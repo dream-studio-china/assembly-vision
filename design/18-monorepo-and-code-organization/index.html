@@ -1,0 +1,2701 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/design/18-monorepo-and-code-organization/">
+      
+      
+        <link rel="prev" href="../17-central-admin-dashboard/">
+      
+      
+        <link rel="next" href="../19-training-and-evaluation/">
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Monorepo and Code Organization - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#18-monorepo-and-code-organization" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Monorepo and Code Organization
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#181-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.1 Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#182-organization-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.2 Organization Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#183-proposed-repository-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.3 Proposed Repository Tree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#184-application-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4 Application Responsibilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18.4 Application Responsibilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1841-edge-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4.1 edge-service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1842-central-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4.2 central-api
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1843-central-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4.3 central-worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1844-web-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4.4 Web Applications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#185-python-package-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.5 Python Package Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#186-typescript-package-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.6 TypeScript Package Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#187-dependency-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.7 Dependency Diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#188-mvp-versus-later-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.8 MVP Versus Later Packages
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18.8 MVP Versus Later Packages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1881-two-day-static-image-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.8.1 Two-Day Static-Image MVP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1882-one-month-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.8.2 One-Month MVP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1883-add-only-when-justified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.8.3 Add Only When Justified
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#189-dependency-and-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.9 Dependency and Version Management
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1810-configuration-and-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.10 Configuration and Secrets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1811-models-data-and-generated-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.11 Models, Data, and Generated Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1812-testing-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.12 Testing Layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1813-ci-and-build-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.13 CI and Build Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1814-ownership-and-change-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.14 Ownership and Change Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1815-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.15 Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001: Edge-First Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002: Python Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003: Vue 3 and TypeScript Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004: Two-Stage Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005: Local-First Storage and Delayed Upload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006: REST Plus WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007: Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008: Docker Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009: Static-Image-First MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#181-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.1 Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#182-organization-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.2 Organization Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#183-proposed-repository-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.3 Proposed Repository Tree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#184-application-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4 Application Responsibilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18.4 Application Responsibilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1841-edge-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4.1 edge-service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1842-central-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4.2 central-api
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1843-central-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4.3 central-worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1844-web-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.4.4 Web Applications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#185-python-package-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.5 Python Package Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#186-typescript-package-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.6 TypeScript Package Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#187-dependency-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.7 Dependency Diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#188-mvp-versus-later-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.8 MVP Versus Later Packages
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18.8 MVP Versus Later Packages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1881-two-day-static-image-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.8.1 Two-Day Static-Image MVP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1882-one-month-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.8.2 One-Month MVP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1883-add-only-when-justified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.8.3 Add Only When Justified
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#189-dependency-and-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.9 Dependency and Version Management
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1810-configuration-and-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.10 Configuration and Secrets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1811-models-data-and-generated-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.11 Models, Data, and Generated Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1812-testing-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.12 Testing Layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1813-ci-and-build-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.13 CI and Build Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1814-ownership-and-change-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.14 Ownership and Change Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1815-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18.15 Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="18-monorepo-and-code-organization">18. Monorepo and Code Organization<a class="headerlink" href="#18-monorepo-and-code-organization" title="Permanent link">&para;</a></h1>
+<h2 id="181-goals">18.1 Goals<a class="headerlink" href="#181-goals" title="Permanent link">&para;</a></h2>
+<p>AssemblyVision uses one Python/TypeScript monorepo to coordinate domain contracts, edge and central releases, frontend clients, migrations, deployment, and evaluation. The repository must preserve runtime boundaries without creating a package for every pipeline step.</p>
+<p>Related contracts are defined in <a href="../14-data-model-and-database/">Data Model and Database</a> and <a href="../15-rest-api-and-events/">REST API and Events</a>. Frontend ownership is described in <a href="../16-edge-dashboard/">Edge Dashboard</a> and <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a>; ML workflow is described in <a href="../19-training-and-evaluation/">Training and Evaluation</a>.</p>
+<h2 id="182-organization-principles">18.2 Organization Principles<a class="headerlink" href="#182-organization-principles" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>apps/</code> contains independently runnable/deployable processes and web applications.</li>
+<li><code>packages/</code> contains code reused by at least two applications or a cohesive domain that requires independent tests.</li>
+<li>Keep product detection, ROI, component detection, temporal aggregation, and rules together in <code>vision-core</code> until independent reuse or dependency isolation is demonstrated.</li>
+<li>Runtime application code never imports from <code>training/</code>.</li>
+<li>Edge code must not import central persistence or require a central connection.</li>
+<li>Frontends consume generated API contracts and small shared visual primitives; page-specific stores and components remain in their app.</li>
+<li>Production data, credentials, datasets, and model weights are external artifacts and ignored by Git.</li>
+<li>Each deployable app owns composition/configuration; shared packages must not read environment variables at import time.</li>
+</ol>
+<h2 id="183-proposed-repository-tree">18.3 Proposed Repository Tree<a class="headerlink" href="#183-proposed-repository-tree" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>assembly-vision/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── apps/
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── edge-service/
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   │   ├── src/assemblyvision_edge/
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   │   │   ├── api/
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   │   │   ├── application/
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   │   │   ├── infrastructure/
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   │   │   └── main.py
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   │   ├── migrations/
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   │   ├── tests/
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   │   └── pyproject.toml
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── edge-web/
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   │   ├── src/{pages,components,stores,router,services}/
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   │   ├── tests/
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   │   └── package.json
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── central-api/
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   │   ├── src/assemblyvision_central/
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   │   │   ├── api/
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   │   │   ├── application/
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   │   │   ├── infrastructure/
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   │   │   └── main.py
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   │   ├── migrations/
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│   │   ├── tests/
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│   │   └── pyproject.toml
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   ├── central-worker/
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│   │   ├── src/assemblyvision_worker/
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   │   ├── tests/
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│   │   └── pyproject.toml
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│   └── admin-web/
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>│       ├── src/{pages,components,stores,router,services}/
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│       ├── tests/
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>│       └── package.json
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── packages/
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>│   ├── python/
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>│   │   ├── domain/
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>│   │   │   ├── src/assemblyvision_domain/
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>│   │   │   │   ├── models.py
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>│   │   │   │   ├── events.py
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>│   │   │   │   └── errors.py
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>│   │   │   └── pyproject.toml
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>│   │   ├── vision-core/
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>│   │   │   ├── src/assemblyvision_vision/
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>│   │   │   │   ├── sources/
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>│   │   │   │   ├── camera/
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>│   │   │   │   ├── barcode/
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>│   │   │   │   ├── detection/
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>│   │   │   │   ├── roi/
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>│   │   │   │   ├── aggregation/
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>│   │   │   │   ├── rules/
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>│   │   │   │   └── pipeline.py
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>│   │   │   ├── tests/
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>│   │   │   └── pyproject.toml
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>│   │   └── platform-common/
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>│   │       ├── src/assemblyvision_common/
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>│   │       │   ├── config.py
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>│   │       │   ├── logging.py
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>│   │       │   ├── telemetry.py
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>│   │       │   └── checksums.py
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>│   │       └── pyproject.toml
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>│   └── typescript/
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>│       ├── api-client/
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>│       │   ├── src/{edge,central,generated}/
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>│       │   └── package.json
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>│       ├── ui/
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>│       │   ├── src/{status,detection-viewer,formatters}/
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>│       │   └── package.json
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>│       └── eslint-config/
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>│           └── package.json
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>├── training/
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>│   ├── assemblyvision_training/
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>│   │   ├── data/
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>│   │   ├── product_detector/
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>│   │   ├── component_detector/
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>│   │   ├── evaluation/
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>│   │   └── manifests/
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>│   ├── configs/
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>│   ├── tests/
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>│   └── pyproject.toml
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>├── models/
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>│   ├── README.md
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>│   └── manifests/
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>├── deploy/
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>│   ├── docker/
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>│   │   ├── edge.Dockerfile
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>│   │   ├── central-api.Dockerfile
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>│   │   ├── central-worker.Dockerfile
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>│   │   └── web.Dockerfile
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>│   ├── compose/
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>│   │   ├── edge.compose.yml
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>│   │   └── central.compose.yml
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>│   ├── nginx/
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>│   └── env/
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>├── config/
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>│   ├── schemas/
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>│   └── examples/
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>├── tests/
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>│   ├── contract/
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>│   ├── e2e/
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>│   ├── resilience/
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>│   ├── performance/
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>│   └── fixtures/
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>├── docs/
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>│   ├── design/
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>│   │   └── decisions/
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>│   └── README.md
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>├── scripts/
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>├── .github/workflows/
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>├── pyproject.toml
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>├── uv.lock
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>├── package.json
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>├── pnpm-lock.yaml
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>├── pnpm-workspace.yaml
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>├── tsconfig.base.json
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>├── docker-compose.yml
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>├── Makefile
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>└── README.md
+</code></pre></div>
+<p>Brace notation above is explanatory shorthand; actual directories are ordinary directories. <code>edge-service</code> combines API, capture orchestration, pipeline execution, local persistence, and uploader in one process for the first production release. CPU/GPU-heavy inference may run in a supervised subprocess, but a separately deployable <code>edge-worker</code> is not justified until isolation or independent scaling is measured. Likewise, the two-day MVP is exposed as an <code>edge-service</code> CLI entry point rather than a separate <code>edge-cli</code> app.</p>
+<h2 id="184-application-responsibilities">18.4 Application Responsibilities<a class="headerlink" href="#184-application-responsibilities" title="Permanent link">&para;</a></h2>
+<h3 id="1841-edge-service">18.4.1 <code>edge-service</code><a class="headerlink" href="#1841-edge-service" title="Permanent link">&para;</a></h3>
+<p>Owns dependency composition for camera adapters, barcode readers, the inspection pipeline, SQLite repositories, filesystem media, persistent upload outbox, local API/WebSocket, startup recovery, and health. Infrastructure adapters implement domain-facing protocols. It must start and inspect without central credentials or connectivity.</p>
+<p>Suggested internal direction is <code>api -&gt; application -&gt; domain/protocols</code>, with <code>infrastructure</code> implementing protocols. API handlers do not call SQLAlchemy directly. The capture callback must not perform database uploads or browser broadcasting synchronously.</p>
+<h3 id="1842-central-api">18.4.2 <code>central-api</code><a class="headerlink" href="#1842-central-api" title="Permanent link">&para;</a></h3>
+<p>Owns authentication/authorization, tenant scoping, ingestion, query APIs, configuration/model registry, review, audit, presigned media sessions, and WebSocket notification publication. It uses PostgreSQL and object storage. Small transactions complete inline.</p>
+<h3 id="1843-central-worker">18.4.3 <code>central-worker</code><a class="headerlink" href="#1843-central-worker" title="Permanent link">&para;</a></h3>
+<p>Runs only jobs that should outlive an HTTP request: report/export generation, media verification/derivative creation when expensive, retention batches, and notification fan-out if introduced. It is not needed for ordinary CRUD or inspection metadata ingestion. MVP can use a PostgreSQL-backed job table; Redis plus a worker framework is added only if retries, scheduling, or throughput justify it.</p>
+<h3 id="1844-web-applications">18.4.4 Web Applications<a class="headerlink" href="#1844-web-applications" title="Permanent link">&para;</a></h3>
+<p><code>edge-web</code> and <code>admin-web</code> own route-level features and deployment branding. They share generated API clients, detection coordinate rendering, basic status indicators, and formatting. Complex product/rule editors and fleet charts remain central-only; edge health/queue controls remain edge-only.</p>
+<h2 id="185-python-package-boundaries">18.5 Python Package Boundaries<a class="headerlink" href="#185-python-package-boundaries" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Contents</th>
+<th>Must not contain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>domain</code></td>
+<td>Pydantic API/event value models, enums, stable error codes</td>
+<td>FastAPI routers, SQLAlchemy tables, camera SDK, storage clients</td>
+</tr>
+<tr>
+<td><code>vision-core</code></td>
+<td>Image-source protocols, folder source, camera/barcode adapter protocols, YOLO wrappers, ROI, aggregation, deterministic rules, pipeline</td>
+<td>Edge database, central APIs, dashboard code, training orchestration</td>
+</tr>
+<tr>
+<td><code>platform-common</code></td>
+<td>Narrow logging/config/checksum/telemetry utilities used by multiple apps</td>
+<td>Domain business rules, generic “utils” dumping ground</td>
+</tr>
+</tbody>
+</table>
+<p>SQLAlchemy persistence models stay in each application because edge and central schemas differ. Upload protocol DTOs may live in <code>domain</code>; upload retry implementation belongs to <code>edge-service</code>. If only one app uses a helper, keep it in that app.</p>
+<h2 id="186-typescript-package-boundaries">18.6 TypeScript Package Boundaries<a class="headerlink" href="#186-typescript-package-boundaries" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>api-client</code> contains deterministic generated clients for edge and central OpenAPI documents plus minimal auth/error wrappers. Generated code is isolated and replaceable.</li>
+<li><code>ui</code> contains genuinely shared, presentation-focused components: detection viewer, status badge, media-safe formatting, and common accessible primitives. It does not contain route-aware components or application stores.</li>
+<li><code>eslint-config</code> centralizes lint rules. A separate package for charts, domain types, auth, or validation is unnecessary initially; those remain in an app or API client until reuse is proven.</li>
+<li>Vue, Element Plus/Naive UI, and ECharts should be peer dependencies where appropriate to prevent duplicate runtime copies.</li>
+</ul>
+<h2 id="187-dependency-diagram">18.7 Dependency Diagram<a class="headerlink" href="#187-dependency-diagram" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    EV[edge-web] --&gt; AC[TS api-client]
+    EV --&gt; UI[TS ui]
+    AW[admin-web] --&gt; AC
+    AW --&gt; UI
+    AC -. generated from .-&gt; EO[Edge OpenAPI]
+    AC -. generated from .-&gt; CO[Central OpenAPI]
+
+    ES[edge-service] --&gt; VD[Python domain]
+    ES --&gt; VC[vision-core]
+    ES --&gt; PC[platform-common]
+    VC --&gt; VD
+    VC --&gt; PC
+
+    CA[central-api] --&gt; VD
+    CA --&gt; PC
+    CW[central-worker] --&gt; VD
+    CW --&gt; PC
+    CW --&gt; CAI[central application interfaces]
+
+    TR[training] --&gt; VC
+    TR --&gt; VD
+    CA -. publishes .-&gt; CO
+    ES -. publishes .-&gt; EO</code></pre>
+<p>The worker imports a small central application interface/library factored within <code>central-api</code> packaging or a later central-domain package; it must not import FastAPI route modules. No arrow from edge runtime to central runtime denotes a code/runtime dependency. The uploader communicates over the documented network contract.</p>
+<h2 id="188-mvp-versus-later-packages">18.8 MVP Versus Later Packages<a class="headerlink" href="#188-mvp-versus-later-packages" title="Permanent link">&para;</a></h2>
+<h3 id="1881-two-day-static-image-mvp">18.8.1 Two-Day Static-Image MVP<a class="headerlink" href="#1881-two-day-static-image-mvp" title="Permanent link">&para;</a></h3>
+<p>Required: <code>edge-service</code> CLI entry point, <code>domain</code>, <code>vision-core</code> with folder source/detectors/ROI/rules, <code>training/evaluation</code> basics, model manifests, and focused tests. Not required: databases, web apps, central apps, temporal aggregation, upload, camera SDK, or shared TypeScript packages.</p>
+<h3 id="1882-one-month-mvp">18.8.2 One-Month MVP<a class="headerlink" href="#1882-one-month-mvp" title="Permanent link">&para;</a></h3>
+<p>Required: all applications shown except that <code>central-worker</code> may remain a module/process only if asynchronous reports or media work ships. Required packages are <code>domain</code>, <code>vision-core</code>, <code>platform-common</code>, <code>api-client</code>, and a minimal <code>ui</code>. SQLite/PostgreSQL migrations, edge/central Compose definitions, contract tests, and resilience tests are included.</p>
+<h3 id="1883-add-only-when-justified">18.8.3 Add Only When Justified<a class="headerlink" href="#1883-add-only-when-justified" title="Permanent link">&para;</a></h3>
+<p>Potential later packages include vendor-specific camera adapters with conflicting native dependencies, a dedicated MES/PLC integration package, central application/domain extraction for multiple processes, chart components reused by another app, and model-distribution tooling. Do not pre-create empty packages for them.</p>
+<h2 id="189-dependency-and-version-management">18.9 Dependency and Version Management<a class="headerlink" href="#189-dependency-and-version-management" title="Permanent link">&para;</a></h2>
+<p>Use one root Python workspace with <code>uv</code> and per-app/package <code>pyproject.toml</code> declarations; production app lock resolution comes from committed <code>uv.lock</code>. Use pnpm workspaces with one committed lockfile. Pin major/minor runtime dependencies and model runtime/CUDA combinations explicitly. Renovation is reviewed with tests rather than blindly merged.</p>
+<p>Python supports 3.12. TypeScript uses a strict base configuration. Each package exports only public entry points. Circular dependencies fail CI through import/dependency checks. Native camera SDKs and GPU packages use optional dependency groups so central images do not include them.</p>
+<h2 id="1810-configuration-and-secrets">18.10 Configuration and Secrets<a class="headerlink" href="#1810-configuration-and-secrets" title="Permanent link">&para;</a></h2>
+<p>Typed settings live in each runnable app and compose shared primitives from <code>platform-common</code>. Resolution order is documented: defaults, configuration file, environment variables, then explicit approved runtime overrides. Example files contain no secrets. Credentials come from mounted secrets or deployment secret stores and are never part of model/configuration bundles.</p>
+<p>Configuration schemas and examples under <code>config/</code> are source-controlled. Effective runtime configuration and version checksum are observable, with sensitive fields redacted.</p>
+<h2 id="1811-models-data-and-generated-artifacts">18.11 Models, Data, and Generated Artifacts<a class="headerlink" href="#1811-models-data-and-generated-artifacts" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>models/manifests/</code> may contain small manifests and checksums for development references. Model weights live in an artifact registry/object store and are ignored by Git.</li>
+<li><code>training/</code> contains reproducible code and small synthetic test fixtures, not production datasets or uncurated exports.</li>
+<li>Runtime databases, images, clips, logs, cache, and reports use explicit external volumes, never repository paths.</li>
+<li>OpenAPI documents and generated clients are produced deterministically. The chosen policy may commit generated output for easy frontend builds or regenerate in CI, but CI always checks drift.</li>
+<li>Built frontend assets and compiled Python runtime layers are build outputs, not source directories.</li>
+</ul>
+<h2 id="1812-testing-layout">18.12 Testing Layout<a class="headerlink" href="#1812-testing-layout" title="Permanent link">&para;</a></h2>
+<p>Unit tests live beside their owning app/package. Root tests cover boundaries:</p>
+<table>
+<thead>
+<tr>
+<th>Suite</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>contract</code></td>
+<td>OpenAPI generation, client generation/type-check, event JSON Schema, edge-central ingestion compatibility</td>
+</tr>
+<tr>
+<td><code>e2e</code></td>
+<td>Browser plus deployed API/database/object store workflows</td>
+</tr>
+<tr>
+<td><code>resilience</code></td>
+<td>Network loss, restart, expired lease, disk-full, checksum mismatch, duplicate upload</td>
+</tr>
+<tr>
+<td><code>performance</code></td>
+<td>Pipeline latency, API/dashboard queries, upload recovery, sustained operation</td>
+</tr>
+<tr>
+<td><code>fixtures</code></td>
+<td>Small synthetic/non-sensitive images, API payloads, and factory builders</td>
+</tr>
+</tbody>
+</table>
+<p>Tests do not import fixtures from production data directories. ML evaluation datasets are versioned externally and invoked separately from fast CI.</p>
+<h2 id="1813-ci-and-build-flow">18.13 CI and Build Flow<a class="headerlink" href="#1813-ci-and-build-flow" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Validate formatting, Ruff, MyPy, ESLint, TypeScript, and Markdown links/diagrams where tooling is available.</li>
+<li>Run changed-package unit tests, then contract and integration tests.</li>
+<li>Generate OpenAPI and TypeScript clients and fail on drift.</li>
+<li>Build each app in isolated multi-stage Docker builds using only declared workspace dependencies.</li>
+<li>Scan dependencies/images and produce an SBOM.</li>
+<li>Run Compose smoke tests for edge offline startup and central ingestion.</li>
+<li>Publish immutable images/artifacts only from reviewed, tagged revisions; record source revision in manifests.</li>
+</ol>
+<p>Training jobs are not part of every application CI run. Their code tests run in CI; full training/evaluation runs in a controlled ML environment and publishes signed/verified reports and model artifacts.</p>
+<h2 id="1814-ownership-and-change-rules">18.14 Ownership and Change Rules<a class="headerlink" href="#1814-ownership-and-change-rules" title="Permanent link">&para;</a></h2>
+<p>Use code owners for vision/rules, edge runtime, central/security, frontend shared packages, migrations, and training/evaluation. A Pydantic contract change requires API/client drift checks. A published event change requires compatibility review. Database changes require migration and rollback/forward-recovery notes. Shared UI additions require two concrete consumers; otherwise they remain local.</p>
+<h2 id="1815-open-questions-and-validation-required">18.15 Open Questions and Validation Required<a class="headerlink" href="#1815-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Select <code>uv</code> workspace and pnpm versions supported by the build environment.</li>
+<li>Confirm CI provider, container registry, artifact/model registry, and SBOM/signing requirements.</li>
+<li>Confirm whether camera SDK licensing or native libraries require a separately built adapter package/image.</li>
+<li>Decide whether generated OpenAPI clients are committed or generated during every consumer build.</li>
+<li>Validate whether report/media workloads justify <code>central-worker</code> and a job broker in the one-month MVP.</li>
+<li>Confirm supported edge operating system, CPU/GPU architecture, and offline dependency installation process.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2451 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/design/21-security-and-source-distribution/">
+      
+      
+        <link rel="prev" href="../20-deployment-and-operations/">
+      
+      
+        <link rel="next" href="../22-testing-and-quality-assurance/">
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Security and Source Distribution - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#21-security-and-source-distribution" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Security and Source Distribution
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#211-purpose-and-security-position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.1 Purpose and Security Position
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21.1 Purpose and Security Position">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2111-scope-distinction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.1.1 Scope Distinction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#212-assets-and-trust-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.2 Assets and Trust Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#213-identity-and-authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.3 Identity and Authorization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#214-network-and-api-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.4 Network and API Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#215-data-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.5 Data Protection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#216-configuration-model-and-supply-chain-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.6 Configuration, Model, and Supply-Chain Integrity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#217-source-distribution-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.7 Source Distribution Approach
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#218-source-distribution-caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.8 Source Distribution Caveats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#219-secrets-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.9 Secrets Management
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2110-security-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.10 Security Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21.10 Security Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21101-suspected-device-credential-compromise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.10.1 Suspected Device Credential Compromise
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21102-unauthorized-configuration-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.10.2 Unauthorized Configuration Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21103-vulnerable-runtime-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.10.3 Vulnerable Runtime Dependency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2111-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.11 Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2112-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.12 Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2113-related-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.13 Related Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001: Edge-First Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002: Python Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003: Vue 3 and TypeScript Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004: Two-Stage Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005: Local-First Storage and Delayed Upload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006: REST Plus WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007: Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008: Docker Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009: Static-Image-First MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#211-purpose-and-security-position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.1 Purpose and Security Position
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21.1 Purpose and Security Position">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2111-scope-distinction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.1.1 Scope Distinction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#212-assets-and-trust-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.2 Assets and Trust Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#213-identity-and-authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.3 Identity and Authorization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#214-network-and-api-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.4 Network and API Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#215-data-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.5 Data Protection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#216-configuration-model-and-supply-chain-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.6 Configuration, Model, and Supply-Chain Integrity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#217-source-distribution-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.7 Source Distribution Approach
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#218-source-distribution-caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.8 Source Distribution Caveats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#219-secrets-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.9 Secrets Management
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2110-security-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.10 Security Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21.10 Security Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21101-suspected-device-credential-compromise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.10.1 Suspected Device Credential Compromise
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21102-unauthorized-configuration-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.10.2 Unauthorized Configuration Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21103-vulnerable-runtime-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.10.3 Vulnerable Runtime Dependency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2111-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.11 Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2112-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.12 Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2113-related-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21.13 Related Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="21-security-and-source-distribution">21. Security and Source Distribution<a class="headerlink" href="#21-security-and-source-distribution" title="Permanent link">&para;</a></h1>
+<h2 id="211-purpose-and-security-position">21.1 Purpose and Security Position<a class="headerlink" href="#211-purpose-and-security-position" title="Permanent link">&para;</a></h2>
+<p>AssemblyVision protects production evidence, configuration integrity, credentials, and administrative actions while preserving offline edge inspection. Security controls are risk-based; neither Docker nor Python bytecode is represented as a strong source-code security boundary.</p>
+<h3 id="2111-scope-distinction">21.1.1 Scope Distinction<a class="headerlink" href="#2111-scope-distinction" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>MVP:</strong> no authentication is required for the two-day static-image CLI, provided it is used only in an isolated development environment with non-production data.</li>
+<li><strong>One-month target:</strong> local access controls, central authentication, TLS, device credentials, audit logs, non-root containers, and controlled artifact distribution.</li>
+<li><strong>Production target:</strong> customer-integrated identity where practical, role-based authorization, certificate lifecycle management, signed model/configuration packages, vulnerability management, backup encryption, and incident response.</li>
+<li><strong>Future scope:</strong> hardware-backed keys, remote attestation, stronger native compilation/obfuscation, or licensing controls only if justified by contractual threat analysis.</li>
+</ul>
+<h2 id="212-assets-and-trust-boundaries">21.2 Assets and Trust Boundaries<a class="headerlink" href="#212-assets-and-trust-boundaries" title="Permanent link">&para;</a></h2>
+<p>Protected assets include inspection decisions, images and clips, barcodes, product configurations, rules, model packages, credentials, audit logs, source/build artifacts, and personal information in user accounts. Trust boundaries exist between camera/edge hardware, local browser/edge API, edge/central network, central API/workers, object storage, administrators, and the build/registry environment.</p>
+<p>Customer control of edge hardware means a sufficiently privileged customer administrator can inspect containers, volumes, memory, and traffic. The architecture prevents casual browsing and unauthorized application-level access; it cannot guarantee resistance to a determined privileged reverse engineer.</p>
+<h2 id="213-identity-and-authorization">21.3 Identity and Authorization<a class="headerlink" href="#213-identity-and-authorization" title="Permanent link">&para;</a></h2>
+<p>Central users authenticate through customer identity federation when available or a securely managed local identity provider. Sessions use short-lived tokens and secure, HTTP-only cookies where browser architecture permits. Service-to-service and edge-to-central access uses a unique per-device identity; credentials are revocable and must not be shared across devices.</p>
+<p>Recommended roles are:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Permitted actions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Operator</td>
+<td>View current state, acknowledge alarms, initiate authorized retry/pause/resume</td>
+</tr>
+<tr>
+<td>Reviewer</td>
+<td>View evidence and record review outcomes</td>
+</tr>
+<tr>
+<td>Product engineer</td>
+<td>Draft product and rule configuration</td>
+</tr>
+<tr>
+<td>Release approver</td>
+<td>Approve and deploy signed rule/model/application releases</td>
+</tr>
+<tr>
+<td>Site administrator</td>
+<td>Manage devices and site-scoped users</td>
+</tr>
+<tr>
+<td>Auditor</td>
+<td>Read inspections, reviews, release history, and audit logs</td>
+</tr>
+</tbody>
+</table>
+<p>Authorization is deny-by-default and scoped by organization/site/line/device. Drafting and approving safety-relevant configuration should be separated where staffing permits. All permission, configuration, rule, model, retention, and review changes are audited with actor, time, old/new values or checksum, reason, and correlation identifier.</p>
+<p>Local dashboard access must reflect site constraints. A loopback-only kiosk can reduce exposure but does not replace authentication where other users can reach the host. Emergency pause may be locally available; configuration changes require stronger authorization.</p>
+<h2 id="214-network-and-api-security">21.4 Network and API Security<a class="headerlink" href="#214-network-and-api-security" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Use TLS for edge-to-central and browser-to-central traffic; validate hostnames and trust chains.</li>
+<li>Prefer outbound-only edge connections so the factory firewall need not expose the edge API centrally.</li>
+<li>Authenticate every upload and bind it to a registered device.</li>
+<li>Apply request size limits, schema validation, rate limits, and safe media content handling.</li>
+<li>Use idempotency keys without treating them as authentication.</li>
+<li>Keep database, Redis, and object-storage interfaces on private networks.</li>
+<li>Restrict local API listening addresses and cross-origin policy.</li>
+<li>Do not place secrets, raw SQL errors, filesystem paths, or stack traces in client responses.</li>
+<li>Treat uploaded filenames and metadata as untrusted; generate storage keys server-side.</li>
+</ul>
+<p>WebSocket connections use the same authentication and authorization rules as REST, expire with their session, and carry status notifications rather than authoritative state transitions.</p>
+<h2 id="215-data-protection">21.5 Data Protection<a class="headerlink" href="#215-data-protection" title="Permanent link">&para;</a></h2>
+<p>Inspection evidence may reveal product identifiers and factory operations. Collection is minimized to the configured upload policy: representative evidence for OK records and richer evidence for NG or exceptions. Retention is explicit by media class. Access to images, clips, barcode values, and exports is logged and site-scoped.</p>
+<p>Encryption at rest should use platform or volume encryption at the edge and database/object-store encryption centrally. Key ownership and backup-key handling must be agreed with the customer. Logs must avoid credentials and redact sensitive barcode content when full values are unnecessary. Browser caches must not retain sensitive media beyond the intended session.</p>
+<h2 id="216-configuration-model-and-supply-chain-integrity">21.6 Configuration, Model, and Supply-Chain Integrity<a class="headerlink" href="#216-configuration-model-and-supply-chain-integrity" title="Permanent link">&para;</a></h2>
+<p>Every deployable artifact has a version, cryptographic checksum, compatibility metadata, provenance, and approval state. Production packages are signed; edge clients verify checksum, signature, device/product compatibility, minimum application version, and required rule/model pairing before installation. Activation occurs between inspection windows and retains a last known-good set.</p>
+<p>Build controls include pinned dependencies, reviewed lock-file changes, software bills of materials, container and dependency scanning, restricted registry publishing, protected release credentials, and reproducible build records. Models and datasets are handled as controlled artifacts: production images, training data, notebooks, and experiment credentials are excluded from runtime images.</p>
+<h2 id="217-source-distribution-approach">21.7 Source Distribution Approach<a class="headerlink" href="#217-source-distribution-approach" title="Permanent link">&para;</a></h2>
+<p>The customer receives runnable edge artifacts, not the Git repository. The distribution pipeline should:</p>
+<ol>
+<li>Build Python wheels or application trees in a private build stage.</li>
+<li>Compile project Python modules to checked-hash <code>.pyc</code> files.</li>
+<li>Remove original project <code>.py</code> files where imports and diagnostics remain reliable.</li>
+<li>Copy only runtime dependencies and artifacts into the final image.</li>
+<li>Build Vue applications and deploy only generated static assets.</li>
+<li>Exclude <code>.git</code>, tests, documentation not needed at runtime, source maps unless operationally approved, training datasets, model-training code, notebooks, and internal experiment configuration.</li>
+<li>Run under a non-root user with a read-only root filesystem where practical.</li>
+<li>Put models, rules, databases, logs, media, and temporary files in explicit mounts with minimum permissions.</li>
+<li>Inject short-lived or rotatable secrets at deployment time; never bake long-term secrets into images.</li>
+</ol>
+<p>Third-party Python source may still be included by dependency packaging and must follow its license. License notices and required attribution must remain available. Debug symbols and frontend source maps must be intentionally controlled; removing them can make support harder and does not prevent reconstruction of client behavior.</p>
+<h2 id="218-source-distribution-caveats">21.8 Source Distribution Caveats<a class="headerlink" href="#218-source-distribution-caveats" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>.pyc</code> is straightforward to analyze with available tools and is not strong anti-reverse-engineering protection.</li>
+<li>Docker packages files and processes but is not a source-code security boundary against a host administrator.</li>
+<li>Built frontend JavaScript is necessarily delivered to the browser and can be inspected.</li>
+<li>Model files and rule definitions can reveal system behavior even without Python source.</li>
+<li>Removing source can reduce diagnostic quality, complicate traceback analysis, and create obligations to supply corresponding source for some third-party licenses.</li>
+<li>Image encryption cannot protect code while the authorized machine is actively executing it without additional trusted hardware.</li>
+</ul>
+<p>This level is accepted for the MVP because the immediate requirement is to avoid direct casual source browsing, not to guarantee protection from advanced reverse engineering. Licensing servers, aggressive obfuscation, custom packers, and hardware-bound activation are deliberately not introduced without a concrete commercial and operational requirement.</p>
+<h2 id="219-secrets-management">21.9 Secrets Management<a class="headerlink" href="#219-secrets-management" title="Permanent link">&para;</a></h2>
+<p>Secrets are classified, inventoried, and assigned an owner and rotation method. Local secrets should be readable only by the service account and supplied through a customer-approved OS secret store, Docker secret mount, or protected file. Environment variables are acceptable only when process and support tooling exposure is understood. Frontend build-time variables are public and must never contain secrets.</p>
+<p>Rotation must support overlap so queued uploads survive credential replacement. Revoking one device must not invalidate other devices. Logs display credential identifiers, never credential values.</p>
+<h2 id="2110-security-operations">21.10 Security Operations<a class="headerlink" href="#2110-security-operations" title="Permanent link">&para;</a></h2>
+<h3 id="21101-suspected-device-credential-compromise">21.10.1 Suspected Device Credential Compromise<a class="headerlink" href="#21101-suspected-device-credential-compromise" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Revoke the device credential centrally and disable its package/configuration access.</li>
+<li>Preserve audit logs, upload receipts, and device diagnostics.</li>
+<li>Continue local inspection if safe, but quarantine outbound synchronization until re-enrollment.</li>
+<li>Reimage or inspect the edge host according to customer incident policy.</li>
+<li>Issue a new unique credential only after host trust is restored; reconcile queued records by inspection ID and checksum.</li>
+</ol>
+<h3 id="21102-unauthorized-configuration-change">21.10.2 Unauthorized Configuration Change<a class="headerlink" href="#21102-unauthorized-configuration-change" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Stop further activation and retain the current evidence and audit trail.</li>
+<li>Identify actor, scope, old/new checksums, affected devices, and inspection time range.</li>
+<li>Restore the last approved configuration atomically.</li>
+<li>Re-review potentially affected inspections using preserved model/rule versions and evidence.</li>
+<li>Correct permissions or credential exposure before service normalization.</li>
+</ol>
+<h3 id="21103-vulnerable-runtime-dependency">21.10.3 Vulnerable Runtime Dependency<a class="headerlink" href="#21103-vulnerable-runtime-dependency" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Establish whether the vulnerable component and code path exist in deployed images.</li>
+<li>Apply compensating network or feature controls where needed.</li>
+<li>Rebuild from patched pinned dependencies, scan, test, sign, and stage rollout.</li>
+<li>Preserve release provenance and notify customers according to severity and contract.</li>
+</ol>
+<h2 id="2111-verification">21.11 Verification<a class="headerlink" href="#2111-verification" title="Permanent link">&para;</a></h2>
+<p>Security verification includes authorization matrix tests, tenant/site isolation tests, device revocation, malformed upload handling, dependency/container scanning, secret scanning, package signature failure, rollback safety, audit-log completeness, backup restoration, and an external penetration test before broad deployment where contractually required.</p>
+<h2 id="2112-open-questions-and-validation-required">21.12 Open Questions and Validation Required<a class="headerlink" href="#2112-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Customer identity provider, MFA policy, account lifecycle, and role-separation feasibility.</li>
+<li>Edge users, physical access controls, local network reachability, and kiosk/browser model.</li>
+<li>Certificate authority, device enrollment, revocation, rotation, and offline renewal process.</li>
+<li>Data classification for barcodes, images, video, logs, and exports.</li>
+<li>Encryption-at-rest requirements and key ownership for edge, central, and backups.</li>
+<li>Required retention, legal hold, deletion, and audit-log retention periods.</li>
+<li>Contractual source-delivery, escrow, open-source license, support, or obfuscation obligations.</li>
+<li>Required vulnerability response times and approved registry/scanning products.</li>
+</ul>
+<h2 id="2113-related-decisions">21.13 Related Decisions<a class="headerlink" href="#2113-related-decisions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../decisions/ADR-001-edge-first-inspection/">ADR-001: Edge-first inspection</a></li>
+<li><a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/">ADR-005: Local-first storage and delayed upload</a></li>
+<li><a href="../decisions/ADR-008-docker-deployment/">ADR-008: Docker deployment</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

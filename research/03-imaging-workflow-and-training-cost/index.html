@@ -1,0 +1,2740 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/research/03-imaging-workflow-and-training-cost/">
+      
+      
+        <link rel="prev" href="../02-yolo-capabilities-and-success-rates/">
+      
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Imaging Workflow and Training Cost - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Imaging Workflow and Training Cost
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001: Edge-First Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002: Python Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003: Vue 3 and TypeScript Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004: Two-Stage Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005: Local-First Storage and Delayed Upload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006: REST Plus WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007: Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008: Docker Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009: Static-Image-First MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-imaging-specifications-and-best-practices-for-fixed-line-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Imaging Specifications and Best Practices for Fixed-Line Inspection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Imaging Specifications and Best Practices for Fixed-Line Inspection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-lighting-is-the-dominant-factor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Lighting is the dominant factor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-lighting-families-and-when-to-use-them" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Lighting families (and when to use them)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-filters-and-glare-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Filters and glare control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-exposure-aperture-depth-of-field-and-motion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Exposure, aperture, depth of field, and motion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-camera-mounting-angle-and-stationarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Camera mounting, angle, and stationarity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-assemblyvision-imaging-checklist-applies-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 AssemblyVision imaging checklist (applies directly)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-standard-workflows-and-procedures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Standard Workflows and Procedures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Standard Workflows and Procedures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Data collection SOP (synthesis of Ultralytics + Roboflow + AssemblyVision)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-labeling-standards-and-tooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Labeling standards and tooling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-dataset-organization-and-trainvalidationtest-splits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Dataset organization and train/validation/test splits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-quality-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Quality gates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-training-cost-and-practitioner-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Training Cost and Practitioner Experience
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Training Cost and Practitioner Experience">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-how-many-images-do-people-actually-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 How many images do people actually need?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-training-time-and-compute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Training time and compute
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-common-failures-and-tips-synthesis-of-cited-practitioner-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Common failures and tips (synthesis of cited practitioner material)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-iteration-cycles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Iteration cycles
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-practical-checklists-for-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Practical Checklists for AssemblyVision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Practical Checklists for AssemblyVision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-imaging-station-checklist-pre-data-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Imaging station checklist (pre-data-collection)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-data-collection-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Data collection checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-annotation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Annotation checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-split-evaluation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Split &amp; evaluation checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-training-cost-planning-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Training &amp; cost planning checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-imaging-specifications-and-best-practices-for-fixed-line-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Imaging Specifications and Best Practices for Fixed-Line Inspection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Imaging Specifications and Best Practices for Fixed-Line Inspection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-lighting-is-the-dominant-factor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Lighting is the dominant factor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-lighting-families-and-when-to-use-them" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Lighting families (and when to use them)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-filters-and-glare-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Filters and glare control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-exposure-aperture-depth-of-field-and-motion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Exposure, aperture, depth of field, and motion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-camera-mounting-angle-and-stationarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Camera mounting, angle, and stationarity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-assemblyvision-imaging-checklist-applies-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 AssemblyVision imaging checklist (applies directly)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-standard-workflows-and-procedures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Standard Workflows and Procedures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Standard Workflows and Procedures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Data collection SOP (synthesis of Ultralytics + Roboflow + AssemblyVision)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-labeling-standards-and-tooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Labeling standards and tooling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-dataset-organization-and-trainvalidationtest-splits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Dataset organization and train/validation/test splits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-quality-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Quality gates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-training-cost-and-practitioner-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Training Cost and Practitioner Experience
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Training Cost and Practitioner Experience">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-how-many-images-do-people-actually-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 How many images do people actually need?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-training-time-and-compute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Training time and compute
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-common-failures-and-tips-synthesis-of-cited-practitioner-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Common failures and tips (synthesis of cited practitioner material)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-iteration-cycles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Iteration cycles
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-practical-checklists-for-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Practical Checklists for AssemblyVision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Practical Checklists for AssemblyVision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-imaging-station-checklist-pre-data-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Imaging station checklist (pre-data-collection)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-data-collection-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Data collection checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-annotation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Annotation checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-split-evaluation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Split &amp; evaluation checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-training-cost-planning-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Training &amp; cost planning checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection">Research 3: Imaging Workflow, Data Practices, and Training Cost for Fixed-Line Inspection<a class="headerlink" href="#research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Status: Research synthesis for the AssemblyVision project (fixed 4MP industrial camera, fixed lighting, presence checking of large components, 300-800 image target).
+Date compiled: 2026-08-04
+Honesty convention: Lighting/camera guidance is cited from published engineering references (Cognex, Wikipedia/MV literature). <strong>Training-time and labeling-time figures that could not be pinned to a citable source are explicitly marked "practitioner estimate"</strong>. Cost figures depend heavily on local hardware and are ranges, not guarantees.</p>
+</blockquote>
+<hr />
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>This document gives AssemblyVision (a) imaging specifications and best practices for fixed-line inspection, (b) standard data workflows (collection SOP, labeling standards, splits, quality gates), and (c) practitioner evidence on training cost, dataset size, and common failures - plus practical checklists that map directly onto the AssemblyVision design set.</p>
+<hr />
+<h2 id="2-imaging-specifications-and-best-practices-for-fixed-line-inspection">2. Imaging Specifications and Best Practices for Fixed-Line Inspection<a class="headerlink" href="#2-imaging-specifications-and-best-practices-for-fixed-line-inspection" title="Permanent link">&para;</a></h2>
+<h3 id="21-lighting-is-the-dominant-factor">2.1 Lighting is the dominant factor<a class="headerlink" href="#21-lighting-is-the-dominant-factor" title="Permanent link">&para;</a></h3>
+<p>Vendor-engineering consensus is unambiguous: <strong>"Poor lighting is the most common cause of poor machine vision performance. Even sophisticated cameras and software can't make up for inadequate lighting."</strong> Good lighting maximizes contrast on the features of interest and minimizes it everywhere else, and it must be <strong>consistent</strong> so that normal part variation does not change image contrast (https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting).</p>
+<h3 id="22-lighting-families-and-when-to-use-them">2.2 Lighting families (and when to use them)<a class="headerlink" href="#22-lighting-families-and-when-to-use-them" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Geometry</th>
+<th>Best for</th>
+<th>Notes for AssemblyVision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ring / low-angle ring</strong></td>
+<td>Circular LED around the lens</td>
+<td>Uniform bright-field on flat, matte parts; general presence checks</td>
+<td>Good default for matte plastic/metal assemblies viewed from above</td>
+</tr>
+<tr>
+<td><strong>Bar lights</strong></td>
+<td>Linear LED strips</td>
+<td>Larger areas, wider FOV, or angled illumination of tall parts</td>
+<td>Consider for a large product that fills the 4MP frame</td>
+</tr>
+<tr>
+<td><strong>Dome (diffuse) lighting</strong></td>
+<td>Diffuser over a ring, "cloudy-day" light</td>
+<td><strong>Curved or shiny surfaces</strong>; suppresses reflections</td>
+<td>First choice if the product has glossy surfaces or visible reflections</td>
+</tr>
+<tr>
+<td><strong>Coaxial (axial) lighting</strong></td>
+<td>Light injected along the optical axis via beam splitter</td>
+<td>Flat, specular surfaces; reading low-contrast features</td>
+<td>Strong candidate for flat component faces; can introduce specular hotspots if alignment drifts</td>
+</tr>
+<tr>
+<td><strong>Backlighting</strong></td>
+<td>Diffuse light behind the target</td>
+<td>Silhouette, edge/counting, dimensional checks</td>
+<td>Not applicable to a product that sits on a conveyor with background visible unless the line allows a back panel</td>
+</tr>
+<tr>
+<td><strong>Dark-field / low-angle</strong></td>
+<td>Light from the side at a shallow angle</td>
+<td>Surface texture, scratches, embossing, height changes</td>
+<td>Useful for scratch/emboss detection on an otherwise flat surface</td>
+</tr>
+<tr>
+<td><strong>Bright-field / full-illumination</strong></td>
+<td>Light from above reflecting into the camera</td>
+<td>Flat parts; high contrast on flat features</td>
+<td>The most common default</td>
+</tr>
+<tr>
+<td><strong>Multispectral / IR</strong></td>
+<td>Color-specific or IR LEDs</td>
+<td>Suppressing busy backgrounds or color noise; working through challenging ambient light</td>
+<td>Possible fallback if visible-light reflections are unavoidable</td>
+</tr>
+</tbody>
+</table>
+<p>Sources: https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting ; https://en.wikipedia.org/wiki/Machine_vision (equipment and imaging sections).</p>
+<h3 id="23-filters-and-glare-control">2.3 Filters and glare control<a class="headerlink" href="#23-filters-and-glare-control" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Polarizing filters</strong> (camera-side and/or light-side) "can eliminate glare from light being reflected into a camera" - the standard fix for specular reflections on metal or shiny plastic (https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting).</li>
+<li><strong>Color/IR/UV filters</strong> can raise contrast or block unwanted ambient light. In a controlled station, an enclosure that excludes ambient light is usually simpler than relying on filters.</li>
+<li>Glass and reflective surfaces are called out in engineering guidance as a case where "controlled lighting is important because reflections may look similar to real defects" (https://blog.roboflow.com/surface-defects/).</li>
+</ul>
+<h3 id="24-exposure-aperture-depth-of-field-and-motion">2.4 Exposure, aperture, depth of field, and motion<a class="headerlink" href="#24-exposure-aperture-depth-of-field-and-motion" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Motion blur rule:</strong> the image must freeze the product. With a moving conveyor, exposure time must be short enough that object displacement during exposure is a small fraction of a pixel (or use a strobe/global-shutter camera). Industrial cameras normally use <strong>global shutters</strong> for moving parts (Wikipedia's machine vision equipment section lists simultaneous-exposure ("suitable for moving processes") as a key differentiator: https://en.wikipedia.org/wiki/Machine_vision).</li>
+<li><strong>Aperture and DoF:</strong> choose aperture (f-stop) so the whole product height range is in focus; smaller aperture increases depth of field but reduces light, requiring more illumination or longer exposure (which risks blur). There is a classic trade triangle: exposure time / aperture / lighting intensity.</li>
+<li><strong>ISO/gain:</strong> keep analog gain/ISO low to minimize noise; add light rather than gain. (General imaging engineering practice; not tied to a single citation - treat as standard knowledge from the same MV literature above.)</li>
+<li><strong>Over-exposure/blooming:</strong> specular highlights can saturate the sensor and wash out feature edges. Histogram checks (e.g., max mean brightness limits) belong in the quality gate (AssemblyVision already specifies min/max mean brightness and Laplacian variance in <code>docs/design/06-ai-detection-pipeline.md</code>).</li>
+</ul>
+<h3 id="25-camera-mounting-angle-and-stationarity">2.5 Camera mounting, angle, and stationarity<a class="headerlink" href="#25-camera-mounting-angle-and-stationarity" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Fixed, vibration-isolated mounting.</strong> The environment section of engineering guidance flags vibration, temperature changes, and contaminants as the top environmental risks that break vision systems (https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision-considerations-implementation).</li>
+<li><strong>Angle:</strong> a single fixed angle is the right design (AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> states a ~45-degree angle change is a domain change requiring revalidation). A near-perpendicular top-down view minimizes perspective distortion and makes ROI coordinates stable.</li>
+<li><strong>Field of view:</strong> set the FOV so the product occupies a consistent fraction of the frame (AssemblyVision's stage-1 min box area ratio is 0.15 in <code>docs/design/08-product-detection-and-roi.md</code>); verify the actual position band and clipping range from production captures.</li>
+<li><strong>Stationarity / trigger:</strong> hardware photo-eye or PLC trigger is preferred over time windows (per <code>docs/design/07-camera-and-image-acquisition.md</code>); ensure the product is stationary or the exposure is strobed at a deterministic point in the conveyor cycle so every frame is comparable.</li>
+</ul>
+<h3 id="26-assemblyvision-imaging-checklist-applies-directly">2.6 AssemblyVision imaging checklist (applies directly)<a class="headerlink" href="#26-assemblyvision-imaging-checklist-applies-directly" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Use a dome or coaxial diffuse setup for the specific product materials; test ring/bright-field as a baseline first (Cognex guidance: "there is no one best lighting setup for all applications").</li>
+<li>Enclose or shield the station from ambient light; verify consistency over a full shift.</li>
+<li>Add polarization if any component face is specular.</li>
+<li>Set exposure to freeze motion (global shutter / strobe); target low ISO/gain; tune aperture for full-height DoF.</li>
+<li>Mount camera rigidly; record applied settings and serial numbers (per <code>docs/design/07-camera-and-image-acquisition.md</code>).</li>
+<li>Calibrate frame-quality gates (blur, brightness, glare) from real production captures, including empty, blurred, dark, bright, and reflective scenes (per <code>docs/design/07-camera-and-image-acquisition.md</code> Section 7.9).</li>
+<li>Collect calibration and drift data over a normal shift before finalizing thresholds.</li>
+</ol>
+<hr />
+<h2 id="3-standard-workflows-and-procedures">3. Standard Workflows and Procedures<a class="headerlink" href="#3-standard-workflows-and-procedures" title="Permanent link">&para;</a></h2>
+<h3 id="31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision">3.1 Data collection SOP (synthesis of Ultralytics + Roboflow + AssemblyVision)<a class="headerlink" href="#31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision" title="Permanent link">&para;</a></h3>
+<p>Ultralytics' official guidance stresses that <strong>"the quality of this data directly determines model performance"</strong> and covers class definition, sourcing, and bias avoidance (https://docs.ultralytics.com/guides/data-collection-and-annotation/). Roboflow's industrial walkthroughs add field-specific coverage rules (https://blog.roboflow.com/surface-defects/).</p>
+<p>Recommended SOP:</p>
+<ol>
+<li><strong>Define a versioned class ontology</strong> (product + required components) with inclusion/exclusion rules and ambiguity policy (AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> Section 19.5).</li>
+<li><strong>Collect with the production camera/optics/mounting/lighting</strong>, not a phone or a different camera. A fixed-angle setup should be kept for training and deployment.</li>
+<li><strong>Coverage must include:</strong> all products/components; real OK products across batches/dates; physically constructed NG products for each missing component (do NOT synthesize all NG by digital erasure - shadows, packaging deformation, and revealed backgrounds differ); empty frames; partial entries; blur; reflections; exposure variation; occlusion (AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> Section 19.4; same coverage themes in https://blog.roboflow.com/surface-defects/).</li>
+<li><strong>Include negative/background images</strong> - "normal images are also important. They teach the model that ordinary grain, color changes, and harmless surface patterns should not always be classified as defects" (https://blog.roboflow.com/surface-defects/).</li>
+<li><strong>Provenance per image:</strong> site/line/camera/setup, capture session, product instance, deliberate defect scenario, and camera/lighting revision (AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> Section 19.3).</li>
+</ol>
+<h3 id="32-labeling-standards-and-tooling">3.2 Labeling standards and tooling<a class="headerlink" href="#32-labeling-standards-and-tooling" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Annotation rules:</strong> consistent class names; tight boxes around the visible feature ("Large boxes containing mostly normal surface can make it harder for the model to learn"); annotate every instance; decide and document connected/overlapping cases; second reviewer for all NG and ambiguous labels (https://blog.roboflow.com/surface-defects/ ; AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> Section 19.5).</li>
+<li><strong>Annotation types/formats:</strong> bounding boxes for detection; COCO/VOC/YOLO formats; YOLO format is <code>class x_center y_center width height</code> normalized (https://docs.ultralytics.com/guides/data-collection-and-annotation/).</li>
+<li><strong>Tools:</strong></li>
+<li><strong>CVAT</strong> - open-source, team workflow, auto-segmentation: https://github.com/cvat-ai/cvat</li>
+<li><strong>Label Studio</strong> - open-source, multi-task labeling: https://github.com/HumanSignal/label-studio</li>
+<li><strong>LabelImg</strong> - classic lightweight bounding-box tool: https://github.com/HumanSignal/labelImg</li>
+<li><strong>Roboflow Annotate</strong> - managed, model-assisted labeling, dataset versioning, export to YOLO/COCO: https://blog.roboflow.com/missing-item-inspection/ and https://blog.roboflow.com/roboflow-train-3-0/</li>
+<li><strong>Ultralytics annotation editor</strong> (platform) - SAM-powered smart annotation, native YOLO format: https://docs.ultralytics.com/guides/data-collection-and-annotation/</li>
+<li><strong>Labeling efficiency strategies:</strong> clear guidelines, pre-annotation tools, active learning (label the most informative samples first), batch processing similar images, regular quality checks (https://docs.ultralytics.com/guides/data-collection-and-annotation/).</li>
+</ul>
+<h3 id="33-dataset-organization-and-trainvalidationtest-splits">3.3 Dataset organization and train/validation/test splits<a class="headerlink" href="#33-dataset-organization-and-trainvalidationtest-splits" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Version every dataset</strong> (checksums, annotation hashes, ontology version) and treat raw data as immutable (AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> Sections 19.3/19.5).</li>
+<li><strong>Leakage-safe splitting is the single most important split rule:</strong> split by physical product instance, and preferably by capture session / batch / date; <strong>never randomly split adjacent video frames</strong> because near-identical frames leak and inflate metrics (AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> Section 19.6). Planning start: 70/15/15 by grouped instances for train/validation/internal test, with the customer acceptance set held out entirely.</li>
+<li><strong>Run leakage checks:</strong> exact SHA-256 duplicates, perceptual-hash nearest neighbors, group-ID overlap, derived-file lineage (AssemblyVision Section 19.6.3).</li>
+</ul>
+<h3 id="34-quality-gates">3.4 Quality gates<a class="headerlink" href="#34-quality-gates" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Frame-level gates at inference:</strong> blur (Laplacian variance), brightness range, corruption, frame age; rejected frames contribute no positive evidence (AssemblyVision <code>docs/design/06-ai-detection-pipeline.md</code> and <code>docs/design/07-camera-and-image-acquisition.md</code>).</li>
+<li><strong>Dataset-level gates:</strong> automated checks for invalid boxes, unknown classes, duplicates; second-reviewer sampling; inter-annotator agreement (https://docs.ultralytics.com/guides/data-collection-and-annotation/).</li>
+<li><strong>Model-level gates:</strong> evaluate precision, recall, mAP, confusion matrix, false positives/negatives, small-defect performance, and predictions on normal images; "For critical classes, recall may be more important than using a very high confidence threshold" (https://blog.roboflow.com/surface-defects/).</li>
+</ul>
+<hr />
+<h2 id="4-training-cost-and-practitioner-experience">4. Training Cost and Practitioner Experience<a class="headerlink" href="#4-training-cost-and-practitioner-experience" title="Permanent link">&para;</a></h2>
+<h3 id="41-how-many-images-do-people-actually-need">4.1 How many images do people actually need?<a class="headerlink" href="#41-how-many-images-do-people-actually-need" title="Permanent link">&para;</a></h3>
+<p>The public guidance is intentionally wide because it depends on task difficulty:</p>
+<ul>
+<li><strong>Very simple single-class detection (presence/counting of a fixed object):</strong> Roboflow's missing-item tutorial recommends <strong>starting with 25-50 images for one object class</strong> (https://blog.roboflow.com/missing-item-inspection/).</li>
+<li><strong>General guidance for starting experiments:</strong> "A few hundred annotated objects per class is enough to start experimenting with transfer learning, but for reliable real-world performance Ultralytics recommends at least 1,500 images and 10,000 labeled instances per class" (https://docs.ultralytics.com/guides/data-collection-and-annotation/).</li>
+<li><strong>AssemblyVision's own target:</strong> ~300-800 product images (one class) and ~300-500 labeled instances per component class plus physically-constructed missing-component scenarios (per <code>docs/design/19-training-and-evaluation.md</code>). This sits between the "few hundred to start" and the "1,500 / 10,000 for reliability" guidance. Given a fixed station, single product type, and large components, the lower end is plausible, but it must be validated empirically - the "reliable real-world" guidance is from a vendor generalizing across diverse custom datasets.</li>
+</ul>
+<h3 id="42-training-time-and-compute">4.2 Training time and compute<a class="headerlink" href="#42-training-time-and-compute" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Ultralytics reference schedule:</strong> start around <strong>300 epochs</strong>; reduce if overfitting early, extend to 600-1200+ if not; use early stopping (patience), pretrained weights (transfer learning), mixed precision (AMP), and subset training for iteration (https://docs.ultralytics.com/guides/model-training-tips/).</li>
+<li><strong>Managed training:</strong> Roboflow Train defaults to 100 epochs, supports training from a COCO checkpoint, and NAS automatically trains 10-100 candidate models (https://blog.roboflow.com/roboflow-train-3-0/). Roboflow's PCB walkthrough reports "training takes a few hours" for a forked dataset (https://blog.roboflow.com/pcb-defect-detection/).</li>
+<li><strong>Practitioner estimates (clearly marked, not from a single citable benchmark):</strong></li>
+<li>A nano/small YOLO on <strong>hundreds of images</strong> on a single modern consumer/data-center GPU typically converges in <strong>minutes to ~1 hour</strong> for 100-300 epochs. Roboflow's "a few hours" is a safe planning figure for managed pipelines.</li>
+<li>Labeling time for bounding boxes is commonly cited in practitioner forums at roughly <strong>1-3 seconds per instance</strong> for an experienced annotator (a few minutes per image with several instances). <strong>This is an estimate; measure it on your own data.</strong></li>
+<li>For AssemblyVision scale (a few hundred images, 3-5 classes), total human labeling effort is realistically on the order of <strong>hours to 1-2 person-days</strong>, and compute cost on cloud GPUs is small (tens of GPU-hours at most for the small models). Treat these as planning ranges, not promises.</li>
+</ul>
+<h3 id="43-common-failures-and-tips-synthesis-of-cited-practitioner-material">4.3 Common failures and tips (synthesis of cited practitioner material)<a class="headerlink" href="#43-common-failures-and-tips-synthesis-of-cited-practitioner-material" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Poor/ inconsistent lighting is the #1 failure</strong> (Cognex: "Poor lighting is the most common cause of poor machine vision performance" - https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting).</li>
+<li><strong>Data leakage from video frames</strong> inflates validation metrics and misleads threshold choice (AssemblyVision Section 19.6; this is a well-known pitfall across the community).</li>
+<li><strong>Too few real NG examples</strong> - synthetic digital erasure does not reproduce shadows/background changes (AssemblyVision Section 19.4).</li>
+<li><strong>Label drift / inconsistent boxes</strong> between annotators and across days; fix with frozen ontology versions, examples, review sampling, and adjudication (AssemblyVision Section 19.5; https://docs.ultralytics.com/guides/data-collection-and-annotation/).</li>
+<li><strong>Over-trusting mAP</strong> - choose thresholds for recall on validation and evaluate at frozen thresholds (https://blog.roboflow.com/surface-defects/ ; AssemblyVision Section 19.9).</li>
+<li><strong>Integration failure is the real killer</strong> - ~77% of manufacturing vision pilots stall on integration, not model quality (https://blog.roboflow.com/scale-a-computer-vision-pilot-to-production/). AssemblyVision's design (local-first, offline-capable, human review, evidence persistence) is structured to counter this.</li>
+<li><strong>Starting augmentations too aggressively</strong> can distort thin features (e.g., shear distorting scratches/cracks - https://blog.roboflow.com/flanges-uality-inspection/). Keep augmentations bounded to physically plausible variation (AssemblyVision Section 19.7).</li>
+<li><strong>Confidence triage</strong> (PASS / REVIEW / FAIL bands) reduces wrong automatic decisions and feeds the review stream back into training - directly applicable to AssemblyVision's low-confidence <code>UNCERTAIN</code> handling (https://blog.roboflow.com/flanges-uality-inspection/ ; AssemblyVision BR-006).</li>
+</ol>
+<h3 id="44-iteration-cycles">4.4 Iteration cycles<a class="headerlink" href="#44-iteration-cycles" title="Permanent link">&para;</a></h3>
+<p>Practitioner material consistently describes <strong>short, feedback-driven cycles</strong>: run a first model on default settings, review false positives/negatives, add the most informative misclassified/uncertain images, relabel, retrain (https://blog.roboflow.com/surface-defects/ ; https://blog.roboflow.com/flanges-uality-inspection/). The active-learning loop (upload low-confidence predictions for review and retraining) is a standard production pattern and matches AssemblyVision's human-in-the-loop and production-monitoring requirements (<code>docs/design/19-training-and-evaluation.md</code> Section 19.14).</p>
+<hr />
+<h2 id="5-practical-checklists-for-assemblyvision">5. Practical Checklists for AssemblyVision<a class="headerlink" href="#5-practical-checklists-for-assemblyvision" title="Permanent link">&para;</a></h2>
+<h3 id="51-imaging-station-checklist-pre-data-collection">5.1 Imaging station checklist (pre-data-collection)<a class="headerlink" href="#51-imaging-station-checklist-pre-data-collection" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Dome or coaxial diffuse lighting chosen and prototyped; ring/bright-field baseline tested</li>
+<li>[ ] Polarizers available/tested for specular component faces</li>
+<li>[ ] Ambient light excluded (enclosure/shroud)</li>
+<li>[ ] Global shutter / strobe configuration set; motion blur verified at max conveyor speed</li>
+<li>[ ] Aperture/DoF covers full product height band; gain/ISO kept low</li>
+<li>[ ] Camera rigidly mounted; applied settings + serial logged (per <code>docs/design/07-camera-and-image-acquisition.md</code>)</li>
+<li>[ ] Frame-quality gates calibrated on real captures (blur, brightness, glare)</li>
+<li>[ ] Trigger (photo-eye/PLC) debounce and product-window boundaries validated</li>
+<li>[ ] FOV/position band verified against stage-1 min box area and ROI margins</li>
+</ul>
+<h3 id="52-data-collection-checklist">5.2 Data collection checklist<a class="headerlink" href="#52-data-collection-checklist" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Collect with the exact production camera/optics/lighting/software</li>
+<li>[ ] Cover all products, all components, real OK across batches/dates</li>
+<li>[ ] Physically build NG cases for every missing component and missing manual</li>
+<li>[ ] Include empty frames, partial entries, blur, reflections, exposure variation, occlusion</li>
+<li>[ ] Record provenance per image (site, line, camera, session, product instance, scenario)</li>
+<li>[ ] Target: ~300-800 product images; ~300-500 instances/component; ~100 product instances per missing scenario to start (AssemblyVision Section 19.2)</li>
+<li>[ ] Freeze dataset version with checksums and ontology version</li>
+</ul>
+<h3 id="53-annotation-checklist">5.3 Annotation checklist<a class="headerlink" href="#53-annotation-checklist" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Locked, versioned class ontology with inclusion/exclusion and ambiguity rules</li>
+<li>[ ] Consistent tight boxes; every instance annotated; connected/overlap rules documented</li>
+<li>[ ] Automated checks (invalid boxes, unknown classes, duplicates)</li>
+<li>[ ] Second reviewer on all NG and ambiguous labels; adjudication log</li>
+<li>[ ] Track per-class counts, product instances, sessions, batches (frame count alone overstates diversity)</li>
+</ul>
+<h3 id="54-split-evaluation-checklist">5.4 Split &amp; evaluation checklist<a class="headerlink" href="#54-split-evaluation-checklist" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Leakage-safe grouping by product instance / session / batch / date (never random frame splits)</li>
+<li>[ ] 70/15/15 planning split by grouped instances; customer acceptance set held out entirely</li>
+<li>[ ] Run SHA-256 + perceptual-hash + group-ID leakage checks</li>
+<li>[ ] Report NG recall, FN/FP rates, per-component recall, product-detection and ROI success, latency (AssemblyVision QA-012)</li>
+<li>[ ] Select thresholds on validation with missed-NG costed higher; freeze before test/acceptance</li>
+</ul>
+<h3 id="55-training-cost-planning-checklist">5.5 Training &amp; cost planning checklist<a class="headerlink" href="#55-training-cost-planning-checklist" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Start from COCO-pretrained weights; ~300 epochs default with early stopping</li>
+<li>[ ] Budget compute: small models on hundreds of images converge in minutes-hours (managed pipelines "a few hours" per Roboflow)</li>
+<li>[ ] Budget labeling: hours to 1-2 person-days at AssemblyVision scale (estimate - measure locally)</li>
+<li>[ ] Run subset training (e.g., 10% fraction) for quick iteration before full runs (Ultralytics)</li>
+<li>[ ] Track run provenance: source revision, container digest, seed, dataset version, hyperparameters, artifact checksums (AssemblyVision Section 19.8)</li>
+</ul>
+<hr />
+<h2 id="6-open-questions-and-validation-required">6. Open Questions and Validation Required<a class="headerlink" href="#6-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Measure the <strong>actual labeling rate</strong> (seconds per box) for the real components before committing to a labeling budget; published/estimate rates vary widely.</li>
+<li>Confirm whether 300-800 product images is sufficient for stage-1 product detection on the actual product; compare against Ultralytics' "~1,500 images / 10,000 instances per class" reliability guidance on a fixed, single-product station.</li>
+<li>Select and prototype the lighting solution (dome vs coaxial vs ring + polarization) on real parts; no vendor source can choose it for a specific product finish.</li>
+<li>Verify motion-blur and exposure requirements against the actual conveyor speed and product dwell time; determine whether a strobe/global-shutter configuration is required.</li>
+<li>Confirm trigger availability (photo-eye/PLC/barcode timing) and stationarity before finalizing the product-window strategy.</li>
+<li>Determine whether quality-gate thresholds (Laplacian variance, brightness) chosen from the design defaults are correct for the real camera and lighting.</li>
+<li>Establish customer-acceptance sample sizes and binomial confidence bounds for NG recall with zero or few observed misses (per <code>docs/design/19-training-and-evaluation.md</code> Section 19.13).</li>
+<li>Validate GPU/CPU training time on the team's actual training hardware; cloud GPU-hour costs for this dataset size are expected to be small but are unmeasured here.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2666 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/research/02-yolo-capabilities-and-success-rates/">
+      
+      
+        <link rel="prev" href="../01-industrial-inspection-success-rates/">
+      
+      
+        <link rel="next" href="../03-imaging-workflow-and-training-cost/">
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>YOLO Capabilities and Success Rates - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#research-2-yolo-versions-capabilities-and-published-success-rates-for-industrial-inspection" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              YOLO Capabilities and Success Rates
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001: Edge-First Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002: Python Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003: Vue 3 and TypeScript Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004: Two-Stage Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005: Local-First Storage and Delayed Upload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006: REST Plus WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007: Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008: Docker Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009: Static-Image-First MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-yolo-family-overview-and-relevance-to-industrial-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. YOLO Family Overview and Relevance to Industrial Inspection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-benchmark-performance-coco-val-640px-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Benchmark Performance (COCO val, 640px, detection)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Benchmark Performance (COCO val, 640px, detection)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-map50-95-and-model-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 mAP50-95 and model size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-parameters-and-flops-smallest-scales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Parameters and FLOPs (smallest scales)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-speed-latency-vendor-reported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Speed / latency (vendor-reported)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-speed-vs-accuracy-fps-vs-map-trade-off-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Speed vs Accuracy: FPS vs mAP Trade-off Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-real-world-industrial-case-reports-published-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Real-World Industrial Case Reports (Published Numbers)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-task-profile-from-the-assemblyvision-design-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Task profile (from the AssemblyVision design set)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-candidate-choices-and-reasoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Candidate choices and reasoning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-specific-guidance-for-the-two-stage-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Specific guidance for the two-stage design
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-yolo-family-overview-and-relevance-to-industrial-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. YOLO Family Overview and Relevance to Industrial Inspection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-benchmark-performance-coco-val-640px-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Benchmark Performance (COCO val, 640px, detection)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Benchmark Performance (COCO val, 640px, detection)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-map50-95-and-model-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 mAP50-95 and model size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-parameters-and-flops-smallest-scales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Parameters and FLOPs (smallest scales)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-speed-latency-vendor-reported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Speed / latency (vendor-reported)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-speed-vs-accuracy-fps-vs-map-trade-off-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Speed vs Accuracy: FPS vs mAP Trade-off Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-real-world-industrial-case-reports-published-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Real-World Industrial Case Reports (Published Numbers)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-task-profile-from-the-assemblyvision-design-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Task profile (from the AssemblyVision design set)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-candidate-choices-and-reasoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Candidate choices and reasoning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-specific-guidance-for-the-two-stage-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Specific guidance for the two-stage design
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="research-2-yolo-versions-capabilities-and-published-success-rates-for-industrial-inspection">Research 2: YOLO Versions, Capabilities, and Published Success Rates for Industrial Inspection<a class="headerlink" href="#research-2-yolo-versions-capabilities-and-published-success-rates-for-industrial-inspection" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Status: Research synthesis for the AssemblyVision project (two-stage detection: stage-1 full-frame product detection, stage-2 component detection on the ROI).
+Date compiled: 2026-08-04
+Honesty convention: All mAP/AP numbers below are <strong>COCO val or LVIS benchmark numbers published by the model authors or Ultralytics</strong>, unless otherwise stated. Benchmark numbers are <strong>lab results, not production results</strong>. FPS/latency figures are vendor-reported on specific GPUs (noted per row). "As of 2025/2026" is respected: the newest model covered is Ultralytics YOLO26 (2026).</p>
+</blockquote>
+<hr />
+<h2 id="1-scope">1. Scope<a class="headerlink" href="#1-scope" title="Permanent link">&para;</a></h2>
+<p>This document covers:</p>
+<ul>
+<li>YOLO versions relevant to industrial inspection: <strong>YOLOv5, v8, v9, v10, v11, v12, YOLO-World, and YOLO26</strong>.</li>
+<li>Published accuracy (AP/mAP) on generic and industrial benchmarks; speed vs accuracy trade-offs (FPS vs mAP, latency).</li>
+<li>Real-world industrial case reports of YOLO applied to defect detection, presence checking, and assembly verification, with achieved numbers.</li>
+<li>Guidance for choosing a YOLO version for AssemblyVision's small-scale, two-stage presence-detection task.</li>
+</ul>
+<p>Primary sources: Ultralytics documentation pages (each model page states release date, architecture, and COCO metrics), arXiv papers for v9/v10/v11-world/YOLO26, and Roboflow engineering posts.</p>
+<hr />
+<h2 id="2-yolo-family-overview-and-relevance-to-industrial-inspection">2. YOLO Family Overview and Relevance to Industrial Inspection<a class="headerlink" href="#2-yolo-family-overview-and-relevance-to-industrial-inspection" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Released</th>
+<th>Origin</th>
+<th>Key architectural point</th>
+<th>Industrial relevance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>YOLOv5</td>
+<td>2020 (v7.0 in 2022)</td>
+<td>Ultralytics (community, de facto standard)</td>
+<td>Anchor-based; huge ecosystem; mature; AGPL-3.0</td>
+<td>Most-published version in older industrial papers; enormous tutorial base</td>
+</tr>
+<tr>
+<td>YOLOv8</td>
+<td>Jan 2023</td>
+<td>Ultralytics</td>
+<td>Anchor-free split head; single unified package; tasks: detect/segment/classify/pose/OBB</td>
+<td>The default baseline in 2023-2026 industrial literature</td>
+</tr>
+<tr>
+<td>YOLOv9</td>
+<td>Feb 2024</td>
+<td>WongKinYiu (Academia Sinica)</td>
+<td>PGI (programmable gradient information) + GELAN</td>
+<td>High efficiency; official code is outside the Ultralytics package (separate repo)</td>
+</tr>
+<tr>
+<td>YOLOv10</td>
+<td>May 2024</td>
+<td>Tsinghua THU-MIG + Ultralytics</td>
+<td><strong>NMS-free end-to-end</strong> (consistent dual assignments); holistic efficiency design</td>
+<td>Removes NMS post-processing, lower latency; good for embedded pipelines</td>
+</tr>
+<tr>
+<td>YOLO11</td>
+<td>Sep 2024</td>
+<td>Ultralytics</td>
+<td>Improved backbone/neck; 22% fewer params than v8m at higher mAP; tasks: detect/segment/classify/pose/OBB</td>
+<td>Strong default for production; used in Roboflow Train, widely deployed</td>
+</tr>
+<tr>
+<td>YOLO12</td>
+<td>Early 2025</td>
+<td>University at Buffalo / UCAS (community)</td>
+<td>Attention-centric (Area Attention, R-ELAN); <strong>community-maintained, may be unstable for training; Ultralytics recommends YOLO11/YOLO26 for production</strong></td>
+<td>Benchmarking/research; not recommended by Ultralytics for production workloads</td>
+</tr>
+<tr>
+<td>YOLO-World</td>
+<td>2024</td>
+<td>Tencent AILab + Ultralytics port</td>
+<td>Open-vocabulary detection (RepVL-PAN, region-text contrastive loss); zero-shot text prompts; offline vocabulary</td>
+<td>Useful for fast prototyping product detection; needs fine-tuning for reliable fixed-class production use</td>
+</tr>
+<tr>
+<td>YOLO26</td>
+<td>2026</td>
+<td>Ultralytics</td>
+<td><strong>Native NMS-free end-to-end</strong>, DFL-free regression, MuSGD optimizer, STAL small-object label assignment; tasks incl. depth</td>
+<td>Latest recommended default; best CPU/GPU efficiency per the vendor</td>
+</tr>
+</tbody>
+</table>
+<p>Sources: https://docs.ultralytics.com/models/yolov5/ ; https://docs.ultralytics.com/models/yolov8/ ; https://docs.ultralytics.com/models/yolov9/ ; https://docs.ultralytics.com/models/yolov10/ ; https://docs.ultralytics.com/models/yolo11/ ; https://docs.ultralytics.com/models/yolo12/ ; https://docs.ultralytics.com/models/yolo-world/ ; https://docs.ultralytics.com/models/yolo26/</p>
+<hr />
+<h2 id="3-benchmark-performance-coco-val-640px-detection">3. Benchmark Performance (COCO val, 640px, detection)<a class="headerlink" href="#3-benchmark-performance-coco-val-640px-detection" title="Permanent link">&para;</a></h2>
+<h3 id="31-map50-95-and-model-size">3.1 mAP50-95 and model size<a class="headerlink" href="#31-map50-95-and-model-size" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>YOLOv5u</th>
+<th>YOLOv8</th>
+<th>YOLOv9</th>
+<th>YOLOv10</th>
+<th>YOLO11</th>
+<th>YOLO12</th>
+<th>YOLO26</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nano</td>
+<td>34.3</td>
+<td>37.3</td>
+<td>38.3 (t)</td>
+<td>39.5</td>
+<td>39.5</td>
+<td>40.6</td>
+<td>40.9</td>
+</tr>
+<tr>
+<td>small</td>
+<td>43.0</td>
+<td>44.9</td>
+<td>46.8</td>
+<td>46.8</td>
+<td>47.0</td>
+<td>48.0</td>
+<td>48.6</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>49.0</td>
+<td>50.2</td>
+<td>51.4</td>
+<td>51.3 (m)</td>
+<td>51.5</td>
+<td>52.5</td>
+<td>53.1</td>
+</tr>
+<tr>
+<td>large</td>
+<td>52.2</td>
+<td>52.9</td>
+<td>53.0 (c)</td>
+<td>53.4 (l) / 52.5 (b)</td>
+<td>53.4</td>
+<td>53.7</td>
+<td>55.0</td>
+</tr>
+<tr>
+<td>xlarge</td>
+<td>53.2</td>
+<td>53.9</td>
+<td>55.6 (e)</td>
+<td>54.4</td>
+<td>54.7</td>
+<td>55.2</td>
+<td>57.5</td>
+</tr>
+</tbody>
+</table>
+<p>Sources: https://docs.ultralytics.com/models/yolov5/ ; https://docs.ultralytics.com/models/yolov8/ ; https://docs.ultralytics.com/models/yolov9/ ; https://docs.ultralytics.com/models/yolov10/ ; https://docs.ultralytics.com/models/yolo11/ ; https://docs.ultralytics.com/models/yolo12/ ; https://docs.ultralytics.com/models/yolo26/</p>
+<h3 id="32-parameters-and-flops-smallest-scales">3.2 Parameters and FLOPs (smallest scales)<a class="headerlink" href="#32-parameters-and-flops-smallest-scales" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Params (M)</th>
+<th>FLOPs (B)</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>YOLOv5nu</td>
+<td>2.6</td>
+<td>7.7</td>
+<td></td>
+</tr>
+<tr>
+<td>YOLOv8n</td>
+<td>3.2</td>
+<td>8.7</td>
+<td></td>
+</tr>
+<tr>
+<td>YOLOv10n</td>
+<td>2.3</td>
+<td>6.7</td>
+<td>NMS-free</td>
+</tr>
+<tr>
+<td>YOLO11n</td>
+<td>2.6</td>
+<td>6.5</td>
+<td></td>
+</tr>
+<tr>
+<td>YOLO12n</td>
+<td>2.6</td>
+<td>7.6</td>
+<td>Attention-based</td>
+</tr>
+<tr>
+<td>YOLO26n</td>
+<td>2.4</td>
+<td>5.4</td>
+<td>NMS-free, DFL-free</td>
+</tr>
+</tbody>
+</table>
+<p>Sources: model pages above.</p>
+<h3 id="33-speed-latency-vendor-reported">3.3 Speed / latency (vendor-reported)<a class="headerlink" href="#33-speed-latency-vendor-reported" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>CPU ONNX (ms)</th>
+<th>T4 TensorRT (ms)</th>
+<th>A100 TensorRT (ms)</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>YOLOv8n</td>
+<td>80.4</td>
+<td>6.16*</td>
+<td>0.99</td>
+<td>*T4 value from the v10 comparison table</td>
+</tr>
+<tr>
+<td>YOLOv10n</td>
+<td>-</td>
+<td>1.84</td>
+<td>-</td>
+<td>NMS-free; T4 TRT FP16</td>
+</tr>
+<tr>
+<td>YOLO11n</td>
+<td>56.1</td>
+<td>1.5</td>
+<td>-</td>
+<td>T4 TRT</td>
+</tr>
+<tr>
+<td>YOLO12n</td>
+<td>-</td>
+<td>1.64</td>
+<td>-</td>
+<td>T4 TRT</td>
+</tr>
+<tr>
+<td>YOLO26n</td>
+<td>38.9</td>
+<td>1.7</td>
+<td>-</td>
+<td>"up to 43% faster CPU ONNX than YOLO11n" per Ultralytics</td>
+</tr>
+</tbody>
+</table>
+<p>Sources: https://docs.ultralytics.com/models/yolov8/ ; https://docs.ultralytics.com/models/yolov10/ ; https://docs.ultralytics.com/models/yolo11/ ; https://docs.ultralytics.com/models/yolo12/ ; https://docs.ultralytics.com/models/yolo26/</p>
+<blockquote>
+<p><strong>Reading the trade-off:</strong> From v5u to v26 the nano-class models gained ~6.6 mAP (34.3 -&gt; 40.9) while shrinking params (2.6 -&gt; 2.4M) and speeding up CPU inference (~73.6 -&gt; 38.9 ms). For an edge box running one or two small models at a few Hz, <strong>any of v8/v10/v11/v26 nano or small is comfortably fast</strong>; the binding constraint is more likely image decode/ROI crop and memory than model FLOPS. On a Jetson-class device (no NVIDIA data center GPU), expect lower FPS than the A100/T4 figures above; benchmark locally (see Section 7).</p>
+</blockquote>
+<hr />
+<h2 id="4-speed-vs-accuracy-fps-vs-map-trade-off-summary">4. Speed vs Accuracy: FPS vs mAP Trade-off Summary<a class="headerlink" href="#4-speed-vs-accuracy-fps-vs-map-trade-off-summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Generic COCO:</strong> YOLO26 reaches 40.9-57.5 mAP at 1.7-11.8 ms T4 TensorRT (https://docs.ultralytics.com/models/yolo26/).</li>
+<li><strong>YOLOv10 paper:</strong> YOLOv10-S is 1.8x faster than RT-DETR-R18 at similar AP; YOLOv10-B has 46% less latency and 25% fewer params than YOLOv9-C at the same performance; YOLOv10l/x beat YOLOv8l/x by 0.3/0.5 AP with 1.8x/2.3x fewer parameters (https://arxiv.org/abs/2405.14458).</li>
+<li><strong>YOLO-World (open-vocabulary):</strong> 35.4 AP on LVIS at 52.0 FPS on a V100; zero-shot COCO mAP of the Ultralytics port ranges 37.4 (yolov8s-world) to 47.1 (yolov8x-worldv2) (https://arxiv.org/abs/2401.17270 ; https://docs.ultralytics.com/models/yolo-world/).</li>
+<li><strong>YOLOv9 paper:</strong> PGI + GELAN enable train-from-scratch models to beat models pretrained on large datasets; YOLOv9c matches YOLOv7-AF accuracy with 42% fewer params and 21% less compute (https://arxiv.org/abs/2402.13616).</li>
+</ul>
+<p><strong>Practical rule for industrial inspection:</strong> a 4-10 mAP point difference between model families matters far less than (a) imaging quality, (b) label quality, and (c) operating-threshold choice. All modern YOLOs (v8+) are "good enough" accuracy-wise for simple presence detection; pick on deployment constraints and ecosystem maturity.</p>
+<hr />
+<h2 id="5-real-world-industrial-case-reports-published-numbers">5. Real-World Industrial Case Reports (Published Numbers)<a class="headerlink" href="#5-real-world-industrial-case-reports-published-numbers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Case</th>
+<th>Method</th>
+<th>Task / conditions</th>
+<th>Achieved numbers</th>
+<th>Lessons</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VR-YOLO, PCB defect detection</td>
+<td>YOLOv8 + viewpoint robustness</td>
+<td>PCB defects, original vs viewpoint-shifted test</td>
+<td>mAP 98.9% (original), 94.7% (viewpoint shift)</td>
+<td>Robustness augmentation buys ~4 pp under pose change; small cost added</td>
+<td>https://arxiv.org/abs/2507.02963</td>
+</tr>
+<tr>
+<td>Multi-scale pruned YOLOv8, PCB</td>
+<td>YOLOv8 + pruning/lightweight neck + MPDIoU loss</td>
+<td>Public PCB defect dataset</td>
+<td>mAP50 99.32%, mAP50-95 75.18% (+10.13 pp vs YOLOv8n)</td>
+<td>mAP50 saturates; mAP50-95 is the honest quality bar; small defects dominate error</td>
+<td>https://arxiv.org/abs/2507.17176</td>
+</tr>
+<tr>
+<td>Industrial-YOLO, steel + MVTec AD + automotive</td>
+<td>Fine-tuned YOLOv8 + TensorRT/OpenVINO</td>
+<td>NEU-DET, MVTec AD, custom automotive/battery; claims edge deployment</td>
+<td>mAP 98.5%, &gt;120 FPS Jetson Orin (preprint, unverified)</td>
+<td>Treat as author-reported; useful only as an upper-bound existence claim</td>
+<td>https://arxiv.org/abs/2606.07659</td>
+</tr>
+<tr>
+<td>YOLOv8 DSA semiconductor inspection</td>
+<td>YOLOv8, data-centric labeling</td>
+<td>SEM images of hexagonal contact-hole patterns</td>
+<td>Defect detection precision &gt;0.9 mAP</td>
+<td>Labeling methodology matters as much as architecture</td>
+<td>https://arxiv.org/abs/2307.15516</td>
+</tr>
+<tr>
+<td>ASDF assembly state detection</td>
+<td>YOLOv8 + 6D pose late fusion</td>
+<td>Assembly step/state detection (medical &amp; industrial)</td>
+<td>Beats pure-DL assembly state detection; stronger 6D pose on GBOT</td>
+<td>Combining detection with geometric verification improves state classification</td>
+<td>https://arxiv.org/abs/2403.16400</td>
+</tr>
+<tr>
+<td>Manual assembly tracking stand</td>
+<td>YOLOv8, multicamera</td>
+<td>120 assemblies at varied speeds, manual assembly stages</td>
+<td>High detection accuracy; stage-level timing deviations found</td>
+<td>YOLOv8 reliably follows assembly stages in a controlled stand</td>
+<td>https://arxiv.org/abs/2401.10777</td>
+</tr>
+<tr>
+<td>Roboflow real-time PCB inspection</td>
+<td>RF-DETR Nano (YOLO alternative)</td>
+<td>Forked Universe PCB dataset, 6 classes, conf 0.4</td>
+<td>mAP 0.99 on test</td>
+<td>Managed training; confidence threshold 0.3-0.5 recommended range</td>
+<td>https://blog.roboflow.com/pcb-defect-detection/</td>
+</tr>
+<tr>
+<td>Roboflow bottle-count missing item</td>
+<td>YOLO counting</td>
+<td>Top-down bottle packaging; 25-50 images for 1 class</td>
+<td>Qualitative pass ("12 bottle tops counted")</td>
+<td>Single-class presence/counting is feasible with tens of images</td>
+<td>https://blog.roboflow.com/missing-item-inspection/</td>
+</tr>
+<tr>
+<td>Roboflow flange inspection</td>
+<td>RF-DETR + workflow triage</td>
+<td>Flange face scratches/cracks/dents/pinholes</td>
+<td>PASS/REVIEW/FAIL triage; thresholds 0.4 (decision), 0.6 (fail)</td>
+<td>Confidence-band triage (REVIEW) reduces wrong auto-decisions; REVIEW feeds retraining</td>
+<td>https://blog.roboflow.com/flanges-uality-inspection/</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cross-cutting lessons from the case reports:</strong></p>
+<ol>
+<li><strong>Achieved mAP50 for well-defined, well-lit industrial classes is typically 0.90-0.99.</strong> The spread comes from conditions (viewpoint, lighting) and evaluation strictness (mAP50 vs mAP50-95), not from which YOLO version was used.</li>
+<li><strong>Robustness cost:</strong> pose/lighting changes reliably cost several mAP points (VR-YOLO: -4 pp). Design the imaging station to minimize this, and monitor drift.</li>
+<li><strong>Triage beats binary auto-decisions:</strong> the flange and PCB workflows route mid-confidence detections to human review. This maps directly to AssemblyVision's <code>UNCERTAIN</code> handling (see <code>docs/design/02-requirements.md</code>, BR-006).</li>
+<li><strong>Detector + rules &gt; detector alone:</strong> assembly-state work and AssemblyVision's deterministic rule engine agree: never let the final OK/NG be decided by raw detections alone.</li>
+</ol>
+<hr />
+<h2 id="6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection">6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)<a class="headerlink" href="#6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection" title="Permanent link">&para;</a></h2>
+<h3 id="61-task-profile-from-the-assemblyvision-design-set">6.1 Task profile (from the AssemblyVision design set)<a class="headerlink" href="#61-task-profile-from-the-assemblyvision-design-set" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Stage 1: detect exactly one <code>product</code> in a full ~4MP frame (approx 2560x1440 or 2448x2048); ROI crop.</li>
+<li>Stage 2: detect <code>component_a</code>, <code>component_b</code>, ..., <code>manual</code> inside the ROI (fixed classes).</li>
+<li>Data budget: ~300-800 product images; ~300-500 labeled instances per component class (see <code>docs/design/19-training-and-evaluation.md</code>).</li>
+<li>Runtime: edge box (CPU or modest GPU); product-window latency budget around 2.5 s per inspection incl. multiple frames (see <code>docs/design/06-ai-detection-pipeline.md</code>).</li>
+<li>Priority: NG recall over throughput; fail-safe behavior.</li>
+</ul>
+<h3 id="62-candidate-choices-and-reasoning">6.2 Candidate choices and reasoning<a class="headerlink" href="#62-candidate-choices-and-reasoning" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Choice</th>
+<th>Fit for AssemblyVision</th>
+<th>Caveats</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>YOLO11n / YOLO11s</strong> (default recommendation)</td>
+<td>Mature, stable, officially maintained; nano=2.6M params is far under any edge budget; 39.5/47.0 COCO mAP is ample for simple classes; tasks/export coverage is the widest; the de facto standard for new projects</td>
+<td>None significant; pick <code>s</code> over <code>n</code> if components are small or similar to each other</td>
+</tr>
+<tr>
+<td><strong>YOLOv8n / YOLOv8s</strong></td>
+<td>The most-published baseline; every industrial case report above uses v8; largest body of troubleshooting material</td>
+<td>Slightly lower efficiency than v11/26; fine if you already have v8 expertise</td>
+</tr>
+<tr>
+<td><strong>YOLOv10n/s</strong></td>
+<td>NMS-free end-to-end: removes an entire post-processing stage and reduces latency; good for a fixed-class pipeline</td>
+<td>Slightly smaller ecosystem; some export formats limited (e.g., PaddlePaddle/NCNN noted in docs); NMS removal matters little at 1-3 Hz</td>
+</tr>
+<tr>
+<td><strong>YOLO26n/s</strong></td>
+<td>Latest (2026), native NMS-free, best CPU ONNX latency (38.9 ms for n), STAL improves small-object label coverage (relevant to small components)</td>
+<td>Newest = least battle-tested in the wild; ensure the toolchain (ONNX/TensorRT versions) you need is supported before committing</td>
+</tr>
+<tr>
+<td><strong>YOLOv9</strong></td>
+<td>Excellent accuracy/efficiency; good if you want an alternative research-grade model</td>
+<td>Separate codebase; <strong>training is slower and heavier than v8/v11</strong> (explicitly noted by Ultralytics); v9c/v9e are the useful scales</td>
+</tr>
+<tr>
+<td><strong>YOLO12</strong></td>
+<td>Highest accuracy per FLOP in the 2025 batch</td>
+<td><strong>Community-maintained; Ultralytics explicitly recommends YOLO11/YOLO26 for production</strong>; training instability and memory reported; use only for benchmarking</td>
+</tr>
+<tr>
+<td><strong>YOLO-World</strong></td>
+<td>Zero-shot text-prompt detection for prototyping the <code>product</code> class before labeling</td>
+<td>Zero-shot AP (37-47 mAP COCO) is below fine-tuned; use fine-tuning (worldv2 supports deterministic training and ONNX/TensorRT export) for production; requires label-free iteration discipline</td>
+</tr>
+</tbody>
+</table>
+<p>Sources: https://docs.ultralytics.com/models/yolo11/ ; https://docs.ultralytics.com/models/yolov8/ ; https://docs.ultralytics.com/models/yolov10/ ; https://docs.ultralytics.com/models/yolo12/ ; https://docs.ultralytics.com/models/yolo26/ ; https://docs.ultralytics.com/models/yolo-world/</p>
+<h3 id="63-specific-guidance-for-the-two-stage-design">6.3 Specific guidance for the two-stage design<a class="headerlink" href="#63-specific-guidance-for-the-two-stage-design" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Use the same YOLO family for both stages</strong> to keep one training/export/deploy pipeline (per <code>docs/design/09-component-detection.md</code>, Ultralytics YOLO is the initial implementation).</li>
+<li><strong>Stage 1 needs very little capacity.</strong> A single <code>product</code> class, large object, stable framing: YOLO11n is likely sufficient; keep confidence threshold validation (default starting config 0.70 in <code>docs/design/08-product-detection-and-roi.md</code>).</li>
+<li><strong>Stage 2 is where accuracy budget matters.</strong> Components inside an ROI are smaller and may be visually similar. Prefer YOLO11s or a 1280-input run for stage 2 if mAP50-95 on validation is below target (PCB evidence: small-object localization is the hard part - https://arxiv.org/abs/2507.17176). </li>
+<li><strong>Input size trade-off:</strong> 640px is the default and is fast; 1280px roughly quadruples compute but improves small-object recall. For a 4MP source, you almost always crop to a fixed resolution for stage 2 rather than run native 4MP.</li>
+<li><strong>NMS-free (v10/26) is attractive but not required</strong> at the pipeline's low frame rate. If you adopt it, keep the one-to-one head default and verify determinism for replay (AssemblyVision's <code>fail_on_multiple_products</code> and deterministic evidence require reproducible outputs).</li>
+<li><strong>Fine-tune from COCO-pretrained weights</strong>; Ultralytics and Roboflow both confirm transfer learning is the fastest, cheapest route for small datasets (https://docs.ultralytics.com/guides/model-training-tips/ ; https://blog.roboflow.com/missing-item-inspection/).</li>
+<li><strong>Do not let mAP drive the decision.</strong> Per <code>docs/design/19-training-and-evaluation.md</code>, promotion decisions hinge on product-level NG recall at frozen operating thresholds, not mAP.</li>
+</ol>
+<hr />
+<h2 id="7-open-questions-and-validation-required">7. Open Questions and Validation Required<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Confirm the actual edge hardware (CPU model/GPU/NPU) and benchmark YOLO11n/s and YOLO26n/s ONNX/TensorRT latency on that specific device; vendor T4/A100 figures are not representative of a conveyor-side box.</li>
+<li>Decide whether stage-2 input resolution (640 vs 1280 vs custom crop size) is required to hit per-component recall targets on the real components; the answer depends on smallest component pixel size in the ROI.</li>
+<li>Verify YOLO26 (2026) toolchain support (ONNX export, TensorRT version, PyTorch version) matches the AssemblyVision monorepo baseline before adopting it.</li>
+<li>Confirm whether deterministic/reproducible inference is achievable with the chosen runtime (required for replay and audit per <code>docs/design/06-ai-detection-pipeline.md</code>).</li>
+<li>Establish the operating confidence thresholds empirically from held-out production data for both stages; the design documents list starting values (0.70 product; 0.45-0.50 component observation) that are unvalidated.</li>
+<li>Resolve whether YOLO-World fine-tuning or a plain YOLO11 model is better for stage 1 given the small product dataset; no public comparison exists for this specific regime.</li>
+<li>Validate whether the Ultralytics "~1,500 images / 10,000 instances per class" recommendation conflicts with AssemblyVision's 300-800 image target for a single large, visually consistent product class - the guidance is for reliable generalization across diverse classes; a fixed station with one product type is a favorable case, but this needs empirical confirmation.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

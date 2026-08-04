@@ -1,0 +1,3012 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/design/15-rest-api-and-events/">
+      
+      
+        <link rel="prev" href="../14-data-model-and-database/">
+      
+      
+        <link rel="next" href="../16-edge-dashboard/">
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>REST API and Events - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#15-rest-api-and-events" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              REST API and Events
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#151-contract-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.1 Contract Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#152-common-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2 Common Behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.2 Common Behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1521-authentication-and-authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.1 Authentication and Authorization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1522-idempotency-and-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.2 Idempotency and Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1523-pagination-and-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.3 Pagination and Filtering
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#153-edge-api-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3 Edge API Groups
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.3 Edge API Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1531-runtime-camera-and-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.1 Runtime, Camera, and Health
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1532-local-inspections-and-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.2 Local Inspections and Media
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.3 Upload Queue and Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#154-central-api-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4 Central API Groups
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.4 Central API Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1541-identity-fleet-and-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.1 Identity, Fleet, and Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1542-inspection-ingestion-and-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.2 Inspection Ingestion and History
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1543-review-products-rules-and-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.3 Review, Products, Rules, and Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1544-dashboards-reports-users-and-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.4 Dashboards, Reports, Users, and Audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#155-rest-and-websocket-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.5 REST and WebSocket Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#156-event-envelope-and-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.6 Event Envelope and Evolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#157-failure-handling-and-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.7 Failure Handling and Limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#158-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.8 Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001: Edge-First Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002: Python Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003: Vue 3 and TypeScript Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004: Two-Stage Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005: Local-First Storage and Delayed Upload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006: REST Plus WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007: Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008: Docker Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009: Static-Image-First MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#151-contract-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.1 Contract Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#152-common-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2 Common Behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.2 Common Behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1521-authentication-and-authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.1 Authentication and Authorization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1522-idempotency-and-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.2 Idempotency and Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1523-pagination-and-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.3 Pagination and Filtering
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#153-edge-api-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3 Edge API Groups
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.3 Edge API Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1531-runtime-camera-and-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.1 Runtime, Camera, and Health
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1532-local-inspections-and-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.2 Local Inspections and Media
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.3 Upload Queue and Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#154-central-api-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4 Central API Groups
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.4 Central API Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1541-identity-fleet-and-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.1 Identity, Fleet, and Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1542-inspection-ingestion-and-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.2 Inspection Ingestion and History
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1543-review-products-rules-and-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.3 Review, Products, Rules, and Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1544-dashboards-reports-users-and-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.4 Dashboards, Reports, Users, and Audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#155-rest-and-websocket-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.5 REST and WebSocket Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#156-event-envelope-and-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.6 Event Envelope and Evolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#157-failure-handling-and-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.7 Failure Handling and Limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#158-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.8 Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="15-rest-api-and-events">15. REST API and Events<a class="headerlink" href="#15-rest-api-and-events" title="Permanent link">&para;</a></h1>
+<h2 id="151-contract-principles">15.1 Contract Principles<a class="headerlink" href="#151-contract-principles" title="Permanent link">&para;</a></h2>
+<p>AssemblyVision exposes independent <code>/api/v1</code> edge and central APIs. REST handles commands, durable resources, historical queries, and reconnect snapshots. WebSocket carries low-latency transient notifications; it is never required for inspection execution or durable synchronization.</p>
+<p>Schemas are defined in <a href="../14-data-model-and-database/">Data Model and Database</a>. UI consumers are described in <a href="../16-edge-dashboard/">Edge Dashboard</a> and <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a>.</p>
+<p>All JSON uses UTF-8, snake_case fields, ISO 8601 UTC timestamps, UUID strings, and <code>application/problem+json</code> errors. A problem response includes <code>type</code>, <code>title</code>, <code>status</code>, <code>detail</code>, <code>code</code>, <code>request_id</code>, and optional field <code>errors</code>.</p>
+<h2 id="152-common-behavior">15.2 Common Behavior<a class="headerlink" href="#152-common-behavior" title="Permanent link">&para;</a></h2>
+<h3 id="1521-authentication-and-authorization">15.2.1 Authentication and Authorization<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Edge UI requests originate on the local management network. MVP may use a local operator session, but mutating routes require <code>operator</code> or <code>edge_admin</code>; read-only health is deliberately limited. Do not treat localhost as authentication.</li>
+<li>Device-to-central calls use mutually authenticated TLS or short-lived device credentials bound to <code>device_id</code>.</li>
+<li>Central users authenticate through OIDC Authorization Code with PKCE. API authorization uses organization-scoped roles: <code>viewer</code>, <code>reviewer</code>, <code>config_manager</code>, <code>fleet_admin</code>, and <code>org_admin</code>.</li>
+<li>Media authorization is checked before issuing a short-lived download URL.</li>
+</ul>
+<h3 id="1522-idempotency-and-concurrency">15.2.2 Idempotency and Concurrency<a class="headerlink" href="#1522-idempotency-and-concurrency" title="Permanent link">&para;</a></h3>
+<p><code>PUT</code> and <code>DELETE</code> are naturally idempotent. Retriable central <code>POST</code> ingestion requests require <code>Idempotency-Key</code>. The server stores <code>(device_id, key, request_hash, response)</code>; same key/same hash replays the result, while same key/different hash returns <code>409 IDEMPOTENCY_CONFLICT</code>. Administrative updates use <code>If-Match</code> with an ETag/revision and return <code>412 REVISION_MISMATCH</code> on stale writes.</p>
+<h3 id="1523-pagination-and-filtering">15.2.3 Pagination and Filtering<a class="headerlink" href="#1523-pagination-and-filtering" title="Permanent link">&para;</a></h3>
+<p>History endpoints use keyset pagination with <code>limit</code> (default 50, maximum 200) and opaque <code>cursor</code>. Responses are <code>{items, next_cursor}</code>. Filters are explicit query parameters; the cursor binds the normalized filter set and is rejected if reused with different filters. Small configuration lists may use the same envelope without a cursor.</p>
+<h2 id="153-edge-api-groups">15.3 Edge API Groups<a class="headerlink" href="#153-edge-api-groups" title="Permanent link">&para;</a></h2>
+<p>In the tables, <code>R</code> means authenticated edge viewer, <code>O</code> operator, and <code>A</code> edge administrator. <code>-</code> under pagination means not applicable.</p>
+<h3 id="1531-runtime-camera-and-health">15.3.1 Runtime, Camera, and Health<a class="headerlink" href="#1531-runtime-camera-and-health" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/health/live</code></td>
+<td>Process liveness only.</td>
+<td>None / <code>{status}</code></td>
+<td><code>503</code> only during shutdown</td>
+<td>Safe GET</td>
+<td>-</td>
+<td>Unauthenticated, no internals</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/health/ready</code></td>
+<td>Camera/model/database readiness.</td>
+<td>None / <code>DeviceStatus</code> summary</td>
+<td><code>503 NOT_READY</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/device/status</code></td>
+<td>Full device, disk, network, and queue status.</td>
+<td>None / <code>DeviceStatus</code></td>
+<td><code>503 STATUS_UNAVAILABLE</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/camera/state</code></td>
+<td>Camera connection and capture settings, excluding secrets.</td>
+<td>None / <code>CameraState</code></td>
+<td><code>503 CAMERA_ADAPTER_ERROR</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/camera/reconnect</code></td>
+<td>Request a supervised camera reconnect.</td>
+<td><code>{reason}</code> / <code>OperationAccepted</code></td>
+<td><code>409 INSPECTION_ACTIVE</code>, <code>503 CAMERA_ADAPTER_ERROR</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>A</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspection/state</code></td>
+<td>Current window and pause/fault state.</td>
+<td>None / <code>InspectionRuntimeState</code></td>
+<td><code>503 STATE_UNAVAILABLE</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/inspection/pause</code></td>
+<td>Stop opening new windows; finish or abort current window per safety policy.</td>
+<td><code>{reason}</code> / <code>InspectionRuntimeState</code></td>
+<td><code>409 ALREADY_PAUSED</code>, <code>503 CONTROL_ERROR</code></td>
+<td>Repeated desired state succeeds</td>
+<td>-</td>
+<td>O</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/inspection/resume</code></td>
+<td>Resume after readiness checks.</td>
+<td><code>{reason}</code> / <code>InspectionRuntimeState</code></td>
+<td><code>409 PRECONDITION_FAILED</code>, <code>503 CONTROL_ERROR</code></td>
+<td>Repeated desired state succeeds</td>
+<td>-</td>
+<td>O</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1532-local-inspections-and-media">15.3.2 Local Inspections and Media<a class="headerlink" href="#1532-local-inspections-and-media" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/inspections</code></td>
+<td>Query recent local inspections.</td>
+<td>Query: outcome, barcode, product, from/to, cursor, limit / <code>Page[InspectionSummary]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}</code></td>
+<td>Return complete local result/evidence.</td>
+<td>Path UUID / <code>InspectionRecord</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}/media</code></td>
+<td>List available/purged media metadata.</td>
+<td>Optional kind / <code>list[MediaMetadata]</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/media/{media_id}/content</code></td>
+<td>Stream local image or clip with range support.</td>
+<td><code>Range</code> optional / bytes</td>
+<td><code>404 MEDIA_NOT_FOUND</code>, <code>410 MEDIA_PURGED</code>, <code>416 INVALID_RANGE</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1533-upload-queue-and-configuration">15.3.3 Upload Queue and Configuration<a class="headerlink" href="#1533-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/uploads</code></td>
+<td>Inspect queue by state/kind.</td>
+<td>Query filters/cursor / <code>Page[UploadTask]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/uploads/{task_id}/retry</code></td>
+<td>Move failed/dead-letter task to due state.</td>
+<td><code>{reason}</code> / <code>UploadTask</code></td>
+<td><code>404 TASK_NOT_FOUND</code>, <code>409 TASK_ACTIVE</code></td>
+<td><code>Idempotency-Key</code>; duplicate returns same state</td>
+<td>-</td>
+<td>O</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/configuration/effective</code></td>
+<td>Effective config plus source/revision/checksum.</td>
+<td>None / <code>EffectiveConfiguration</code></td>
+<td><code>503 CONFIG_UNAVAILABLE</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>PUT /api/v1/configuration/local-overrides</code></td>
+<td>Replace permitted site-local overrides.</td>
+<td><code>If-Match</code>, <code>LocalOverrides</code> / new revision</td>
+<td><code>400 INVALID_CONFIG</code>, <code>403 MANAGED_FIELD</code>, <code>412 REVISION_MISMATCH</code></td>
+<td>Idempotent replacement</td>
+<td>-</td>
+<td>A</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/configuration/validate</code></td>
+<td>Validate without activation.</td>
+<td><code>ConfigurationCandidate</code> / <code>ValidationResult</code></td>
+<td><code>422 VALIDATION_FAILED</code></td>
+<td>Deterministic</td>
+<td>-</td>
+<td>A</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/logs</code></td>
+<td>Bounded structured service log query.</td>
+<td>level/component/from/to/cursor / <code>Page[LogEvent]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>A</td>
+</tr>
+</tbody>
+</table>
+<h2 id="154-central-api-groups">15.4 Central API Groups<a class="headerlink" href="#154-central-api-groups" title="Permanent link">&para;</a></h2>
+<p>Roles are abbreviated <code>V</code> viewer, <code>R</code> reviewer, <code>C</code> configuration manager, <code>F</code> fleet administrator, <code>O</code> organization administrator, and <code>D</code> enrolled device.</p>
+<h3 id="1541-identity-fleet-and-events">15.4.1 Identity, Fleet, and Events<a class="headerlink" href="#1541-identity-fleet-and-events" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/auth/me</code></td>
+<td>Return user, organization, and effective permissions.</td>
+<td>Session/token / <code>CurrentUser</code></td>
+<td><code>401 UNAUTHENTICATED</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>Any user</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/sites</code></td>
+<td>List authorized sites and lines.</td>
+<td>Query cursor / <code>Page[Site]</code></td>
+<td><code>403 FORBIDDEN</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/lines</code></td>
+<td>List/filter production lines.</td>
+<td>site/cursor / <code>Page[ProductionLine]</code></td>
+<td><code>404 SITE_NOT_FOUND</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/devices</code></td>
+<td>Fleet query by site/line/state/last-seen.</td>
+<td>Filters/cursor / <code>Page[DeviceSummary]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/devices</code></td>
+<td>Enroll a device and issue one-time bootstrap material.</td>
+<td><code>DeviceCreate</code> / <code>DeviceEnrollment</code></td>
+<td><code>409 DEVICE_CODE_EXISTS</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>F</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/devices/{device_id}</code></td>
+<td>Device details, assignments, versions, and health.</td>
+<td>Path UUID / <code>DeviceDetail</code></td>
+<td><code>404 DEVICE_NOT_FOUND</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>PATCH /api/v1/devices/{device_id}</code></td>
+<td>Change line assignment, label, or desired state.</td>
+<td><code>If-Match</code>, <code>DevicePatch</code> / <code>DeviceDetail</code></td>
+<td><code>409 INVALID_STATE</code>, <code>412 REVISION_MISMATCH</code></td>
+<td>Idempotent fields</td>
+<td>-</td>
+<td>F</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/device-events:batch</code></td>
+<td>Ingest bounded ordered event batch.</td>
+<td><code>DeviceEventBatch</code> / per-item receipts</td>
+<td><code>400 BATCH_TOO_LARGE</code>, <code>409 ID_CONFLICT</code></td>
+<td><code>Idempotency-Key</code> plus event IDs</td>
+<td>-</td>
+<td>D</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/system-events</code></td>
+<td>Query central/device events.</td>
+<td>device/severity/code/time/cursor / page</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>V</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1542-inspection-ingestion-and-history">15.4.2 Inspection Ingestion and History<a class="headerlink" href="#1542-inspection-ingestion-and-history" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /api/v1/inspection-uploads</code></td>
+<td>Ingest one finalized inspection and component evidence.</td>
+<td><code>InspectionRecord</code> / <code>UploadReceipt</code></td>
+<td><code>409 VERSION_UNKNOWN</code>, <code>409 PAYLOAD_CONFLICT</code>, <code>422 INVALID_EVIDENCE</code></td>
+<td>Required key; inspection ID and device sequence also unique</td>
+<td>-</td>
+<td>D</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/media-uploads:initiate</code></td>
+<td>Validate metadata and create upload target/session.</td>
+<td><code>MediaUploadInitiate</code> / target or already-present receipt</td>
+<td><code>409 INSPECTION_UNKNOWN</code>, <code>413 MEDIA_TOO_LARGE</code>, <code>415 TYPE_NOT_ALLOWED</code></td>
+<td>Required key; source media ID unique</td>
+<td>-</td>
+<td>D</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/media-uploads/{upload_id}/complete</code></td>
+<td>Verify uploaded object size/checksum and attach it.</td>
+<td><code>{sha256, size_bytes}</code> / <code>MediaMetadata</code></td>
+<td><code>409 CHECKSUM_MISMATCH</code>, <code>410 UPLOAD_EXPIRED</code></td>
+<td>Repeated completion returns verified resource</td>
+<td>-</td>
+<td>D</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections</code></td>
+<td>Cross-device history search.</td>
+<td>org-scoped filters/cursor / <code>Page[InspectionSummary]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}</code></td>
+<td>Result, components, versions, media, latest review.</td>
+<td>Path UUID / <code>CentralInspectionDetail</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}/media</code></td>
+<td>Authorized media metadata and short-lived URLs.</td>
+<td>kind optional / list</td>
+<td><code>404</code>, <code>410 MEDIA_PURGED</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>V</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1543-review-products-rules-and-models">15.4.3 Review, Products, Rules, and Models<a class="headerlink" href="#1543-review-products-rules-and-models" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/reviews/queue</code></td>
+<td>Pending NG/uncertain review worklist.</td>
+<td>product/device/reason/cursor / page</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/inspections/{id}/reviews</code></td>
+<td>Append a review revision.</td>
+<td><code>If-Match</code>, <code>ReviewCreate</code> / <code>ReviewRecord</code></td>
+<td><code>409 REVIEW_CONFLICT</code>, <code>422 INVALID_CORRECTION</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/products</code></td>
+<td>Product and active-version list.</td>
+<td>status/search/cursor / page</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/products</code></td>
+<td>Create stable product identity.</td>
+<td><code>ProductCreate</code> / <code>Product</code></td>
+<td><code>409 PRODUCT_CODE_EXISTS</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/products/{id}/versions</code></td>
+<td>Create draft product version.</td>
+<td><code>ProductConfigurationDraft</code> / version</td>
+<td><code>409 VERSION_EXISTS</code>, <code>422 INVALID_COMPONENT</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/product-versions/{id}/publish</code></td>
+<td>Validate and immutably publish.</td>
+<td><code>{reason}</code> / <code>ProductConfiguration</code></td>
+<td><code>409 ALREADY_PUBLISHED</code>, <code>422 INVALID_CONFIG</code></td>
+<td>Repeated publish returns published resource</td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/rules</code></td>
+<td>List stable rules and versions.</td>
+<td>product/status/cursor / page</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/rules/{id}/versions</code></td>
+<td>Create rule draft.</td>
+<td><code>RuleConfigurationDraft</code> / draft</td>
+<td><code>422 INVALID_POLICY</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/rule-versions/{id}/publish</code></td>
+<td>Publish after model/product compatibility validation.</td>
+<td><code>{reason}</code> / <code>RuleConfiguration</code></td>
+<td><code>409 INCOMPATIBLE_VERSION</code>, <code>422 INVALID_POLICY</code></td>
+<td>Repeated publish succeeds</td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/models</code></td>
+<td>List model packages/versions and lifecycle state.</td>
+<td>task/status/cursor / page</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/models/{id}/versions</code></td>
+<td>Register manifest and staged artifact.</td>
+<td><code>ModelManifestCreate</code> / version/upload target</td>
+<td><code>409 VERSION_EXISTS</code>, <code>422 INVALID_MANIFEST</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/model-versions/{id}/publish</code></td>
+<td>Verify artifact and publish version.</td>
+<td><code>{reason}</code> / <code>ModelManifest</code></td>
+<td><code>409 CHECKSUM_MISMATCH</code>, <code>422 EVALUATION_REQUIRED</code></td>
+<td>Repeated publish succeeds</td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>PUT /api/v1/devices/{id}/desired-configuration</code></td>
+<td>Assign versioned configuration bundle.</td>
+<td><code>If-Match</code>, <code>DesiredConfiguration</code> / assignment</td>
+<td><code>409 INCOMPATIBLE_BUNDLE</code>, <code>412 REVISION_MISMATCH</code></td>
+<td>Idempotent replacement</td>
+<td>-</td>
+<td>F</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1544-dashboards-reports-users-and-audit">15.4.4 Dashboards, Reports, Users, and Audit<a class="headerlink" href="#1544-dashboards-reports-users-and-audit" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/dashboard/summary</code></td>
+<td>Aggregated KPIs for explicit time/site filters.</td>
+<td>from/to/site/line/product/model/rule / <code>DashboardSummary</code></td>
+<td><code>400 INVALID_RANGE</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/dashboard/timeseries</code></td>
+<td>Bucketed outcomes, latency, and failures.</td>
+<td>filters, interval / <code>TimeSeries</code></td>
+<td><code>400 INVALID_INTERVAL</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/reports</code></td>
+<td>Start a large export/report job.</td>
+<td><code>ReportRequest</code> / <code>JobAccepted</code></td>
+<td><code>413 RANGE_TOO_LARGE</code>, <code>422 INVALID_COLUMNS</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>V with export permission</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/reports/{job_id}</code></td>
+<td>Poll job and obtain expiring download URL.</td>
+<td>Path UUID / <code>ReportStatus</code></td>
+<td><code>404 JOB_NOT_FOUND</code>, <code>410 EXPIRED</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>Requester or O</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/users</code></td>
+<td>Organization user/role list.</td>
+<td>search/role/cursor / page</td>
+<td><code>403 FORBIDDEN</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>O</td>
+</tr>
+<tr>
+<td><code>PUT /api/v1/users/{id}/roles</code></td>
+<td>Replace organization role assignments.</td>
+<td><code>If-Match</code>, <code>{role_ids}</code> / user</td>
+<td><code>400 LAST_ADMIN</code>, <code>412 REVISION_MISMATCH</code></td>
+<td>Idempotent replacement</td>
+<td>-</td>
+<td>O</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/audit-logs</code></td>
+<td>Immutable audit query and export source.</td>
+<td>actor/action/resource/time/cursor / page</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>O/auditor</td>
+</tr>
+</tbody>
+</table>
+<h2 id="155-rest-and-websocket-boundary">15.5 REST and WebSocket Boundary<a class="headerlink" href="#155-rest-and-websocket-boundary" title="Permanent link">&para;</a></h2>
+<p>REST is authoritative for inspection details, queue state, configuration, commands, uploads, review, and reports. WebSocket communicates that something changed. A reconnecting client always refreshes REST state; it must not assume the WebSocket stream is complete.</p>
+<table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>Events</th>
+<th>Delivery semantics</th>
+<th>Client action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Edge <code>WS /api/v1/ws/runtime</code></td>
+<td><code>device.status_changed</code>, <code>inspection.started</code>, <code>inspection.updated</code>, <code>inspection.completed</code>, <code>upload.changed</code>, <code>alert.raised</code>, <code>alert.cleared</code></td>
+<td>Best effort, ordered per connection, bounded buffer; slow clients disconnected</td>
+<td>Apply transient preview updates; refetch resource on sequence gap</td>
+</tr>
+<tr>
+<td>Central <code>WS /api/v1/ws/organization</code></td>
+<td><code>device.changed</code>, <code>inspection.received</code>, <code>review.changed</code>, <code>job.changed</code>, <code>configuration.assignment_changed</code></td>
+<td>Best effort after authorization filtering; no durable replay in MVP</td>
+<td>Invalidate/refetch affected REST query</td>
+</tr>
+</tbody>
+</table>
+<p>WebSocket authentication uses the existing secure session cookie or a short-lived, single-purpose ticket obtained over REST. Tokens must not appear in URL query logs.</p>
+<h2 id="156-event-envelope-and-evolution">15.6 Event Envelope and Evolution<a class="headerlink" href="#156-event-envelope-and-evolution" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;event_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inspection.completed&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;schema_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;occurred_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-08-04T10:12:31.442Z&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">&quot;source_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01988...&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">&quot;sequence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1842</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">&quot;correlation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;inspection_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;outcome&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NG&quot;</span><span class="p">}</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span>
+</code></pre></div>
+<p>Event payloads are intentionally small. Additive fields are allowed within a schema version; removal, meaning changes, or type changes require a new version. Unknown event types are ignored and logged. Heartbeat ping/pong is transport-level; <code>DeviceStatus</code> snapshots remain REST resources.</p>
+<h2 id="157-failure-handling-and-limits">15.7 Failure Handling and Limits<a class="headerlink" href="#157-failure-handling-and-limits" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Return <code>429</code> with <code>Retry-After</code> for rate limits and <code>503</code> with bounded retry guidance for temporary dependency failures.</li>
+<li>Cap request bodies, event batches, media size, filter ranges, and WebSocket message/buffer sizes.</li>
+<li>A central ingestion <code>202</code> means accepted for asynchronous verification, not fully persisted, only where the response explicitly includes a receipt state. Normal inspection metadata ingestion should commit before <code>201</code>.</li>
+<li>Never retry non-idempotent calls automatically without an idempotency key.</li>
+<li>Propagate <code>X-Request-ID</code>; edge upload attempts also carry inspection and task correlation IDs.</li>
+<li>Use presigned object upload for large media; do not proxy video through API workers unless storage constraints require it.</li>
+</ul>
+<h2 id="158-open-questions-and-validation-required">15.8 Open Questions and Validation Required<a class="headerlink" href="#158-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Select the central identity provider and device certificate enrollment/rotation process.</li>
+<li>Confirm edge local-user requirements, session timeout, and emergency pause authorization.</li>
+<li>Confirm maximum media sizes, batch sizes, report ranges, and API rate limits from measured load.</li>
+<li>Decide whether central WebSocket scale requires Redis pub/sub after the single-instance MVP.</li>
+<li>Confirm whether external MES/PLC integrations require separate credentials, endpoints, or event delivery guarantees.</li>
+<li>Validate browser and reverse-proxy support for WebSockets in the customer network.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2740 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/research/03-imaging-workflow-and-training-cost/">
+      
+      
+        <link rel="prev" href="../02-yolo-capabilities-and-success-rates/">
+      
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>成像流程与训练成本 - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              成像流程与训练成本
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    原始需求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构设计
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构设计
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设计索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    封面与状态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    简介
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    需求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 检测流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    相机与图像采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    产品检测与 ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组件检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规则引擎
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    本地存储与保留
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    上传与同步
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型与数据库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API 与事件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心管理看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo 与代码组织
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    训练与评估
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署与运维
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全与源码分发
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试与质量保证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    可观测性与支持
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    人在回路
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    客户验收
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    风险与缓解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构决策
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构决策
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001：边缘优先检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002：Python 后端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003：Vue 3 与 TypeScript 前端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004：两阶段检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005：本地优先存储与延迟上传
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006：REST 与 WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007：Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008：Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009：静态图像优先 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调研
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    调研
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工业检测成功率
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO 能力与成功率
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    成像流程与训练成本
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    成像流程与训练成本
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 目的
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-imaging-specifications-and-best-practices-for-fixed-line-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 固定线路检测的成像规范和最佳实践
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 固定线路检测的成像规范和最佳实践">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-lighting-is-the-dominant-factor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 照明是主导因素
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-lighting-families-and-when-to-use-them" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 照明系列（以及何时使用它们）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-filters-and-glare-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 滤光片和眩光控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-exposure-aperture-depth-of-field-and-motion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 曝光、光圈、景深和运动
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-camera-mounting-angle-and-stationarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 相机安装、角度和平稳性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-assemblyvision-imaging-checklist-applies-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 AssemblyVision 成像检查表（直接应用）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-standard-workflows-and-procedures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 标准工作流程和程序
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 标准工作流程和程序">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 数据采集SOP（Ultralytics+Roboflow+AssemblyVision的综合）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-labeling-standards-and-tooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 标签标准和工具
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-dataset-organization-and-trainvalidationtest-splits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 数据集组织和训练/验证/测试分割
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-quality-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 质量门
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-training-cost-and-practitioner-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 培训费用和从业人员经验
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 培训费用和从业人员经验">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-how-many-images-do-people-actually-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 人们实际需要多少图像？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-training-time-and-compute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 训练时间和计算
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-common-failures-and-tips-synthesis-of-cited-practitioner-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 常见故障和提示（引用的从业者材料的综合）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-iteration-cycles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 迭代周期
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-practical-checklists-for-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. AssemblyVision 实用清单
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. AssemblyVision 实用清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-imaging-station-checklist-pre-data-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 成像站清单（数据收集前）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-data-collection-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 数据收集清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-annotation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 注释清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-split-evaluation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 拆分和评估清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-training-cost-planning-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 培训和成本规划清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 开放式问题和需要验证
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 目的
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-imaging-specifications-and-best-practices-for-fixed-line-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 固定线路检测的成像规范和最佳实践
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 固定线路检测的成像规范和最佳实践">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-lighting-is-the-dominant-factor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 照明是主导因素
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-lighting-families-and-when-to-use-them" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 照明系列（以及何时使用它们）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-filters-and-glare-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 滤光片和眩光控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-exposure-aperture-depth-of-field-and-motion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 曝光、光圈、景深和运动
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-camera-mounting-angle-and-stationarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 相机安装、角度和平稳性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-assemblyvision-imaging-checklist-applies-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 AssemblyVision 成像检查表（直接应用）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-standard-workflows-and-procedures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 标准工作流程和程序
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 标准工作流程和程序">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 数据采集SOP（Ultralytics+Roboflow+AssemblyVision的综合）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-labeling-standards-and-tooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 标签标准和工具
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-dataset-organization-and-trainvalidationtest-splits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 数据集组织和训练/验证/测试分割
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-quality-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 质量门
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-training-cost-and-practitioner-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 培训费用和从业人员经验
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 培训费用和从业人员经验">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-how-many-images-do-people-actually-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 人们实际需要多少图像？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-training-time-and-compute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 训练时间和计算
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-common-failures-and-tips-synthesis-of-cited-practitioner-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 常见故障和提示（引用的从业者材料的综合）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-iteration-cycles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 迭代周期
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-practical-checklists-for-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. AssemblyVision 实用清单
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. AssemblyVision 实用清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-imaging-station-checklist-pre-data-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 成像站清单（数据收集前）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-data-collection-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 数据收集清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-annotation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 注释清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-split-evaluation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 拆分和评估清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-training-cost-planning-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 培训和成本规划清单
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 开放式问题和需要验证
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection">研究3：固定线路巡检的成像工作流程、数据实践和培训成本<a class="headerlink" href="#research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>状态：AssemblyVision 项目的研究综合（固定 4MP 工业相机、固定照明、大型部件的存在检查、300-800 个图像目标）。
+编译日期：2026-08-04
+诚实惯例：照明/相机指南引用自已发表的工程参考文献（康耐视、维基百科/MV 文献）。 <strong>无法固定到可引用来源的培训时间和标签时间数字明确标记为“从业者估计”</strong>。成本数字在很大程度上取决于本地硬件，并且是范围，而不是保证。</p>
+</blockquote>
+<hr />
+<h2 id="1-purpose">1. 目的<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>本文档提供了 AssemblyVision (a) 固定线检测的成像规范和最佳实践，(b) 标准数据工作流程（收集 SOP、标签标准、分割、质量门），以及 (c) 有关培训成本、数据集大小和常见故障的从业者证据 - 以及直接映射到 AssemblyVision 设计集的实用检查表。</p>
+<hr />
+<h2 id="2-imaging-specifications-and-best-practices-for-fixed-line-inspection">2. 固定线路检测的成像规范和最佳实践<a class="headerlink" href="#2-imaging-specifications-and-best-practices-for-fixed-line-inspection" title="Permanent link">&para;</a></h2>
+<h3 id="21-lighting-is-the-dominant-factor">2.1 照明是主导因素<a class="headerlink" href="#21-lighting-is-the-dominant-factor" title="Permanent link">&para;</a></h3>
+<p>供应商与工程界的共识是明确的：<strong>“照明不佳是机器视觉性能不佳的最常见原因。即使是复杂的相机和软件也无法弥补照明不足。”</strong>良好的照明可以最大限度地提高感兴趣特征的对比度，并最大限度地减少其他地方的对比度，并且它必须<strong>一致</strong>，以便正常零件变化不会改变图像对比度（https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting）。</p>
+<h3 id="22-lighting-families-and-when-to-use-them">2.2 照明系列（以及何时使用它们）<a class="headerlink" href="#22-lighting-families-and-when-to-use-them" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>几何</th>
+<th>最适合</th>
+<th>AssemblyVision 注释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>戒指/低角度戒指</strong></td>
+<td>透镜周围的圆形LED</td>
+<td>平坦、哑光部件上的均匀明场；一般存在检查</td>
+<td>从上方观察哑光塑料/金属组件的良好默认设置</td>
+</tr>
+<tr>
+<td><strong>酒吧灯</strong></td>
+<td>线性 LED 灯带</td>
+<td>更大的面积、更宽的视场或高部件的角度照明</td>
+<td>考虑填充 4MP 框架的大型产品</td>
+</tr>
+<tr>
+<td><strong>圆顶（漫射）照明</strong></td>
+<td>环上的漫射器，“阴天”光</td>
+<td><strong>弯曲或闪亮的表面</strong>；抑制反射</td>
+<td>如果产品具有光泽表面或可见反射，则为首选</td>
+</tr>
+<tr>
+<td><strong>同轴（轴向）照明</strong></td>
+<td>光通过分束器沿光轴注入</td>
+<td>平坦的镜面表面；阅读低对比度功能</td>
+<td>平面部件面的有力候选者；如果对齐漂移，可能会引入镜面反射热点</td>
+</tr>
+<tr>
+<td><strong>背光</strong></td>
+<td>目标后面的漫射光</td>
+<td>轮廓、边缘/计数、尺寸检查</td>
+<td>不适用于位于背景可见的传送带上的产品，除非生产线允许使用背板</td>
+</tr>
+<tr>
+<td><strong>暗视野/低角度</strong></td>
+<td>浅角度的侧面光线</td>
+<td>表面纹理、划痕、压花、高度变化</td>
+<td>对于平坦表面上的划痕/压花检测非常有用</td>
+</tr>
+<tr>
+<td><strong>明场/全照明</strong></td>
+<td>来自上方的光线反射到相机中</td>
+<td>扁平件；平面特征上的高对比度</td>
+<td>最常见的默认</td>
+</tr>
+<tr>
+<td><strong>多光谱/红外</strong></td>
+<td>特定颜色或红外 LED</td>
+<td>抑制繁忙的背景或色彩噪声；在具有挑战性的环境光下工作</td>
+<td>如果可见光反射不可避免，则可能有后退方案</td>
+</tr>
+</tbody>
+</table>
+<p>来源：https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting； https://en.wikipedia.org/wiki/Machine_vision（设备和成像部分）。</p>
+<h3 id="23-filters-and-glare-control">2.3 滤光片和眩光控制<a class="headerlink" href="#23-filters-and-glare-control" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>偏振滤光片</strong>（相机侧和/或光侧）“可以消除反射到相机中的光产生的眩光”-金属或闪亮塑料上镜面反射的标准修复（https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting）。</li>
+<li><strong>彩色/红外/紫外线滤镜</strong>可以提高对比度或阻挡不需要的环境光。在受控站中，排除环境光的外壳通常比依赖过滤器更简单。</li>
+<li>工程指南中将玻璃和反射表面称为“受控照明很重要，因为反射可能看起来与真实缺陷相似”的情况 (https://blog.roboflow.com/surface-defects/)。</li>
+</ul>
+<h3 id="24-exposure-aperture-depth-of-field-and-motion">2.4 曝光、光圈、景深和运动<a class="headerlink" href="#24-exposure-aperture-depth-of-field-and-motion" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>运动模糊规则：</strong> 图像必须冻结产品。对于移动传送带，曝光时间必须足够短，以使曝光期间的物体位移仅为像素的一小部分（或使用频闪/全局快门相机）。工业相机通常对移动部件使用<strong>全局快门</strong>（维基百科的机器视觉设备部分列出了同步曝光（“适合移动过程”）作为关键区别：https://en.wikipedia.org/wiki/Machine_vision）。</li>
+<li><strong>光圈和景深：</strong> 选择光圈（光圈值），以便整个产品高度范围都处于焦点；较小的光圈会增加景深，但会减少光线，需要更多的照明或更长的曝光时间（这有模糊的风险）。有一个经典的贸易三角：曝光时间/光圈/照明强度。</li>
+<li><strong>ISO/增益：</strong> 保持模拟增益/ISO 较低，以最大限度地减少噪音；添加光而不是增益。 （一般成像工程实践；不依赖于单个引用 - 视为来自上述相同 MV 文献的标准知识。）</li>
+<li><strong>过度曝光/泛光：</strong>镜面高光会使传感器饱和并冲掉特征边缘。直方图检查（例如，最大平均亮度限制）属于质量门（AssemblyVision 已在 <code>docs/design/06-ai-detection-pipeline.md</code> 中指定最小/最大平均亮度和拉普拉斯方差）。</li>
+</ul>
+<h3 id="25-camera-mounting-angle-and-stationarity">2.5 相机安装、角度和平稳性<a class="headerlink" href="#25-camera-mounting-angle-and-stationarity" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>固定、隔振安装。</strong> 工程指南的环境部分将振动、温度变化和污染物标记为破坏视觉系统的首要环境风险 (https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision-considerations-implementation)。</li>
+<li><strong>角度：</strong> 单个固定角度是正确的设计（AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> 指出约 45 度的角度变化是需要重新验证的域变化）。近乎垂直的自上而下视图最大限度地减少了透视失真并使 ROI 坐标稳定。</li>
+<li><strong>视野：</strong> 设置 FOV，以便产品占据框架的一致部分（AssemblyVision 的 stage-1 最小框面积比在 <code>docs/design/08-product-detection-and-roi.md</code> 中为 0.15）；验证生产捕获的实际位置带和剪辑范围。</li>
+<li><strong>稳定性/触发：</strong> 硬件光电眼或 PLC 触发优于时间窗口（根据 <code>docs/design/07-camera-and-image-acquisition.md</code>）；确保产品静止或在传送周期中的确定点进行曝光选通，以便每个帧都具有可比性。</li>
+</ul>
+<h3 id="26-assemblyvision-imaging-checklist-applies-directly">2.6 AssemblyVision 成像检查表（直接应用）<a class="headerlink" href="#26-assemblyvision-imaging-checklist-applies-directly" title="Permanent link">&para;</a></h3>
+<ol>
+<li>针对特定产品材料使用圆顶或同轴漫射装置；首先将测试环/明场作为基线（康耐视指南：“没有一种适合所有应用的最佳照明设置”）。</li>
+<li>将工作站封闭或遮挡环境光；验证整个班次的一致性。</li>
+<li>如果任何组件面是镜面的，请添加偏振。</li>
+<li>将曝光设置为定格运动（全局快门/频闪）；目标低 ISO/增益；调整全高度景深的光圈。
+5、相机安装牢固；记录应用的设置和序列号（按照<code>docs/design/07-camera-and-image-acquisition.md</code>）。</li>
+<li>从真实的制作捕获中校准帧质量门（模糊、亮度、眩光），包括空的、模糊的、黑暗的、明亮的和反射的场景（根据 <code>docs/design/07-camera-and-image-acquisition.md</code> 第 7.9 节）。</li>
+<li>在最终确定阈值之前收集正常班次的校准和漂移数据。</li>
+</ol>
+<hr />
+<h2 id="3-standard-workflows-and-procedures">3. 标准工作流程和程序<a class="headerlink" href="#3-standard-workflows-and-procedures" title="Permanent link">&para;</a></h2>
+<h3 id="31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision">3.1 数据采集SOP（Ultralytics+Roboflow+AssemblyVision的综合）<a class="headerlink" href="#31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision" title="Permanent link">&para;</a></h3>
+<p>Ultralytics 的官方指南强调 <strong>“数据的质量直接决定模型性能”</strong> 并涵盖类定义、来源和偏差避免 (https://docs.ultralytics.com/guides/data-collection-and-annotation/)。 Roboflow 的工业演练添加了特定领域的覆盖规则 (https://blog.roboflow.com/surface-defects/)。</p>
+<p>推荐标准操作流程：</p>
+<ol>
+<li><strong>定义版本化类本体</strong>（产品 + 所需组件），包含包含/排除规则和歧义策略（AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> 第 19.5 节）。</li>
+<li><strong>使用生产相机/光学器件/安装/照明</strong>收集，而不是手机或其他相机。应保留固定角度设置以供训练和部署。</li>
+<li><strong>覆盖范围必须包括：</strong> 所有产品/组件；跨批次/日期的真正合格产品；为每个缺失的组件物理构建 NG 产品（不要通过数字擦除来合成所有 NG - 阴影、包装变形和显示的背景有所不同）；空帧；部分条目；模糊;反思；曝光变化；遮挡（AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> 第 19.4 节；https://blog.roboflow.com/surface-defects/ 中的相同覆盖主题）。</li>
+<li><strong>包括负片/背景图像</strong> - “正常图像也很重要。它们教导模型普通颗粒、颜色变化和无害的表面图案不应总是被归类为缺陷”(https://blog.roboflow.com/surface-defects/)。</li>
+<li><strong>每张图像的出处：</strong> 场地/生产线/相机/设置、捕获会话、产品实例、故意缺陷场景和相机/照明修订（AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> 第 19.3 节）。</li>
+</ol>
+<h3 id="32-labeling-standards-and-tooling">3.2 标签标准和工具<a class="headerlink" href="#32-labeling-standards-and-tooling" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>注解规则：</strong>一致的类名；可见特征周围的紧密框（“主要包含法线表面的大框会使模型更难学习”）；注释每个实例；决定并记录相关/重叠的案例；所有 NG 和不明确标签的第二位审阅者（https://blog.roboflow.com/surface-defects/；AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> 第 19.5 节）。</li>
+<li><strong>注释类型/格式：</strong>用于检测的边界框； COCO/VOC/YOLO 格式； YOLO 格式已标准化 (https://docs.ultralytics.com/guides/data-collection-and-annotation/)。</li>
+<li><strong>工具：</strong></li>
+<li><strong>CVAT</strong> - 开源、团队工作流程、自动分段：https://github.com/cvat-ai/cvat</li>
+<li><strong>Label Studio</strong> - 开源、多任务标签：https://github.com/HumanSignal/label-studio</li>
+<li><strong>LabelImg</strong> - 经典的轻量级边界框工具：https://github.com/HumanSignal/labelImg</li>
+<li><strong>Roboflow Annotate</strong> - 托管、模型辅助标记、数据集版本控制、导出到 YOLO/COCO：https://blog.roboflow.com/missing-item-inspection/ 和 https://blog.roboflow.com/roboflow-train-3-0/</li>
+<li><strong>Ultralytics 注释编辑器</strong>（平台） - SAM 支持的智能注释，原生 YOLO 格式：https://docs.ultralytics.com/guides/data-collection-and-annotation/</li>
+<li><strong>标记效率策略：</strong>明确的指南、预注释工具、主动学习（首先标记信息最丰富的样本）、批量处理相似图像、定期质量检查（https://docs.ultralytics.com/guides/data-collection-and-annotation/）。</li>
+</ul>
+<h3 id="33-dataset-organization-and-trainvalidationtest-splits">3.3 数据集组织和训练/验证/测试分割<a class="headerlink" href="#33-dataset-organization-and-trainvalidationtest-splits" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>对每个数据集进行版本控制</strong>（校验和、注释哈希、本体版本）并将原始数据视为不可变（AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> 第 19.3/19.5 节）。</li>
+<li><strong>泄漏安全拆分是最重要的拆分规则：</strong> 按物理产品实例拆分，最好按捕获会话/批次/日期拆分； <strong>永远不要随机分割相邻的视频帧</strong>，因为几乎相同的帧会泄漏并导致指标膨胀（AssemblyVision <code>docs/design/19-training-and-evaluation.md</code> 第 19.6 节）。计划开始：2015 年 70 月 15 日，按分组实例进行训练/验证/内部测试，并完全保留客户验收集。</li>
+<li><strong>运行泄漏检查：</strong> 精确的 SHA-256 重复项、感知哈希最近邻、组 ID 重叠、派生文件沿袭（AssemblyVision 第 19.6.3 节）。</li>
+</ul>
+<h3 id="34-quality-gates">3.4 质量门<a class="headerlink" href="#34-quality-gates" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>推理时的帧级门：</strong>模糊（拉普拉斯方差）、亮度范围、损坏、帧年龄；被拒绝的帧没有提供任何积极的证据（AssemblyVision <code>docs/design/06-ai-detection-pipeline.md</code> 和 <code>docs/design/07-camera-and-image-acquisition.md</code>）。</li>
+<li><strong>数据集级门：</strong>自动检查无效框、未知类、重复项；第二审稿人抽样；注释者间协议（https://docs.ultralytics.com/guides/data-collection-and-annotation/）。</li>
+<li><strong>模型级门：</strong>评估精度、召回率、mAP、混淆矩阵、误报/阴性、小缺陷性能以及对正常图像的预测； “对于关键类别，召回可能比使用非常高的置信度阈值更重要”（https://blog.roboflow.com/surface-defects/）。</li>
+</ul>
+<hr />
+<h2 id="4-training-cost-and-practitioner-experience">4. 培训费用和从业人员经验<a class="headerlink" href="#4-training-cost-and-practitioner-experience" title="Permanent link">&para;</a></h2>
+<h3 id="41-how-many-images-do-people-actually-need">4.1 人们实际需要多少图像？<a class="headerlink" href="#41-how-many-images-do-people-actually-need" title="Permanent link">&para;</a></h3>
+<p>公共指导故意广泛，因为它取决于任务难度：</p>
+<ul>
+<li><strong>非常简单的单类检测（固定对象的存在/计数）：</strong> Roboflow 的缺失项目教程建议 <strong>从一个对象类的 25-50 个图像开始</strong> (https://blog.roboflow.com/missing-item-inspection/)。</li>
+<li><strong>开始实验的一般指导：</strong>“每个类几百个带注释的对象足以开始尝试迁移学习，但为了获得可靠的实际性能，Ultralytics 建议每个类至少 1,500 个图像和 10,000 个标记实例”(https://docs.ultralytics.com/guides/data-collection-and-annotation/)。</li>
+<li><strong>AssemblyVision 自己的目标：</strong> 每个组件类约 300-800 个产品图像（一类）和约 300-500 个标记实例以及物理构建的缺失组件场景（根据 <code>docs/design/19-training-and-evaluation.md</code>）。这介于“启动时的几百个”和“可靠性为 1,500 / 10,000”的指导之间。考虑到固定站、单一产品类型和大型组件，较低的结果是合理的，但必须根据经验进行验证——“可靠的现实世界”指导来自供应商对不同定制数据集的概括。</li>
+</ul>
+<h3 id="42-training-time-and-compute">4.2 训练时间和计算<a class="headerlink" href="#42-training-time-and-compute" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Ultralytics 参考时间表：</strong> 从 <strong>300 epoch 左右开始</strong>；如果早期过度拟合则减少，如果没有则延长至 600-1200+；使用早期停止（耐心）、预训练权重（迁移学习）、混合精度 (AMP) 和子集训练进行迭代 (https://docs.ultralytics.com/guides/model-training-tips/)。</li>
+<li><strong>托管训练：</strong> Roboflow Train 默认为 100 个 epoch，支持从 COCO 检查点进行训练，NAS 自动训练 10-100 个候选模型（https://blog.roboflow.com/roboflow-train-3-0/）。 Roboflow 的 PCB 演练报告称，对于分叉数据集“训练需要几个小时”(https://blog.roboflow.com/pcb-defect-detection/)。</li>
+<li><strong>从业者的估计（明确标记，不是来自单个可引用的基准）：</strong></li>
+<li>单个现代消费者/数据中心 GPU 上的 <strong>数百个图像</strong> 上的纳米/小型 YOLO 通常在 <strong>分钟到约 1 小时</strong>内收敛，持续 100-300 个周期。 Roboflow 的“几个小时”是托管管道的安全规划数字。</li>
+<li>在从业者论坛中，对于经验丰富的注释者来说，边界框的标记时间通常约为<strong>每个实例 1-3 秒</strong>（每个图像需要几分钟，有多个实例）。 <strong>这是一个估计值；根据您自己的数据进行测量。</strong></li>
+<li>对于 AssemblyVision 规模（几百个图像，3-5 个类），总的人工标记工作实际上约为<strong>小时到 1-2 人天</strong>，并且云 GPU 上的计算成本很小（对于小型模型最多需要数十个 GPU 小时）。将这些视为计划范围，而不是承诺。</li>
+</ul>
+<h3 id="43-common-failures-and-tips-synthesis-of-cited-practitioner-material">4.3 常见故障和提示（引用的从业者材料的综合）<a class="headerlink" href="#43-common-failures-and-tips-synthesis-of-cited-practitioner-material" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>照明不佳/不一致是第一大故障</strong>（康耐视：“照明不佳是机器视觉性能不佳的最常见原因” - https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting）。</li>
+<li><strong>视频帧中的数据泄漏</strong>会夸大验证指标并误导阈值选择（AssemblyVision 第 19.6 节；这是整个社区众所周知的陷阱）。</li>
+<li><strong>真实的 NG 示例太少</strong> - 合成数字擦除不会再现阴影/背景变化（AssemblyVision 第 19.4 节）。</li>
+<li><strong>注释者之间和跨天的标签漂移/不一致的框</strong>；修复冻结本体版本、示例、审查抽样和裁决（AssemblyVision 第 19.5 节；https://docs.ultralytics.com/guides/data-collection-and-annotation/）。</li>
+<li><strong>过度信任 mAP</strong> - 选择验证时召回的阈值并在冻结阈值下进行评估（https://blog.roboflow.com/surface-defects/；AssemblyVision 第 19.9 节）。</li>
+<li><strong>集成失败是真正的杀手</strong> - 约 77% 的制造视觉试点因集成而停滞，而不是模型质量 (https://blog.roboflow.com/scale-a-computer-vision-pilot-to-products/)。 AssemblyVision 的设计（本地优先、离线功能、人工审查、证据持久性）旨在解决这一问题。</li>
+<li><strong>过于激进地开始增强</strong>可能会扭曲薄特征（例如，剪切扭曲划痕/裂纹 - https://blog.roboflow.com/flanges-uality-inspection/）。将增强限制在物理上合理的变化范围内（AssemblyVision 第 19.7 节）。</li>
+<li><strong>置信度分类</strong>（通过/审核/失败范围）减少错误的自动决策，并将审核流反馈到训练中 - 直接适用于 AssemblyVision 的低置信度 <code>UNCERTAIN</code> 处理（https://blog.roboflow.com/flanges-uality-inspection/；AssemblyVision BR-006）。</li>
+</ol>
+<h3 id="44-iteration-cycles">4.4 迭代周期<a class="headerlink" href="#44-iteration-cycles" title="Permanent link">&para;</a></h3>
+<p>从业者材料一致地描述了<strong>短、反馈驱动的周期</strong>：在默认设置下运行第一个模型，检查误报/阴性，添加信息最丰富的错误分类/不确定图像，重新标记，重新训练（https://blog.roboflow.com/surface-defects/；https://blog.roboflow.com/flanges-uality-inspection/）。主动学习循环（上传低置信度预测以供审查和再培训）是一种标准生产模式，符合 AssemblyVision 的人机交互和生产监控要求（<code>docs/design/19-training-and-evaluation.md</code> 第 19.14 节）。</p>
+<hr />
+<h2 id="5-practical-checklists-for-assemblyvision">5. AssemblyVision 实用清单<a class="headerlink" href="#5-practical-checklists-for-assemblyvision" title="Permanent link">&para;</a></h2>
+<h3 id="51-imaging-station-checklist-pre-data-collection">5.1 成像站清单（数据收集前）<a class="headerlink" href="#51-imaging-station-checklist-pre-data-collection" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] 选择圆顶或同轴漫射照明并制作原型；环/明场基线测试</li>
+<li>[ ] 偏振器可用/已针对镜面组件面进行测试</li>
+<li>[ ] 排除环境光（外壳/护罩）</li>
+<li>[ ] 全局快门/频闪配置设置；在最大传送带速度下验证运动模糊</li>
+<li>[ ] 孔径/自由度覆盖整个产品高度范围；增益/ISO 保持较低水平</li>
+<li>[ ] 相机牢固安装；应用的设置+串行记录（根据<code>docs/design/07-camera-and-image-acquisition.md</code>）</li>
+<li>[ ] 根据真实捕获校准帧质量门（模糊、亮度、眩光）</li>
+<li>[ ] 触发（光电眼/PLC）去抖动和产品窗口边界验证</li>
+<li>[ ] FOV/位置带根据阶段 1 最小框面积和 ROI 边距进行验证</li>
+</ul>
+<h3 id="52-data-collection-checklist">5.2 数据收集清单<a class="headerlink" href="#52-data-collection-checklist" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] 使用精确的生产相机/光学器件/灯光/软件进行收集</li>
+<li>[ ] 涵盖所有产品、所有组件，跨批次/日期真正OK</li>
+<li>[ ] 为每个缺失的组件和缺失的手册物理构建 NG 案例</li>
+<li>[ ] 包括空帧、部分条目、模糊、反射、曝光变化、遮挡</li>
+<li>[ ] 记录每张图像的出处（站点、线路、摄像机、会话、产品实例、场景）</li>
+<li>[ ] 目标：~300-800 张产品图片； ~300-500 个实例/组件；每个缺失场景启动约 100 个产品实例（AssemblyVision 第 19.2 节）</li>
+<li>[ ] 冻结带有校验和的数据集版本和本体版本</li>
+</ul>
+<h3 id="53-annotation-checklist">5.3 注释清单<a class="headerlink" href="#53-annotation-checklist" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] 锁定、版本化的类本体，具有包含/排除和歧义规则</li>
+<li>[ ] 一致的紧密盒子；每个实例都带有注释；记录连接/重叠规则</li>
+<li>[ ] 自动检查（无效框、未知类、重复项）</li>
+<li>[ ] 所有 NG 和不明确标签的第二位审稿人；裁决日志</li>
+<li>[ ] 跟踪每类计数、产品实例、会话、批次（仅帧计数就夸大了多样性）</li>
+</ul>
+<h3 id="54-split-evaluation-checklist">5.4 拆分和评估清单<a class="headerlink" href="#54-split-evaluation-checklist" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] 按产品实例/会话/批次/日期进行防泄漏分组（绝不随机帧分割）</li>
+<li>[ ] 2015 年 70 月 15 日计划按分组实例划分；客户验收集完全保留</li>
+<li>[ ] 运行 SHA-256 + 感知哈希 + 组 ID 泄漏检查</li>
+<li>[ ] 报告 NG 召回、FN/FP 率、每个组件召回、产品检测和 ROI 成功、延迟 (AssemblyVision QA-012)</li>
+<li>[ ] 选择验证阈值，漏检 NG 成本更高；测试/验收前冻结</li>
+</ul>
+<h3 id="55-training-cost-planning-checklist">5.5 培训和成本规划清单<a class="headerlink" href="#55-training-cost-planning-checklist" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] 从 COCO 预训练的权重开始；约 300 个周期默认提前停止</li>
+<li>[ ] 预算计算：数百个图像的小型模型在几分钟到几小时内收敛（每个 Roboflow 的托管管道“几个小时”）</li>
+<li>[ ] 预算标签：AssemblyVision 规模的小时数为 1-2 人天（估计 - 当地测量）</li>
+<li>[ ] 在完整运行之前运行子集训练（例如 10% 分数）以实现快速迭代 (Ultralytics)</li>
+<li>[ ] 跟踪运行出处：源版本、容器摘要、种子、数据集版本、超参数、工件校验和（AssemblyVision 第 19.8 节）</li>
+</ul>
+<hr />
+<h2 id="6-open-questions-and-validation-required">6. 开放式问题和需要验证<a class="headerlink" href="#6-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>在承诺标签预算之前，测量实际组件的<strong>实际标签率</strong>（每盒秒数）；公布/估计的费率差异很大。</li>
+<li>确认300-800张产品图片是否足以对实际产品进行第一阶段产品检测；与 Ultralytics 在固定单一产品站上的“每类约 1,500 个图像/10,000 个实例”可靠性指南进行比较。</li>
+<li>在真实零件上选择照明解决方案并进行原型设计（圆顶、同轴、环形+偏振）；没有供应商来源可以选择它来完成特定的产品。</li>
+<li>根据实际传送带速度和产品停留时间验证运动模糊和曝光要求；确定是否需要频闪/全局快门配置。</li>
+<li>在最终确定产品窗口策略之前确认触发器可用性（光电眼/PLC/条形码定时）和稳定性。</li>
+<li>确定从设计默认值中选择的质量门阈值（拉普拉斯方差、亮度）对于真实相机和照明是否正确。</li>
+<li>建立客户接受样本量和二项式置信界限，以进行 NG 召回，观察到的遗漏为零或很少（根据 <code>docs/design/19-training-and-evaluation.md</code> 第 19.13 节）。</li>
+<li>在团队实际训练硬件上验证 GPU/CPU 训练时间；此数据集大小的云 GPU 小时成本预计会很小，但此处未进行测量。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

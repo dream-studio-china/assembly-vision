@@ -1,0 +1,2360 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/design/27-risks-and-mitigations/">
+      
+      
+        <link rel="prev" href="../26-customer-acceptance/">
+      
+      
+        <link rel="next" href="../appendices/">
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Risks and Mitigations - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#27-risks-and-mitigations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Risks and Mitigations
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#271-purpose-and-risk-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.1 Purpose and Risk Method
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#272-scope-and-treatment-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.2 Scope and Treatment Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#273-comprehensive-risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.3 Comprehensive Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#274-cross-risk-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.4 Cross-Risk Controls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#275-risk-review-and-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.5 Risk Review and Ownership
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#276-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.6 Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#277-related-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.7 Related Documents
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001: Edge-First Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002: Python Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003: Vue 3 and TypeScript Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004: Two-Stage Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005: Local-First Storage and Delayed Upload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006: REST Plus WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007: Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008: Docker Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009: Static-Image-First MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#271-purpose-and-risk-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.1 Purpose and Risk Method
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#272-scope-and-treatment-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.2 Scope and Treatment Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#273-comprehensive-risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.3 Comprehensive Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#274-cross-risk-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.4 Cross-Risk Controls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#275-risk-review-and-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.5 Risk Review and Ownership
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#276-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.6 Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#277-related-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        27.7 Related Documents
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="27-risks-and-mitigations">27. Risks and Mitigations<a class="headerlink" href="#27-risks-and-mitigations" title="Permanent link">&para;</a></h1>
+<h2 id="271-purpose-and-risk-method">27.1 Purpose and Risk Method<a class="headerlink" href="#271-purpose-and-risk-method" title="Permanent link">&para;</a></h2>
+<p>This register identifies known threats to inspection integrity, traceability, availability, and operations. Every risk states cause, impact, detection, prevention, recovery, and residual risk. Owners and ratings are assigned during site planning because factory topology, hardware, throughput, and acceptance thresholds are not yet known.</p>
+<h2 id="272-scope-and-treatment-principles">27.2 Scope and Treatment Principles<a class="headerlink" href="#272-scope-and-treatment-principles" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>MVP:</strong> address risks affecting static decision correctness and evidence; document live-production risks as not yet mitigated.</li>
+<li><strong>One-month target:</strong> implement core camera, identity, windowing, persistence, synchronization, health, and recovery controls.</li>
+<li><strong>Production target:</strong> verify mitigations on customer hardware and independent data, assign owners, and accept residual risk explicitly.</li>
+<li><strong>Future scope:</strong> hardware interlocks, PLC/MES integration, redundant infrastructure, and advanced drift automation where justified.</li>
+</ul>
+<p>The default safe behavior is to avoid issuing <code>OK</code> when product identity, required evidence, configuration compatibility, or durable recording is uncertain. Human review and physical line procedures remain necessary controls during rollout.</p>
+<h2 id="273-comprehensive-risk-register">27.3 Comprehensive Risk Register<a class="headerlink" href="#273-comprehensive-risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID and risk</th>
+<th>Cause</th>
+<th>Impact</th>
+<th>Detection method</th>
+<th>Prevention</th>
+<th>Recovery</th>
+<th>Residual risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R-01 Camera shift</td>
+<td>Loose mount, vibration, maintenance, impact</td>
+<td>ROI/domain shift can miss required components and create false OK or false NG</td>
+<td>Reference-scene geometry, product-box distribution, calibration image, operator check, quality trend</td>
+<td>Rigid/tamper-evident mount, startup checklist, detected product ROI, approved camera envelope</td>
+<td>Pause, restore/alignment check, capture validation set, revalidate before resume</td>
+<td>Small shifts may evade geometric alarms while changing appearance</td>
+</tr>
+<tr>
+<td>R-02 Camera disconnection</td>
+<td>Cable/power/driver/SDK/device failure</td>
+<td>No inspectable frames; production may pass without a decision if external controls are weak</td>
+<td>Frame-age watchdog, adapter errors, link state, reconnect count</td>
+<td>Industrial cabling/power, strain relief, conformance tests, supervised adapter</td>
+<td>Stop windows, alarm, reconnect adapter, verify framing with test product</td>
+<td>Intermittent faults may recover before diagnosis; line interlock depends on customer integration</td>
+</tr>
+<tr>
+<td>R-03 Incorrect exposure</td>
+<td>Lighting/camera setting change, auto-exposure, contamination</td>
+<td>Lost detail or confidence; false NG and possible false OK</td>
+<td>Histogram/saturation/brightness metrics, config checksum, reference images</td>
+<td>Lock validated exposure/gain, fixed lighting, change control, cleaning procedure</td>
+<td>Correct settings/lighting, clean optics, rerun known samples</td>
+<td>Local glare or gradual lamp aging may pass global metrics</td>
+</tr>
+<tr>
+<td>R-04 Motion blur</td>
+<td>Conveyor speed, exposure time, vibration, trigger timing</td>
+<td>Components/barcodes become unreadable and detections fail</td>
+<td>Blur score, frame-quality rejection, latency/timing logs, image review</td>
+<td>Adequate lighting, short exposure, stable mount, trigger/window tuning, multiple usable frames</td>
+<td>Route NG/uncertain, adjust optics/timing, recapture/reinspect</td>
+<td>Blur metrics are imperfect; all frames may be blurred at some operating points</td>
+</tr>
+<tr>
+<td>R-05 Reflection</td>
+<td>Glossy surfaces, light/camera angle, environmental change</td>
+<td>Occluded visual features and unstable confidence</td>
+<td>Saturation/specular metrics, heatmaps/evidence review, scenario tests</td>
+<td>Diffuse/polarized controlled lighting where validated, representative training data</td>
+<td>Adjust lighting/angle under change control, collect data, revalidate</td>
+<td>Reflection can vary by material batch and position</td>
+</tr>
+<tr>
+<td>R-06 Product occlusion</td>
+<td>Packaging, hands/tools, overlapping parts, incomplete field of view</td>
+<td>Required component hidden; incorrect presence decision or excess NG</td>
+<td>Visible-area/box checks, quality reasons, temporal consistency, review</td>
+<td>Physical inspection zone, operator procedure, multiple frames, minimum visibility rules</td>
+<td>Mark NG/uncertain and reinspect after clearing occlusion</td>
+<td>Occlusion can resemble true absence and may not be separable from one view</td>
+</tr>
+<tr>
+<td>R-07 Product-position variation</td>
+<td>Conveyor guides/tolerances, product placement</td>
+<td>Product crop truncation or unfamiliar viewpoint</td>
+<td>Product-box position/size trends, ROI clipping flags, acceptance shift cases</td>
+<td>Stage-one product detection, ROI margins, capture-zone guides, representative data</td>
+<td>Reposition/reinspect, tune validated margins, collect/revalidate shifted cases</td>
+<td>Movement beyond trained envelope can occur without a hard boundary</td>
+</tr>
+<tr>
+<td>R-08 Barcode-read failure</td>
+<td>Blur, damage, glare, unsupported symbology, decoder fault</td>
+<td>Unknown product type/rule; loss of traceability</td>
+<td>Decoder status, repeated attempts, checksum/format validation, mismatch rate</td>
+<td>Dedicated decoder/ROI, multiple frames, validated standards, label quality process</td>
+<td>Do not infer unverified OK; retry/reinspect or authorized manual resolution</td>
+<td>Some labels remain unreadable; manual entry can introduce error</td>
+</tr>
+<tr>
+<td>R-09 Wrong product-type mapping</td>
+<td>Stale/incorrect master data, reused code, manual error</td>
+<td>Wrong required-component rule can produce false OK</td>
+<td>Barcode/product/config consistency checks, visual product class comparison, audits</td>
+<td>Versioned authoritative mapping, approval workflow, test vectors</td>
+<td>Pause affected mapping, restore last approved version, review affected inspections</td>
+<td>Correctly formatted but semantically wrong source data may evade checks</td>
+</tr>
+<tr>
+<td>R-10 Wrong rule configuration</td>
+<td>Omitted component, wrong threshold/policy, editing error</td>
+<td>Defective product may be classified OK or valid product NG</td>
+<td>Schema/semantic validation, diff/approval, simulation on regression set, audit</td>
+<td>Versioning, least privilege, two-person approval where feasible, staged activation</td>
+<td>Roll back, identify affected version/time range, re-evaluate evidence</td>
+<td>Regression set may not represent every production condition</td>
+</tr>
+<tr>
+<td>R-11 Model and rule version mismatch</td>
+<td>Partial update, manual file replacement, compatibility error</td>
+<td>Rule expects classes/evidence model cannot supply</td>
+<td>Signed manifest compatibility matrix, startup/readiness validation, inspection record versions</td>
+<td>Atomic release set, read-only model/rule mounts, no ad hoc replacement</td>
+<td>Refuse readiness, activate last known-good compatible set, report failure</td>
+<td>Compatibility metadata itself may be authored incorrectly without end-to-end tests</td>
+</tr>
+<tr>
+<td>R-12 Multiple products in one inspection window</td>
+<td>Insufficient spacing, trigger overlap, tracking failure</td>
+<td>Evidence combines products or misses one product</td>
+<td>Product count/tracks, entry/exit events, window duration and geometry checks</td>
+<td>Sensor/trigger design, spacing rules, explicit multi-product rejection</td>
+<td>Abort as ambiguous/NG, clear zone, reinspect products individually</td>
+<td>Occluded overlapping products may appear as one</td>
+</tr>
+<tr>
+<td>R-13 Duplicate inspection</td>
+<td>Trigger bounce, restart, repeated barcode event, tracking re-entry</td>
+<td>Duplicate records/disposition and distorted statistics</td>
+<td>Window identity state machine, product/barcode/time correlation, duplicate event metric</td>
+<td>Trigger debounce, stable inspection IDs, explicit lifecycle and idempotency</td>
+<td>Mark/link duplicate without deleting audit history; reconcile downstream action</td>
+<td>Identical consecutive products can make heuristic deduplication unsafe</td>
+</tr>
+<tr>
+<td>R-14 Frame mixing between products</td>
+<td>Window overlap, stale buffers, async race, wrong timestamps</td>
+<td>Components from another product can support false OK</td>
+<td>Window/track IDs per frame, monotonic sequence checks, boundary tests, provenance audit</td>
+<td>Single ownership of frames, flush/bound buffers, sensor/barcode boundaries, state-machine tests</td>
+<td>Abort ambiguous windows, preserve evidence, fix boundary logic and retest</td>
+<td>Weak physical separation can remain ambiguous without a sensor</td>
+</tr>
+<tr>
+<td>R-15 Network outage</td>
+<td>Factory WAN/LAN, DNS, firewall, proxy failure</td>
+<td>Central history/review delayed; queue and disk grow</td>
+<td>Connectivity state, queue depth/bytes/oldest age, retry classes</td>
+<td>Edge-first design, persistent queue, capacity planning, backoff/jitter</td>
+<td>Continue locally, restore network, rate-limit drain, reconcile receipts</td>
+<td>Outage longer than local capacity requires degraded recording or production pause</td>
+</tr>
+<tr>
+<td>R-16 Central-server outage</td>
+<td>API/database/object storage/deployment failure</td>
+<td>Upload/review/reporting unavailable across devices</td>
+<td>Central health/alerts, edge 5xx/timeouts, backlog metrics</td>
+<td>Decoupled edge, backups, tested central recovery, appropriate redundancy</td>
+<td>Continue edge operation, recover service/data, drain queues idempotently</td>
+<td>Extended outage delays human review and fleet-wide visibility</td>
+</tr>
+<tr>
+<td>R-17 Upload duplication</td>
+<td>Timeout after commit, retry, operator retry, queue replay</td>
+<td>Duplicate central records/media and incorrect reporting</td>
+<td>Idempotency key, unique source inspection constraint, receipt lookup, checksum</td>
+<td>Idempotent API and durable receipt before acknowledgement</td>
+<td>Return original receipt, merge/reject duplicate media by checksum, audit conflicts</td>
+<td>Changed payload under reused key needs explicit conflict handling</td>
+</tr>
+<tr>
+<td>R-18 Local disk full</td>
+<td>Outage backlog, video/log growth, failed cleanup, undersizing</td>
+<td>Cannot store evidence/database; crashes or traceability loss</td>
+<td>Free bytes/inodes, growth forecast, media class/queue metrics, write errors</td>
+<td>Quotas, bounded logs/video, tiered retention, capacity reserve, protect pending files</td>
+<td>Safe cleanup uploaded expired data, disable optional recording, expand disk or pause</td>
+<td>Sudden bursts/filesystem overhead can exhaust reserve before response</td>
+</tr>
+<tr>
+<td>R-19 Local database corruption</td>
+<td>Power loss, storage fault, unsafe copying, software defect</td>
+<td>Lost decisions/queue state and inability to reconcile evidence</td>
+<td>SQLite integrity checks, I/O errors, backup/restore tests, media reconciliation</td>
+<td>Transactions/WAL as validated, atomic writes, reliable storage, online backups</td>
+<td>Quarantine database, restore backup, reconstruct limited metadata from manifests/media, reconcile central receipts</td>
+<td>Records after last valid backup may require manual reconstruction or remain lost</td>
+</tr>
+<tr>
+<td>R-20 Container restart</td>
+<td>Crash, OOM, host update, restart policy</td>
+<td>Interrupted window, temporary inspection outage, duplicate work</td>
+<td>Restart counters, exit codes, health gaps, incomplete-window state</td>
+<td>Resource sizing/limits, health supervision, durable state boundaries, soak tests</td>
+<td>Restart, mark ambiguous window aborted, reconcile queue/temp files, smoke test</td>
+<td>Product present during restart may require physical reinspection</td>
+</tr>
+<tr>
+<td>R-21 Client power loss</td>
+<td>Facility/PSU failure or unsafe shutdown</td>
+<td>Abrupt capture/database/media interruption and downtime</td>
+<td>Boot reason, unclean shutdown flag, database/filesystem checks, UPS telemetry</td>
+<td>UPS where justified, reliable power, transactional writes, atomic rename, shutdown procedure</td>
+<td>Recover host, integrity/reconciliation checks, abort incomplete windows, verify known sample</td>
+<td>Storage hardware can fail despite transactional design; physical product identity may be lost</td>
+</tr>
+<tr>
+<td>R-22 Clock drift</td>
+<td>NTP unavailable, bad RTC, manual time change</td>
+<td>Misordered records, incorrect correlation/retention/audit times</td>
+<td>Offset monitoring, central receive-time comparison, monotonic sequence checks</td>
+<td>Approved time source, monotonic clocks for durations, store source and receive times</td>
+<td>Restore synchronization, flag affected range, preserve original timestamps and sequence</td>
+<td>Offline wall-clock accuracy remains bounded by hardware and outage duration</td>
+</tr>
+<tr>
+<td>R-23 Model drift</td>
+<td>Product/material/process/lighting changes over time</td>
+<td>Rising false negatives/positives outside validation domain</td>
+<td>OK audits, reviewed NG, per-version/product/component trends, input/box/quality distributions</td>
+<td>Change control, representative monitoring, periodic sampling, locked baseline comparison</td>
+<td>Increase review, contain affected scope, collect labels, retrain/tune and fully revalidate</td>
+<td>Rare defects and delayed ground truth make drift detection statistically slow</td>
+</tr>
+<tr>
+<td>R-24 Insufficient NG samples</td>
+<td>Rare defects, inability to stage cases, biased collection</td>
+<td>Unknown/weak NG recall and overconfident acceptance</td>
+<td>Coverage matrix and sample counts by component/product/scenario, confidence intervals</td>
+<td>Intentionally create authorized missing cases, collect production NG, conservative rules/review</td>
+<td>Restrict acceptance scope, increase review, gather data before promotion</td>
+<td>Staged defects may not reproduce natural failure appearance</td>
+</tr>
+<tr>
+<td>R-25 Customer changing the camera angle</td>
+<td>Maintenance, relocation, new line, mount adjustment</td>
+<td>Significant domain change; product/component appearance and ROI behavior shift</td>
+<td>Mount marks/calibration, reference image comparison, product-box trends, change audit</td>
+<td>Physical lock/tamper evidence, operating envelope, customer change procedure</td>
+<td>Treat significant change, including near 45 degrees, as new domain: test, collect, fine-tune if needed, revalidate system</td>
+<td>Small undocumented angle changes may accumulate and evade threshold checks</td>
+</tr>
+<tr>
+<td>R-26 Unauthorized configuration changes</td>
+<td>Stolen account/device access, excessive role, direct volume edit</td>
+<td>Disabled requirements, wrong mapping/thresholds, loss of audit trust</td>
+<td>Authentication/audit logs, checksum/signature verification, file integrity and activation events</td>
+<td>Least privilege, MFA centrally, signed artifacts, read-only mounts, approval separation</td>
+<td>Revoke access, preserve evidence, restore approved version, assess/review affected inspections</td>
+<td>Privileged host administrators can bypass container controls; physical/customer governance remains essential</td>
+</tr>
+</tbody>
+</table>
+<h2 id="274-cross-risk-controls">27.4 Cross-Risk Controls<a class="headerlink" href="#274-cross-risk-controls" title="Permanent link">&para;</a></h2>
+<p>Several controls reduce multiple risks:</p>
+<ol>
+<li>A deterministic state machine binds each frame and decision to one product window.</li>
+<li>Product detection generates the ROI; hard-coded full-frame regions are fallback/coarse zones only.</li>
+<li>Per-component temporal aggregation excludes unusable frames and never claims to improve single-frame model accuracy.</li>
+<li>Product identity, model, rule, configuration, and evidence versions are persisted with every decision.</li>
+<li>The edge stores decisions and upload tasks transactionally and continues without the central server.</li>
+<li>Signed, compatible release sets activate atomically between windows and support rollback.</li>
+<li>Human review, OK auditing, and customer acceptance use independent evidence to detect quality failures.</li>
+<li>Disk, camera, clock, process, queue, and quality health are observable locally and centrally.</li>
+</ol>
+<h2 id="275-risk-review-and-ownership">27.5 Risk Review and Ownership<a class="headerlink" href="#275-risk-review-and-ownership" title="Permanent link">&para;</a></h2>
+<p>Before pilot deployment, each risk receives customer and supplier owners, likelihood/impact rating, planned treatment, target completion, verification evidence, and acceptance authority. Review occurs at design gates, after any incident or significant change, before each production release, and periodically during operation. Closed risks remain historically traceable; residual risks are accepted by an authorized customer representative.</p>
+<h2 id="276-open-questions-and-validation-required">27.6 Open Questions and Validation Required<a class="headerlink" href="#276-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Customer risk-rating matrix, risk owners, escalation authority, and acceptable residual-risk process.</li>
+<li>Physical line controls when AssemblyVision is unavailable or returns NG/uncertain/system exception.</li>
+<li>Camera mount, lighting, trigger, spacing, power/UPS, storage, and time-source design.</li>
+<li>Expected outage duration and local capacity needed for media/upload buffering.</li>
+<li>Product/component criticality and consequences of missed defects.</li>
+<li>Availability of independent NG data and customer authority to stage missing-component cases.</li>
+<li>Identity provider, physical/host administrator controls, and configuration approval separation.</li>
+<li>Which changes mandate partial versus complete customer reacceptance.</li>
+</ul>
+<h2 id="277-related-documents">27.7 Related Documents<a class="headerlink" href="#277-related-documents" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../20-deployment-and-operations/">Deployment and Operations</a></li>
+<li><a href="../21-security-and-source-distribution/">Security and Source Distribution</a></li>
+<li><a href="../22-testing-and-quality-assurance/">Testing and Quality Assurance</a></li>
+<li><a href="../23-observability-and-support/">Observability and Support</a></li>
+<li><a href="../26-customer-acceptance/">Customer Acceptance</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

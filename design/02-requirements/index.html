@@ -1,0 +1,2635 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/design/02-requirements/">
+      
+      
+        <link rel="prev" href="../01-introduction/">
+      
+      
+        <link rel="next" href="../03-architecture-overview/">
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Requirements - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#assemblyvision-requirements" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Requirements
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-requirement-language-and-priorities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Requirement Language and Priorities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-business-and-safety-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Business and Safety Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-edge-functional-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Edge Functional Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-central-functional-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Central Functional Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-data-and-upload-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Data and Upload Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Data and Upload Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-common-inspection-record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Common Inspection Record
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-upload-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Upload Profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-quality-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Quality Attributes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-scope-requirements-by-horizon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Scope Requirements by Horizon
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Scope Requirements by Horizon">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-two-day-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Two-Day MVP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-one-month-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 One-Month Target
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-production-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Production Target
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Future
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-constraints-and-non-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Constraints and Non-Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001: Edge-First Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002: Python Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003: Vue 3 and TypeScript Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004: Two-Stage Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005: Local-First Storage and Delayed Upload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006: REST Plus WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007: Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008: Docker Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009: Static-Image-First MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-requirement-language-and-priorities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Requirement Language and Priorities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-business-and-safety-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Business and Safety Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-edge-functional-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Edge Functional Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-central-functional-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Central Functional Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-data-and-upload-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Data and Upload Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Data and Upload Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-common-inspection-record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Common Inspection Record
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-upload-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Upload Profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-quality-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Quality Attributes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-scope-requirements-by-horizon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Scope Requirements by Horizon
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Scope Requirements by Horizon">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-two-day-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Two-Day MVP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-one-month-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 One-Month Target
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-production-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Production Target
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Future
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-constraints-and-non-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Constraints and Non-Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="assemblyvision-requirements">AssemblyVision Requirements<a class="headerlink" href="#assemblyvision-requirements" title="Permanent link">&para;</a></h1>
+<h2 id="1-requirement-language-and-priorities">1. Requirement Language and Priorities<a class="headerlink" href="#1-requirement-language-and-priorities" title="Permanent link">&para;</a></h2>
+<p><code>MUST</code> denotes a release obligation, <code>SHOULD</code> an expected behavior that may be waived with documented rationale, and <code>MAY</code> an option. Priorities are <code>P0</code> production-critical, <code>P1</code> required for the intended target, and <code>P2</code> future or conditional. Requirement IDs are stable and follow the conventions in <a href="../appendices/#5-traceability-conventions">Appendices</a>.</p>
+<h2 id="2-business-and-safety-requirements">2. Business and Safety Requirements<a class="headerlink" href="#2-business-and-safety-requirements" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th style="text-align: right;">Priority</th>
+<th>Requirement</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BR-001</td>
+<td style="text-align: right;">P0</td>
+<td>The system MUST produce one traceable business result, <code>OK</code> or <code>NG</code>, per completed physical-product inspection.</td>
+<td>End-to-end and acceptance tests</td>
+</tr>
+<tr>
+<td>BR-002</td>
+<td style="text-align: right;">P0</td>
+<td><code>OK</code> MUST require valid evidence for every component required by the resolved product rule.</td>
+<td>Rule-engine tests</td>
+</tr>
+<tr>
+<td>BR-003</td>
+<td style="text-align: right;">P0</td>
+<td>Missing, uncertain, invalid, unresolved, or incomplete inspection evidence MUST NOT produce <code>OK</code>.</td>
+<td>Fault-injection tests</td>
+</tr>
+<tr>
+<td>BR-004</td>
+<td style="text-align: right;">P0</td>
+<td>Evaluation MUST prioritize NG recall and false-negative reduction over early false-positive reduction.</td>
+<td>Evaluation report review</td>
+</tr>
+<tr>
+<td>BR-005</td>
+<td style="text-align: right;">P0</td>
+<td>Production acceptance MUST use measured customer production data excluded from training and MUST NOT rely on an unvalidated accuracy guarantee.</td>
+<td>Dataset lineage and acceptance report</td>
+</tr>
+<tr>
+<td>BR-006</td>
+<td style="text-align: right;">P1</td>
+<td>Early production MUST support human review of all NG results, low-confidence cases as configured, and sampled OK audits.</td>
+<td>Workflow test</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-edge-functional-requirements">3. Edge Functional Requirements<a class="headerlink" href="#3-edge-functional-requirements" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th style="text-align: right;">Priority</th>
+<th>Requirement</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EDGE-001</td>
+<td style="text-align: right;">P0</td>
+<td>Production-critical capture, inference, aggregation, rules, and final decision MUST execute on the edge computer without a central round trip.</td>
+<td>Network-disconnection test</td>
+</tr>
+<tr>
+<td>EDGE-002</td>
+<td style="text-align: right;">P0</td>
+<td>The edge MUST integrate industrial camera capture and expose explicit connected, degraded, disconnected, and fault states.</td>
+<td>Adapter and fault tests</td>
+</tr>
+<tr>
+<td>EDGE-003</td>
+<td style="text-align: right;">P0</td>
+<td>The edge MUST delimit frames belonging to one physical product and prevent evidence mixing between products.</td>
+<td>Sequence and boundary tests</td>
+</tr>
+<tr>
+<td>EDGE-004</td>
+<td style="text-align: right;">P0</td>
+<td>Barcode decoding MUST be a separate capability; detection MAY locate its region but MUST NOT substitute for decoding.</td>
+<td>Component/API tests</td>
+</tr>
+<tr>
+<td>EDGE-005</td>
+<td style="text-align: right;">P0</td>
+<td>Product type resolution MUST be explicit and traceable; unresolved or conflicting identity MUST NOT produce <code>OK</code>.</td>
+<td>Rule tests</td>
+</tr>
+<tr>
+<td>EDGE-006</td>
+<td style="text-align: right;">P0</td>
+<td>Stage-one detection MUST locate the complete product in a full frame and report class, box, confidence, and optional tracking data.</td>
+<td>Model contract tests</td>
+</tr>
+<tr>
+<td>EDGE-007</td>
+<td style="text-align: right;">P0</td>
+<td>ROI generation MUST apply configurable margins, clip to image bounds, retain full-frame/ROI coordinate mapping, and reject invalid geometry.</td>
+<td>Unit/property tests</td>
+</tr>
+<tr>
+<td>EDGE-008</td>
+<td style="text-align: right;">P0</td>
+<td>Stage-two detection MUST identify configured required components in the generated product ROI.</td>
+<td>Model evaluation</td>
+</tr>
+<tr>
+<td>EDGE-009</td>
+<td style="text-align: right;">P0</td>
+<td>Temporal aggregation MUST combine evidence independently per required component and MUST NOT use whole-product majority voting.</td>
+<td>Aggregator tests</td>
+</tr>
+<tr>
+<td>EDGE-010</td>
+<td style="text-align: right;">P0</td>
+<td>The deterministic rule engine MUST emit decision, missing and low-confidence lists, reason codes, and active model/rule/product-configuration versions.</td>
+<td>Golden tests</td>
+</tr>
+<tr>
+<td>EDGE-011</td>
+<td style="text-align: right;">P0</td>
+<td>The edge MUST persist inspection metadata and required evidence atomically enough to recover after process restart or power loss.</td>
+<td>Recovery test</td>
+</tr>
+<tr>
+<td>EDGE-012</td>
+<td style="text-align: right;">P0</td>
+<td>The edge MUST persist upload work, retry with backoff, prevent duplicates through idempotency, verify media checksums, and resume after interruption.</td>
+<td>Resilience test</td>
+</tr>
+<tr>
+<td>EDGE-013</td>
+<td style="text-align: right;">P0</td>
+<td>Cleanup MUST protect records and files still required by pending uploads or active review policy.</td>
+<td>Retention tests</td>
+</tr>
+<tr>
+<td>EDGE-014</td>
+<td style="text-align: right;">P1</td>
+<td>The local FastAPI service and locally served Vue application SHOULD expose live status, recent results, evidence, storage/health state, queue state, logs, configuration, and manual retry while offline.</td>
+<td>Local browser E2E</td>
+</tr>
+<tr>
+<td>EDGE-015</td>
+<td style="text-align: right;">P1</td>
+<td>Inspection pause/resume MAY be exposed only after its operational authority and safe behavior are approved.</td>
+<td>Acceptance procedure</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-central-functional-requirements">4. Central Functional Requirements<a class="headerlink" href="#4-central-functional-requirements" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th style="text-align: right;">Priority</th>
+<th>Requirement</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CENTRAL-001</td>
+<td style="text-align: right;">P1</td>
+<td>The central API MUST ingest inspection envelopes and selected media idempotently and return a durable receipt.</td>
+<td>API/integration tests</td>
+</tr>
+<tr>
+<td>CENTRAL-002</td>
+<td style="text-align: right;">P1</td>
+<td>Ingestion MUST detect payload conflicts for an already accepted idempotency key instead of silently replacing data.</td>
+<td>Conflict tests</td>
+</tr>
+<tr>
+<td>CENTRAL-003</td>
+<td style="text-align: right;">P1</td>
+<td>Central history MUST support time-, device-, line-, barcode-, product-, decision-, model-, rule-, and reason-based query with pagination.</td>
+<td>API/query tests</td>
+</tr>
+<tr>
+<td>CENTRAL-004</td>
+<td style="text-align: right;">P1</td>
+<td>The service MUST manage devices, products, product components, versioned rules, versioned model metadata, users, permissions, and audit records.</td>
+<td>Authorization/E2E tests</td>
+</tr>
+<tr>
+<td>CENTRAL-005</td>
+<td style="text-align: right;">P1</td>
+<td>Manual review MUST preserve the original automated result, reviewer outcome, reason, reviewer identity, and timestamps.</td>
+<td>Audit tests</td>
+</tr>
+<tr>
+<td>CENTRAL-006</td>
+<td style="text-align: right;">P1</td>
+<td>Dashboards MUST report device health, upload delay, OK/NG trends, missing components, barcode failures, and version-specific performance without presenting reviewed labels as raw predictions.</td>
+<td>Data-quality tests</td>
+</tr>
+<tr>
+<td>CENTRAL-007</td>
+<td style="text-align: right;">P1</td>
+<td>Configuration distribution MUST use immutable versioned packages, compatibility checks, staged activation, acknowledgement, and rollback.</td>
+<td>Distribution tests</td>
+</tr>
+<tr>
+<td>CENTRAL-008</td>
+<td style="text-align: right;">P1</td>
+<td>Media storage MUST use a filesystem abstraction or S3-compatible object storage with database metadata and integrity checks.</td>
+<td>Storage integration tests</td>
+</tr>
+<tr>
+<td>CENTRAL-009</td>
+<td style="text-align: right;">P0</td>
+<td>Central unavailability MUST NOT change or block an edge inspection decision.</td>
+<td>Outage test</td>
+</tr>
+<tr>
+<td>CENTRAL-010</td>
+<td style="text-align: right;">P2</td>
+<td>Future model package distribution MAY share the versioned distribution mechanism after signing/approval requirements are validated.</td>
+<td>Release qualification</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-data-and-upload-requirements">5. Data and Upload Requirements<a class="headerlink" href="#5-data-and-upload-requirements" title="Permanent link">&para;</a></h2>
+<h3 id="51-common-inspection-record">5.1 Common Inspection Record<a class="headerlink" href="#51-common-inspection-record" title="Permanent link">&para;</a></h3>
+<p>Each inspection MUST include a globally unique inspection ID generated at the edge; device ID; inspection start/end timestamps; barcode value and read status where available; resolved product type and resolution source; final business result; internal decision state; detected, missing, and low-confidence components; per-component aggregate evidence; product box and ROI mapping; frame-quality summary; product-detector model, component-detector model, rule, and product-configuration versions; reason codes; media references and checksums; and upload status.</p>
+<h3 id="52-upload-profile">5.2 Upload Profile<a class="headerlink" href="#52-upload-profile" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Outcome</th>
+<th>Required central payload</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OK</code></td>
+<td>Metadata, barcode, product type, decision, component/confidence summary, versions, device/time, one representative key frame</td>
+</tr>
+<tr>
+<td><code>NG</code></td>
+<td>Full metadata, missing/low-confidence components, multiple key frames, annotated key frame, product ROI, optional event clip, relevant errors</td>
+</tr>
+<tr>
+<td>System exception</td>
+<td>Exception type, device/camera state, relevant image where available, bounded log excerpt, timestamp</td>
+</tr>
+</tbody>
+</table>
+<p>Every video frame MUST NOT be uploaded. Complete or rolling local video MAY be retained when required by an approved policy. Exact counts, formats, and retention periods are configuration decisions requiring validation.</p>
+<h2 id="6-quality-attributes">6. Quality Attributes<a class="headerlink" href="#6-quality-attributes" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th style="text-align: right;">Priority</th>
+<th>Requirement</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QA-001</td>
+<td style="text-align: right;">P0</td>
+<td>Offline inspection MUST continue for the validated outage duration, bounded by local storage capacity.</td>
+<td>Soak/outage test</td>
+</tr>
+<tr>
+<td>QA-002</td>
+<td style="text-align: right;">P0</td>
+<td>Inspection and upload state MUST survive container restart and host reboot without duplicate business decisions.</td>
+<td>Restart tests</td>
+</tr>
+<tr>
+<td>QA-003</td>
+<td style="text-align: right;">P0</td>
+<td>All mutable operational configuration MUST be versioned, validated before activation, and attributable to an actor or source.</td>
+<td>Audit tests</td>
+</tr>
+<tr>
+<td>QA-004</td>
+<td style="text-align: right;">P0</td>
+<td>Logs MUST be structured and correlate by device ID, inspection ID, upload task ID, request ID, and active versions as applicable.</td>
+<td>Observability tests</td>
+</tr>
+<tr>
+<td>QA-005</td>
+<td style="text-align: right;">P0</td>
+<td>Disk monitoring MUST warn before exhaustion and apply safe, deterministic cleanup policy; disk-full MUST not yield <code>OK</code> when mandatory evidence cannot be committed.</td>
+<td>Disk-full tests</td>
+</tr>
+<tr>
+<td>QA-006</td>
+<td style="text-align: right;">P0</td>
+<td>Clock health and central receive time MUST be recorded so clock drift is detectable; ordering MUST not rely only on wall-clock time.</td>
+<td>Clock-skew tests</td>
+</tr>
+<tr>
+<td>QA-007</td>
+<td style="text-align: right;">P1</td>
+<td>APIs MUST use schema validation, bounded payloads, pagination, documented errors, and generated OpenAPI contracts.</td>
+<td>Contract/security tests</td>
+</tr>
+<tr>
+<td>QA-008</td>
+<td style="text-align: right;">P1</td>
+<td>Runtime services MUST use health checks, restart policies, persistent volumes, environment configuration, non-root containers, and read-only filesystems where practical.</td>
+<td>Deployment inspection</td>
+</tr>
+<tr>
+<td>QA-009</td>
+<td style="text-align: right;">P1</td>
+<td>Performance acceptance MUST measure average/P95 latency and throughput against observed line timing rather than an invented target.</td>
+<td>Load/acceptance tests</td>
+</tr>
+<tr>
+<td>QA-010</td>
+<td style="text-align: right;">P1</td>
+<td>Access to central administration, configuration, review, and evidence MUST be role-authorized and audited.</td>
+<td>Authorization tests</td>
+</tr>
+<tr>
+<td>QA-011</td>
+<td style="text-align: right;">P1</td>
+<td>Edge and central implementations MUST use Python 3.12 and the Web applications MUST use Vue 3 with TypeScript under the approved technology baseline.</td>
+<td>Build inspection</td>
+</tr>
+<tr>
+<td>QA-012</td>
+<td style="text-align: right;">P1</td>
+<td>Tests and evaluation MUST report NG recall, false-negative/positive rates, per-component/product recall, acquisition stages, barcode success, latency, throughput, upload delay, and review/correction rates.</td>
+<td>Release report</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-scope-requirements-by-horizon">7. Scope Requirements by Horizon<a class="headerlink" href="#7-scope-requirements-by-horizon" title="Permanent link">&para;</a></h2>
+<h3 id="71-two-day-mvp">7.1 Two-Day MVP<a class="headerlink" href="#71-two-day-mvp" title="Permanent link">&para;</a></h3>
+<p>Applicable requirements are BR-002, BR-003, EDGE-005 through EDGE-008, EDGE-010, and the trace fields that can be populated for static images. The MVP uses folder input and output files; it does not claim EDGE-001 through EDGE-004 or operational durability.</p>
+<h3 id="72-one-month-target">7.2 One-Month Target<a class="headerlink" href="#72-one-month-target" title="Permanent link">&para;</a></h3>
+<p>The target implements the remaining edge requirements, initial central requirements, local/central persistence, selected media upload, basic dashboards, Compose deployment, and resilience/evaluation tests. Features may remain demonstration-grade until their validation criteria are met.</p>
+<h3 id="73-production-target">7.3 Production Target<a class="headerlink" href="#73-production-target" title="Permanent link">&para;</a></h3>
+<p>All P0 and applicable P1 requirements must have objective evidence. Release additionally requires customer-agreed thresholds, operational runbooks, security review, recovery/soak testing, accepted retention, package rollback, and cautious human-in-the-loop rollout.</p>
+<h3 id="74-future">7.4 Future<a class="headerlink" href="#74-future" title="Permanent link">&para;</a></h3>
+<p>P2 requirements and integrations are separately approved. Kubernetes, automated retraining, Tauri packaging, PLC/MES integration, and edge PostgreSQL are not default production dependencies.</p>
+<h2 id="8-constraints-and-non-requirements">8. Constraints and Non-Requirements<a class="headerlink" href="#8-constraints-and-non-requirements" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The edge deployment MUST NOT depend on Kubernetes; the central design remains Docker Compose friendly.</li>
+<li>AssemblyVision does not guarantee 100% accuracy or near-zero missed NG cases without measured evidence.</li>
+<li>The design does not assume exact camera/scanner vendors, GPU, OS, barcode standard, conveyor speed, network availability, component classes, retention period, server location, or acceptance threshold.</li>
+<li>The main dashboard will not use Tkinter, PyQt, or PySide. A future lightweight desktop wrapper may host the local Web application.</li>
+<li><code>.pyc</code> files and Docker images reduce casual source browsing but are not anti-reverse-engineering or source-security boundaries.</li>
+<li>Training data, notebooks, production runtime data, and long-term secrets MUST NOT be included in client runtime images.</li>
+</ul>
+<h2 id="9-open-questions-and-validation-required">9. Open Questions and Validation Required<a class="headerlink" href="#9-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ol>
+<li>What exact thresholds, confidence policies, and required evidence qualify each component as present?</li>
+<li>Is <code>UNCERTAIN</code> exposed to operators or only retained internally while business output remains <code>NG</code>?</li>
+<li>Which edge operations require authentication in the one-month target?</li>
+<li>Which metadata/media are mandatory for a locally committed result when storage is degraded?</li>
+<li>What outage duration and disk reserve must the edge support?</li>
+<li>What authorization, audit retention, encryption, and data residency obligations apply centrally?</li>
+<li>What measurable performance and acceptance thresholds will be agreed from baseline data?</li>
+<li>The authoritative unresolved list is <a href="../appendices/#3-global-open-questions">Global Open Questions</a>.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

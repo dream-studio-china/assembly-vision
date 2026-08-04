@@ -1,0 +1,3012 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/design/15-rest-api-and-events/">
+      
+      
+        <link rel="prev" href="../14-data-model-and-database/">
+      
+      
+        <link rel="next" href="../16-edge-dashboard/">
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>REST API 与事件 - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#15-rest-api-and-events" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              REST API 与事件
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    原始需求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构设计
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构设计
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设计索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    封面与状态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    简介
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    需求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 检测流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    相机与图像采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    产品检测与 ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组件检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规则引擎
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    本地存储与保留
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    上传与同步
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型与数据库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API 与事件
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API 与事件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#151-contract-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.1 契约原则
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#152-common-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2 常见行为
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.2 常见行为">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1521-authentication-and-authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.1 认证和授权
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1522-idempotency-and-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.2 幂等性和并发性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1523-pagination-and-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.3 分页和过滤
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#153-edge-api-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3 边缘 API 组
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.3 边缘 API 组">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1531-runtime-camera-and-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.1 运行时、相机和健康状况
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1532-local-inspections-and-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.2 当地检查和媒体
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.3 上传队列和配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#154-central-api-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4 中央 API 组
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.4 中央 API 组">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1541-identity-fleet-and-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.1 身份、车队和事件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1542-inspection-ingestion-and-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.2 检查摄入和历史记录
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1543-review-products-rules-and-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.3 审查、产品、规则和模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1544-dashboards-reports-users-and-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.4 仪表板、报告、用户和审计
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#155-rest-and-websocket-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.5 REST 和 WebSocket 边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#156-event-envelope-and-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.6 事件包络和演化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#157-failure-handling-and-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.7 故障处理和限制
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#158-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.8 未解决的问题和需要验证
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心管理看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo 与代码组织
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    训练与评估
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署与运维
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全与源码分发
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试与质量保证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    可观测性与支持
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    人在回路
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    客户验收
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    风险与缓解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构决策
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构决策
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001：边缘优先检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002：Python 后端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003：Vue 3 与 TypeScript 前端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004：两阶段检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005：本地优先存储与延迟上传
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006：REST 与 WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007：Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008：Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009：静态图像优先 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调研
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    调研
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工业检测成功率
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO 能力与成功率
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    成像流程与训练成本
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#151-contract-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.1 契约原则
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#152-common-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2 常见行为
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.2 常见行为">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1521-authentication-and-authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.1 认证和授权
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1522-idempotency-and-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.2 幂等性和并发性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1523-pagination-and-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2.3 分页和过滤
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#153-edge-api-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3 边缘 API 组
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.3 边缘 API 组">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1531-runtime-camera-and-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.1 运行时、相机和健康状况
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1532-local-inspections-and-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.2 当地检查和媒体
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.3 上传队列和配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#154-central-api-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4 中央 API 组
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15.4 中央 API 组">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1541-identity-fleet-and-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.1 身份、车队和事件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1542-inspection-ingestion-and-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.2 检查摄入和历史记录
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1543-review-products-rules-and-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.3 审查、产品、规则和模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1544-dashboards-reports-users-and-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.4.4 仪表板、报告、用户和审计
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#155-rest-and-websocket-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.5 REST 和 WebSocket 边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#156-event-envelope-and-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.6 事件包络和演化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#157-failure-handling-and-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.7 故障处理和限制
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#158-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.8 未解决的问题和需要验证
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="15-rest-api-and-events">15.REST API 和事件<a class="headerlink" href="#15-rest-api-and-events" title="Permanent link">&para;</a></h1>
+<h2 id="151-contract-principles">15.1 契约原则<a class="headerlink" href="#151-contract-principles" title="Permanent link">&para;</a></h2>
+<p>AssemblyVision 公开独立的 <code>/api/v1</code> 边缘和中央 API。 REST 处理命令、持久资源、历史查询和重新连接快照。 WebSocket 承载低延迟瞬时通知；检查执行或持久同步不需要它。</p>
+<p>模式在 <a href="../14-data-model-and-database/">Data Model and Database</a> 中定义。 UI 消费者在 <a href="../16-edge-dashboard/">Edge Dashboard</a> 和 <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a> 中描述。</p>
+<p>所有 JSON 均使用 UTF-8、snake_case 字段、ISO 8601 UTC 时间戳、UUID 字符串和 <code>application/problem+json</code> 错误。问题响应包括<code>type</code>、<code>title</code>、<code>status</code>、<code>detail</code>、<code>code</code>、<code>request_id</code>和可选字段<code>errors</code>。</p>
+<h2 id="152-common-behavior">15.2 常见行为<a class="headerlink" href="#152-common-behavior" title="Permanent link">&para;</a></h2>
+<h3 id="1521-authentication-and-authorization">15.2.1 认证和授权<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Edge UI 请求源自本地管理网络。 MVP 可以使用本地操作员会话，但改变路由需要 <code>operator</code> 或 <code>edge_admin</code>；只读健康状况被故意限制。不要将 localhost 视为身份验证。</li>
+<li>设备到中心的调用使用相互验证的 TLS 或绑定到 <code>device_id</code> 的短期设备凭据。</li>
+<li>中央用户通过 OIDC 授权码和 PKCE 进行身份验证。 API 授权使用组织范围的角色：<code>viewer</code>、<code>reviewer</code>、<code>config_manager</code>、<code>fleet_admin</code> 和 <code>org_admin</code>。</li>
+<li>在发布短期下载 URL 之前检查媒体授权。</li>
+</ul>
+<h3 id="1522-idempotency-and-concurrency">15.2.2 幂等性和并发性<a class="headerlink" href="#1522-idempotency-and-concurrency" title="Permanent link">&para;</a></h3>
+<p><code>PUT</code> 和 <code>DELETE</code> 自然是幂等的。可重试的中央 <code>POST</code> 摄取请求需要 <code>Idempotency-Key</code>。服务器存储<code>(device_id, key, request_hash, response)</code>；相同的密钥/相同的散列重播结果，而相同的密钥/不同的散列返回<code>409 IDEMPOTENCY_CONFLICT</code>。管理更新将 <code>If-Match</code> 与 ETag/revision 结合使用，并在过时写入时返回 <code>412 REVISION_MISMATCH</code>。</p>
+<h3 id="1523-pagination-and-filtering">15.2.3 分页和过滤<a class="headerlink" href="#1523-pagination-and-filtering" title="Permanent link">&para;</a></h3>
+<p>历史记录端点使用带有 <code>limit</code> （默认 50，最大 200）和不透明 <code>cursor</code> 的键集分页。响应为<code>{items, next_cursor}</code>。过滤器是显式查询参数；游标绑定标准化过滤器集，如果与不同的过滤器重用，则游标会被拒绝。小型配置列表可以使用相同的信封而不带光标。</p>
+<h2 id="153-edge-api-groups">15.3 边缘 API 组<a class="headerlink" href="#153-edge-api-groups" title="Permanent link">&para;</a></h2>
+<p>在表中，<code>R</code> 表示经过身份验证的边缘查看器、<code>O</code> 操作员和 <code>A</code> 边缘管理员。分页下的<code>-</code>表示不适用。</p>
+<h3 id="1531-runtime-camera-and-health">15.3.1 运行时、相机和健康状况<a class="headerlink" href="#1531-runtime-camera-and-health" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法和终点</th>
+<th>目的</th>
+<th>请求/响应</th>
+<th>错误</th>
+<th>幂等性</th>
+<th>分页</th>
+<th>授权</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/health/live</code></td>
+<td>仅处理活性。</td>
+<td>无 / <code>{status}</code></td>
+<td><code>503</code> 仅在关机期间</td>
+<td>安全获取</td>
+<td>-</td>
+<td>未经身份验证，无内部结构</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/health/ready</code></td>
+<td>相机/模型/数据库准备就绪。</td>
+<td>无 / <code>DeviceStatus</code> 摘要</td>
+<td><code>503 NOT_READY</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/device/status</code></td>
+<td>完整的设备、磁盘、网络和队列状态。</td>
+<td>无 / <code>DeviceStatus</code></td>
+<td><code>503 STATUS_UNAVAILABLE</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/camera/state</code></td>
+<td>相机连接和拍摄设置，不包括机密。</td>
+<td>无 / <code>CameraState</code></td>
+<td><code>503 CAMERA_ADAPTER_ERROR</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/camera/reconnect</code></td>
+<td>请求重新连接受监控的摄像机。</td>
+<td><code>{reason}</code> / <code>OperationAccepted</code></td>
+<td><code>409 INSPECTION_ACTIVE</code>、<code>503 CAMERA_ADAPTER_ERROR</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>一个</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspection/state</code></td>
+<td>当前窗口和暂停/故障状态。</td>
+<td>无 / <code>InspectionRuntimeState</code></td>
+<td><code>503 STATE_UNAVAILABLE</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/inspection/pause</code></td>
+<td>停止打开新窗口；根据安全策略完成或中止当前窗口。</td>
+<td><code>{reason}</code> / <code>InspectionRuntimeState</code></td>
+<td><code>409 ALREADY_PAUSED</code>、<code>503 CONTROL_ERROR</code></td>
+<td>重复期望的状态成功</td>
+<td>-</td>
+<td>哦</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/inspection/resume</code></td>
+<td>准备就绪检查后恢复。</td>
+<td><code>{reason}</code> / <code>InspectionRuntimeState</code></td>
+<td><code>409 PRECONDITION_FAILED</code>、<code>503 CONTROL_ERROR</code></td>
+<td>重复期望的状态成功</td>
+<td>-</td>
+<td>哦</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1532-local-inspections-and-media">15.3.2 当地检查和媒体<a class="headerlink" href="#1532-local-inspections-and-media" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法和终点</th>
+<th>目的</th>
+<th>请求/响应</th>
+<th>错误</th>
+<th>幂等性</th>
+<th>分页</th>
+<th>授权</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/inspections</code></td>
+<td>查询最近的本地检查。</td>
+<td>查询：结果、条形码、产品、从/到、光标、限制 / <code>Page[InspectionSummary]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}</code></td>
+<td>返回完整的本地结果/证据。</td>
+<td>路径 UUID / <code>InspectionRecord</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}/media</code></td>
+<td>列出可用/已清除的媒体元数据。</td>
+<td>可选种类 / <code>list[MediaMetadata]</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/media/{media_id}/content</code></td>
+<td>流式传输本地图像或剪辑并支持范围。</td>
+<td><code>Range</code> 可选 / 字节</td>
+<td><code>404 MEDIA_NOT_FOUND</code>、<code>410 MEDIA_PURGED</code>、<code>416 INVALID_RANGE</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1533-upload-queue-and-configuration">15.3.3 上传队列和配置<a class="headerlink" href="#1533-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法和终点</th>
+<th>目的</th>
+<th>请求/响应</th>
+<th>错误</th>
+<th>幂等性</th>
+<th>分页</th>
+<th>授权</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/uploads</code></td>
+<td>按状态/种类检查队列。</td>
+<td>查询过滤器/光标/ <code>Page[UploadTask]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/uploads/{task_id}/retry</code></td>
+<td>将失败/死信任务移至到期状态。</td>
+<td><code>{reason}</code> / <code>UploadTask</code></td>
+<td><code>404 TASK_NOT_FOUND</code>、<code>409 TASK_ACTIVE</code></td>
+<td><code>Idempotency-Key</code>；重复返回相同状态</td>
+<td>-</td>
+<td>哦</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/configuration/effective</code></td>
+<td>有效的配置加上源/修订/校验和。</td>
+<td>无 / <code>EffectiveConfiguration</code></td>
+<td><code>503 CONFIG_UNAVAILABLE</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>PUT /api/v1/configuration/local-overrides</code></td>
+<td>替换允许的站点本地覆盖。</td>
+<td><code>If-Match</code>、<code>LocalOverrides</code> / 新修订版</td>
+<td><code>400 INVALID_CONFIG</code>、<code>403 MANAGED_FIELD</code>、<code>412 REVISION_MISMATCH</code></td>
+<td>幂等替代</td>
+<td>-</td>
+<td>一个</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/configuration/validate</code></td>
+<td>无需激活即可验证。</td>
+<td><code>ConfigurationCandidate</code> / <code>ValidationResult</code></td>
+<td><code>422 VALIDATION_FAILED</code></td>
+<td>确定性</td>
+<td>-</td>
+<td>一个</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/logs</code></td>
+<td>有界结构化服务日志查询。</td>
+<td>级别/组件/从/到/光标 / <code>Page[LogEvent]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>一个</td>
+</tr>
+</tbody>
+</table>
+<h2 id="154-central-api-groups">15.4 中央 API 组<a class="headerlink" href="#154-central-api-groups" title="Permanent link">&para;</a></h2>
+<p>角色缩写为 <code>V</code> 查看者、<code>R</code> 审阅者、<code>C</code> 配置管理员、<code>F</code> 队列管理员、<code>O</code> 组织管理员和 <code>D</code> 注册设备。</p>
+<h3 id="1541-identity-fleet-and-events">15.4.1 身份、车队和事件<a class="headerlink" href="#1541-identity-fleet-and-events" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法和终点</th>
+<th>目的</th>
+<th>请求/响应</th>
+<th>错误</th>
+<th>幂等性</th>
+<th>分页</th>
+<th>授权</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/auth/me</code></td>
+<td>返回用户、组织和有效权限。</td>
+<td>会话/令牌 / <code>CurrentUser</code></td>
+<td><code>401 UNAUTHENTICATED</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>任何用户</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/sites</code></td>
+<td>列出授权站点和线路。</td>
+<td>查询游标 / <code>Page[Site]</code></td>
+<td><code>403 FORBIDDEN</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/lines</code></td>
+<td>列出/过滤生产线。</td>
+<td>站点/光标 / <code>Page[ProductionLine]</code></td>
+<td><code>404 SITE_NOT_FOUND</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/devices</code></td>
+<td>按站点/线路/州/最后查看的车队查询。</td>
+<td>过滤器/光标 / <code>Page[DeviceSummary]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/devices</code></td>
+<td>注册设备并颁发一次性引导材料。</td>
+<td><code>DeviceCreate</code> / <code>DeviceEnrollment</code></td>
+<td><code>409 DEVICE_CODE_EXISTS</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>F</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/devices/{device_id}</code></td>
+<td>设备详细信息、分配、版本和运行状况。</td>
+<td>路径 UUID / <code>DeviceDetail</code></td>
+<td><code>404 DEVICE_NOT_FOUND</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>PATCH /api/v1/devices/{device_id}</code></td>
+<td>更改线路分配、标签或所需状态。</td>
+<td><code>If-Match</code>、<code>DevicePatch</code> / <code>DeviceDetail</code></td>
+<td><code>409 INVALID_STATE</code>、<code>412 REVISION_MISMATCH</code></td>
+<td>幂等域</td>
+<td>-</td>
+<td>F</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/device-events:batch</code></td>
+<td>摄取有界有序事件批次。</td>
+<td><code>DeviceEventBatch</code> / 每件商品的收据</td>
+<td><code>400 BATCH_TOO_LARGE</code>、<code>409 ID_CONFLICT</code></td>
+<td><code>Idempotency-Key</code> 加上事件 ID</td>
+<td>-</td>
+<td>d</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/system-events</code></td>
+<td>查询中心/设备事件。</td>
+<td>设备/严重性/代码/时间/光标/页面</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>V</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1542-inspection-ingestion-and-history">15.4.2 检查摄入和历史记录<a class="headerlink" href="#1542-inspection-ingestion-and-history" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法和终点</th>
+<th>目的</th>
+<th>请求/响应</th>
+<th>错误</th>
+<th>幂等性</th>
+<th>分页</th>
+<th>授权</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /api/v1/inspection-uploads</code></td>
+<td>摄取一份最终检查和组件证据。</td>
+<td><code>InspectionRecord</code> / <code>UploadReceipt</code></td>
+<td><code>409 VERSION_UNKNOWN</code>、<code>409 PAYLOAD_CONFLICT</code>、<code>422 INVALID_EVIDENCE</code></td>
+<td>所需密钥；检查ID和设备序列也是唯一的</td>
+<td>-</td>
+<td>d</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/media-uploads:initiate</code></td>
+<td>验证元数据并创建上传目标/会话。</td>
+<td><code>MediaUploadInitiate</code> / 目标或已经存在的收据</td>
+<td><code>409 INSPECTION_UNKNOWN</code>、<code>413 MEDIA_TOO_LARGE</code>、<code>415 TYPE_NOT_ALLOWED</code></td>
+<td>所需密钥；源媒体ID唯一</td>
+<td>-</td>
+<td>d</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/media-uploads/{upload_id}/complete</code></td>
+<td>验证上传的对象大小/校验和并将其附加。</td>
+<td><code>{sha256, size_bytes}</code> / <code>MediaMetadata</code></td>
+<td><code>409 CHECKSUM_MISMATCH</code>、<code>410 UPLOAD_EXPIRED</code></td>
+<td>重复完成返回经过验证的资源</td>
+<td>-</td>
+<td>d</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections</code></td>
+<td>跨设备历史搜索。</td>
+<td>组织范围过滤器/光标 / <code>Page[InspectionSummary]</code></td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}</code></td>
+<td>结果、组件、版本、媒体、最新评论。</td>
+<td>路径 UUID / <code>CentralInspectionDetail</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}/media</code></td>
+<td>授权媒体元数据和短期 URL。</td>
+<td>种类可选/列表</td>
+<td><code>404</code>、<code>410 MEDIA_PURGED</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>V</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1543-review-products-rules-and-models">15.4.3 审查、产品、规则和模型<a class="headerlink" href="#1543-review-products-rules-and-models" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法和终点</th>
+<th>目的</th>
+<th>请求/响应</th>
+<th>错误</th>
+<th>幂等性</th>
+<th>分页</th>
+<th>授权</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/reviews/queue</code></td>
+<td>待处理的 NG/不确定审核工作清单。</td>
+<td>产品/设备/原因/光标/页面</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/inspections/{id}/reviews</code></td>
+<td>追加审查修订。</td>
+<td><code>If-Match</code>、<code>ReviewCreate</code> / <code>ReviewRecord</code></td>
+<td><code>409 REVIEW_CONFLICT</code>、<code>422 INVALID_CORRECTION</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/products</code></td>
+<td>产品和活动版本列表。</td>
+<td>状态/搜索/光标/页面</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/products</code></td>
+<td>创建稳定的产品标识。</td>
+<td><code>ProductCreate</code> / <code>Product</code></td>
+<td><code>409 PRODUCT_CODE_EXISTS</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/products/{id}/versions</code></td>
+<td>创建草稿产品版本。</td>
+<td><code>ProductConfigurationDraft</code> / 版本</td>
+<td><code>409 VERSION_EXISTS</code>、<code>422 INVALID_COMPONENT</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/product-versions/{id}/publish</code></td>
+<td>验证并不可更改地发布。</td>
+<td><code>{reason}</code> / <code>ProductConfiguration</code></td>
+<td><code>409 ALREADY_PUBLISHED</code>、<code>422 INVALID_CONFIG</code></td>
+<td>重复发布返回已发布资源</td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/rules</code></td>
+<td>列出稳定的规则和版本。</td>
+<td>产品/状态/光标/页面</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/rules/{id}/versions</code></td>
+<td>创建规则草案。</td>
+<td><code>RuleConfigurationDraft</code> /草稿</td>
+<td><code>422 INVALID_POLICY</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/rule-versions/{id}/publish</code></td>
+<td>模型/产品兼容性验证后发布。</td>
+<td><code>{reason}</code> / <code>RuleConfiguration</code></td>
+<td><code>409 INCOMPATIBLE_VERSION</code>、<code>422 INVALID_POLICY</code></td>
+<td>重复发布成功</td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/models</code></td>
+<td>列出模型包/版本和生命周期状态。</td>
+<td>任务/状态/光标/页面</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/models/{id}/versions</code></td>
+<td>注册清单和暂存工件。</td>
+<td><code>ModelManifestCreate</code> / 版本/上传目标</td>
+<td><code>409 VERSION_EXISTS</code>、<code>422 INVALID_MANIFEST</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/model-versions/{id}/publish</code></td>
+<td>验证工件并发布版本。</td>
+<td><code>{reason}</code> / <code>ModelManifest</code></td>
+<td><code>409 CHECKSUM_MISMATCH</code>、<code>422 EVALUATION_REQUIRED</code></td>
+<td>重复发布成功</td>
+<td>-</td>
+<td>C</td>
+</tr>
+<tr>
+<td><code>PUT /api/v1/devices/{id}/desired-configuration</code></td>
+<td>分配版本化配置包。</td>
+<td><code>If-Match</code>、<code>DesiredConfiguration</code> / 作业</td>
+<td><code>409 INCOMPATIBLE_BUNDLE</code>、<code>412 REVISION_MISMATCH</code></td>
+<td>幂等替代</td>
+<td>-</td>
+<td>F</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1544-dashboards-reports-users-and-audit">15.4.4 仪表板、报告、用户和审计<a class="headerlink" href="#1544-dashboards-reports-users-and-audit" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法和终点</th>
+<th>目的</th>
+<th>请求/响应</th>
+<th>错误</th>
+<th>幂等性</th>
+<th>分页</th>
+<th>授权</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/dashboard/summary</code></td>
+<td>用于明确时间/站点过滤器的聚合 KPI。</td>
+<td>从/到/站点/线路/产品/型号/规则 / <code>DashboardSummary</code></td>
+<td><code>400 INVALID_RANGE</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/dashboard/timeseries</code></td>
+<td>桶状结果、延迟和失败。</td>
+<td>过滤器，间隔 / <code>TimeSeries</code></td>
+<td><code>400 INVALID_INTERVAL</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>V</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/reports</code></td>
+<td>开始大型导出/报告作业。</td>
+<td><code>ReportRequest</code> / <code>JobAccepted</code></td>
+<td><code>413 RANGE_TOO_LARGE</code>、<code>422 INVALID_COLUMNS</code></td>
+<td><code>Idempotency-Key</code></td>
+<td>-</td>
+<td>V 拥有出口许可</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/reports/{job_id}</code></td>
+<td>轮询作业并获取过期的下载 URL。</td>
+<td>路径 UUID / <code>ReportStatus</code></td>
+<td><code>404 JOB_NOT_FOUND</code>、<code>410 EXPIRED</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>请求者或 O</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/users</code></td>
+<td>组织用户/角色列表。</td>
+<td>搜索/角色/光标/页面</td>
+<td><code>403 FORBIDDEN</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>哦</td>
+</tr>
+<tr>
+<td><code>PUT /api/v1/users/{id}/roles</code></td>
+<td>替换组织角色分配。</td>
+<td><code>If-Match</code>、<code>{role_ids}</code> / 用户</td>
+<td><code>400 LAST_ADMIN</code>、<code>412 REVISION_MISMATCH</code></td>
+<td>幂等替代</td>
+<td>-</td>
+<td>哦</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/audit-logs</code></td>
+<td>不可变的审计查询和导出源。</td>
+<td>演员/动作/资源/时间/光标/页面</td>
+<td><code>400 INVALID_FILTER</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>O/审计员</td>
+</tr>
+</tbody>
+</table>
+<h2 id="155-rest-and-websocket-boundary">15.5 REST 和 WebSocket 边界<a class="headerlink" href="#155-rest-and-websocket-boundary" title="Permanent link">&para;</a></h2>
+<p>REST 对于检查详细信息、队列状态、配置、命令、上传、审查和报告具有权威性。 WebSocket 传达某些内容发生了变化。重新连接的客户端总是刷新 REST 状态；它不能假设 WebSocket 流是完整的。</p>
+<table>
+<thead>
+<tr>
+<th>频道</th>
+<th>活动</th>
+<th>传递语义</th>
+<th>客户行动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>边缘 <code>WS /api/v1/ws/runtime</code></td>
+<td><code>device.status_changed</code>、<code>inspection.started</code>、<code>inspection.updated</code>、<code>inspection.completed</code>、<code>upload.changed</code>、<code>alert.raised</code>、<code>alert.cleared</code></td>
+<td>尽最大努力，按连接排序，有界缓冲区；缓慢的客户端断开连接</td>
+<td>应用暂时预览更新；在序列间隙重新获取资源</td>
+</tr>
+<tr>
+<td>中环 <code>WS /api/v1/ws/organization</code></td>
+<td><code>device.changed</code>、<code>inspection.received</code>、<code>review.changed</code>、<code>job.changed</code>、<code>configuration.assignment_changed</code></td>
+<td>授权过滤后尽力而为； MVP 中没有持久的重播</td>
+<td>无效/重新获取受影响的 REST 查询</td>
+</tr>
+</tbody>
+</table>
+<p>WebSocket 身份验证使用现有的安全会话 cookie 或通过 REST 获取的短期、单一用途票证。令牌不得出现在 URL 查询日志中。</p>
+<h2 id="156-event-envelope-and-evolution">15.6 事件包络和演化<a class="headerlink" href="#156-event-envelope-and-evolution" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;event_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inspection.completed&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;schema_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;occurred_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-08-04T10:12:31.442Z&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">&quot;source_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01988...&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">&quot;sequence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1842</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">&quot;correlation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;inspection_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;outcome&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NG&quot;</span><span class="p">}</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span>
+</code></pre></div>
+<p>事件有效负载故意较小。模式版本中允许添加字段；删除，意味着更改或类型更改需要新版本。未知的事件类型将被忽略并记录。心跳 ping/pong 是传输级别的； <code>DeviceStatus</code> 快照仍然是 REST 资源。</p>
+<h2 id="157-failure-handling-and-limits">15.7 故障处理和限制<a class="headerlink" href="#157-failure-handling-and-limits" title="Permanent link">&para;</a></h2>
+<ul>
+<li>返回 <code>429</code> 和 <code>Retry-After</code> 进行速率限制，并返回 <code>503</code> 和针对临时依赖失败的有限重试指导。</li>
+<li>限制请求主体、事件批次、媒体大小、过滤器范围和 WebSocket 消息/缓冲区大小。</li>
+<li>集中摄取<code>202</code>意味着接受异步验证，不完全持久，仅当响应明确包含接收状态时。正常检查元数据摄取应在 <code>201</code> 之前提交。</li>
+<li>切勿在没有幂等密钥的情况下自动重试非幂等调用。</li>
+<li>传播<code>X-Request-ID</code>；边缘上传尝试还携带检查和任务关联 ID。</li>
+<li>对大型媒体使用预签名对象上传；除非存储限制需要，否则不要通过 API Worker 代理视频。</li>
+</ul>
+<h2 id="158-open-questions-and-validation-required">15.8 未解决的问题和需要验证<a class="headerlink" href="#158-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>选择中央身份提供商和设备证书注册/轮换流程。</li>
+<li>确认边缘本地用户要求、会话超时和紧急暂停授权。</li>
+<li>根据测量的负载确认最大介质尺寸、批量大小、报告范围和 API 速率限制。</li>
+<li>决定中央WebSocket规模在单实例MVP之后是否需要Redis pub/sub。</li>
+<li>确认外部 MES/PLC 集成是否需要单独的凭据、端点或事件交付保证。</li>
+<li>验证客户网络中 WebSocket 的浏览器和反向代理支持。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

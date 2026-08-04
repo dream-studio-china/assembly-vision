@@ -1,0 +1,2694 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/research/01-industrial-inspection-success-rates/">
+      
+      
+        <link rel="prev" href="../../design/decisions/ADR-010-per-component-temporal-aggregation/">
+      
+      
+        <link rel="next" href="../02-yolo-capabilities-and-success-rates/">
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>工业检测成功率 - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#research-1-achieved-detection-success-rates-in-industrial-inspection-horizontal-comparison" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              工业检测成功率
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    原始需求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构设计
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构设计
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设计索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    封面与状态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    简介
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    需求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 检测流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    相机与图像采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    产品检测与 ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组件检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规则引擎
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    本地存储与保留
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    上传与同步
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型与数据库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API 与事件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心管理看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo 与代码组织
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    训练与评估
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署与运维
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全与源码分发
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试与质量保证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    可观测性与支持
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    人在回路
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    客户验收
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    风险与缓解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构决策
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构决策
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001：边缘优先检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002：Python 后端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003：Vue 3 与 TypeScript 前端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004：两阶段检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005：本地优先存储与延迟上传
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006：REST 与 WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007：Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008：Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009：静态图像优先 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调研
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    调研
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工业检测成功率
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工业检测成功率
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scope-and-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 范围和定义
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 参考数据集和基准（环境、大小、地面实况）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-reported-success-rates-by-industry-and-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 按行业和方法列出的成功率
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 按行业和方法列出的成功率">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-pcb-electronics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 PCB/电子
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-steel-metal-surface-defects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 钢材/金属表面缺陷
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-automotive-parts-assembly-assembly-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 汽车零部件装配/装配状态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-packaging-food-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 包装/食品检验
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-textile-fabric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 纺织/面料
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-pharmaceutical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 制药
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-general-industry-level-failure-statistics-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 一般行业级故障统计（上下文）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-consolidated-comparison-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 综合比较表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-what-real-world-success-rates-look-like-good-vs-constrained-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 现实世界的成功率是怎样的：良好条件与受限条件
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-implications-and-caveats-for-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. AssemblyVision 的含义和注意事项
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 开放式问题和需要验证
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO 能力与成功率
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    成像流程与训练成本
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scope-and-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 范围和定义
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 参考数据集和基准（环境、大小、地面实况）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-reported-success-rates-by-industry-and-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 按行业和方法列出的成功率
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 按行业和方法列出的成功率">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-pcb-electronics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 PCB/电子
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-steel-metal-surface-defects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 钢材/金属表面缺陷
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-automotive-parts-assembly-assembly-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 汽车零部件装配/装配状态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-packaging-food-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 包装/食品检验
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-textile-fabric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 纺织/面料
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-pharmaceutical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 制药
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-general-industry-level-failure-statistics-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 一般行业级故障统计（上下文）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-consolidated-comparison-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 综合比较表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-what-real-world-success-rates-look-like-good-vs-constrained-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 现实世界的成功率是怎样的：良好条件与受限条件
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-implications-and-caveats-for-assemblyvision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. AssemblyVision 的含义和注意事项
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 开放式问题和需要验证
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="research-1-achieved-detection-success-rates-in-industrial-inspection-horizontal-comparison">研究1：工业检测中的检测成功率（横向比较）<a class="headerlink" href="#research-1-achieved-detection-success-rates-in-industrial-inspection-horizontal-comparison" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>状态：AssemblyVision 项目的研究综合（边缘优先、两阶段工业装配检测）。
+编译日期：2026-08-04
+目的：跨行业、方法和条件，对与 AssemblyVision 相当的工业检测任务报告的检测成功率（召回率、精确度、准确度、F1、mAP）进行横向比较。
+始终遵循诚实惯例：<strong>实验室/基准数据与生产线报告明确分开</strong>；供应商或数据集报告的数字被标记为此类；估计值和有争议的数字已被标记。当某个号码不可用时，它被明确声明为不可用，而不是发明的。</p>
+</blockquote>
+<hr />
+<h2 id="1-scope-and-definitions">1. 范围和定义<a class="headerlink" href="#1-scope-and-definitions" title="Permanent link">&para;</a></h2>
+<p>本文档比较了与 AssemblyVision 任务类似的检查任务的<strong>实现的检测成功率</strong>：<strong>组装产品上组件的存在/完整性验证，由固定工业相机在受控照明下成像</strong>。</p>
+<p>最具可比性的已发表证据来自：</p>
+<ul>
+<li><strong>PCB/电子产品缺陷检测</strong>（密集、细小的特征；固定摄像头）</li>
+<li><strong>钢材、金属、玻璃、木材和纺织品的表面缺陷检测</strong>（固定线扫描）</li>
+<li><strong>装配验证和状态检测</strong>（汽车和工业手动装配）</li>
+<li><strong>包装/食品检验</strong>（计数和完整性检查）</li>
+<li><strong>金属铸造/焊接检查</strong>（孔隙、裂纹、夹杂物）</li>
+<li><strong>药品检验</strong>（直接公布的数字很少；仅邻近证据）</li>
+</ul>
+<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回）在 <code>docs/design/19-training-and-evaluation.md</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
+<hr />
+<h2 id="2-reference-datasets-and-benchmarks-environment-size-ground-truth">2. 参考数据集和基准（环境、大小、地面实况）<a class="headerlink" href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>数据集</th>
+<th>域名</th>
+<th>图片</th>
+<th>类别/缺陷</th>
+<th>环境条件</th>
+<th>地面真相</th>
+<th>链接</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NEU-DET</strong></td>
+<td>热轧带钢表面缺陷</td>
+<td>1,800 灰度，200x200 像素，300/类</td>
+<td>6：银纹、夹杂物、斑块、麻面、卷入氧化皮、划痕</td>
+<td>实验室从真实钢厂获得的蒸馏物；固定照明；单面取向</td>
+<td>边界框</td>
+<td>https://ieee-dataport.org/documents/neu-det； Kaggle：https://www.kaggle.com/datasets/kaustubhdikshit/neu-surface-defect-database</td>
+</tr>
+<tr>
+<td><strong>DAGM 2007</strong>（工业光学检测挑战）</td>
+<td>有纹理的工业零件；弱监督缺陷检测</td>
+<td>10 个数据集（6 个开发 + 4 个竞赛），每个 <strong>1,000 个无缺陷 + 150 个缺陷</strong>图像</td>
+<td>每个数据集一个缺陷类别；多种纹理模型</td>
+<td>人工生成但“类似于现实世界的问题”；一组中的图像非常相似</td>
+<td>弱椭圆标签；损失矩阵：假阴性成本是假阳性的 20 倍；合格总损失 &lt;= 200</td>
+<td>https://conferences.mpi-inf.mpg.de/dagm/2007/prizes.html</td>
+</tr>
+<tr>
+<td><strong>KolektorSDD</strong></td>
+<td>电气换向器表面裂纹（埋胶）</td>
+<td>399 张图像（52 张有缺陷，347 张正常）</td>
+<td>1 缺陷类别</td>
+<td>真实生产项目，“受控工业环境”，真实案例</td>
+<td>像素级（原始）；后来重新注释</td>
+<td>https://www.vicos.si/resources/kolektorsdd/</td>
+</tr>
+<tr>
+<td><strong>KolektorSDD2</strong></td>
+<td>与上面相同的域，更大</td>
+<td>3,336 张图像（356 张有缺陷，2,979 张正常）</td>
+<td>1个缺陷类别，394个标记对象；多种缺陷类型</td>
+<td>真实的生产项目，受控的工业环境；高度不平衡</td>
+<td>像素精确的实例注释；用于检测和分类的训练/测试分割</td>
+<td>https://www.vicos.si/resources/kolektorsdd2/</td>
+</tr>
+<tr>
+<td><strong>MVTec AD</strong></td>
+<td>15 个对象和纹理类别，包括瓶子、榛子、晶体管、金属螺母、电缆等</td>
+<td>&gt;5,000 张高分辨率图像</td>
+<td>73+ 缺陷类型； 5 个纹理 + 10 个对象类别</td>
+<td>“模拟现实世界的工业检查场景”；无监督异常检测基准；每类别无缺陷训练集</td>
+<td>像素级精确的异常注释；图像级和像素级评估</td>
+<td>https://www.mvtec.com/research-teaching/datasets/mvtec-ad</td>
+</tr>
+<tr>
+<td><strong>MVTec AD 2</strong></td>
+<td>先进的工业异常检测</td>
+<td>&gt;8,000 张高分辨率图像，8 个场景</td>
+<td>透明/重叠物体、暗场和背光、高方差法线、极小的缺陷； <strong>光照变化测试场景</strong></td>
+<td>旨在反映实际分配变化； SOTA 方法仍然<strong>低于 AU-PRO 平均值的 60%</strong></td>
+<td>评估服务器上保存的像素精确的地面实况</td>
+<td>https://arxiv.org/abs/2503.21622</td>
+</tr>
+<tr>
+<td><strong>铸造产品数据集</strong>（Kaggle、Ravirajsinh45）</td>
+<td>铸造产品表面质量（二元合格/不良）</td>
+<td>报告为约 7,348 张图像（约 5,198 张正常，约 2,150 张有缺陷），512x512</td>
+<td>二元分类（非本地化）</td>
+<td>拍摄铸件；不受控制的工作室条件；数据集报告的数字，引用前请验证</td>
+<td>文件夹级二进制标签</td>
+<td>https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product</td>
+</tr>
+<tr>
+<td><strong>AITEX / TILDA</strong>（纺织）</td>
+<td>织物疵点检测</td>
+<td>AITEX 通常被引用为约 245 个缺陷 + 140 个无缺陷图像（根据分布进行验证）；蒂尔达 7 班</td>
+<td>多种纺织品缺陷类型</td>
+<td>公共纺织品数据库；用于无监督织物异常检测研究</td>
+<td>像素/掩模或图像标签取决于版本</td>
+<td>请参阅使用 AITEX + TILDA + MVTec AD 进行的研究：https://arxiv.org/abs/2401.02287</td>
+</tr>
+<tr>
+<td><strong>PKU/DeepPCB 式公共 PCB 缺陷数据集</strong></td>
+<td>PCB制造缺陷（开路、短路、鼠咬、毛刺、针孔、杂铜、漏孔）</td>
+<td>常见版本中数千个裁剪的缺陷补丁（具体划分因版本而异）</td>
+<td>6 个主要缺陷类别</td>
+<td>重建/成像 PCB 显微照片；固定比例</td>
+<td>边界框</td>
+<td>通过论文引用：https://arxiv.org/abs/2507.02963 和 https://arxiv.org/abs/2507.17176</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>不确定性标志：</strong> 其中一些数字（尤其是投射图像计数和 AITEX 图像计数）在副本/镜像之间有所不同。它们被标记为“报告/验证”。 NEU-DET 和 KolektorSDD2 的数据在上述官方来源中是一致的。</p>
+</blockquote>
+<hr />
+<h2 id="3-reported-success-rates-by-industry-and-method">3. 按行业和方法列出的成功率<a class="headerlink" href="#3-reported-success-rates-by-industry-and-method" title="Permanent link">&para;</a></h2>
+<h3 id="31-pcb-electronics">3.1 PCB/电子<a class="headerlink" href="#31-pcb-electronics" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>项目/标杆</th>
+<th>方法</th>
+<th>条件</th>
+<th>数据集大小（训练）</th>
+<th>达到指标</th>
+<th>成本/计算说明</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VR-YOLO（基于YOLOv8的PCB缺陷检测）</td>
+<td>一阶段YOLOv8+场景多样性+关键物体聚焦</td>
+<td>原厂测试集</td>
+<td>没有摘要报道； PCB缺陷数据集</td>
+<td><strong>mAP 98.9%</strong>（原始测试）； <strong>94.7% mAP</strong>，视点移动（剪切 ±0.06，旋转 ±10 度）</td>
+<td>与基线 YOLO 相比，“额外的计算成本可以忽略不计”</td>
+<td>https://arxiv.org/abs/2507.02963</td>
+</tr>
+<tr>
+<td>多尺度YOLOv8 PCB（修剪、轻量级）</td>
+<td>YOLOv8 + Ghost-HGNetv2 主干、C2f-Faster 颈、GCDetect 头、Inner-MPDIoU 损失</td>
+<td>公共 PCB 缺陷数据集</td>
+<td>摘要未报道</td>
+<td><strong>mAP0.5 99.32%</strong>，<strong>mAP0.5:0.95 75.18%</strong>（比 YOLOv8n +10.13 pp）</td>
+<td>参数-光；自适应修剪； AP50 高于 AP50-95 表明小缺陷定位仍然困难</td>
+<td>https://arxiv.org/abs/2507.17176</td>
+</tr>
+<tr>
+<td>Roboflow 实时 PCB 检测演练</td>
+<td>RF-DETR Nano（变压器检测器）</td>
+<td>Forked Roboflow Universe PCB 数据集（6 类）</td>
+<td>“数百张带注释的图像”（如帖子中所述）</td>
+<td>测试集上的 <strong>mAP 0.99</strong></td>
+<td>置信阈值0.4；托管平台上的“培训需要几个小时”</td>
+<td>https://blog.roboflow.com/pcb-defect-detection/</td>
+</tr>
+<tr>
+<td>YOLOv8 谈半导体定向自组装 (DSA) 缺陷检测</td>
+<td>YOLOv8（以数据为中心的标签研究）</td>
+<td>六边形接触孔 DSA 图案的 SEM 图像</td>
+<td>采用新颖的标记方法构建的数据集</td>
+<td><strong>缺陷检测精度 &gt; 0.9 mAP</strong></td>
+<td>重点是标签质量，而不是计算</td>
+<td>https://arxiv.org/abs/2307.15516</td>
+</tr>
+</tbody>
+</table>
+<p><strong>阅读 AssemblyVision：</strong> PCB 结果显示，在具有一致照明的<strong>单一固定成像设置上，单级 YOLO 系列检测器通常可以达到 mAP50 ~0.98-0.99</strong> 对于明确定义的缺陷类别。但 VR-YOLO 结果（轻微视点变化下的 98.9 -&gt; 94.7 mAP）对于生产鲁棒性来说是更真实的数字；小的姿势/光线变化会显着降低准确性。</p>
+<h3 id="32-steel-metal-surface-defects">3.2 钢材/金属表面缺陷<a class="headerlink" href="#32-steel-metal-surface-defects" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>项目/标杆</th>
+<th>方法</th>
+<th>条件</th>
+<th>数据集</th>
+<th>达到指标</th>
+<th>笔记</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工业-YOLO（微调YOLOv8，边缘优化）</td>
+<td>YOLOv8 + TensorRT/OpenVINO</td>
+<td><strong>NEU-DET + MVTec AD + 定制汽车/电池缺陷图像基准；声称部署在活跃的汽车装配线上</strong></td>
+<td>NEU-DET、MVTec AD、自定义扩展</td>
+<td><strong>mAP 98.5%</strong>； <strong>&gt; NVIDIA Jetson Orin 上 120 FPS</strong></td>
+<td><strong>2026 年预印本，单组，未经同行评审；视为供应商/作者报告。</strong> NEU-DET 上的典型 YOLO 论文报告较低的 mAP (~70-80%)，具体取决于拆分； 98.5% 处于乐观状态，可能包括数据管理效应</td>
+<td>https://arxiv.org/abs/2606.07659</td>
+</tr>
+<tr>
+<td>NEU-DET 上典型的学术 YOLO 基线</td>
+<td>YOLOv5/v8 变体</td>
+<td>1,800 张图像的标准 70/30 分割</td>
+<td>1,800 张图像（1,260 张训练图像，标准 70% 分割）</td>
+<td>论文中报告的 mAP50 在 ~0.70-0.90 范围内； <strong>值随着分割和增强而变化很大</strong>（此处未复制以避免挑选）</td>
+<td>数据集小； 200x200 输入为低分辨率；结果是实验室结果，而非生产结果</td>
+<td>请参阅 NEU-DET 托管：https://ieee-dataport.org/documents/neu-det</td>
+</tr>
+<tr>
+<td>Kaggle 铸造产品（二进制）</td>
+<td>分类 CNN（许多公共内核）</td>
+<td>铸造产品的静态图像</td>
+<td>约 7,348 张图片</td>
+<td>公共内核通常报告二进制 OK/缺陷分割的准确度约为 0.97-0.99</td>
+<td>文件夹标签分类，不本地化；考虑到类别不平衡（~70/30），准确性在这里是一个很差的指标；数据集数字被“报告”</td>
+<td>https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>诚实的说明：</strong> 包含 Industrial-YOLO 摘要是为了完整性，但被标记为未经同行评审的预印本，具有异常高的 mAP；它不应该被用作规划锚点。对于规划，预计小缺陷数据集上 YOLO 类模型的 NEU-DET 风格基准 mAP50 在 <strong>0.75-0.90</strong> 范围内，并用实际分割进行验证。</p>
+</blockquote>
+<h3 id="33-automotive-parts-assembly-assembly-state">3.3 汽车零部件装配/装配状态<a class="headerlink" href="#33-automotive-parts-assembly-assembly-state" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>方法</th>
+<th>条件</th>
+<th>数据集</th>
+<th>达到指标</th>
+<th>笔记</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASDF - 装配状态检测（YOLOv8 + 6D 姿势后期融合）</td>
+<td>YOLOv8物体检测+姿态细化+Pose2State融合</td>
+<td>医疗/工业装配；遮挡和外观动态</td>
+<td>ASDF数据集+GBOT数据集</td>
+<td>优于“纯基于深度学习”的组装状态基线；更稳健的 6D 姿势； GBOT 击败混合和纯跟踪方法证明检测器 + 几何验证相结合优于单独使用检测器 - 与 AssemblyVision 的 ROI + 规则设计直接相关</td>
+<td>https://arxiv.org/abs/2403.16400</td>
+<td></td>
+</tr>
+<tr>
+<td>手动装配作业智能控制</td>
+<td>YOLOv8检测，多摄像头支架</td>
+<td>复制真实生产； 120 个不同速度的组件</td>
+<td>120 个组件（多级）</td>
+<td>分割/检测精度高；发现阶段时间偏差；统一效率指标提出</td>
+<td>阶段级跟踪而不是最终的 OK/NG；显示 YOLOv8 可以在受控支架中可靠地遵循组装步骤</td>
+<td>https://arxiv.org/abs/2401.10777</td>
+</tr>
+<tr>
+<td>工业-YOLO 汽车扩展</td>
+<td>微调 YOLOv8</td>
+<td>声称主动装配线部署</td>
+<td>定制汽车划痕/凹坑/夹杂物图像</td>
+<td>（参见 3.2；预印本级声明）</td>
+<td>视为未经验证</td>
+<td>https://arxiv.org/abs/2606.07659</td>
+</tr>
+</tbody>
+</table>
+<p><strong>通读：</strong>已发布的装配状态工作重点是<strong>检测正在发生哪个装配步骤</strong>，并一致报告添加几何/姿势验证比单独的检测改进了状态分类。 AssemblyVision 针对每个组件检测的确定性规则引擎采用相同的设计模式。</p>
+<h3 id="34-packaging-food-inspection">3.4 包装/食品检验<a class="headerlink" href="#34-packaging-food-inspection" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>方法</th>
+<th>条件</th>
+<th>数据集</th>
+<th>达到指标</th>
+<th>笔记</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Roboflow 缺失物品（瓶子计数）演练</td>
+<td>YOLO 物体检测，自上而下</td>
+<td>包装好的瓶子，固定摄像头；设计用于在检查侧面摄像头盖是否存在后运行建议为单个对象类使用约 25-50 个图像（根据教程）</td>
+<td>没有发布正式的 mAP；定性“正确数出 12 个瓶盖”</td>
+<td>证明<strong>简单的单类计数任务需要很少的数据</strong>；匹配 AssemblyVision 的存在检查模式</td>
+<td>https://blog.roboflow.com/missing-item-inspection/</td>
+<td></td>
+</tr>
+<tr>
+<td>MVTec AD 食品类别（例如榛子、饼干）</td>
+<td>无监督异常检测</td>
+<td>基准实验室图像</td>
+<td>5,000 多个 MVTec AD 图像的一部分</td>
+<td>MVTec AD 图像级 AU-ROC 对于 SOTA 方法来说很高且饱和（~高 90 秒），但 AD2 显示了更困难的现实世界差距（参见 3.6）</td>
+<td>不是 YOLO 计数结果；包含在内是为了完整性</td>
+<td>https://www.mvtec.com/research-teaching/datasets/mvtec-ad； https://arxiv.org/abs/2503.21622</td>
+</tr>
+</tbody>
+</table>
+<h3 id="35-textile-fabric">3.5 纺织/面料<a class="headerlink" href="#35-textile-fabric" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>方法</th>
+<th>条件</th>
+<th>数据集</th>
+<th>达到指标</th>
+<th>笔记</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>逆向知识蒸馏织物异常检测</td>
+<td>师生蒸馏（无监督）</td>
+<td>织物异常检测、图案纹理</td>
+<td>MVTec AD + AITEX + TILDA + 新的纺织厂数据集</td>
+<td>每个纹理基准报告的指标（参见纸质表）；没有单一的标题数字</td>
+<td>演示当缺陷标签稀缺时使用的<strong>无监督异常检测路线</strong>；工业织物检验经常使用这种方法，而不是监督 YOLO</td>
+<td>https://arxiv.org/abs/2401.02287</td>
+</tr>
+</tbody>
+</table>
+<h3 id="36-pharmaceutical">3.6 制药<a class="headerlink" href="#36-pharmaceutical" title="Permanent link">&para;</a></h3>
+<p><strong>没有找到可靠、可引用的公共生产召回/精确度数据用于人工智能药品视觉检查（小瓶/安瓿/注射器完整性或颗粒检测）。</strong> 相关证据：</p>
+<ul>
+<li>MVTec AD 2 包括透明物体场景（与安瓿/小瓶相关）并报告 SOTA 异常检测低于 60% AU-PRO (https://arxiv.org/abs/2503.21622)。</li>
+<li>药品检验主要由供应商 AOI 系统（Cognex、Omron 等）主导，这些系统不发布召回编号。 https://www.cognex.com/what-is/machine-vision 描述了检测功能，但没有量化的准确性。</li>
+</ul>
+<p><strong>这是一个明确的数据差距。</strong> AssemblyVision 不得假设存在公布的药品费率；计划生成自己的验收数据。</p>
+<h3 id="37-general-industry-level-failure-statistics-context">3.7 一般行业级故障统计（上下文）<a class="headerlink" href="#37-general-industry-level-failure-statistics-context" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>~77% 的制造业视觉人工智能实施从未通过试点</strong>（Roboflow 总结的从业者访谈；归因于集成/流程问题，而不是模型失败）。 https://blog.roboflow.com/scale-a-computer-vision-pilot-to-product/</li>
+<li><strong>50-70% 的机器视觉项目因可预防的错误和技术疏忽而未能达到预期</strong>（康耐视引用的行业调查；供应商发布的统计数据，视为方向性）。 https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision-considerations-implementation</li>
+</ul>
+<hr />
+<h2 id="4-consolidated-comparison-table">4. 综合比较表<a class="headerlink" href="#4-consolidated-comparison-table" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>行业/任务</th>
+<th>方法家族</th>
+<th>条件</th>
+<th>典型报告指标（测试集）</th>
+<th>观察范围</th>
+<th>关键警告</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PCB缺陷检测</td>
+<td>YOLOv8 系列单级</td>
+<td>固定成像，基准数据集</td>
+<td>地图50</td>
+<td><strong>0.75 - 0.99</strong>（严格 mAP50-95 时为 75%；mAP50 时为 99%）</td>
+<td>mAP50-95 远低于 mAP50（75% vs 99%） - 小缺陷的定位是约束约束</td>
+<td>https://arxiv.org/abs/2507.17176； https://arxiv.org/abs/2507.02963</td>
+</tr>
+<tr>
+<td>PCB 缺陷检测、稳健性</td>
+<td>YOLOv8 + 增强</td>
+<td>轻微的视角转变</td>
+<td>地图</td>
+<td>98.9 -&gt; 94.7</td>
+<td>微小的姿势/灯光变化成本约为 4 pp</td>
+<td>https://arxiv.org/abs/2507.02963</td>
+</tr>
+<tr>
+<td>钢材表面缺陷</td>
+<td>NEU-DET 上的 YOLO 级</td>
+<td>实验室剧照，小图像</td>
+<td>地图50</td>
+<td>~0.70 - 0.90（典型论文）</td>
+<td>预印本声称 98.5% 不具有代表性</td>
+<td>https://ieee-dataport.org/documents/neu-det； https://arxiv.org/abs/2606.07659</td>
+</tr>
+<tr>
+<td>铸造（二进制）</td>
+<td>CNN 分类</td>
+<td>静态图像</td>
+<td>准确度</td>
+<td>~0.97-0.99（内核）</td>
+<td>准确性掩盖了类别不平衡；没有本地化</td>
+<td>https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product</td>
+</tr>
+<tr>
+<td>装配状态</td>
+<td>YOLOv8 + 姿态融合</td>
+<td>受控装配台</td>
+<td>与纯深度学习相比的相对改进</td>
+<td>“比纯深度学习基线更好”</td>
+<td>没有公开绝对召回；集成几何验证是胜利</td>
+<td>https://arxiv.org/abs/2403.16400； https://arxiv.org/abs/2401.10777</td>
+</tr>
+<tr>
+<td>包装完整性</td>
+<td>YOLO 计数</td>
+<td>固定相机，简单类</td>
+<td>定性</td>
+<td>“正确计数”演示</td>
+<td>非常小的数据就足够了（25-50 张图像）</td>
+<td>https://blog.roboflow.com/missing-item-inspection/</td>
+</tr>
+<tr>
+<td>纺织异常</td>
+<td>无监督蒸馏</td>
+<td>图案纹理</td>
+<td>每个基准指标</td>
+<td>参见论文</td>
+<td>标签稀缺时使用的无监督路线</td>
+<td>https://arxiv.org/abs/2401.02287</td>
+</tr>
+<tr>
+<td>通用异常检测</td>
+<td>SOTA 异常方法</td>
+<td>MVTec AD</td>
+<td>AU-PRO</td>
+<td>MVTec AD 饱和； <strong>MVTec AD2 上&lt;60%</strong></td>
+<td>更困难、更现实的场景揭示了巨大差距https://arxiv.org/abs/2503.21622</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-what-real-world-success-rates-look-like-good-vs-constrained-conditions">5. 现实世界的成功率是怎样的：良好条件与受限条件<a class="headerlink" href="#5-what-real-world-success-rates-look-like-good-vs-constrained-conditions" title="Permanent link">&para;</a></h2>
+<p><strong>良好的条件（典型的实验室到中试结果）：</strong></p>
+<ul>
+<li>固定相机、固定照明、一种产品类型、受控姿势、丰富的标记良好的数据、视觉上清晰的类别。</li>
+<li>YOLO 级检测器在此类设置上的已发布结果：<strong>mAP50 0.95-0.99</strong>（上述 PCB 论文；Roboflow PCB mAP 0.99）。</li>
+<li>对于单个视觉上不同的对象的 <strong>简单存在/计数</strong>：可用模型在<strong>数十个图像</strong>上进行训练（Roboflow 缺失项目教程：25-50 个图像）并成功部署。</li>
+</ul>
+<p><strong>约束条件（生产现实主义）：</strong></p>
+<ul>
+<li>轻微的视点/姿势变化：VR-YOLO 从 98.9 下降到 94.7 mAP (https://arxiv.org/abs/2507.02963)。</li>
+<li>照明和外观变化：MVTec AD 2 专门用于测试这一点，SOTA 方法得分 <strong>低于 60% AU-PRO</strong>，包括透明物体和暗场/背光场景 (https://arxiv.org/abs/2503.21622)。</li>
+<li>严重的类别不平衡和罕见缺陷：KolektorSDD2 有 356 个有缺陷的图像，而有 2,979 个正常图像（缺陷率 10.7%）（https://www.vicos.si/resources/kolektorsdd2/）；稀有类召回率是一个受到影响的指标，而小测试集使得在统计上无法观察到失误。</li>
+<li>弱/模糊标签：DAGM 的竞赛设计（FN 成本 20 倍 FP）表明，在行业中，漏检缺陷比误报要昂贵得多 - 获胜阈值是 <strong>4 个测试集的总损失 &lt;= 200</strong>，即，有效地接近零的可容忍漏报和有限的误报（https://conferences.mpi-inf.mpg.de/dagm/2007/prizes.html）。</li>
+<li>小物体/紧密定位：PCB mAP50-95 为 75.18%，而 mAP50 为 99.32%，这表明<strong>检测“有问题”比紧密定位要容易得多</strong> (https://arxiv.org/abs/2507.17176)。</li>
+</ul>
+<p><strong>AssemblyVision 的底线：</strong>已发布的证据支持在稳定成像下进行存在检查的高单帧检测置信度（mAP50 ~0.95+），但<strong>没有公共来源报告装配完整性的生产假阴性率</strong>。 AssemblyVision 的故障安全设计（对任何缺失/不确定的证据、时间聚合、人工审核的 NG）是对这种不确定性的正确响应，其接受阈值必须来自测量的客户数据，而不是来自这些基准数字。</p>
+<hr />
+<h2 id="6-implications-and-caveats-for-assemblyvision">6. AssemblyVision 的含义和注意事项<a class="headerlink" href="#6-implications-and-caveats-for-assemblyvision" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>mAP 不是生产召回率。</strong> 上述每个基准数字都是测试集平均值； AssemblyVision 的验收指标（NG 召回）必须使用排除的生产数据的固定阈值进行测量。</li>
+<li><strong>微小的姿势和光照变化在误差预算中占主导地位。</strong> 它们的预算（VR-YOLO -4pp；MVTec AD2 &lt;60% AU-PRO）。仅当监测漂移时，AssemblyVision 的固定摄像头 + 固定照明才有优势（请参阅<code>docs/design/07-camera-and-image-acquisition.md</code>）。</li>
+<li><strong>稀有等级和不平衡问题是常态。</strong> 预计NG案例只是少数；规划专用的物理捕获的缺失组件数据集（参见<code>docs/design/19-training-and-evaluation.md</code>）。</li>
+<li><strong>基准数据集不是目标分布。</strong> NEU-DET、MVTec AD 等与传送带不同（运动、振动、反射、条形码阴影）。仅将它们视为方法可行性证据。</li>
+<li><strong>行业失败统计数据</strong>（77% 的试点失速；50-70% 的项目未达到预期）是关于集成和流程，而不是探测器精度。 AssemblyVision 的边缘优先、离线功能设计和人机交互计划可解决这些特定的故障模式。</li>
+</ol>
+<hr />
+<h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>没有公共基准测量 <strong>NG 召回/组件存在（装配完整性）检查的误报率</strong>。 AssemblyVision 必须定义自己的接受数据集和置信界限（根据 <code>docs/design/19-training-and-evaluation.md</code>，观察到的零失误的二项式界限）。</li>
+<li>Kaggle 选角数据集数据（7,348 张图像；5,198 张正常/2,150 张有缺陷）是数据集页面报告的，如果用作参考，应重新验证。</li>
+<li>已发布的 PCB mAP 数字来自特定的公共数据集（分割各不相同）； VR-YOLO 和多尺度 PCB 论文使用的确切数据集和分割在引用它们作为锚点之前应该得到确认。</li>
+<li>药品目视检查不存在可靠的公众号；将该行业视为数据缺口。</li>
+<li>Industrial-YOLO 2026 预印本（mAP 98.5%，在 Jetson Orin 上 &gt;120 FPS）未经同行评审；在依赖其吞吐量声明进行边缘硬件预算之前确认或放弃。</li>
+<li>通过与 Ultralytics (https://docs.ultralytics.com/guides/data-collection-and-annotation/) 指南中的“每个类几百个对象就足以启动，每个类约 1,500 个图像/10,000 个实例来实现可靠的实际性能”进行比较，验证 AssemblyVision 自己的目标（300-800 个产品图像；300-500 个实例/组件）是否足够。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
