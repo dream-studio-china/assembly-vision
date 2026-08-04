@@ -2454,7 +2454,7 @@
 <tr>
 <td><code>local_inspections</code></td>
 <td><code>id</code> PK UUID、<code>device_id</code>、<code>sequence</code>、时间戳、条形码、产品/产品模型/组件模型/规则版本 ID、结果、原因 JSON、延迟</td>
-<td><code>UNIQUE(device_id, sequence)</code>;耐用的产品级结果和同步单元。</td>
+<td><code>UNIQUE(device_id, sequence)</code>；耐用的产品级结果和同步单元。</td>
 </tr>
 <tr>
 <td><code>local_detection_frames</code></td>
@@ -2494,7 +2494,7 @@
 <tr>
 <td><code>rule_installations</code></td>
 <td><code>rule_version_id</code> PK、产品版本 ID、文档 JSON、校验和、状态、安装/激活次数</td>
-<td>激活验证兼容的模型类和产品版本。</td>
+<td>激活验证兼容的型号类别和产品版本。</td>
 </tr>
 </tbody>
 </table>
@@ -2539,7 +2539,7 @@
 </tr>
 <tr>
 <td><code>users</code>、<code>roles</code>、<code>user_roles</code></td>
-<td>UUID 键、组织范围、身份主题、角色名称、连接行</td>
+<td>UUID 键、组织范围、身份主体、角色名称、连接行</td>
 <td>身份提供者主体唯一；赋值具有复合唯一性。</td>
 </tr>
 <tr>
@@ -2607,7 +2607,7 @@
     PRODUCTION_LINE ||--o{ DEVICE :运作
     ORGANIZATION ||--o{ USER :有
     USER ||--o{ USER_ROLE :收到
-    ROLE ||--o{ USER_ROLE :补助金
+    ROLE ||--o{ USER_ROLE :赠款
     ORGANIZATION ||--o{ PRODUCT :拥有
     PRODUCT ||--o{ PRODUCT_VERSION :版本
     PRODUCT_VERSION ||--o{ RULE_VERSION :检查者
@@ -2654,7 +2654,7 @@
 <li>存储参与者类型（<code>USER</code>、<code>DEVICE</code>、<code>SYSTEM</code>）、参与者 ID、操作、目标、删除机密的前后值、UTC 时间、请求 ID 和原因（如果需要）。</li>
 <li>已发布的产品、模型和规则版本是不可变的。更正创建新版本。</li>
 <li>评论是仅附加的修订。 UI 会预测最新修订版本，而所有修订版本仍可查询。</li>
-<li>审核行仅附加到应用程序角色。行政变更需要单独记录的操作程序。</li>
+<li>审计行仅附加到应用程序角色。行政变更需要单独记录的操作程序。</li>
 <li>根据客户政策，敏感条形码和身份数据必须在一般日志和导出中进行屏蔽。</li>
 </ul>
 <h2 id="1412-migration-and-recovery">14.12 迁移和恢复<a class="headerlink" href="#1412-migration-and-recovery" title="Permanent link">&para;</a></h2>
@@ -2667,7 +2667,7 @@
 <li>CI 验证每个文档并检查提交/生成的工件是否存在偏差。</li>
 <li><code>openapi-typescript</code> 或 Orval 生成 TypeScript 模式和客户端到 <code>packages/typescript/api-client/generated</code> 中；生成的文件不需手动编辑。</li>
 <li>前端包装器添加了身份验证和错误映射等传输问题，而无需重新定义有效负载。</li>
-<li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。重大架构更改需要版本化端点或协调发布。</li>
+<li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。破坏性架构更改需要版本化端点或协调发布。</li>
 <li>在需要时在前端边界添加日期时间和 UUID 运行时验证；单独生成的 TypeScript 类型并不能验证 JSON。</li>
 </ol>
 <p>OpenAPI 涵盖按名称引用的 REST 快照和 WebSocket 事件负载模式。由于 OpenAPI 没有完全描述 WebSocket 通道，因此事件信封从相同的 Pydantic 类导出为 JSON 模式，并针对前端验证器进行测试。</p>

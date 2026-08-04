@@ -2116,12 +2116,12 @@
     participant Window as 产品窗口管理器
     participant Vision as 愿景管道
     participant Aggregate as 时间聚合器
-    participant Rules as Rule Engine
+    participant Rules as 规则引擎
     participant Store as 本地存储
     participant Upload as 上传队列
     Sensor-&gt;&gt;Window:产品入驻活动
-    Window-&gt;&gt;Window:Create inspection and pin versions
-loop Until exit or timeout
+    Window-&gt;&gt;Window:创建检查和引脚版本
+loop 直到退出或超时
         Capture-&gt;&gt;Window:带时间戳的帧
         Window-&gt;&gt;Vision:相关框架
         Vision--&gt;&gt;Aggregate:每个组件的框架证据
@@ -2131,7 +2131,7 @@ loop Until exit or timeout
     Aggregate--&gt;&gt;Rules:每个所需组件的证据
     Rules--&gt;&gt;Store:OK 或 NG 以及原因代码
     Store--&gt;&gt;Upload:将持久结果和媒体入队
-    Note over Store,Upload:Upload is asynchronous and cannot block inspection</code></pre>
+    Note over Store,Upload:上传是异步的，不能阻塞检查</code></pre>
 <h2 id="76-frame-quality-and-color-handling">7.6 帧质量和颜色处理<a class="headerlink" href="#76-frame-quality-and-color-handling" title="Permanent link">&para;</a></h2>
 <p>解码为记录的规范格式，通常是 OpenCV 的 BGR8，同时保留原始尺寸。模型预处理执行其自己的 RGB 转换。质量检查应包括模糊、亮度范围、损坏、帧年龄以及可选的饱和度或眩光。阈值是特定于相机的，必须根据生产捕获进行校准。</p>
 <p>被拒绝的框架仍然可以追踪拒绝原因，但不会提供任何积极的证据。如果剩余的有效帧太少，则乘积为<code>NG</code>；由于没有矛盾的证据，不可用的输入不能成为 <code>OK</code>。</p>
@@ -2160,7 +2160,7 @@ loop Until exit or timeout
 <li>在序列间隙或缓冲区溢出时，增加指标并将受影响的窗口标记为降级；证据不足产生<code>NG</code>。</li>
 <li>对于陈旧或重复的帧，拒绝这些帧并报告相机运行状况恶化。</li>
 <li>在时钟调整时，继续使用单调时钟计算持续时间并记录挂钟的不连续性。</li>
-<li>捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断<code>NG</code>。</li>
+<li>在捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断<code>NG</code>。</li>
 <li>服务器中断时，不要进行采集更改。在储存能力允许的情况下，当地捕获和检查将继续进行。</li>
 </ul>
 <p>滚动视频写入分段文件以限制断电后的损坏。媒体持久化和删除规则在<a href="../12-local-storage-and-retention/">local storage and retention</a>中定义。</p>
@@ -2168,7 +2168,7 @@ loop Until exit or timeout
 <ul>
 <li>根据记录和模拟的 SDK 行为对每个供应商适配器进行合同测试。</li>
 <li>测试断开、重新连接、丢帧、重复序列号、损坏的缓冲区和延迟帧。</li>
-<li>在每个窗口阶段验证触发去抖、相邻产品、超时和重新启动。</li>
+<li>验证触发去抖、相邻产品、超时以及每个窗口阶段的重新启动。</li>
 <li>使用正常、模糊、黑暗、明亮、反射和空的生产场景校准质量阈值。</li>
 <li>浸泡测试捕获时间比正常生产班次长，同时监控内存和缓冲区增长。</li>
 <li>验证文件源排序和输出 ID 是否可重复。</li>

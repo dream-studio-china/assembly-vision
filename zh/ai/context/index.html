@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/design/05-central-server-architecture/">
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/ai/context/">
       
       
-        <link rel="prev" href="../04-edge-client-architecture/">
-      
-      
-        <link rel="next" href="../06-ai-detection-pipeline/">
       
       
         
@@ -31,7 +27,7 @@
     
     
       
-        <title>中心端架构 - AssemblyVision</title>
+        <title>AssemblyVision - 完整的项目背景 - AssemblyVision</title>
       
     
     
@@ -82,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#assemblyvision-central-server-architecture" class="md-skip">
+        <a href="#assemblyvision---full-project-context" class="md-skip">
           跳转至
         </a>
       
@@ -118,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              中心端架构
+              AssemblyVision - 完整的项目背景
             
           </span>
         </div>
@@ -343,8 +339,6 @@
       
   
   
-    
-  
   
   
     
@@ -357,11 +351,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
@@ -382,7 +378,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -400,7 +396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../design/" class="md-nav__link">
         
   
   
@@ -428,7 +424,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../00-cover-and-status/" class="md-nav__link">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
         
   
   
@@ -456,7 +452,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../01-introduction/" class="md-nav__link">
+      <a href="../../design/01-introduction/" class="md-nav__link">
         
   
   
@@ -484,7 +480,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../02-requirements/" class="md-nav__link">
+      <a href="../../design/02-requirements/" class="md-nav__link">
         
   
   
@@ -512,7 +508,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../03-architecture-overview/" class="md-nav__link">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
         
   
   
@@ -540,7 +536,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../04-edge-client-architecture/" class="md-nav__link">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
         
   
   
@@ -565,37 +561,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    中心端架构
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
         
   
   
@@ -611,275 +580,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-responsibilities-and-boundary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. 职责与边界
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-central-component-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. 中心组件架构
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-ingestion-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 摄取架构
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 摄取架构">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31-inspection-envelope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.1 检验范围
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32-media-transfer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.2 媒体传输
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-domain-and-persistence-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. 领域和持久化模型
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-administration-and-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. 管理和配置
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. 管理和配置">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#51-device-and-product-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.1 设备和产品管理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#52-distribution-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.2 分发生命周期
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-manual-review-and-reporting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 人工审核和报告
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-api-and-web-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. API 和 Web 架构
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-authorization-audit-and-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 授权、审计和安全
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-reliability-jobs-and-operations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. 可靠性、工作和运营
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-deployment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. 部署
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-delivery-horizons" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. 交付范围
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="11. 交付范围">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#111-two-day-mvp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.1 两天 MVP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#112-one-month-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.2 一个月目标
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#113-production-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.3 生产目标
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#114-future" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.4 未来
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-assumptions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. Assumptions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-open-questions-and-validation-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. 开放性问题和需要验证
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -892,7 +592,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
         
   
   
@@ -920,7 +620,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
         
   
   
@@ -948,7 +648,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../08-product-detection-and-roi/" class="md-nav__link">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
         
   
   
@@ -976,7 +676,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../09-component-detection/" class="md-nav__link">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
         
   
   
@@ -1004,7 +704,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../10-temporal-aggregation/" class="md-nav__link">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
         
   
   
@@ -1032,7 +732,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../11-rule-engine/" class="md-nav__link">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
         
   
   
@@ -1060,7 +760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../12-local-storage-and-retention/" class="md-nav__link">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
         
   
   
@@ -1088,7 +788,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../13-upload-and-synchronization/" class="md-nav__link">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
         
   
   
@@ -1116,7 +816,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../14-data-model-and-database/" class="md-nav__link">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
         
   
   
@@ -1144,7 +844,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../15-rest-api-and-events/" class="md-nav__link">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
         
   
   
@@ -1172,7 +872,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../16-edge-dashboard/" class="md-nav__link">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
         
   
   
@@ -1200,7 +900,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../17-central-admin-dashboard/" class="md-nav__link">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
         
   
   
@@ -1228,7 +928,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../18-monorepo-and-code-organization/" class="md-nav__link">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
         
   
   
@@ -1256,7 +956,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../19-training-and-evaluation/" class="md-nav__link">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
         
   
   
@@ -1284,7 +984,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../20-deployment-and-operations/" class="md-nav__link">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
         
   
   
@@ -1312,7 +1012,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../21-security-and-source-distribution/" class="md-nav__link">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
         
   
   
@@ -1340,7 +1040,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
         
   
   
@@ -1368,7 +1068,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../23-observability-and-support/" class="md-nav__link">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
         
   
   
@@ -1396,7 +1096,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../24-human-in-the-loop/" class="md-nav__link">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
         
   
   
@@ -1424,7 +1124,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../25-roadmap/" class="md-nav__link">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
         
   
   
@@ -1452,7 +1152,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../26-customer-acceptance/" class="md-nav__link">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
         
   
   
@@ -1480,7 +1180,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../27-risks-and-mitigations/" class="md-nav__link">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
         
   
   
@@ -1508,7 +1208,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../appendices/" class="md-nav__link">
+      <a href="../../design/appendices/" class="md-nav__link">
         
   
   
@@ -1587,7 +1287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/" class="md-nav__link">
+      <a href="../../design/decisions/" class="md-nav__link">
         
   
   
@@ -1615,7 +1315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
         
   
   
@@ -1643,7 +1343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-002-python-backend/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
         
   
   
@@ -1671,7 +1371,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
         
   
   
@@ -1699,7 +1399,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
         
   
   
@@ -1727,7 +1427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
         
   
   
@@ -1755,7 +1455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
         
   
   
@@ -1783,7 +1483,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-007-monorepo/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
         
   
   
@@ -1811,7 +1511,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-008-docker-deployment/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
         
   
   
@@ -1839,7 +1539,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
         
   
   
@@ -1867,7 +1567,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
         
   
   
@@ -2075,10 +1775,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-responsibilities-and-boundary" class="md-nav__link">
+  <a href="#1-project-overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 职责与边界
+        一、项目概况
       
     </span>
   </a>
@@ -2086,10 +1786,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-central-component-architecture" class="md-nav__link">
+  <a href="#2-repository-state" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 中心组件架构
+        2. 存储库状态
       
     </span>
   </a>
@@ -2097,49 +1797,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-ingestion-architecture" class="md-nav__link">
+  <a href="#3-directory-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 摄取架构
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 摄取架构">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31-inspection-envelope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.1 检验范围
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32-media-transfer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.2 媒体传输
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-domain-and-persistence-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. 领域和持久化模型
+        3、目录结构
       
     </span>
   </a>
@@ -2147,49 +1808,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-administration-and-configuration" class="md-nav__link">
+  <a href="#4-architecture-summary-from-docsdesign" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 管理和配置
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. 管理和配置">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#51-device-and-product-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.1 设备和产品管理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#52-distribution-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.2 分发生命周期
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-manual-review-and-reporting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 人工审核和报告
+        4. Architecture Summary (from docs/design/)
       
     </span>
   </a>
@@ -2197,10 +1819,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-api-and-web-architecture" class="md-nav__link">
+  <a href="#5-documentation-set" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. API 和 Web 架构
+        5. 文档集
       
     </span>
   </a>
@@ -2208,10 +1830,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-authorization-audit-and-security" class="md-nav__link">
+  <a href="#6-bilingual-mkdocs-english-chinese" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. 授权、审计和安全
+        6.双语MkDocs（英文+中文）
       
     </span>
   </a>
@@ -2219,10 +1841,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#9-reliability-jobs-and-operations" class="md-nav__link">
+  <a href="#7-conventions-agentsmd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. 可靠性、工作和运营
+        7.约定（AGENTS.md）
       
     </span>
   </a>
@@ -2230,10 +1852,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-deployment" class="md-nav__link">
+  <a href="#8-latest-session-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. 部署
+        8. Latest Session Decisions
       
     </span>
   </a>
@@ -2241,82 +1863,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#11-delivery-horizons" class="md-nav__link">
+  <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11. 交付范围
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="11. 交付范围">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#111-two-day-mvp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.1 两天 MVP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#112-one-month-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.2 一个月目标
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#113-production-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.3 生产目标
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#114-future" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.4 未来
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-assumptions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. Assumptions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-open-questions-and-validation-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. 开放性问题和需要验证
+        9. Open Items / Next Steps
       
     </span>
   </a>
@@ -2343,108 +1893,154 @@
   
 
 
-<h1 id="assemblyvision-central-server-architecture">AssemblyVision 中央服务器架构<a class="headerlink" href="#assemblyvision-central-server-architecture" title="Permanent link">&para;</a></h1>
-<h2 id="1-responsibilities-and-boundary">1. 职责与边界<a class="headerlink" href="#1-responsibilities-and-boundary" title="Permanent link">&para;</a></h2>
-<p>中央服务器接收延迟的检查结果和选定的证据，维护跨设备历史记录和报告，管理设备/产品/规则/模型/用户，支持手动审核，记录审核事件并分发批准的配置。它是一个管理和证据平面，从来不是生产检验的同步依赖。</p>
-<p>最初的自动化决策是来自边缘的仅附加事实。中央审查和更正是相互关联的事实；它们不会覆盖原始结果。请参阅<a href="../03-architecture-overview/">Architecture Overview</a>和<a href="../04-edge-client-architecture/">Edge Client Architecture</a>。</p>
-<h2 id="2-central-component-architecture">2. 中心组件架构<a class="headerlink" href="#2-central-component-architecture" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>flowchart LR
-    Edge[边缘上传客户端] --&gt; Gateway[Nginx 和中央 FastAPI]
-    Admin[Vue 管理应用程序] --&gt; Gateway
-    Gateway --&gt; Auth[Identity and authorization]
-    Gateway --&gt; Ingest[检查摄取]
-    Gateway --&gt; Query[历史记录和仪表板查询]
-    Gateway --&gt; Config[设备产品规则和型号管理]
-    Gateway --&gt; Review[Manual review]
-    Ingest --&gt; DB[(PostgreSQL)]
-    Ingest --&gt; Media[(对象存储抽象)]
-    Ingest --&gt; Jobs[后台工作]
-    Query --&gt; DB
-    Query --&gt; Media
-    Config --&gt; DB
-    Config --&gt; Jobs
-    Review --&gt; DB
-    Auth --&gt; DB
-    Jobs --&gt; DB
-    Jobs --&gt; Media
-    Jobs -. broker only when justified .-&gt; Redis[(雷迪斯)]
-    Config --&gt;|版本化的包交付| Edge</code></pre>
-<p>模块可以从一个具有明确域边界的可部署 FastAPI 开始。仅出于可衡量的扩展、隔离或所有权需求而引入单独的服务。工作人员有理由进行长期运行的媒体衍生品、导出/报告、通知、包组装和完整性/协调扫描，而不是简单的 CRUD。</p>
-<h2 id="3-ingestion-architecture">3. 摄取架构<a class="headerlink" href="#3-ingestion-architecture" title="Permanent link">&para;</a></h2>
-<h3 id="31-inspection-envelope">3.1 检验范围<a class="headerlink" href="#31-inspection-envelope" title="Permanent link">&para;</a></h3>
-<p>边缘发布一个版本化信封，其中包含身份、时间戳、产品解决方案、业务/内部结果、组件和聚合证据、原因代码、框架/投资回报率摘要、不可变版本和媒体清单。服务器对设备进行身份验证，验证架构和大小，验证设备所有权/状态和兼容引用，计算规范的有效负载哈希，并保留在事务中。</p>
-<p><code>(device_id, inspection_id)</code> 和幂等键是唯一的。相同的重试将返回先前的收据。具有不同规范散列的重用身份/密钥返回 <code>409 Conflict</code>，记录安全/数据完整性事件，并保留原始事件。收据包括中央记录 ID、接受的模式版本、服务器接收时间和媒体上传状态。</p>
-<h3 id="32-media-transfer">3.2 媒体传输<a class="headerlink" href="#32-media-transfer" title="Permanent link">&para;</a></h3>
-<p>OK通常会贡献一帧代表性的帧。 NG 提供多个关键帧、注释、ROI 以及可选的简短事件剪辑。例外情况只能提供有限的诊断证据。 API最初可以直接接受小媒体；生产应使用经过验证的大小限制，并可选择为较大对象发出上传会话。</p>
-<p>字节被暂存、校验和/大小验证，然后在不透明的存储密钥下最终确定。 PostgreSQL 存储媒体类型、校验和、大小、内容类型、状态、保留类别和对象密钥，而不是公共文件系统路径。部分/孤立上传是异步协调的。根据安全模型，检索使用授权的 API 流或限时链接。</p>
-<h2 id="4-domain-and-persistence-model">4. 领域和持久化模型<a class="headerlink" href="#4-domain-and-persistence-model" title="Permanent link">&para;</a></h2>
-<p>核心 PostgreSQL 聚合是：</p>
+<h1 id="assemblyvision---full-project-context">AssemblyVision - 完整的项目背景<a class="headerlink" href="#assemblyvision---full-project-context" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>上下文快照。最后更新: 2026-08-04</p>
+<p>首先在新会话中读取此文件以快速重建项目状态。</p>
+</blockquote>
+<hr />
+<h2 id="1-project-overview">一、项目概况<a class="headerlink" href="#1-project-overview" title="Permanent link">&para;</a></h2>
+<p><strong>AssemblyVision - 工业装配检测系统</strong>是边缘优先的工业装配检测系统
+用于基于传送带的生产线的计算机视觉平台。检查成品
+并验证是否存在所有必需的组装组件。</p>
 <ul>
-<li>租户/位置：验证所需租户层次结构的组织、站点、生产线和设备。</li>
-<li>身份/访问：用户、角色、分配、设备凭证和会话/令牌。</li>
-<li>配置：产品、所需组件、不可变规则版本、模型包/版本、兼容性声明和设备分配。</li>
-<li>检查：检查、组件结果、证据摘要、媒体元数据、设备事件和上传收据。</li>
-<li>审查/审计：审查记录和仅附加审计事件。</li>
+<li><strong>业务输出</strong>：<code>OK</code>（可靠检测到所有必需的组件）或<code>NG</code>（缺失，
+  不确定或无法验证）。质量优先级是<strong>最小化漏报</strong>（高 NG
+  召回率，极低的假阴性率）。从未提出过 100% 准确性的声明。</li>
+<li><strong>架构</strong>：边缘客户端+中央服务器。所有生产关键型图像处理和
+  最终决策在边缘工业计算机上执行；永远不需要中央服务器
+  用于实时检查。</li>
+<li><strong>当前存储库状态</strong>：仅文档和架构基线。没有申请
+  代码还存在。下一个具体里程碑是为期两天的静态图像 MVP。</li>
 </ul>
-<p>使用 UUID/ULID 样式的不透明主键，同时保留唯一的边缘业务标识符。基于测量的查询，对接收和检查时间、设备/时间、条形码（在政策允许的情况下）、产品/结果、模型/规则版本、审核状态和原因代码进行索引。时间存储为时区感知 UTC；边缘观察时间和服务器接收时间均被保留。当必须保留引用时，软删除适用于托管配置；检查/审查使用保留工作流程而不是随意删除。</p>
-<p>PostgreSQL 事务保护聚合不变量。对象存储与 PostgreSQL 不是事务性的，因此需要显式的 <code>PENDING</code>、<code>AVAILABLE</code>、<code>FAILED</code> 和 <code>DELETED</code> 媒体状态以及协调。</p>
-<h2 id="5-administration-and-configuration">5. 管理和配置<a class="headerlink" href="#5-administration-and-configuration" title="Permanent link">&para;</a></h2>
-<h3 id="51-device-and-product-management">5.1 设备和产品管理<a class="headerlink" href="#51-device-and-product-management" title="Permanent link">&para;</a></h3>
-<p>管理员注册设备、将其分配到批准的组织/线路范围、轮换凭据、查看上次查看/队列/版本运行状况以及隔离受损或不兼容的设备。产品识别所需的组件集，但不嵌入可变的生产策略。规则版本参考产品配置并声明阈值/聚合策略；模型清单标识工件校验和、类、运行时兼容性、培训/评估沿袭和批准状态。</p>
-<h3 id="52-distribution-lifecycle">5.2 分发生命周期<a class="headerlink" href="#52-distribution-lifecycle" title="Permanent link">&para;</a></h3>
-<p>包会经历草稿、验证、批准、分配、下载、边缘验证、激活和确认状态。不可变内容收到新版本而不是就地编辑。在更广泛的分配之前，推出支持较小的设备群。边缘保留最后一次已知良好的包裹，并仅在检查之间激活。中心地位将分配与实际确认区分开来；任何仪表板都不应暗示仅通过分配即可激活。</p>
-<p>模型分发是未来的范围，但一个月目标中的配置/规则分发应该已经使用兼容的版本和确认语义。</p>
-<h2 id="6-manual-review-and-reporting">6. 人工审核和报告<a class="headerlink" href="#6-manual-review-and-reporting" title="Permanent link">&para;</a></h2>
-<p>审核呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
-<p>报告将自动计数与经过审查的真实情况分开，并清楚地说明样本覆盖范围。所需的视图包括 OK/NG 趋势、缺失组件、条形码故障、产品/系列/设备故障、模型/规则版本性能、设备运行状况/上次查看、上传延迟、审核率和纠正率。估计的假阴性指标需要抽样 OK 审核或独立标记的验收数据；未经审查不能被解释为正确性。</p>
-<h2 id="7-api-and-web-architecture">7. API 和 Web 架构<a class="headerlink" href="#7-api-and-web-architecture" title="Permanent link">&para;</a></h2>
-<p>建议的版本组为 <code>/api/v1/device-ingest</code>、<code>/devices</code>、<code>/lines</code>、<code>/inspections</code>、<code>/media</code>、<code>/reviews</code>、<code>/products</code>、<code>/rules</code>、<code>/models</code>、<code>/device-configurations</code>、<code>/dashboard</code>、<code>/reports</code>、<code>/events</code>、<code>/audit-logs</code> 和 <code>/auth</code>。集合 API 使用游标分页和有界过滤器。变异请求在客户端重试时使用乐观并发和幂等性。</p>
-<p>FastAPI生成OpenAPI； Vue 3 TypeScript 应用程序使用生成的客户端。 Pinia 保存会话/UI 状态而不是复制服务器事实。路由器级和组件级防护改善了用户体验，而服务器授权仍然具有权威性。 WebSocket 或 SSE 可以提供设备/仪表板更新，并在重新连接后通过 REST 重新同步。</p>
-<h2 id="8-authorization-audit-and-security">8. 授权、审计和安全<a class="headerlink" href="#8-authorization-audit-and-security" title="Permanent link">&para;</a></h2>
+<h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
-<li>设备身份验证与人工身份验证不同，其范围仅限于该设备的摄取/配置。</li>
-<li>根据策略要求，人员权限可单独查看、审查、配置编辑、批准、推出、用户管理、导出和审核访问。</li>
-<li>TLS 保护传输；秘密存储/轮换和静态加密遵循选定的托管/客户控制。</li>
-<li>审核记录包括参与者、操作、目标、先前/新版本引用或有界差异、时间戳、请求/相关 ID 和结果。</li>
-<li>根据经过验证的数据分类处理条形码和媒体访问；日志避免凭证和不必要的原始负载。</li>
-<li>上传强制执行内容类型、大小、校验和、恶意软件/内容策略（如果需要）、速率限制和不透明对象密钥。</li>
+<li>远程：<code>https://github.com/dream-studio-china/assembly-vision</code>（分支<code>main</code>）</li>
+<li>Git 历史记录（迄今为止的所有提交）：</li>
+<li><code>75e2f2e</code>添加MIT许可证</li>
+<li><code>fc55b9e</code> 文档：使用语言、git 工作流程和安全规则组织 AGENTS.md</li>
+<li><code>5924580</code> 添加AssemblyVision架构文档和双语MkDocs站点</li>
+<li>磁盘上未跟踪（故意未提交）：<code>.obsidian/</code>（本地黑曜石配置）。</li>
+<li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
+  吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
 </ul>
-<p>确切的身份提供商和租赁模型尚未解决，并且不得由初始表列表暗示。</p>
-<h2 id="9-reliability-jobs-and-operations">9. 可靠性、工作和运营<a class="headerlink" href="#9-reliability-jobs-and-operations" title="Permanent link">&para;</a></h2>
-<p>除了数据库/对象存储依赖项之外，API 是水平无状态的。 PostgreSQL 在需要时使用经过测试的备份和时间点恢复。对象存储使用与数据库保留和备份策略兼容的生命周期规则。健康检查区分活跃度/就绪度；可观察性将请求、设备、检查、媒体、作业和用户/审核 ID 关联起来。</p>
-<p>异步作业是可重试的和幂等的，持久存储状态，对瞬时/永久故障进行分类，并在合理的情况下使用死信/运算符处理。仪表板查询优化仅在查询测量之后从索引和预聚合表/物化视图开始； Redis 是可选的而不是记录系统。</p>
-<p>指标涵盖摄取量/错误/幂等重播/冲突、媒体验证、API 延迟/错误、数据库/对象存储运行状况、作业滞后/失败、设备上次查看、上传延迟、包确认、审核积压和审核失败。警报必须是可操作的，并避免将故意离线的设备视为无法解释的健康设备。</p>
-<h2 id="10-deployment">10. 部署<a class="headerlink" href="#10-deployment" title="Permanent link">&para;</a></h2>
-<p>最初的中央部署是 Docker Compose 友好的：Nginx、内置管理资产、FastAPI API、PostgreSQL、对象存储实现以及只有合理的工作人员/代理。容器使用多阶段构建、非 root 用户、运行状况检查、重启策略、显式机密/配置和持久卷。架构迁移是一个受控发布步骤，并非由每个 API 副本同时运行。</p>
-<p>未来的 Kubernetes 部署可能会取代编排，同时保留 API 和持久性边界。不假定确切的托管位置、可用性拓扑、备份目标和数据驻留。</p>
-<h2 id="11-delivery-horizons">11. 交付范围<a class="headerlink" href="#11-delivery-horizons" title="Permanent link">&para;</a></h2>
-<h3 id="111-two-day-mvp">11.1 两天 MVP<a class="headerlink" href="#111-two-day-mvp" title="Permanent link">&para;</a></h3>
-<p>没有建立中央服务器。静态输出使用未来兼容的标识符、原因代码和版本，因此集成不需要重新定义决策。</p>
-<h3 id="112-one-month-target">11.2 一个月目标<a class="headerlink" href="#112-one-month-target" title="Permanent link">&para;</a></h3>
-<p>实施设备范围的幂等摄取、PostgreSQL 检查历史记录、选定的证据存储、初始设备/产品/规则元数据、基本管理仪表板、审查捕获和 Compose 部署。推迟复杂的分析和模型二进制分发。</p>
-<h3 id="113-production-target">11.3 生产目标<a class="headerlink" href="#113-production-target" title="Permanent link">&para;</a></h3>
-<p>添加批准的身份/授权、凭证轮换、审计、备份/恢复测试、保留、安全媒体访问、转出/回滚、协调、警报、报告正确性控制、性能/浸泡测试和操作运行手册。</p>
-<h3 id="114-future">11.4 未来<a class="headerlink" href="#114-future" title="Permanent link">&para;</a></h3>
-<p>仅当需求和负载合理时才添加签名模型分发、更大规模的工作人员和分析、外部身份/集成以及 Kubernetes。</p>
-<h2 id="12-assumptions">12. Assumptions<a class="headerlink" href="#12-assumptions" title="Permanent link">&para;</a></h2>
+<h2 id="3-directory-structure">3、目录结构<a class="headerlink" href="#3-directory-structure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>assembly-vision/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── README.md               # Root README with docs map + bilingual site instructions
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── LICENSE                 # MIT License (c) 2026 dream-studio-china
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── scripts/
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── translate-docs.py            # docs/ -&gt; docs-zh/ Chinese translation (deep-translator)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   └── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── .github/workflows/docs.yml       # GitHub Pages deploy on push to main
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>└── docs/
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    ├── index.md            # MkDocs home page
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    ├── README.md           # Documentation index
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    ├── overrides/main.html # Theme override placeholder
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    ├── ai/context.md       # THIS file
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    ├── design/             # 28 design documents + appendices + decisions/
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    │   └── decisions/      # ADR-001 ... ADR-010 + README
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    └── research/           # 3 external-research reports
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>        ├── 01-industrial-inspection-success-rates.md
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>        ├── 02-yolo-capabilities-and-success-rates.md
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        └── 03-imaging-workflow-and-training-cost.md
+</code></pre></div>
+<h2 id="4-architecture-summary-from-docsdesign">4. Architecture Summary (from docs/design/)<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
 <ul>
-<li>边缘客户端可以进行身份验证并最终到达 HTTPS 端点。</li>
-<li>中央关系数据库和持久对象存储可以在选定的托管环境中运行。</li>
-<li>设备/产品标识符可以集中管理，无需在检查期间进行集中查找。</li>
-<li>只有在标签批准和数据集治理之后，审核结果才可以用作培训候选。</li>
+<li><strong>边缘客户端职责</strong>：相机集成、捕获/触发、产品窗口
+  管理、条形码识别、产品类型解析、两阶段YOLO检测、ROI
+  生成、可选的 OpenCV 检查、每个组件的时间聚合、确定性规则
+  评估、本地数据库/媒体、带重试的上传队列、运行状况监控、本地 FastAPI、
+  本地 Vue 仪表板。在中央/网络中断期间检查仍在继续。</li>
+<li><strong>中央服务器职责</strong>：摄取选定的结果/媒体、历史记录、报告、
+  设备/配置/规则/模型管理、用户/角色、手动 NG 审核、审计、仪表板、远程
+  分布。不需要进行检查。</li>
+<li><strong>两阶段检测</strong>：第一阶段全画幅检测产品；投资回报率引擎
+  扩展/剪辑它；第二阶段检测所需的组件（<code>component_a</code>、<code>component_b</code>、
+  <code>component_c</code>、<code>manual</code>、...) 在 ROI 内。条形码解码与 YOLO 是分开的。</li>
+<li><strong>时间聚合</strong>：跨框架的每个所需组件证据（没有整个产品
+  多数投票）。聚合提高了系统的鲁棒性，而不是单帧模型的准确性。</li>
+<li><strong>规则引擎</strong>：确定性，独立于人工智能模型，版本化。仅完整有效
+  证据可能会产生<code>OK</code>；内部 <code>UNCERTAIN</code> 始终映射到业务 <code>NG</code>。</li>
+<li><strong>部署</strong>：Python 3.12 / FastAPI / YOLO / OpenCV 边缘后端，Vue 3 + TypeScript
+  前端、Docker Compose（边缘没有 Kubernetes）、PostgreSQL 中心 + SQLite 边缘 (MVP)。</li>
+<li><strong>上传策略</strong>：选择性（OK：元数据+一个关键帧；NG：完整元数据+多个关键帧
+  框架+可选夹子）；持久队列、带有退避、幂等性、校验和的重试。</li>
 </ul>
-<h2 id="13-open-questions-and-validation-required">13. 开放性问题和需要验证<a class="headerlink" href="#13-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
-<ol>
-<li>系统是单客户还是多租户，什么组织/站点/线路层次结构是真实的？</li>
-<li>中央托管在哪里，适用哪些可用性/恢复目标，以及允许哪些连接路径？</li>
-<li>需要哪些身份提供商、角色、设备凭证机制、TLS/PKI、签名和秘密存储？</li>
-<li>适用哪些条形码/介质分类、驻留、保留、删除、导出和审核义务？</li>
-<li>哪些检查/媒体量、有效负载大小、查询并发性和报告计划决定工作/存储设计？</li>
-<li>哪些审核结果和工作流程状态得到批准，谁可以更改标签或发布包？</li>
-<li>1个月的目标是否需要远程配置交付，还是仅需要管理和手动边缘安装？</li>
-<li>哪些工作适合使用代理/Redis，哪些对象存储实现可用？</li>
-<li>参见<a href="../appendices/#3-global-open-questions">Global Open Questions</a>。</li>
-</ol>
+<h2 id="5-documentation-set">5. 文档集<a class="headerlink" href="#5-documentation-set" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/design/00</code> 到 <code>27</code> + <code>appendices.md</code>：封面/状态、介绍、要求、
+  架构概述、边缘客户端、中央服务器、AI 检测管道、摄像头和图像
+  采集、产品检测和 ROI、组件检测、时间聚合、规则引擎、
+  本地存储和保留、上传和同步、数据模型和数据库、REST API 和事件、
+  边缘仪表板、中央管理仪表板、单一存储库和代码组织、培训和评估、
+  部署和操作、安全和源代码分发、测试和质量保证、可观察性和支持、
+  人机交互、路线图、客户接受度、风险和缓解措施。</li>
+<li><code>docs/design/decisions/</code>：ADR-001 边缘优先检查、ADR-002 Python 后端、ADR-003 Vue 3</li>
+<li>TypeScript 前端、ADR-004 两阶段检测、ADR-005 本地优先存储和延迟
+  上传、ADR-006 REST + WebSocket、ADR-007 monorepo、ADR-008 Docker 部署、ADR-009
+  静态图像优先 MVP，ADR-010 每个组件时间聚合。</li>
+<li><code>docs/design/appendices.md</code> 保存规范术语、决策一致性检查表、
+  全局开放问题 (OQ-001 ... OQ-025)、原因代码术语表和可追溯性约定。</li>
+<li><code>docs/research/</code>：行业成功率、YOLO 能力、成像/工作流程/培训成本。</li>
+</ul>
+<h2 id="6-bilingual-mkdocs-english-chinese">6.双语MkDocs（英文+中文）<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
+<ul>
+<li>主配置<code>mkdocs.yml</code>是唯一的事实来源（材质主题，美人鱼渲染通过
+  <code>pymdownx.superfences</code> 自定义围栏，<code>extra.alternate</code> 语言切换器）。</li>
+<li><code>scripts/build-docs.sh</code> 管道：<code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
+  <code>generate-mkdocs-configs.py</code> （生成 mkdocs-en.yml + mkdocs-zh.yml）-&gt; 构建 site/ 和 site/zh/。</li>
+<li>翻译使用 <code>deep-translator</code> GoogleTranslator（免费，无 API 密钥）。限速；一个完整的
+  翻译大约需要 15-30 分钟。单文件模式：<code>python scripts/translate-docs.py
+  design/03-architecture-overview.md</code>。如果出现任何 API 故障，原始英语块将被保留。</li>
+<li>所有内容均已翻译，包括 <code>research/</code> 和美人鱼图标签。美人鱼语法是
+  保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
+  被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
+<li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
+  跨文档锚点（例如 <code>appendices.md#3-global-open-questions</code>）也适用于中文。</li>
+<li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
+  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
+<li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
+</ul>
+<h2 id="7-conventions-agentsmd">7.约定（AGENTS.md）<a class="headerlink" href="#7-conventions-agentsmd" title="Permanent link">&para;</a></h2>
+<ul>
+<li>英语为基础语言；所有文档/评论/提交/自述文件必须是英文。</li>
+<li>常规提交：<code>feat:</code>、<code>fix:</code>、<code>docs:</code>、<code>chore:</code>、<code>refactor:</code>。</li>
+<li>分支命名：<code>feat/xxx</code>、<code>fix/xxx</code>、<code>docs/xxx</code>。</li>
+<li>除非明确要求，否则请勿承诺；未经明确批准，请勿推动或强行推动。</li>
+<li>没有泄露任何秘密。使用类型化 Pydantic 模型和 TypeScript 接口。</li>
+<li>工程规则：保留边缘优先架构；保留AI推理/规则评估/
+  持久化/Web API 分离；不要将 YOLO 逻辑放入 FastAPI 路由处理程序中；不要放
+  AI模型中的业务规则；边缘不能依赖于中央服务器；运行测试 + Ruff +
+  我的Py；切勿在未执行的情况下声称测试已通过；永远不要声称 100% 准确。</li>
+</ul>
+<h2 id="8-latest-session-decisions">8. Latest Session Decisions<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 10 个 ADR +
+  附录）来自<code>docs/source-brief.md</code>（以前的<code>docs/doc-task.md</code>）。</li>
+<li>通过互联网研究创建<code>docs/research/</code>（3份报告）。</li>
+<li>构建了具有自动翻译功能的双语MkDocs，改编自<code>crud-skeleton</code>项目。</li>
+<li>向 <code>translate-docs.py</code> 添加了美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
+<li><code>UNCERTAIN</code> 决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
+<li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（一个单独的
+  边缘工作者/API 分割被推迟，直到测量证明其合理为止）。</li>
+<li>检查分别固定产品检测器和组件检测器模型版本。</li>
+</ul>
+<h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li>为期两天的静态图像 MVP 是下一个工程里程碑（文件夹输入、两阶段检测、
+  ROI、规则、JSON + 带注释的图像、CLI）。</li>
+<li>硬件/条件仍未确认（参见<code>docs/design/appendices.md</code>第3节开放问题）：
+  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
+  可靠性、中央服务器位置、接受阈值。</li>
+<li><code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</li>
+</ul>
 
 
 

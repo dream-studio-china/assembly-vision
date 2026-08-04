@@ -2184,7 +2184,7 @@
 <li><strong>金属铸造/焊接检查</strong>（孔隙、裂纹、夹杂物）</li>
 <li><strong>药品检验</strong>（直接公布的数字很少；仅邻近证据）</li>
 </ul>
-<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回）在 <code>docs/design/19-training-and-evaluation.md</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
+<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回率）在 <code>docs/design/19-training-and-evaluation.md</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
 <hr />
 <h2 id="2-reference-datasets-and-benchmarks-environment-size-ground-truth">2. 参考数据集和基准（环境、大小、地面实况）<a class="headerlink" href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" title="Permanent link">&para;</a></h2>
 <table>
@@ -2241,7 +2241,7 @@
 <td>15 个对象和纹理类别，包括瓶子、榛子、晶体管、金属螺母、电缆等</td>
 <td>&gt;5,000 张高分辨率图像</td>
 <td>73+ 缺陷类型； 5 个纹理 + 10 个对象类别</td>
-<td>“模拟现实世界的工业检查场景”；无监督异常检测基准；每类别无缺陷训练集</td>
+<td>“模拟真实的工业检查场景”；无监督异常检测基准；每类别无缺陷训练集</td>
 <td>像素级精确的异常注释；图像级和像素级评估</td>
 <td>https://www.mvtec.com/research-teaching/datasets/mvtec-ad</td>
 </tr>
@@ -2358,10 +2358,10 @@
 <tr>
 <td>工业-YOLO（微调YOLOv8，边缘优化）</td>
 <td>YOLOv8 + TensorRT/OpenVINO</td>
-<td><strong>NEU-DET + MVTec AD + 定制汽车/电池缺陷图像基准；声称部署在活跃的汽车装配线上</strong></td>
+<td><strong>NEU-DET + MVTec AD + 定制汽车/电池缺陷图像的基准；声称部署在活跃的汽车装配线上</strong></td>
 <td>NEU-DET、MVTec AD、自定义扩展</td>
 <td><strong>mAP 98.5%</strong>； <strong>&gt; NVIDIA Jetson Orin 上 120 FPS</strong></td>
-<td><strong>2026 年预印本，单组，未经同行评审；视为供应商/作者报告。</strong> NEU-DET 上的典型 YOLO 论文报告较低的 mAP (~70-80%)，具体取决于拆分； 98.5% 处于乐观状态，可能包括数据管理效应</td>
+<td><strong>2026 年预印本，单组，未经同行评审；视为供应商/作者报告。</strong> NEU-DET 上的典型 YOLO 论文报告较低的 mAP (~70-80%)，具体取决于分割； 98.5% 处于乐观状态，可能包括数据管理效应</td>
 <td>https://arxiv.org/abs/2606.07659</td>
 </tr>
 <tr>

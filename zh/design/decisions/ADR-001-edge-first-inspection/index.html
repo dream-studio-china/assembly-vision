@@ -1382,7 +1382,7 @@
   <a href="#1-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 现状
+        1. Status
       
     </span>
   </a>
@@ -1393,7 +1393,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        2. Context
       
     </span>
   </a>
@@ -1404,7 +1404,7 @@
   <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 决定
+        3. Decision
       
     </span>
   </a>
@@ -1415,7 +1415,7 @@
   <a href="#4-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.范围
+        4. Scope
       
     </span>
   </a>
@@ -1438,7 +1438,7 @@
   <a href="#51-positive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1 正面
+        5.1 Positive
       
     </span>
   </a>
@@ -1449,7 +1449,7 @@
   <a href="#52-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 负面和权衡
+        5.2 Negative and Trade-offs
       
     </span>
   </a>
@@ -1945,7 +1945,7 @@
   <a href="#1-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 现状
+        1. Status
       
     </span>
   </a>
@@ -1956,7 +1956,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        2. Context
       
     </span>
   </a>
@@ -1967,7 +1967,7 @@
   <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 决定
+        3. Decision
       
     </span>
   </a>
@@ -1978,7 +1978,7 @@
   <a href="#4-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.范围
+        4. Scope
       
     </span>
   </a>
@@ -2001,7 +2001,7 @@
   <a href="#51-positive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1 正面
+        5.1 Positive
       
     </span>
   </a>
@@ -2012,7 +2012,7 @@
   <a href="#52-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 负面和权衡
+        5.2 Negative and Trade-offs
       
     </span>
   </a>
@@ -2078,25 +2078,25 @@
 
 
 <h1 id="adr-001-edge-first-inspection">ADR-001: Edge-First Inspection<a class="headerlink" href="#adr-001-edge-first-inspection" title="Permanent link">&para;</a></h1>
-<h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
+<h2 id="1-status">1. Status<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
 <p>已接受</p>
-<h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
+<h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 在网络和中央服务器可能不可用的工厂中检查移动的产品。相机捕获、条形码分辨率、两阶段检测、时间聚合、确定性规则和持久证据形成了一条生产关键决策路径。网络往返会增加不受控制的依赖性，并可能停止检查或留下产品而无法及时获得结果。</p>
 <p>中央系统对于车队历史记录、配置和模型管理、审查、报告、用户、审计和同步仍然是必需的。</p>
-<h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
+<h2 id="3-decision">3. Decision<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
 <p>所有生产关键型图像处理和最终的每个产品 <code>OK</code>/<code>NG</code> 决策都在边缘工业计算机上执行。边缘在本地存储决策和所需的证据，并在断开连接时继续检查。中央服务接收延迟的幂等上传，并且不需要实时决策。</p>
 <p>边缘拥有摄像头和触发器集成、产品窗口、条形码识别、产品类型映射、推理、ROI、聚合、规则评估、本地数据库/媒体、上传队列和本地操作 UI。中央服务器拥有跨设备和管理功能。</p>
-<h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
+<h2 id="4-scope">4. Scope<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
 <p>这一决定适用于一个月的目标和生产架构。静态图像 MVP 执行相同的决策核心，无需摄像头、离线同步或中央服务。它不需要每个管理功能都在边缘运行。</p>
 <h2 id="5-consequences">5. 后果<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
-<h3 id="51-positive">5.1 正面<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
+<h3 id="51-positive">5.1 Positive<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
 <ul>
 <li>检查可用性和延迟独立于 WAN 和中央可用性。</li>
 <li>决策和证据可以在其来源处关联起来。</li>
 <li>网络使用受选定的证据而不是每个视频帧的限制。</li>
 <li>中央维护不能直接中断生产线决策。</li>
 </ul>
-<h3 id="52-negative-and-trade-offs">5.2 负面和权衡<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
+<h3 id="52-negative-and-trade-offs">5.2 Negative and Trade-offs<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
 <li>边缘硬件必须支持推理、存储、监控和升级。</li>
 <li>队列部署重复运行时组件并需要版本治理。</li>

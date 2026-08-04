@@ -2116,10 +2116,10 @@
     participant Source as 文件夹图像源
     participant Product as 产品检测仪
     participant ROI as 投资回报引擎
-    participant Component as 元件检测器
+    participant Component as Component Detector
     participant Rules as 规则引擎
     participant Storage as 本地存储
-    Operator-&gt;&gt;CLI:使用配置启动批处理
+    Operator-&gt;&gt;CLI:Start batch with configuration
 loop 每个支持的图像
         CLI-&gt;&gt;Source:读取图像
         Source--&gt;&gt;CLI:图像和源元数据
@@ -2151,7 +2151,7 @@ else 产品无法验证
 <li>检测每个有效 ROI 中的组件并按组件密钥保留证据。</li>
 <li>使用配置的退出、超时或触发条件关闭窗口。</li>
 <li>独立地汇总每个所需组件的证据。</li>
-<li>评估固定的规则和配置版本。</li>
+<li>评估固定规则和配置版本。</li>
 <li>在发布完成之前以事务方式保留结果和媒体。</li>
 <li>独立于检查执行的排队上传。</li>
 </ol>

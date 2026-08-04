@@ -519,7 +519,7 @@
   <a href="#1-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 目的
+        1. Purpose
       
     </span>
   </a>
@@ -541,7 +541,7 @@
   <a href="#3-stakeholders-and-concerns" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 利益相关者和关注点
+        3. Stakeholders and Concerns
       
     </span>
   </a>
@@ -586,7 +586,7 @@
   <a href="#52-edge-autonomy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 边缘自治
+        5.2 Edge Autonomy
       
     </span>
   </a>
@@ -597,7 +597,7 @@
   <a href="#53-evidence-and-reproducibility" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3 证据和再现性
+        5.3 Evidence and Reproducibility
       
     </span>
   </a>
@@ -707,7 +707,7 @@
   <a href="#8-assumptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. 假设
+        8. Assumptions
       
     </span>
   </a>
@@ -2039,7 +2039,7 @@
   <a href="#1-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 目的
+        1. Purpose
       
     </span>
   </a>
@@ -2061,7 +2061,7 @@
   <a href="#3-stakeholders-and-concerns" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 利益相关者和关注点
+        3. Stakeholders and Concerns
       
     </span>
   </a>
@@ -2106,7 +2106,7 @@
   <a href="#52-edge-autonomy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 边缘自治
+        5.2 Edge Autonomy
       
     </span>
   </a>
@@ -2117,7 +2117,7 @@
   <a href="#53-evidence-and-reproducibility" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3 证据和再现性
+        5.3 Evidence and Reproducibility
       
     </span>
   </a>
@@ -2227,7 +2227,7 @@
   <a href="#8-assumptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. 假设
+        8. Assumptions
       
     </span>
   </a>
@@ -2266,18 +2266,18 @@
 
 
 <h1 id="assemblyvision-introduction">AssemblyVision简介<a class="headerlink" href="#assemblyvision-introduction" title="Permanent link">&para;</a></h1>
-<h2 id="1-purpose">1. 目的<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 是一种输送线计算机视觉系统，旨在检查成品中是否存在所需的装配组件。检查目标可能包括完整的产品、大型部件、手册或说明书、条形码以及产品型号或类型。</p>
-<p>对于每个物理产品，业务结果是：</p>
+<p>对于每个实物产品，业务结果是：</p>
 <ul>
 <li><code>OK</code>：所有必需的组件在活动规则下都有足够的有效证据。</li>
 <li><code>NG</code>：组件缺失、证据不确定、产品身份无法可靠解析或检验无法可靠完成。</li>
 </ul>
 <p>系统优先避免放行错误标记为 <code>OK</code> 的有缺陷或不完整的产品。因此，它倾向于保守的 <code>NG</code> 决策和早期操作期间的人工审查。这是一个工程目标，而不是精度保证。</p>
 <h2 id="2-confirmed-operating-context">2. 确认的操作环境<a class="headerlink" href="#2-confirmed-operating-context" title="Permanent link">&para;</a></h2>
-<p>已知环境包括大约四兆像素的工业相机、固定照明、通常固定的相机和受控检查区域。产品可能会轻微移动且无法完美套准，但大幅不受控制的旋转并不正常。目前的检查涉及大型零件和组件的存在，而不是微型组件或微小的螺钉。</p>
+<p>已知环境包括大约四兆像素的工业相机、固定照明、通常固定的相机和受控检查区域。产品可能会轻微移动且无法完美套准，但大幅不受控制的旋转是不正常的。目前的检查涉及大型零件和组件的存在，而不是微型组件或微小的螺钉。</p>
 <p>AssemblyVision 必须实现相机捕获、条形码识别、图像/视频持久性和结果持久性。这些是必需的功能，而不是预先存在的工厂服务。当与中央服务器断开连接时，边缘机器必须继续检查。</p>
-<h2 id="3-stakeholders-and-concerns">3. 利益相关者和关注点<a class="headerlink" href="#3-stakeholders-and-concerns" title="Permanent link">&para;</a></h2>
+<h2 id="3-stakeholders-and-concerns">3. Stakeholders and Concerns<a class="headerlink" href="#3-stakeholders-and-concerns" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2328,44 +2328,44 @@
 <h2 id="5-architectural-principles">5. 架构原则<a class="headerlink" href="#5-architectural-principles" title="Permanent link">&para;</a></h2>
 <h3 id="51-safety-biased-decisions">5.1 基于安全的决策<a class="headerlink" href="#51-safety-biased-decisions" title="Permanent link">&para;</a></h3>
 <p>只有完整、有效、足够有力的证据才能产生<code>OK</code>。缺失、陈旧、混合、低质量、未解决或不兼容的证据会产生内部<code>UNCERTAIN</code>或<code>NG</code>；内部 <code>UNCERTAIN</code> 始终映射到业务 <code>NG</code>。</p>
-<h3 id="52-edge-autonomy">5.2 边缘自治<a class="headerlink" href="#52-edge-autonomy" title="Permanent link">&para;</a></h3>
+<h3 id="52-edge-autonomy">5.2 Edge Autonomy<a class="headerlink" href="#52-edge-autonomy" title="Permanent link">&para;</a></h3>
 <p>检查不能等待中央API。决策路径使用的配置和模型包在激活之前在本地安装和验证。上传是异步且可恢复的。</p>
-<h3 id="53-evidence-and-reproducibility">5.3 证据和再现性<a class="headerlink" href="#53-evidence-and-reproducibility" title="Permanent link">&para;</a></h3>
+<h3 id="53-evidence-and-reproducibility">5.3 Evidence and Reproducibility<a class="headerlink" href="#53-evidence-and-reproducibility" title="Permanent link">&para;</a></h3>
 <p>结果保留足够的结构化证据和不可变的版本标识符来解释哪些输入、模型、配置和规则产生了决策。媒体存储遵循明确的保留政策，不得被视为唯一记录。</p>
 <h3 id="54-deterministic-policy-around-probabilistic-models">5.4 围绕概率模型的确定性策略<a class="headerlink" href="#54-deterministic-policy-around-probabilistic-models" title="Permanent link">&para;</a></h3>
-<p>模型提供检测和置信值。单独可测试的确定性规则引擎应用批准的阈值和所需组件策略。时间聚合通过结合帧证据来提高系统的鲁棒性；它不会提高模型固有的单帧精度。</p>
+<p>Models provide detections and confidence values. A separately testable, deterministic rule engine applies approved thresholds and required-component policy. Temporal aggregation improves system robustness by combining frame evidence; it does not improve a model's inherent single-frame accuracy.</p>
 <h3 id="55-incremental-delivery">5.5 增量交付<a class="headerlink" href="#55-incremental-delivery" title="Permanent link">&para;</a></h3>
-<p>该实施从静态图像垂直切片开始，然后添加物理采集和本地持久性，然后是同步和中央工作流程，最后是基于测量证据的生产强化。</p>
+<p>The implementation starts with a static-image vertical slice, then adds physical acquisition and local durability, then synchronization and central workflows, and finally production hardening based on measured evidence.</p>
 <h2 id="6-scope-by-horizon">6. 范围范围<a class="headerlink" href="#6-scope-by-horizon" title="Permanent link">&para;</a></h2>
 <h3 id="61-two-day-mvp">6.1 两天 MVP<a class="headerlink" href="#61-two-day-mvp" title="Permanent link">&para;</a></h3>
-<p>静态图像 CLI 读取输入文件夹、检测产品、生成具有坐标映射的有界 ROI、检测配置的组件、评估规则并写入 JSON、ROI 图像和带注释的图像。它无需摄像头、视频、中央服务或仪表板即可建立模式和确定性行为。</p>
+<p>The static-image CLI reads an input folder, detects the product, generates a bounded ROI with coordinate mapping, detects configured components, evaluates rules, and writes JSON, ROI images, and annotated images. It establishes schemas and deterministic behavior without camera, video, central services, or dashboards.</p>
 <h3 id="62-one-month-target">6.2 一个月目标<a class="headerlink" href="#62-one-month-target" title="Permanent link">&para;</a></h3>
-<p>目标连接相机和条形码解码器，为每个物理产品窗口创建一个检查记录，在本地保留，公开本地 FastAPI/Vue 接口，聚合每个组件的帧证据，并将选定的记录/证据上传到初始中央服务。包括 Docker Compose 打包、离线测试、重试、保留、运行状况和客户现场评估。</p>
+<p>The target connects a camera and barcode decoder, creates one inspection record per physical product window, persists locally, exposes a local FastAPI/Vue interface, aggregates frame evidence per component, and uploads selected records/evidence to an initial central service. Docker Compose packaging, offline testing, retry, retention, health, and customer-site evaluation are included.</p>
 <h3 id="63-production-target">6.3 生产目标<a class="headerlink" href="#63-production-target" title="Permanent link">&para;</a></h3>
-<p>生产添加了经过验证的操作限制、访问控制、防篡改审计历史（如果需要）、包批准和回滚、强大的磁盘/电源/时钟处理、受监控的服务目标、审查工作流程、记录的支持运行手册以及使用保留的生产数据的客户验收。</p>
+<p>Production adds validated operational limits, access control, tamper-evident audit history where required, package approval and rollback, robust disk/power/clock handling, monitored service objectives, review workflows, documented support runbooks, and customer acceptance using held-out production data.</p>
 <h3 id="64-future">6.4 未来<a class="headerlink" href="#64-future" title="Permanent link">&para;</a></h3>
-<p>潜在的扩展包括中央模型分发、用于中央规模的可选 Kubernetes、Tauri 边缘包装器、PLC/MES 集成、在大型边缘安装中合理的 PostgreSQL，以及具有明确批准门的重新培训自动化。在没有必要证据的情况下，他们不得使 MVP 复杂化。</p>
+<p>Potential extensions include central model distribution, optional Kubernetes for central scale, a Tauri edge wrapper, PLC/MES integration, justified PostgreSQL at larger edge installations, and retraining automation with explicit approval gates. They must not complicate the MVP without evidence of need.</p>
 <h2 id="7-reading-guide">7. 阅读指南<a class="headerlink" href="#7-reading-guide" title="Permanent link">&para;</a></h2>
-<p>从 <a href="../02-requirements/">Requirements</a> 开始，然后是 <a href="../03-architecture-overview/">Architecture Overview</a>。实施团队应使用 <a href="../04-edge-client-architecture/">Edge Client Architecture</a> 和 <a href="../05-central-server-architecture/">Central Server Architecture</a>。共享术语、原因代码、跟踪约定和未解决的决策位于 <a href="../appendices/">Appendices</a> 中。</p>
-<h2 id="8-assumptions">8. 假设<a class="headerlink" href="#8-assumptions" title="Permanent link">&para;</a></h2>
+<p>Start with <a href="../02-requirements/">Requirements</a>, then <a href="../03-architecture-overview/">Architecture Overview</a>. Implementation teams should use <a href="../04-edge-client-architecture/">Edge Client Architecture</a> and <a href="../05-central-server-architecture/">Central Server Architecture</a>. Shared terminology, reason codes, trace conventions, and unresolved decisions are in <a href="../appendices/">Appendices</a>.</p>
+<h2 id="8-assumptions">8. Assumptions<a class="headerlink" href="#8-assumptions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>检查环境保持足够的控制以评估固定角度模型；显着的摄像机角度变化需要重新验证。</li>
-<li>可以集成一种可靠的物理产品界定方法，但尚未选择其机制。</li>
-<li>可以为商定的保留/上传策略配置本地存储。</li>
-<li>可以根据批准的安全流程收集代表性的生产示例，包括故意丢失的组件。</li>
-<li>在谨慎推出期间可以进行人工审核；其人员配置和工作流程尚未确定。</li>
+<li>The inspection environment remains controlled enough to evaluate a fixed-angle model; a significant camera-angle change requires revalidation.</li>
+<li>A reliable method for delimiting physical products can be integrated, but its mechanism is not yet selected.</li>
+<li>Local storage can be provisioned for the agreed retention/upload policy.</li>
+<li>Representative production examples, including intentionally missing components, can be collected under an approved safety process.</li>
+<li>Human review is available during cautious rollout; its staffing and workflow are not yet confirmed.</li>
 </ul>
-<p>这些假设是验证项目，而不是工厂事实。</p>
+<p>These assumptions are validation items, not factory facts.</p>
 <h2 id="9-open-questions-and-validation-required">9. 开放问题和需要验证<a class="headerlink" href="#9-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ol>
-<li>哪些产品、所需组件以及产品到规则的映射定义了第一个版本？</li>
-<li>哪种物理事件界定了检查窗口：传感器、触发器、条形码、跟踪、区域、超时或经过验证的组合？</li>
-<li><code>NG</code> 业务结果如何在运营中使用，自动生产线驱动是否在范围内？</li>
-<li>有哪些相机、条码硬件/标准、计算硬件、操作系统和加速器可用？</li>
-<li>测得的周期时间、视野、模糊/曝光限制以及可接受的决策延迟是多少？</li>
-<li>谁进行审查和样品审核，以及如何批准更正的标签进行培训？</li>
-<li>适用哪些安全、隐私、保留和托管限制？</li>
-<li>参见综合<a href="../appendices/#3-global-open-questions">Global Open Questions</a>。</li>
+<li>What products, required components, and product-to-rule mappings define the first release?</li>
+<li>Which physical event delimits an inspection window: sensor, trigger, barcode, tracking, zones, timeout, or a validated combination?</li>
+<li>How is an <code>NG</code> business result consumed operationally, and is automatic line actuation in scope?</li>
+<li>What camera, barcode hardware/standard, compute hardware, operating system, and accelerator are available?</li>
+<li>What are the measured cycle time, field of view, blur/exposure limits, and acceptable decision latency?</li>
+<li>Who performs review and sample audits, and how are corrected labels approved for training?</li>
+<li>What security, privacy, retention, and hosting constraints apply?</li>
+<li>See the consolidated <a href="../appendices/#3-global-open-questions">Global Open Questions</a>.</li>
 </ol>
 
 

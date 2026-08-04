@@ -2137,7 +2137,7 @@
 <p>即使外部业务接口仅公开 <code>OK</code> 和 <code>NG</code>，<code>UNCERTAIN</code> 和 <code>UNVERIFIABLE</code> 也会以诊断方式保留。</p>
 <h2 id="105-temporal-aggregation-sequence">10.5 时间聚合序列<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
-    participant Window as Product Window
+    participant Window as 产品展示
     participant Quality as 框架质量门
     participant Detector as 元件检测器
     participant Aggregate as 每个组件聚合器
@@ -2157,7 +2157,7 @@ else 帧无效
 loop 每个必需的组件
         Aggregate-&gt;&gt;Aggregate:解决现有、缺失、不确定或无法验证的问题
     end
-    Aggregate--&gt;&gt;Rules:Immutable component evidence set
+    Aggregate--&gt;&gt;Rules:不可变组件证据集
     Rules--&gt;&gt;Window:仅当所有必需的组件都存在时才可以</code></pre>
 <h2 id="106-default-policy">10.6 默认策略<a class="headerlink" href="#106-default-policy" title="Permanent link">&para;</a></h2>
 <p>实用的初始策略接受不同相邻有效帧中的一个高置信度观察或至少两个中等置信度观察。它还需要足够的有效检查机会和可选的可见性约束。</p>
