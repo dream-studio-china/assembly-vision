@@ -1,5 +1,12 @@
 # AssemblyVision Coding Rules
 
+## 1. Language
+
+- English is the base language of this project.
+- All documentation, code comments, commit messages, and README files MUST be written in English.
+
+## 2. Engineering Rules
+
 Before implementing any feature:
 
 1. Read the relevant files under `docs/`.
@@ -20,3 +27,33 @@ Before implementing any feature:
 16. Report unresolved assumptions and hardware dependencies.
 17. Prefer the smallest complete implementation over speculative abstractions.
 18. Never claim the inspection system guarantees 100% accuracy.
+
+## 3. Git Workflow
+
+### 3.1 Conventional Commits
+
+Commit messages MUST follow Conventional Commits:
+
+- `feat:` — new feature
+- `fix:` — bug fix
+- `docs:` — documentation changes
+- `chore:` — maintenance and housekeeping
+- `refactor:` — code restructuring without behavior change
+
+### 3.2 Branch Naming
+
+Branches MUST follow the pattern:
+
+- `feat/xxx`
+- `fix/xxx`
+- `docs/xxx`
+
+### 3.3 Commit and Push Policy
+
+- **Do NOT commit or create commits unless the user explicitly requests it.**
+- **Do NOT push unless the user explicitly approves it.**
+- **Do NOT force-push unless the user explicitly asks for it.**
+
+## 4. Security
+
+- No secrets committed.
