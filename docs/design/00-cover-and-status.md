@@ -9,7 +9,7 @@
 | Status | Draft for engineering validation |
 | Architecture baseline | Edge-client and central-server architecture |
 | Quality priority | Minimize false negatives, preserve traceability, then reduce false positives |
-| Source of project facts | `docs/source-brief.md` |
+| Source of project facts | [docs/source-brief.md](../source-brief.md) |
 
 This document set describes a proposed implementation. It does not claim that AssemblyVision is deployed, that image or barcode recording already exists, or that any accuracy target has been achieved. Production acceptance must be based on measured customer data that was not used for training.
 

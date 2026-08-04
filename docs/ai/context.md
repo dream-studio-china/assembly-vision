@@ -86,7 +86,7 @@ assembly-vision/
 
 ## 5. Documentation Set
 
-- `docs/design/00` to `27` + `appendices.md`: cover/status, introduction, requirements,
+- `docs/design/00` to `27` + [appendices.md](../design/appendices.md): cover/status, introduction, requirements,
   architecture overview, edge client, central server, AI detection pipeline, camera & image
   acquisition, product detection & ROI, component detection, temporal aggregation, rule engine,
   local storage & retention, upload & synchronization, data model & database, REST API & events,
@@ -97,7 +97,7 @@ assembly-vision/
   + TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage & delayed
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
   static-image-first MVP, ADR-010 per-component temporal aggregation.
-- `docs/design/appendices.md` holds the canonical terminology, decision consistency checklist,
+- [docs/design/appendices.md](../design/appendices.md) holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
 
@@ -108,13 +108,14 @@ assembly-vision/
 - `scripts/build-docs.sh` pipeline: `translate-docs.py` (docs/ -> docs-zh/) ->
   `generate-mkdocs-configs.py` (produces mkdocs-en.yml + mkdocs-zh.yml) -> build site/ and site/zh/.
 - Translation uses `deep-translator` GoogleTranslator (free, no API key). Rate-limited; a full
-  translation takes ~15-30 minutes. Single-file mode: `python scripts/translate-docs.py
-  design/03-architecture-overview.md`. On any API failure the original English chunk is kept.
+  translation takes ~15-30 minutes. Single-file mode:
+  `python scripts/translate-docs.py design/03-architecture-overview.md`. On any API failure the
+  original English chunk is kept.
 - All content is translated, including `research/` and Mermaid diagram labels. Mermaid syntax is
   preserved; only node labels, edge text, subgraph titles, sequence messages, and state/ER labels
   are translated. `research/` no longer has a special copy step (removed from build-docs.sh).
 - Translated headings keep their original English slug as an explicit `{#slug}` attribute so
-  cross-document anchors (e.g. `appendices.md#3-global-open-questions`) work in Chinese too.
+  cross-document anchors (e.g. [appendices.md#3-global-open-questions](../design/appendices.md#3-global-open-questions)) work in Chinese too.
 - Known machine-translation quality issues (not script bugs): `frames` -> 框架 (should be 帧),
   `volume` -> 音量 (should be 存储卷), `poll` -> 民意调查 (should be 轮询). Review before publishing.
 - `docs-zh/`, `site/`, and the generated configs are build artifacts, not committed.
@@ -134,7 +135,7 @@ assembly-vision/
 ## 8. Latest Session Decisions
 
 - Generated the full architecture document set under `docs/design/` (28 docs + 10 ADRs +
-  appendices) from `docs/source-brief.md` (formerly `docs/doc-task.md`).
+  appendices) from [docs/source-brief.md](../source-brief.md) (formerly `docs/doc-task.md`).
 - Created `docs/research/` (3 reports) via internet research.
 - Built the bilingual MkDocs with automatic translation, adapted from the `crud-skeleton` project.
 - Added Mermaid translation to `translate-docs.py` (labels/edge text only, syntax preserved).
@@ -147,7 +148,7 @@ assembly-vision/
 
 - Two-day static-image MVP is the next engineering milestone (folder input, two-stage detection,
   ROI, rules, JSON + annotated images, CLI).
-- Hardware/conditions still unconfirmed (see `docs/design/appendices.md` section 3 open questions):
+- Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.
 - `.obsidian/` remains untracked by choice; notify the user before changing that decision.

@@ -79,4 +79,7 @@
 4. Product and component detector versions, rule version, and product-configuration version are pinned per inspection.
 5. Runtime data, model weights, production media, datasets, and secrets remain outside Git.
 
+Mandatory engineering contracts are defined in [docs/contracts](../contracts/README.md); treat
+them as enforceable rules alongside these baseline rules.
+
 Use the [decision consistency checklist](appendices.md#2-decision-consistency-checklist) for every architecture change.

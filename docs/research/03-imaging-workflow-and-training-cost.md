@@ -44,14 +44,14 @@ Sources: https://www.cognex.com/en/tools-and-resources/resource-center/machine-v
 - **Motion blur rule:** the image must freeze the product. With a moving conveyor, exposure time must be short enough that object displacement during exposure is a small fraction of a pixel (or use a strobe/global-shutter camera). Industrial cameras normally use **global shutters** for moving parts (Wikipedia's machine vision equipment section lists simultaneous-exposure ("suitable for moving processes") as a key differentiator: https://en.wikipedia.org/wiki/Machine_vision).
 - **Aperture and DoF:** choose aperture (f-stop) so the whole product height range is in focus; smaller aperture increases depth of field but reduces light, requiring more illumination or longer exposure (which risks blur). There is a classic trade triangle: exposure time / aperture / lighting intensity.
 - **ISO/gain:** keep analog gain/ISO low to minimize noise; add light rather than gain. (General imaging engineering practice; not tied to a single citation - treat as standard knowledge from the same MV literature above.)
-- **Over-exposure/blooming:** specular highlights can saturate the sensor and wash out feature edges. Histogram checks (e.g., max mean brightness limits) belong in the quality gate (AssemblyVision already specifies min/max mean brightness and Laplacian variance in `docs/design/06-ai-detection-pipeline.md`).
+- **Over-exposure/blooming:** specular highlights can saturate the sensor and wash out feature edges. Histogram checks (e.g., max mean brightness limits) belong in the quality gate (AssemblyVision already specifies min/max mean brightness and Laplacian variance in `[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)`).
 
 ### 2.5 Camera mounting, angle, and stationarity
 
 - **Fixed, vibration-isolated mounting.** The environment section of engineering guidance flags vibration, temperature changes, and contaminants as the top environmental risks that break vision systems (https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision-considerations-implementation).
-- **Angle:** a single fixed angle is the right design (AssemblyVision `docs/design/19-training-and-evaluation.md` states a ~45-degree angle change is a domain change requiring revalidation). A near-perpendicular top-down view minimizes perspective distortion and makes ROI coordinates stable.
-- **Field of view:** set the FOV so the product occupies a consistent fraction of the frame (AssemblyVision's stage-1 min box area ratio is 0.15 in `docs/design/08-product-detection-and-roi.md`); verify the actual position band and clipping range from production captures.
-- **Stationarity / trigger:** hardware photo-eye or PLC trigger is preferred over time windows (per `docs/design/07-camera-and-image-acquisition.md`); ensure the product is stationary or the exposure is strobed at a deterministic point in the conveyor cycle so every frame is comparable.
+- **Angle:** a single fixed angle is the right design (AssemblyVision `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)` states a ~45-degree angle change is a domain change requiring revalidation). A near-perpendicular top-down view minimizes perspective distortion and makes ROI coordinates stable.
+- **Field of view:** set the FOV so the product occupies a consistent fraction of the frame (AssemblyVision's stage-1 min box area ratio is 0.15 in `[docs/design/08-product-detection-and-roi.md](../design/08-product-detection-and-roi.md)`); verify the actual position band and clipping range from production captures.
+- **Stationarity / trigger:** hardware photo-eye or PLC trigger is preferred over time windows (per `[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)`); ensure the product is stationary or the exposure is strobed at a deterministic point in the conveyor cycle so every frame is comparable.
 
 ### 2.6 AssemblyVision imaging checklist (applies directly)
 
@@ -59,8 +59,8 @@ Sources: https://www.cognex.com/en/tools-and-resources/resource-center/machine-v
 2. Enclose or shield the station from ambient light; verify consistency over a full shift.
 3. Add polarization if any component face is specular.
 4. Set exposure to freeze motion (global shutter / strobe); target low ISO/gain; tune aperture for full-height DoF.
-5. Mount camera rigidly; record applied settings and serial numbers (per `docs/design/07-camera-and-image-acquisition.md`).
-6. Calibrate frame-quality gates (blur, brightness, glare) from real production captures, including empty, blurred, dark, bright, and reflective scenes (per `docs/design/07-camera-and-image-acquisition.md` Section 7.9).
+5. Mount camera rigidly; record applied settings and serial numbers (per `[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)`).
+6. Calibrate frame-quality gates (blur, brightness, glare) from real production captures, including empty, blurred, dark, bright, and reflective scenes (per `[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)` Section 7.9).
 7. Collect calibration and drift data over a normal shift before finalizing thresholds.
 
 ---
@@ -73,15 +73,15 @@ Ultralytics' official guidance stresses that **"the quality of this data directl
 
 Recommended SOP:
 
-1. **Define a versioned class ontology** (product + required components) with inclusion/exclusion rules and ambiguity policy (AssemblyVision `docs/design/19-training-and-evaluation.md` Section 19.5).
+1. **Define a versioned class ontology** (product + required components) with inclusion/exclusion rules and ambiguity policy (AssemblyVision `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)` Section 19.5).
 2. **Collect with the production camera/optics/mounting/lighting**, not a phone or a different camera. A fixed-angle setup should be kept for training and deployment.
-3. **Coverage must include:** all products/components; real OK products across batches/dates; physically constructed NG products for each missing component (do NOT synthesize all NG by digital erasure - shadows, packaging deformation, and revealed backgrounds differ); empty frames; partial entries; blur; reflections; exposure variation; occlusion (AssemblyVision `docs/design/19-training-and-evaluation.md` Section 19.4; same coverage themes in https://blog.roboflow.com/surface-defects/).
+3. **Coverage must include:** all products/components; real OK products across batches/dates; physically constructed NG products for each missing component (do NOT synthesize all NG by digital erasure - shadows, packaging deformation, and revealed backgrounds differ); empty frames; partial entries; blur; reflections; exposure variation; occlusion (AssemblyVision `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)` Section 19.4; same coverage themes in https://blog.roboflow.com/surface-defects/).
 4. **Include negative/background images** - "normal images are also important. They teach the model that ordinary grain, color changes, and harmless surface patterns should not always be classified as defects" (https://blog.roboflow.com/surface-defects/).
-5. **Provenance per image:** site/line/camera/setup, capture session, product instance, deliberate defect scenario, and camera/lighting revision (AssemblyVision `docs/design/19-training-and-evaluation.md` Section 19.3).
+5. **Provenance per image:** site/line/camera/setup, capture session, product instance, deliberate defect scenario, and camera/lighting revision (AssemblyVision `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)` Section 19.3).
 
 ### 3.2 Labeling standards and tooling
 
-- **Annotation rules:** consistent class names; tight boxes around the visible feature ("Large boxes containing mostly normal surface can make it harder for the model to learn"); annotate every instance; decide and document connected/overlapping cases; second reviewer for all NG and ambiguous labels (https://blog.roboflow.com/surface-defects/ ; AssemblyVision `docs/design/19-training-and-evaluation.md` Section 19.5).
+- **Annotation rules:** consistent class names; tight boxes around the visible feature ("Large boxes containing mostly normal surface can make it harder for the model to learn"); annotate every instance; decide and document connected/overlapping cases; second reviewer for all NG and ambiguous labels (https://blog.roboflow.com/surface-defects/ ; AssemblyVision `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)` Section 19.5).
 - **Annotation types/formats:** bounding boxes for detection; COCO/VOC/YOLO formats; YOLO format is `class x_center y_center width height` normalized (https://docs.ultralytics.com/guides/data-collection-and-annotation/).
 - **Tools:**
   - **CVAT** - open-source, team workflow, auto-segmentation: https://github.com/cvat-ai/cvat
@@ -93,13 +93,13 @@ Recommended SOP:
 
 ### 3.3 Dataset organization and train/validation/test splits
 
-- **Version every dataset** (checksums, annotation hashes, ontology version) and treat raw data as immutable (AssemblyVision `docs/design/19-training-and-evaluation.md` Sections 19.3/19.5).
-- **Leakage-safe splitting is the single most important split rule:** split by physical product instance, and preferably by capture session / batch / date; **never randomly split adjacent video frames** because near-identical frames leak and inflate metrics (AssemblyVision `docs/design/19-training-and-evaluation.md` Section 19.6). Planning start: 70/15/15 by grouped instances for train/validation/internal test, with the customer acceptance set held out entirely.
+- **Version every dataset** (checksums, annotation hashes, ontology version) and treat raw data as immutable (AssemblyVision `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)` Sections 19.3/19.5).
+- **Leakage-safe splitting is the single most important split rule:** split by physical product instance, and preferably by capture session / batch / date; **never randomly split adjacent video frames** because near-identical frames leak and inflate metrics (AssemblyVision `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)` Section 19.6). Planning start: 70/15/15 by grouped instances for train/validation/internal test, with the customer acceptance set held out entirely.
 - **Run leakage checks:** exact SHA-256 duplicates, perceptual-hash nearest neighbors, group-ID overlap, derived-file lineage (AssemblyVision Section 19.6.3).
 
 ### 3.4 Quality gates
 
-- **Frame-level gates at inference:** blur (Laplacian variance), brightness range, corruption, frame age; rejected frames contribute no positive evidence (AssemblyVision `docs/design/06-ai-detection-pipeline.md` and `docs/design/07-camera-and-image-acquisition.md`).
+- **Frame-level gates at inference:** blur (Laplacian variance), brightness range, corruption, frame age; rejected frames contribute no positive evidence (AssemblyVision `[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)` and `[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)`).
 - **Dataset-level gates:** automated checks for invalid boxes, unknown classes, duplicates; second-reviewer sampling; inter-annotator agreement (https://docs.ultralytics.com/guides/data-collection-and-annotation/).
 - **Model-level gates:** evaluate precision, recall, mAP, confusion matrix, false positives/negatives, small-defect performance, and predictions on normal images; "For critical classes, recall may be more important than using a very high confidence threshold" (https://blog.roboflow.com/surface-defects/).
 
@@ -113,7 +113,7 @@ The public guidance is intentionally wide because it depends on task difficulty:
 
 - **Very simple single-class detection (presence/counting of a fixed object):** Roboflow's missing-item tutorial recommends **starting with 25-50 images for one object class** (https://blog.roboflow.com/missing-item-inspection/).
 - **General guidance for starting experiments:** "A few hundred annotated objects per class is enough to start experimenting with transfer learning, but for reliable real-world performance Ultralytics recommends at least 1,500 images and 10,000 labeled instances per class" (https://docs.ultralytics.com/guides/data-collection-and-annotation/).
-- **AssemblyVision's own target:** ~300-800 product images (one class) and ~300-500 labeled instances per component class plus physically-constructed missing-component scenarios (per `docs/design/19-training-and-evaluation.md`). This sits between the "few hundred to start" and the "1,500 / 10,000 for reliability" guidance. Given a fixed station, single product type, and large components, the lower end is plausible, but it must be validated empirically - the "reliable real-world" guidance is from a vendor generalizing across diverse custom datasets.
+- **AssemblyVision's own target:** ~300-800 product images (one class) and ~300-500 labeled instances per component class plus physically-constructed missing-component scenarios (per `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)`). This sits between the "few hundred to start" and the "1,500 / 10,000 for reliability" guidance. Given a fixed station, single product type, and large components, the lower end is plausible, but it must be validated empirically - the "reliable real-world" guidance is from a vendor generalizing across diverse custom datasets.
 
 ### 4.2 Training time and compute
 
@@ -137,7 +137,7 @@ The public guidance is intentionally wide because it depends on task difficulty:
 
 ### 4.4 Iteration cycles
 
-Practitioner material consistently describes **short, feedback-driven cycles**: run a first model on default settings, review false positives/negatives, add the most informative misclassified/uncertain images, relabel, retrain (https://blog.roboflow.com/surface-defects/ ; https://blog.roboflow.com/flanges-uality-inspection/). The active-learning loop (upload low-confidence predictions for review and retraining) is a standard production pattern and matches AssemblyVision's human-in-the-loop and production-monitoring requirements (`docs/design/19-training-and-evaluation.md` Section 19.14).
+Practitioner material consistently describes **short, feedback-driven cycles**: run a first model on default settings, review false positives/negatives, add the most informative misclassified/uncertain images, relabel, retrain (https://blog.roboflow.com/surface-defects/ ; https://blog.roboflow.com/flanges-uality-inspection/). The active-learning loop (upload low-confidence predictions for review and retraining) is a standard production pattern and matches AssemblyVision's human-in-the-loop and production-monitoring requirements (`[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)` Section 19.14).
 
 ---
 
@@ -150,7 +150,7 @@ Practitioner material consistently describes **short, feedback-driven cycles**: 
 - [ ] Ambient light excluded (enclosure/shroud)
 - [ ] Global shutter / strobe configuration set; motion blur verified at max conveyor speed
 - [ ] Aperture/DoF covers full product height band; gain/ISO kept low
-- [ ] Camera rigidly mounted; applied settings + serial logged (per `docs/design/07-camera-and-image-acquisition.md`)
+- [ ] Camera rigidly mounted; applied settings + serial logged (per `[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)`)
 - [ ] Frame-quality gates calibrated on real captures (blur, brightness, glare)
 - [ ] Trigger (photo-eye/PLC) debounce and product-window boundaries validated
 - [ ] FOV/position band verified against stage-1 min box area and ROI margins
@@ -199,5 +199,5 @@ Practitioner material consistently describes **short, feedback-driven cycles**: 
 - Verify motion-blur and exposure requirements against the actual conveyor speed and product dwell time; determine whether a strobe/global-shutter configuration is required.
 - Confirm trigger availability (photo-eye/PLC/barcode timing) and stationarity before finalizing the product-window strategy.
 - Determine whether quality-gate thresholds (Laplacian variance, brightness) chosen from the design defaults are correct for the real camera and lighting.
-- Establish customer-acceptance sample sizes and binomial confidence bounds for NG recall with zero or few observed misses (per `docs/design/19-training-and-evaluation.md` Section 19.13).
+- Establish customer-acceptance sample sizes and binomial confidence bounds for NG recall with zero or few observed misses (per `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)` Section 19.13).
 - Validate GPU/CPU training time on the team's actual training hardware; cloud GPU-hour costs for this dataset size are expected to be small but are unmeasured here.

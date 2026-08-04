@@ -3,7 +3,7 @@
 ## 1. Documentation Sets
 
 - [Software architecture and design](design/README.md)
-- [Source architecture brief](doc-task.md)
+- [Source architecture brief](source-brief.md)
 
 The design set is the engineering baseline derived from the source brief. Unknown factory, hardware, timing, security, retention, and acceptance details remain explicitly unresolved rather than assumed.
 
