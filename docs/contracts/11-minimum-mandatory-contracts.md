@@ -1,6 +1,8 @@
 # 11. Minimum Mandatory Contracts
 
-AssemblyVision must enforce at least the following rules from the beginning:
+AssemblyVision must enforce the following rules whenever their subsystem is in scope. Rules 1-9,
+13-17, and 19 apply from the static spike; upload, database, API, TypeScript, audit, and cleanup
+rules activate when those subsystems are introduced:
 
 1. All Python code passes Ruff.
 2. All core modules pass MyPy.
@@ -32,4 +34,4 @@ AssemblyVision must enforce at least the following rules from the beginning:
 
 - [Contract index](./README.md)
 - [Appendices - decision consistency checklist](../design/appendices.md#2-decision-consistency-checklist)
-- [AGENTS.md](../../AGENTS.md)
+- [Contributor rules](../contributing.md)

@@ -7,7 +7,7 @@ Observability must explain inspection behavior, device health, synchronization s
 ### 23.1.1 Delivery Scope
 
 - **MVP:** structured local logs, per-stage timing, decision JSON, model/rule versions, and CLI health output.
-- **One-month target:** local health API/dashboard, persistent device events, queue/disk/camera metrics, central fleet view, correlation identifiers, and diagnostic bundles.
+- **One-month target:** local health API/dashboard, persistent device events, queue/disk/camera metrics, central upload/device status for the pilot, correlation identifiers, and a bounded diagnostic bundle.
 - **Production target:** alert routing, service objectives agreed from baseline data, runbooks, clock monitoring, controlled remote diagnostics, and version-segmented quality dashboards.
 - **Future scope:** OpenTelemetry tracing across fleet services and integration with customer monitoring platforms.
 
@@ -70,7 +70,7 @@ Metric labels must avoid unbounded values such as inspection ID or barcode. Thos
 
 ## 23.5 Health Model
 
-`/health/live` reports whether the process can answer. `/health/ready` reports whether its required local dependencies permit its function. A separate `/health/device` reports camera, model, rule, disk, database, clock, network, and central connectivity states.
+`/api/v1/health/live` reports whether the process can answer. `/api/v1/health/ready` reports whether decision-critical local dependencies permit valid inspection. Authenticated `/api/v1/device/status` reports camera, model, rule, disk, database, clock, network, central connectivity, `inspection_ready`, and `sync_ready` states.
 
 The decision runtime inside `edge-service` is not ready when it cannot durably record decisions, has no compatible active model/rule, or has no usable camera. Central connectivity alone does not make it unready. The dashboard presents `healthy`, `degraded`, and `unavailable` with reason codes and timestamps rather than a single green indicator.
 

@@ -24,7 +24,10 @@ The following operations require elevated permissions:
 - Data deletion
 - Remote device configuration
 - User management
-- Human-review actions that change business status
+- Human-review actions that append or supersede a human disposition
+
+Review never overwrites the immutable edge `internal_decision` or `business_result`. It has no
+production-line release effect unless a separately approved PLC/MES disposition contract exists.
 
 ## 4. Release Lifecycle
 

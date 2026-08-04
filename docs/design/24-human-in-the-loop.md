@@ -9,7 +9,7 @@ Human review is a controlled quality process for cautious rollout, ambiguous evi
 ### 24.2.1 Initial Production Phase
 
 - Make all NG inspections available for review.
-- Route low-confidence or explicitly `UNCERTAIN` cases to review if that state is adopted.
+- Route business `NG` cases whose internal decision is `UNCERTAIN` to review as a distinct explanatory category.
 - Audit a representative sample of OK inspections.
 - Preserve original evidence, model/rule/configuration versions, and machine reason codes.
 - Store reviewer corrections and route confirmed misclassifications to a governed training backlog.
@@ -36,7 +36,7 @@ The machine outcome remains immutable. A review adds a separate human dispositio
 | Machine outcome | Review purpose | Allowed human disposition |
 |---|---|---|
 | `NG` | Confirm real defect or false NG | Confirmed NG, corrected OK, inconclusive |
-| `UNCERTAIN` if adopted | Resolve insufficient/conflicting evidence | Confirmed NG, confirmed OK, recapture/reinspect, inconclusive |
+| Business `NG`, internal `UNCERTAIN` | Resolve insufficient/conflicting evidence | Confirmed NG, confirmed OK, recapture/reinspect, inconclusive |
 | Sampled `OK` | Estimate missed defects and detect drift | Confirmed OK, corrected NG, inconclusive |
 | System exception | Determine inspectability and recovery | Reinspect, operational fault, inconclusive |
 
@@ -142,7 +142,7 @@ Manual review is reduced only when measured production evidence supports the cha
 
 ## 24.12 Open Questions and Validation Required
 
-- Whether internal `UNCERTAIN` is displayed as a distinct review category while retaining business result `NG`.
+- How internal `UNCERTAIN` is displayed as a distinct review category while retaining business result `NG`.
 - Who has authority to define ground truth, adjudicate disagreements, and release a product after review.
 - Review staffing, shifts, languages, response expectations, and queue ownership.
 - Initial and continuing OK audit sampling policy after production baseline measurement.

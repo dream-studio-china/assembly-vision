@@ -7,8 +7,10 @@ The following fields must not be modified after creation:
 - `inspection_id`
 - `device_id`
 - `captured_at`
-- `original_decision`
-- `model_version`
+- `original_internal_decision`
+- `original_business_result`
+- Product-detector model version and checksum
+- Component-detector model version and checksum
 - `rule_version`
 - `product_config_version`
 - Original media references
@@ -20,7 +22,8 @@ Human review must be stored separately.
 Each inspection must record:
 
 - Application version
-- Model version
+- Product-detector model version and checksum
+- Component-detector model version and checksum
 - Rule version
 - Product-configuration version
 - Device ID
@@ -55,13 +58,17 @@ All public APIs must use versioned paths:
 
 ## 6. Standard Error Response
 
+Use `application/problem+json`:
+
 ```json
 {
-  "error": {
-    "code": "PRODUCT_NOT_FOUND",
-    "message": "Product could not be located",
-    "trace_id": "..."
-  }
+  "type": "https://assemblyvision.example/problems/product-not-found",
+  "title": "Product not found",
+  "status": 422,
+  "detail": "Product could not be located",
+  "code": "PRODUCT_NOT_FOUND",
+  "request_id": "...",
+  "errors": []
 }
 ```
 
@@ -88,7 +95,10 @@ Do not hardcode:
 
 Use validated runtime configuration, preferably through Pydantic Settings.
 
-Invalid configuration must prevent the service from entering the Ready state.
+Invalid decision-critical local configuration prevents `inspection_ready`. Missing upload URLs,
+central credentials, or central connectivity prevents `sync_ready` but does not block otherwise
+valid offline inspection. Product mapping, required components, thresholds, model/rule bindings,
+and signed package fields cannot be overridden by environment variables or local UI overrides.
 
 ## 8. Version Binding
 
@@ -96,10 +106,21 @@ Every production inspection must bind to:
 
 ```text
 Application Version
-Model Version
+Product-Detector Model Version and Checksum
+Component-Detector Model Version and Checksum
 Rule Version
 Product Configuration Version
 ```
+
+## 9. Configuration Ownership
+
+| Configuration class | Owner | Local/environment override |
+|---|---|---|
+| Product mapping, required components, thresholds, model/rule compatibility | Versioned governed package | Forbidden |
+| Camera identity, exposure, geometry | Approved site configuration | Allowed only with audit and revalidation |
+| Upload URL, proxy, timeouts, bandwidth | Deployment/site operations | Allowed; affects `sync_ready`, not decision rules |
+| Secrets and device credentials | Deployment secret store | Runtime injection only; never persisted in packages |
+| UI preferences and non-safety display options | Local user/device | Allowed |
 
 ## Related Documents
 

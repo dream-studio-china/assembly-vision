@@ -2,43 +2,54 @@
 
 ## 1. Layer Model
 
-AssemblyVision follows this dependency direction:
+AssemblyVision uses dependency inversion. Source-code dependencies point toward domain contracts;
+infrastructure implements domain-owned protocols and is wired at the composition root:
 
 ```text
-Application Layer
-        ↓
-Orchestration Layer
-        ↓
-Domain Layer
-        ↓
-Infrastructure Layer
+API / CLI / Scheduled Entry Points
+                |
+                v
+Application / Orchestration
+                |
+                v
+Domain Models and Protocols
+                ^
+                |
+Infrastructure Adapters
+
+Composition Root -> Application + Infrastructure
 ```
 
-Suggested repository mapping:
+Initial repository mapping:
 
 ```text
 apps/
-  edge-api
-  edge-cli
-  edge-worker
-  server-api
-  server-worker
+  edge-service       # API, CLI entry point, inspection runtime, persistence, uploader
+  edge-web
+  central-api
+  admin-web
+  central-worker     # optional; only when long-running jobs justify it
 
 packages/python/
+  domain
   vision-core
-  rule-engine
-  temporal-aggregator
-  product-detector
-  component-detector
-  roi-engine
-  persistence
-  upload-client
+  platform-common
+
+packages/typescript/
+  api-client
+  ui                 # only proven shared presentation primitives
 ```
+
+Product detection, ROI, component detection, temporal aggregation, and deterministic rules are
+logical modules inside `vision-core`; they are not separate packages until reuse, native dependency
+isolation, or independent release requirements are demonstrated. Edge persistence and upload
+implementations remain in `edge-service` behind domain-facing protocols. In-process worker tasks or
+a supervised inference subprocess are not separate deployment units.
 
 ## 2. Mandatory Rules
 
-- `apps/` is responsible only for startup, dependency injection, protocol adaptation, and transport concerns.
-- Core business logic must live under reusable packages.
+- `apps/` owns composition, transport, application orchestration, and app-specific infrastructure.
+- Shared packages are created only for cohesive domain logic or demonstrated reuse by multiple applications.
 - FastAPI routes must only validate requests, call services, and serialize responses.
 - YOLO inference logic must not be implemented directly inside FastAPI routes.
 - Database logic must not be implemented directly inside Vue components or FastAPI routes.

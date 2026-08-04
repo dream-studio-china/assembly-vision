@@ -59,7 +59,8 @@ Site change
 
 ## 5. Industrial Exception Policy
 
-The following conditions should produce `NG` or `UNCERTAIN`:
+The following conditions produce business result `NG`. The internal decision may be `NG` or
+`UNCERTAIN` to preserve the reason for review:
 
 - Camera disconnected
 - Missing image

@@ -19,25 +19,25 @@
 The edge application should expose at least:
 
 ```text
-/livez
-/readyz
-/health/camera
-/health/model
-/health/storage
-/health/upload
+/api/v1/health/live
+/api/v1/health/ready
+/api/v1/device/status
 ```
 
 Definitions:
 
-- `livez`: the process is alive.
-- `readyz`: the process is ready to perform valid inspections.
+- `/api/v1/health/live`: the process is alive; it exposes no internal details.
+- `/api/v1/health/ready`: decision-critical configuration, camera, models, and persistence permit
+  valid inspections.
+- `/api/v1/device/status`: authenticated detailed camera/model/storage/upload health, including
+  separate `inspection_ready` and `sync_ready` flags.
 
 Example:
 
 ```text
 model unavailable:
-livez = healthy
-readyz = unhealthy
+/api/v1/health/live = healthy
+/api/v1/health/ready = unhealthy
 ```
 
 ## 3. Startup Sequence
@@ -62,9 +62,11 @@ The service must not accept production inspection work before readiness checks p
   "event": "inspection_completed",
   "inspection_id": "...",
   "device_id": "...",
-  "decision": "NG",
+  "business_result": "NG",
+  "internal_decision": "UNCERTAIN",
   "latency_ms": 134,
-  "model_version": "component-v1.2.0"
+  "product_model_version": "product-v1.0.0",
+  "component_model_version": "component-v1.2.0"
 }
 ```
 
@@ -108,6 +110,8 @@ Maintain runbooks for:
 - Synchronization after network recovery
 - Model rollback
 - Rule rollback
+
+The indexed runbook set is under [docs/runbooks](../runbooks/README.md).
 
 ## Related Documents
 

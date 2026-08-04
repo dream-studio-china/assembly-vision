@@ -27,7 +27,7 @@ The contracts should be treated as enforceable engineering rules, not as optiona
 9. [09 - Industrial Site and Change Control](09-industrial-site-and-change-control.md)
 10. [10 - Model, Rule, Release, and Acceptance](10-model-rule-release-and-acceptance.md)
 11. [11 - Minimum Mandatory Contracts](11-minimum-mandatory-contracts.md)
-12. [AGENTS.md](../../AGENTS.md)
+12. [Contributor rules](../contributing.md)
 
 ## Related Documentation
 
@@ -36,7 +36,7 @@ The contracts should be treated as enforceable engineering rules, not as optiona
 - [Reason-code glossary](../design/appendices.md#4-reason-code-glossary) — stable decision codes
 - [Open questions](../design/appendices.md#3-global-open-questions) — unresolved items affecting contracts
 - [Architecture decisions](../design/decisions/README.md) — accepted ADRs referenced by the contracts
-- [Source brief](../source-brief.md) — the original task that defines the system
+- [Source brief](../source-brief.md) — historical input; ADRs, contracts, and current design are normative
 
 ## Enforcement Principle
 

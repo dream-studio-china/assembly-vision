@@ -79,7 +79,7 @@ services:
       - edge-models:/opt/assemblyvision/models:ro
       - edge-tmp:/tmp
     healthcheck:
-      test: ["CMD", "python", "-m", "assemblyvision.healthcheck", "http://127.0.0.1:8000/health/live"]
+      test: ["CMD", "python", "-m", "assemblyvision.healthcheck", "http://127.0.0.1:8000/api/v1/health/live"]
       interval: 15s
       timeout: 3s
       retries: 4
@@ -160,7 +160,7 @@ Production TLS policy, certificate automation, upload limits, and request timeou
 
 ## 20.7 Configuration and Secrets
 
-Configuration precedence is defaults, versioned site configuration, then environment overrides. Product rules and model manifests are signed/versioned domain artifacts, not ordinary environment variables. Secrets include central credentials, device credentials, TLS private keys, and object-store credentials. They are mounted from a host secret store or deployment system with least privilege.
+Configuration precedence is typed application defaults, governed immutable package, approved site configuration, and deployment-only environment overrides. Environment/local overrides may change connectivity, paths, resource limits, and non-safety display options; they must not change product mapping, required components, thresholds, or model/rule compatibility. Product rules and model manifests are signed/versioned domain artifacts, not ordinary environment variables. Secrets include central credentials, device credentials, TLS private keys, and object-store credentials. They are mounted from a host secret store or deployment system with least privilege.
 
 Every effective configuration snapshot records its version and checksum. Validation occurs before activation. Invalid configuration leaves the last known-good version active and emits an event. Changes affecting camera geometry, product mapping, required components, thresholds, or models require audit records and an explicit activation action.
 

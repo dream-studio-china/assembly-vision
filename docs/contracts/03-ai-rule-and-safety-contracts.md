@@ -63,9 +63,8 @@ Inputs may include:
 
 Outputs include:
 
-- `OK`
-- `NG`
-- `UNCERTAIN`
+- `internal_decision`: `OK`, `NG`, or `UNCERTAIN`
+- `business_result`: `OK` or `NG`
 - Missing components
 - Low-confidence components
 - Reason codes
@@ -91,8 +90,12 @@ Default behavior:
 
 ```text
 Unable to reliably confirm completeness
-→ NG or UNCERTAIN
+→ internal_decision = UNCERTAIN or NG
+→ business_result = NG
 ```
+
+`UNCERTAIN` is never a business result and must never reach the production-line output as a third
+state. It is explanatory evidence for review while the physical/business path remains `NG`.
 
 Forbidden behavior:
 

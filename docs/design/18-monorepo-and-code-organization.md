@@ -166,7 +166,7 @@ Runs only jobs that should outlive an HTTP request: report/export generation, me
 |---|---|---|
 | `domain` | Pydantic API/event value models, enums, stable error codes | FastAPI routers, SQLAlchemy tables, camera SDK, storage clients |
 | `vision-core` | Image-source protocols, folder source, camera/barcode adapter protocols, YOLO wrappers, ROI, aggregation, deterministic rules, pipeline | Edge database, central APIs, dashboard code, training orchestration |
-| `platform-common` | Narrow logging/config/checksum/telemetry utilities used by multiple apps | Domain business rules, generic “utils” dumping ground |
+| `platform-common` | Optional extraction for narrow logging/config/checksum/telemetry utilities after two applications need them | Domain business rules, generic "utils" dumping ground |
 
 SQLAlchemy persistence models stay in each application because edge and central schemas differ. Upload protocol DTOs may live in `domain`; upload retry implementation belongs to `edge-service`. If only one app uses a helper, keep it in that app.
 
@@ -206,17 +206,17 @@ flowchart LR
     ES -. publishes .-> EO
 ```
 
-The worker imports a small central application interface/library factored within `central-api` packaging or a later central-domain package; it must not import FastAPI route modules. No arrow from edge runtime to central runtime denotes a code/runtime dependency. The uploader communicates over the documented network contract.
+For month one, durable job handlers remain in the central codebase and may use a second process entry point; no separate `central-worker` application is required. If independent deployment later becomes necessary, first extract a small central application/domain package consumed by both deployables. A worker must never import FastAPI route modules. No arrow from edge runtime to central runtime denotes a code/runtime dependency. The uploader communicates over the documented network contract.
 
 ## 18.8 MVP Versus Later Packages
 
 ### 18.8.1 Two-Day Static-Image MVP
 
-Required: `edge-service` CLI entry point, `domain`, `vision-core` with folder source/detectors/ROI/rules, `training/evaluation` basics, model manifests, and focused tests. Not required: databases, web apps, central apps, temporal aggregation, upload, camera SDK, or shared TypeScript packages.
+Required: one Python distribution containing the `edge-service` CLI entry point and cohesive internal modules for domain models, folder source, detectors, ROI, rules, manifests, and focused tests. Separate package publication, TypeScript workspace setup, databases, Web apps, central apps, temporal aggregation, upload, and camera SDK are not required.
 
 ### 18.8.2 One-Month MVP
 
-Required: all applications shown except that `central-worker` may remain a module/process only if asynchronous reports or media work ships. Required packages are `domain`, `vision-core`, `platform-common`, `api-client`, and a minimal `ui`. SQLite/PostgreSQL migrations, edge/central Compose definitions, contract tests, and resilience tests are included.
+Required: `edge-service`, `edge-web`, a central API codebase, and only the minimal central inspection/review Web view needed for the demonstrator. Start with two Python distributions at most (edge runtime/vision and central API); keep domain, configuration, logging, persistence, and jobs as internal modules until two concrete consumers justify extraction. Share only generated API contracts and proven detection-viewer primitives in TypeScript. A separate `central-worker`, `platform-common`, shared chart/auth/validation packages, generalized admin UI, and report jobs are deferred.
 
 ### 18.8.3 Add Only When Justified
 
@@ -278,5 +278,5 @@ Use code owners for vision/rules, edge runtime, central/security, frontend share
 - Confirm CI provider, container registry, artifact/model registry, and SBOM/signing requirements.
 - Confirm whether camera SDK licensing or native libraries require a separately built adapter package/image.
 - Decide whether generated OpenAPI clients are committed or generated during every consumer build.
-- Validate whether report/media workloads justify `central-worker` and a job broker in the one-month MVP.
+- Validate whether report/media workloads justify `central-worker` and a job broker in the one-month demonstrator.
 - Confirm supported edge operating system, CPU/GPU architecture, and offline dependency installation process.

@@ -7,7 +7,7 @@ AssemblyVision testing demonstrates measured behavior under representative produ
 ## 22.2 Scope by Delivery Stage
 
 - **Two-day MVP:** unit tests for ROI/rules/serialization, static pipeline integration tests, deterministic fixtures, CLI smoke test, and baseline model evaluation.
-- **One-month target:** camera and barcode adapters, local persistence, temporal aggregation, APIs, dashboards, synchronization, failure injection, deployment smoke tests, and customer-site acceptance candidates.
+- **One-month target:** camera/barcode adapters, local persistence, temporal aggregation, edge API/dashboard, one central ingestion/history/review path, targeted synchronization/restart/idempotency tests, deployment smoke tests, and a controlled customer-site baseline where access permits.
 - **Production target:** independent acceptance data, long-running tests, power-loss and disk-full recovery, security/contract testing, release regression suites, and model/rule promotion gates.
 - **Future scope:** multi-line load simulation, hardware-in-the-loop rigs, automated fleet canaries, and additional camera-domain test sets.
 

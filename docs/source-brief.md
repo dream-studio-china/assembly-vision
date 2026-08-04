@@ -1,5 +1,8 @@
 # Task: Generate the Complete AssemblyVision Software Architecture Documentation
 
+> **Status:** Historical input. Accepted ADRs, engineering contracts, and the current design set are
+> normative when this brief contains older naming or scope assumptions.
+
 You are a principal software architect, industrial computer-vision engineer, MLOps engineer, and full-stack technical writer.
 
 Your task is to generate a complete, internally consistent, implementation-oriented software architecture document set for an industrial AI inspection platform named **AssemblyVision**.

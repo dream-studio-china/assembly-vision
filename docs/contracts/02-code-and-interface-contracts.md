@@ -13,35 +13,21 @@ Do not use the following as core domain interfaces:
 - SQLAlchemy ORM objects
 - `dict[str, Any]`
 
-## 2. Standard Domain Models
+## 2. Canonical Domain Models
 
-```python
-from typing import Literal
+The canonical Pydantic and matching TypeScript contracts are defined in
+[Data Model and Database](../design/14-data-model-and-database.md#143-canonical-pydantic-2-models).
+This contract does not duplicate simplified model definitions because duplicated examples can
+silently diverge from the API source of truth.
 
-from pydantic import BaseModel, Field
+Mandatory distinctions include:
 
-
-class BoundingBox(BaseModel):
-    x_min: int
-    y_min: int
-    x_max: int
-    y_max: int
-
-
-class Detection(BaseModel):
-    class_name: str
-    confidence: float = Field(ge=0.0, le=1.0)
-    bbox: BoundingBox
-    frame_index: int | None = None
-
-
-class InspectionDecision(BaseModel):
-    decision: Literal["OK", "NG", "UNCERTAIN"]
-    missing_components: list[str]
-    low_confidence_components: list[str]
-    model_version: str
-    rule_version: str
-```
+- `BoundingBox` includes its source image dimensions and uses documented full-frame or ROI space.
+- Detections use stable `frame_id` identifiers, not transport-local frame indexes.
+- `internal_decision` is `OK | NG | UNCERTAIN`; `business_result` is only `OK | NG`.
+- Each inspection pins product-detector, component-detector, rule, product-configuration, and
+  application versions, including artifact checksums required for replay.
+- Upload, media, inspection-lifecycle, and device-operational states use their canonical enums.
 
 ## 3. Interface Constraints
 

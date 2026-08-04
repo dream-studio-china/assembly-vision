@@ -20,7 +20,10 @@ production data excluded from training.
 | [Source Brief](source-brief.md) | The original architecture task that drives this document set |
 | [Architecture Design](design/README.md) | 28 design documents: edge/central architecture, AI pipeline, data model, APIs, deployment, testing, roadmap, risk register |
 | [Architecture Decisions](design/decisions/README.md) | ADR-001 through ADR-010 |
+| [Engineering Contracts](contracts/README.md) | Mandatory architecture, safety, API, quality, deployment, and acceptance constraints |
+| [Operational Runbooks](runbooks/README.md) | Executable recovery procedures for required failure scenarios |
 | [Research](research/01-industrial-inspection-success-rates.md) | Industry success rates, YOLO capabilities, imaging and training practices |
+| [Contributor Documentation](contributing.md) | Required reading, precedence, language, Git, and quality rules |
 
 ## Delivery Horizons
 

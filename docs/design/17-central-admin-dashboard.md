@@ -24,10 +24,10 @@ The server enforces every permission and organization scope. Route guards improv
 
 | Route | Page | Core functions |
 |---|---|---|
-| `/overview` | Fleet overview | KPIs, outcome/latency trends, active alerts, device state, upload delay |
+| `/overview` | Fleet overview | KPIs, business-result/latency trends, active alerts, device state, upload delay |
 | `/devices` and `/devices/:id` | Fleet management | Site/line filtering, last seen, versions, assignment, event history |
 | `/inspections` and `/inspections/:id` | Inspection history | Cross-device search, evidence/media, version traceability, review status |
-| `/reviews` | NG review work queue | Claim/open, compare evidence, correct outcome/components, submit reason |
+| `/reviews` | NG review work queue | Claim/open, compare evidence, append disposition/component corrections, submit reason |
 | `/products` | Product management | Stable products, immutable versions, barcode mappings, components |
 | `/rules` | Rule management | Draft, validate, compare, publish, assignment impact |
 | `/models` | Model registry | Manifest/artifacts, evaluation summary, lifecycle, compatibility |
@@ -68,7 +68,7 @@ MVP may assign one device at a time. Staged fleet rollout, canaries, automatic r
 
 ## 17.6 Inspection Search and Evidence Review
 
-Search supports bounded time, site, line, device, outcome, barcode, product, component reason, review state, model version, and rule version. Results use server-side keyset pagination. Filter chips and URL query state make active constraints unambiguous.
+Search supports bounded time, site, line, device, business result, internal decision, barcode, product, component reason, review state, model version, and rule version. Results use server-side keyset pagination. Filter chips and URL query state make active constraints unambiguous.
 
 Inspection detail shows device capture and central receive timestamps separately, final decision, barcode/product, evidence, quality, media, exact immutable versions, upload receipt, and review revisions. Detection overlays use source dimensions and share the tested viewer package with the edge dashboard. Media URLs are short-lived and refreshed only after authorization.
 
@@ -80,7 +80,7 @@ Review flow:
 
 1. Open a stable inspection revision and display original result without modification.
 2. Inspect key frames, ROI, annotated image, optional clip, component evidence, and quality reasons.
-3. Select reviewed outcome and component corrections.
+3. Select human disposition and component corrections; never rewrite the machine fields.
 4. Require a controlled reason code; allow a bounded comment.
 5. Show the exact change and submit with an idempotency key and optimistic revision.
 6. Append a `ReviewRecord`; do not overwrite the inspection result.

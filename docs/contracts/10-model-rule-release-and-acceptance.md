@@ -88,7 +88,8 @@ Each acceptance record must retain:
 
 - Result
 - Image evidence
-- Model version
+- Product-detector model version and checksum
+- Component-detector model version and checksum
 - Rule version
 - Timestamp
 - Device ID

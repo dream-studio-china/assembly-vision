@@ -31,12 +31,14 @@ The edge client owns:
 
 ```text
 1. Complete inspection
-2. Save required images or video clips
-3. Save the local database record
-4. Create an upload task
-5. Return the local result
-6. Upload asynchronously
+2. Finalize required media files with size and checksum
+3. Atomically commit inspection, media manifests, and upload outbox tasks
+4. Publish/return the committed local result
+5. Upload asynchronously
 ```
+
+Steps 2 and 3 form one recoverable unit: a crash must not leave a completed inspection without its
+required upload task. Temporary files and incomplete transactions are reconciled at startup.
 
 Local media and records must not be deleted before confirmed upload and retention checks.
 
@@ -45,15 +47,23 @@ Local media and records must not be deleted before confirmed upload and retentio
 Each upload task must contain at least:
 
 - `upload_task_id`
-- `inspection_id`
 - `device_id`
+- `inspection_id` (nullable for device-event tasks)
+- `object_id`
+- `kind`
 - `payload_hash`
+- `checksum_sha256` when bytes are uploaded
 - `status`
-- `retry_count`
-- `next_retry_at`
-- `last_error`
+- `attempt_count`
+- `next_attempt_at`
+- `last_error_code`
 - `created_at`
+- `updated_at`
 - `completed_at`
+- Lease owner and expiry while in progress
+
+Canonical states are `PENDING`, `IN_PROGRESS`, `RETRY_WAIT`, `SUCCEEDED`,
+`PERMANENT_FAILURE`, and `CANCELLED`.
 
 ## 5. Idempotency
 
@@ -62,7 +72,7 @@ The central server must support idempotent uploads.
 Recommended idempotency key:
 
 ```text
-device_id + inspection_id
+inspection:{device_id}:{inspection_id}
 ```
 
 Duplicate upload attempts must not create duplicate inspection records.
@@ -82,8 +92,8 @@ Media uploads must:
 On startup, the edge application must:
 
 - Recover `PENDING` tasks
-- Recover `RETRY` tasks
-- Detect stale `UPLOADING` tasks
+- Recover `RETRY_WAIT` tasks
+- Detect stale `IN_PROGRESS` tasks
 - Move stale tasks back into a retryable state
 - Verify referenced media still exists
 - Validate database-to-file consistency where practical
@@ -101,15 +111,17 @@ The local cleanup process must not delete:
 
 The central server may append:
 
-- `review_decision`
+- `review_disposition`
 - `review_comment`
 - `reviewer`
 - `reviewed_at`
 
 It must not overwrite:
 
-- `original_ai_decision`
-- `model_version`
+- `original_internal_decision`
+- `original_business_result`
+- Product-detector model version and checksum
+- Component-detector model version and checksum
 - `rule_version`
 - Original media references
 
