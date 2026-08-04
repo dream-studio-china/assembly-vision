@@ -1,0 +1,41 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'scripts/build-docs.sh'
+      - 'scripts/translate-docs.py'
+      - 'scripts/generate-mkdocs-configs.py'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install docs dependencies
+        run: pip install mkdocs-material deep-translator
+
+      - name: Build bilingual site
+        run: bash scripts/build-docs.sh
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site

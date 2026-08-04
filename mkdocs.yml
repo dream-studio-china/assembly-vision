@@ -1,0 +1,113 @@
+site_name: AssemblyVision
+site_description: AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)
+repo_url: https://github.com/dream-studio-china/assembly-vision
+edit_uri: edit/main/docs/
+site_dir: site
+site_url: https://dream-studio-china.github.io/assembly-vision/
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Source Brief: source-brief.md
+  - Architecture Design:
+      - Design Index: design/README.md
+      - Cover and Status: design/00-cover-and-status.md
+      - Introduction: design/01-introduction.md
+      - Requirements: design/02-requirements.md
+      - Architecture Overview: design/03-architecture-overview.md
+      - Edge Client Architecture: design/04-edge-client-architecture.md
+      - Central Server Architecture: design/05-central-server-architecture.md
+      - AI Detection Pipeline: design/06-ai-detection-pipeline.md
+      - Camera and Image Acquisition: design/07-camera-and-image-acquisition.md
+      - Product Detection and ROI: design/08-product-detection-and-roi.md
+      - Component Detection: design/09-component-detection.md
+      - Temporal Aggregation: design/10-temporal-aggregation.md
+      - Rule Engine: design/11-rule-engine.md
+      - Local Storage and Retention: design/12-local-storage-and-retention.md
+      - Upload and Synchronization: design/13-upload-and-synchronization.md
+      - Data Model and Database: design/14-data-model-and-database.md
+      - REST API and Events: design/15-rest-api-and-events.md
+      - Edge Dashboard: design/16-edge-dashboard.md
+      - Central Admin Dashboard: design/17-central-admin-dashboard.md
+      - Monorepo and Code Organization: design/18-monorepo-and-code-organization.md
+      - Training and Evaluation: design/19-training-and-evaluation.md
+      - Deployment and Operations: design/20-deployment-and-operations.md
+      - Security and Source Distribution: design/21-security-and-source-distribution.md
+      - Testing and Quality Assurance: design/22-testing-and-quality-assurance.md
+      - Observability and Support: design/23-observability-and-support.md
+      - Human in the Loop: design/24-human-in-the-loop.md
+      - Roadmap: design/25-roadmap.md
+      - Customer Acceptance: design/26-customer-acceptance.md
+      - Risks and Mitigations: design/27-risks-and-mitigations.md
+      - Appendices: design/appendices.md
+      - Architecture Decisions:
+          - ADR Index: design/decisions/README.md
+          - "ADR-001: Edge-First Inspection": design/decisions/ADR-001-edge-first-inspection.md
+          - "ADR-002: Python Backend": design/decisions/ADR-002-python-backend.md
+          - "ADR-003: Vue 3 and TypeScript Frontend": design/decisions/ADR-003-vue-3-and-typescript-frontend.md
+          - "ADR-004: Two-Stage Detection": design/decisions/ADR-004-two-stage-detection.md
+          - "ADR-005: Local-First Storage and Delayed Upload": design/decisions/ADR-005-local-first-storage-and-delayed-upload.md
+          - "ADR-006: REST Plus WebSocket": design/decisions/ADR-006-rest-plus-websocket.md
+          - "ADR-007: Monorepo": design/decisions/ADR-007-monorepo.md
+          - "ADR-008: Docker Deployment": design/decisions/ADR-008-docker-deployment.md
+          - "ADR-009: Static-Image-First MVP": design/decisions/ADR-009-static-image-first-mvp.md
+          - "ADR-010: Per-Component Temporal Aggregation": design/decisions/ADR-010-per-component-temporal-aggregation.md
+  - Research:
+      - Industrial Inspection Success Rates: research/01-industrial-inspection-success-rates.md
+      - YOLO Capabilities and Success Rates: research/02-yolo-capabilities-and-success-rates.md
+      - Imaging Workflow and Training Cost: research/03-imaging-workflow-and-training-cost.md
+
+extra:
+  alternate:
+    - name: English
+      link: /assembly-vision/
+      lang: en
+    - name: 中文
+      link: /assembly-vision/zh/
+      lang: zh
