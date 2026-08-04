@@ -2,58 +2,144 @@
 
 ## 1. Language
 
-- English is the base language of this project.
-- All documentation, code comments, commit messages, and README files MUST be written in English.
+English is the official language of this repository.
 
-## 2. Engineering Rules
+The following must be written in English:
 
-Before implementing any feature:
+- Source code
+- Documentation
+- README files
+- Code comments
+- Docstrings
+- API documentation
+- Commit messages
+- Pull request descriptions
 
-1. Read the relevant files under `docs/`.
-2. Inspect existing interfaces and tests.
-3. Preserve the documented edge-first architecture.
-4. Do not introduce new frameworks or services without justification.
-5. Keep AI inference, rule evaluation, persistence, and Web APIs separated.
-6. Do not put YOLO inference logic inside FastAPI route handlers.
-7. Do not put business rules inside the AI model.
-8. Do not let the edge inspection pipeline depend on the central server.
-9. Maintain offline operation and upload retry behavior.
-10. Use typed Pydantic models and TypeScript interfaces.
-11. Add or update tests for every behavioral change.
-12. Run tests, Ruff, and MyPy before completing a task.
-13. Do not claim tests passed unless they were actually executed.
-14. Do not change public interfaces silently.
-15. Do not add placeholder implementations unless clearly marked.
-16. Report unresolved assumptions and hardware dependencies.
-17. Prefer the smallest complete implementation over speculative abstractions.
-18. Never claim the inspection system guarantees 100% accuracy.
+## 2. Required Reading
 
-## 3. Git Workflow
+Before making changes:
 
-### 3.1 Conventional Commits
+1. Read the relevant files under `docs/design/`.
+2. Read the relevant contracts under `docs/contracts/`.
+3. Read related ADRs under `docs/design/decisions/`.
+4. Inspect existing interfaces, implementations, and tests.
+5. Use `docs/ai/context.md` when broader repository context is required.
 
-Commit messages MUST follow Conventional Commits:
+Documentation hierarchy:
 
-- `feat:` — new feature
-- `fix:` — bug fix
-- `docs:` — documentation changes
-- `chore:` — maintenance and housekeeping
-- `refactor:` — code restructuring without behavior change
+```text
+docs/design/             Defines how the system is designed.
+docs/design/decisions/   Explains why major decisions were made.
+docs/contracts/          Defines mandatory implementation constraints.
+docs/runbooks/           Defines operational recovery procedures.
+```
 
-### 3.2 Branch Naming
+If documents conflict, use this precedence:
 
-Branches MUST follow the pattern:
+```text
+Explicit user instruction
+→ Accepted ADR
+→ Engineering contract
+→ Architecture design
+→ Existing implementation
+```
 
-- `feat/xxx`
-- `fix/xxx`
-- `docs/xxx`
+Report conflicts before changing public architecture or behavior.
 
-### 3.3 Commit and Push Policy
+## 3. Architecture Rules
 
-- **Do NOT commit or create commits unless the user explicitly requests it.**
-- **Do NOT push unless the user explicitly approves it.**
-- **Do NOT force-push unless the user explicitly asks for it.**
+1. Preserve the documented edge-first architecture.
+2. Do not introduce new frameworks or services without justification.
+3. Keep AI inference, rule evaluation, persistence, and Web APIs separated.
+4. Do not put YOLO inference logic inside FastAPI route handlers.
+5. Do not put business rules inside AI models or detector classes.
+6. Do not let the edge inspection pipeline depend on the central server.
+7. Maintain offline operation and persistent upload retry behavior.
+8. Do not bypass the Rule Engine.
+9. Respect `docs/contracts/01-architecture-boundaries.md`.
+10. Prefer the smallest complete implementation over speculative abstractions.
 
-## 4. Security
+## 4. Safety Rules
 
-- No secrets committed.
+1. Never return `OK` when inspection evidence is incomplete or invalid.
+2. Detector failures, invalid ROI, missing rules, unknown product types, and unavailable models must produce `NG` or `UNCERTAIN` according to policy.
+3. Never claim the inspection system guarantees 100% accuracy.
+4. Preserve the original AI decision during human review.
+5. Do not delete local media until upload and retention conditions are satisfied.
+
+## 5. Code and Interface Rules
+
+1. Use explicit type annotations for public functions and classes.
+2. Use typed Pydantic models for backend contracts.
+3. Use generated or synchronized TypeScript API types.
+4. Do not use unstructured dictionaries as core domain interfaces.
+5. Do not change public interfaces silently.
+6. Do not add placeholder implementations unless clearly marked.
+7. Report unresolved assumptions and hardware dependencies.
+
+## 6. Quality Rules
+
+For every behavioral change:
+
+1. Add or update tests.
+2. Run Ruff.
+3. Run MyPy.
+4. Run Pytest.
+5. Report the exact commands executed.
+6. Do not claim checks passed unless they were actually executed.
+7. Report failures that could not be resolved.
+
+## 7. Documentation Rules
+
+Update relevant documentation when changing:
+
+- Architecture
+- Public APIs
+- Database schemas
+- Module interfaces
+- Configuration formats
+- Deployment behavior
+- Model manifests
+- Rule formats
+- Operational recovery behavior
+
+Documentation is part of the implementation.
+
+## 8. Git Workflow
+
+### 8.1 Conventional Commits
+
+Commit messages must follow Conventional Commits:
+
+- `feat:`
+- `fix:`
+- `docs:`
+- `refactor:`
+- `test:`
+- `build:`
+- `ci:`
+- `chore:`
+
+### 8.2 Branch Naming
+
+Use:
+
+- `feat/...`
+- `fix/...`
+- `docs/...`
+- `refactor/...`
+- `chore/...`
+
+### 8.3 Commit and Push Policy
+
+- Do not create commits unless explicitly requested.
+- Do not push unless explicitly approved.
+- Do not force-push unless explicitly requested.
+- Do not rewrite Git history without explicit approval.
+
+## 9. Security
+
+- Never commit secrets.
+- Never hardcode credentials, tokens, or private keys.
+- Do not expose stack traces, internal paths, or credentials through APIs.
+- Use environment-based runtime configuration.
