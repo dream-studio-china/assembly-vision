@@ -13,13 +13,13 @@ This roadmap sequences AssemblyVision implementation by technical dependency and
 
 ## 25.3 Preconditions
 
-Before implementation, obtain representative camera images, draft product/component rules, model artifacts or a training path, permitted development data, and access to candidate edge hardware. Name customer owners for ground truth, camera mechanics, network/security, and acceptance. Unknowns are tracked explicitly rather than encoded as defaults.
+Before implementation, obtain representative camera images, draft product/component rules, runnable model artifacts, class mappings, permitted development data, a small held-out fixture set, and access to candidate edge hardware. Name customer owners for ground truth, camera mechanics, network/security, and acceptance. The two-day clock starts only after this readiness gate passes; unknowns are tracked explicitly rather than encoded as defaults.
 
 ## 25.4 Two-Day Static-Image MVP
 
 ### 25.4.1 Day One
 
-1. Establish the Python/TypeScript monorepo foundation and quality commands needed by the MVP.
+1. Establish one Python workspace/project and the Ruff, MyPy, and Pytest commands needed by the static spike; defer TypeScript workspace setup.
 2. Implement folder image input and deterministic output naming.
 3. Load the product detector and record model metadata.
 4. Detect the product, expand/clip its bounds, and save the mapped ROI.
@@ -43,7 +43,11 @@ Camera SDK, live video, temporal aggregation, barcode implementation, local serv
 
 The pipeline is repeatable on supplied static images, failures are explicit, coordinate mappings are test-covered, outputs identify model/rule versions, and results can seed baseline evaluation. This proves software flow, not production accuracy.
 
-## 25.5 One-Month Target
+## 25.5 One-Month Controlled Integration Demonstrator
+
+This is a multi-stream target for a small team with camera, model, data, and site access already
+available. It is not a promise of production acceptance. The scope is intentionally limited to one
+product family, one camera, one window mechanism, one barcode path, and one central ingestion path.
 
 ### 25.5.1 Week 1: Inspection Core and Baseline
 
@@ -58,7 +62,9 @@ Dependencies: representative images, initial product/component definitions, cand
 - Integrate the selected camera adapter and trigger/window prototype.
 - Implement barcode reading as a separate capability and product-type resolution.
 - Add SQLite schema/migrations, atomic media storage, recovery states, and retention safeguards.
-- Add local FastAPI and the basic Vue dashboard for camera, latest result, health, and history.
+- Add local FastAPI and a basic Vue dashboard for camera, latest result, health, and recent history.
+- Add minimum pilot security: unique device credentials, TLS, one authenticated administrator role,
+  protected inspection/media access, and audit of mutations.
 
 Dependencies: camera/SDK/hardware, barcode samples/standard, operating environment. Risks: driver/container compatibility, exposure, trigger ambiguity.
 
@@ -67,17 +73,21 @@ Dependencies: camera/SDK/hardware, barcode samples/standard, operating environme
 - Implement product-window management and frame-quality filtering.
 - Add per-component temporal aggregation and explicit ambiguous-window handling.
 - Implement persistent idempotent upload queue, retry/backoff, checksums, and receipts.
-- Add central ingestion API, PostgreSQL schema, object storage abstraction, basic history, device view, and manual-review queue.
+- Add one central ingestion API, PostgreSQL schema, selected-media storage, basic inspection history,
+  and a minimal review capture view. Defer generalized product/rule administration and analytics.
 
 Dependencies: stable camera timestamps/window signal, network path, identity approach. Risks: frame mixing, duplicate inspection, queue pressure.
 
 ### 25.5.4 Week 4: Deployment, Resilience, and Site Evaluation
 
 - Build non-root multi-stage Docker images, Compose profiles, Nginx configuration, volumes, health checks, and release manifests.
-- Test offline operation, restart/power-loss recovery, disk pressure, retry, duplicate upload, and cleanup.
-- Add structured logs, edge health, central device/queue status, audit trail, and support bundle.
-- Execute customer-site tests and an acceptance baseline with unseen data.
-- Deliver installation, operator, reviewer, backup/restore, and incident runbooks.
+- Test the critical pilot subset: offline operation, restart recovery, retry/idempotency, duplicate
+  upload, and protected-evidence cleanup. Full power-loss, disk-full, and soak matrices remain
+  production gates.
+- Add structured logs, edge health, central upload status, and a bounded audit trail.
+- Execute a controlled customer-site baseline with unseen examples when access and ground truth are
+  available; this is not final customer acceptance.
+- Deliver runbooks required for the pilot paths; expand the complete runbook set before production.
 
 Dependencies: site access, customer network/security decisions, acceptance cases and ground truth. Risks: late domain shift and insufficient test duration.
 
@@ -87,7 +97,8 @@ The following work is driven by baseline findings rather than compressed into th
 
 1. Expand real production data by failed product/component strata and revalidate models.
 2. Finalize acceptance thresholds and confidence treatment with the customer.
-3. Harden device identity, role-based access, signed packages, vulnerability response, backups, and audit retention.
+3. Expand pilot authentication into full role-based access, external identity where required,
+   credential rotation, signed packages, vulnerability response, backups, and audit retention.
 4. Prove long-running stability and restoration on production-equivalent hardware.
 5. Validate camera-mount/exposure controls and change-detection procedures.
 6. Establish release rings, rollback exercises, support ownership, and quality monitoring.

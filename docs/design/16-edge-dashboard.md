@@ -58,7 +58,7 @@ Use a bandwidth-limited JPEG/MJPEG or WebRTC preview only if justified by latenc
 
 ## 16.5 Inspection History and Detail
 
-History defaults to newest first and supports outcome, barcode, product, and bounded date filters. Search is debounced and server-side; cursor pagination prevents loading the full local database. A row displays completion time, outcome, barcode, product, reason summary, latency, upload state, and model/rule versions.
+History defaults to newest first and supports business result, internal decision, barcode, product, and bounded date filters. Search is debounced and server-side; cursor pagination prevents loading the full local database. A row displays completion time, business result, internal decision detail, barcode, product, reason summary, latency, upload state, and model/rule versions.
 
 The detail page contains:
 
@@ -74,7 +74,7 @@ Purged media displays metadata and purge reason rather than a broken image. Vide
 
 ## 16.6 Upload Queue
 
-The queue page groups `PENDING`, `IN_PROGRESS`, `RETRY`, `DEAD_LETTER`, and `SUCCEEDED` counts. Default rows show unfinished tasks, next attempt, attempt count, object kind, inspection link, bytes, and sanitized error code. The dashboard explains that retries continue without the page being open.
+The queue page groups `PENDING`, `IN_PROGRESS`, `RETRY_WAIT`, `PERMANENT_FAILURE`, `CANCELLED`, and `SUCCEEDED` counts. Default rows show unfinished tasks, next attempt, attempt count, object kind, inspection link, bytes, and sanitized error code. The dashboard explains that retries continue without the page being open.
 
 Manual retry is enabled only for retry/dead-letter tasks, requires confirmation and reason, and sends an idempotency key. It does not create a second task. Bulk retry is deferred until operational evidence shows it is needed; unbounded bulk retry can overload the central server after an outage.
 

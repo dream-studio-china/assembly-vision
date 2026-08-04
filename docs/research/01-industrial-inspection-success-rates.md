@@ -20,7 +20,7 @@ The most comparable published evidence comes from:
 - **Metal casting / welding inspection** (porosity, cracks, inclusions)
 - **Pharmaceutical inspection** (direct published numbers are scarce; adjacent evidence only)
 
-**Metric notes.** Industrial papers overwhelmingly report **mAP (mean Average Precision)** on a held-out test set, not production recall/precision at an operating threshold. mAP is an average over confidence thresholds and is **not** the same as the operational recall a production line achieves after a confidence threshold is fixed. Where papers report precision/recall/F1 at a threshold, this is stated. AssemblyVision's own safety metric (NG recall) is defined in `docs/design/19-training-and-evaluation.md`; no public benchmark measures exactly that quantity for assembly completeness, so AssemblyVision must establish its own baseline.
+**Metric notes.** Industrial papers overwhelmingly report **mAP (mean Average Precision)** on a held-out test set, not production recall/precision at an operating threshold. mAP is an average over confidence thresholds and is **not** the same as the operational recall a production line achieves after a confidence threshold is fixed. Where papers report precision/recall/F1 at a threshold, this is stated. AssemblyVision's own safety metric (NG recall) is defined in `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)`; no public benchmark measures exactly that quantity for assembly completeness, so AssemblyVision must establish its own baseline.
 
 ---
 
@@ -142,8 +142,8 @@ The most comparable published evidence comes from:
 ## 6. Implications and Caveats for AssemblyVision
 
 1. **mAP is not production recall.** Every benchmark number above is a test-set average; AssemblyVision's acceptance metric (NG recall) must be measured with fixed thresholds on excluded production data.
-2. **Small pose and lighting changes dominate error budgets.** Budget for them (VR-YOLO -4pp; MVTec AD2 <60% AU-PRO). AssemblyVision's fixed camera + fixed lighting are an advantage only if drift is monitored (see `docs/design/07-camera-and-image-acquisition.md`).
-3. **Rare-class and imbalance problems are the norm.** Expect NG cases to be a small minority; plan dedicated physically-captured missing-component datasets (see `docs/design/19-training-and-evaluation.md`).
+2. **Small pose and lighting changes dominate error budgets.** Budget for them (VR-YOLO -4pp; MVTec AD2 <60% AU-PRO). AssemblyVision's fixed camera + fixed lighting are an advantage only if drift is monitored (see `[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)`).
+3. **Rare-class and imbalance problems are the norm.** Expect NG cases to be a small minority; plan dedicated physically-captured missing-component datasets (see `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)`).
 4. **Benchmark datasets are NOT the target distribution.** NEU-DET, MVTec AD, etc. differ from a conveyor line (motion, vibration, reflection, barcode shadows). Treat them as method feasibility evidence only.
 5. **Industry failure statistics** (77% pilots stall; 50-70% projects miss expectations) are about integration and process, not detector accuracy. AssemblyVision's edge-first, offline-capable design and human-in-the-loop plan address these specific failure modes.
 
@@ -151,7 +151,7 @@ The most comparable published evidence comes from:
 
 ## 7. Open Questions and Validation Required
 
-- No public benchmark measures **NG recall / false-negative rate for component-presence (assembly completeness) inspection**. AssemblyVision must define its own acceptance dataset and confidence bounds (binomial bound for zero observed misses, per `docs/design/19-training-and-evaluation.md`).
+- No public benchmark measures **NG recall / false-negative rate for component-presence (assembly completeness) inspection**. AssemblyVision must define its own acceptance dataset and confidence bounds (binomial bound for zero observed misses, per `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)`).
 - The Kaggle casting dataset figures (7,348 images; 5,198 OK / 2,150 defective) are dataset-page-reported and should be re-verified if used as a reference.
 - Published PCB mAP numbers come from specific public datasets (splits vary); the exact dataset and split used by VR-YOLO and the multi-scale PCB papers should be confirmed before citing them as anchors.
 - No reliable public numbers exist for pharmaceutical visual inspection; treat that industry as a data gap.

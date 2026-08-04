@@ -45,7 +45,7 @@
 | CENTRAL-004 | P1 | The service MUST manage devices, products, product components, versioned rules, versioned model metadata, users, permissions, and audit records. | Authorization/E2E tests |
 | CENTRAL-005 | P1 | Manual review MUST preserve the original automated result, reviewer outcome, reason, reviewer identity, and timestamps. | Audit tests |
 | CENTRAL-006 | P1 | Dashboards MUST report device health, upload delay, OK/NG trends, missing components, barcode failures, and version-specific performance without presenting reviewed labels as raw predictions. | Data-quality tests |
-| CENTRAL-007 | P1 | Configuration distribution MUST use immutable versioned packages, compatibility checks, staged activation, acknowledgement, and rollback. | Distribution tests |
+| CENTRAL-007 | P1 | When remote configuration distribution enters production scope, it MUST use immutable versioned packages, compatibility checks, staged activation, acknowledgement, and rollback. The one-month demonstrator MAY use manually installed checksum-verified packages. | Distribution tests |
 | CENTRAL-008 | P1 | Media storage MUST use a filesystem abstraction or S3-compatible object storage with database metadata and integrity checks. | Storage integration tests |
 | CENTRAL-009 | P0 | Central unavailability MUST NOT change or block an edge inspection decision. | Outage test |
 | CENTRAL-010 | P2 | Future model package distribution MAY share the versioned distribution mechanism after signing/approval requirements are validated. | Release qualification |
@@ -91,7 +91,7 @@ Applicable requirements are BR-002, BR-003, EDGE-005 through EDGE-008, EDGE-010,
 
 ### 7.2 One-Month Target
 
-The target implements the remaining edge requirements, initial central requirements, local/central persistence, selected media upload, basic dashboards, Compose deployment, and resilience/evaluation tests. Features may remain demonstration-grade until their validation criteria are met.
+The target is a controlled integration demonstrator for one product family, one camera, one validated window mechanism, and one barcode path. It implements durable local decisions, offline operation, selected media upload, one idempotent central ingestion/history path, minimum pilot authentication, a basic local dashboard, and a minimal central inspection/review view. Generalized administration, reports, remote configuration delivery, and the full resilience matrix are deferred.
 
 ### 7.3 Production Target
 

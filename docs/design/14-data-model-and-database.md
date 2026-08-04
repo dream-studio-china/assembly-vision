@@ -41,10 +41,48 @@ class APIModel(BaseModel):
     model_config = ConfigDict(extra="forbid", from_attributes=True)
 
 
-class Decision(StrEnum):
+class InternalDecision(StrEnum):
     OK = "OK"
     NG = "NG"
     UNCERTAIN = "UNCERTAIN"
+
+
+class BusinessResult(StrEnum):
+    OK = "OK"
+    NG = "NG"
+
+
+class InspectionLifecycle(StrEnum):
+    OPEN = "OPEN"
+    EVALUATING = "EVALUATING"
+    COMPLETED = "COMPLETED"
+    ABORTED = "ABORTED"
+
+
+class UploadTaskState(StrEnum):
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    RETRY_WAIT = "RETRY_WAIT"
+    SUCCEEDED = "SUCCEEDED"
+    PERMANENT_FAILURE = "PERMANENT_FAILURE"
+    CANCELLED = "CANCELLED"
+
+
+class DeviceOperationalState(StrEnum):
+    STARTING = "STARTING"
+    READY = "READY"
+    INSPECTING = "INSPECTING"
+    DEGRADED = "DEGRADED"
+    PAUSED = "PAUSED"
+    MAINTENANCE = "MAINTENANCE"
+    FAULTED = "FAULTED"
+
+
+class MediaLifecycle(StrEnum):
+    PENDING = "PENDING"
+    AVAILABLE = "AVAILABLE"
+    FAILED = "FAILED"
+    PURGED = "PURGED"
 
 
 class BoundingBox(APIModel):
@@ -79,6 +117,41 @@ class FrameQuality(APIModel):
     saturation_fraction: Confidence
     occlusion_fraction: Confidence | None = None
     reason_codes: list[str] = Field(default_factory=list)
+
+
+class ReasonCount(APIModel):
+    reason_code: str
+    count: NonNegativeInt
+
+
+class FrameQualitySummary(APIModel):
+    total_frame_count: NonNegativeInt
+    usable_frame_count: NonNegativeInt
+    rejected_frame_count: NonNegativeInt
+    reasons: list[ReasonCount] = Field(default_factory=list)
+
+
+class BarcodeResult(APIModel):
+    status: Literal["READ", "NOT_READ", "CONFLICT", "NOT_REQUIRED"]
+    value: str | None = Field(default=None, max_length=256)
+    symbology: str | None = Field(default=None, max_length=64)
+
+
+class ProductResolution(APIModel):
+    status: Literal["RESOLVED", "UNKNOWN", "CONFLICT"]
+    source: Literal["BARCODE", "MANUAL", "CONFIGURED_DEFAULT", "NONE"]
+    product_code: str | None = None
+    product_version_id: UUID | None = None
+
+
+class MediaMetadata(APIModel):
+    media_id: UUID
+    kind: Literal["KEY_FRAME", "ANNOTATED_FRAME", "PRODUCT_ROI", "NG_CLIP", "ROLLING_VIDEO"]
+    lifecycle: MediaLifecycle
+    relative_path: str
+    mime_type: str
+    size_bytes: NonNegativeInt
+    checksum_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
 class ProductDetection(APIModel):
@@ -122,7 +195,8 @@ class AggregatedComponentEvidence(APIModel):
 
 
 class InspectionDecision(APIModel):
-    outcome: Decision
+    internal_decision: InternalDecision
+    business_result: BusinessResult
     missing_components: list[str]
     low_confidence_components: list[str]
     reason_codes: list[str]
@@ -132,37 +206,55 @@ class InspectionDecision(APIModel):
 class InspectionRecord(APIModel):
     inspection_id: UUID
     device_id: UUID
-    inspection_sequence: Annotated[int, Field(gt=0)]
+    device_sequence: Annotated[int, Field(gt=0)]
+    lifecycle_status: InspectionLifecycle
     started_at: datetime
     completed_at: datetime
-    barcode: str | None = Field(default=None, max_length=256)
-    product_code: str | None = None
-    product_version_id: UUID | None = None
+    barcode_result: BarcodeResult
+    product_resolution: ProductResolution
+    product_detection: ProductDetection | None = None
+    roi_result: ROIResult | None = None
+    frame_quality_summary: FrameQualitySummary
+    application_version: str
     product_model_version_id: UUID
+    product_model_checksum_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     component_model_version_id: UUID
+    component_model_checksum_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     rule_version_id: UUID
+    aggregation_policy_version: str
     evidence: list[AggregatedComponentEvidence]
+    media: list[MediaMetadata]
     decision: InspectionDecision
+    synchronization_status: Literal["LOCAL_ONLY", "QUEUED", "PARTIAL", "SYNCED", "FAILED"]
     processing_ms: NonNegativeInt
 
 
 class UploadTask(APIModel):
     upload_task_id: UUID
-    inspection_id: UUID
+    device_id: UUID
+    inspection_id: UUID | None = None
     kind: Literal["INSPECTION", "MEDIA", "DEVICE_EVENT"]
     object_id: UUID
-    status: Literal["PENDING", "IN_PROGRESS", "RETRY", "SUCCEEDED", "DEAD_LETTER"]
+    payload_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    status: UploadTaskState
     idempotency_key: str
     checksum_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     attempt_count: NonNegativeInt = 0
     next_attempt_at: datetime | None = None
     last_error_code: str | None = None
+    created_at: datetime
+    updated_at: datetime
+    completed_at: datetime | None = None
+    lease_owner: str | None = None
+    lease_expires_at: datetime | None = None
 
 
 class DeviceStatus(APIModel):
     device_id: UUID
     observed_at: datetime
-    inspection_state: Literal["STARTING", "READY", "INSPECTING", "PAUSED", "FAULTED"]
+    operational_state: DeviceOperationalState
+    inspection_ready: bool
+    sync_ready: bool
     camera_connected: bool
     model_loaded: bool
     central_connected: bool
@@ -210,6 +302,18 @@ class Artifact(APIModel):
     size_bytes: NonNegativeInt
 
 
+class DatasetReference(APIModel):
+    dataset_version: str
+    purpose: Literal["TRAIN", "VALIDATION", "TEST", "ACCEPTANCE"]
+    manifest_uri: str
+
+
+class ModelMetric(APIModel):
+    name: str
+    value: float
+    scope: str
+
+
 class ModelManifest(APIModel):
     model_version_id: UUID
     model_id: UUID
@@ -220,25 +324,38 @@ class ModelManifest(APIModel):
     input_height: Annotated[int, Field(gt=0)]
     class_names: list[str]
     artifacts: list[Artifact]
-    dataset_version: str
-    metrics: dict[str, float]
+    datasets: list[DatasetReference]
+    split_strategy: str
+    source_revision: str
+    training_config_revision: str
+    metrics: list[ModelMetric]
+    limitations: list[str]
+    approved_by: str | None = None
+    approved_at: datetime | None = None
+    supersedes_model_version_id: UUID | None = None
     created_at: datetime
+
+
+class ComponentCorrection(APIModel):
+    component_code: str
+    state: Literal["PRESENT", "MISSING", "UNCERTAIN"]
 
 
 class ReviewRecord(APIModel):
     review_id: UUID
     inspection_id: UUID
     reviewer_user_id: UUID
-    original_outcome: Decision
-    reviewed_outcome: Decision
-    component_corrections: dict[str, Literal["PRESENT", "MISSING", "UNCERTAIN"]]
+    original_internal_decision: InternalDecision
+    original_business_result: BusinessResult
+    reviewed_disposition: Literal["CONFIRMED_OK", "CONFIRMED_NG", "REINSPECT", "INCONCLUSIVE"]
+    component_corrections: list[ComponentCorrection]
     reason_code: str
     comment: str | None = Field(default=None, max_length=2000)
     reviewed_at: datetime
     revision: Annotated[int, Field(gt=0)]
 ```
 
-The 15 required public models are `BoundingBox`, `Detection`, `FrameQuality`, `ProductDetection`, `ROIResult`, `ComponentDetection`, `AggregatedComponentEvidence`, `InspectionDecision`, `InspectionRecord`, `UploadTask`, `DeviceStatus`, `ProductConfiguration`, `RuleConfiguration`, `ModelManifest`, and `ReviewRecord`. `ComponentPolicy` and `Artifact` are supporting value objects.
+The 15 required public models are `BoundingBox`, `Detection`, `FrameQuality`, `ProductDetection`, `ROIResult`, `ComponentDetection`, `AggregatedComponentEvidence`, `InspectionDecision`, `InspectionRecord`, `UploadTask`, `DeviceStatus`, `ProductConfiguration`, `RuleConfiguration`, `ModelManifest`, and `ReviewRecord`. Barcode, resolution, lifecycle, media, dataset, metric, and correction types are supporting value objects and are still part of the generated API contract.
 
 ## 14.4 Matching TypeScript Types
 
@@ -247,26 +364,58 @@ These interfaces show the expected generated shape. Frontends should import gene
 ```typescript
 export type UUID = string;
 export type ISODateTime = string;
-export type Decision = "OK" | "NG" | "UNCERTAIN";
+export type InternalDecision = "OK" | "NG" | "UNCERTAIN";
+export type BusinessResult = "OK" | "NG";
+export type InspectionLifecycle = "OPEN" | "EVALUATING" | "COMPLETED" | "ABORTED";
+export type UploadTaskState = "PENDING" | "IN_PROGRESS" | "RETRY_WAIT" | "SUCCEEDED" | "PERMANENT_FAILURE" | "CANCELLED";
+export type DeviceOperationalState = "STARTING" | "READY" | "INSPECTING" | "DEGRADED" | "PAUSED" | "MAINTENANCE" | "FAULTED";
+export type MediaLifecycle = "PENDING" | "AVAILABLE" | "FAILED" | "PURGED";
 
 export interface BoundingBox { x_min: number; y_min: number; x_max: number; y_max: number; image_width: number; image_height: number }
 export interface Detection { class_name: string; confidence: number; bbox: BoundingBox; frame_id: UUID; track_id: string | null }
 export interface FrameQuality { usable: boolean; blur_score: number; brightness_mean: number; saturation_fraction: number; occlusion_fraction: number | null; reason_codes: string[] }
+export interface ReasonCount { reason_code: string; count: number }
+export interface FrameQualitySummary { total_frame_count: number; usable_frame_count: number; rejected_frame_count: number; reasons: ReasonCount[] }
+export interface BarcodeResult { status: "READ" | "NOT_READ" | "CONFLICT" | "NOT_REQUIRED"; value: string | null; symbology: string | null }
+export interface ProductResolution { status: "RESOLVED" | "UNKNOWN" | "CONFLICT"; source: "BARCODE" | "MANUAL" | "CONFIGURED_DEFAULT" | "NONE"; product_code: string | null; product_version_id: UUID | null }
+export interface MediaMetadata { media_id: UUID; kind: "KEY_FRAME" | "ANNOTATED_FRAME" | "PRODUCT_ROI" | "NG_CLIP" | "ROLLING_VIDEO"; lifecycle: MediaLifecycle; relative_path: string; mime_type: string; size_bytes: number; checksum_sha256: string }
 export interface ProductDetection { frame_id: UUID; product_class: string; confidence: number; bbox: BoundingBox; model_version_id: UUID; quality: FrameQuality }
 export interface ROIResult { frame_id: UUID; product_bbox: BoundingBox; roi_bbox: BoundingBox; roi_width: number; roi_height: number; orientation_degrees: number | null; transform_full_to_roi: [number, number, number, number, number, number]; media_id: UUID | null }
 export interface ComponentDetection { frame_id: UUID; component_code: string; confidence: number; roi_bbox: BoundingBox; full_frame_bbox: BoundingBox; model_version_id: UUID }
 export interface AggregatedComponentEvidence { component_code: string; state: "PRESENT" | "MISSING" | "UNCERTAIN"; best_confidence: number | null; usable_frame_count: number; detection_count: number; adjacent_detection_run: number; supporting_frame_ids: UUID[]; policy_reason_codes: string[] }
-export interface InspectionDecision { outcome: Decision; missing_components: string[]; low_confidence_components: string[]; reason_codes: string[]; decided_at: ISODateTime }
-export interface InspectionRecord { inspection_id: UUID; device_id: UUID; inspection_sequence: number; started_at: ISODateTime; completed_at: ISODateTime; barcode: string | null; product_code: string | null; product_version_id: UUID | null; product_model_version_id: UUID; component_model_version_id: UUID; rule_version_id: UUID; evidence: AggregatedComponentEvidence[]; decision: InspectionDecision; processing_ms: number }
-export interface UploadTask { upload_task_id: UUID; inspection_id: UUID; kind: "INSPECTION" | "MEDIA" | "DEVICE_EVENT"; object_id: UUID; status: "PENDING" | "IN_PROGRESS" | "RETRY" | "SUCCEEDED" | "DEAD_LETTER"; idempotency_key: string; checksum_sha256: string | null; attempt_count: number; next_attempt_at: ISODateTime | null; last_error_code: string | null }
-export interface DeviceStatus { device_id: UUID; observed_at: ISODateTime; inspection_state: "STARTING" | "READY" | "INSPECTING" | "PAUSED" | "FAULTED"; camera_connected: boolean; model_loaded: boolean; central_connected: boolean; disk_free_bytes: number; upload_pending_count: number; current_product_model_version_id: UUID | null; current_component_model_version_id: UUID | null; current_rule_version_id: UUID | null; alerts: string[] }
+export interface InspectionDecision { internal_decision: InternalDecision; business_result: BusinessResult; missing_components: string[]; low_confidence_components: string[]; reason_codes: string[]; decided_at: ISODateTime }
+export interface InspectionRecord { inspection_id: UUID; device_id: UUID; device_sequence: number; lifecycle_status: InspectionLifecycle; started_at: ISODateTime; completed_at: ISODateTime; barcode_result: BarcodeResult; product_resolution: ProductResolution; product_detection: ProductDetection | null; roi_result: ROIResult | null; frame_quality_summary: FrameQualitySummary; application_version: string; product_model_version_id: UUID; product_model_checksum_sha256: string; component_model_version_id: UUID; component_model_checksum_sha256: string; rule_version_id: UUID; aggregation_policy_version: string; evidence: AggregatedComponentEvidence[]; media: MediaMetadata[]; decision: InspectionDecision; synchronization_status: "LOCAL_ONLY" | "QUEUED" | "PARTIAL" | "SYNCED" | "FAILED"; processing_ms: number }
+export interface UploadTask { upload_task_id: UUID; device_id: UUID; inspection_id: UUID | null; kind: "INSPECTION" | "MEDIA" | "DEVICE_EVENT"; object_id: UUID; payload_hash: string; status: UploadTaskState; idempotency_key: string; checksum_sha256: string | null; attempt_count: number; next_attempt_at: ISODateTime | null; last_error_code: string | null; created_at: ISODateTime; updated_at: ISODateTime; completed_at: ISODateTime | null; lease_owner: string | null; lease_expires_at: ISODateTime | null }
+export interface DeviceStatus { device_id: UUID; observed_at: ISODateTime; operational_state: DeviceOperationalState; inspection_ready: boolean; sync_ready: boolean; camera_connected: boolean; model_loaded: boolean; central_connected: boolean; disk_free_bytes: number; upload_pending_count: number; current_product_model_version_id: UUID | null; current_component_model_version_id: UUID | null; current_rule_version_id: UUID | null; alerts: string[] }
 export interface ProductConfiguration { product_version_id: UUID; product_id: UUID; product_code: string; version: number; barcode_patterns: string[]; required_component_codes: string[]; active_from: ISODateTime | null }
 export interface ComponentPolicy { component_code: string; high_confidence: number; medium_confidence: number; minimum_medium_detections: number; require_adjacent_frames: boolean }
 export interface RuleConfiguration { rule_version_id: UUID; rule_id: UUID; product_version_id: UUID; version: number; component_policies: ComponentPolicy[]; minimum_usable_frames: number; uncertain_maps_to_ng: true; published_at: ISODateTime | null }
 export interface Artifact { name: string; uri: string; sha256: string; size_bytes: number }
-export interface ModelManifest { model_version_id: UUID; model_id: UUID; semantic_version: string; task: "PRODUCT_DETECTION" | "COMPONENT_DETECTION"; runtime: string; input_width: number; input_height: number; class_names: string[]; artifacts: Artifact[]; dataset_version: string; metrics: Record<string, number>; created_at: ISODateTime }
-export interface ReviewRecord { review_id: UUID; inspection_id: UUID; reviewer_user_id: UUID; original_outcome: Decision; reviewed_outcome: Decision; component_corrections: Record<string, "PRESENT" | "MISSING" | "UNCERTAIN">; reason_code: string; comment: string | null; reviewed_at: ISODateTime; revision: number }
+export interface DatasetReference { dataset_version: string; purpose: "TRAIN" | "VALIDATION" | "TEST" | "ACCEPTANCE"; manifest_uri: string }
+export interface ModelMetric { name: string; value: number; scope: string }
+export interface ModelManifest { model_version_id: UUID; model_id: UUID; semantic_version: string; task: "PRODUCT_DETECTION" | "COMPONENT_DETECTION"; runtime: string; input_width: number; input_height: number; class_names: string[]; artifacts: Artifact[]; datasets: DatasetReference[]; split_strategy: string; source_revision: string; training_config_revision: string; metrics: ModelMetric[]; limitations: string[]; approved_by: string | null; approved_at: ISODateTime | null; supersedes_model_version_id: UUID | null; created_at: ISODateTime }
+export interface ComponentCorrection { component_code: string; state: "PRESENT" | "MISSING" | "UNCERTAIN" }
+export interface ReviewRecord { review_id: UUID; inspection_id: UUID; reviewer_user_id: UUID; original_internal_decision: InternalDecision; original_business_result: BusinessResult; reviewed_disposition: "CONFIRMED_OK" | "CONFIRMED_NG" | "REINSPECT" | "INCONCLUSIVE"; component_corrections: ComponentCorrection[]; reason_code: string; comment: string | null; reviewed_at: ISODateTime; revision: number }
 ```
+
+### 14.4.1 API Supporting Schema Registry
+
+Every named schema in [REST API and Events](15-rest-api-and-events.md) must be a typed Pydantic
+model in OpenAPI. The minimum registry is:
+
+| Schema family | Required models |
+|---|---|
+| Errors and pagination | `Problem`, `ProblemFieldError`, `Page[T]`, opaque cursor metadata |
+| Runtime | `CameraState`, `InspectionRuntimeState`, `OperationAccepted`, `EffectiveConfiguration`, `ValidationResult` |
+| Inspection queries | `InspectionSummary`, `CentralInspectionDetail`, `MediaMetadata` |
+| Ingestion | `UploadReceipt`, `MediaUploadInitiate`, `MediaUploadComplete`, `DeviceEventBatch`, per-item receipt |
+| Configuration | `ConfigurationCandidate`, `LocalOverrides`, `DesiredConfiguration`, assignment/validation/activation acknowledgement |
+| Administration | typed site, line, device, user, dashboard, report, and audit request/response projections |
+
+`Problem` uses the `application/problem+json` fields in the API contract. Request models retain
+`extra="forbid"`; WebSocket event payload consumers allow unknown additive fields within the same
+schema version. Event `sequence` is monotonic per `(source_id, channel)` and resets only when the
+source identity changes.
 
 ## 14.5 Edge Schema
 
@@ -274,11 +423,11 @@ SQLite is the MVP default. Enable WAL mode, foreign keys, `busy_timeout`, and `s
 
 | Table | Key and principal columns | Constraints and purpose |
 |---|---|---|
-| `local_inspections` | `id` PK UUID, `device_id`, `sequence`, timestamps, barcode, product/product-model/component-model/rule version IDs, outcome, reason JSON, latency | `UNIQUE(device_id, sequence)`; durable product-level result and synchronization unit. |
+| `local_inspections` | `id` PK UUID, `device_id`, `device_sequence`, lifecycle, timestamps, barcode status/value, product resolution, internal decision, business result, application/product-model/component-model/rule versions and checksums, reason JSON, latency | `UNIQUE(device_id, device_sequence)`; durable product-level result and synchronization unit. |
 | `local_detection_frames` | `id` PK, `inspection_id` FK, `frame_index`, captured time, quality fields, product bbox JSON | `UNIQUE(inspection_id, frame_index)`; optional detailed evidence subject to shorter retention. |
 | `local_component_evidence` | `id` PK, `inspection_id` FK, component code, state, confidence/count fields, reason JSON | `UNIQUE(inspection_id, component_code)`; final per-component evidence. |
 | `local_media_files` | `id` PK, `inspection_id` FK nullable, kind, relative path, MIME type, bytes, SHA-256, captured time, upload-required flag | Path must be relative to the configured media root; `UNIQUE(relative_path)` and `UNIQUE(sha256, kind)` where deduplication is safe. |
-| `upload_tasks` | `id` PK, aggregate/object IDs, kind, idempotency key, state, attempts, lease owner/expiry, next attempt, error | `UNIQUE(idempotency_key)`; persistent outbox with recoverable leases. |
+| `upload_tasks` | `id` PK, device/inspection/object IDs, kind, payload hash, checksum, idempotency key, canonical state, attempts, lease owner/expiry, next attempt, timestamps, error | `UNIQUE(device_id, idempotency_key)`; persistent outbox with recoverable leases. |
 | `device_events` | `id` PK, occurred time, severity, event code, details JSON, upload state | Append-only operational event stream. |
 | `local_configuration` | `key` PK, revision, value JSON, source, applied time, checksum | Atomic effective configuration snapshot; retain prior snapshots in history or event records. |
 | `model_installations` | `model_version_id` PK, manifest JSON, local path, SHA-256, state, installed/activated times | Only one active installation per task, enforced transactionally. |
@@ -289,7 +438,7 @@ Required edge indexes:
 ```sql
 CREATE INDEX ix_local_inspections_completed ON local_inspections(completed_at DESC);
 CREATE INDEX ix_local_inspections_barcode ON local_inspections(barcode) WHERE barcode IS NOT NULL;
-CREATE INDEX ix_local_inspections_outcome_time ON local_inspections(outcome, completed_at DESC);
+CREATE INDEX ix_local_inspections_result_time ON local_inspections(business_result, completed_at DESC);
 CREATE INDEX ix_upload_tasks_due ON upload_tasks(state, next_attempt_at);
 CREATE INDEX ix_media_inspection_kind ON local_media_files(inspection_id, kind);
 CREATE INDEX ix_device_events_time ON device_events(occurred_at DESC);
@@ -310,7 +459,7 @@ PostgreSQL owns tenant isolation and global history. Every tenant-owned row carr
 | `product_versions` | UUID PK, product FK, integer version, immutable configuration JSON, published time | `UNIQUE(product_id, version)`; no update after publish. |
 | `rules`, `rule_versions` | Stable rule identity and immutable version document with product version FK | Drafts editable; published versions immutable and uniquely numbered. |
 | `model_packages`, `model_versions` | Stable model identity; task, semantic version, manifest, artifact URI/checksum, lifecycle state | `UNIQUE(model_id, semantic_version)`; immutable after publication. |
-| `inspections` | UUID PK matching edge ID, organization/device FKs, device sequence, times, barcode, product/product-model/component-model/rule versions, outcome, latency, received time | `UNIQUE(device_id, device_sequence)`; preserves exact runtime versions. |
+| `inspections` | UUID PK matching edge ID, organization/device FKs, device sequence, lifecycle/times, barcode/product resolution, internal decision, business result, application/product-model/component-model/rule versions and checksums, latency, received time | `UNIQUE(device_id, device_sequence)`; preserves exact runtime versions. |
 | `inspection_components` | UUID PK, inspection FK, component code, state, confidence/counts, reasons | `UNIQUE(inspection_id, component_code)`. |
 | `inspection_media` | UUID PK matching edge object ID, inspection FK, kind, object key, MIME, bytes, SHA-256, capture/receive times | `UNIQUE(device_id, source_media_id)` and immutable object key after verification. |
 | `review_records` | UUID PK, inspection/reviewer FKs, outcomes, corrections, reason, revision, time | `UNIQUE(inspection_id, revision)`; revisions append, never overwrite. |
@@ -352,10 +501,10 @@ The edge equivalents of `INSPECTION`, `INSPECTION_COMPONENT`, and media retain t
 ## 14.8 Keys, Indexes, and Query Paths
 
 - Primary keys are UUIDs generated before persistence. The edge can therefore create records offline.
-- Business keys are organization slug, site/line/device code, product code, component code, `(device_id, sequence)`, and version numbers within their stable parent.
+- Business keys are organization slug, site/line/device code, product code, component code, `(device_id, device_sequence)`, and version numbers within their stable parent.
 - Index central barcode queries with `(organization_id, barcode, completed_at DESC)` and use a partial predicate excluding null barcodes. Do not globally constrain barcode uniqueness because rework and duplicate reads are possible.
-- Index dashboard time scans with `(organization_id, completed_at DESC)` and `(device_id, completed_at DESC)`. Add `(organization_id, outcome, completed_at DESC)` for NG queues.
-- Index pending reviews with a partial index on inspections whose outcome is `NG` or `UNCERTAIN` and review status is pending.
+- Index dashboard time scans with `(organization_id, completed_at DESC)` and `(device_id, completed_at DESC)`. Add `(organization_id, business_result, completed_at DESC)` for NG queues and indexes for product/model/rule/reason query paths.
+- Index pending reviews with a partial index on inspections whose business result is `NG` and review status is pending; internal `UNCERTAIN` remains a filterable reason/state.
 - Index all foreign keys used in joins. Validate plans with production-like cardinality before adding confidence/component composite indexes.
 - Use keyset pagination `(completed_at, id) < (:cursor_time, :cursor_id)` for history. Offset pagination is acceptable only for small configuration lists.
 

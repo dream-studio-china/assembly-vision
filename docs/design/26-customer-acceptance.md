@@ -12,7 +12,7 @@ The static-image MVP is accepted as an engineering prototype when it executes th
 
 ### 26.2.2 Pilot Acceptance
 
-The one-month target is evaluated on the selected edge hardware and customer line under controlled rollout with human verification. It covers camera, barcode, local decision, persistence, offline operation, synchronization, central history, and review.
+The one-month target may run a controlled baseline on selected edge hardware and one bounded customer-line path with human verification. It covers camera, barcode, local decision, persistence, offline operation, synchronization, central history, and review, but it is not final production acceptance.
 
 ### 26.2.3 Production Acceptance
 

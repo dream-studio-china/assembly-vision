@@ -10,7 +10,7 @@ AssemblyVision needs two substantial Web applications: an offline-usable local e
 
 ## 3. Decision
 
-Use Vue 3 and TypeScript with Vite for both frontends. Use Vue Router, Pinia, an OpenAPI-generated client or Axios, a consistently selected component library (Element Plus or Naive UI), ECharts, VueUse, Vitest, ESLint, and Prettier. Share domain types, API client, image/detection viewer, status components, charts, validation, and formatting packages while keeping the edge and central applications separate.
+Use Vue 3 and TypeScript with Vite for both frontends. Use Vue Router, Pinia, an OpenAPI-generated client or Axios, a consistently selected component library (Element Plus or Naive UI), ECharts, VueUse, Vitest, ESLint, and Prettier. Share API contracts and proven reusable capabilities while keeping the edge and central applications separate; this decision does not require one package per capability. Initially extract only the generated API client and detection-coordinate/viewer primitives with two concrete consumers. Keep charts, authentication, validation, formatting, stores, and route features local until reuse is demonstrated.
 
 The edge application is served locally and remains usable without central connectivity. A standard browser or kiosk mode is the initial shell; a Tauri wrapper remains a future option.
 

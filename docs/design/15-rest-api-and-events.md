@@ -46,7 +46,7 @@ In the tables, `R` means authenticated edge viewer, `O` operator, and `A` edge a
 
 | Method and endpoint | Purpose | Request / response | Errors | Idempotency | Pagination | Authorization |
 |---|---|---|---|---|---|---|
-| `GET /api/v1/inspections` | Query recent local inspections. | Query: outcome, barcode, product, from/to, cursor, limit / `Page[InspectionSummary]` | `400 INVALID_FILTER` | Safe GET | Cursor | R |
+| `GET /api/v1/inspections` | Query recent local inspections. | Query: business_result, internal_decision, barcode, product, from/to, cursor, limit / `Page[InspectionSummary]` | `400 INVALID_FILTER` | Safe GET | Cursor | R |
 | `GET /api/v1/inspections/{inspection_id}` | Return complete local result/evidence. | Path UUID / `InspectionRecord` | `404 INSPECTION_NOT_FOUND` | Safe GET | - | R |
 | `GET /api/v1/inspections/{inspection_id}/media` | List available/purged media metadata. | Optional kind / `list[MediaMetadata]` | `404 INSPECTION_NOT_FOUND` | Safe GET | - | R |
 | `GET /api/v1/media/{media_id}/content` | Stream local image or clip with range support. | `Range` optional / bytes | `404 MEDIA_NOT_FOUND`, `410 MEDIA_PURGED`, `416 INVALID_RANGE` | Safe GET | - | R |
@@ -56,7 +56,7 @@ In the tables, `R` means authenticated edge viewer, `O` operator, and `A` edge a
 | Method and endpoint | Purpose | Request / response | Errors | Idempotency | Pagination | Authorization |
 |---|---|---|---|---|---|---|
 | `GET /api/v1/uploads` | Inspect queue by state/kind. | Query filters/cursor / `Page[UploadTask]` | `400 INVALID_FILTER` | Safe GET | Cursor | R |
-| `POST /api/v1/uploads/{task_id}/retry` | Move failed/dead-letter task to due state. | `{reason}` / `UploadTask` | `404 TASK_NOT_FOUND`, `409 TASK_ACTIVE` | `Idempotency-Key`; duplicate returns same state | - | O |
+| `POST /api/v1/uploads/{upload_task_id}/retry` | Move eligible retry-wait or permanent-failure work to due state after operator resolution. | `{reason}` / `UploadTask` | `404 TASK_NOT_FOUND`, `409 TASK_ACTIVE` | `Idempotency-Key`; duplicate returns same state | - | O |
 | `GET /api/v1/configuration/effective` | Effective config plus source/revision/checksum. | None / `EffectiveConfiguration` | `503 CONFIG_UNAVAILABLE` | Safe GET | - | R |
 | `PUT /api/v1/configuration/local-overrides` | Replace permitted site-local overrides. | `If-Match`, `LocalOverrides` / new revision | `400 INVALID_CONFIG`, `403 MANAGED_FIELD`, `412 REVISION_MISMATCH` | Idempotent replacement | - | A |
 | `POST /api/v1/configuration/validate` | Validate without activation. | `ConfigurationCandidate` / `ValidationResult` | `422 VALIDATION_FAILED` | Deterministic | - | A |
@@ -87,7 +87,7 @@ Roles are abbreviated `V` viewer, `R` reviewer, `C` configuration manager, `F` f
 | `POST /api/v1/inspection-uploads` | Ingest one finalized inspection and component evidence. | `InspectionRecord` / `UploadReceipt` | `409 VERSION_UNKNOWN`, `409 PAYLOAD_CONFLICT`, `422 INVALID_EVIDENCE` | Required key; inspection ID and device sequence also unique | - | D |
 | `POST /api/v1/media-uploads:initiate` | Validate metadata and create upload target/session. | `MediaUploadInitiate` / target or already-present receipt | `409 INSPECTION_UNKNOWN`, `413 MEDIA_TOO_LARGE`, `415 TYPE_NOT_ALLOWED` | Required key; source media ID unique | - | D |
 | `POST /api/v1/media-uploads/{upload_id}/complete` | Verify uploaded object size/checksum and attach it. | `{sha256, size_bytes}` / `MediaMetadata` | `409 CHECKSUM_MISMATCH`, `410 UPLOAD_EXPIRED` | Repeated completion returns verified resource | - | D |
-| `GET /api/v1/inspections` | Cross-device history search. | org-scoped filters/cursor / `Page[InspectionSummary]` | `400 INVALID_FILTER` | Safe GET | Cursor | V |
+| `GET /api/v1/inspections` | Cross-device history search. | Filters: site, line, device, time, barcode, product, business_result, internal_decision, model, rule, reason, review state, cursor / `Page[InspectionSummary]` | `400 INVALID_FILTER` | Safe GET | Cursor | V |
 | `GET /api/v1/inspections/{inspection_id}` | Result, components, versions, media, latest review. | Path UUID / `CentralInspectionDetail` | `404 INSPECTION_NOT_FOUND` | Safe GET | - | V |
 | `GET /api/v1/inspections/{inspection_id}/media` | Authorized media metadata and short-lived URLs. | kind optional / list | `404`, `410 MEDIA_PURGED` | Safe GET | - | V |
 
@@ -109,7 +109,21 @@ Roles are abbreviated `V` viewer, `R` reviewer, `C` configuration manager, `F` f
 | `POST /api/v1/model-versions/{id}/publish` | Verify artifact and publish version. | `{reason}` / `ModelManifest` | `409 CHECKSUM_MISMATCH`, `422 EVALUATION_REQUIRED` | Repeated publish succeeds | - | C |
 | `PUT /api/v1/devices/{id}/desired-configuration` | Assign versioned configuration bundle. | `If-Match`, `DesiredConfiguration` / assignment | `409 INCOMPATIBLE_BUNDLE`, `412 REVISION_MISMATCH` | Idempotent replacement | - | F |
 
-### 15.4.4 Dashboards, Reports, Users, and Audit
+### 15.4.4 Device Configuration Distribution (Production Target)
+
+Remote delivery is not required for the one-month demonstrator; it may use manually installed,
+checksum-verified immutable packages. When remote delivery enters scope, the following device-facing
+contract is mandatory:
+
+| Method and endpoint | Purpose | Request / response | Errors | Authorization |
+|---|---|---|---|---|
+| `GET /api/v1/device/configuration-manifest` | Poll the assigned immutable release manifest. | Current version/checksum / manifest or `304` | `409 DEVICE_QUARANTINED` | D |
+| `GET /api/v1/device/configuration-packages/{version_id}` | Download a package or pre-signed artifact URL. | Version UUID / artifact metadata | `404`, `409 INCOMPATIBLE_PACKAGE` | D |
+| `POST /api/v1/device/configuration-validations` | Report checksum, signature, compatibility, and smoke-test results. | `ConfigurationValidationReport` / receipt | `409 ASSIGNMENT_STALE` | D, idempotency key |
+| `POST /api/v1/device/configuration-activations` | Acknowledge activation between inspection windows. | `ConfigurationActivationReport` / assignment state | `409 VERSION_NOT_VALIDATED` | D, idempotency key |
+| `POST /api/v1/device/configuration-rollbacks` | Report rollback and active last-known-good package. | `ConfigurationRollbackReport` / assignment state | `409 INVALID_ROLLBACK_TARGET` | D, idempotency key |
+
+### 15.4.5 Dashboards, Reports, Users, and Audit
 
 | Method and endpoint | Purpose | Request / response | Errors | Idempotency | Pagination | Authorization |
 |---|---|---|---|---|---|---|
@@ -143,11 +157,11 @@ WebSocket authentication uses the existing secure session cookie or a short-live
   "source_id": "01988...",
   "sequence": 1842,
   "correlation_id": "01989...",
-  "data": {"inspection_id": "01989...", "outcome": "NG"}
+  "data": {"inspection_id": "01989...", "business_result": "NG", "internal_decision": "UNCERTAIN"}
 }
 ```
 
-Event payloads are intentionally small. Additive fields are allowed within a schema version; removal, meaning changes, or type changes require a new version. Unknown event types are ignored and logged. Heartbeat ping/pong is transport-level; `DeviceStatus` snapshots remain REST resources.
+Event payloads are intentionally small. Additive fields are allowed within a schema version; removal, meaning changes, or type changes require a new version. Event consumers allow unknown additive payload fields while request bodies remain strict. `sequence` is monotonic per `(source_id, channel)`; clients refetch REST state on gaps. Unknown event types are ignored and logged. Heartbeat ping/pong is transport-level; `DeviceStatus` snapshots remain REST resources.
 
 ## 15.7 Failure Handling and Limits
 

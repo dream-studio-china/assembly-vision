@@ -10,6 +10,8 @@ The repository currently contains the implementation-oriented architecture basel
 - [Architecture and design set](docs/design/README.md)
 - [Architecture status](docs/design/00-cover-and-status.md)
 - [Architecture decisions](docs/design/decisions/README.md)
+- [Engineering contracts](docs/contracts/README.md)
+- [Operational runbooks](docs/runbooks/README.md)
 - [Source design brief](docs/source-brief.md)
 
 ## Bilingual Documentation Site

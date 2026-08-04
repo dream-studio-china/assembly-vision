@@ -72,7 +72,7 @@ Administrators register devices, assign them to approved organizational/line sco
 
 A package moves through draft, validated, approved, assigned, downloaded, edge-validated, activated, and acknowledged states. Immutable content receives a new version rather than in-place edits. Rollout supports a small device cohort before wider assignment. The edge retains last known-good packages and activates only between inspections. Central status distinguishes assignment from actual acknowledgement; no dashboard should imply activation from assignment alone.
 
-Model distribution is future scope, but configuration/rule distribution in the one-month target should already use compatible version and acknowledgement semantics.
+Model and remote configuration/rule delivery are production-target capabilities. The one-month demonstrator may register desired versions centrally while packages are installed manually at the edge; installation still verifies immutable content, checksum, compatibility, and last-known-good rollback locally. Assignment must never be displayed as activation.
 
 ## 6. Manual Review and Reporting
 
@@ -119,7 +119,7 @@ No central server is built. Static outputs use future-compatible identifiers, re
 
 ### 11.2 One-Month Target
 
-Implement device-scoped idempotent ingestion, PostgreSQL inspection history, selected evidence storage, initial device/product/rule metadata, a basic administration dashboard, review capture, and Compose deployment. Defer sophisticated analytics and model binary distribution.
+Implement device-scoped idempotent ingestion, PostgreSQL inspection history, selected evidence storage, initial device/product/rule metadata, a minimal inspection/review view, minimum pilot authentication, and Compose deployment. Defer generalized administration, sophisticated analytics, report/export jobs, and remote package distribution.
 
 ### 11.3 Production Target
 
@@ -144,6 +144,6 @@ Add signed model distribution, larger-scale workers and analytics, external iden
 4. What barcode/media classification, residency, retention, deletion, export, and audit obligations apply?
 5. What inspection/media volumes, payload sizes, query concurrency, and report schedules determine worker/storage design?
 6. Which review outcomes and workflow states are approved, and who can alter labels or release packages?
-7. Does the one-month target require remote configuration delivery, or only management and manual edge installation?
+7. Which production increment introduces remote configuration delivery after the one-month manual-install demonstrator?
 8. Which jobs justify a broker/Redis, and which object-store implementation is available?
 9. See [Global Open Questions](appendices.md#3-global-open-questions).

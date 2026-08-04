@@ -108,7 +108,7 @@ Sources: https://docs.ultralytics.com/models/yolov8/ ; https://docs.ultralytics.
 
 1. **Achieved mAP50 for well-defined, well-lit industrial classes is typically 0.90-0.99.** The spread comes from conditions (viewpoint, lighting) and evaluation strictness (mAP50 vs mAP50-95), not from which YOLO version was used.
 2. **Robustness cost:** pose/lighting changes reliably cost several mAP points (VR-YOLO: -4 pp). Design the imaging station to minimize this, and monitor drift.
-3. **Triage beats binary auto-decisions:** the flange and PCB workflows route mid-confidence detections to human review. This maps directly to AssemblyVision's `UNCERTAIN` handling (see `docs/design/02-requirements.md`, BR-006).
+3. **Triage beats binary auto-decisions:** the flange and PCB workflows route mid-confidence detections to human review. This maps directly to AssemblyVision's `UNCERTAIN` handling (see `[docs/design/02-requirements.md](../design/02-requirements.md)`, BR-006).
 4. **Detector + rules > detector alone:** assembly-state work and AssemblyVision's deterministic rule engine agree: never let the final OK/NG be decided by raw detections alone.
 
 ---
@@ -119,8 +119,8 @@ Sources: https://docs.ultralytics.com/models/yolov8/ ; https://docs.ultralytics.
 
 - Stage 1: detect exactly one `product` in a full ~4MP frame (approx 2560x1440 or 2448x2048); ROI crop.
 - Stage 2: detect `component_a`, `component_b`, ..., `manual` inside the ROI (fixed classes).
-- Data budget: ~300-800 product images; ~300-500 labeled instances per component class (see `docs/design/19-training-and-evaluation.md`).
-- Runtime: edge box (CPU or modest GPU); product-window latency budget around 2.5 s per inspection incl. multiple frames (see `docs/design/06-ai-detection-pipeline.md`).
+- Data budget: ~300-800 product images; ~300-500 labeled instances per component class (see `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)`).
+- Runtime: edge box (CPU or modest GPU); product-window latency budget around 2.5 s per inspection incl. multiple frames (see `[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)`).
 - Priority: NG recall over throughput; fail-safe behavior.
 
 ### 6.2 Candidate choices and reasoning
@@ -139,13 +139,13 @@ Sources: https://docs.ultralytics.com/models/yolo11/ ; https://docs.ultralytics.
 
 ### 6.3 Specific guidance for the two-stage design
 
-1. **Use the same YOLO family for both stages** to keep one training/export/deploy pipeline (per `docs/design/09-component-detection.md`, Ultralytics YOLO is the initial implementation).
-2. **Stage 1 needs very little capacity.** A single `product` class, large object, stable framing: YOLO11n is likely sufficient; keep confidence threshold validation (default starting config 0.70 in `docs/design/08-product-detection-and-roi.md`).
+1. **Use the same YOLO family for both stages** to keep one training/export/deploy pipeline (per `[docs/design/09-component-detection.md](../design/09-component-detection.md)`, Ultralytics YOLO is the initial implementation).
+2. **Stage 1 needs very little capacity.** A single `product` class, large object, stable framing: YOLO11n is likely sufficient; keep confidence threshold validation (default starting config 0.70 in `[docs/design/08-product-detection-and-roi.md](../design/08-product-detection-and-roi.md)`).
 3. **Stage 2 is where accuracy budget matters.** Components inside an ROI are smaller and may be visually similar. Prefer YOLO11s or a 1280-input run for stage 2 if mAP50-95 on validation is below target (PCB evidence: small-object localization is the hard part - https://arxiv.org/abs/2507.17176). 
 4. **Input size trade-off:** 640px is the default and is fast; 1280px roughly quadruples compute but improves small-object recall. For a 4MP source, you almost always crop to a fixed resolution for stage 2 rather than run native 4MP.
 5. **NMS-free (v10/26) is attractive but not required** at the pipeline's low frame rate. If you adopt it, keep the one-to-one head default and verify determinism for replay (AssemblyVision's `fail_on_multiple_products` and deterministic evidence require reproducible outputs).
 6. **Fine-tune from COCO-pretrained weights**; Ultralytics and Roboflow both confirm transfer learning is the fastest, cheapest route for small datasets (https://docs.ultralytics.com/guides/model-training-tips/ ; https://blog.roboflow.com/missing-item-inspection/).
-7. **Do not let mAP drive the decision.** Per `docs/design/19-training-and-evaluation.md`, promotion decisions hinge on product-level NG recall at frozen operating thresholds, not mAP.
+7. **Do not let mAP drive the decision.** Per `[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)`, promotion decisions hinge on product-level NG recall at frozen operating thresholds, not mAP.
 
 ---
 
@@ -154,7 +154,7 @@ Sources: https://docs.ultralytics.com/models/yolo11/ ; https://docs.ultralytics.
 - Confirm the actual edge hardware (CPU model/GPU/NPU) and benchmark YOLO11n/s and YOLO26n/s ONNX/TensorRT latency on that specific device; vendor T4/A100 figures are not representative of a conveyor-side box.
 - Decide whether stage-2 input resolution (640 vs 1280 vs custom crop size) is required to hit per-component recall targets on the real components; the answer depends on smallest component pixel size in the ROI.
 - Verify YOLO26 (2026) toolchain support (ONNX export, TensorRT version, PyTorch version) matches the AssemblyVision monorepo baseline before adopting it.
-- Confirm whether deterministic/reproducible inference is achievable with the chosen runtime (required for replay and audit per `docs/design/06-ai-detection-pipeline.md`).
+- Confirm whether deterministic/reproducible inference is achievable with the chosen runtime (required for replay and audit per `[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)`).
 - Establish the operating confidence thresholds empirically from held-out production data for both stages; the design documents list starting values (0.70 product; 0.45-0.50 component observation) that are unvalidated.
 - Resolve whether YOLO-World fine-tuning or a plain YOLO11 model is better for stage 1 given the small product dataset; no public comparison exists for this specific regime.
 - Validate whether the Ultralytics "~1,500 images / 10,000 instances per class" recommendation conflicts with AssemblyVision's 300-800 image target for a single large, visually consistent product class - the guidance is for reliable generalization across diverse classes; a fixed station with one product type is a favorable case, but this needs empirical confirmation.

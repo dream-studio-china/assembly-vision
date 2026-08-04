@@ -3,7 +3,11 @@
 ## 1. Documentation Sets
 
 - [Software architecture and design](design/README.md)
-- [Source architecture brief](doc-task.md)
+- [Engineering contracts](contracts/README.md)
+- [Operational runbooks](runbooks/README.md)
+- [Contributor documentation](contributing.md)
+- [AI context snapshot](ai/context.md)
+- [Source architecture brief](source-brief.md)
 
 The design set is the engineering baseline derived from the source brief. Unknown factory, hardware, timing, security, retention, and acceptance details remain explicitly unresolved rather than assumed.
 
@@ -13,9 +17,11 @@ The design set is the engineering baseline derived from the source brief. Unknow
 2. [Introduction](design/01-introduction.md)
 3. [Requirements](design/02-requirements.md)
 4. [Architecture overview](design/03-architecture-overview.md)
-5. [Design index](design/README.md)
-6. [Architecture decisions](design/decisions/README.md)
-7. [Appendices and open questions](design/appendices.md)
+5. [Engineering contracts](contracts/README.md)
+6. [Design index](design/README.md)
+7. [Architecture decisions](design/decisions/README.md)
+8. [Appendices and open questions](design/appendices.md)
+9. [Operational runbooks](runbooks/README.md)
 
 ## 3. Document Status
 

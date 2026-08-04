@@ -12,9 +12,9 @@ Do not upload every video frame. Media selection occurs locally and is recorded 
 
 ## 13.3 Task and Protocol Design
 
-One inspection has a stable client-generated `inspection_id` and manifest checksum. Each upload task has a stable `task_id`, artifact identity, SHA-256 checksum, byte size, attempt count, next-attempt time, lease, and state. Recommended states are `PENDING`, `IN_PROGRESS`, `RETRY_WAIT`, `SUCCEEDED`, `PERMANENT_FAILURE`, and `CANCELLED`.
+One inspection has a stable client-generated `inspection_id` and manifest checksum. Each upload task has a stable `upload_task_id`, device ID, nullable inspection ID, artifact identity, payload hash, SHA-256 checksum where applicable, byte size, attempt count, next-attempt time, timestamps, lease, and state. Canonical states are `PENDING`, `IN_PROGRESS`, `RETRY_WAIT`, `SUCCEEDED`, `PERMANENT_FAILURE`, and `CANCELLED`.
 
-Metadata ingestion uses an idempotency key such as `device_id:inspection_id:manifest_version`. The central server enforces a uniqueness constraint on `(device_id, inspection_id)` and returns the existing receipt for an identical replay. A replay with different immutable content returns a conflict and is quarantined for investigation rather than overwritten.
+Metadata ingestion uses the stable idempotency key `inspection:{device_id}:{inspection_id}`. Schema and manifest versions remain inside the hashed payload rather than changing the key. The central server enforces uniqueness on `(device_id, inspection_id)` and `(device_id, idempotency_key)`, stores the receipt atomically with accepted metadata, and returns it for an identical replay. A replay with different immutable content returns a conflict and is quarantined rather than overwritten.
 
 Large media should use resumable or pre-signed object uploads when justified. Completion is accepted only after the server confirms expected size/checksum and binds the object to the inspection.
 
@@ -29,7 +29,7 @@ sequenceDiagram
     participant Objects as Object Storage
     Inspect->>DB: Commit inspection, media, and upload tasks
     Worker->>DB: Lease next due task
-    Worker->>Server: PUT metadata with idempotency key
+    Worker->>Server: POST /api/v1/inspection-uploads with idempotency key
     alt Server accepts or returns identical receipt
         Server-->>Worker: Receipt and required media list
         loop Required media
@@ -71,8 +71,7 @@ sequenceDiagram
     loop Each physical product during outage
         Camera->>Edge: Local frames and trigger
         Edge->>Edge: Detect, aggregate, and decide locally
-        Edge->>Store: Durably persist decision and evidence
-        Store->>Queue: Commit upload tasks
+        Edge->>Store: Atomically commit decision, evidence, and upload tasks
         Queue->>Queue: Retain tasks and schedule backoff
     end
     Note over Edge,Queue: Inspection continues without the server
@@ -88,7 +87,7 @@ Offline duration is limited by local protected-storage capacity, not by a softwa
 
 ## 13.7 Ordering and Synchronization
 
-The server must not require global chronological arrival. Devices can upload late and out of order. Device UTC timestamps are retained with clock-health metadata; server receive time is separate. Metadata precedes media binding, but inspections can be centrally visible as `MEDIA_PENDING` until required artifacts arrive.
+The server must not require global chronological arrival. Devices can upload late and out of order. Device UTC timestamps are retained with clock-health metadata; server receive time is separate. Metadata precedes media binding, but inspections can be centrally visible while required media has lifecycle `PENDING`; verified media becomes `AVAILABLE`, terminal failures become `FAILED`, and retention cleanup records `PURGED`.
 
 Configuration/model distribution is a separate pull/download workflow. Upload acknowledgment cannot activate new rules or models, and central data never retroactively changes the immutable local decision. Manual review creates an additional central record rather than rewriting original evidence.
 

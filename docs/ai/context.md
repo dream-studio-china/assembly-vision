@@ -23,12 +23,9 @@ and verifies that all required assembly components are present.
 
 ## 2. Repository State
 
-- Remote: `https://github.com/dream-studio-china/assembly-vision` (branch `main`)
-- Git history (all commits so far):
-  - `75e2f2e` Add MIT License
-  - `fc55b9e` docs: organize AGENTS.md with language, git workflow, and security rules
-  - `5924580` Add AssemblyVision architecture documentation and bilingual MkDocs site
-- Untracked on disk (intentionally not committed): `.obsidian/` (local Obsidian config).
+- Remote: `https://github.com/dream-studio-china/assembly-vision`; active documentation work is on branch `dev`.
+- `dev` includes engineering contracts, cross-references, expanded contributor rules, and editor ignores on top of `origin/main`.
+- `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
 
@@ -50,8 +47,11 @@ assembly-vision/
     ├── index.md            # MkDocs home page
     ├── README.md           # Documentation index
     ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+    ├── contributing.md     # Contributor-facing repository rules and precedence
     ├── overrides/main.html # Theme override placeholder
     ├── ai/context.md       # THIS file
+    ├── contracts/          # 11 mandatory engineering contracts + index
+    ├── runbooks/           # 9 mandatory operational recovery runbooks + index
     ├── design/             # 28 design documents + appendices + decisions/
     │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
     │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
@@ -69,9 +69,9 @@ assembly-vision/
   generation, optional OpenCV checks, per-component temporal aggregation, deterministic rule
   evaluation, local database/media, upload queue with retry, health monitoring, local FastAPI,
   local Vue dashboard. Inspection continues during central/network outages.
-- **Central server responsibilities**: ingestion of selected results/media, history, reporting,
-  device/config/rule/model management, users/roles, manual NG review, audit, dashboards, remote
-  distribution. Not required for inspection.
+- **Central server responsibilities**: ingestion of selected results/media, history, governed
+  metadata, manual review records, bounded pilot status, and later administration/reporting/audit.
+  Remote package distribution is production scope. Central is not required for inspection.
 - **Two-stage detection**: stage one detects the product in the full frame; the ROI engine
   expands/clips it; stage two detects required components (`component_a`, `component_b`,
   `component_c`, `manual`, ...) inside the ROI. Barcode decoding is separate from YOLO.
@@ -86,7 +86,7 @@ assembly-vision/
 
 ## 5. Documentation Set
 
-- `docs/design/00` to `27` + `appendices.md`: cover/status, introduction, requirements,
+- `docs/design/00` to `27` + [appendices.md](../design/appendices.md): cover/status, introduction, requirements,
   architecture overview, edge client, central server, AI detection pipeline, camera & image
   acquisition, product detection & ROI, component detection, temporal aggregation, rule engine,
   local storage & retention, upload & synchronization, data model & database, REST API & events,
@@ -97,9 +97,13 @@ assembly-vision/
   + TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage & delayed
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
   static-image-first MVP, ADR-010 per-component temporal aggregation.
-- `docs/design/appendices.md` holds the canonical terminology, decision consistency checklist,
+- [docs/design/appendices.md](../design/appendices.md) holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
+- [docs/contracts/](../contracts/README.md): 11 enforceable architecture, safety, API, quality,
+  operations, security, change-control, and acceptance contracts.
+- [docs/runbooks/](../runbooks/README.md): executable recovery procedures for all contract-required
+  operational scenarios.
 
 ## 6. Bilingual MkDocs (English + Chinese)
 
@@ -108,13 +112,14 @@ assembly-vision/
 - `scripts/build-docs.sh` pipeline: `translate-docs.py` (docs/ -> docs-zh/) ->
   `generate-mkdocs-configs.py` (produces mkdocs-en.yml + mkdocs-zh.yml) -> build site/ and site/zh/.
 - Translation uses `deep-translator` GoogleTranslator (free, no API key). Rate-limited; a full
-  translation takes ~15-30 minutes. Single-file mode: `python scripts/translate-docs.py
-  design/03-architecture-overview.md`. On any API failure the original English chunk is kept.
+  translation takes ~15-30 minutes. Single-file mode:
+  `python scripts/translate-docs.py design/03-architecture-overview.md`. On any API failure the
+  original English chunk is kept.
 - All content is translated, including `research/` and Mermaid diagram labels. Mermaid syntax is
   preserved; only node labels, edge text, subgraph titles, sequence messages, and state/ER labels
   are translated. `research/` no longer has a special copy step (removed from build-docs.sh).
 - Translated headings keep their original English slug as an explicit `{#slug}` attribute so
-  cross-document anchors (e.g. `appendices.md#3-global-open-questions`) work in Chinese too.
+  cross-document anchors (e.g. [appendices.md#3-global-open-questions](../design/appendices.md#3-global-open-questions)) work in Chinese too.
 - Known machine-translation quality issues (not script bugs): `frames` -> 框架 (should be 帧),
   `volume` -> 音量 (should be 存储卷), `poll` -> 民意调查 (should be 轮询). Review before publishing.
 - `docs-zh/`, `site/`, and the generated configs are build artifacts, not committed.
@@ -134,7 +139,7 @@ assembly-vision/
 ## 8. Latest Session Decisions
 
 - Generated the full architecture document set under `docs/design/` (28 docs + 10 ADRs +
-  appendices) from `docs/source-brief.md` (formerly `docs/doc-task.md`).
+  appendices) from [docs/source-brief.md](../source-brief.md) (formerly `docs/doc-task.md`).
 - Created `docs/research/` (3 reports) via internet research.
 - Built the bilingual MkDocs with automatic translation, adapted from the `crud-skeleton` project.
 - Added Mermaid translation to `translate-docs.py` (labels/edge text only, syntax preserved).
@@ -142,12 +147,14 @@ assembly-vision/
 - Edge deployment is a single `edge-service` process for the first production release (a separate
   edge worker/API split is deferred until measurements justify it).
 - Inspections pin both product-detector and component-detector model versions separately.
+- The one-month scope is a bounded controlled integration demonstrator, not complete production
+  acceptance; generalized administration, remote distribution, and full resilience/soak work follow.
 
 ## 9. Open Items / Next Steps
 
 - Two-day static-image MVP is the next engineering milestone (folder input, two-stage detection,
   ROI, rules, JSON + annotated images, CLI).
-- Hardware/conditions still unconfirmed (see `docs/design/appendices.md` section 3 open questions):
+- Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.
 - `.obsidian/` remains untracked by choice; notify the user before changing that decision.

@@ -37,7 +37,10 @@
 
 ## 2. Decision Consistency Checklist
 
-Use this checklist for every architecture, API, schema, UI, and operational change.
+Use this checklist for every architecture, API, schema, UI, and operational change. Mandatory
+engineering contracts under [docs/contracts](../contracts/README.md) enforce the most critical
+of these rules in CI and runtime; where a checklist item conflicts with a contract, the contract
+takes precedence.
 
 - [ ] Production-critical decisions remain entirely executable at the edge.
 - [ ] Network or central failure cannot turn incomplete evidence into `OK` or stop otherwise healthy local inspection.
