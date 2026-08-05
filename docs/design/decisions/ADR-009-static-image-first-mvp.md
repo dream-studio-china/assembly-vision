@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Accepted
+Accepted; superseded in part by [ADR-011: Labeled Train-and-Inspect MVP](ADR-011-labeled-train-and-inspect-mvp.md).
 
 ## 2. Context
 
@@ -10,9 +10,9 @@ The end system requires camera capture, live video, product windows, barcode, te
 
 ## 3. Decision
 
-Build a two-day static-image MVP first. It reads one image or a folder, detects the product, generates and maps the ROI, detects components, evaluates a versioned deterministic rule, outputs `OK` or `NG` with reasons, and saves JSON, ROI, and annotated evidence through a CLI.
+Build a static-image MVP first. It reads one image or a folder, detects the product, generates and maps the ROI, detects components, evaluates a versioned deterministic rule, outputs `OK` or `NG` with reasons, and saves JSON, ROI, and annotated evidence through a CLI.
 
-The MVP excludes camera SDK integration, real-time video, temporal aggregation, central services, full dashboards, authentication, PLC/MES integration, and automated retraining. Its interfaces and schemas should be reusable by later live acquisition rather than becoming an alternate production pipeline.
+The MVP excludes camera SDK integration, real-time video, temporal aggregation, central services, full dashboards, authentication, PLC/MES integration, and automated retraining. Its interfaces and schemas should be reusable by later live acquisition rather than becoming an alternate production pipeline. The original training exclusion is superseded by ADR-011; all other exclusions remain in force.
 
 ## 4. Scope
 
@@ -39,7 +39,7 @@ This decision governs initial implementation sequence, not the final operational
 - **Live camera first:** rejected because hardware/timing failures obscure basic model and rule behavior.
 - **Central/dashboard first:** rejected because it does not reduce the core inspection risk.
 - **Model notebook only:** rejected because it omits production-style schemas, rules, evidence, CLI, and tests.
-- **Simulated video first:** useful after static flow, but unnecessary for the two-day objective.
+- **Simulated video first:** useful after static flow, but unnecessary for the static-image objective.
 
 ## 7. Open Questions and Validation Required
 
@@ -52,3 +52,4 @@ This decision governs initial implementation sequence, not the final operational
 - [Roadmap](../25-roadmap.md)
 - [Testing and Quality Assurance](../22-testing-and-quality-assurance.md)
 - [ADR-004: Two-stage detection](ADR-004-two-stage-detection.md)
+- [ADR-011: Labeled Train-and-Inspect MVP](ADR-011-labeled-train-and-inspect-mvp.md)

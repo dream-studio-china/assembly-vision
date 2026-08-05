@@ -8,7 +8,7 @@ Customer acceptance establishes measured fitness for a defined product mix, line
 
 ### 26.2.1 MVP Acceptance
 
-The static-image MVP is accepted as an engineering prototype when it executes the documented flow repeatably and emits traceable evidence. It is not accepted for autonomous production disposition.
+The static train-and-inspect MVP is accepted as an engineering prototype when it reproducibly trains from a locked labeled static-image set, executes inspection against a separate held-out static-image set, reports verification results, and emits traceable evidence. It is not accepted for autonomous production disposition.
 
 ### 26.2.2 Pilot Acceptance
 

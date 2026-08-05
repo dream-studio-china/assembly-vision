@@ -2,7 +2,7 @@
 
 ## 1. Architectural Drivers
 
-AssemblyVision must make conservative product decisions in a controlled but not perfectly registered imaging environment, remain operational through network and central outages, preserve reproducible evidence, and evolve from a two-day static-image proof to an accepted production system. The result is an edge-first architecture with asynchronous central synchronization.
+AssemblyVision must make conservative product decisions in a controlled but not perfectly registered imaging environment, remain operational through network and central outages, preserve reproducible evidence, and evolve from a labeled static-image train-and-inspect proof to an accepted production system. The result is an edge-first architecture with asynchronous central synchronization.
 
 Detailed obligations are in [Requirements](02-requirements.md); shared terms and decision rules are in [Appendices](appendices.md).
 
@@ -141,9 +141,9 @@ Client images use multi-stage builds, built Web assets, non-root runtime, explic
 
 ## 10. Delivery Evolution
 
-### 10.1 Two-Day MVP
+### 10.1 Static Train-and-Inspect MVP
 
-Use an in-process CLI and the minimum reusable vision/rule modules. File-based inputs/outputs stand in for acquisition and persistence while preserving future schemas and version fields.
+Use a developer-only training CLI to produce product and component model artifacts from X-AnyLabeling YOLO labels. The in-process edge CLI consumes those artifacts to inspect folder inputs and write evidence while preserving future schemas and version fields. Training code is separate from, and is never imported by, the edge runtime.
 
 ### 10.2 One-Month Target
 

@@ -6,7 +6,7 @@ AssemblyVision testing demonstrates measured behavior under representative produ
 
 ## 22.2 Scope by Delivery Stage
 
-- **Two-day MVP:** unit tests for ROI/rules/serialization, static pipeline integration tests, deterministic fixtures, CLI smoke test, and baseline model evaluation.
+- **Static train-and-inspect MVP:** YOLO dataset-layout and label validation, product/ROI/component coordinate-remapping tests, training dry run on synthetic fixtures, static pipeline integration tests, deterministic fixtures, CLI smoke tests, held-out filename-ground-truth verification, and baseline model evaluation.
 - **One-month target:** camera/barcode adapters, local persistence, temporal aggregation, edge API/dashboard, one central ingestion/history/review path, targeted synchronization/restart/idempotency tests, deployment smoke tests, and a controlled customer-site baseline where access permits.
 - **Production target:** independent acceptance data, long-running tests, power-loss and disk-full recovery, security/contract testing, release regression suites, and model/rule promotion gates.
 - **Future scope:** multi-line load simulation, hardware-in-the-loop rigs, automated fleet canaries, and additional camera-domain test sets.
@@ -167,4 +167,5 @@ Test reports and manifests are retained with release provenance. Flaky tests are
 - [Customer Acceptance](26-customer-acceptance.md)
 - [Risks and Mitigations](27-risks-and-mitigations.md)
 - [ADR-009: Static-image-first MVP](decisions/ADR-009-static-image-first-mvp.md)
+- [ADR-011: Labeled Train-and-Inspect MVP](decisions/ADR-011-labeled-train-and-inspect-mvp.md)
 - [ADR-010: Per-component temporal aggregation](decisions/ADR-010-per-component-temporal-aggregation.md)

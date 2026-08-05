@@ -14,11 +14,11 @@ This is a fail-safe classification policy, not a claim of perfect detection accu
 
 | Scope | Included |
 |---|---|
-| Two-day static-image MVP | Folder input, product detection, ROI extraction, component detection, deterministic rules, JSON result, ROI and annotated image |
+| Static train-and-inspect MVP | X-AnyLabeling YOLO labels, product and component model training, folder input, product detection, ROI extraction, component detection, deterministic rules, JSON result, ROI and annotated image, held-out verification |
 | One-month production target | Camera capture, barcode resolution, product windows, frame quality, per-component temporal aggregation, local persistence, asynchronous upload |
 | Future | Perspective normalization where validated, hardware-trigger/PLC adapters, model ensembles, tracking across complex scenes |
 
-The static MVP deliberately excludes video aggregation, central-server dependency, and automated actuation. Production inspection remains entirely executable on the edge computer; server availability cannot block or alter the local decision path.
+The static MVP deliberately excludes video aggregation, central-server dependency, and automated actuation. Its training CLI is developer-only and never becomes a dependency of the inspection runtime. Production inspection remains entirely executable on the edge computer; server availability cannot block or alter the local decision path.
 
 ## 6.3 Pipeline Contracts
 

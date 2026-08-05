@@ -148,7 +148,7 @@ API contract tests verify the generated client against OpenAPI. Security tests a
 
 ## 17.15 MVP and Later Scope
 
-One-month MVP: device overview/detail, inspection history/detail, basic NG review, product/rule listing and controlled version creation, simple model registry, basic summary charts, and audit capture. Reports, comprehensive user administration, staged rollouts, saved dashboard views, alert acknowledgements, and advanced model comparison can follow. The central dashboard is absent from the two-day static-image MVP.
+One-month MVP: device overview/detail, inspection history/detail, basic NG review, product/rule listing and controlled version creation, simple model registry, basic summary charts, and audit capture. Reports, comprehensive user administration, staged rollouts, saved dashboard views, alert acknowledgements, and advanced model comparison can follow. The central dashboard is absent from the static train-and-inspect MVP.
 
 ## 17.16 Open Questions and Validation Required
 

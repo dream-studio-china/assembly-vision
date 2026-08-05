@@ -10,7 +10,7 @@ Related contracts are defined in [Data Model and Database](14-data-model-and-dat
 
 1. `apps/` contains independently runnable/deployable processes and web applications.
 2. `packages/` contains code reused by at least two applications or a cohesive domain that requires independent tests.
-3. Keep product detection, ROI, component detection, temporal aggregation, and rules together in `vision-core` until independent reuse or dependency isolation is demonstrated.
+3. Keep product detection, ROI, component detection, temporal aggregation, and rules together in `vision-core`. Extract `domain` and `vision-core` once a second concrete consumer requires them; the labeled train-and-inspect MVP is that trigger because training reuses domain schemas and ROI/preprocessing.
 4. Runtime application code never imports from `training/`.
 5. Edge code must not import central persistence or require a central connection.
 6. Frontends consume generated API contracts and small shared visual primitives; page-specific stores and components remain in their app.
@@ -90,9 +90,11 @@ assembly-vision/
 │           └── package.json
 ├── training/
 │   ├── assemblyvision_training/
+│   │   ├── cli.py
 │   │   ├── data/
 │   │   ├── product_detector/
 │   │   ├── component_detector/
+│   │   ├── preparation/
 │   │   ├── evaluation/
 │   │   └── manifests/
 │   ├── configs/
@@ -138,7 +140,7 @@ assembly-vision/
 └── README.md
 ```
 
-Brace notation above is explanatory shorthand; actual directories are ordinary directories. `edge-service` combines API, capture orchestration, pipeline execution, local persistence, and uploader in one process for the first production release. CPU/GPU-heavy inference may run in a supervised subprocess, but a separately deployable `edge-worker` is not justified until isolation or independent scaling is measured. Likewise, the two-day MVP is exposed as an `edge-service` CLI entry point rather than a separate `edge-cli` app.
+Brace notation above is explanatory shorthand; actual directories are ordinary directories. `edge-service` combines API, capture orchestration, pipeline execution, local persistence, and uploader in one process for the first production release. CPU/GPU-heavy inference may run in a supervised subprocess, but a separately deployable `edge-worker` is not justified until isolation or independent scaling is measured. The static train-and-inspect MVP exposes inspection through the `edge-service` CLI and training through the separate developer-only `av-train` CLI rather than creating an `edge-cli` app.
 
 ## 18.4 Application Responsibilities
 
@@ -210,13 +212,13 @@ For month one, durable job handlers remain in the central codebase and may use a
 
 ## 18.8 MVP Versus Later Packages
 
-### 18.8.1 Two-Day Static-Image MVP
+### 18.8.1 Static Train-and-Inspect MVP
 
-Required: one Python distribution containing the `edge-service` CLI entry point and cohesive internal modules for domain models, folder source, detectors, ROI, rules, manifests, and focused tests. Separate package publication, TypeScript workspace setup, databases, Web apps, central apps, temporal aggregation, upload, and camera SDK are not required.
+Required: one root `uv` workspace containing the `edge-service` runtime distribution, a separate developer-only `training` distribution with an `av-train` CLI, and shared `domain` and `vision-core` packages. `training` produces product and component YOLO artifacts from X-AnyLabeling labels; it is never imported by or included in the edge runtime distribution. `vision-core` owns shared ROI generation and coordinate mapping so component dataset preparation and runtime inference use the same transforms. TypeScript setup, databases, Web apps, central apps, temporal aggregation, upload, and camera SDK are not required.
 
 ### 18.8.2 One-Month MVP
 
-Required: `edge-service`, `edge-web`, a central API codebase, and only the minimal central inspection/review Web view needed for the demonstrator. Start with two Python distributions at most (edge runtime/vision and central API); keep domain, configuration, logging, persistence, and jobs as internal modules until two concrete consumers justify extraction. Share only generated API contracts and proven detection-viewer primitives in TypeScript. A separate `central-worker`, `platform-common`, shared chart/auth/validation packages, generalized admin UI, and report jobs are deferred.
+Required: `edge-service`, `edge-web`, a central API codebase, and only the minimal central inspection/review Web view needed for the demonstrator. Runtime deployment starts with two Python application distributions at most (edge runtime and central API); the already-extracted `domain` and `vision-core` packages remain shared with the developer-only training distribution. Keep configuration, logging, persistence, and jobs application-local until another concrete consumer justifies extraction. Share only generated API contracts and proven detection-viewer primitives in TypeScript. A separate `central-worker`, `platform-common`, shared chart/auth/validation packages, generalized admin UI, and report jobs are deferred.
 
 ### 18.8.3 Add Only When Justified
 
@@ -237,7 +239,8 @@ Configuration schemas and examples under `config/` are source-controlled. Effect
 ## 18.11 Models, Data, and Generated Artifacts
 
 - `models/manifests/` may contain small manifests and checksums for development references. Model weights live in an artifact registry/object store and are ignored by Git.
-- `training/` contains reproducible code and small synthetic test fixtures, not production datasets or uncurated exports.
+- `training/` contains reproducible code, X-AnyLabeling-to-YOLO dataset validation, component-ROI preparation, and small synthetic test fixtures, not production datasets or uncurated exports. It is developer-only and excluded from runtime distributions.
+- The static train-and-inspect MVP uses plain local model artifacts with checksums. Model encryption and `.pyc`-only runtime packaging are deferred to a separately justified distribution scope.
 - Runtime databases, images, clips, logs, cache, and reports use explicit external volumes, never repository paths.
 - OpenAPI documents and generated clients are produced deterministically. The chosen policy may commit generated output for easy frontend builds or regenerate in CI, but CI always checks drift.
 - Built frontend assets and compiled Python runtime layers are build outputs, not source directories.

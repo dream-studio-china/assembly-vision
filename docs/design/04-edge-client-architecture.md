@@ -160,9 +160,9 @@ The edge uses Compose without Kubernetes. Images are multi-stage, run non-root, 
 
 ## 12. Delivery Horizons
 
-### 12.1 Two-Day MVP
+### 12.1 Static Train-and-Inspect MVP
 
-Implement a single CLI path with folder source, model adapters, ROI, component evidence, rules, JSON/media output, and focused tests. Use example configuration with non-production thresholds clearly marked.
+Implement an edge CLI path with folder source, trained model adapters, ROI, component evidence, rules, JSON/media output, held-out verification, and focused tests. A separate developer-only training CLI produces model artifacts; it is not part of the edge runtime.
 
 ### 12.2 One-Month Target
 

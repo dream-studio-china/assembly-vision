@@ -153,7 +153,7 @@ Acceptance checks include:
 
 ## 16.14 MVP and Later Scope
 
-MVP includes live status/latest result, recent history/detail, health, queue visibility/manual retry, and pause/resume if operationally approved. Local override editing and logs may be administrator-only late-MVP features. Later additions may include WebRTC preview, kiosk packaging/Tauri, alert acknowledgement workflow, guided camera calibration, and richer multi-frame evidence playback. None is required for the two-day static-image MVP.
+MVP includes live status/latest result, recent history/detail, health, queue visibility/manual retry, and pause/resume if operationally approved. Local override editing and logs may be administrator-only late-MVP features. Later additions may include WebRTC preview, kiosk packaging/Tauri, alert acknowledgement workflow, guided camera calibration, and richer multi-frame evidence playback. None is required for the static train-and-inspect MVP.
 
 ## 16.15 Open Questions and Validation Required
 

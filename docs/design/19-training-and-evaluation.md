@@ -6,6 +6,25 @@ Training produces a product detector for full frames and a component detector fo
 
 Model metadata follows [Data Model and Database](14-data-model-and-database.md). Model registration and review surfaces are described in [Central Admin Dashboard](17-central-admin-dashboard.md), and code ownership in [Monorepo and Code Organization](18-monorepo-and-code-organization.md).
 
+### 19.1.1 Static Train-and-Inspect MVP
+
+The MVP implements a developer-controlled training-to-inspection loop before camera integration. X-AnyLabeling is the selected annotation tool and exports standard YOLO text labels. Product and component boxes are annotated in full-frame coordinates. The training CLI validates the exported dataset, trains the product detector from full-frame images, then uses the product ROI transform to crop component training images and remap component boxes into ROI coordinates before component training.
+
+The runtime inspection CLI consumes only the resulting immutable weight artifacts and manifests. Training code is in a separate `training/` workspace, is never imported by the runtime, and is excluded from runtime distributions. A configured filename convention provides expected `OK` or `NG` labels for held-out verification; it is not a substitute for bounding-box labels during detector training.
+
+The first MVP runs small models and measured image sizes on the developer's Apple Silicon Mac with 16 GB memory. It records reproducibility metadata and reports held-out static-set results, but does not claim production accuracy, production throughput, or production acceptance. Plain model artifacts with SHA-256 manifests are sufficient for this MVP; model encryption and `.pyc`-only distribution packaging are deferred.
+
+The minimum YOLO dataset layout is:
+
+```text
+dataset/
+├── images/{train,val}/
+├── labels/{train,val}/
+└── data.yaml
+```
+
+Each label file shares its image basename and contains normalized YOLO class and box coordinates. The `data.yaml` class-name order is the authoritative class-ID mapping. Train and validation groups must keep derived crops and their source product/session together.
+
 ## 19.2 Task Definitions
 
 ### 19.2.1 Product Detector

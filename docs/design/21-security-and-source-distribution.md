@@ -6,7 +6,7 @@ AssemblyVision protects production evidence, configuration integrity, credential
 
 ### 21.1.1 Scope Distinction
 
-- **MVP:** no authentication is required for the two-day static-image CLI, provided it is used only in an isolated development environment with non-production data.
+- **Static train-and-inspect MVP:** no authentication is required while the training and inspection CLIs are used only in an isolated development environment with non-production data. Training code, datasets, notebooks, and experiment configuration are developer-only and are not included in a runtime distribution. Model encryption and `.pyc`-only packaging are deferred.
 - **One-month target:** local access controls, central authentication, TLS, device credentials, audit logs, non-root containers, and controlled artifact distribution.
 - **Production target:** customer-integrated identity where practical, role-based authorization, certificate lifecycle management, signed model/configuration packages, vulnerability management, backup encryption, and incident response.
 - **Future scope:** hardware-backed keys, remote attestation, stronger native compilation/obfuscation, or licensing controls only if justified by contractual threat analysis.

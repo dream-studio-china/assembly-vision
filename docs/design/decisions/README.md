@@ -12,5 +12,6 @@
 | [ADR-008](ADR-008-docker-deployment.md) | Docker deployment |
 | [ADR-009](ADR-009-static-image-first-mvp.md) | Static-image-first MVP |
 | [ADR-010](ADR-010-per-component-temporal-aggregation.md) | Per-component temporal aggregation |
+| [ADR-011](ADR-011-labeled-train-and-inspect-mvp.md) | Labeled train-and-inspect MVP |
 
-All records are currently `Accepted`. Superseding a decision requires a new ADR and explicit links from the affected record and design documents.
+All records are currently `Accepted`. ADR-011 supersedes ADR-009 only for the MVP training exclusion and two-day scope. Superseding a decision requires a new ADR and explicit links from the affected record and design documents.

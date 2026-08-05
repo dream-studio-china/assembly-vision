@@ -6,7 +6,8 @@ This document defines how AssemblyVision is packaged, installed, upgraded, opera
 
 ### 20.1.1 Current and MVP Scope
 
-- The two-day static-image MVP runs from a developer environment and produces JSON, ROI images, and annotated images.
+- The static train-and-inspect MVP runs from a developer environment. A developer-only training CLI produces local model artifacts; the inspection CLI produces JSON, ROI images, annotated images, and held-out verification output.
+- This MVP does not implement encrypted model artifacts or `.pyc`-only customer runtime packaging; training code is simply excluded from any runtime distribution.
 - The one-month target packages edge and central applications with Docker Compose.
 - SQLite is acceptable for the initial edge database; PostgreSQL is the central database.
 - Persistent runtime data is stored outside container layers.

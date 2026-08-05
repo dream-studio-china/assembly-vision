@@ -113,9 +113,9 @@ Future Kubernetes deployment may replace orchestration while preserving APIs and
 
 ## 11. Delivery Horizons
 
-### 11.1 Two-Day MVP
+### 11.1 Static Train-and-Inspect MVP
 
-No central server is built. Static outputs use future-compatible identifiers, reason codes, and versions so integration does not require redefining decisions.
+No central server is built. The separate developer-only training CLI and the static inspection CLI use future-compatible identifiers, reason codes, manifests, and versions so integration does not require redefining decisions.
 
 ### 11.2 One-Month Target
 

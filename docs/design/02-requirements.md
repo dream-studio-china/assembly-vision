@@ -85,9 +85,9 @@ Every video frame MUST NOT be uploaded. Complete or rolling local video MAY be r
 
 ## 7. Scope Requirements by Horizon
 
-### 7.1 Two-Day MVP
+### 7.1 Static Train-and-Inspect MVP
 
-Applicable requirements are BR-002, BR-003, EDGE-005 through EDGE-008, EDGE-010, and the trace fields that can be populated for static images. The MVP uses folder input and output files; it does not claim EDGE-001 through EDGE-004 or operational durability.
+Applicable requirements are BR-002, BR-003, EDGE-005 through EDGE-008, EDGE-010, and the trace fields that can be populated for static images. The MVP validates standard YOLO labels, trains product and component models through a separate developer-only CLI, prepares ROI-coordinate component labels, and verifies held-out static results against filename ground truth. It uses folder input and output files; it does not claim EDGE-001 through EDGE-004 or operational durability.
 
 ### 7.2 One-Month Target
 
