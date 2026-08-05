@@ -36,19 +36,33 @@ class ExpectedResult:
 
 
 def load_expected(path: Path) -> dict[str, ExpectedResult]:
-    """Load the expected-labels JSON file keyed by filename."""
+    """Load the expected-labels JSON file keyed by filename.
+
+    Entries are validated strictly so a missing or malformed expected label
+    cannot be silently coerced into a more permissive outcome.
+    """
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"cannot read expected labels {path}: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise ValueError(f"expected labels file {path} must contain an object")
     expected: dict[str, ExpectedResult] = {}
     for name, info in raw.items():
         if not isinstance(info, dict):
-            continue
-        ok = bool(info.get("ok", False))
-        present = frozenset(str(c) for c in info.get("present", []))
-        missing = frozenset(str(c) for c in info.get("missing", []))
-        expected[name] = ExpectedResult(ok=ok, present=present, missing=missing)
+            raise ValueError(f"expected label for {name!r} must be an object")
+        ok = info.get("ok")
+        if not isinstance(ok, bool):
+            raise ValueError(f"expected label for {name!r} must include a boolean 'ok'")
+        present = info.get("present", [])
+        missing = info.get("missing", [])
+        if not isinstance(present, list) or not isinstance(missing, list):
+            raise ValueError(f"expected label for {name!r} must have list 'present' and 'missing'")
+        expected[name] = ExpectedResult(
+            ok=ok,
+            present=frozenset(str(c) for c in present),
+            missing=frozenset(str(c) for c in missing),
+        )
     return expected
 
 
@@ -81,6 +95,14 @@ class VerifyRow:
 @dataclass
 class VerificationReport:
     rows: list[VerifyRow] = field(default_factory=list)
+    unlabeled: int = 0
+    failed: int = 0
+    unmatched_expected: int = 0
+
+    @property
+    def has_gaps(self) -> bool:
+        """True when the report cannot be trusted to represent the expected set."""
+        return self.unlabeled > 0 or self.failed > 0 or self.unmatched_expected > 0 or len(self.rows) == 0
 
     @property
     def expected_ng(self) -> int:
@@ -133,20 +155,33 @@ def run_verify(
     filename_fallback: bool = True,
 ) -> VerificationReport:
     rows: list[VerifyRow] = []
+    unlabeled = 0
+    failed = 0
+    seen: set[str] = set()
     for source, path in work:
-        exp = expected.get(path.name)
+        name = path.name
+        exp = expected.get(name)
         if exp is None and filename_fallback:
-            exp = filename_expected(path.name)
+            exp = filename_expected(name)
         if exp is None:
+            unlabeled += 1
             continue
+        seen.add(name)
         try:
             record = pipeline.inspect_image(source, path, writer)
         except AssemblyVisionError as exc:
+            failed += 1
             log.error("verify failed for %s: %s", path, exc)
             continue
         predicted_ok = record.decision.business_result is BusinessResult.OK
         rows.append(VerifyRow(str(path), exp.ok, predicted_ok, record))
-    return VerificationReport(rows)
+    unmatched_expected = len(set(expected) - seen)
+    return VerificationReport(
+        rows=rows,
+        unlabeled=unlabeled,
+        failed=failed,
+        unmatched_expected=unmatched_expected,
+    )
 
 
 def format_report(report: VerificationReport) -> str:
@@ -155,11 +190,17 @@ def format_report(report: VerificationReport) -> str:
         f"total            : {len(report.rows)}",
         f"expected OK      : {report.expected_ok}",
         f"expected NG      : {report.expected_ng}",
+        f"unlabeled        : {report.unlabeled}",
+        f"failed           : {report.failed}",
+        f"unmatched expect.: {report.unmatched_expected}",
         f"matched          : {report.matched}/{len(report.rows)}",
         f"NG recall        : {report.ng_recall:.3f} ({report.true_positive_ng}/{report.expected_ng})",
         f"false negatives  : {report.false_negative}  (FN rate {report.fn_rate:.3f})",
         f"false positives  : {report.false_positive}  (FP rate {report.fp_rate:.3f})",
     ]
+    if report.has_gaps:
+        lines.append("")
+        lines.append("DANGER: verification did not cover the full expected set (see unlabeled/failed/unmatched).")
     fns = [r for r in report.rows if not r.expected_ok and r.predicted_ok]
     if fns:
         lines.append("")

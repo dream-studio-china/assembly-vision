@@ -6,12 +6,16 @@ import json
 from pathlib import Path
 
 import pytest
+from assemblyvision_domain.errors import AssemblyVisionError
+from assemblyvision_domain.models import BusinessResult
 from assemblyvision_edge.verify import (
+    ExpectedResult,
     VerificationReport,
     VerifyRow,
     filename_expected,
     format_report,
     load_expected,
+    run_verify,
 )
 
 
@@ -63,6 +67,19 @@ def test_load_expected_missing_file(tmp_path: Path) -> None:
         load_expected(tmp_path / "nope.json")
 
 
+def test_load_expected_rejects_malformed_entries(tmp_path: Path) -> None:
+    path = tmp_path / "bad-expected.json"
+    path.write_text(json.dumps({"a.png": {"ok": "yes"}}), encoding="utf-8")
+    with pytest.raises(ValueError, match="boolean 'ok'"):
+        load_expected(path)
+    path.write_text(json.dumps({"a.png": "ng"}), encoding="utf-8")
+    with pytest.raises(ValueError, match="must be an object"):
+        load_expected(path)
+    path.write_text(json.dumps({"a.png": {"ok": True, "present": "x"}}), encoding="utf-8")
+    with pytest.raises(ValueError, match="list 'present'"):
+        load_expected(path)
+
+
 def test_filename_expected() -> None:
     assert filename_expected("ok_001.png").ok is True  # type: ignore[union-attr]
     assert filename_expected("ng_missing_001.png").ok is False  # type: ignore[union-attr]
@@ -73,3 +90,67 @@ def test_report_ignores_unlabeled_images() -> None:
     report = VerificationReport(rows=[])
     assert report.matched == 0
     assert report.ng_recall == 0.0
+    assert report.has_gaps is True
+
+
+class _FakePipeline:
+    def __init__(self, failures: set[str]) -> None:
+        self._failures = failures
+
+    def inspect_image(self, source: object, path: Path, writer: object) -> object:
+        if path.name in self._failures:
+            raise AssemblyVisionError("boom")
+        return _FakeRecord()
+
+
+class _FakeRecord:
+    class _Decision:
+        business_result = BusinessResult.OK
+
+    decision = _Decision()
+
+
+def _work(tmp_path: Path, names: list[str]) -> list[tuple[object, Path]]:
+    for n in names:
+        (tmp_path / n).touch()
+    return [(None, tmp_path / n) for n in names]  # type: ignore[list-item]
+
+
+def test_run_verify_counts_unlabeled_and_failed(tmp_path: Path) -> None:
+    work = _work(tmp_path, ["ok_a.png", "ok_b.png", "plain.png"])
+    report = run_verify(
+        _FakePipeline(failures={"ok_b.png"}),  # type: ignore[arg-type]
+        work,  # type: ignore[arg-type]
+        expected={"ok_a.png": ExpectedResult(True), "ok_b.png": ExpectedResult(False)},
+        writer=object(),  # type: ignore[arg-type]
+    )
+    assert len(report.rows) == 1
+    assert report.unlabeled == 1
+    assert report.failed == 1
+    assert report.has_gaps is True
+
+
+def test_run_verify_detects_unmatched_expected(tmp_path: Path) -> None:
+    work = _work(tmp_path, ["ok_a.png"])
+    report = run_verify(
+        _FakePipeline(failures=set()),  # type: ignore[arg-type]
+        work,  # type: ignore[arg-type]
+        expected={"ok_a.png": ExpectedResult(True), "ghost.png": ExpectedResult(False)},
+        writer=object(),  # type: ignore[arg-type]
+    )
+    assert report.unmatched_expected == 1
+    assert report.has_gaps is True
+
+
+def test_run_verify_complete_input_is_not_a_gap(tmp_path: Path) -> None:
+    report = run_verify(
+        _FakePipeline(failures=set()),  # type: ignore[arg-type]
+        _work(tmp_path, ["ok_a.png"]),  # type: ignore[arg-type]
+        expected={"ok_a.png": ExpectedResult(True)},
+        writer=object(),  # type: ignore[arg-type]
+    )
+    assert len(report.rows) == 1
+    assert report.unlabeled == 0
+    assert report.failed == 0
+    assert report.unmatched_expected == 0
+    assert report.has_gaps is False

@@ -168,7 +168,7 @@ def _run_verify(args: argparse.Namespace) -> int:
     print(format_per_image(report))
     print()
     print(format_report(report))
-    if report.false_negative > 0:
+    if report.false_negative > 0 or report.has_gaps:
         return 1
     return 0
 
