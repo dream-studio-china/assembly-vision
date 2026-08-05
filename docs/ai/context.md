@@ -1,6 +1,6 @@
 # AssemblyVision - Full Project Context
 
-> Context snapshot. Last updated: 2026-08-04
+> Context snapshot. Last updated: 2026-08-05
 >
 > Read this file first in a new session to reconstruct the project state quickly.
 
@@ -18,12 +18,13 @@ and verifies that all required assembly components are present.
 - **Architecture**: edge-client + central-server. All production-critical image processing and
   final decisions execute on the edge industrial computer; the central server is never required
   for real-time inspection.
-- **Current repository state**: documentation and architecture baseline only. No application
-  code exists yet. The next concrete milestone is the two-day static-image MVP.
+- **Current repository state**: the static-image edge-service scaffold exists on `feat/mvp`
+  (uv workspace, domain models, ROI/rule logic, CLI, output writer, and tests). The next
+  concrete milestone is the labeled static train-and-inspect MVP defined by ADR-011.
 
 ## 2. Repository State
 
-- Remote: `https://github.com/dream-studio-china/assembly-vision`; active documentation work is on branch `dev`.
+- Remote: `https://github.com/dream-studio-china/assembly-vision`; current MVP work is on branch `feat/mvp`.
 - `dev` includes engineering contracts, cross-references, expanded contributor rules, and editor ignores on top of `origin/main`.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
@@ -43,6 +44,11 @@ assembly-vision/
 │   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
 │   └── build-docs.sh                # translate -> build site/ (EN) and site/zh/ (ZH)
 ├── .github/workflows/docs.yml       # GitHub Pages deploy on push to main
+├── apps/edge-service/                # Current static inspection CLI scaffold
+├── config/examples/                  # Example pipeline, rule, and manifest configuration
+├── models/manifests/                 # Checked model metadata; weights remain outside Git
+├── tests/fixtures/                   # Small non-sensitive test fixtures
+├── pyproject.toml                    # Root uv workspace configuration
 └── docs/
     ├── index.md            # MkDocs home page
     ├── README.md           # Documentation index
@@ -55,7 +61,7 @@ assembly-vision/
     ├── design/             # 28 design documents + appendices + decisions/
     │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
     │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-    │   └── decisions/      # ADR-001 ... ADR-010 + README
+    │   └── decisions/      # ADR-001 ... ADR-011 + README
     └── research/           # 3 external-research reports
         ├── 01-industrial-inspection-success-rates.md
         ├── 02-yolo-capabilities-and-success-rates.md
@@ -96,7 +102,8 @@ assembly-vision/
 - `docs/design/decisions/`: ADR-001 edge-first inspection, ADR-002 Python backend, ADR-003 Vue 3
   + TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage & delayed
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
-  static-image-first MVP, ADR-010 per-component temporal aggregation.
+   static-image-first MVP, ADR-010 per-component temporal aggregation, and ADR-011 labeled
+   train-and-inspect MVP.
 - [docs/design/appendices.md](../design/appendices.md) holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
@@ -138,7 +145,7 @@ assembly-vision/
 
 ## 8. Latest Session Decisions
 
-- Generated the full architecture document set under `docs/design/` (28 docs + 10 ADRs +
+- Generated the full architecture document set under `docs/design/` (28 docs + 11 ADRs +
   appendices) from [docs/source-brief.md](../source-brief.md) (formerly `docs/doc-task.md`).
 - Created `docs/research/` (3 reports) via internet research.
 - Built the bilingual MkDocs with automatic translation, adapted from the `crud-skeleton` project.
@@ -149,11 +156,17 @@ assembly-vision/
 - Inspections pin both product-detector and component-detector model versions separately.
 - The one-month scope is a bounded controlled integration demonstrator, not complete production
   acceptance; generalized administration, remote distribution, and full resilience/soak work follow.
+- ADR-011 supersedes ADR-009 only for the MVP training exclusion and two-day scope. The selected
+  annotation tool is X-AnyLabeling; the MVP uses standard YOLO labels, a separate developer-only
+  training CLI, real two-stage models, and held-out filename-ground-truth verification.
+- Model encryption and `.pyc`-only runtime packaging are deferred. The MVP protection boundary is
+  that training code, datasets, notebooks, and experiment configuration are not distributed.
 
 ## 9. Open Items / Next Steps
 
-- Two-day static-image MVP is the next engineering milestone (folder input, two-stage detection,
-  ROI, rules, JSON + annotated images, CLI).
+- Labeled static train-and-inspect MVP is the next engineering milestone: extract shared domain/
+  vision packages, add the separate training CLI, train from X-AnyLabeling YOLO labels, replace
+  detector stubs, and add held-out verification.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.

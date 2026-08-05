@@ -16,7 +16,7 @@ The edge deployment does not use Kubernetes. Central Kubernetes support is a fut
 
 ## 4. Scope
 
-This applies to the one-month and production runtime packaging. The two-day MVP may run directly in a developer environment. Host drivers, GPU runtime, camera SDK, volume backups, and OS hardening remain installation responsibilities outside container images.
+This applies to the one-month and production runtime packaging. The static train-and-inspect MVP may run directly in a developer environment. Host drivers, GPU runtime, camera SDK, volume backups, and OS hardening remain installation responsibilities outside container images.
 
 ## 5. Consequences
 

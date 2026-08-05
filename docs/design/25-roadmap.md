@@ -6,42 +6,41 @@ This roadmap sequences AssemblyVision implementation by technical dependency and
 
 ## 25.2 Scope Boundaries
 
-- **Two-day MVP:** static images from a folder through two-stage detection, rules, JSON, ROI, and annotated output.
+- **Static train-and-inspect MVP:** X-AnyLabeling YOLO labels through product/component training, static two-stage inspection, rule decisions, traceable output, and held-out verification.
 - **One-month target:** first integrated edge and central capability suitable for controlled customer-site evaluation, not unrestricted production autonomy.
 - **Production target:** hardened offline operation, governed releases, security, observability, acceptance evidence, and support readiness.
 - **Future scope:** Kubernetes centrally, Tauri wrapper, PLC/MES integration, advanced fleet management, automated retraining, and multi-angle optimization.
 
 ## 25.3 Preconditions
 
-Before implementation, obtain representative camera images, draft product/component rules, runnable model artifacts, class mappings, permitted development data, a small held-out fixture set, and access to candidate edge hardware. Name customer owners for ground truth, camera mechanics, network/security, and acceptance. The two-day clock starts only after this readiness gate passes; unknowns are tracked explicitly rather than encoded as defaults.
+Before implementation, obtain representative static images, X-AnyLabeling product and component box labels in YOLO format, draft product/component rules, a class mapping, permitted development data, a separate held-out fixture set with filename `OK` or `NG` ground truth, and access to the developer Apple Silicon Mac with 16 GB memory. Name owners for ground truth, camera mechanics, network/security, and acceptance. Unknowns are tracked explicitly rather than encoded as defaults.
 
-## 25.4 Two-Day Static-Image MVP
+## 25.4 Static Train-and-Inspect MVP
 
-### 25.4.1 Day One
+### 25.4.1 Foundation and Dataset Preparation
 
-1. Establish one Python workspace/project and the Ruff, MyPy, and Pytest commands needed by the static spike; defer TypeScript workspace setup.
-2. Implement folder image input and deterministic output naming.
-3. Load the product detector and record model metadata.
-4. Detect the product, expand/clip its bounds, and save the mapped ROI.
-5. Serialize initial inspection/frame/ROI JSON with failure reason codes.
-6. Add focused tests for image errors, no-product behavior, ROI clipping, and serialization.
+1. Establish one root `uv` workspace with `edge-service`, a developer-only `training` distribution, and shared `domain` and `vision-core` packages; defer TypeScript workspace setup.
+2. Validate the X-AnyLabeling YOLO export layout, class order, image/label basename pairing, normalized bounds, and leakage-safe train/validation grouping.
+3. Implement folder image input, deterministic output naming, model-manifest generation, and focused tests for image errors, ROI clipping, coordinate mapping, and serialization.
+4. Train a small full-frame product detector on the developer hardware and record model metadata, class mapping, artifact checksum, and training configuration.
+5. Generate product ROIs for component training images, crop them, map component boxes into ROI coordinates, and validate round trips and out-of-ROI handling.
 
-### 25.4.2 Day Two
+### 25.4.2 Train, Inspect, and Verify
 
-1. Load the component detector against the product ROI.
-2. Define a minimal versioned product rule listing required components.
-3. Evaluate component presence deterministically and produce `OK` or `NG` plus reasons.
-4. Save annotated full image, annotated ROI where useful, component evidence, and versions.
-5. Provide a CLI for one image/folder and machine-readable exit/report behavior.
-6. Run the initial held-out static fixture suite and document limitations.
+1. Train a component detector on prepared ROI images and produce a versioned, checksummed manifest.
+2. Replace static detector stubs with real Ultralytics product and component adapters; preserve deterministic single-product selection, ROI mapping, and failure reason codes.
+3. Define a minimal versioned product rule listing required components, evaluate presence deterministically, and produce `OK` or `NG` plus reasons.
+4. Save annotated full image, annotated ROI where useful, component evidence, model/rule versions, and JSON results.
+5. Provide `av-train` commands for product training, component-dataset preparation, and component training; provide `assemblyvision inspect` for one image/folder and `assemblyvision verify` for machine-readable held-out reports.
+6. Run the held-out static fixture suite and report NG recall, false negatives, false positives, per-component support, and documented limitations.
 
 ### 25.4.3 Explicit Exclusions
 
-Camera SDK, live video, temporal aggregation, barcode implementation, local service/dashboard, central server, authentication, production deployment, PLC/MES integration, and automated retraining are not part of this two-day MVP.
+Camera SDK, live video, temporal aggregation, barcode implementation, local service/dashboard, central server, authentication, production deployment, PLC/MES integration, automated retraining, model encryption, and `.pyc`-only runtime packaging are not part of this MVP. Training code remains developer-only and is not included in any runtime distribution.
 
 ### 25.4.4 Exit Evidence
 
-The pipeline is repeatable on supplied static images, failures are explicit, coordinate mappings are test-covered, outputs identify model/rule versions, and results can seed baseline evaluation. This proves software flow, not production accuracy.
+The training and inspection flow is repeatable from a locked labeled dataset; failures are explicit; full-frame-to-ROI transforms are test-covered; output identifies dataset, model, and rule versions; and held-out verification reports decision metrics. This proves a static training-to-inspection flow, not production accuracy, timing, or operational readiness.
 
 ## 25.5 One-Month Controlled Integration Demonstrator
 
@@ -51,9 +50,9 @@ product family, one camera, one window mechanism, one barcode path, and one cent
 
 ### 25.5.1 Week 1: Inspection Core and Baseline
 
-- Complete static pipeline, product detector adapter, ROI engine, component detector adapter, deterministic rule engine, schemas, CLI, and baseline evaluation.
-- Establish leakage-safe dataset manifests and a locked regression set.
-- Profile inference on candidate hardware if available.
+- Stabilize the labeled train-and-inspect baseline: dataset validation, product training, ROI component-dataset preparation, component training, real detector adapters, deterministic rules, schemas, CLI, and held-out verification.
+- Establish leakage-safe dataset manifests, locked regression sets, and reproducible model manifests.
+- Profile training and inference on the developer Apple Silicon hardware if available.
 
 Dependencies: representative images, initial product/component definitions, candidate models. Risks: insufficient NG examples and model fit.
 
@@ -107,9 +106,9 @@ The following work is driven by baseline findings rather than compressed into th
 ## 25.7 Dependency and Critical Path
 
 ```text
-Production data and product rules
-  -> baseline models
-  -> static pipeline
+Labeled static data and product rules
+  -> dataset validation and baseline models
+  -> static train-and-inspect pipeline
   -> camera/barcode integration
   -> product-window identity
   -> temporal aggregation
@@ -126,7 +125,7 @@ The camera/window identity path and representative NG data are the main critical
 
 | Gate | Evidence required |
 |---|---|
-| Static pipeline complete | Deterministic fixtures, reason codes, artifacts, version traceability |
+| Static train-and-inspect complete | Validated YOLO labels, reproducible product/component artifacts, deterministic fixtures, reason codes, version traceability, held-out verification report |
 | Edge integration ready | Camera/barcode conformance, durable decision, restart recovery, health states |
 | Connected pilot ready | Idempotent synchronization, central history/review, offline tests, access controls |
 | Acceptance candidate | Locked artifacts, unseen customer dataset, complete evidence, runbooks |
@@ -160,3 +159,4 @@ No gate uses an invented accuracy, latency, or availability number. Numeric crit
 - [Testing and Quality Assurance](22-testing-and-quality-assurance.md)
 - [Customer Acceptance](26-customer-acceptance.md)
 - [ADR-009: Static-image-first MVP](decisions/ADR-009-static-image-first-mvp.md)
+- [ADR-011: Labeled Train-and-Inspect MVP](decisions/ADR-011-labeled-train-and-inspect-mvp.md)

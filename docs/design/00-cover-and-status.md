@@ -30,7 +30,7 @@ The horizons are scope labels, not promises that calendar time alone establishes
 
 | Horizon | Intended result | Included | Explicitly excluded or deferred | Status |
 |---|---|---|---|---|
-| Two-day MVP | Prove static-image processing end to end | Folder input, product detection, generated ROI, component detection, deterministic rules, JSON, ROI and annotated image output, CLI, minimal tests | Camera SDK, video, temporal aggregation, central server, dashboards, authentication, PLC/MES, retraining | Defined; model artifacts and representative images required |
+| Static train-and-inspect MVP | Prove a labeled static-image training-to-inspection flow | X-AnyLabeling YOLO box labels, separate training CLI, product/ROI/component training, deterministic rules, folder inspection, JSON/ROI/annotated output, verification report, focused tests | Camera SDK, video, temporal aggregation, central server, dashboards, authentication, PLC/MES, automated retraining, model encryption, and `.pyc` distribution packaging | Defined; annotated images, held-out images, product rules, and developer hardware required |
 | One-month target | Demonstrate a controlled integrated pilot for one bounded product/camera path | Camera/barcode adapters, durable local decision, edge API/dashboard, product windows, aggregation, persistent upload queue, one central ingestion/history/review path, minimum pilot security, Compose, targeted resilience baseline | Generalized administration/reports, remote package delivery, final acceptance, full resilience/soak matrix, production guarantees | Proposed; requires ready hardware, models, data, and a small parallel team |
 | Production target | Operate cautiously with measured acceptance | Hardened recovery, retention, audit, access control, configuration/model governance, observability, human review, release/rollback, production acceptance | Any claim of 100% accuracy | Requires validation and customer agreement |
 | Future | Extend only after operational evidence | Model-package distribution, optional central Kubernetes, optional Tauri edge shell, justified edge PostgreSQL, integrations and automation | Not part of the initial commitment | Candidate scope |
@@ -79,4 +79,4 @@ These roles are responsibilities, not confirmed staffing facts.
 3. What measured acceptance thresholds will be agreed after baseline evaluation?
 4. Which target dates are commitments, and what hardware/site access is available before them?
 5. Which data classifications, retention obligations, and customer policies apply?
-6. Which items in the global list in [Appendices](appendices.md#3-global-open-questions) block the two-day MVP, one-month target, and production release?
+6. Which items in the global list in [Appendices](appendices.md#3-global-open-questions) block the static train-and-inspect MVP, one-month target, and production release?

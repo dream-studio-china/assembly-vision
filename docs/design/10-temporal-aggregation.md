@@ -6,7 +6,7 @@ The temporal aggregator converts frame-level observations from [component detect
 
 ## 10.2 Scope
 
-Temporal aggregation is excluded from the two-day static-image MVP. The production target aggregates evidence within one bounded physical-product window. Future tracking may support more complex overlapping scenes, but evidence isolation remains mandatory.
+Temporal aggregation is excluded from the static train-and-inspect MVP. The production target aggregates evidence within one bounded physical-product window. Future tracking may support more complex overlapping scenes, but evidence isolation remains mandatory.
 
 ## 10.3 Core Invariants
 

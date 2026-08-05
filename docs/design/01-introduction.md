@@ -61,13 +61,13 @@ Models provide detections and confidence values. A separately testable, determin
 
 ### 5.5 Incremental Delivery
 
-The implementation starts with a static-image vertical slice, then adds physical acquisition and local durability, then synchronization and central workflows, and finally production hardening based on measured evidence.
+The implementation starts with a labeled static-image train-and-inspect vertical slice, then adds physical acquisition and local durability, then synchronization and central workflows, and finally production hardening based on measured evidence.
 
 ## 6. Scope by Horizon
 
-### 6.1 Two-Day MVP
+### 6.1 Static Train-and-Inspect MVP
 
-The static-image CLI reads an input folder, detects the product, generates a bounded ROI with coordinate mapping, detects configured components, evaluates rules, and writes JSON, ROI images, and annotated images. It establishes schemas and deterministic behavior without camera, video, central services, or dashboards.
+X-AnyLabeling produces YOLO product and component box labels. A developer-only training CLI trains full-frame product and ROI component models, while the static-image runtime CLI consumes their manifests, inspects a separate folder, evaluates rules, and writes JSON, ROI images, annotated images, and a held-out verification report. It establishes schemas and deterministic behavior without camera, video, central services, or dashboards. Training code is not part of the runtime distribution.
 
 ### 6.2 One-Month Target
 
