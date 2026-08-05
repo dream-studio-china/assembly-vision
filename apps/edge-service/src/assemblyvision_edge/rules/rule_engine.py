@@ -8,7 +8,7 @@ the database, and FastAPI (docs/design/11-rule-engine.md and contract 01).
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID, uuid5
 
 from assemblyvision_domain import reason_codes as rc
@@ -56,11 +56,11 @@ class ComponentRequirement(APIModel):
 class RuleDefinition(APIModel):
     """Versioned, immutable rule document (docs/design/11-rule-engine.md)."""
 
-    schema_version: int
+    schema_version: Literal[1]
     rule_id: str = Field(min_length=1)
     rule_version: Annotated[int, Field(ge=1)]
     product_type: str = Field(min_length=1)
-    compatible_component_model_versions: list[str] = Field(default_factory=list)
+    compatible_component_model_versions: Annotated[list[str], Field(min_length=1)]
     barcode_required: bool = False
     required_components: dict[str, ComponentRequirement]
     mandatory_gates: dict[str, bool] = Field(default_factory=dict)
@@ -127,12 +127,12 @@ class RuleEngine:
             reasons: list[str] = []
             missing: list[str] = []
             low_confidence: list[str] = []
+            if rule.schema_version != 1:
+                reasons.append(rc.CONFIG_INVALID)
             if not rule.required_components:
                 reasons.append(rc.CONFIG_INVALID)
-            if (
-                rule.compatible_component_model_versions
-                and context.component_model_version not in rule.compatible_component_model_versions
-            ):
+            compatible_versions = getattr(rule, "compatible_component_model_versions", [])
+            if context.component_model_version not in compatible_versions:
                 reasons.append(rc.VERSION_INCOMPATIBLE)
             if rule.barcode_required and not context.product_identity_verified:
                 reasons.append(rc.PRODUCT_IDENTITY_UNVERIFIED)

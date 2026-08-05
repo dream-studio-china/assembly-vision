@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 from assemblyvision_domain.models import BusinessResult, InternalDecision
-from assemblyvision_edge.rules.rule_engine import RuleDefinition, RuleEngine
+from assemblyvision_edge.rules.rule_engine import ComponentRequirement, RuleDefinition, RuleEngine
 
 from tests.conftest import make_context, make_evidence, make_rule
 
@@ -311,9 +311,44 @@ def test_empty_required_components_rejected_at_validation() -> None:
                 "rule_id": "permissive",
                 "rule_version": 1,
                 "product_type": "model_a",
+                "compatible_component_model_versions": ["component-yolo-1.0.0"],
                 "required_components": {},
             }
         )
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"schema_version": 2},
+        {"compatible_component_model_versions": []},
+    ],
+)
+def test_rule_rejects_unsupported_schema_or_empty_model_compatibility(
+    overrides: dict[str, object],
+) -> None:
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        make_rule(**overrides)
+
+
+def test_engine_fails_closed_for_constructed_invalid_rule() -> None:
+    rule = RuleDefinition.model_construct(
+        schema_version=2,
+        rule_id="invalid",
+        rule_version=1,
+        product_type="model_a",
+        compatible_component_model_versions=[],
+        required_components={"component_a": ComponentRequirement(expected_count=1)},
+        mandatory_gates={"product_detected": True},
+    )
+    decision = ENGINE.evaluate(
+        make_context(components={"component_a": make_evidence("component_a", "PRESENT")}), rule
+    )
+    assert decision.business_result is BusinessResult.NG
+    assert "CONFIG_INVALID" in decision.reason_codes
+    assert "VERSION_INCOMPATIBLE" in decision.reason_codes
 
 
 def test_empty_rule_cannot_produce_ok_in_engine() -> None:
@@ -322,6 +357,7 @@ def test_empty_rule_cannot_produce_ok_in_engine() -> None:
         rule_id="permissive",
         rule_version=1,
         product_type="model_a",
+        compatible_component_model_versions=[],
         required_components={},
     )
     decision = ENGINE.evaluate(make_context(components={}), rule)
