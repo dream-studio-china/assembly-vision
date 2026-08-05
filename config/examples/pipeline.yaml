@@ -1,0 +1,25 @@
+# Non-production thresholds: require model-specific validation before use.
+application_version: "0.1.0"
+models:
+  product_manifest: ../../models/manifests/product-manifest.json
+  component_manifest: ../../models/manifests/component-manifest.json
+product_detection:
+  model_version: product-yolo-1.0.0
+  confidence_threshold: 0.70
+  iou_threshold: 0.50
+component_detection:
+  model_version: component-yolo-1.0.0
+  iou_threshold: 0.50
+  components:
+    manual:
+      observation_threshold: 0.45
+    component_a:
+      observation_threshold: 0.50
+    component_b:
+      observation_threshold: 0.50
+roi:
+  margin_x_ratio: 0.05
+  margin_y_ratio: 0.05
+  min_area_pixels: 250000
+  min_expanded_area_retained: 0.90
+  normalize_perspective: false

@@ -1,0 +1,266 @@
+#!/usr/bin/env python
+"""Adapt a Roboflow YOLOv8 export into the AssemblyVision dataset layout.
+
+Roboflow "YOLOv8 PyTorch" exports come as:
+  <src>/{images,labels}/{train,val,test}/ + <src>/data.yaml
+
+Our pipeline needs two-stage datasets:
+  dataset_product/     class "product" (an independently annotated full-product box)
+  dataset_components/  the real component classes (generic "missing" classes dropped)
+
+The design forbids training a generic missing-component class; absence is
+inferred from the absence of the real component's box. A product class must be
+annotated independently of the components: stage one must localize the complete
+product even when a component is missing, so the product box can never be
+derived from the union of present component boxes. The held-out ``test`` split
+is never copied into training or validation; it becomes the verification set.
+
+Usage:
+  uv run python scripts/adapt-roboflow-dataset.py <src> <out> \
+      [--product-class product] [--required 'chip,capacitor,boot']
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover
+    yaml = None  # type: ignore[assignment]
+
+
+def _load_names(data_yaml: Path) -> list[str]:
+    if yaml is None:
+        raise RuntimeError("PyYAML is required (uv sync)")
+    raw = yaml.safe_load(data_yaml.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict) or "names" not in raw:
+        raise ValueError(f"data.yaml has no names: {data_yaml}")
+    return [str(n) for n in raw["names"]]
+
+
+def _box_coords(line: str, img_w: int, img_h: int) -> tuple[float, float, float, float]:
+    parts = line.split()
+    cx, cy, w, h = (float(v) for v in parts[1:5])
+    return (cx - w / 2) * img_w, (cy - h / 2) * img_h, (cx + w / 2) * img_w, (cy + h / 2) * img_h
+
+
+def _norm(
+    coords: tuple[float, float, float, float], img_w: int, img_h: int
+) -> tuple[float, float, float, float]:
+    x1, y1, x2, y2 = coords
+    cx = (x1 + x2) / 2 / img_w
+    cy = (y1 + y2) / 2 / img_h
+    return (cx, cy, (x2 - x1) / img_w, (y2 - y1) / img_h)
+
+
+def _sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def _check_disjoint(
+    checksums: dict[str, set[str]], split_a: str, split_b: str, dataset: str
+) -> None:
+    """Fail when two splits of one dataset share byte-identical images."""
+    overlap = checksums.get(split_a, set()) & checksums.get(split_b, set())
+    if overlap:
+        raise ValueError(
+            f"split overlap in {dataset!r} between {split_a!r} and {split_b!r}: "
+            f"{len(overlap)} duplicate checksums; held-out/test data must stay disjoint from training"
+        )
+
+
+def adapt(src: Path, out: Path, required: list[str] | None, product_class: str = "product") -> None:
+    if yaml is None:
+        raise RuntimeError("PyYAML is required (uv sync)")
+    names = _load_names(src / "data.yaml")
+    if product_class not in names:
+        raise ValueError(
+            f"data.yaml has no product class {product_class!r}; the two-stage pipeline requires "
+            "an independently annotated full-product box (the union of component boxes is rejected)"
+        )
+    drop = {n for n in names if "missing" in n.lower()}
+    keep = [n for n in names if n not in drop and n != product_class]
+
+    comp_order = required if required else keep
+    missing_in_data = [n for n in comp_order if n not in keep]
+    if missing_in_data:
+        raise ValueError(f"required component classes not present in dataset: {missing_in_data}")
+
+    splits = [
+        d.name
+        for d in (src / "images").iterdir()
+        if d.is_dir() and d.name in ("train", "val", "test")
+    ]
+
+    for split in ("train", "val"):
+        for ds in ("dataset_product", "dataset_components"):
+            (out / ds / "images" / split).mkdir(parents=True)
+            (out / ds / "labels" / split).mkdir(parents=True)
+
+    test_img_dir = out / "test"
+    test_img_dir.mkdir(parents=True)
+    expected: dict[str, dict[str, Any]] = {}
+    product_skipped: dict[str, int] = {"train": 0, "val": 0}
+    checksums: dict[str, dict[str, set[str]]] = {}
+    from PIL import Image
+
+    for split in splits:
+        img_dir = src / "images" / split
+        lbl_dir = src / "labels" / split
+        is_test = split == "test"
+        for img_path in sorted(img_dir.iterdir()):
+            if not img_path.is_file():
+                continue
+            lbl_path = lbl_dir / f"{img_path.stem}.txt"
+            with Image.open(img_path) as handle:
+                img_w, img_h = handle.size
+
+            coords: dict[str, list[tuple[float, float, float, float]]] = {n: [] for n in keep}
+            if lbl_path.is_file():
+                for line in lbl_path.read_text(encoding="utf-8").strip().splitlines():
+                    if not line.strip():
+                        continue
+                    cls_id = int(line.split()[0])
+                    if cls_id >= len(names):
+                        continue
+                    name = names[cls_id]
+                    if name in keep:
+                        coords[name].append(_box_coords(line, img_w, img_h))
+
+            product_coords = []
+            if lbl_path.is_file():
+                for line in lbl_path.read_text(encoding="utf-8").strip().splitlines():
+                    if not line.strip():
+                        continue
+                    cls_id = int(line.split()[0])
+                    if cls_id >= len(names):
+                        continue
+                    if names[cls_id] == product_class:
+                        product_coords.append(_box_coords(line, img_w, img_h))
+
+            if is_test:
+                data = img_path.read_bytes()
+                (test_img_dir / img_path.name).write_bytes(data)
+                present = {n for n in comp_order if coords.get(n)}
+                expected[img_path.name] = {
+                    "ok": present == set(comp_order),
+                    "present": sorted(present),
+                    "missing": sorted(set(comp_order) - present),
+                }
+                checksums.setdefault("test", {}).setdefault("test", set()).add(_sha256_bytes(data))
+                continue
+
+            data = img_path.read_bytes()
+            # Component dataset: keep every train/val image, including empty-label
+            # negatives, so prepare-components can generate negative ROI crops.
+            lines = []
+            for i, name in enumerate(comp_order):
+                for coord in coords.get(name, []):
+                    n = _norm(coord, img_w, img_h)
+                    lines.append(f"{i} {n[0]:.6f} {n[1]:.6f} {n[2]:.6f} {n[3]:.6f}")
+            (out / "dataset_components" / "labels" / split / f"{img_path.stem}.txt").write_text(
+                "\n".join(lines) + ("\n" if lines else ""), encoding="utf-8"
+            )
+            (out / "dataset_components" / "images" / split / img_path.name).write_bytes(data)
+            checksums.setdefault("components", {}).setdefault(split, set()).add(_sha256_bytes(data))
+
+            # Product dataset: only images with an independent full-product box.
+            if not product_coords:
+                product_skipped[split] += 1
+                continue
+            best = _largest_product_box(product_coords)
+            n = _norm(best, img_w, img_h)
+            (out / "dataset_product" / "labels" / split / f"{img_path.stem}.txt").write_text(
+                f"0 {n[0]:.6f} {n[1]:.6f} {n[2]:.6f} {n[3]:.6f}\n", encoding="utf-8"
+            )
+            (out / "dataset_product" / "images" / split / img_path.name).write_bytes(data)
+            checksums.setdefault("product", {}).setdefault(split, set()).add(_sha256_bytes(data))
+
+    for dataset in ("components", "product"):
+        _check_disjoint(checksums.get(dataset, {}), "train", "val", dataset)
+    held_out = checksums.get("test", {}).get("test", set())
+    for dataset in ("components", "product"):
+        train_val = checksums.get(dataset, {}).get("train", set()) | checksums.get(dataset, {}).get(
+            "val", set()
+        )
+        overlap = held_out & train_val
+        if overlap:
+            raise ValueError(
+                f"held-out test images overlap {dataset!r} training/validation data: "
+                f"{len(overlap)} duplicate checksums"
+            )
+
+    def _data(names_out: list[str], images_root: Path) -> dict[str, Any]:
+        return {
+            "nc": len(names_out),
+            "names": names_out,
+            "train": str((images_root / "train").resolve()),
+            "val": str((images_root / "val").resolve()),
+        }
+
+    (out / "dataset_product" / "data.yaml").write_text(
+        yaml.dump(_data(["product"], out / "dataset_product" / "images"), default_flow_style=False),
+        encoding="utf-8",
+    )
+    (out / "dataset_components" / "data.yaml").write_text(
+        yaml.dump(
+            _data(comp_order, out / "dataset_components" / "images"), default_flow_style=False
+        ),
+        encoding="utf-8",
+    )
+    if expected:
+        (out / "test-expected.json").write_text(json.dumps(expected, indent=2), encoding="utf-8")
+
+    print(f"adapted -> {out}")
+    print(
+        f"  product:    train={len(list((out / 'dataset_product/images/train').glob('*')))} val={len(list((out / 'dataset_product/images/val').glob('*')))}"
+    )
+    print(
+        f"  components: train={len(list((out / 'dataset_components/images/train').glob('*')))} val={len(list((out / 'dataset_components/images/val').glob('*')))}"
+    )
+    print(
+        f"  product boxes skipped (no product annotation): train={product_skipped['train']} val={product_skipped['val']}"
+    )
+    print(f"  dropped generic missing classes: {sorted(drop)}")
+    print(f"  product class: {product_class!r}; component order: {comp_order}")
+    print(f"  held-out test images: {len(expected)} (expected labels in test-expected.json)")
+
+
+def _largest_product_box(
+    coords: list[tuple[float, float, float, float]],
+) -> tuple[float, float, float, float]:
+    return max(coords, key=lambda c: (c[2] - c[0]) * (c[3] - c[1]))
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Adapt a Roboflow YOLOv8 export for AssemblyVision"
+    )
+    parser.add_argument("src", type=Path, help="Roboflow YOLOv8 export directory")
+    parser.add_argument("out", type=Path, help="Output dataset directory")
+    parser.add_argument(
+        "--product-class",
+        type=str,
+        default="product",
+        help="Name of the independently annotated full-product class (default: product)",
+    )
+    parser.add_argument(
+        "--required",
+        type=str,
+        default="",
+        help="Comma-separated required component classes (order = class ids)",
+    )
+    args = parser.parse_args(argv)
+    required = [n.strip() for n in args.required.split(",") if n.strip()] if args.required else None
+    adapt(args.src, args.out, required, args.product_class)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

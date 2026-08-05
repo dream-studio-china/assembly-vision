@@ -124,17 +124,29 @@ def _tr(text: str, translator) -> str:
 def _translate_segments(line: str, translator) -> str:
     """Translate label content in a single data line (nodes, edges, state/ER text)."""
     # Dashed/dotted edge labels:  A -. text .-> B | A -- text --> B | A == text ==> B
-    line = re.sub(r"(-\.[ \t]+)([^.\n]+?)([ \t]+\.->)", lambda m: m.group(1) + _tr(m.group(2), translator) + m.group(3), line)
-    line = re.sub(r"(--[ \t]+)([^>\n]+?)([ \t]+-->)", lambda m: m.group(1) + _tr(m.group(2), translator) + m.group(3), line)
-    line = re.sub(r"(==[ \t]+)([^>\n]+?)([ \t]+==>)", lambda m: m.group(1) + _tr(m.group(2), translator) + m.group(3), line)
+    line = re.sub(
+        r"(-\.[ \t]+)([^.\n]+?)([ \t]+\.->)",
+        lambda m: m.group(1) + _tr(m.group(2), translator) + m.group(3),
+        line,
+    )
+    line = re.sub(
+        r"(--[ \t]+)([^>\n]+?)([ \t]+-->)",
+        lambda m: m.group(1) + _tr(m.group(2), translator) + m.group(3),
+        line,
+    )
+    line = re.sub(
+        r"(==[ \t]+)([^>\n]+?)([ \t]+==>)",
+        lambda m: m.group(1) + _tr(m.group(2), translator) + m.group(3),
+        line,
+    )
     pattern = re.compile(
-        r"\[\[(?P<sub>[^\]\n]*)\]\]"        # subroutine  [[label]]
-        r"|\[\((?P<cyl>[^\]\n]*)\)\]"       # cylinder    [(label)]
-        r"|\(\((?P<circ>[^()\n]*)\)\)"      # circle      ((label))
-        r"|\{(?P<rh>[^}\n]*)\}"             # rhombus     {label}
-        r"|\|(?P<edge>[^|\n]*)\|"           # edge label  -->|label|
-        r"|\[(?P<node>[^\]\n]*)\]"          # rectangle   [label]
-        r"|(?P<colon>:)[^:\n\]}|]*$"        # state/seq/ER text after ': '
+        r"\[\[(?P<sub>[^\]\n]*)\]\]"  # subroutine  [[label]]
+        r"|\[\((?P<cyl>[^\]\n]*)\)\]"  # cylinder    [(label)]
+        r"|\(\((?P<circ>[^()\n]*)\)\)"  # circle      ((label))
+        r"|\{(?P<rh>[^}\n]*)\}"  # rhombus     {label}
+        r"|\|(?P<edge>[^|\n]*)\|"  # edge label  -->|label|
+        r"|\[(?P<node>[^\]\n]*)\]"  # rectangle   [label]
+        r"|(?P<colon>:)[^:\n\]}|]*$"  # state/seq/ER text after ': '
     )
     delims = {
         "sub": ("[[", "]]"),
@@ -193,11 +205,27 @@ def translate_mermaid(src: str, translator) -> str:
     out: list[str] = []
     for raw in src.split("\n"):
         low = raw.strip().lower()
-        if (low.startswith(("flowchart", "graph", "sequence", "state", "class",
-                            "er", "mindmap", "journey", "pie", "gantt", "timeline",
-                            "quadrantchart", "xychart", "block", "sankey", "gitgraph",
-                            "zenuml"))
-                or low in ("end", "autonumber")):
+        if low.startswith(
+            (
+                "flowchart",
+                "graph",
+                "sequence",
+                "state",
+                "class",
+                "er",
+                "mindmap",
+                "journey",
+                "pie",
+                "gantt",
+                "timeline",
+                "quadrantchart",
+                "xychart",
+                "block",
+                "sankey",
+                "gitgraph",
+                "zenuml",
+            )
+        ) or low in ("end", "autonumber"):
             out.append(raw)
             continue
         if low.startswith(("participant ", "actor ")):
@@ -253,7 +281,7 @@ def translate_file(src_path: Path, dst_path: Path, translator) -> None:
         end = content.find("---", 3)
         if end != -1:
             frontmatter = content[: end + 3] + "\n\n"
-            body = content[end + 3:].strip()
+            body = content[end + 3 :].strip()
 
     if not body:
         dst_path.parent.mkdir(parents=True, exist_ok=True)
@@ -262,11 +290,11 @@ def translate_file(src_path: Path, dst_path: Path, translator) -> None:
 
     # Stash non-translatable blocks (most specific first). Mermaid blocks are
     # translated in place (labels/edge text) before being stashed as a whole.
-    body = stash_fenced(body, translator)   # fenced code blocks (Mermaid-aware)
-    body = stash_headings(body)             # heading lines (translated separately)
-    body = stash(body, r"`[^`]+`")               # inline code
-    body = stash(body, r"<!--[\s\S]*?-->")       # HTML comments
-    body = stash(body, r"!\[.*?\]\(.*?\)")       # images
+    body = stash_fenced(body, translator)  # fenced code blocks (Mermaid-aware)
+    body = stash_headings(body)  # heading lines (translated separately)
+    body = stash(body, r"`[^`]+`")  # inline code
+    body = stash(body, r"<!--[\s\S]*?-->")  # HTML comments
+    body = stash(body, r"!\[.*?\]\(.*?\)")  # images
     body = stash(body, r"\[([^\]]*)\]\(([^\)]+)\)")  # links [text](url)
 
     # Split into paragraphs and translate in chunks (free Google limit ~5k chars;

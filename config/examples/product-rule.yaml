@@ -1,0 +1,18 @@
+schema_version: 1
+rule_id: model-a-presence
+rule_version: 3
+product_type: model_a
+compatible_component_model_versions:
+  - component-yolo-1.0.0
+barcode_required: false
+required_components:
+  component_a:
+    expected_count: 1
+  component_b:
+    expected_count: 1
+  manual:
+    expected_count: 1
+mandatory_gates:
+  product_detected: true
+  roi_valid: true
+  minimum_valid_frames_met: true

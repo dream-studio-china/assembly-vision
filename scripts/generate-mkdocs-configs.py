@@ -14,7 +14,6 @@ Usage:
 """
 
 import copy
-import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -141,10 +140,11 @@ def tr(s: str) -> str:
             from deep_translator import GoogleTranslator
 
             translated = GoogleTranslator(source="en", target="zh-CN").translate(s)
+        except Exception:
+            translated = None
+        if translated:
             MAP[s] = translated
             return translated
-        except Exception:
-            pass
     return s
 
 
@@ -161,7 +161,9 @@ def walk(items) -> None:
 
 
 def main() -> None:
-    cfg = yaml.load((ROOT / "mkdocs.yml").read_text(encoding="utf-8"), Loader=_Loader)
+    # `_Loader` subclasses yaml.SafeLoader and only captures the `!!python/name:`
+    # tag suffix as a string; it never instantiates arbitrary objects.
+    cfg = yaml.load((ROOT / "mkdocs.yml").read_text(encoding="utf-8"), Loader=_Loader)  # noqa: S506
 
     site_url = cfg.get("site_url", "")
     path = urlparse(site_url).path.rstrip("/") if site_url else ""
@@ -174,7 +176,9 @@ def main() -> None:
     en_cfg = copy.deepcopy(cfg)
     en_cfg.setdefault("extra", {})["alternate"] = alternates
     (ROOT / "mkdocs-en.yml").write_text(
-        yaml.dump(en_cfg, Dumper=_Dumper, allow_unicode=True, default_flow_style=False, sort_keys=False),
+        yaml.dump(
+            en_cfg, Dumper=_Dumper, allow_unicode=True, default_flow_style=False, sort_keys=False
+        ),
         encoding="utf-8",
     )
 
@@ -186,7 +190,9 @@ def main() -> None:
     walk(zh_cfg.get("nav", []))
     zh_cfg.setdefault("extra", {})["alternate"] = alternates
     (ROOT / "mkdocs-zh.yml").write_text(
-        yaml.dump(zh_cfg, Dumper=_Dumper, allow_unicode=True, default_flow_style=False, sort_keys=False),
+        yaml.dump(
+            zh_cfg, Dumper=_Dumper, allow_unicode=True, default_flow_style=False, sort_keys=False
+        ),
         encoding="utf-8",
     )
 
