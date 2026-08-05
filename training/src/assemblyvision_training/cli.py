@@ -34,6 +34,8 @@ def build_parser() -> argparse.ArgumentParser:
     product.add_argument("--imgsz", type=int, default=640, help="Model input size")
     product.add_argument("--model-size", default="n", help="YOLO model scale (n/s/m/l)")
     product.add_argument("--device", default="cpu", help="torch device (cpu/mps/cuda)")
+    product.add_argument("--seed", type=int, default=0, help="Training random seed (reproducibility)")
+    product.add_argument("--no-augment", action="store_true", help="Disable heavy augmentation (stable for small datasets)")
     product.add_argument(
         "--out-weights",
         type=Path,
@@ -63,6 +65,8 @@ def build_parser() -> argparse.ArgumentParser:
     component.add_argument("--imgsz", type=int, default=320, help="Model input size")
     component.add_argument("--model-size", default="n", help="YOLO model scale (n/s/m/l)")
     component.add_argument("--device", default="cpu", help="torch device (cpu/mps/cuda)")
+    component.add_argument("--seed", type=int, default=0, help="Training random seed (reproducibility)")
+    component.add_argument("--no-augment", action="store_true", help="Disable heavy augmentation (stable for small datasets)")
     component.add_argument(
         "--out-weights",
         type=Path,
@@ -117,6 +121,8 @@ def _run_product(args: argparse.Namespace) -> int:
         device=args.device,
         project_dir=weights_path.parent / ".train-runs",
         run_name="product",
+        seed=args.seed,
+        no_augment=args.no_augment,
     )
     log.info("best weights: %s", best)
     weights_path.parent.mkdir(parents=True, exist_ok=True)
@@ -184,6 +190,8 @@ def _run_component(args: argparse.Namespace) -> int:
         device=args.device,
         project_dir=weights_path.parent / ".train-runs",
         run_name="component",
+        seed=args.seed,
+        no_augment=args.no_augment,
     )
     log.info("best weights: %s", best)
     weights_path.parent.mkdir(parents=True, exist_ok=True)

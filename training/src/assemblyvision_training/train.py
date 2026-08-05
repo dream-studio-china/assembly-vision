@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
+from typing import Any
 
 from ultralytics import YOLO  # type: ignore[attr-defined]
 
@@ -36,22 +37,37 @@ def train_detector(
     device: str,
     project_dir: Path,
     run_name: str,
+    seed: int = 0,
+    no_augment: bool = False,
 ) -> Path:
     """Train a YOLO detection model.
 
-    Returns the path to the best weights file (best.pt).
+    ``no_augment`` disables heavy augmentation, which stabilizes training on
+    small or synthetic datasets. Returns the path to the best weights file.
     """
     model_path = _ensure_cached(model_size)
     model = YOLO(str(model_path))
-    _ = model.train(
-        data=str(dataset_dir / "data.yaml"),
-        epochs=epochs,
-        imgsz=imgsz,
-        device=device,
-        project=str(project_dir),
-        name=run_name,
-        exist_ok=True,
-    )
+    kwargs: dict[str, Any] = {
+        "data": str(dataset_dir / "data.yaml"),
+        "epochs": epochs,
+        "imgsz": imgsz,
+        "device": device,
+        "project": str(project_dir),
+        "name": run_name,
+        "exist_ok": True,
+        "seed": seed,
+    }
+    if no_augment:
+        kwargs.update(
+            mosaic=0.0,
+            scale=0.2,
+            translate=0.05,
+            fliplr=0.0,
+            hsv_h=0.0,
+            hsv_s=0.0,
+            hsv_v=0.0,
+        )
+    _ = model.train(**kwargs)
     best_path = project_dir / run_name / "weights" / "best.pt"
     if not best_path.is_file():
         candidates = sorted((project_dir / run_name / "weights").glob("*.pt"))
