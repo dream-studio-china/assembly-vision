@@ -111,6 +111,7 @@ class InspectionPipeline:
         gates = {
             "product_detected": False,
             "roi_valid": False,
+            "component_inference_valid": False,
             "minimum_valid_frames_met": True,
         }
 
@@ -143,6 +144,7 @@ class InspectionPipeline:
                                 generated.result.transform_full_to_roi,
                                 (frame.width, frame.height),
                             )
+                            gates["component_inference_valid"] = True
                         except DetectionError as exc:
                             extra_reasons.append(exc.reason_code)
                             log.warning("component detection failed: %s", exc)
@@ -220,9 +222,10 @@ class InspectionPipeline:
     ) -> dict[str, AggregatedComponentEvidence]:
         evidence_map: dict[str, AggregatedComponentEvidence] = {}
         roi_valid = gates.get("roi_valid", False)
+        inference_valid = gates.get("component_inference_valid", False)
         for key in self._rule.required_components:
             hits = [obs for obs in observations if obs.component_code == key]
-            if roi_valid and hits:
+            if roi_valid and inference_valid and hits:
                 ratios = [
                     obs.roi_bbox.area / (obs.roi_bbox.image_width * obs.roi_bbox.image_height)
                     for obs in hits
@@ -245,7 +248,7 @@ class InspectionPipeline:
                     box_area_ratios=ratios,
                     box_centers=centers,
                 )
-            elif roi_valid:
+            elif roi_valid and inference_valid:
                 evidence_map[key] = AggregatedComponentEvidence(
                     component_code=key,
                     state="MISSING",

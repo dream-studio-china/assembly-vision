@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from uuid import UUID, uuid4
 
+from assemblyvision_domain import reason_codes as rc
 from assemblyvision_domain.errors import DetectionError
 from assemblyvision_domain.models import (
     BoundingBox,
@@ -53,6 +54,18 @@ class FakeComponentDetector:
         frame_size: tuple[int, int],
     ) -> list[ComponentDetection]:
         return self._observations
+
+
+class RaisingComponentDetector:
+    def detect(
+        self,
+        roi: Image.Image,
+        frame_id: UUID,
+        required: tuple[str, ...],
+        transform: tuple[float, float, float, float, float, float],
+        frame_size: tuple[int, int],
+    ) -> list[ComponentDetection]:
+        raise DetectionError("INFERENCE_ERROR", "component boom")
 
 
 class _Outcome:
@@ -171,6 +184,21 @@ def test_image_read_error_is_failsafe_ng(tmp_path: Path) -> None:
 
     assert record.decision.business_result is BusinessResult.NG
     assert "IMAGE_READ_ERROR" in record.decision.reason_codes
+
+
+def test_component_inference_failure_is_uncertain_not_missing(tmp_path: Path) -> None:
+    image_path = tmp_path / "product.png"
+    _write_image(image_path)
+    pipeline = _build_pipeline(
+        FakeProductDetector(_Outcome(selected=_product_detection(uuid4()))),
+        RaisingComponentDetector(),
+    )
+    record = pipeline.inspect_image(FolderSource(tmp_path), image_path, OutputWriter(tmp_path / "out"))
+
+    assert record.decision.business_result is BusinessResult.NG
+    assert "INFERENCE_ERROR" in record.decision.reason_codes
+    assert all(evidence.state == "UNCERTAIN" for evidence in record.evidence)
+    assert all(rc.COMPONENT_UNVERIFIABLE in evidence.policy_reason_codes for evidence in record.evidence)
 
 
 def test_json_output_contains_versions(tmp_path: Path) -> None:
