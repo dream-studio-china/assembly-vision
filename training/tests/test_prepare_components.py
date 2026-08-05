@@ -78,7 +78,9 @@ class _Result:
 
 
 class _FakeModel:
-    def __call__(self, frame: Image.Image, verbose: bool = False, conf: float = 0.1) -> list[_Result]:
+    def __call__(
+        self, frame: Image.Image, verbose: bool = False, conf: float = 0.1
+    ) -> list[_Result]:
         return [_Result([40.0, 30.0, 160.0, 120.0])]
 
 

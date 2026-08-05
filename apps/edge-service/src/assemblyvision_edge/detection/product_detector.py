@@ -83,8 +83,12 @@ class ProductDetector:
 
         cls_id, conf, (x1, y1, x2, y2) = candidates[0]
         bbox = BoundingBox(
-            x_min=x1, y_min=y1, x_max=x2, y_max=y2,
-            image_width=frame.width, image_height=frame.height,
+            x_min=x1,
+            y_min=y1,
+            x_max=x2,
+            y_max=y2,
+            image_width=frame.width,
+            image_height=frame.height,
         )
         selected = ProductDetection(
             frame_id=frame_id,
@@ -92,6 +96,8 @@ class ProductDetector:
             confidence=conf,
             bbox=bbox,
             model_version_id=self._manifest.model_version_id,
-            quality=FrameQuality(usable=True, blur_score=0.0, brightness_mean=0.0, saturation_fraction=0.0),
+            quality=FrameQuality(
+                usable=True, blur_score=0.0, brightness_mean=0.0, saturation_fraction=0.0
+            ),
         )
         return ProductDetectionOutcome(selected=selected, candidates=(selected,))

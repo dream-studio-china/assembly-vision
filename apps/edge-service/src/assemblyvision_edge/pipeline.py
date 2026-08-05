@@ -89,7 +89,9 @@ class InspectionPipeline:
         self._device_id = device_id
         self._sequence = count(1)
 
-    def inspect_image(self, source: FolderSource, path: Path, writer: OutputWriter) -> InspectionRecord:
+    def inspect_image(
+        self, source: FolderSource, path: Path, writer: OutputWriter
+    ) -> InspectionRecord:
         """Run one inspection and persist its evidence, returning the record."""
         inspection_id = uuid4()
         frame_id = uuid4()
@@ -128,7 +130,9 @@ class InspectionPipeline:
                     product_detection = outcome.selected
                     gates["product_detected"] = True
                     try:
-                        generated = self._roi_engine.generate(frame, frame_id, product_detection.bbox)
+                        generated = self._roi_engine.generate(
+                            frame, frame_id, product_detection.bbox
+                        )
                     except ROIGenerationError as exc:
                         extra_reasons.append(rc.ROI_INVALID)
                         log.warning("ROI generation failed: %s", exc)
@@ -161,7 +165,9 @@ class InspectionPipeline:
         internal = InternalDecision.NG if final_reasons else InternalDecision.OK
         decision = InspectionDecision(
             internal_decision=internal,
-            business_result=BusinessResult.NG if internal is not InternalDecision.OK else BusinessResult.OK,
+            business_result=BusinessResult.NG
+            if internal is not InternalDecision.OK
+            else BusinessResult.OK,
             missing_components=decided.missing_components,
             low_confidence_components=decided.low_confidence_components,
             reason_codes=final_reasons,
@@ -186,9 +192,7 @@ class InspectionPipeline:
                 usable_frame_count=1 if frame is not None else 0,
                 rejected_frame_count=0 if frame is not None else 1,
                 reasons=(
-                    [ReasonCount(reason_code=rc.IMAGE_READ_ERROR, count=1)]
-                    if frame is None
-                    else []
+                    [ReasonCount(reason_code=rc.IMAGE_READ_ERROR, count=1)] if frame is None else []
                 ),
             ),
             application_version=self._config.application_version,

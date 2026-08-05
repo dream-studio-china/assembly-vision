@@ -83,10 +83,14 @@ class RuleContext(APIModel):
 
 def rule_version_id(rule: RuleDefinition) -> UUID:
     """Deterministic UUID for a rule version, stable across runs."""
-    return uuid5(UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8"), f"{rule.rule_id}:{rule.rule_version}")
+    return uuid5(
+        UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8"), f"{rule.rule_id}:{rule.rule_version}"
+    )
 
 
-def _spatial_violation(requirement: ComponentRequirement, evidence: AggregatedComponentEvidence) -> bool:
+def _spatial_violation(
+    requirement: ComponentRequirement, evidence: AggregatedComponentEvidence
+) -> bool:
     """Return True when PRESENT evidence violates a declared spatial constraint.
 
     A constraint that cannot be evaluated against the supplied evidence is
@@ -125,7 +129,10 @@ class RuleEngine:
             low_confidence: list[str] = []
             if not rule.required_components:
                 reasons.append(rc.CONFIG_INVALID)
-            if rule.compatible_component_model_versions and context.component_model_version not in rule.compatible_component_model_versions:
+            if (
+                rule.compatible_component_model_versions
+                and context.component_model_version not in rule.compatible_component_model_versions
+            ):
                 reasons.append(rc.VERSION_INCOMPATIBLE)
             if rule.barcode_required and not context.product_identity_verified:
                 reasons.append(rc.PRODUCT_IDENTITY_UNVERIFIED)
@@ -156,7 +163,9 @@ class RuleEngine:
             internal = InternalDecision.NG if reasons else InternalDecision.OK
             return InspectionDecision(
                 internal_decision=internal,
-                business_result=BusinessResult.NG if internal is not InternalDecision.OK else BusinessResult.OK,
+                business_result=BusinessResult.NG
+                if internal is not InternalDecision.OK
+                else BusinessResult.OK,
                 missing_components=sorted(missing),
                 low_confidence_components=sorted(low_confidence),
                 reason_codes=sorted(reasons),

@@ -56,7 +56,7 @@ def _write_pipeline(tmp_path: Path, override: str) -> Path:
         "product_detection:\n  confidence_threshold: -0.1\n",
         "component_detection:\n  iou_threshold: nan\n",
         "component_detection:\n  components:\n    manual:\n      observation_threshold: inf\n",
-        "roi:\n  normalize_perspective: \"false\"\n",
+        'roi:\n  normalize_perspective: "false"\n',
         "roi:\n  min_area_pixels: 100.5\n",
         "unknown_section:\n  x: 1\n",
     ],

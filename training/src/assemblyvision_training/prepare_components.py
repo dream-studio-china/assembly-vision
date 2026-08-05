@@ -73,8 +73,12 @@ def prepare_component_dataset(
             best_idx = _largest_box_index(boxes)
             x1, y1, x2, y2 = (float(v) for v in boxes.xyxy[best_idx].tolist())
             product_box = BoundingBox(
-                x_min=x1, y_min=y1, x_max=x2, y_max=y2,
-                image_width=frame.width, image_height=frame.height,
+                x_min=x1,
+                y_min=y1,
+                x_max=x2,
+                y_max=y2,
+                image_width=frame.width,
+                image_height=frame.height,
             )
 
             try:
@@ -96,7 +100,9 @@ def prepare_component_dataset(
             # be kept with an empty label file, not dropped.
             generated.roi_image.save(out_img_dir / img_path.name)
             out_lbl = out_lbl_dir / f"{img_path.stem}.txt"
-            out_lbl.write_text("\n".join(roi_labels) + ("\n" if roi_labels else ""), encoding="utf-8")
+            out_lbl.write_text(
+                "\n".join(roi_labels) + ("\n" if roi_labels else ""), encoding="utf-8"
+            )
 
     out_data = {
         "nc": len(class_names),
@@ -104,7 +110,9 @@ def prepare_component_dataset(
         "train": str((output_dir / "images" / "train").resolve()),
         "val": str((output_dir / "images" / "val").resolve()),
     }
-    (output_dir / "data.yaml").write_text(yaml.dump(out_data, default_flow_style=False), encoding="utf-8")
+    (output_dir / "data.yaml").write_text(
+        yaml.dump(out_data, default_flow_style=False), encoding="utf-8"
+    )
 
 
 def _largest_box_index(boxes: Any) -> int:
@@ -141,7 +149,12 @@ def _remap_labels(
         px_h = h * frame_height
         box = Box(px_cx - px_w / 2, px_cy - px_h / 2, px_cx + px_w / 2, px_cy + px_h / 2)
         mapped = apply_transform(box, transform)
-        if mapped.x_min < 0 or mapped.y_min < 0 or mapped.x_max > roi_width or mapped.y_max > roi_height:
+        if (
+            mapped.x_min < 0
+            or mapped.y_min < 0
+            or mapped.x_max > roi_width
+            or mapped.y_max > roi_height
+        ):
             continue
         if mapped.width <= 0 or mapped.height <= 0:
             continue

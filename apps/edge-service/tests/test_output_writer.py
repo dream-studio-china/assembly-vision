@@ -90,6 +90,8 @@ def test_writer_leaves_no_temp_files(tmp_path: Path) -> None:
     saved = writer.save(_make_record(uuid4()), full_frame=None, roi_image=None, annotated=None)
 
     leftover = [
-        p for p in (tmp_path / "out" / str(saved.inspection_id)).iterdir() if p.name.endswith(".tmp")
+        p
+        for p in (tmp_path / "out" / str(saved.inspection_id)).iterdir()
+        if p.name.endswith(".tmp")
     ]
     assert leftover == []

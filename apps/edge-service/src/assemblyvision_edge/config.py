@@ -25,7 +25,9 @@ def validate_model_version_declaration(declared: str, manifest: ModelManifest, n
     """
     expected = manifest_model_version(manifest)
     if declared != expected:
-        raise ConfigError(f"{name} {declared!r} does not match loaded manifest version {expected!r}")
+        raise ConfigError(
+            f"{name} {declared!r} does not match loaded manifest version {expected!r}"
+        )
 
 
 @dataclass(frozen=True)
@@ -126,10 +128,16 @@ def load_pipeline_config(path: Path) -> PipelineConfig:
         raise ConfigError("application_version must be a non-empty string")
     models = _require_mapping(doc.get("models"), "models")
     _reject_unknown(models, {"product_manifest", "component_manifest"}, "models")
-    product_manifest = _resolve_path(base, models.get("product_manifest"), "models.product_manifest")
-    component_manifest = _resolve_path(base, models.get("component_manifest"), "models.component_manifest")
+    product_manifest = _resolve_path(
+        base, models.get("product_manifest"), "models.product_manifest"
+    )
+    component_manifest = _resolve_path(
+        base, models.get("component_manifest"), "models.component_manifest"
+    )
     product_detection_raw = _require_mapping(doc.get("product_detection"), "product_detection")
-    component_detection_raw = _require_mapping(doc.get("component_detection"), "component_detection")
+    component_detection_raw = _require_mapping(
+        doc.get("component_detection"), "component_detection"
+    )
     _reject_unknown(
         product_detection_raw,
         {"model_version", "confidence_threshold", "iou_threshold"},
@@ -141,26 +149,36 @@ def load_pipeline_config(path: Path) -> PipelineConfig:
         "component_detection",
     )
     product_detection = DetectionSettings(
-        model_version=_require_str(product_detection_raw.get("model_version"), "product_detection.model_version"),
+        model_version=_require_str(
+            product_detection_raw.get("model_version"), "product_detection.model_version"
+        ),
         confidence_threshold=_as_threshold(
-            product_detection_raw.get("confidence_threshold"), "product_detection.confidence_threshold", 0.7
+            product_detection_raw.get("confidence_threshold"),
+            "product_detection.confidence_threshold",
+            0.7,
         ),
         iou_threshold=_as_threshold(
             product_detection_raw.get("iou_threshold"), "product_detection.iou_threshold", 0.5
         ),
     )
     component_detection = DetectionSettings(
-        model_version=_require_str(component_detection_raw.get("model_version"), "component_detection.model_version"),
+        model_version=_require_str(
+            component_detection_raw.get("model_version"), "component_detection.model_version"
+        ),
         confidence_threshold=0.0,
         iou_threshold=_as_threshold(
             component_detection_raw.get("iou_threshold"), "component_detection.iou_threshold", 0.5
         ),
     )
-    components_raw = _require_mapping(component_detection_raw.get("components"), "component_detection.components")
+    components_raw = _require_mapping(
+        component_detection_raw.get("components"), "component_detection.components"
+    )
     components: dict[str, ComponentDetectionSettings] = {}
     for code, settings_raw in components_raw.items():
         settings = _require_mapping(settings_raw, f"component_detection.components.{code}")
-        _reject_unknown(settings, {"observation_threshold"}, f"component_detection.components.{code}")
+        _reject_unknown(
+            settings, {"observation_threshold"}, f"component_detection.components.{code}"
+        )
         components[code] = ComponentDetectionSettings(
             observation_threshold=_as_threshold(
                 settings.get("observation_threshold"),

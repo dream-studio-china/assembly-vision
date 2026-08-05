@@ -43,7 +43,12 @@ COMPONENTS = {
 }
 
 
-def _rounded_rect(draw: ImageDraw.ImageDraw, box: tuple[int, int, int, int], fill: tuple[int, int, int], radius: int = 10) -> None:
+def _rounded_rect(
+    draw: ImageDraw.ImageDraw,
+    box: tuple[int, int, int, int],
+    fill: tuple[int, int, int],
+    radius: int = 10,
+) -> None:
     x1, y1, x2, y2 = box
     draw.rounded_rectangle(box, radius=radius, fill=fill, outline=(0, 0, 0), width=2)
 
@@ -57,7 +62,9 @@ def _draw_board(draw: ImageDraw.ImageDraw) -> None:
             draw.point((i, j), fill=(c, c + 8, c + 16))
 
 
-def _draw_component(draw: ImageDraw.ImageDraw, code: str, x1: int, y1: int, x2: int, y2: int, rotation: int) -> None:
+def _draw_component(
+    draw: ImageDraw.ImageDraw, code: str, x1: int, y1: int, x2: int, y2: int, rotation: int
+) -> None:
     cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
     pts = []
     for dx, dy in ((x1 - cx, y1 - cy), (x2 - cx, y1 - cy), (x2 - cx, y2 - cy), (x1 - cx, y2 - cy)):
@@ -144,8 +151,22 @@ def generate(out: Path, n_train: int, n_val: int) -> None:
 
     # Some training images have one component missing so the detector learns absence.
     missing_schedule = [
-        None, None, None, None, None, None, None, None,
-        {"screw"}, None, {"chip"}, None, {"connector"}, None, {"diode"}, None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        {"screw"},
+        None,
+        {"chip"},
+        None,
+        {"connector"},
+        None,
+        {"diode"},
+        None,
     ]
 
     idx = 0
@@ -153,17 +174,29 @@ def generate(out: Path, n_train: int, n_val: int) -> None:
         for i in range(n):
             dx = random.randint(-24, 24)
             dy = random.randint(-18, 18)
-            missing = missing_schedule[i % len(missing_schedule)] if split == "train" and i % 4 == 0 else None
+            missing = (
+                missing_schedule[i % len(missing_schedule)]
+                if split == "train" and i % 4 == 0
+                else None
+            )
             present = set(component_names) - (missing or set())
             stem = f"img{idx:03d}"
             for ds in ("dataset_product", "dataset_components"):
                 _make_image(out / ds / "images" / split / f"{stem}.png", present, dx, dy)
             _product_label(out / "dataset_product" / "labels" / split / f"{stem}.txt")
-            _write_labels(out / "dataset_components" / "labels" / split / f"{stem}.txt", present, dx, dy)
+            _write_labels(
+                out / "dataset_components" / "labels" / split / f"{stem}.txt", present, dx, dy
+            )
             idx += 1
 
-    _write_data_yaml(out / "dataset_product" / "data.yaml", ["product"], out / "dataset_product" / "images")
-    _write_data_yaml(out / "dataset_components" / "data.yaml", component_names, out / "dataset_components" / "images")
+    _write_data_yaml(
+        out / "dataset_product" / "data.yaml", ["product"], out / "dataset_product" / "images"
+    )
+    _write_data_yaml(
+        out / "dataset_components" / "data.yaml",
+        component_names,
+        out / "dataset_components" / "images",
+    )
 
     test = out / "test"
     test.mkdir(parents=True)

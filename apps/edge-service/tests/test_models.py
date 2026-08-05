@@ -31,14 +31,29 @@ def test_bounding_box_valid() -> None:
     ],
 )
 def test_bounding_box_rejects_invalid(kwargs: dict[str, float]) -> None:
-    base = {"x_min": 1.0, "y_min": 2.0, "x_max": 10.0, "y_max": 20.0, "image_width": 100, "image_height": 100}
+    base = {
+        "x_min": 1.0,
+        "y_min": 2.0,
+        "x_max": 10.0,
+        "y_max": 20.0,
+        "image_width": 100,
+        "image_height": 100,
+    }
     base.update(kwargs)
     with pytest.raises(ValidationError):
         BoundingBox.model_validate(base)
 
 
 def test_bounding_box_rejects_extra_fields() -> None:
-    base = {"x_min": 1.0, "y_min": 2.0, "x_max": 10.0, "y_max": 20.0, "image_width": 100, "image_height": 100, "unexpected": 1}
+    base = {
+        "x_min": 1.0,
+        "y_min": 2.0,
+        "x_max": 10.0,
+        "y_max": 20.0,
+        "image_width": 100,
+        "image_height": 100,
+        "unexpected": 1,
+    }
     with pytest.raises(ValidationError):
         BoundingBox.model_validate(base)
 
@@ -58,7 +73,11 @@ def test_inspection_record_json_round_trip() -> None:
             "started_at": datetime(2026, 1, 1, tzinfo=UTC),
             "completed_at": datetime(2026, 1, 1, tzinfo=UTC),
             "barcode_result": {"status": "NOT_REQUIRED"},
-            "product_resolution": {"status": "RESOLVED", "source": "CONFIGURED_DEFAULT", "product_code": "model_a"},
+            "product_resolution": {
+                "status": "RESOLVED",
+                "source": "CONFIGURED_DEFAULT",
+                "product_code": "model_a",
+            },
             "frame_quality_summary": {
                 "total_frame_count": 1,
                 "usable_frame_count": 1,

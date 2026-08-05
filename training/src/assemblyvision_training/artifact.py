@@ -43,11 +43,15 @@ def place_weights(best: Path, weights_path: Path) -> None:
     best.replace(weights_path)
 
 
-def _reject_existing_manifest_overwrite(path: Path, new_checksum: str, semantic_version: str) -> None:
+def _reject_existing_manifest_overwrite(
+    path: Path, new_checksum: str, semantic_version: str
+) -> None:
     try:
         existing = ModelManifest.model_validate_json(path.read_text(encoding="utf-8"))
     except Exception as exc:
-        raise ConfigError(f"existing manifest {path} is invalid; refusing to overwrite: {exc}") from exc
+        raise ConfigError(
+            f"existing manifest {path} is invalid; refusing to overwrite: {exc}"
+        ) from exc
     if (
         existing.semantic_version == semantic_version
         and existing.artifacts
@@ -77,14 +81,10 @@ def write_manifest(
     otherwise publication is refused so versioned identities stay immutable.
     """
     if not _SEMVER_RE.match(semantic_version):
-        raise ConfigError(
-            f"semantic_version {semantic_version!r} is not a valid X.Y.Z version"
-        )
+        raise ConfigError(f"semantic_version {semantic_version!r} is not a valid X.Y.Z version")
     checksum = sha256_file(weights_path)
     size = weights_path.stat().st_size
-    relative_uri = os.path.relpath(
-        Path(weights_path).resolve(), output_path.parent.resolve()
-    )
+    relative_uri = os.path.relpath(Path(weights_path).resolve(), output_path.parent.resolve())
 
     artifact = Artifact(
         name="weights",

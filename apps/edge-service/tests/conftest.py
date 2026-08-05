@@ -40,7 +40,9 @@ def make_rule(**overrides: object) -> RuleDefinition:
     return RuleDefinition.model_validate(base)
 
 
-def make_context(component_model_version: str = "component-yolo-1.0.0", **overrides: object) -> RuleContext:
+def make_context(
+    component_model_version: str = "component-yolo-1.0.0", **overrides: object
+) -> RuleContext:
     base: dict[str, object] = {
         "product_identity_verified": True,
         "component_model_version": component_model_version,

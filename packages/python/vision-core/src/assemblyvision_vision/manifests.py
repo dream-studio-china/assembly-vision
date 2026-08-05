@@ -73,7 +73,9 @@ def verify_manifest_artifact(manifest: ModelManifest, manifest_path: Path) -> Pa
     return path
 
 
-def verify_model_class_map(names: Mapping[int, object] | Sequence[object], manifest: ModelManifest) -> None:
+def verify_model_class_map(
+    names: Mapping[int, object] | Sequence[object], manifest: ModelManifest
+) -> None:
     """Validate the loaded model's class map against the manifest class order.
 
     Ultralytics exposes ``model.names`` as a ``{class_id: name}`` mapping; the

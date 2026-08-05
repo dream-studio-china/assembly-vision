@@ -90,7 +90,9 @@ def test_adapter_uses_independent_product_box_not_component_union(tmp_path: Path
     out = tmp_path / "out"
     adapt(src, out, required=["chip", "capacitor"], product_class="product")
 
-    product_label = (out / "dataset_product" / "labels" / "train" / "img_train_0.txt").read_text().strip()
+    product_label = (
+        (out / "dataset_product" / "labels" / "train" / "img_train_0.txt").read_text().strip()
+    )
     cx, cy, w, h = (float(v) for v in product_label.split()[1:])
     # the product box reflects the annotated full product, not the component size
     assert w == pytest.approx(0.8, abs=1e-3)

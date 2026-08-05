@@ -5,9 +5,8 @@ from __future__ import annotations
 from collections.abc import Iterator
 from pathlib import Path
 
-from PIL import Image
-
 from assemblyvision_domain.errors import ImageReadError
+from PIL import Image
 
 SUPPORTED_EXTENSIONS = frozenset({".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"})
 

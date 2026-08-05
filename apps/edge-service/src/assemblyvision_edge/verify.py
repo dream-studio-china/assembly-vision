@@ -102,7 +102,12 @@ class VerificationReport:
     @property
     def has_gaps(self) -> bool:
         """True when the report cannot be trusted to represent the expected set."""
-        return self.unlabeled > 0 or self.failed > 0 or self.unmatched_expected > 0 or len(self.rows) == 0
+        return (
+            self.unlabeled > 0
+            or self.failed > 0
+            or self.unmatched_expected > 0
+            or len(self.rows) == 0
+        )
 
     @property
     def expected_ng(self) -> int:
@@ -200,7 +205,9 @@ def format_report(report: VerificationReport) -> str:
     ]
     if report.has_gaps:
         lines.append("")
-        lines.append("DANGER: verification did not cover the full expected set (see unlabeled/failed/unmatched).")
+        lines.append(
+            "DANGER: verification did not cover the full expected set (see unlabeled/failed/unmatched)."
+        )
     fns = [r for r in report.rows if not r.expected_ok and r.predicted_ok]
     if fns:
         lines.append("")
@@ -216,6 +223,8 @@ def format_per_image(report: VerificationReport) -> str:
         match = "match" if r.expected_ok == r.predicted_ok else "MISMATCH"
         exp = "OK" if r.expected_ok else "NG"
         pred = "OK" if r.predicted_ok else "NG"
-        reasons = ",".join(r.record.decision.reason_codes) if r.record and not r.predicted_ok else "-"
+        reasons = (
+            ",".join(r.record.decision.reason_codes) if r.record and not r.predicted_ok else "-"
+        )
         lines.append(f"{r.image}\texpected={exp}\tpredicted={pred}\t{match}\t{reasons}")
     return "\n".join(lines)

@@ -52,7 +52,9 @@ def test_transform_round_trip() -> None:
 
 
 def _bbox(x1: float, y1: float, x2: float, y2: float, width: int, height: int) -> BoundingBox:
-    return BoundingBox(x_min=x1, y_min=y1, x_max=x2, y_max=y2, image_width=width, image_height=height)
+    return BoundingBox(
+        x_min=x1, y_min=y1, x_max=x2, y_max=y2, image_width=width, image_height=height
+    )
 
 
 def test_roi_engine_generates_valid_roi() -> None:

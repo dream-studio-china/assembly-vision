@@ -96,12 +96,18 @@ def test_model_version_label_derivation() -> None:
 
 
 def test_manifest_model_version_falls_back_to_derived_label() -> None:
-    manifest = load_model_manifest(COMPONENT_MANIFEST).model_copy(update={"model_version_label": None})
+    manifest = load_model_manifest(COMPONENT_MANIFEST).model_copy(
+        update={"model_version_label": None}
+    )
     assert manifest_model_version(manifest) == "component-yolo-1.0.0"
 
 
 def test_validate_model_version_declaration_binds_manifest() -> None:
     manifest = load_model_manifest(COMPONENT_MANIFEST)
-    validate_model_version_declaration("component-yolo-1.0.0", manifest, "component_detection.model_version")
+    validate_model_version_declaration(
+        "component-yolo-1.0.0", manifest, "component_detection.model_version"
+    )
     with pytest.raises(ConfigError, match="does not match loaded manifest version"):
-        validate_model_version_declaration("component-yolo-9.9.9", manifest, "component_detection.model_version")
+        validate_model_version_declaration(
+            "component-yolo-9.9.9", manifest, "component_detection.model_version"
+        )

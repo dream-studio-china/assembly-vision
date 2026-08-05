@@ -34,9 +34,7 @@ def test_metrics_all_matched() -> None:
 
 
 def test_metrics_with_false_negative() -> None:
-    report = VerificationReport(
-        rows=[_row(True, True), _row(False, False), _row(False, True)]
-    )
+    report = VerificationReport(rows=[_row(True, True), _row(False, False), _row(False, True)])
     assert report.false_negative == 1
     assert report.ng_recall == pytest.approx(0.5)
     assert report.fn_rate == pytest.approx(0.5)
@@ -113,7 +111,7 @@ class _FakeRecord:
 def _work(tmp_path: Path, names: list[str]) -> list[tuple[object, Path]]:
     for n in names:
         (tmp_path / n).touch()
-    return [(None, tmp_path / n) for n in names]  # type: ignore[list-item]
+    return [(None, tmp_path / n) for n in names]
 
 
 def test_run_verify_counts_unlabeled_and_failed(tmp_path: Path) -> None:

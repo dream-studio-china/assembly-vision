@@ -38,7 +38,9 @@ def _atomic_write_bytes(path: Path, data: bytes) -> None:
         raise OutputError(f"cannot persist {path}") from exc
 
 
-def _draw_rect(draw: ImageDraw.ImageDraw, box: BoundingBox, color: tuple[int, int, int], label: str) -> None:
+def _draw_rect(
+    draw: ImageDraw.ImageDraw, box: BoundingBox, color: tuple[int, int, int], label: str
+) -> None:
     draw.rectangle((box.x_min, box.y_min, box.x_max, box.y_max), outline=color, width=3)
     draw.text((box.x_min, max(0, box.y_min - 14)), label, fill=color)
 
@@ -82,9 +84,15 @@ class OutputWriter:
         if full_frame is not None:
             media.append(self._save_image(inspection_dir, "key_frame.jpg", full_frame, "KEY_FRAME"))
         if roi_image is not None:
-            media.append(self._save_image(inspection_dir, "product_roi.jpg", roi_image, "PRODUCT_ROI"))
+            media.append(
+                self._save_image(inspection_dir, "product_roi.jpg", roi_image, "PRODUCT_ROI")
+            )
         if annotated is not None:
-            media.append(self._save_image(inspection_dir, "annotated_frame.jpg", annotated, "ANNOTATED_FRAME"))
+            media.append(
+                self._save_image(
+                    inspection_dir, "annotated_frame.jpg", annotated, "ANNOTATED_FRAME"
+                )
+            )
         record.media = media
         payload = json.dumps(record.model_dump(mode="json"), indent=2, sort_keys=True) + "\n"
         _atomic_write_bytes(inspection_dir / "inspection.json", payload.encode("utf-8"))

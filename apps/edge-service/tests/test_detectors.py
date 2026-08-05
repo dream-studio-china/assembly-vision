@@ -39,11 +39,15 @@ class FakeModel:
 
 
 def _product_settings() -> DetectionSettings:
-    return DetectionSettings(model_version="product-yolo-1.0.0", confidence_threshold=0.5, iou_threshold=0.5)
+    return DetectionSettings(
+        model_version="product-yolo-1.0.0", confidence_threshold=0.5, iou_threshold=0.5
+    )
 
 
 def _component_settings() -> DetectionSettings:
-    return DetectionSettings(model_version="component-yolo-1.0.0", confidence_threshold=0.0, iou_threshold=0.5)
+    return DetectionSettings(
+        model_version="component-yolo-1.0.0", confidence_threshold=0.0, iou_threshold=0.5
+    )
 
 
 def _components() -> dict[str, ComponentDetectionSettings]:
@@ -76,7 +80,9 @@ def test_product_detector_no_product() -> None:
 
 def test_product_detector_multiple_products() -> None:
     manifest = load_model_manifest(PRODUCT_MANIFEST)
-    model = FakeModel([(0, 0.9, (10.0, 10.0, 200.0, 200.0)), (0, 0.8, (400.0, 300.0, 700.0, 500.0))])
+    model = FakeModel(
+        [(0, 0.9, (10.0, 10.0, 200.0, 200.0)), (0, 0.8, (400.0, 300.0, 700.0, 500.0))]
+    )
     detector = ProductDetector(manifest, _product_settings(), model)
     outcome = detector.detect(Image.new("RGB", (800, 600), (0, 0, 0)), uuid4())
     assert outcome.selected is None
@@ -111,7 +117,7 @@ def test_component_detector_filters_unrequired_and_low_confidence() -> None:
     manifest = load_model_manifest(COMPONENT_MANIFEST)
     model = FakeModel(
         [
-            (0, 0.9, (10.0, 10.0, 100.0, 100.0)),   # component_a, required, above 0.5
+            (0, 0.9, (10.0, 10.0, 100.0, 100.0)),  # component_a, required, above 0.5
             (1, 0.4, (200.0, 200.0, 300.0, 300.0)),  # component_b, below threshold
             (2, 0.95, (400.0, 300.0, 500.0, 400.0)),  # manual, required
         ]
@@ -128,4 +134,4 @@ def test_component_detector_filters_unrequired_and_low_confidence() -> None:
 def test_from_manifest_rejects_missing_weights(tmp_path: object) -> None:
     manifest = load_model_manifest(PRODUCT_MANIFEST)
     with pytest.raises(ConfigError):
-        ProductDetector.from_manifest(manifest, _product_settings(), tmp_path)  # type: ignore[arg-type]
+        ProductDetector.from_manifest(manifest, _product_settings(), tmp_path)

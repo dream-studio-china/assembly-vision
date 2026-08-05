@@ -5,11 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import UUID
 
-from PIL import Image
-
 from assemblyvision_domain import reason_codes as rc
 from assemblyvision_domain.errors import ROIGenerationError
 from assemblyvision_domain.models import BoundingBox, ROIResult
+from PIL import Image
+
 from assemblyvision_vision.roi.geometry import (
     Box,
     clip,
@@ -56,7 +56,9 @@ class ROIEngine:
     def __init__(self, config: ROIConfig) -> None:
         self._config = config
 
-    def generate(self, frame: Image.Image, frame_id: UUID, product_box: BoundingBox) -> GeneratedROI:
+    def generate(
+        self, frame: Image.Image, frame_id: UUID, product_box: BoundingBox
+    ) -> GeneratedROI:
         box = Box.from_bbox(product_box)
         margin_x = box.width * self._config.margin_x_ratio
         margin_y = box.height * self._config.margin_y_ratio

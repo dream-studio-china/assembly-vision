@@ -73,5 +73,7 @@ def train_detector(
         candidates = sorted((project_dir / run_name / "weights").glob("*.pt"))
         if candidates:
             return candidates[0]
-        raise FileNotFoundError(f"training produced no weight file in {project_dir / run_name / 'weights'}")
+        raise FileNotFoundError(
+            f"training produced no weight file in {project_dir / run_name / 'weights'}"
+        )
     return best_path

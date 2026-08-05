@@ -1,13 +1,18 @@
-.PHONY: sync lint typecheck test
+.PHONY: sync lint format typecheck test check
 
 sync:
 	uv sync
 
 lint:
-	uv run ruff check apps
+	uv run ruff check .
+
+format:
+	uv run ruff format --check .
 
 typecheck:
-	uv run mypy apps/edge-service/src packages/python/domain/src packages/python/vision-core/src training/src
+	uv run mypy .
 
 test:
 	uv run pytest
+
+check: lint format typecheck test

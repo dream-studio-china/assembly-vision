@@ -88,8 +88,12 @@ class ComponentDetector:
                 continue
             x1, y1, x2, y2 = xyxy
             roi_bbox = BoundingBox(
-                x_min=x1, y_min=y1, x_max=x2, y_max=y2,
-                image_width=roi.width, image_height=roi.height,
+                x_min=x1,
+                y_min=y1,
+                x_max=x2,
+                y_max=y2,
+                image_width=roi.width,
+                image_height=roi.height,
             )
             full_box = apply_transform(Box(x1, y1, x2, y2), inverse)
             full_bbox = full_box.to_bbox(frame_width, frame_height)

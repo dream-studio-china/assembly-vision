@@ -46,7 +46,9 @@ def test_warns_on_unpaired_images(yolo_dataset_dir: Path) -> None:
     from PIL import Image
 
     (yolo_dataset_dir / "images" / "train" / "unlabeled.png").touch()
-    Image.new("RGB", (64, 64), (100, 100, 100)).save(yolo_dataset_dir / "images" / "train" / "unlabeled.png")
+    Image.new("RGB", (64, 64), (100, 100, 100)).save(
+        yolo_dataset_dir / "images" / "train" / "unlabeled.png"
+    )
     info = validate_dataset(yolo_dataset_dir)
     assert any("no label" in w for w in info.warnings)
 

@@ -35,8 +35,14 @@ def build_parser() -> argparse.ArgumentParser:
     product.add_argument("--imgsz", type=int, default=640, help="Model input size")
     product.add_argument("--model-size", default="n", help="YOLO model scale (n/s/m/l)")
     product.add_argument("--device", default="cpu", help="torch device (cpu/mps/cuda)")
-    product.add_argument("--seed", type=int, default=0, help="Training random seed (reproducibility)")
-    product.add_argument("--no-augment", action="store_true", help="Disable heavy augmentation (stable for small datasets)")
+    product.add_argument(
+        "--seed", type=int, default=0, help="Training random seed (reproducibility)"
+    )
+    product.add_argument(
+        "--no-augment",
+        action="store_true",
+        help="Disable heavy augmentation (stable for small datasets)",
+    )
     product.add_argument(
         "--out-weights",
         type=Path,
@@ -58,11 +64,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     prepare = sub.add_parser("prepare-components", help="Prepare ROI-cropped component dataset")
     prepare.add_argument("dataset", type=Path, help="YOLO dataset with full-frame component labels")
-    prepare.add_argument("--product-weights", required=True, type=Path, help="Trained product detector weights")
+    prepare.add_argument(
+        "--product-weights", required=True, type=Path, help="Trained product detector weights"
+    )
     prepare.add_argument("--margin-x", type=float, default=0.05, help="ROI X margin ratio")
     prepare.add_argument("--margin-y", type=float, default=0.05, help="ROI Y margin ratio")
     prepare.add_argument("--min-area", type=int, default=10_000, help="Minimum ROI area (pixels)")
-    prepare.add_argument("--min-retention", type=float, default=0.80, help="Minimum clip retention ratio")
+    prepare.add_argument(
+        "--min-retention", type=float, default=0.80, help="Minimum clip retention ratio"
+    )
     prepare.add_argument("--out-dir", type=Path, required=True, help="Output dataset directory")
 
     component = sub.add_parser("component", help="Train a component detector on ROI images")
@@ -72,8 +82,14 @@ def build_parser() -> argparse.ArgumentParser:
     component.add_argument("--imgsz", type=int, default=320, help="Model input size")
     component.add_argument("--model-size", default="n", help="YOLO model scale (n/s/m/l)")
     component.add_argument("--device", default="cpu", help="torch device (cpu/mps/cuda)")
-    component.add_argument("--seed", type=int, default=0, help="Training random seed (reproducibility)")
-    component.add_argument("--no-augment", action="store_true", help="Disable heavy augmentation (stable for small datasets)")
+    component.add_argument(
+        "--seed", type=int, default=0, help="Training random seed (reproducibility)"
+    )
+    component.add_argument(
+        "--no-augment",
+        action="store_true",
+        help="Disable heavy augmentation (stable for small datasets)",
+    )
     component.add_argument(
         "--out-weights",
         type=Path,
@@ -133,7 +149,9 @@ def _print_improvement_hints(task: str, weights_path: Path, rule_path: Path | No
         print(f"1. pipeline.yaml: set product_detection.model_version: {tag!r}")
         print("2. regenerate the component ROI dataset with prepare-components")
         print("   using the new product weights, then retrain the component detector")
-    print("3. re-run: assemblyvision verify <test> --config <pipeline.yaml> --rule <rule.yaml> --output out/")
+    print(
+        "3. re-run: assemblyvision verify <test> --config <pipeline.yaml> --rule <rule.yaml> --output out/"
+    )
     print("   see docs/runbooks/10-model-improvement.md")
 
 
@@ -143,12 +161,23 @@ def _run_product(args: argparse.Namespace) -> int:
     except ConfigError as exc:
         log.error("invalid dataset: %s", exc)
         return 2
-    log.info("dataset validated: %d classes, %d train / %d val images", len(info.class_names), info.train_images, info.val_images)
+    log.info(
+        "dataset validated: %d classes, %d train / %d val images",
+        len(info.class_names),
+        info.train_images,
+        info.val_images,
+    )
     semver = args.semver
     weights_path: Path = args.out_weights
     manifest_path: Path = args.out_manifest
 
-    log.info("training product detector (semver=%s epochs=%d imgsz=%d device=%s)", semver, args.epochs, args.imgsz, args.device)
+    log.info(
+        "training product detector (semver=%s epochs=%d imgsz=%d device=%s)",
+        semver,
+        args.epochs,
+        args.imgsz,
+        args.device,
+    )
     best = train_detector(
         dataset_dir=args.dataset,
         model_size=args.model_size,
@@ -212,12 +241,23 @@ def _run_component(args: argparse.Namespace) -> int:
     except ConfigError as exc:
         log.error("invalid dataset: %s", exc)
         return 2
-    log.info("dataset validated: %d classes, %d train / %d val images", len(info.class_names), info.train_images, info.val_images)
+    log.info(
+        "dataset validated: %d classes, %d train / %d val images",
+        len(info.class_names),
+        info.train_images,
+        info.val_images,
+    )
     semver = args.semver
     weights_path: Path = args.out_weights
     manifest_path: Path = args.out_manifest
 
-    log.info("training component detector (semver=%s epochs=%d imgsz=%d device=%s)", semver, args.epochs, args.imgsz, args.device)
+    log.info(
+        "training component detector (semver=%s epochs=%d imgsz=%d device=%s)",
+        semver,
+        args.epochs,
+        args.imgsz,
+        args.device,
+    )
     best = train_detector(
         dataset_dir=args.dataset,
         model_size=args.model_size,
