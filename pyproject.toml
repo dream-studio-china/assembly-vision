@@ -1,0 +1,27 @@
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["apps/edge-service"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["site", "docs-zh", "docs", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "S", "C4"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101"]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+exclude = ["site", "docs-zh", "docs"]
+
+[tool.pytest.ini_options]
+testpaths = ["apps/edge-service/tests"]
+addopts = "-q"
