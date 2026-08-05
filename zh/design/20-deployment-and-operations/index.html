@@ -1123,7 +1123,7 @@
   <a href="#204-edge-docker-compose-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.4 Edge Docker 组合示例
+        20.4 Edge Docker Compose Example
       
     </span>
   </a>
@@ -1145,7 +1145,7 @@
   <a href="#206-nginx-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.6 Nginx 示例
+        20.6 Nginx Example
       
     </span>
   </a>
@@ -1189,7 +1189,7 @@
   <a href="#2010-backup-and-recovery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.10 备份与恢复
+        20.10 Backup and Recovery
       
     </span>
   </a>
@@ -2667,6 +2667,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3038,7 +3066,7 @@
   <a href="#204-edge-docker-compose-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.4 Edge Docker 组合示例
+        20.4 Edge Docker Compose Example
       
     </span>
   </a>
@@ -3060,7 +3088,7 @@
   <a href="#206-nginx-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.6 Nginx 示例
+        20.6 Nginx Example
       
     </span>
   </a>
@@ -3104,7 +3132,7 @@
   <a href="#2010-backup-and-recovery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.10 备份与恢复
+        20.10 Backup and Recovery
       
     </span>
   </a>
@@ -3238,111 +3266,111 @@
 
 <h1 id="20-deployment-and-operations">20. 部署和操作<a class="headerlink" href="#20-deployment-and-operations" title="Permanent link">&para;</a></h1>
 <h2 id="201-purpose-and-scope">20.1 目的和范围<a class="headerlink" href="#201-purpose-and-scope" title="Permanent link">&para;</a></h2>
-<p>本文档定义了 AssemblyVision 的打包、安装、升级、操作、备份和恢复方式。它涵盖了边缘检测系统和中央服务，而不使中央服务器成为实时检测的依赖。</p>
+<p>This document defines how AssemblyVision is packaged, installed, upgraded, operated, backed up, and recovered. It covers the edge inspection system and the central services without making the central server a dependency of real-time inspection.</p>
 <h3 id="2011-current-and-mvp-scope">20.1.1 当前和 MVP 范围<a class="headerlink" href="#2011-current-and-mvp-scope" title="Permanent link">&para;</a></h3>
 <ul>
-<li>静态训练和检查 MVP 在开发人员环境中运行。仅供开发人员使用的培训 CLI 会生成本地模型工件；检查 CLI 生成 JSON、ROI 图像、带注释的图像和保留的验证输出。</li>
-<li>此 MVP 未实现加密模型工件或仅限 <code>.pyc</code> 的客户运行时打包；训练代码被简单地排除在任何运行时分发之外。</li>
-<li>为期一个月的目标是使用 Docker Compose 打包边缘和中央应用程序。</li>
-<li>SQLite 可接受作为初始边缘数据库； PostgreSQL 是中央数据库。</li>
-<li>持久运行时数据存储在容器层之外。</li>
-<li>边缘不需要 Kubernetes。</li>
+<li>The static train-and-inspect MVP runs from a developer environment. A developer-only training CLI produces local model artifacts; the inspection CLI produces JSON, ROI images, annotated images, and held-out verification output.</li>
+<li>This MVP does not implement encrypted model artifacts or <code>.pyc</code>-only customer runtime packaging; training code is simply excluded from any runtime distribution.</li>
+<li>The one-month target packages edge and central applications with Docker Compose.</li>
+<li>SQLite is acceptable for the initial edge database; PostgreSQL is the central database.</li>
+<li>Persistent runtime data is stored outside container layers.</li>
+<li>Kubernetes is not required at the edge.</li>
 </ul>
 <h3 id="2012-production-target">20.1.2 生产目标<a class="headerlink" href="#2012-production-target" title="Permanent link">&para;</a></h3>
 <ul>
-<li>可复制的多阶段图像，由不可变版本或摘要固定。</li>
-<li>非根容器、运行状况检查、重启策略、资源限制和显式持久卷。</li>
-<li>使用持久上传队列进行离线边缘检查。</li>
-<li>受控、可逆的配置、规则、应用程序和模型部署。</li>
-<li>配置、数据库和所需证据的备份和恢复练习。</li>
+<li>Reproducible multi-stage images, pinned by immutable version or digest.</li>
+<li>Non-root containers, health checks, restart policies, resource limits, and explicit persistent volumes.</li>
+<li>Offline edge inspection with a persistent upload queue.</li>
+<li>Controlled, reversible configuration, rule, application, and model deployment.</li>
+<li>Backups and restore exercises for configuration, databases, and required evidence.</li>
 </ul>
 <h3 id="2013-future-scope">20.1.3 未来范围<a class="headerlink" href="#2013-future-scope" title="Permanent link">&para;</a></h3>
 <ul>
-<li>如果规模或组织标准证明合理，则在 Kubernetes 上进行集中部署。</li>
-<li>舰队部署编排和分阶段部署环。</li>
-<li>在异常大型的边缘安装中可选 PostgreSQL。</li>
+<li>Central deployment on Kubernetes if scale or organizational standards justify it.</li>
+<li>Fleet rollout orchestration and staged deployment rings.</li>
+<li>Optional PostgreSQL at unusually large edge installations.</li>
 </ul>
 <h2 id="202-deployment-units">20.2 部署单元<a class="headerlink" href="#202-deployment-units" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>单位</th>
-<th>地点</th>
-<th>责任</th>
-<th>需要检查</th>
+<th>Unit</th>
+<th>Location</th>
+<th>Responsibility</th>
+<th>Required for inspection</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>edge-service</code></td>
-<td>边缘</td>
-<td>本地 API、相机/条形码编排、推理、聚合、持久性、上传和运行状况</td>
-<td>是的</td>
+<td>Edge</td>
+<td>Local API, camera/barcode orchestration, inference, aggregation, persistence, upload, and health</td>
+<td>Yes</td>
 </tr>
 <tr>
 <td><code>edge-web</code></td>
-<td>边缘</td>
-<td>具有离线功能的操作员仪表板</td>
-<td>不，但操作上很重要</td>
+<td>Edge</td>
+<td>Offline-capable operator dashboard</td>
+<td>No, but operationally important</td>
 </tr>
 <tr>
 <td><code>nginx-edge</code></td>
-<td>边缘</td>
-<td>静态 UI 和本地反向代理</td>
-<td>没有</td>
+<td>Edge</td>
+<td>Static UI and local reverse proxy</td>
+<td>No</td>
 </tr>
 <tr>
 <td><code>central-api</code></td>
-<td>中环</td>
-<td>摄取、管理、报告 API</td>
-<td>没有</td>
+<td>Central</td>
+<td>Ingestion, administration, reporting APIs</td>
+<td>No</td>
 </tr>
 <tr>
 <td><code>central-worker</code></td>
-<td>中环</td>
-<td>可选媒体处理、报告、通知、包准备</td>
-<td>没有</td>
+<td>Central</td>
+<td>Optional media processing, reports, notifications, package preparation</td>
+<td>No</td>
 </tr>
 <tr>
 <td><code>admin-web</code></td>
-<td>中环</td>
-<td>管理和审查 UI</td>
-<td>没有</td>
+<td>Central</td>
+<td>Administration and review UI</td>
+<td>No</td>
 </tr>
 <tr>
 <td><code>postgres</code></td>
-<td>中环</td>
-<td>中央交易商店</td>
-<td>没有</td>
+<td>Central</td>
+<td>Central transactional store</td>
+<td>No</td>
 </tr>
 <tr>
 <td><code>object-storage</code></td>
-<td>中环</td>
-<td>上传的图像和剪辑存储</td>
-<td>没有</td>
+<td>Central</td>
+<td>Uploaded image and clip storage</td>
+<td>No</td>
 </tr>
 <tr>
 <td><code>redis</code></td>
-<td>中环</td>
-<td>可选的作业代理/缓存；仅当工人需要时</td>
-<td>没有</td>
+<td>Central</td>
+<td>Optional job broker/cache; only when workers require it</td>
+<td>No</td>
 </tr>
 </tbody>
 </table>
-<p>相机访问可能需要供应商 SDK、主机设备映射或主机端适配器。在选择容器隔离和设备权限之前必须验证此集成。</p>
+<p>Camera access may require a vendor SDK, host device mapping, or a host-side adapter. This integration must be validated before selecting container isolation and device permissions.</p>
 <h2 id="203-image-construction">20.3 图像构建<a class="headerlink" href="#203-image-construction" title="Permanent link">&para;</a></h2>
-<p>每个应用程序都使用多阶段构建。构建阶段解决固定依赖项、运行编译并仅发出运行时工件。运行时阶段不包含 Git 元数据、测试、训练数据、笔记本或包管理器缓存。 Python 模块可以编译为 <code>.pyc</code> 并在可行的情况下删除原始项目 <code>.py</code> 文件；这是包装卫生，而不是强有力的代码保护。</p>
-<p>运行时要求是：</p>
+<p>Each application uses a multi-stage build. The build stage resolves pinned dependencies, runs compilation, and emits only runtime artifacts. The runtime stage contains no Git metadata, tests, training data, notebooks, or package-manager caches. Python modules may be compiled to <code>.pyc</code> and original project <code>.py</code> files removed where practical; this is packaging hygiene, not strong code protection.</p>
+<p>Runtime requirements are:</p>
 <ol>
-<li>作为专用非根 UID/GID 运行。</li>
-<li>显式挂载应用程序代码只读目录和运行时目录。</li>
-<li>仅写入数据库、介质、队列、临时卷和日志卷。</li>
-<li>在运行时接收机密，而不是通过图像层或前端包。</li>
-<li>通过运行状况 API 公开构建标识符和应用程序版本。</li>
-<li>固定基础镜像并在发布前扫描它们。</li>
+<li>Run as a dedicated non-root UID/GID.</li>
+<li>Mount application code read-only and runtime directories explicitly.</li>
+<li>Write only to database, media, queue, temporary, and log volumes.</li>
+<li>Receive secrets at runtime, never through image layers or frontend bundles.</li>
+<li>Expose a build identifier and application version through the health API.</li>
+<li>Pin base images and scan them before release.</li>
 </ol>
-<h2 id="204-edge-docker-compose-example">20.4 Edge Docker 组合示例<a class="headerlink" href="#204-edge-docker-compose-example" title="Permanent link">&para;</a></h2>
-<p>该示例是一个模板。设备路径、图像注册表、存储路径和资源限制需要站点验证。</p>
+<h2 id="204-edge-docker-compose-example">20.4 Edge Docker Compose Example<a class="headerlink" href="#204-edge-docker-compose-example" title="Permanent link">&para;</a></h2>
+<p>The example is a template. Device paths, image registry, storage paths, and resource limits require site validation.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">services</span><span class="p">:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">edge-service</span><span class="p">:</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry.example.invalid/assemblyvision/edge-service:${AV_VERSION}</span>
@@ -3391,11 +3419,11 @@
 <a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="w">  </span><span class="nt">edge-models</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
 <a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="w">  </span><span class="nt">edge-tmp</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
 </code></pre></div>
-<p><code>depends_on</code> 仅控制启动顺序； UI 必须容忍服务重新启动。 <code>edge-service</code> 内的决策关键任务必须在没有 DNS 访问中央服务器的情况下启动和继续。当需要相机SDK或GPU隔离时，可以在容器内添加监督推理子流程；可单独部署的边缘工作人员被推迟，直到测量证明其合理为止。</p>
+<p><code>depends_on</code> controls startup ordering only; the UI must tolerate service restarts. Decision-critical tasks inside <code>edge-service</code> must start and continue without DNS access to the central server. A supervised inference subprocess may be added inside the container when camera SDK or GPU isolation is required; a separately deployable edge worker is deferred until measurements justify it.</p>
 <h2 id="205-central-docker-compose-profile">20.5 中央 Docker 撰写配置文件<a class="headerlink" href="#205-central-docker-compose-profile" title="Permanent link">&para;</a></h2>
 <p>中央配置文件包含 Nginx、<code>central-api</code>、可选的 <code>central-worker</code>、PostgreSQL、对象存储和可选的 Redis。后台执行适用于大型媒体、缩略图、导出、报告生成、通知和模型包准备的校验和验证。检查摄取本身仍然是同步幂等 API 操作，在确认边缘之前持久记录收据。</p>
 <p>持久卷必须涵盖 PostgreSQL 和对象存储。数据库迁移在应用程序替换之前作为一次性发布任务运行；它们必须在滚动更换过程中向后兼容，或者需要有记录的维护窗口。</p>
-<h2 id="206-nginx-example">20.6 Nginx 示例<a class="headerlink" href="#206-nginx-example" title="Permanent link">&para;</a></h2>
+<h2 id="206-nginx-example">20.6 Nginx Example<a class="headerlink" href="#206-nginx-example" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">server</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">assemblyvision.example.invalid</span><span class="p">;</span>
@@ -3447,19 +3475,19 @@
     C--&gt;&gt;E:宣布可用版本
     E-&gt;&gt;C:下载包和清单
     E-&gt;&gt;E:验证身份、校验和和签名
-    E-&gt;&gt;V:运行兼容性和烟雾检查
+    E-&gt;&gt;V:Run compatibility and smoke checks
 alt 验证成功
         V--&gt;&gt;E:有效的
-        E-&gt;&gt;I:请求安全窗口激活
+        E-&gt;&gt;I:Request safe-window activation
         I--&gt;&gt;E:检查窗口关闭
         E-&gt;&gt;E:原子切换主动释放
         E-&gt;&gt;I:重新启动或重新加载
         I--&gt;&gt;E:新版本带来健康
         E-&gt;&gt;C:报告安装成功
-else 验证或健康检查失败
+else validation or health check fails
         V--&gt;&gt;E:无效的
-        E-&gt;&gt;E:保留或恢复最后的已知良好版本
-        E-&gt;&gt;C:报告故障和诊断
+        E-&gt;&gt;E:Keep or restore last known-good release
+        E-&gt;&gt;C:Report failure and diagnostics
     end</code></pre>
 <p>激活不得将物理产品检查拆分到多个版本。回滚恢复以前的应用程序/模型/规则集，同时保留检查和上传数据。</p>
 <h2 id="209-release-and-upgrade-procedure">20.9 发布和升级流程<a class="headerlink" href="#209-release-and-upgrade-procedure" title="Permanent link">&para;</a></h2>
@@ -3474,7 +3502,7 @@ else 验证或健康检查失败
 <li>恢复检查并将遥测数据与基线进行比较。</li>
 <li>如果运行状况、延迟、证据完整性或检查行为违反批准的发布标准，则回滚。</li>
 </ol>
-<h2 id="2010-backup-and-recovery">20.10 备份与恢复<a class="headerlink" href="#2010-backup-and-recovery" title="Permanent link">&para;</a></h2>
+<h2 id="2010-backup-and-recovery">20.10 Backup and Recovery<a class="headerlink" href="#2010-backup-and-recovery" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>

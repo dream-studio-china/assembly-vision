@@ -1684,7 +1684,7 @@
   <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 决定
+        3. Decision
       
     </span>
   </a>
@@ -2507,6 +2507,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2828,7 +2856,7 @@
   <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 决定
+        3. Decision
       
     </span>
   </a>
@@ -2923,7 +2951,7 @@
 <p>ADR-009 建立了静态图像优先的实施顺序，并将模型训练排除在其两天的范围之外。当前的 MVP 目标要求开发人员从带标签的静态图像集进行训练，然后检查单独的图像集，一次一张图像，并提供可追踪的 <code>OK</code> 或 <code>NG</code> 结果。</p>
 <p>所选的注释工具是X-AnyLabeling。它以 Ultralytics YOLO 文本格式导出产品和组件边界框。文件名 <code>OK</code> 或 <code>NG</code> 标签对于保留验证仍然有用，但不能单独训练边界框检测器。</p>
 <p>MVP 在开发人员控制的具有 16 GB 内存的 Apple Silicon Mac 上运行。它必须保留最终的两阶段架构：全帧上的产品检测、生成的产品 ROI、该 ROI 中的组件检测以及确定性规则评估。培训必须与边缘运行时保持分离，因此它不会与客户运行时包一起分发。</p>
-<h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
+<h2 id="3-decision">3. Decision<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
 <p>仅替换 MVP 的 ADR-009 中的训练排除项。标记的培训和检查 MVP 应：</p>
 <ol>
 <li>使用 X-AnyLabeling 以标准 YOLO 格式创建全框架产品和组件边界框标签。</li>

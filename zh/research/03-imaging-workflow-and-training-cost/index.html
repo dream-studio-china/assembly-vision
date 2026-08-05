@@ -2366,6 +2366,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2620,7 +2648,7 @@
   <a href="#25-camera-mounting-angle-and-stationarity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.5 相机安装、角度和平稳性
+        2.5 Camera mounting, angle, and stationarity
       
     </span>
   </a>
@@ -2692,7 +2720,7 @@
   <a href="#34-quality-gates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.4 质量门
+        3.4 Quality gates
       
     </span>
   </a>
@@ -2720,7 +2748,7 @@
   <a href="#41-how-many-images-do-people-actually-need" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1 人们实际需要多少图像？
+        4.1 How many images do people actually need?
       
     </span>
   </a>
@@ -2841,7 +2869,7 @@
   <a href="#6-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. 开放式问题和需要验证
+        6. Open Questions and Validation Required
       
     </span>
   </a>
@@ -3078,7 +3106,7 @@
   <a href="#25-camera-mounting-angle-and-stationarity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.5 相机安装、角度和平稳性
+        2.5 Camera mounting, angle, and stationarity
       
     </span>
   </a>
@@ -3150,7 +3178,7 @@
   <a href="#34-quality-gates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.4 质量门
+        3.4 Quality gates
       
     </span>
   </a>
@@ -3178,7 +3206,7 @@
   <a href="#41-how-many-images-do-people-actually-need" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1 人们实际需要多少图像？
+        4.1 How many images do people actually need?
       
     </span>
   </a>
@@ -3299,7 +3327,7 @@
   <a href="#6-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. 开放式问题和需要验证
+        6. Open Questions and Validation Required
       
     </span>
   </a>
@@ -3414,7 +3442,7 @@
 <li><strong>ISO/增益：</strong> 保持模拟增益/ISO 较低，以最大限度地减少噪音；添加光而不是增益。 （一般成像工程实践；不依赖于单个引用 - 视为来自上述相同 MV 文献的标准知识。）</li>
 <li><strong>过度曝光/泛光：</strong>镜面高光会使传感器饱和并冲掉特征边缘。直方图检查（例如，最大平均亮度限制）属于质量门（AssemblyVision 已在 <code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code> 中指定最小/最大平均亮度和拉普拉斯方差）。</li>
 </ul>
-<h3 id="25-camera-mounting-angle-and-stationarity">2.5 相机安装、角度和平稳性<a class="headerlink" href="#25-camera-mounting-angle-and-stationarity" title="Permanent link">&para;</a></h3>
+<h3 id="25-camera-mounting-angle-and-stationarity">2.5 Camera mounting, angle, and stationarity<a class="headerlink" href="#25-camera-mounting-angle-and-stationarity" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>固定、隔振安装。</strong> 工程指南的环境部分将振动、温度变化和污染物标记为破坏视觉系统的首要环境风险 (https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision-considerations-implementation)。</li>
 <li><strong>角度：</strong> 单个固定角度是正确的设计（AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 指出约 45 度的角度变化是需要重新验证的域变化）。近乎垂直的自上而下视图最大限度地减少了透视失真并使 ROI 坐标稳定。</li>
@@ -3434,34 +3462,34 @@
 <hr />
 <h2 id="3-standard-workflows-and-procedures">3. 标准工作流程和程序<a class="headerlink" href="#3-standard-workflows-and-procedures" title="Permanent link">&para;</a></h2>
 <h3 id="31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision">3.1 数据采集SOP（Ultralytics+Roboflow+AssemblyVision的综合）<a class="headerlink" href="#31-data-collection-sop-synthesis-of-ultralytics-roboflow-assemblyvision" title="Permanent link">&para;</a></h3>
-<p>Ultralytics 的官方指南强调 <strong>“数据的质量直接决定模型性能”</strong> 并涵盖类定义、来源和偏差避免 (https://docs.ultralytics.com/guides/data-collection-and-annotation/)。 Roboflow 的工业演练添加了特定领域的覆盖规则 (https://blog.roboflow.com/surface-defects/)。</p>
-<p>推荐标准操作流程：</p>
+<p>Ultralytics' official guidance stresses that <strong>"the quality of this data directly determines model performance"</strong> and covers class definition, sourcing, and bias avoidance (https://docs.ultralytics.com/guides/data-collection-and-annotation/). Roboflow's industrial walkthroughs add field-specific coverage rules (https://blog.roboflow.com/surface-defects/).</p>
+<p>Recommended SOP:</p>
 <ol>
-<li><strong>定义版本化类本体</strong>（产品 + 所需组件），包含包含/排除规则和歧义策略（AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 第 19.5 节）。</li>
-<li><strong>使用生产相机/光学器件/安装/照明</strong>收集，而不是手机或其他相机。应保留固定角度设置以供训练和部署。</li>
-<li><strong>覆盖范围必须包括：</strong> 所有产品/组件；跨批次/日期的真正合格产品；为每个缺失的组件物理构建 NG 产品（不要通过数字擦除来合成所有 NG - 阴影、包装变形和显示的背景有所不同）；空帧；部分条目；模糊;反思；曝光变化；遮挡（AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 第 19.4 节；https://blog.roboflow.com/surface-defects/ 中的相同覆盖主题）。</li>
-<li><strong>包括负片/背景图像</strong> - “正常图像也很重要。它们教导模型普通颗粒、颜色变化和无害的表面图案不应总是被归类为缺陷”(https://blog.roboflow.com/surface-defects/)。</li>
-<li><strong>每张图像的出处：</strong> 场地/生产线/相机/设置、捕获会话、产品实例、故意缺陷场景和相机/照明修订（AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 第 19.3 节）。</li>
+<li><strong>Define a versioned class ontology</strong> (product + required components) with inclusion/exclusion rules and ambiguity policy (AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> Section 19.5).</li>
+<li><strong>Collect with the production camera/optics/mounting/lighting</strong>, not a phone or a different camera. A fixed-angle setup should be kept for training and deployment.</li>
+<li><strong>Coverage must include:</strong> all products/components; real OK products across batches/dates; physically constructed NG products for each missing component (do NOT synthesize all NG by digital erasure - shadows, packaging deformation, and revealed backgrounds differ); empty frames; partial entries; blur; reflections; exposure variation; occlusion (AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> Section 19.4; same coverage themes in https://blog.roboflow.com/surface-defects/).</li>
+<li><strong>Include negative/background images</strong> - "normal images are also important. They teach the model that ordinary grain, color changes, and harmless surface patterns should not always be classified as defects" (https://blog.roboflow.com/surface-defects/).</li>
+<li><strong>Provenance per image:</strong> site/line/camera/setup, capture session, product instance, deliberate defect scenario, and camera/lighting revision (AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> Section 19.3).</li>
 </ol>
 <h3 id="32-labeling-standards-and-tooling">3.2 标签标准和工具<a class="headerlink" href="#32-labeling-standards-and-tooling" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>注解规则：</strong>一致的类名；可见特征周围的紧密框（“主要包含法线表面的大框会使模型更难学习”）；注释每个实例；决定并记录相关/重叠的案例；所有 NG 和不明确标签的第二位审阅者（https://blog.roboflow.com/surface-defects/；AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 第 19.5 节）。</li>
-<li><strong>注释类型/格式：</strong>用于检测的边界框； COCO/VOC/YOLO 格式； YOLO 格式已标准化 (https://docs.ultralytics.com/guides/data-collection-and-annotation/)。</li>
-<li><strong>工具：</strong></li>
-<li><strong>CVAT</strong> - 开源、团队工作流程、自动分段：https://github.com/cvat-ai/cvat</li>
-<li><strong>Label Studio</strong> - 开源、多任务标签：https://github.com/HumanSignal/label-studio</li>
-<li><strong>LabelImg</strong> - 经典的轻量级边界框工具：https://github.com/HumanSignal/labelImg</li>
-<li><strong>Roboflow Annotate</strong> - 托管、模型辅助标记、数据集版本控制、导出到 YOLO/COCO：https://blog.roboflow.com/missing-item-inspection/ 和 https://blog.roboflow.com/roboflow-train-3-0/</li>
-<li><strong>Ultralytics 注释编辑器</strong>（平台） - SAM 支持的智能注释，原生 YOLO 格式：https://docs.ultralytics.com/guides/data-collection-and-annotation/</li>
-<li><strong>标记效率策略：</strong>明确的指南、预注释工具、主动学习（首先标记信息最丰富的样本）、批量处理相似图像、定期质量检查（https://docs.ultralytics.com/guides/data-collection-and-annotation/）。</li>
+<li><strong>Annotation rules:</strong> consistent class names; tight boxes around the visible feature ("Large boxes containing mostly normal surface can make it harder for the model to learn"); annotate every instance; decide and document connected/overlapping cases; second reviewer for all NG and ambiguous labels (https://blog.roboflow.com/surface-defects/ ; AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> Section 19.5).</li>
+<li><strong>Annotation types/formats:</strong> bounding boxes for detection; COCO/VOC/YOLO formats; YOLO format is <code>class x_center y_center width height</code> normalized (https://docs.ultralytics.com/guides/data-collection-and-annotation/).</li>
+<li><strong>Tools:</strong></li>
+<li><strong>CVAT</strong> - open-source, team workflow, auto-segmentation: https://github.com/cvat-ai/cvat</li>
+<li><strong>Label Studio</strong> - open-source, multi-task labeling: https://github.com/HumanSignal/label-studio</li>
+<li><strong>LabelImg</strong> - classic lightweight bounding-box tool: https://github.com/HumanSignal/labelImg</li>
+<li><strong>Roboflow Annotate</strong> - managed, model-assisted labeling, dataset versioning, export to YOLO/COCO: https://blog.roboflow.com/missing-item-inspection/ and https://blog.roboflow.com/roboflow-train-3-0/</li>
+<li><strong>Ultralytics annotation editor</strong> (platform) - SAM-powered smart annotation, native YOLO format: https://docs.ultralytics.com/guides/data-collection-and-annotation/</li>
+<li><strong>Labeling efficiency strategies:</strong> clear guidelines, pre-annotation tools, active learning (label the most informative samples first), batch processing similar images, regular quality checks (https://docs.ultralytics.com/guides/data-collection-and-annotation/).</li>
 </ul>
 <h3 id="33-dataset-organization-and-trainvalidationtest-splits">3.3 数据集组织和训练/验证/测试分割<a class="headerlink" href="#33-dataset-organization-and-trainvalidationtest-splits" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>对每个数据集进行版本控制</strong>（校验和、注释哈希、本体版本）并将原始数据视为不可变（AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 第 19.3/19.5 节）。</li>
-<li><strong>泄漏安全拆分是最重要的拆分规则：</strong> 按物理产品实例拆分，最好按捕获会话/批次/日期拆分； <strong>永远不要随机分割相邻的视频帧</strong>，因为几乎相同的帧会泄漏并导致指标膨胀（AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 第 19.6 节）。计划开始：2015 年 70 月 15 日，按分组实例进行训练/验证/内部测试，并完全保留客户验收集。</li>
-<li><strong>运行泄漏检查：</strong> 精确的 SHA-256 重复项、感知哈希最近邻、组 ID 重叠、派生文件沿袭（AssemblyVision 第 19.6.3 节）。</li>
+<li><strong>Version every dataset</strong> (checksums, annotation hashes, ontology version) and treat raw data as immutable (AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> Sections 19.3/19.5).</li>
+<li><strong>Leakage-safe splitting is the single most important split rule:</strong> split by physical product instance, and preferably by capture session / batch / date; <strong>never randomly split adjacent video frames</strong> because near-identical frames leak and inflate metrics (AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> Section 19.6). Planning start: 70/15/15 by grouped instances for train/validation/internal test, with the customer acceptance set held out entirely.</li>
+<li><strong>Run leakage checks:</strong> exact SHA-256 duplicates, perceptual-hash nearest neighbors, group-ID overlap, derived-file lineage (AssemblyVision Section 19.6.3).</li>
 </ul>
-<h3 id="34-quality-gates">3.4 质量门<a class="headerlink" href="#34-quality-gates" title="Permanent link">&para;</a></h3>
+<h3 id="34-quality-gates">3.4 Quality gates<a class="headerlink" href="#34-quality-gates" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>推理时的帧级门：</strong>模糊（拉普拉斯方差）、亮度范围、损坏、帧年龄；被拒绝的帧没有提供任何积极的证据（AssemblyVision <code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code> 和 <code>[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)</code>）。</li>
 <li><strong>数据集级门：</strong>自动检查无效框、未知类、重复项；第二审稿人抽样；注释者间协议（https://docs.ultralytics.com/guides/data-collection-and-annotation/）。</li>
@@ -3469,7 +3497,7 @@
 </ul>
 <hr />
 <h2 id="4-training-cost-and-practitioner-experience">4. 培训费用和从业人员经验<a class="headerlink" href="#4-training-cost-and-practitioner-experience" title="Permanent link">&para;</a></h2>
-<h3 id="41-how-many-images-do-people-actually-need">4.1 人们实际需要多少图像？<a class="headerlink" href="#41-how-many-images-do-people-actually-need" title="Permanent link">&para;</a></h3>
+<h3 id="41-how-many-images-do-people-actually-need">4.1 How many images do people actually need?<a class="headerlink" href="#41-how-many-images-do-people-actually-need" title="Permanent link">&para;</a></h3>
 <p>公共指导故意广泛，因为它取决于任务难度：</p>
 <ul>
 <li><strong>非常简单的单类检测（固定对象的存在/计数）：</strong> Roboflow 的缺失项目教程建议 <strong>从一个对象类的 25-50 个图像开始</strong> (https://blog.roboflow.com/missing-item-inspection/)。</li>
@@ -3547,7 +3575,7 @@
 <li>[ ] 跟踪运行出处：源版本、容器摘要、种子、数据集版本、超参数、工件校验和（AssemblyVision 第 19.8 节）</li>
 </ul>
 <hr />
-<h2 id="6-open-questions-and-validation-required">6. 开放式问题和需要验证<a class="headerlink" href="#6-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="6-open-questions-and-validation-required">6. Open Questions and Validation Required<a class="headerlink" href="#6-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>在承诺标签预算之前，测量实际组件的<strong>实际标签率</strong>（每盒秒数）；公布/估计的费率差异很大。</li>
 <li>确认300-800张产品图片是否足以对实际产品进行第一阶段产品检测；与 Ultralytics 在固定单一产品站上的“每类约 1,500 个图像/10,000 个实例”可靠性指南进行比较。</li>

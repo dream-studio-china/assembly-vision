@@ -1091,7 +1091,7 @@
   <a href="#2111-scope-distinction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.1.1 范围区别
+        21.1.1 Scope Distinction
       
     </span>
   </a>
@@ -1107,7 +1107,7 @@
   <a href="#212-assets-and-trust-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.2 资产和信托边界
+        21.2 Assets and Trust Boundaries
       
     </span>
   </a>
@@ -1129,7 +1129,7 @@
   <a href="#214-network-and-api-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.4 网络和API安全
+        21.4 Network and API Security
       
     </span>
   </a>
@@ -1173,7 +1173,7 @@
   <a href="#218-source-distribution-caveats" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.8 源分发注意事项
+        21.8 Source Distribution Caveats
       
     </span>
   </a>
@@ -1256,7 +1256,7 @@
   <a href="#2112-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.12 未决问题和需要验证
+        21.12 Open Questions and Validation Required
       
     </span>
   </a>
@@ -2612,6 +2612,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2923,7 +2951,7 @@
   <a href="#2111-scope-distinction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.1.1 范围区别
+        21.1.1 Scope Distinction
       
     </span>
   </a>
@@ -2939,7 +2967,7 @@
   <a href="#212-assets-and-trust-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.2 资产和信托边界
+        21.2 Assets and Trust Boundaries
       
     </span>
   </a>
@@ -2961,7 +2989,7 @@
   <a href="#214-network-and-api-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.4 网络和API安全
+        21.4 Network and API Security
       
     </span>
   </a>
@@ -3005,7 +3033,7 @@
   <a href="#218-source-distribution-caveats" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.8 源分发注意事项
+        21.8 Source Distribution Caveats
       
     </span>
   </a>
@@ -3088,7 +3116,7 @@
   <a href="#2112-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.12 未决问题和需要验证
+        21.12 Open Questions and Validation Required
       
     </span>
   </a>
@@ -3129,14 +3157,14 @@
 <h1 id="21-security-and-source-distribution">21. 安全性和源代码分发<a class="headerlink" href="#21-security-and-source-distribution" title="Permanent link">&para;</a></h1>
 <h2 id="211-purpose-and-security-position">21.1 目的和安全地位<a class="headerlink" href="#211-purpose-and-security-position" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 可以保护生产证据、配置完整性、凭证和管理操作，同时保留离线边缘检查。安全控制是基于风险的； Docker 和 Python 字节码都没有被表示为强大的源代码安全边界。</p>
-<h3 id="2111-scope-distinction">21.1.1 范围区别<a class="headerlink" href="#2111-scope-distinction" title="Permanent link">&para;</a></h3>
+<h3 id="2111-scope-distinction">21.1.1 Scope Distinction<a class="headerlink" href="#2111-scope-distinction" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>静态训练和检查 MVP：</strong> 不需要身份验证，而训练和检查 CLI 仅在具有非生产数据的隔离开发环境中使用。训练代码、数据集、笔记本和实验配置仅供开发人员使用，不包含在运行时发行版中。模型加密和仅限 <code>.pyc</code> 的打包被推迟。</li>
 <li><strong>一个月目标：</strong> 本地访问控制、中央身份验证、TLS、设备凭证、审核日志、非根容器和受控工件分发。</li>
 <li><strong>生产目标：</strong> 实用的客户集成身份、基于角色的授权、证书生命周期管理、签名模型/配置包、漏洞管理、备份加密和事件响应。</li>
 <li><strong>未来范围：</strong> 硬件支持的密钥、远程证明、更强大的本机编译/混淆或仅在合同威胁分析证明合理的情况下进行许可控制。</li>
 </ul>
-<h2 id="212-assets-and-trust-boundaries">21.2 资产和信托边界<a class="headerlink" href="#212-assets-and-trust-boundaries" title="Permanent link">&para;</a></h2>
+<h2 id="212-assets-and-trust-boundaries">21.2 Assets and Trust Boundaries<a class="headerlink" href="#212-assets-and-trust-boundaries" title="Permanent link">&para;</a></h2>
 <p>受保护的资产包括检查决策、图像和剪辑、条形码、产品配置、规则、模型包、凭证、审核日志、源/构建工件以及用户帐户中的个人信息。相机/边缘硬件、本地浏览器/边缘 API、边缘/中央网络、中央 API/工作线程、对象存储、管理员和构建/注册环境之间存在信任边界。</p>
 <p>客户对边缘硬件的控制意味着拥有足够特权的客户管理员可以检查容器、卷、内存和流量。该架构可防止随意浏览和未经授权的应用程序级访问；它不能保证抵抗有决心的特权逆向工程师。</p>
 <h2 id="213-identity-and-authorization">21.3 身份和授权<a class="headerlink" href="#213-identity-and-authorization" title="Permanent link">&para;</a></h2>
@@ -3178,40 +3206,40 @@
 </table>
 <p>授权默认拒绝，并按组织/站点/线路/设备划分范围。在人员配备允许的情况下，起草和批准安全相关配置应分开。所有权限、配置、规则、模型、保留和审查更改均通过参与者、时间、旧/新值或校验和、原因和相关标识符进行审核。</p>
 <p>本地仪表板访问必须反映站点限制。仅环回信息亭可以减少暴露，但不能取代其他用户可以访问主机的身份验证。本地可紧急暂停；配置更改需要更强的授权。</p>
-<h2 id="214-network-and-api-security">21.4 网络和API安全<a class="headerlink" href="#214-network-and-api-security" title="Permanent link">&para;</a></h2>
+<h2 id="214-network-and-api-security">21.4 Network and API Security<a class="headerlink" href="#214-network-and-api-security" title="Permanent link">&para;</a></h2>
 <ul>
-<li>对边缘到中心和浏览器到中心的流量使用 TLS；验证主机名和信任链。</li>
-<li>首选仅出站边缘连接，因此工厂防火墙无需集中公开边缘 API。</li>
-<li>对每个上传进行身份验证并将其绑定到已注册的设备。</li>
-<li>应用请求大小限制、模式验证、速率限制和安全媒体内容处理。</li>
-<li>使用幂等密钥而不将其视为身份验证。</li>
-<li>将数据库、Redis 和对象存储接口保留在专用网络上。</li>
-<li>限制本​​地API监听地址和跨域策略。</li>
-<li>不要在客户端响应中放置机密、原始 SQL 错误、文件系统路径或堆栈跟踪。</li>
-<li>将上传的文件名和元数据视为不可信；在服务器端生成存储密钥。</li>
+<li>Use TLS for edge-to-central and browser-to-central traffic; validate hostnames and trust chains.</li>
+<li>Prefer outbound-only edge connections so the factory firewall need not expose the edge API centrally.</li>
+<li>Authenticate every upload and bind it to a registered device.</li>
+<li>Apply request size limits, schema validation, rate limits, and safe media content handling.</li>
+<li>Use idempotency keys without treating them as authentication.</li>
+<li>Keep database, Redis, and object-storage interfaces on private networks.</li>
+<li>Restrict local API listening addresses and cross-origin policy.</li>
+<li>Do not place secrets, raw SQL errors, filesystem paths, or stack traces in client responses.</li>
+<li>Treat uploaded filenames and metadata as untrusted; generate storage keys server-side.</li>
 </ul>
-<p>WebSocket 连接使用与 REST 相同的身份验证和授权规则，随会话一起过期，并携带状态通知而不是权威状态转换。</p>
+<p>WebSocket connections use the same authentication and authorization rules as REST, expire with their session, and carry status notifications rather than authoritative state transitions.</p>
 <h2 id="215-data-protection">21.5 数据保护<a class="headerlink" href="#215-data-protection" title="Permanent link">&para;</a></h2>
-<p>检查证据可能会揭示产品标识符和工厂运营情况。收集最小化到配置的上传策略：OK 记录的代表性证据和 NG 或异常的更丰富的证据。保留是按媒体类别明确的。对图像、剪辑、条形码值和导出的访问都会被记录并限制在站点范围内。</p>
-<p>静态加密应在边缘使用平台或卷加密，并在集中使用数据库/对象存储加密。密钥所有权和备份密钥处理必须与客户达成一致。当不需要完整值时，日志必须避免凭据并编辑敏感条形码内容。浏览器缓存不得保留超出预期会话的敏感媒体。</p>
+<p>Inspection evidence may reveal product identifiers and factory operations. Collection is minimized to the configured upload policy: representative evidence for OK records and richer evidence for NG or exceptions. Retention is explicit by media class. Access to images, clips, barcode values, and exports is logged and site-scoped.</p>
+<p>Encryption at rest should use platform or volume encryption at the edge and database/object-store encryption centrally. Key ownership and backup-key handling must be agreed with the customer. Logs must avoid credentials and redact sensitive barcode content when full values are unnecessary. Browser caches must not retain sensitive media beyond the intended session.</p>
 <h2 id="216-configuration-model-and-supply-chain-integrity">21.6 配置、模型和供应链完整性<a class="headerlink" href="#216-configuration-model-and-supply-chain-integrity" title="Permanent link">&para;</a></h2>
-<p>每个可部署的工件都有一个版本、加密校验和、兼容性元数据、出处和批准状态。签署生产包；边缘客户端在安装前验证校验和、签名、设备/产品兼容性、最低应用程序版本以及所需的规则/模型配对。激活发生在检查窗口之间，并保留最后的已知良好组。</p>
-<p>构建控制包括固定依赖项、审查的锁定文件更改、软件材料清单、容器和依赖项扫描、受限注册表发布、受保护的发布凭据和可重现的构建记录。模型和数据集作为受控工件进行处理：生产图像、训练数据、笔记本和实验凭证被排除在运行时图像之外。</p>
+<p>Every deployable artifact has a version, cryptographic checksum, compatibility metadata, provenance, and approval state. Production packages are signed; edge clients verify checksum, signature, device/product compatibility, minimum application version, and required rule/model pairing before installation. Activation occurs between inspection windows and retains a last known-good set.</p>
+<p>Build controls include pinned dependencies, reviewed lock-file changes, software bills of materials, container and dependency scanning, restricted registry publishing, protected release credentials, and reproducible build records. Models and datasets are handled as controlled artifacts: production images, training data, notebooks, and experiment credentials are excluded from runtime images.</p>
 <h2 id="217-source-distribution-approach">21.7 源分发方法<a class="headerlink" href="#217-source-distribution-approach" title="Permanent link">&para;</a></h2>
-<p>客户收到可运行的边缘工件，而不是 Git 存储库。分配管道应：</p>
+<p>The customer receives runnable edge artifacts, not the Git repository. The distribution pipeline should:</p>
 <ol>
-<li>在私有构建阶段构建 Python 轮子或应用程序树。</li>
-<li>将项目 Python 模块编译为检查哈希 <code>.pyc</code> 文件。</li>
-<li>删除导入和诊断仍然可靠的原始项目 <code>.py</code> 文件。</li>
-<li>仅将运行时依赖项和工件复制到最终映像中。</li>
-<li>构建 Vue 应用程序并仅部署生成的静态资产。</li>
-<li>排除<code>.git</code>、测试、运行时不需要的文档、除非操作批准的源映射、训练数据集、模型训练代码、笔记本和内部实验配置。</li>
-<li>在可行的情况下，在具有只读根文件系统的非 root 用户下运行。</li>
-<li>将模型、规则、数据库、日志、媒体和临时文件以最小权限显式挂载。</li>
-<li>在部署时注入短期或可轮换的秘密；永远不要将长期秘密烘焙到图像中。</li>
+<li>Build Python wheels or application trees in a private build stage.</li>
+<li>Compile project Python modules to checked-hash <code>.pyc</code> files.</li>
+<li>Remove original project <code>.py</code> files where imports and diagnostics remain reliable.</li>
+<li>Copy only runtime dependencies and artifacts into the final image.</li>
+<li>Build Vue applications and deploy only generated static assets.</li>
+<li>Exclude <code>.git</code>, tests, documentation not needed at runtime, source maps unless operationally approved, training datasets, model-training code, notebooks, and internal experiment configuration.</li>
+<li>Run under a non-root user with a read-only root filesystem where practical.</li>
+<li>Put models, rules, databases, logs, media, and temporary files in explicit mounts with minimum permissions.</li>
+<li>Inject short-lived or rotatable secrets at deployment time; never bake long-term secrets into images.</li>
 </ol>
-<p>第三方 Python 源代码仍可能包含在依赖项打包中，并且必须遵循其许可证。许可通知和所需的归属必须保持可用。必须有意控制调试符号和前端源映射；删除它们会使支持变得更加困难，并且不会阻止客户行为的重建。</p>
-<h2 id="218-source-distribution-caveats">21.8 源分发注意事项<a class="headerlink" href="#218-source-distribution-caveats" title="Permanent link">&para;</a></h2>
+<p>Third-party Python source may still be included by dependency packaging and must follow its license. License notices and required attribution must remain available. Debug symbols and frontend source maps must be intentionally controlled; removing them can make support harder and does not prevent reconstruction of client behavior.</p>
+<h2 id="218-source-distribution-caveats">21.8 Source Distribution Caveats<a class="headerlink" href="#218-source-distribution-caveats" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>.pyc</code> 可以直接使用可用工具进行分析，并且不是强大的反逆向工程保护。</li>
 <li>Docker 打包文件和进程，但不是针对主机管理员的源代码安全边界。</li>
@@ -3250,7 +3278,7 @@
 </ol>
 <h2 id="2111-verification">21.11 验证<a class="headerlink" href="#2111-verification" title="Permanent link">&para;</a></h2>
 <p>安全验证包括授权矩阵测试、租户/站点隔离测试、设备吊销、畸形上传处理、依赖项/容器扫描、秘密扫描、包签名失败、回滚安全、审核日志完整性、备份恢复以及合同要求的广泛部署之前的外部渗透测试。</p>
-<h2 id="2112-open-questions-and-validation-required">21.12 未决问题和需要验证<a class="headerlink" href="#2112-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="2112-open-questions-and-validation-required">21.12 Open Questions and Validation Required<a class="headerlink" href="#2112-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>客户身份提供商、MFA 政策、帐户生命周期和角色分离可行性。</li>
 <li>边缘用户、物理访问控制、本地网络可达性和信息亭/浏览器模型。</li>

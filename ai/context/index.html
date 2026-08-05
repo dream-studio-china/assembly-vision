@@ -2364,6 +2364,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2753,6 +2781,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#81-review-driven-hardening-pr-003-follow-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Review-Driven Hardening (PR-003 follow-up)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2894,6 +2933,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#81-review-driven-hardening-pr-003-follow-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Review-Driven Hardening (PR-003 follow-up)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2926,7 +2976,7 @@
 
 <h1 id="assemblyvision-full-project-context">AssemblyVision - Full Project Context<a class="headerlink" href="#assemblyvision-full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Context snapshot. Last updated: 2026-08-05</p>
+<p>Context snapshot. Last updated: 2026-08-06</p>
 <p>Read this file first in a new session to reconstruct the project state quickly.</p>
 </blockquote>
 <hr />
@@ -2941,9 +2991,11 @@ and verifies that all required assembly components are present.</p>
 <li><strong>Architecture</strong>: edge-client + central-server. All production-critical image processing and
   final decisions execute on the edge industrial computer; the central server is never required
   for real-time inspection.</li>
-<li><strong>Current repository state</strong>: the static-image edge-service scaffold exists on <code>feat/mvp</code>
-  (uv workspace, domain models, ROI/rule logic, CLI, output writer, and tests). The next
-  concrete milestone is the labeled static train-and-inspect MVP defined by ADR-011.</li>
+<li><strong>Current repository state</strong>: the labeled static train-and-inspect MVP (ADR-011) is
+  implemented and validated on <code>feat/mvp</code>. The uv workspace ships shared <code>domain</code> and
+  <code>vision-core</code> packages, a developer-only <code>av-train</code> training CLI, real two-stage
+  Ultralytics YOLO inspection (<code>assemblyvision inspect</code>), and held-out verification
+  (<code>assemblyvision verify</code>) reporting NG recall, false negatives, and false positives.</li>
 </ul>
 <h2 id="2-repository-state">2. Repository State<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
@@ -2956,37 +3008,48 @@ and verifies that all required assembly components are present.</p>
 <h2 id="3-directory-structure">3. Directory Structure<a class="headerlink" href="#3-directory-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>assembly-vision/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── README.md               # Root README with docs map + bilingual site instructions
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── LICENSE                 # MIT License (c) 2026 dream-studio-china
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── scripts/
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── translate-docs.py            # docs/ -&gt; docs-zh/ Chinese translation (deep-translator)
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   └── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── .github/workflows/docs.yml       # GitHub Pages deploy on push to main
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>├── apps/edge-service/                # Current static inspection CLI scaffold
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── pyproject.toml                    # Root uv workspace configuration
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>└── docs/
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    ├── index.md            # MkDocs home page
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    ├── README.md           # Documentation index
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    ├── overrides/main.html # Theme override placeholder
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    ├── ai/context.md       # THIS file
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    ├── runbooks/           # 9 mandatory operational recovery runbooks + index
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    ├── design/             # 28 design documents + appendices + decisions/
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    │   └── decisions/      # ADR-001 ... ADR-011 + README
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>    └── research/           # 3 external-research reports
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        ├── 01-industrial-inspection-success-rates.md
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        ├── 02-yolo-capabilities-and-success-rates.md
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        └── 03-imaging-workflow-and-training-cost.md
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── QUICKSTART.md           # Developer onboarding: setup, checks, CLI, end-to-end demo
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── LICENSE                 # MIT License (c) 2026 dream-studio-china
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── Makefile                # Quality gates: lint, format, typecheck, test, check
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── scripts/
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── translate-docs.py            # docs/ -&gt; docs-zh/ Chinese translation (deep-translator)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── e2e-demo.sh                  # full train-&gt;prepare-&gt;train-&gt;inspect-&gt;verify smoke test
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -&gt; two-stage layout
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   └── tests/                       # tests for the Roboflow adapter
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── packages/python/
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   ├── domain/                       # canonical models, errors, reason codes
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   └── vision-core/                  # ROI engine, image sources, manifest loading
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>├── pyproject.toml                    # Root uv workspace configuration
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>└── docs/
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>    ├── index.md            # MkDocs home page
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    ├── README.md           # Documentation index
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    ├── overrides/main.html # Theme override placeholder
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>    ├── ai/context.md       # THIS file
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>    ├── reviews/            # Code-review follow-up findings (PR-003-review.md)
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>    ├── runbooks/           # 10 operational recovery runbooks + index
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    ├── design/             # 28 design documents + appendices + decisions/
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    │   └── decisions/      # ADR-001 ... ADR-011 + README
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    └── research/           # 3 external-research reports
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        ├── 01-industrial-inspection-success-rates.md
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        ├── 02-yolo-capabilities-and-success-rates.md
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        └── 03-imaging-workflow-and-training-cost.md
 </code></pre></div>
 <h2 id="4-architecture-summary-from-docsdesign">4. Architecture Summary (from docs/design/)<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3030,7 +3093,7 @@ and verifies that all required assembly components are present.</p>
 <li><a href="../../contracts/">docs/contracts/</a>: 11 enforceable architecture, safety, API, quality,
   operations, security, change-control, and acceptance contracts.</li>
 <li><a href="../../runbooks/">docs/runbooks/</a>: executable recovery procedures for all contract-required
-  operational scenarios.</li>
+  operational scenarios, including model improvement (runbook 10).</li>
 </ul>
 <h2 id="6-bilingual-mkdocs-english-chinese">6. Bilingual MkDocs (English + Chinese)<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3081,12 +3144,64 @@ and verifies that all required assembly components are present.</p>
   training CLI, real two-stage models, and held-out filename-ground-truth verification.</li>
 <li>Model encryption and <code>.pyc</code>-only runtime packaging are deferred. The MVP protection boundary is
   that training code, datasets, notebooks, and experiment configuration are not distributed.</li>
+<li>The MVP is implemented and validated end to end (M1-M5): shared <code>domain</code>/<code>vision-core</code>
+  packages were extracted; the developer-only <code>training/</code> workspace and <code>av-train</code>
+  (product / prepare-components / component) were added; detector stubs were replaced with real
+  Ultralytics YOLO adapters that load manifest-referenced weights and map ROI boxes back to full
+  frame; <code>assemblyvision verify</code> reports NG recall / false negatives / false positives; and
+  <code>scripts/e2e-demo.sh</code> runs the full flow with a hard gate on false negatives.</li>
+<li>Datasets: <code>scripts/generate-synthetic-dataset.py</code> builds a labeled assembly dataset (exact
+  boxes, missing-component NG variants) for framework testing; <code>scripts/adapt-roboflow-dataset.py</code>
+  converts a Roboflow YOLOv8 export into the two-stage layout, drops generic <code>missing*</code> classes,
+  and requires an independently annotated full-product class (the union of component boxes is
+  rejected). The source <code>test</code> split becomes the held-out verification set only; it is never
+  copied into training or validation, and split overlap is checked by SHA-256.</li>
+<li>Model improvement is a developer-side loop (docs/runbooks/10-model-improvement.md):
+  collect/correct data -&gt; retrain -&gt; verify no regression -&gt; bump pipeline config and the rule's
+  <code>compatible_component_model_versions</code> together (<code>av-train --rule</code> prints the suggested bump).</li>
+<li>Base YOLO weights are cached under <code>training/.cache/weights/</code> (gitignored); trained artifacts go
+  to <code>models/weights/</code> (gitignored) with manifests under <code>models/manifests/</code>.</li>
+</ul>
+<h2 id="81-review-driven-hardening-pr-003-follow-up">8.1 Review-Driven Hardening (PR-003 follow-up)<a class="headerlink" href="#81-review-driven-hardening-pr-003-follow-up" title="Permanent link">&para;</a></h2>
+<p>A code review of the <code>feat/mvp</code> runtime, training, and verification surfaces led
+to a hardening pass that is committed and validated on <code>feat/mvp</code> (P0 items all
+fixed; remaining P1/P2 items tracked in <code>docs/reviews/PR-003-review.md</code>):</p>
+<ul>
+<li>Rule engine: <code>expected_count</code> is enforced as an exact count, declared spatial
+  constraints (<code>min_box_area_ratio</code>, <code>max_box_area_ratio</code>, <code>allowed_zone</code>) are
+  evaluated against per-detection normalized ROI evidence, empty rules are
+  rejected, and unsupported rule schema versions or empty model-compatibility
+  lists fail closed.</li>
+<li>Verification: incomplete evidence (uncertain states, image-read/inference/ROI/
+  rule failures) is no longer scored as a true positive, and skipped, failed,
+  and unmatched expected samples make <code>verify</code> exit non-zero.</li>
+<li>Model integrity: runtime verifies artifact size and SHA-256, validates the
+  loaded model class map against the manifest, rejects absolute artifact URIs,
+  and binds the rule-facing model version to the verified manifest.</li>
+<li>Detector fail-safe: malformed output (invalid class IDs, non-finite confidence
+  or coordinates, out-of-bounds boxes, bad tensor shapes) is converted to
+  <code>INFERENCE_ERROR</code> at the adapter boundary instead of escaping or mis-indexing.</li>
+<li>Configuration: thresholds must be finite and in <code>[0, 1]</code>, booleans are strict,
+  <code>min_area_pixels</code> must be a positive integer, and unknown keys are rejected in
+  every section.</li>
+<li>Training data: malformed or out-of-range labels, zero-sized and out-of-frame
+  boxes are fatal; missing label files warn; empty label files are valid
+  negatives; component preparation keeps negative ROI crops; and published
+  model versions refuse to be silently overwritten with different bytes.</li>
+<li>Quality gates: <code>ruff check .</code>, <code>ruff format --check .</code>, <code>mypy .</code>, and
+  <code>pytest</code> now cover the whole repository (edge, packages, training, scripts
+  tests) via the Makefile and a new <code>.github/workflows/ci.yml</code>.</li>
 </ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Labeled static train-and-inspect MVP is the next engineering milestone: extract shared domain/
-  vision packages, add the separate training CLI, train from X-AnyLabeling YOLO labels, replace
-  detector stubs, and add held-out verification.</li>
+<li>The static train-and-inspect MVP is complete and validated on synthetic data (NG recall 1.0,
+  zero false negatives on the held-out set). The next milestone is the one-month target
+  (roadmap 25.5): camera/barcode integration, product windows, local persistence, temporal
+  aggregation, edge dashboard, upload queue, and one central ingestion/history/review path.</li>
+<li>Real customer data is still required: annotate with X-AnyLabeling (product + component boxes),
+  then run <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>. Public Roboflow
+  datasets (e.g., BoardEye-Missing-Component) can validate the framework but not a specific line.</li>
+<li>Model improvement workflow is documented (runbook 10) with <code>av-train --rule</code> version hints.</li>
 <li>Hardware/conditions still unconfirmed (see <a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.</li>

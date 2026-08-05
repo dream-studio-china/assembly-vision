@@ -676,7 +676,7 @@
   <a href="#32-media-transfer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 媒体传输
+        3.2 Media Transfer
       
     </span>
   </a>
@@ -692,7 +692,7 @@
   <a href="#4-domain-and-persistence-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 领域和持久化模型
+        4. Domain and Persistence Model
       
     </span>
   </a>
@@ -831,7 +831,7 @@
   <a href="#113-production-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.3 生产目标
+        11.3 Production Target
       
     </span>
   </a>
@@ -2662,6 +2662,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3006,7 +3034,7 @@
   <a href="#32-media-transfer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 媒体传输
+        3.2 Media Transfer
       
     </span>
   </a>
@@ -3022,7 +3050,7 @@
   <a href="#4-domain-and-persistence-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 领域和持久化模型
+        4. Domain and Persistence Model
       
     </span>
   </a>
@@ -3161,7 +3189,7 @@
   <a href="#113-production-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.3 生产目标
+        11.3 Production Target
       
     </span>
   </a>
@@ -3226,7 +3254,7 @@
   
 
 
-<h1 id="assemblyvision-central-server-architecture">AssemblyVision 中央服务器架构<a class="headerlink" href="#assemblyvision-central-server-architecture" title="Permanent link">&para;</a></h1>
+<h1 id="assemblyvision-central-server-architecture">AssemblyVision Central Server Architecture<a class="headerlink" href="#assemblyvision-central-server-architecture" title="Permanent link">&para;</a></h1>
 <h2 id="1-responsibilities-and-boundary">1. 职责与边界<a class="headerlink" href="#1-responsibilities-and-boundary" title="Permanent link">&para;</a></h2>
 <p>中央服务器接收延迟的检查结果和选定的证据，维护跨设备历史记录和报告，管理设备/产品/规则/模型/用户，支持手动审核，记录审核事件并分发批准的配置。它是一个管理和证据平面，从来不是生产检验的同步依赖。</p>
 <p>最初的自动化决策是来自边缘的仅附加事实。中央审查和更正是相互关联的事实；它们不会覆盖原始结果。请参阅<a href="../03-architecture-overview/">Architecture Overview</a>和<a href="../04-edge-client-architecture/">Edge Client Architecture</a>。</p>
@@ -3235,7 +3263,7 @@
     Edge[边缘上传客户端] --&gt; Gateway[Nginx 和中央 FastAPI]
     Admin[Vue 管理应用程序] --&gt; Gateway
     Gateway --&gt; Auth[身份与授权]
-    Gateway --&gt; Ingest[检查摄取]
+    Gateway --&gt; Ingest[Inspection ingestion]
     Gateway --&gt; Query[历史记录和仪表板查询]
     Gateway --&gt; Config[设备产品规则和型号管理]
     Gateway --&gt; Review[人工审核]
@@ -3257,10 +3285,10 @@
 <h3 id="31-inspection-envelope">3.1 检验范围<a class="headerlink" href="#31-inspection-envelope" title="Permanent link">&para;</a></h3>
 <p>边缘发布一个版本化信封，其中包含身份、时间戳、产品解决方案、业务/内部结果、组件和聚合证据、原因代码、框架/投资回报率摘要、不可变版本和媒体清单。服务器对设备进行身份验证，验证架构和大小，验证设备所有权/状态和兼容引用，计算规范的有效负载哈希，并保留在事务中。</p>
 <p><code>(device_id, inspection_id)</code> 和幂等键是唯一的。相同的重试将返回先前的收据。具有不同规范散列的重用身份/密钥返回 <code>409 Conflict</code>，记录安全/数据完整性事件，并保留原始事件。收据包括中央记录 ID、接受的模式版本、服务器接收时间和媒体上传状态。</p>
-<h3 id="32-media-transfer">3.2 媒体传输<a class="headerlink" href="#32-media-transfer" title="Permanent link">&para;</a></h3>
+<h3 id="32-media-transfer">3.2 Media Transfer<a class="headerlink" href="#32-media-transfer" title="Permanent link">&para;</a></h3>
 <p>OK通常会贡献一帧代表性的帧。 NG 提供多个关键帧、注释、ROI 以及可选的简短事件剪辑。例外情况只能提供有限的诊断证据。 API最初可以直接接受小媒体；生产应使用经过验证的大小限制，并可选择为较大对象发出上传会话。</p>
 <p>字节被暂存、校验和/大小验证，然后在不透明的存储密钥下最终确定。 PostgreSQL 存储媒体类型、校验和、大小、内容类型、状态、保留类别和对象密钥，而不是公共文件系统路径。部分/孤立上传是异步协调的。根据安全模型，检索使用授权的 API 流或限时链接。</p>
-<h2 id="4-domain-and-persistence-model">4. 领域和持久化模型<a class="headerlink" href="#4-domain-and-persistence-model" title="Permanent link">&para;</a></h2>
+<h2 id="4-domain-and-persistence-model">4. Domain and Persistence Model<a class="headerlink" href="#4-domain-and-persistence-model" title="Permanent link">&para;</a></h2>
 <p>核心 PostgreSQL 聚合是：</p>
 <ul>
 <li>租户/位置：验证所需租户层次结构的组织、站点、生产线和设备。</li>
@@ -3273,26 +3301,26 @@
 <p>PostgreSQL 事务保护聚合不变量。对象存储与 PostgreSQL 不是事务性的，因此需要显式的 <code>PENDING</code>、<code>AVAILABLE</code>、<code>FAILED</code> 和 <code>DELETED</code> 媒体状态以及协调。</p>
 <h2 id="5-administration-and-configuration">5. 管理和配置<a class="headerlink" href="#5-administration-and-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="51-device-and-product-management">5.1 设备和产品管理<a class="headerlink" href="#51-device-and-product-management" title="Permanent link">&para;</a></h3>
-<p>管理员注册设备、将其分配到批准的组织/线路范围、轮换凭据、查看上次查看/队列/版本运行状况以及隔离受损或不兼容的设备。产品识别所需的组件集，但不嵌入可变的生产策略。规则版本参考产品配置并声明阈值/聚合策略；模型清单标识工件校验和、类、运行时兼容性、培训/评估沿袭和批准状态。</p>
+<p>Administrators register devices, assign them to approved organizational/line scopes, rotate credentials, view last-seen/queue/version health, and quarantine compromised or incompatible devices. Products identify required component sets but do not embed mutable production policy. Rule versions reference product configuration and declare thresholds/aggregation policy; model manifests identify artifact checksums, classes, runtime compatibility, training/evaluation lineage, and approval state.</p>
 <h3 id="52-distribution-lifecycle">5.2 分发生命周期<a class="headerlink" href="#52-distribution-lifecycle" title="Permanent link">&para;</a></h3>
-<p>包会经历草稿、验证、批准、分配、下载、边缘验证、激活和确认状态。不可变内容收到新版本而不是就地编辑。在更广泛的分配之前，推出支持较小的设备群。边缘保留最后一次已知良好的包裹，并仅在检查之间激活。中心地位将分配与实际确认区分开来；任何仪表板都不应暗示仅通过分配即可激活。</p>
-<p>模型和远程配置/规则交付是生产目标功能。一个月的演示者可以集中注册所需的版本，同时在边缘手动安装软件包；安装仍会在本地验证不可变内容、校验和、兼容性和最后一次正确的回滚。分配绝不能显示为激活。</p>
+<p>A package moves through draft, validated, approved, assigned, downloaded, edge-validated, activated, and acknowledged states. Immutable content receives a new version rather than in-place edits. Rollout supports a small device cohort before wider assignment. The edge retains last known-good packages and activates only between inspections. Central status distinguishes assignment from actual acknowledgement; no dashboard should imply activation from assignment alone.</p>
+<p>Model and remote configuration/rule delivery are production-target capabilities. The one-month demonstrator may register desired versions centrally while packages are installed manually at the edge; installation still verifies immutable content, checksum, compatibility, and last-known-good rollback locally. Assignment must never be displayed as activation.</p>
 <h2 id="6-manual-review-and-reporting">6. 人工审核和报告<a class="headerlink" href="#6-manual-review-and-reporting" title="Permanent link">&para;</a></h2>
-<p>审核呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
-<p>报告将自动计数与经过审查的真实情况分开，并清楚地说明样本覆盖范围。所需的视图包括 OK/NG 趋势、缺失组件、条形码故障、产品/系列/设备故障、模型/规则版本性能、设备运行状况/上次查看、上传延迟、审核率和纠正率。估计的假阴性指标需要抽样 OK 审核或独立标记的验收数据；未经审查不能被解释为正确性。</p>
+<p>Review presents original images, overlays, ROI, component evidence, automated reasons, and pinned versions. A reviewer records confirmed <code>OK</code>, confirmed <code>NG</code>, unreviewable, or another approved taxonomy, plus correction reason and notes. The original automated result remains unchanged. Concurrent review uses claim/version checks to prevent silent overwrite; every transition is audited.</p>
+<p>Reports separate automated counts from reviewed ground truth and clearly state sample coverage. Required views include OK/NG trends, missing components, barcode failures, product/line/device breakdown, model/rule version performance, device health/last seen, upload delay, review rate, and correction rate. Estimated false-negative metrics require sampled OK review or independently labeled acceptance data; absence of review cannot be interpreted as correctness.</p>
 <h2 id="7-api-and-web-architecture">7. API 和 Web 架构<a class="headerlink" href="#7-api-and-web-architecture" title="Permanent link">&para;</a></h2>
-<p>建议的版本组为 <code>/api/v1/device-ingest</code>、<code>/devices</code>、<code>/lines</code>、<code>/inspections</code>、<code>/media</code>、<code>/reviews</code>、<code>/products</code>、<code>/rules</code>、<code>/models</code>、<code>/device-configurations</code>、<code>/dashboard</code>、<code>/reports</code>、<code>/events</code>、<code>/audit-logs</code> 和 <code>/auth</code>。集合 API 使用游标分页和有界过滤器。变异请求在客户端重试时使用乐观并发和幂等性。</p>
-<p>FastAPI生成OpenAPI； Vue 3 TypeScript 应用程序使用生成的客户端。 Pinia 保存会话/UI 状态而不是复制服务器事实。路由器级和组件级防护改善了用户体验，而服务器授权仍然具有权威性。 WebSocket 或 SSE 可以提供设备/仪表板更新，并在重新连接后通过 REST 重新同步。</p>
+<p>Suggested versioned groups are <code>/api/v1/device-ingest</code>, <code>/devices</code>, <code>/lines</code>, <code>/inspections</code>, <code>/media</code>, <code>/reviews</code>, <code>/products</code>, <code>/rules</code>, <code>/models</code>, <code>/device-configurations</code>, <code>/dashboard</code>, <code>/reports</code>, <code>/events</code>, <code>/audit-logs</code>, and <code>/auth</code>. Collection APIs use cursor pagination and bounded filters. Mutating requests use optimistic concurrency and idempotency where clients retry.</p>
+<p>FastAPI generates OpenAPI; the Vue 3 TypeScript application consumes a generated client. Pinia holds session/UI state rather than duplicating server truth. Router-level and component-level guards improve UX, while server authorization remains authoritative. WebSocket or SSE may deliver device/dashboard updates, with REST resynchronization after reconnect.</p>
 <h2 id="8-authorization-audit-and-security">8. 授权、审计和安全<a class="headerlink" href="#8-authorization-audit-and-security" title="Permanent link">&para;</a></h2>
 <ul>
-<li>设备身份验证与人工身份验证不同，其范围仅限于该设备的摄取/配置。</li>
-<li>根据策略要求，人员权限可单独查看、审查、配置编辑、批准、推出、用户管理、导出和审核访问。</li>
-<li>TLS 保护传输；秘密存储/轮换和静态加密遵循选定的托管/客户控制。</li>
-<li>审核记录包括参与者、操作、目标、先前/新版本引用或有界差异、时间戳、请求/相关 ID 和结果。</li>
-<li>根据经过验证的数据分类处理条形码和媒体访问；日志避免凭证和不必要的原始负载。</li>
-<li>上传强制执行内容类型、大小、校验和、恶意软件/内容策略（如果需要）、速率限制和不透明对象密钥。</li>
+<li>Device authentication is distinct from human authentication and scoped to ingestion/configuration for that device.</li>
+<li>Human permissions separate view, review, configuration edit, approval, rollout, user administration, export, and audit access as policy requires.</li>
+<li>TLS protects transport; secret storage/rotation and encryption at rest follow the selected hosting/customer controls.</li>
+<li>Audit records include actor, action, target, prior/new version references or bounded diff, timestamp, request/correlation ID, and outcome.</li>
+<li>Barcode and media access are treated according to validated data classification; logs avoid credentials and unnecessary raw payloads.</li>
+<li>Uploads enforce content type, size, checksum, malware/content policy where required, rate limits, and opaque object keys.</li>
 </ul>
-<p>确切的身份提供商和租赁模型尚未解决，并且不得由初始表列表暗示。</p>
+<p>The exact identity provider and tenancy model are unresolved and must not be implied by the initial table list.</p>
 <h2 id="9-reliability-jobs-and-operations">9. 可靠性、工作和运营<a class="headerlink" href="#9-reliability-jobs-and-operations" title="Permanent link">&para;</a></h2>
 <p>除了数据库/对象存储依赖项之外，API 是水平无状态的。 PostgreSQL 在需要时使用经过测试的备份和时间点恢复。对象存储使用与数据库保留和备份策略兼容的生命周期规则。健康检查区分活跃度/就绪度；可观察性将请求、设备、检查、媒体、作业和用户/审核 ID 关联起来。</p>
 <p>异步作业是可重试的和幂等的，持久存储状态，对瞬时/永久故障进行分类，并在合理的情况下使用死信/运算符处理。仪表板查询优化仅在查询测量之后从索引和预聚合表/物化视图开始； Redis 是可选的而不是记录系统。</p>
@@ -3305,7 +3333,7 @@
 <p>没有建立中央服务器。单独的仅供开发人员使用的培训 CLI 和静态检查 CLI 使用未来兼容的标识符、原因代码、清单和版本，因此集成不需要重新定义决策。</p>
 <h3 id="112-one-month-target">11.2 一个月目标<a class="headerlink" href="#112-one-month-target" title="Permanent link">&para;</a></h3>
 <p>实施设备范围的幂等摄取、PostgreSQL 检查历史记录、选定的证据存储、初始设备/产品/规则元数据、最小检查/审查视图、最小试点身份验证和 Compose 部署。推迟一般管理、复杂分析、报告/导出作业和远程包分发。</p>
-<h3 id="113-production-target">11.3 生产目标<a class="headerlink" href="#113-production-target" title="Permanent link">&para;</a></h3>
+<h3 id="113-production-target">11.3 Production Target<a class="headerlink" href="#113-production-target" title="Permanent link">&para;</a></h3>
 <p>添加批准的身份/授权、凭证轮换、审计、备份/恢复测试、保留、安全媒体访问、转出/回滚、协调、警报、报告正确性控制、性能/浸泡测试和操作运行手册。</p>
 <h3 id="114-future">11.4 未来<a class="headerlink" href="#114-future" title="Permanent link">&para;</a></h3>
 <p>仅当需求和负载合理时才添加签名模型分发、更大规模的工作人员和分析、外部身份/集成以及 Kubernetes。</p>

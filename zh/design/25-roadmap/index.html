@@ -1213,7 +1213,7 @@
   <a href="#253-preconditions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.3 前提条件
+        25.3 Preconditions
       
     </span>
   </a>
@@ -1224,12 +1224,12 @@
   <a href="#254-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.4 静态训练和检查 MVP
+        25.4 Static Train-and-Inspect MVP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="25.4 静态训练和检查 MVP">
+    <nav class="md-nav" aria-label="25.4 Static Train-and-Inspect MVP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1379,7 +1379,7 @@
   <a href="#259-future-options" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.9 未来的选择
+        25.9 Future Options
       
     </span>
   </a>
@@ -1401,7 +1401,7 @@
   <a href="#2511-related-documents" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.11 相关文件
+        25.11 Related Documents
       
     </span>
   </a>
@@ -2634,6 +2634,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2955,7 +2983,7 @@
   <a href="#253-preconditions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.3 前提条件
+        25.3 Preconditions
       
     </span>
   </a>
@@ -2966,12 +2994,12 @@
   <a href="#254-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.4 静态训练和检查 MVP
+        25.4 Static Train-and-Inspect MVP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="25.4 静态训练和检查 MVP">
+    <nav class="md-nav" aria-label="25.4 Static Train-and-Inspect MVP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3121,7 +3149,7 @@
   <a href="#259-future-options" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.9 未来的选择
+        25.9 Future Options
       
     </span>
   </a>
@@ -3143,7 +3171,7 @@
   <a href="#2511-related-documents" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.11 相关文件
+        25.11 Related Documents
       
     </span>
   </a>
@@ -3172,91 +3200,91 @@
 
 <h1 id="25-implementation-roadmap">25. 实施路线图<a class="headerlink" href="#25-implementation-roadmap" title="Permanent link">&para;</a></h1>
 <h2 id="251-purpose-and-planning-principles">25.1 目的和规划原则<a class="headerlink" href="#251-purpose-and-planning-principles" title="Permanent link">&para;</a></h2>
-<p>该路线图按技术依赖性和风险对 AssemblyVision 实施进行排序。日期是计划目标，而不是保证。相机/SDK 访问、生产数据、客户决策和硬件可用性可能会改变时间。质量证据优先于名义特征完成。</p>
+<p>This roadmap sequences AssemblyVision implementation by technical dependency and risk. Dates are planning targets, not guarantees. Camera/SDK access, production data, customer decisions, and hardware availability can change timing. Quality evidence takes precedence over nominal feature completion.</p>
 <h2 id="252-scope-boundaries">25.2 范围边界<a class="headerlink" href="#252-scope-boundaries" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>静态训练和检查 MVP：</strong> X-AnyLabeling YOLO 通过产品/组件训练、静态两阶段检查、规则决策、可追踪输出和保留验证进行标签。</li>
-<li><strong>一个月目标：</strong> 第一个适合受控客户现场评估的集成边缘和中央功能，而不是不受限制的生产自主权。</li>
-<li><strong>生产目标：</strong> 强化离线操作、受控发布、安全性、可观察性、验收证据和支持准备情况。</li>
-<li><strong>未来范围：</strong> Kubernetes集中、Tauri包装器、PLC/MES集成、先进的车队管理、自动化再训练和多角度优化。</li>
+<li><strong>Static train-and-inspect MVP:</strong> X-AnyLabeling YOLO labels through product/component training, static two-stage inspection, rule decisions, traceable output, and held-out verification.</li>
+<li><strong>One-month target:</strong> first integrated edge and central capability suitable for controlled customer-site evaluation, not unrestricted production autonomy.</li>
+<li><strong>Production target:</strong> hardened offline operation, governed releases, security, observability, acceptance evidence, and support readiness.</li>
+<li><strong>Future scope:</strong> Kubernetes centrally, Tauri wrapper, PLC/MES integration, advanced fleet management, automated retraining, and multi-angle optimization.</li>
 </ul>
-<h2 id="253-preconditions">25.3 前提条件<a class="headerlink" href="#253-preconditions" title="Permanent link">&para;</a></h2>
-<p>在实施之前，获取代表性静态图像、YOLO 格式的 X-AnyLabeling 产品和组件盒标签、草案产品/组件规则、类映射、允许的开发数据、文件名为 <code>OK</code> 或 <code>NG</code> 基本事实的单独保留固定装置集，并访问具有 16 GB 内存的开发人员 Apple Silicon Mac。地面实况、相机机械、网络/安全和验收的名称所有者。未知数被显式跟踪，而不是编码为默认值。</p>
-<h2 id="254-static-train-and-inspect-mvp">25.4 静态训练和检查 MVP<a class="headerlink" href="#254-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h2>
+<h2 id="253-preconditions">25.3 Preconditions<a class="headerlink" href="#253-preconditions" title="Permanent link">&para;</a></h2>
+<p>Before implementation, obtain representative static images, X-AnyLabeling product and component box labels in YOLO format, draft product/component rules, a class mapping, permitted development data, a separate held-out fixture set with filename <code>OK</code> or <code>NG</code> ground truth, and access to the developer Apple Silicon Mac with 16 GB memory. Name owners for ground truth, camera mechanics, network/security, and acceptance. Unknowns are tracked explicitly rather than encoded as defaults.</p>
+<h2 id="254-static-train-and-inspect-mvp">25.4 Static Train-and-Inspect MVP<a class="headerlink" href="#254-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h2>
 <h3 id="2541-foundation-and-dataset-preparation">25.4.1 基础和数据集准备<a class="headerlink" href="#2541-foundation-and-dataset-preparation" title="Permanent link">&para;</a></h3>
 <ol>
-<li>使用 <code>edge-service</code> 建立一个根 <code>uv</code> 工作区，这是一个仅供开发人员使用的 <code>training</code> 发行版，并共享 <code>domain</code> 和 <code>vision-core</code> 包；推迟 TypeScript 工作区设置。</li>
-<li>验证 X-AnyLabeling YOLO 导出布局、类顺序、图像/标签基本名称配对、标准化边界和泄漏安全训练/验证分组。</li>
-<li>实现文件夹图像输入、确定性输出命名、模型清单生成以及针对图像错误、ROI 裁剪、坐标映射和序列化的重点测试。</li>
-<li>在开发人员硬件上训练小型全框架产品检测器并记录模型元数据、类映射、工件校验和和训练配置。</li>
-<li>为组件训练图像生成产品 ROI，裁剪它们，将组件框映射到 ROI 坐标，并验证往返和 ROI 外处理。</li>
+<li>Establish one root <code>uv</code> workspace with <code>edge-service</code>, a developer-only <code>training</code> distribution, and shared <code>domain</code> and <code>vision-core</code> packages; defer TypeScript workspace setup.</li>
+<li>Validate the X-AnyLabeling YOLO export layout, class order, image/label basename pairing, normalized bounds, and leakage-safe train/validation grouping.</li>
+<li>Implement folder image input, deterministic output naming, model-manifest generation, and focused tests for image errors, ROI clipping, coordinate mapping, and serialization.</li>
+<li>Train a small full-frame product detector on the developer hardware and record model metadata, class mapping, artifact checksum, and training configuration.</li>
+<li>Generate product ROIs for component training images, crop them, map component boxes into ROI coordinates, and validate round trips and out-of-ROI handling.</li>
 </ol>
 <h3 id="2542-train-inspect-and-verify">25.4.2 训练、检查和验证<a class="headerlink" href="#2542-train-inspect-and-verify" title="Permanent link">&para;</a></h3>
 <ol>
-<li>在准备好的 ROI 图像上训练组件检测器并生成版本化的校验和清单。</li>
-<li>用真正的 Ultralytics 产品和组件适配器替换静态检测器存根；保留确定性的单产品选择、ROI 映射和故障原因代码。</li>
-<li>定义列出所需组件的最小版本化产品规则，确定性地评估存在性，并生成 <code>OK</code> 或 <code>NG</code> 以及原因。</li>
-<li>保存带注释的完整图像、带注释的有用 ROI、组件证据、模型/规则版本和 JSON 结果。</li>
-<li>提供产品训练、组件数据集准备、组件训练的<code>av-train</code>命令；为一个图像/文件夹提供 <code>assemblyvision inspect</code>，为机器可读的保留报告提供 <code>assemblyvision verify</code>。</li>
-<li>运行保留的静态夹具套件并报告 NG 召回、漏报、误报、每个组件的支持以及记录的限制。</li>
+<li>Train a component detector on prepared ROI images and produce a versioned, checksummed manifest.</li>
+<li>Replace static detector stubs with real Ultralytics product and component adapters; preserve deterministic single-product selection, ROI mapping, and failure reason codes.</li>
+<li>Define a minimal versioned product rule listing required components, evaluate presence deterministically, and produce <code>OK</code> or <code>NG</code> plus reasons.</li>
+<li>Save annotated full image, annotated ROI where useful, component evidence, model/rule versions, and JSON results.</li>
+<li>Provide <code>av-train</code> commands for product training, component-dataset preparation, and component training; provide <code>assemblyvision inspect</code> for one image/folder and <code>assemblyvision verify</code> for machine-readable held-out reports.</li>
+<li>Run the held-out static fixture suite and report NG recall, false negatives, false positives, per-component support, and documented limitations.</li>
 </ol>
 <h3 id="2543-explicit-exclusions">25.4.3 显式排除<a class="headerlink" href="#2543-explicit-exclusions" title="Permanent link">&para;</a></h3>
-<p>相机 SDK、实时视频、时间聚合、条形码实现、本地服务/仪表板、中央服务器、身份验证、生产部署、PLC/MES 集成、自动再训练、模型加密和仅限 <code>.pyc</code> 的运行时打包不属于此 MVP 的一部分。训练代码仅供开发人员使用，不包含在任何运行时分发中。</p>
+<p>Camera SDK, live video, temporal aggregation, barcode implementation, local service/dashboard, central server, authentication, production deployment, PLC/MES integration, automated retraining, model encryption, and <code>.pyc</code>-only runtime packaging are not part of this MVP. Training code remains developer-only and is not included in any runtime distribution.</p>
 <h3 id="2544-exit-evidence">25.4.4 退出证据<a class="headerlink" href="#2544-exit-evidence" title="Permanent link">&para;</a></h3>
-<p>训练和检查流程可从锁定的标记数据集重复；失败是明确的；全帧到 ROI 转换经过测试；输出标识数据集、模型和规则版本；并保留验证报告决策指标。这证明了静态的培训到检查流程，而不是生产精度、时间安排或操作准备情况。</p>
+<p>The training and inspection flow is repeatable from a locked labeled dataset; failures are explicit; full-frame-to-ROI transforms are test-covered; output identifies dataset, model, and rule versions; and held-out verification reports decision metrics. This proves a static training-to-inspection flow, not production accuracy, timing, or operational readiness.</p>
 <h2 id="255-one-month-controlled-integration-demonstrator">25.5 一个月受控集成演示器<a class="headerlink" href="#255-one-month-controlled-integration-demonstrator" title="Permanent link">&para;</a></h2>
-<p>对于已经拥有相机、模型、数据和站点访问权限的小团队来说，这是一个多流目标
-可用。这不是生产验收的承诺。范围有意限制为一个
-产品系列、一台摄像头、一个窗口机制、一个条形码路径和一个中央摄取路径。</p>
+<p>This is a multi-stream target for a small team with camera, model, data, and site access already
+available. It is not a promise of production acceptance. The scope is intentionally limited to one
+product family, one camera, one window mechanism, one barcode path, and one central ingestion path.</p>
 <h3 id="2551-week-1-inspection-core-and-baseline">25.5.1 第 1 周：检查核心和基线<a class="headerlink" href="#2551-week-1-inspection-core-and-baseline" title="Permanent link">&para;</a></h3>
 <ul>
-<li>稳定标记的训练和检查基线：数据集验证、产品训练、ROI 组件数据集准备、组件训练、真实检测器适配器、确定性规则、模式、CLI 和保留验证。</li>
-<li>建立泄漏安全数据集清单、锁定回归集和可重现的模型清单。</li>
-<li>在开发者 Apple Silicon 硬件上进行配置文件训练和推理（如果有）。</li>
+<li>Stabilize the labeled train-and-inspect baseline: dataset validation, product training, ROI component-dataset preparation, component training, real detector adapters, deterministic rules, schemas, CLI, and held-out verification.</li>
+<li>Establish leakage-safe dataset manifests, locked regression sets, and reproducible model manifests.</li>
+<li>Profile training and inference on the developer Apple Silicon hardware if available.</li>
 </ul>
-<p>依赖性：代表性图像、初始产品/组件定义、候选模型。风险：NG示例和模型拟合不足。</p>
+<p>Dependencies: representative images, initial product/component definitions, candidate models. Risks: insufficient NG examples and model fit.</p>
 <h3 id="2552-week-2-edge-acquisition-and-persistence">25.5.2 第 2 周：边缘获取和持续<a class="headerlink" href="#2552-week-2-edge-acquisition-and-persistence" title="Permanent link">&para;</a></h3>
 <ul>
-<li>集成所选的相机适配器和触发器/窗口原型。</li>
-<li>将条形码读取作为单独的功能和产品类型解决方案来实现。</li>
-<li>添加 SQLite 架构/迁移、原子媒体存储、恢复状态和保留保护措施。</li>
-<li>添加本地 FastAPI 和基本的 Vue 仪表板，用于摄像头、最新结果、运行状况和最近历史记录。</li>
-<li>添加最低限度的试点安全性：唯一的设备凭据、TLS、一个经过身份验证的管理员角色、
-  受保护的检查/媒体访问以及突变审核。</li>
+<li>Integrate the selected camera adapter and trigger/window prototype.</li>
+<li>Implement barcode reading as a separate capability and product-type resolution.</li>
+<li>Add SQLite schema/migrations, atomic media storage, recovery states, and retention safeguards.</li>
+<li>Add local FastAPI and a basic Vue dashboard for camera, latest result, health, and recent history.</li>
+<li>Add minimum pilot security: unique device credentials, TLS, one authenticated administrator role,
+  protected inspection/media access, and audit of mutations.</li>
 </ul>
-<p>依赖项：相机/SDK/硬件、条码样本/标准、运行环境。风险：驱动程序/容器兼容性、暴露、触发歧义。</p>
+<p>Dependencies: camera/SDK/hardware, barcode samples/standard, operating environment. Risks: driver/container compatibility, exposure, trigger ambiguity.</p>
 <h3 id="2553-week-3-video-robustness-and-synchronization">25.5.3 第 3 周：视频鲁棒性和同步<a class="headerlink" href="#2553-week-3-video-robustness-and-synchronization" title="Permanent link">&para;</a></h3>
 <ul>
-<li>实施产品窗口管理和帧质量过滤。</li>
-<li>添加每个组件的时间聚合和显式的模糊窗口处理。</li>
-<li>实现持久幂等上传队列、重试/退避、校验和和收据。</li>
-<li>添加一个中央摄取 API、PostgreSQL 模式、选定媒体存储、基本检查历史记录、
-  和一个最小的评论捕获视图。推迟通用产品/规则管理和分析。</li>
+<li>Implement product-window management and frame-quality filtering.</li>
+<li>Add per-component temporal aggregation and explicit ambiguous-window handling.</li>
+<li>Implement persistent idempotent upload queue, retry/backoff, checksums, and receipts.</li>
+<li>Add one central ingestion API, PostgreSQL schema, selected-media storage, basic inspection history,
+  and a minimal review capture view. Defer generalized product/rule administration and analytics.</li>
 </ul>
-<p>依赖性：稳定的相机时间戳/窗口信号、网络路径、身份方法。风险：混框、重复检查、队列压力。</p>
+<p>Dependencies: stable camera timestamps/window signal, network path, identity approach. Risks: frame mixing, duplicate inspection, queue pressure.</p>
 <h3 id="2554-week-4-deployment-resilience-and-site-evaluation">25.5.4 第 4 周：部署、弹性和站点评估<a class="headerlink" href="#2554-week-4-deployment-resilience-and-site-evaluation" title="Permanent link">&para;</a></h3>
 <ul>
-<li>构建非根多阶段 Docker 映像、Compose 配置文件、Nginx 配置、卷、运行状况检查和发布清单。</li>
-<li>测试关键试点子集：离线操作、重启恢复、重试/幂等性、重复
-  上传和受保护证据清理。保留完全断电、磁盘已满和浸泡矩阵
-  生产门。</li>
-<li>添加结构化日志、边缘运行状况、中央上传状态和有限审计跟踪。</li>
-<li>当访问和真实情况存在时，使用未见过的示例执行受控的客户现场基线
-  可用；这不是最终客户接受。</li>
-<li>提供试点路径所需的操作手册；在生产前扩展完整的操作手册集。</li>
+<li>Build non-root multi-stage Docker images, Compose profiles, Nginx configuration, volumes, health checks, and release manifests.</li>
+<li>Test the critical pilot subset: offline operation, restart recovery, retry/idempotency, duplicate
+  upload, and protected-evidence cleanup. Full power-loss, disk-full, and soak matrices remain
+  production gates.</li>
+<li>Add structured logs, edge health, central upload status, and a bounded audit trail.</li>
+<li>Execute a controlled customer-site baseline with unseen examples when access and ground truth are
+  available; this is not final customer acceptance.</li>
+<li>Deliver runbooks required for the pilot paths; expand the complete runbook set before production.</li>
 </ul>
-<p>依赖性：站点访问、客户网络/安全决策、验收案例和事实真相。风险：域转移晚和测试持续时间不足。</p>
+<p>Dependencies: site access, customer network/security decisions, acceptance cases and ground truth. Risks: late domain shift and insufficient test duration.</p>
 <h2 id="256-production-hardening-after-the-one-month-target">25.6 一个月目标后的生产强化<a class="headerlink" href="#256-production-hardening-after-the-one-month-target" title="Permanent link">&para;</a></h2>
-<p>以下工作是由基线调查结果驱动的，而不是压缩到第一个月：</p>
+<p>The following work is driven by baseline findings rather than compressed into the first month:</p>
 <ol>
-<li>通过失败的产品/组件层扩展实际生产数据并重新验证模型。</li>
-<li>与客户最终确定接受阈值和信心处理。</li>
-<li>将试点身份验证扩展到完全基于角色的访问、需要时的外部身份、
-   凭证轮换、签名包、漏洞响应、备份和审计保留。</li>
-<li>证明在生产等效硬件上的长期运行稳定性和恢复能力。</li>
-<li>验证相机安装/曝光控制和变化检测程序。</li>
-<li>建立发布环、回滚练习、支持所有权和质量监控。</li>
-<li>只有在生产证据支持的情况下才减少人工审核。</li>
+<li>Expand real production data by failed product/component strata and revalidate models.</li>
+<li>Finalize acceptance thresholds and confidence treatment with the customer.</li>
+<li>Expand pilot authentication into full role-based access, external identity where required,
+   credential rotation, signed packages, vulnerability response, backups, and audit retention.</li>
+<li>Prove long-running stability and restoration on production-equivalent hardware.</li>
+<li>Validate camera-mount/exposure controls and change-detection procedures.</li>
+<li>Establish release rings, rollback exercises, support ownership, and quality monitoring.</li>
+<li>Reduce manual review only after production evidence supports it.</li>
 </ol>
 <h2 id="257-dependency-and-critical-path">25.7 依赖性和关键路径<a class="headerlink" href="#257-dependency-and-critical-path" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Labeled static data and product rules
@@ -3271,7 +3299,7 @@
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  -&gt; independent customer acceptance
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>  -&gt; controlled production rollout
 </code></pre></div>
-<p>摄像头/窗口身份路径和代表性 NG 数据是主要的关键路径风险。中央仪表板可以并行进行，但无法弥补尚未解决的边缘决策完整性。</p>
+<p>The camera/window identity path and representative NG data are the main critical-path risks. Central dashboards can progress in parallel but cannot compensate for unresolved edge decision integrity.</p>
 <h2 id="258-delivery-gates">25.8 交货门<a class="headerlink" href="#258-delivery-gates" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3304,7 +3332,7 @@
 </tbody>
 </table>
 <p>没有门使用发明的准确性、延迟或可用性数字。在代表性基线测量和客户同意后添加数字标准。</p>
-<h2 id="259-future-options">25.9 未来的选择<a class="headerlink" href="#259-future-options" title="Permanent link">&para;</a></h2>
+<h2 id="259-future-options">25.9 Future Options<a class="headerlink" href="#259-future-options" title="Permanent link">&para;</a></h2>
 <ul>
 <li>PLC/传送带传感器集成可增强窗口边界。</li>
 <li>用于产品识别和处置的 MES 集成。</li>
@@ -3324,7 +3352,7 @@
 <li>团队规模/技能以及摄像头、前端、MLOps 和现场工作是否可以并行进行。</li>
 <li>PLC/MES 要求以及它们是否改变第一个生产版本。</li>
 </ul>
-<h2 id="2511-related-documents">25.11 相关文件<a class="headerlink" href="#2511-related-documents" title="Permanent link">&para;</a></h2>
+<h2 id="2511-related-documents">25.11 Related Documents<a class="headerlink" href="#2511-related-documents" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../20-deployment-and-operations/">Deployment and Operations</a></li>
 <li><a href="../22-testing-and-quality-assurance/">Testing and Quality Assurance</a></li>

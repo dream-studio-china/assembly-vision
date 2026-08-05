@@ -709,7 +709,7 @@
   <a href="#73-adapter-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.3 适配器接口
+        7.3 Adapter Interface
       
     </span>
   </a>
@@ -731,7 +731,7 @@
   <a href="#75-real-time-inspection-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.5 实时检查顺序
+        7.5 Real-Time Inspection Sequence
       
     </span>
   </a>
@@ -753,7 +753,7 @@
   <a href="#77-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.7 配置
+        7.7 Configuration
       
     </span>
   </a>
@@ -2523,6 +2523,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2844,7 +2872,7 @@
   <a href="#73-adapter-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.3 适配器接口
+        7.3 Adapter Interface
       
     </span>
   </a>
@@ -2866,7 +2894,7 @@
   <a href="#75-real-time-inspection-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.5 实时检查顺序
+        7.5 Real-Time Inspection Sequence
       
     </span>
   </a>
@@ -2888,7 +2916,7 @@
   <a href="#77-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.7 配置
+        7.7 Configuration
       
     </span>
   </a>
@@ -2975,7 +3003,7 @@
 </tbody>
 </table>
 <p>相机供应商、SDK、操作系统、触发电气接口、帧速率、曝光和传送带速度仍然是部署决策。</p>
-<h2 id="73-adapter-interface">7.3 适配器接口<a class="headerlink" href="#73-adapter-interface" title="Permanent link">&para;</a></h2>
+<h2 id="73-adapter-interface">7.3 Adapter Interface<a class="headerlink" href="#73-adapter-interface" title="Permanent link">&para;</a></h2>
 <p>供应商代码被隔离在 <code>FrameSource</code> 协议后面，因此记录的数据可以使用相同的管道。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">FrameSource</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraCapabilities</span><span class="p">:</span> <span class="o">...</span>
@@ -2992,13 +3020,13 @@
 3. 在针对相邻产品进行验证后，具有跟踪功能的视觉进入/退出区域。
 4. 仅时间窗口作为受控后备，因为改变传送带速度可能会混合产品。</p>
 <p>去抖触发器并立即分配唯一的 <code>inspection_id</code>。仅当物理进程验证该策略时，才会记录并抑制配置的死区时间内的重复触发器。重叠窗口被明确拒绝或支持；他们绝不能分享可变的证据。</p>
-<h2 id="75-real-time-inspection-sequence">7.5 实时检查顺序<a class="headerlink" href="#75-real-time-inspection-sequence" title="Permanent link">&para;</a></h2>
+<h2 id="75-real-time-inspection-sequence">7.5 Real-Time Inspection Sequence<a class="headerlink" href="#75-real-time-inspection-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Sensor as 触发器或传感器
     participant Capture as 相机适配器
     participant Window as 产品窗口管理器
     participant Vision as 愿景管道
-    participant Aggregate as 时间聚合器
+    participant Aggregate as Temporal Aggregator
     participant Rules as 规则引擎
     participant Store as 本地存储
     participant Upload as 上传队列
@@ -3007,7 +3035,7 @@
 loop 直到退出或超时
         Capture-&gt;&gt;Window:带时间戳的帧
         Window-&gt;&gt;Vision:相关框架
-        Vision--&gt;&gt;Aggregate:每个组件的框架证据
+        Vision--&gt;&gt;Aggregate:Per-component frame evidence
     end
     Sensor-&gt;&gt;Window:产品退出事件
     Window-&gt;&gt;Aggregate:关闭检查窗口
@@ -3018,7 +3046,7 @@ loop 直到退出或超时
 <h2 id="76-frame-quality-and-color-handling">7.6 帧质量和颜色处理<a class="headerlink" href="#76-frame-quality-and-color-handling" title="Permanent link">&para;</a></h2>
 <p>解码为记录的规范格式，通常是 OpenCV 的 BGR8，同时保留原始尺寸。模型预处理执行其自己的 RGB 转换。质量检查应包括模糊、亮度范围、损坏、帧年龄以及可选的饱和度或眩光。阈值是特定于相机的，必须根据生产捕获进行校准。</p>
 <p>被拒绝的框架仍然可以追踪拒绝原因，但不会提供任何积极的证据。如果剩余的有效帧太少，则乘积为<code>NG</code>；由于没有矛盾的证据，不可用的输入不能成为 <code>OK</code>。</p>
-<h2 id="77-configuration">7.7 配置<a class="headerlink" href="#77-configuration" title="Permanent link">&para;</a></h2>
+<h2 id="77-configuration">7.7 Configuration<a class="headerlink" href="#77-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">camera</span><span class="p">:</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">adapter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vendor_adapter_name</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">device_serial</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">configured-at-site</span>

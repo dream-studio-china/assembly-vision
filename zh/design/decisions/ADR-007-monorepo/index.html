@@ -1561,7 +1561,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        2. Context
       
     </span>
   </a>
@@ -1594,12 +1594,12 @@
   <a href="#5-consequences" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 后果
+        5. Consequences
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. 后果">
+    <nav class="md-nav" aria-label="5. Consequences">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2529,6 +2529,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2839,7 +2867,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        2. Context
       
     </span>
   </a>
@@ -2872,12 +2900,12 @@
   <a href="#5-consequences" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 后果
+        5. Consequences
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. 后果">
+    <nav class="md-nav" aria-label="5. Consequences">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2963,14 +2991,14 @@
 <h1 id="adr-007-monorepo">ADR-007：单一仓库<a class="headerlink" href="#adr-007-monorepo" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
 <p>已接受</p>
-<h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
+<h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 包括边缘和中央 Python 服务、两个 Vue 应用程序、可重用的视觉/域包、生成的 API 客户端、培训/评估代码、部署定义和跨系统测试。这些部分通过共享模式和协调发布来发展，特别是在小团队 MVP 期间。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
 <p>将应用程序、包、培训、部署、测试、配置和文档源保存在一个存储库中。可运行单元位于 <code>apps/</code> 下； <code>packages/python/</code> 和 <code>packages/typescript/</code> 下可重用的 Python 和 TypeScript 代码； <code>training/</code>下的培训/评估； <code>models/</code>下的开发模型元数据； <code>deploy/</code>下部署； <code>tests/</code>下的跨应用测试； <code>docs/</code>下的架构。</p>
 <p>运行时生产数据、客户证据、秘密、部署的数据库和生产模型权重不存储在 Git 中。包的创建只是为了真正的重用或边界价值； MVP 并不用单独的包来反映每个概念组件。</p>
 <h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
 <p>该决策管理源组织和 CI 变更协调。它不需要将所有应用程序部署在一起、共享一个运行时映像或以同一版本发布。</p>
-<h2 id="5-consequences">5. 后果<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
+<h2 id="5-consequences">5. Consequences<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
 <h3 id="51-positive">5.1 正面<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
 <ul>
 <li>跨架构、生成的客户端、服务、UI、测试和文档的原子更改。</li>
