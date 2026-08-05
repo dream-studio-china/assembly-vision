@@ -69,42 +69,44 @@ class ComponentDetector:
         """
         try:
             results: Any = self._model(roi, verbose=False)
-        except Exception as exc:
-            raise DetectionError(rc.INFERENCE_ERROR, f"component inference failed: {exc}") from exc
-        if not results:
-            return []
+            if not results:
+                return []
 
-        frame_width, frame_height = frame_size
-        inverse = inverse_transform(transform)
-        observations: list[ComponentDetection] = []
-        for cls_id, conf, xyxy in extract_raw(results[0].boxes):
-            if cls_id >= len(self._manifest.class_names):
-                continue
-            code = self._manifest.class_names[cls_id]
-            if code not in required:
-                continue
-            threshold = self._components[code].observation_threshold
-            if conf < threshold:
-                continue
-            x1, y1, x2, y2 = xyxy
-            roi_bbox = BoundingBox(
-                x_min=x1,
-                y_min=y1,
-                x_max=x2,
-                y_max=y2,
-                image_width=roi.width,
-                image_height=roi.height,
-            )
-            full_box = apply_transform(Box(x1, y1, x2, y2), inverse)
-            full_bbox = full_box.to_bbox(frame_width, frame_height)
-            observations.append(
-                ComponentDetection(
-                    frame_id=frame_id,
-                    component_code=code,
-                    confidence=conf,
-                    roi_bbox=roi_bbox,
-                    full_frame_bbox=full_bbox,
-                    model_version_id=self._manifest.model_version_id,
+            frame_width, frame_height = frame_size
+            inverse = inverse_transform(transform)
+            observations: list[ComponentDetection] = []
+            for cls_id, conf, xyxy in extract_raw(results[0].boxes):
+                if not 0 <= cls_id < len(self._manifest.class_names):
+                    continue
+                code = self._manifest.class_names[cls_id]
+                if code not in required:
+                    continue
+                threshold = self._components[code].observation_threshold
+                if conf < threshold:
+                    continue
+                x1, y1, x2, y2 = xyxy
+                roi_bbox = BoundingBox(
+                    x_min=x1,
+                    y_min=y1,
+                    x_max=x2,
+                    y_max=y2,
+                    image_width=roi.width,
+                    image_height=roi.height,
                 )
-            )
-        return observations
+                full_box = apply_transform(Box(x1, y1, x2, y2), inverse)
+                full_bbox = full_box.to_bbox(frame_width, frame_height)
+                observations.append(
+                    ComponentDetection(
+                        frame_id=frame_id,
+                        component_code=code,
+                        confidence=conf,
+                        roi_bbox=roi_bbox,
+                        full_frame_bbox=full_bbox,
+                        model_version_id=self._manifest.model_version_id,
+                    )
+                )
+            return observations
+        except Exception as exc:
+            raise DetectionError(
+                rc.INFERENCE_ERROR, f"component inference output is invalid: {exc}"
+            ) from exc

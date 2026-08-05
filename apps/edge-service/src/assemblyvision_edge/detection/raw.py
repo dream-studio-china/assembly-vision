@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 RawDetection = tuple[int, float, tuple[float, float, float, float]]
@@ -17,7 +18,14 @@ def extract_raw(boxes: Any) -> list[RawDetection]:
     if boxes is None:
         return raw
     for i in range(len(boxes)):
-        xyxy = boxes.xyxy[i]
-        x1, y1, x2, y2 = (float(v) for v in xyxy)
-        raw.append((int(boxes.cls[i]), float(boxes.conf[i]), (x1, y1, x2, y2)))
+        class_id = float(boxes.cls[i])
+        confidence = float(boxes.conf[i])
+        x1, y1, x2, y2 = (float(v) for v in boxes.xyxy[i])
+        if not math.isfinite(class_id) or not class_id.is_integer() or class_id < 0:
+            raise ValueError(f"detection {i} has an invalid class ID")
+        if not math.isfinite(confidence):
+            raise ValueError(f"detection {i} has a non-finite confidence")
+        if not all(math.isfinite(value) for value in (x1, y1, x2, y2)):
+            raise ValueError(f"detection {i} has non-finite coordinates")
+        raw.append((int(class_id), confidence, (x1, y1, x2, y2)))
     return raw

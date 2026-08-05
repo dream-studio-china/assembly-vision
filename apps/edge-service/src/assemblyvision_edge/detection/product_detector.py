@@ -64,40 +64,42 @@ class ProductDetector:
     def detect(self, frame: Image.Image, frame_id: UUID) -> ProductDetectionOutcome:
         try:
             results: Any = self._model(frame, verbose=False)
+            if not results:
+                return ProductDetectionOutcome(reason_code=rc.NO_PRODUCT)
+
+            candidates = [
+                (cls_id, conf, xyxy)
+                for cls_id, conf, xyxy in extract_raw(results[0].boxes)
+                if 0 <= cls_id < len(self._manifest.class_names)
+                and self._manifest.class_names[cls_id] == PRODUCT_CLASS
+                and conf >= self._settings.confidence_threshold
+            ]
+            if not candidates:
+                return ProductDetectionOutcome(reason_code=rc.NO_PRODUCT)
+            if len(candidates) > 1:
+                return ProductDetectionOutcome(reason_code=rc.MULTIPLE_PRODUCTS)
+
+            cls_id, conf, (x1, y1, x2, y2) = candidates[0]
+            bbox = BoundingBox(
+                x_min=x1,
+                y_min=y1,
+                x_max=x2,
+                y_max=y2,
+                image_width=frame.width,
+                image_height=frame.height,
+            )
+            selected = ProductDetection(
+                frame_id=frame_id,
+                product_class=self._manifest.class_names[cls_id],
+                confidence=conf,
+                bbox=bbox,
+                model_version_id=self._manifest.model_version_id,
+                quality=FrameQuality(
+                    usable=True, blur_score=0.0, brightness_mean=0.0, saturation_fraction=0.0
+                ),
+            )
+            return ProductDetectionOutcome(selected=selected, candidates=(selected,))
         except Exception as exc:
-            raise DetectionError(rc.INFERENCE_ERROR, f"product inference failed: {exc}") from exc
-        if not results:
-            return ProductDetectionOutcome(reason_code=rc.NO_PRODUCT)
-
-        candidates = [
-            (cls_id, conf, xyxy)
-            for cls_id, conf, xyxy in extract_raw(results[0].boxes)
-            if cls_id < len(self._manifest.class_names)
-            and self._manifest.class_names[cls_id] == PRODUCT_CLASS
-            and conf >= self._settings.confidence_threshold
-        ]
-        if not candidates:
-            return ProductDetectionOutcome(reason_code=rc.NO_PRODUCT)
-        if len(candidates) > 1:
-            return ProductDetectionOutcome(reason_code=rc.MULTIPLE_PRODUCTS)
-
-        cls_id, conf, (x1, y1, x2, y2) = candidates[0]
-        bbox = BoundingBox(
-            x_min=x1,
-            y_min=y1,
-            x_max=x2,
-            y_max=y2,
-            image_width=frame.width,
-            image_height=frame.height,
-        )
-        selected = ProductDetection(
-            frame_id=frame_id,
-            product_class=self._manifest.class_names[cls_id],
-            confidence=conf,
-            bbox=bbox,
-            model_version_id=self._manifest.model_version_id,
-            quality=FrameQuality(
-                usable=True, blur_score=0.0, brightness_mean=0.0, saturation_fraction=0.0
-            ),
-        )
-        return ProductDetectionOutcome(selected=selected, candidates=(selected,))
+            raise DetectionError(
+                rc.INFERENCE_ERROR, f"product inference output is invalid: {exc}"
+            ) from exc

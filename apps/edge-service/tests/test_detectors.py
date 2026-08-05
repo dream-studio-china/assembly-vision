@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import math
 from uuid import uuid4
 
 import pytest
-from assemblyvision_domain.errors import ConfigError
+from assemblyvision_domain.errors import ConfigError, DetectionError
 from assemblyvision_edge.config import ComponentDetectionSettings, DetectionSettings
 from assemblyvision_edge.detection.component_detector import ComponentDetector
 from assemblyvision_edge.detection.product_detector import ProductDetector
@@ -16,7 +17,7 @@ from tests.conftest import COMPONENT_MANIFEST, PRODUCT_MANIFEST
 
 
 class _Boxes:
-    def __init__(self, raw: list[tuple[int, float, tuple[float, float, float, float]]]) -> None:
+    def __init__(self, raw: list[tuple[float, float, tuple[float, float, float, float]]]) -> None:
         self.cls = [r[0] for r in raw]
         self.conf = [r[1] for r in raw]
         self.xyxy = [r[2] for r in raw]
@@ -26,12 +27,12 @@ class _Boxes:
 
 
 class _Results:
-    def __init__(self, raw: list[tuple[int, float, tuple[float, float, float, float]]]) -> None:
+    def __init__(self, raw: list[tuple[float, float, tuple[float, float, float, float]]]) -> None:
         self.boxes = _Boxes(raw) if raw else None
 
 
 class FakeModel:
-    def __init__(self, raw: list[tuple[int, float, tuple[float, float, float, float]]]) -> None:
+    def __init__(self, raw: list[tuple[float, float, tuple[float, float, float, float]]]) -> None:
         self._raw = raw
 
     def __call__(self, frame: Image.Image, verbose: bool = False) -> list[_Results]:
@@ -98,6 +99,28 @@ def test_product_detector_filters_below_confidence() -> None:
     assert outcome.reason_code == "NO_PRODUCT"
 
 
+@pytest.mark.parametrize(
+    "raw",
+    [
+        [(-1.0, 0.9, (100.0, 80.0, 700.0, 520.0))],
+        [(0.5, 0.9, (100.0, 80.0, 700.0, 520.0))],
+        [(0.0, math.nan, (100.0, 80.0, 700.0, 520.0))],
+        [(0.0, 0.9, (100.0, 80.0, math.nan, 520.0))],
+        [(0.0, 0.9, (100.0, 80.0, 900.0, 520.0))],
+    ],
+)
+def test_product_detector_rejects_malformed_output(
+    raw: list[tuple[float, float, tuple[float, float, float, float]]],
+) -> None:
+    manifest = load_model_manifest(PRODUCT_MANIFEST)
+    detector = ProductDetector(manifest, _product_settings(), FakeModel(raw))
+
+    with pytest.raises(DetectionError) as exc_info:
+        detector.detect(Image.new("RGB", (800, 600), (0, 0, 0)), uuid4())
+
+    assert exc_info.value.reason_code == "INFERENCE_ERROR"
+
+
 def test_component_detector_maps_roi_to_full_frame() -> None:
     manifest = load_model_manifest(COMPONENT_MANIFEST)
     model = FakeModel([(0, 0.9, (10.0, 10.0, 100.0, 100.0))])  # component_a in ROI coords
@@ -129,6 +152,33 @@ def test_component_detector_filters_unrequired_and_low_confidence() -> None:
     )
     codes = [obs.component_code for obs in observations]
     assert codes == ["component_a", "manual"]
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        [(-1.0, 0.9, (10.0, 10.0, 100.0, 100.0))],
+        [(0.5, 0.9, (10.0, 10.0, 100.0, 100.0))],
+        [(0.0, math.nan, (10.0, 10.0, 100.0, 100.0))],
+        [(0.0, 0.9, (10.0, 10.0, 700.0, 100.0))],
+    ],
+)
+def test_component_detector_rejects_malformed_output(
+    raw: list[tuple[float, float, tuple[float, float, float, float]]],
+) -> None:
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    detector = ComponentDetector(manifest, _component_settings(), _components(), FakeModel(raw))
+
+    with pytest.raises(DetectionError) as exc_info:
+        detector.detect(
+            Image.new("RGB", (680, 512), (0, 0, 0)),
+            uuid4(),
+            ("component_a",),
+            (1.0, 0.0, -60.0, 0.0, 1.0, -44.0),
+            (800, 600),
+        )
+
+    assert exc_info.value.reason_code == "INFERENCE_ERROR"
 
 
 def test_from_manifest_rejects_missing_weights(tmp_path: object) -> None:
