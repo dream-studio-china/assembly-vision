@@ -271,6 +271,7 @@ class ModelManifest(APIModel):
     model_version_id: UUID
     model_id: UUID
     semantic_version: str
+    model_version_label: str | None = None
     task: Literal["PRODUCT_DETECTION", "COMPONENT_DETECTION"]
     runtime: str
     input_width: Annotated[int, Field(gt=0)]

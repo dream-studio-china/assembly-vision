@@ -9,7 +9,7 @@ from uuid import UUID
 from assemblyvision_domain import reason_codes as rc
 from assemblyvision_domain.errors import ConfigError, DetectionError
 from assemblyvision_domain.models import BoundingBox, ComponentDetection, ModelManifest
-from assemblyvision_vision.manifests import resolve_artifact_path
+from assemblyvision_vision.manifests import verify_manifest_artifact, verify_model_class_map
 from assemblyvision_vision.roi.geometry import Box, apply_transform, inverse_transform
 from PIL import Image
 
@@ -49,10 +49,9 @@ class ComponentDetector:
     ) -> ComponentDetector:
         from ultralytics import YOLO  # type: ignore[attr-defined]
 
-        weights = resolve_artifact_path(manifest, manifest_path)
-        if not weights.is_file():
-            raise ConfigError(f"component weights not found: {weights}")
+        weights = verify_manifest_artifact(manifest, manifest_path)
         model = YOLO(str(weights))
+        verify_model_class_map(model.names, manifest)
         return cls(manifest, settings, components, model)
 
     def detect(

@@ -14,7 +14,7 @@ from assemblyvision_domain.models import (
     ModelManifest,
     ProductDetection,
 )
-from assemblyvision_vision.manifests import resolve_artifact_path
+from assemblyvision_vision.manifests import verify_manifest_artifact, verify_model_class_map
 from PIL import Image
 
 from assemblyvision_edge.config import DetectionSettings
@@ -56,10 +56,9 @@ class ProductDetector:
     ) -> ProductDetector:
         from ultralytics import YOLO  # type: ignore[attr-defined]
 
-        weights = resolve_artifact_path(manifest, manifest_path)
-        if not weights.is_file():
-            raise ConfigError(f"product weights not found: {weights}")
+        weights = verify_manifest_artifact(manifest, manifest_path)
         model = YOLO(str(weights))
+        verify_model_class_map(model.names, manifest)
         return cls(manifest, settings, model)
 
     def detect(self, frame: Image.Image, frame_id: UUID) -> ProductDetectionOutcome:

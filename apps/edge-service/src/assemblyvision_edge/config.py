@@ -8,9 +8,23 @@ from typing import Any
 
 import yaml
 from assemblyvision_domain.errors import ConfigError
+from assemblyvision_domain.models import ModelManifest
+from assemblyvision_vision.manifests import manifest_model_version
 from assemblyvision_vision.roi.roi_engine import ROIConfig
 
 from assemblyvision_edge.rules.rule_engine import RuleDefinition
+
+
+def validate_model_version_declaration(declared: str, manifest: ModelManifest, name: str) -> None:
+    """Bind a pipeline-declared model version to the loaded manifest identity.
+
+    The free-form version string in the configuration must match the canonical
+    label recorded in (or derivable from) the manifest; otherwise an
+    incompatible model/rule pairing could be loaded and evaluated as valid.
+    """
+    expected = manifest_model_version(manifest)
+    if declared != expected:
+        raise ConfigError(f"{name} {declared!r} does not match loaded manifest version {expected!r}")
 
 
 @dataclass(frozen=True)

@@ -37,6 +37,7 @@ from assemblyvision_domain.models import (
     ReasonCount,
     ROIResult,
 )
+from assemblyvision_vision.manifests import manifest_model_version
 from assemblyvision_vision.roi.roi_engine import ROIEngine
 from assemblyvision_vision.sources.folder_source import FolderSource
 from PIL import Image
@@ -149,7 +150,7 @@ class InspectionPipeline:
         evidence_map = self._build_evidence(observations, gates, frame is not None, frame_id)
         context = RuleContext(
             product_identity_verified=not self._rule.barcode_required,
-            component_model_version=self._config.component_detection.model_version,
+            component_model_version=manifest_model_version(self._component_manifest),
             gates=gates,
             components=evidence_map,
         )

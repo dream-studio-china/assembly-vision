@@ -15,7 +15,11 @@ from assemblyvision_vision.roi.roi_engine import ROIEngine
 from assemblyvision_vision.sources.folder_source import FolderSource
 
 from assemblyvision_edge import __version__
-from assemblyvision_edge.config import load_pipeline_config, load_rule_definition
+from assemblyvision_edge.config import (
+    load_pipeline_config,
+    load_rule_definition,
+    validate_model_version_declaration,
+)
 from assemblyvision_edge.detection import ComponentDetector, ProductDetector
 from assemblyvision_edge.output.writer import OutputWriter
 from assemblyvision_edge.pipeline import InspectionPipeline
@@ -87,6 +91,14 @@ def _build_pipeline(args: argparse.Namespace) -> InspectionPipeline:
     rule = load_rule_definition(args.rule)
     product_manifest = load_model_manifest(config.product_manifest)
     component_manifest = load_model_manifest(config.component_manifest)
+    validate_model_version_declaration(
+        config.product_detection.model_version, product_manifest, "product_detection.model_version"
+    )
+    validate_model_version_declaration(
+        config.component_detection.model_version,
+        component_manifest,
+        "component_detection.model_version",
+    )
     product_detector = ProductDetector.from_manifest(
         product_manifest, config.product_detection, config.product_manifest
     )

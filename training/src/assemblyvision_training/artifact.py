@@ -51,6 +51,7 @@ def write_manifest(
         model_version_id=uuid5(_NAMESPACE, f"{task}:{semantic_version}"),
         model_id=uuid5(_NAMESPACE, task),
         semantic_version=semantic_version,
+        model_version_label=weights_path.stem,
         task=task,  # type: ignore[arg-type]
         runtime="ultralytics",
         input_width=imgsz,
