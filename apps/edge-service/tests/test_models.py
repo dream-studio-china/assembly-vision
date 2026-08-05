@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
-from assemblyvision_edge.domain.models import BoundingBox, InspectionRecord
+from assemblyvision_domain.models import BoundingBox, InspectionRecord
 from assemblyvision_edge.rules.rule_engine import rule_version_id
 from pydantic import ValidationError
 

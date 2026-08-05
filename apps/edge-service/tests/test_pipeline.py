@@ -6,15 +6,15 @@ import json
 from pathlib import Path
 from uuid import uuid4
 
+from assemblyvision_domain.models import BusinessResult, InspectionRecord
 from assemblyvision_edge.config import load_pipeline_config, load_rule_definition
 from assemblyvision_edge.detection import ComponentDetector, ProductDetector
-from assemblyvision_edge.domain.models import BusinessResult, InspectionRecord
-from assemblyvision_edge.manifests import load_model_manifest
 from assemblyvision_edge.output.writer import OutputWriter
 from assemblyvision_edge.pipeline import InspectionPipeline
-from assemblyvision_edge.roi.roi_engine import ROIEngine
 from assemblyvision_edge.rules.rule_engine import RuleEngine
-from assemblyvision_edge.sources.folder_source import FolderSource
+from assemblyvision_vision.manifests import load_model_manifest
+from assemblyvision_vision.roi.roi_engine import ROIEngine
+from assemblyvision_vision.sources.folder_source import FolderSource
 from PIL import Image
 
 from tests.conftest import COMPONENT_MANIFEST, EXAMPLE_PIPELINE, EXAMPLE_RULE, PRODUCT_MANIFEST

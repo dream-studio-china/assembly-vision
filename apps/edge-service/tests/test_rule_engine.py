@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from assemblyvision_edge.domain.models import BusinessResult, InternalDecision
+from assemblyvision_domain.models import BusinessResult, InternalDecision
 from assemblyvision_edge.rules.rule_engine import RuleEngine
 
 from tests.conftest import make_context, make_evidence, make_rule

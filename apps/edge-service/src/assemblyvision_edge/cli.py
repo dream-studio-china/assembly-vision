@@ -8,17 +8,18 @@ import sys
 from pathlib import Path
 from uuid import UUID, uuid4
 
+from assemblyvision_domain.errors import AssemblyVisionError, ConfigError
+from assemblyvision_domain.models import BusinessResult
+from assemblyvision_vision.manifests import load_model_manifest
+from assemblyvision_vision.roi.roi_engine import ROIEngine
+from assemblyvision_vision.sources.folder_source import FolderSource
+
 from assemblyvision_edge import __version__
 from assemblyvision_edge.config import load_pipeline_config, load_rule_definition
 from assemblyvision_edge.detection import ComponentDetector, ProductDetector
-from assemblyvision_edge.domain.errors import AssemblyVisionError, ConfigError
-from assemblyvision_edge.domain.models import BusinessResult
-from assemblyvision_edge.manifests import load_model_manifest
 from assemblyvision_edge.output.writer import OutputWriter
 from assemblyvision_edge.pipeline import InspectionPipeline
-from assemblyvision_edge.roi.roi_engine import ROIEngine
 from assemblyvision_edge.rules.rule_engine import RuleEngine
-from assemblyvision_edge.sources.folder_source import FolderSource
 
 log = logging.getLogger("assemblyvision")
 

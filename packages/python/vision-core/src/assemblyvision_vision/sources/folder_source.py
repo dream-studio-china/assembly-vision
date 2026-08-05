@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
-from assemblyvision_edge.domain.errors import ImageReadError
+from assemblyvision_domain.errors import ImageReadError
 
 SUPPORTED_EXTENSIONS = frozenset({".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"})
 

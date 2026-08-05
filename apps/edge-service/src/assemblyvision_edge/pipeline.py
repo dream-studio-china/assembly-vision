@@ -15,18 +15,13 @@ from itertools import count
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from PIL import Image
-
-from assemblyvision_edge.config import PipelineConfig
-from assemblyvision_edge.detection.component_detector import ComponentDetector
-from assemblyvision_edge.detection.product_detector import ProductDetector
-from assemblyvision_edge.domain import reason_codes as rc
-from assemblyvision_edge.domain.errors import (
+from assemblyvision_domain import reason_codes as rc
+from assemblyvision_domain.errors import (
     DetectionError,
     ImageReadError,
     ROIGenerationError,
 )
-from assemblyvision_edge.domain.models import (
+from assemblyvision_domain.models import (
     AggregatedComponentEvidence,
     BarcodeResult,
     BusinessResult,
@@ -42,15 +37,20 @@ from assemblyvision_edge.domain.models import (
     ReasonCount,
     ROIResult,
 )
+from assemblyvision_vision.roi.roi_engine import ROIEngine
+from assemblyvision_vision.sources.folder_source import FolderSource
+from PIL import Image
+
+from assemblyvision_edge.config import PipelineConfig
+from assemblyvision_edge.detection.component_detector import ComponentDetector
+from assemblyvision_edge.detection.product_detector import ProductDetector
 from assemblyvision_edge.output.writer import OutputWriter, annotate_full_frame
-from assemblyvision_edge.roi.roi_engine import ROIEngine
 from assemblyvision_edge.rules.rule_engine import (
     RuleContext,
     RuleDefinition,
     RuleEngine,
     rule_version_id,
 )
-from assemblyvision_edge.sources.folder_source import FolderSource
 
 log = logging.getLogger("assemblyvision.pipeline")
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from assemblyvision_edge.domain.models import BoundingBox
+from assemblyvision_domain.models import BoundingBox
 
 Transform = tuple[float, float, float, float, float, float]
 

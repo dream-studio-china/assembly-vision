@@ -5,9 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from assemblyvision_domain.errors import ConfigError
 from assemblyvision_edge.config import load_pipeline_config, load_rule_definition
-from assemblyvision_edge.domain.errors import ConfigError
-from assemblyvision_edge.manifests import load_model_manifest
+from assemblyvision_vision.manifests import load_model_manifest
 
 from tests.conftest import COMPONENT_MANIFEST, EXAMPLE_PIPELINE, EXAMPLE_RULE, PRODUCT_MANIFEST
 

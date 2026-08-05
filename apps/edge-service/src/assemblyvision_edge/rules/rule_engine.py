@@ -11,17 +11,16 @@ from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID, uuid5
 
-from pydantic import Field
-
-from assemblyvision_edge.domain import reason_codes as rc
-from assemblyvision_edge.domain.errors import RuleEvaluationError
-from assemblyvision_edge.domain.models import (
+from assemblyvision_domain import reason_codes as rc
+from assemblyvision_domain.errors import RuleEvaluationError
+from assemblyvision_domain.models import (
     AggregatedComponentEvidence,
     APIModel,
     BusinessResult,
     InspectionDecision,
     InternalDecision,
 )
+from pydantic import Field
 
 _COMPONENT_REASON_PREFIX = {
     "MISSING": rc.COMPONENT_MISSING,

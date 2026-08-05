@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from assemblyvision_domain.errors import ConfigError
+from assemblyvision_vision.roi.roi_engine import ROIConfig
 
-from assemblyvision_edge.domain.errors import ConfigError
-from assemblyvision_edge.roi.roi_engine import ROIConfig
 from assemblyvision_edge.rules.rule_engine import RuleDefinition
 
 

@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from assemblyvision_edge.domain.errors import ImageReadError
-from assemblyvision_edge.sources.folder_source import FolderSource
+from assemblyvision_domain.errors import ImageReadError
+from assemblyvision_vision.sources.folder_source import FolderSource
 from PIL import Image
 
 

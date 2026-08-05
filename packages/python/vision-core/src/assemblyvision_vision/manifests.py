@@ -6,8 +6,8 @@ import hashlib
 import json
 from pathlib import Path
 
-from assemblyvision_edge.domain.errors import ConfigError
-from assemblyvision_edge.domain.models import ModelManifest
+from assemblyvision_domain.errors import ConfigError
+from assemblyvision_domain.models import ModelManifest
 
 
 def load_model_manifest(path: Path) -> ModelManifest:

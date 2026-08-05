@@ -5,12 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from uuid import UUID
 
+from assemblyvision_domain import reason_codes as rc
+from assemblyvision_domain.errors import ConfigError, DetectionError
+from assemblyvision_domain.models import ModelManifest, ProductDetection
 from PIL import Image
 
 from assemblyvision_edge.config import DetectionSettings
-from assemblyvision_edge.domain import reason_codes as rc
-from assemblyvision_edge.domain.errors import ConfigError, DetectionError
-from assemblyvision_edge.domain.models import ModelManifest, ProductDetection
 
 SCAFFOLD_MESSAGE = (
     "detector is a scaffold stub; supply a trained YOLO artifact and weights "

@@ -7,10 +7,10 @@ from uuid import UUID
 
 from PIL import Image
 
-from assemblyvision_edge.domain import reason_codes as rc
-from assemblyvision_edge.domain.errors import ROIGenerationError
-from assemblyvision_edge.domain.models import BoundingBox, ROIResult
-from assemblyvision_edge.roi.geometry import (
+from assemblyvision_domain import reason_codes as rc
+from assemblyvision_domain.errors import ROIGenerationError
+from assemblyvision_domain.models import BoundingBox, ROIResult
+from assemblyvision_vision.roi.geometry import (
     Box,
     clip,
     expand,

@@ -5,9 +5,9 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-from assemblyvision_edge.domain.errors import ROIGenerationError
-from assemblyvision_edge.domain.models import BoundingBox
-from assemblyvision_edge.roi.geometry import (
+from assemblyvision_domain.errors import ROIGenerationError
+from assemblyvision_domain.models import BoundingBox
+from assemblyvision_vision.roi.geometry import (
     Box,
     apply_transform,
     clip,
@@ -15,7 +15,7 @@ from assemblyvision_edge.roi.geometry import (
     retained_fraction,
     translation_transform,
 )
-from assemblyvision_edge.roi.roi_engine import ROIConfig, ROIEngine
+from assemblyvision_vision.roi.roi_engine import ROIConfig, ROIEngine
 from PIL import Image
 
 

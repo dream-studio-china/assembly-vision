@@ -7,7 +7,7 @@ from typing import Literal
 from uuid import UUID, uuid4
 
 import pytest
-from assemblyvision_edge.domain.models import AggregatedComponentEvidence
+from assemblyvision_domain.models import AggregatedComponentEvidence
 from assemblyvision_edge.rules.rule_engine import ComponentRequirement, RuleContext, RuleDefinition
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
