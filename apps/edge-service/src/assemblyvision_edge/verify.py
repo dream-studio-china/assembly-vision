@@ -16,6 +16,7 @@ import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from assemblyvision_domain import reason_codes as rc
 from assemblyvision_domain.errors import AssemblyVisionError
 from assemblyvision_domain.models import BusinessResult, InspectionRecord
 from assemblyvision_vision.sources.folder_source import FolderSource
@@ -24,6 +25,17 @@ from assemblyvision_edge.output.writer import OutputWriter
 from assemblyvision_edge.pipeline import InspectionPipeline
 
 log = logging.getLogger("assemblyvision.verify")
+
+_UNEVALUABLE_REASON_CODES = frozenset(
+    {
+        rc.IMAGE_READ_ERROR,
+        rc.INFERENCE_ERROR,
+        rc.ROI_INVALID,
+        rc.RULE_EVALUATION_ERROR,
+        rc.CONFIG_INVALID,
+        rc.VERSION_INCOMPATIBLE,
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -152,6 +164,19 @@ class VerificationReport:
         return self.false_positive / self.expected_ok
 
 
+def _is_evaluable(record: InspectionRecord) -> bool:
+    """Return whether a record is valid evidence for held-out scoring.
+
+    A fail-safe NG caused by unreadable input, invalid inference, or uncertain
+    evidence is not a true positive for a missing-component test case.
+    """
+    if not record.evidence:
+        return False
+    if any(reason in _UNEVALUABLE_REASON_CODES for reason in record.decision.reason_codes):
+        return False
+    return all(evidence.state != "UNCERTAIN" for evidence in record.evidence)
+
+
 def run_verify(
     pipeline: InspectionPipeline,
     work: list[tuple[FolderSource, Path]],
@@ -177,6 +202,10 @@ def run_verify(
         except AssemblyVisionError as exc:
             failed += 1
             log.error("verify failed for %s: %s", path, exc)
+            continue
+        if not _is_evaluable(record):
+            failed += 1
+            log.error("verify cannot score incomplete inspection evidence for %s", path)
             continue
         predicted_ok = record.decision.business_result is BusinessResult.OK
         rows.append(VerifyRow(str(path), exp.ok, predicted_ok, record))

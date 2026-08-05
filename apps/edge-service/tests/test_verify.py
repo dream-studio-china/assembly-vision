@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
+from assemblyvision_domain import reason_codes as rc
 from assemblyvision_domain.errors import AssemblyVisionError
 from assemblyvision_domain.models import BusinessResult
 from assemblyvision_edge.verify import (
@@ -92,20 +94,38 @@ def test_report_ignores_unlabeled_images() -> None:
 
 
 class _FakePipeline:
-    def __init__(self, failures: set[str]) -> None:
+    def __init__(
+        self,
+        failures: set[str],
+        incomplete: set[str] | None = None,
+        failure_reasons: set[str] | None = None,
+    ) -> None:
         self._failures = failures
+        self._incomplete = incomplete or set()
+        self._failure_reasons = failure_reasons or set()
 
     def inspect_image(self, source: object, path: Path, writer: object) -> object:
         if path.name in self._failures:
             raise AssemblyVisionError("boom")
-        return _FakeRecord()
+        if path.name in self._incomplete:
+            return _FakeRecord(BusinessResult.NG, evidence_state="UNCERTAIN")
+        if path.name in self._failure_reasons:
+            return _FakeRecord(BusinessResult.NG, reason_codes=[rc.INFERENCE_ERROR])
+        return _FakeRecord(BusinessResult.OK)
 
 
 class _FakeRecord:
-    class _Decision:
-        business_result = BusinessResult.OK
-
-    decision = _Decision()
+    def __init__(
+        self,
+        business_result: BusinessResult,
+        evidence_state: str = "PRESENT",
+        reason_codes: list[str] | None = None,
+    ) -> None:
+        self.decision = SimpleNamespace(
+            business_result=business_result,
+            reason_codes=reason_codes or [],
+        )
+        self.evidence = [SimpleNamespace(state=evidence_state)]
 
 
 def _work(tmp_path: Path, names: list[str]) -> list[tuple[object, Path]]:
@@ -152,3 +172,25 @@ def test_run_verify_complete_input_is_not_a_gap(tmp_path: Path) -> None:
     assert report.failed == 0
     assert report.unmatched_expected == 0
     assert report.has_gaps is False
+
+
+@pytest.mark.parametrize("failure_kind", ["incomplete", "reason"])
+def test_run_verify_does_not_score_system_failure_as_expected_ng(
+    tmp_path: Path, failure_kind: str
+) -> None:
+    kwargs = (
+        {"incomplete": {"ng.png"}}
+        if failure_kind == "incomplete"
+        else {"failure_reasons": {"ng.png"}}
+    )
+    report = run_verify(
+        _FakePipeline(failures=set(), **kwargs),  # type: ignore[arg-type]
+        _work(tmp_path, ["ng.png"]),  # type: ignore[arg-type]
+        expected={"ng.png": ExpectedResult(False)},
+        writer=object(),  # type: ignore[arg-type]
+    )
+
+    assert report.rows == []
+    assert report.failed == 1
+    assert report.true_positive_ng == 0
+    assert report.has_gaps is True
