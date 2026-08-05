@@ -91,12 +91,12 @@ def prepare_component_dataset(
                 generated.roi_image.height,
                 generated.result.transform_full_to_roi,
             )
-            if not roi_labels:
-                continue
-
+            # A valid ROI with no remapped component boxes is a negative
+            # training crop (for example a missing-component product); it must
+            # be kept with an empty label file, not dropped.
             generated.roi_image.save(out_img_dir / img_path.name)
             out_lbl = out_lbl_dir / f"{img_path.stem}.txt"
-            out_lbl.write_text("\n".join(roi_labels) + "\n", encoding="utf-8")
+            out_lbl.write_text("\n".join(roi_labels) + ("\n" if roi_labels else ""), encoding="utf-8")
 
     out_data = {
         "nc": len(class_names),

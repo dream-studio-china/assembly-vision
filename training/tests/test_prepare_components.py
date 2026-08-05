@@ -5,7 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from assemblyvision_training.prepare_components import _remap_labels
+import yaml
+from assemblyvision_training.prepare_components import _remap_labels, prepare_component_dataset
+from assemblyvision_vision.roi.roi_engine import ROIConfig
+from PIL import Image
 
 
 def test_remap_identity_transform(tmp_path: Path) -> None:
@@ -51,3 +54,69 @@ def test_remap_empty_label_file(tmp_path: Path) -> None:
     lbl.write_text("", encoding="utf-8")
     result = _remap_labels(lbl, 800, 600, 400, 300, (1.0, 0.0, 0.0, 0.0, 1.0, 0.0))
     assert len(result) == 0
+
+
+class _Tensor:
+    def __init__(self, vals: list[float]) -> None:
+        self._vals = vals
+
+    def tolist(self) -> list[float]:
+        return list(self._vals)
+
+
+class _Boxes:
+    def __init__(self, box: list[float]) -> None:
+        self.xyxy = [_Tensor(box)]
+
+    def __len__(self) -> int:
+        return 1
+
+
+class _Result:
+    def __init__(self, box: list[float]) -> None:
+        self.boxes = _Boxes(box)
+
+
+class _FakeModel:
+    def __call__(self, frame: Image.Image, verbose: bool = False, conf: float = 0.1) -> list[_Result]:
+        return [_Result([40.0, 30.0, 160.0, 120.0])]
+
+
+def _make_source_dataset(tmp_path: Path) -> Path:
+    d = tmp_path / "source"
+    (d / "images" / "train").mkdir(parents=True)
+    (d / "labels" / "train").mkdir(parents=True)
+    Image.new("RGB", (200, 150), (128, 128, 128)).save(d / "images" / "train" / "img000.png")
+    (d / "labels" / "train" / "img000.txt").write_text("", encoding="utf-8")
+    (d / "data.yaml").write_text(
+        yaml.dump(
+            {
+                "nc": 1,
+                "names": ["chip"],
+                "train": str((d / "images" / "train").resolve()),
+                "val": str((d / "images" / "train").resolve()),
+            }
+        ),
+        encoding="utf-8",
+    )
+    return d
+
+
+def test_prepare_keeps_negative_roi_crops(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import ultralytics
+
+    monkeypatch.setattr(ultralytics, "YOLO", lambda *args, **kwargs: _FakeModel())
+    out = tmp_path / "out"
+    prepare_component_dataset(
+        dataset_dir=_make_source_dataset(tmp_path),
+        product_weights=tmp_path / "product.pt",
+        roi_config=ROIConfig(
+            margin_x_ratio=0.05,
+            margin_y_ratio=0.05,
+            min_area_pixels=1000,
+            min_expanded_area_retained=0.80,
+        ),
+        output_dir=out,
+    )
+    assert (out / "images" / "train" / "img000.png").is_file()
+    assert (out / "labels" / "train" / "img000.txt").read_text(encoding="utf-8") == ""
