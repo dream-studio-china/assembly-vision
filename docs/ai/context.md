@@ -1,6 +1,6 @@
 # AssemblyVision - Full Project Context
 
-> Context snapshot. Last updated: 2026-08-05
+> Context snapshot. Last updated: 2026-08-06
 >
 > Read this file first in a new session to reconstruct the project state quickly.
 
@@ -18,9 +18,11 @@ and verifies that all required assembly components are present.
 - **Architecture**: edge-client + central-server. All production-critical image processing and
   final decisions execute on the edge industrial computer; the central server is never required
   for real-time inspection.
-- **Current repository state**: the static-image edge-service scaffold exists on `feat/mvp`
-  (uv workspace, domain models, ROI/rule logic, CLI, output writer, and tests). The next
-  concrete milestone is the labeled static train-and-inspect MVP defined by ADR-011.
+- **Current repository state**: the labeled static train-and-inspect MVP (ADR-011) is
+  implemented and validated on `feat/mvp`. The uv workspace ships shared `domain` and
+  `vision-core` packages, a developer-only `av-train` training CLI, real two-stage
+  Ultralytics YOLO inspection (`assemblyvision inspect`), and held-out verification
+  (`assemblyvision verify`) reporting NG recall, false negatives, and false positives.
 
 ## 2. Repository State
 
@@ -35,16 +37,26 @@ and verifies that all required assembly components are present.
 ```
 assembly-vision/
 ├── README.md               # Root README with docs map + bilingual site instructions
+├── QUICKSTART.md           # Developer onboarding: setup, checks, CLI, end-to-end demo
 ├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
 ├── LICENSE                 # MIT License (c) 2026 dream-studio-china
 ├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
+├── Makefile                # Quality gates: lint, format, typecheck, test, check
 ├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
 ├── scripts/
 │   ├── translate-docs.py            # docs/ -> docs-zh/ Chinese translation (deep-translator)
 │   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
-│   └── build-docs.sh                # translate -> build site/ (EN) and site/zh/ (ZH)
-├── .github/workflows/docs.yml       # GitHub Pages deploy on push to main
-├── apps/edge-service/                # Current static inspection CLI scaffold
+│   ├── build-docs.sh                # translate -> build site/ (EN) and site/zh/ (ZH)
+│   ├── e2e-demo.sh                  # full train->prepare->train->inspect->verify smoke test
+│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
+│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -> two-stage layout
+│   └── tests/                       # tests for the Roboflow adapter
+├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
+├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
+├── packages/python/
+│   ├── domain/                       # canonical models, errors, reason codes
+│   └── vision-core/                  # ROI engine, image sources, manifest loading
+├── training/                         # developer-only av-train CLI (product/prepare-components/component)
 ├── config/examples/                  # Example pipeline, rule, and manifest configuration
 ├── models/manifests/                 # Checked model metadata; weights remain outside Git
 ├── tests/fixtures/                   # Small non-sensitive test fixtures
@@ -56,8 +68,9 @@ assembly-vision/
     ├── contributing.md     # Contributor-facing repository rules and precedence
     ├── overrides/main.html # Theme override placeholder
     ├── ai/context.md       # THIS file
+    ├── reviews/            # Code-review follow-up findings (PR-003-review.md)
     ├── contracts/          # 11 mandatory engineering contracts + index
-    ├── runbooks/           # 9 mandatory operational recovery runbooks + index
+    ├── runbooks/           # 10 operational recovery runbooks + index
     ├── design/             # 28 design documents + appendices + decisions/
     │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
     │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
@@ -110,7 +123,7 @@ assembly-vision/
 - [docs/contracts/](../contracts/README.md): 11 enforceable architecture, safety, API, quality,
   operations, security, change-control, and acceptance contracts.
 - [docs/runbooks/](../runbooks/README.md): executable recovery procedures for all contract-required
-  operational scenarios.
+  operational scenarios, including model improvement (runbook 10).
 
 ## 6. Bilingual MkDocs (English + Chinese)
 
@@ -161,12 +174,65 @@ assembly-vision/
   training CLI, real two-stage models, and held-out filename-ground-truth verification.
 - Model encryption and `.pyc`-only runtime packaging are deferred. The MVP protection boundary is
   that training code, datasets, notebooks, and experiment configuration are not distributed.
+- The MVP is implemented and validated end to end (M1-M5): shared `domain`/`vision-core`
+  packages were extracted; the developer-only `training/` workspace and `av-train`
+  (product / prepare-components / component) were added; detector stubs were replaced with real
+  Ultralytics YOLO adapters that load manifest-referenced weights and map ROI boxes back to full
+  frame; `assemblyvision verify` reports NG recall / false negatives / false positives; and
+  `scripts/e2e-demo.sh` runs the full flow with a hard gate on false negatives.
+- Datasets: `scripts/generate-synthetic-dataset.py` builds a labeled assembly dataset (exact
+  boxes, missing-component NG variants) for framework testing; `scripts/adapt-roboflow-dataset.py`
+  converts a Roboflow YOLOv8 export into the two-stage layout, drops generic `missing*` classes,
+  and requires an independently annotated full-product class (the union of component boxes is
+  rejected). The source `test` split becomes the held-out verification set only; it is never
+  copied into training or validation, and split overlap is checked by SHA-256.
+- Model improvement is a developer-side loop (docs/runbooks/10-model-improvement.md):
+  collect/correct data -> retrain -> verify no regression -> bump pipeline config and the rule's
+  `compatible_component_model_versions` together (`av-train --rule` prints the suggested bump).
+- Base YOLO weights are cached under `training/.cache/weights/` (gitignored); trained artifacts go
+  to `models/weights/` (gitignored) with manifests under `models/manifests/`.
+
+## 8.1 Review-Driven Hardening (PR-003 follow-up)
+
+A code review of the `feat/mvp` runtime, training, and verification surfaces led
+to a hardening pass that is committed and validated on `feat/mvp` (P0 items all
+fixed; remaining P1/P2 items tracked in `docs/reviews/PR-003-review.md`):
+
+- Rule engine: `expected_count` is enforced as an exact count, declared spatial
+  constraints (`min_box_area_ratio`, `max_box_area_ratio`, `allowed_zone`) are
+  evaluated against per-detection normalized ROI evidence, empty rules are
+  rejected, and unsupported rule schema versions or empty model-compatibility
+  lists fail closed.
+- Verification: incomplete evidence (uncertain states, image-read/inference/ROI/
+  rule failures) is no longer scored as a true positive, and skipped, failed,
+  and unmatched expected samples make `verify` exit non-zero.
+- Model integrity: runtime verifies artifact size and SHA-256, validates the
+  loaded model class map against the manifest, rejects absolute artifact URIs,
+  and binds the rule-facing model version to the verified manifest.
+- Detector fail-safe: malformed output (invalid class IDs, non-finite confidence
+  or coordinates, out-of-bounds boxes, bad tensor shapes) is converted to
+  `INFERENCE_ERROR` at the adapter boundary instead of escaping or mis-indexing.
+- Configuration: thresholds must be finite and in `[0, 1]`, booleans are strict,
+  `min_area_pixels` must be a positive integer, and unknown keys are rejected in
+  every section.
+- Training data: malformed or out-of-range labels, zero-sized and out-of-frame
+  boxes are fatal; missing label files warn; empty label files are valid
+  negatives; component preparation keeps negative ROI crops; and published
+  model versions refuse to be silently overwritten with different bytes.
+- Quality gates: `ruff check .`, `ruff format --check .`, `mypy .`, and
+  `pytest` now cover the whole repository (edge, packages, training, scripts
+  tests) via the Makefile and a new `.github/workflows/ci.yml`.
 
 ## 9. Open Items / Next Steps
 
-- Labeled static train-and-inspect MVP is the next engineering milestone: extract shared domain/
-  vision packages, add the separate training CLI, train from X-AnyLabeling YOLO labels, replace
-  detector stubs, and add held-out verification.
+- The static train-and-inspect MVP is complete and validated on synthetic data (NG recall 1.0,
+  zero false negatives on the held-out set). The next milestone is the one-month target
+  (roadmap 25.5): camera/barcode integration, product windows, local persistence, temporal
+  aggregation, edge dashboard, upload queue, and one central ingestion/history/review path.
+- Real customer data is still required: annotate with X-AnyLabeling (product + component boxes),
+  then run `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`. Public Roboflow
+  datasets (e.g., BoardEye-Missing-Component) can validate the framework but not a specific line.
+- Model improvement workflow is documented (runbook 10) with `av-train --rule` version hints.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.
