@@ -12,7 +12,7 @@ from assemblyvision_domain.errors import ConfigError
 from assemblyvision_vision.roi.roi_engine import ROIConfig
 
 from assemblyvision_training import __version__
-from assemblyvision_training.artifact import write_manifest
+from assemblyvision_training.artifact import place_weights, write_manifest
 from assemblyvision_training.dataset import validate_dataset
 from assemblyvision_training.prepare_components import prepare_component_dataset
 from assemblyvision_training.train import train_detector
@@ -161,8 +161,7 @@ def _run_product(args: argparse.Namespace) -> int:
         no_augment=args.no_augment,
     )
     log.info("best weights: %s", best)
-    weights_path.parent.mkdir(parents=True, exist_ok=True)
-    best.replace(weights_path)
+    place_weights(best, weights_path)
     log.info("weights saved: %s", weights_path)
 
     manifest = write_manifest(
@@ -231,8 +230,7 @@ def _run_component(args: argparse.Namespace) -> int:
         no_augment=args.no_augment,
     )
     log.info("best weights: %s", best)
-    weights_path.parent.mkdir(parents=True, exist_ok=True)
-    best.replace(weights_path)
+    place_weights(best, weights_path)
     log.info("weights saved: %s", weights_path)
 
     manifest = write_manifest(
