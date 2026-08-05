@@ -102,6 +102,24 @@ tests/fixtures/                 # small non-sensitive test fixtures
 docs/                           # architecture, contracts, ADRs, runbooks
 ```
 
+## Full end-to-end demo (one command)
+
+```bash
+# synthetic data -> train product -> prepare ROI -> train component ->
+# inspect held-out images -> verify (hard gate on false negatives)
+scripts/e2e-demo.sh /tmp/av-e2e
+```
+
+Takes ~10 minutes on a laptop CPU (120 + 150 epochs, nano model, no
+augmentation). Expected result: 6 OK + 6 NG with NG recall 1.000 and zero
+false negatives; the script exits non-zero if any NG is predicted as OK.
+
+For richer or Roboflow-sourced data:
+```bash
+uv run python scripts/generate-synthetic-dataset.py /tmp/data --n-train 30 --n-val 8
+uv run python scripts/adapt-roboflow-dataset.py <roboflow-export> /tmp/data --drop-missing --required "chip,capacitor,boot"
+```
+
 ## What's next
 
 - **M5 End-to-end demo** — train on real labeled data and inspect

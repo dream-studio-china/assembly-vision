@@ -7,6 +7,7 @@ import logging
 import sys
 from pathlib import Path
 
+import yaml
 from assemblyvision_domain.errors import ConfigError
 from assemblyvision_vision.roi.roi_engine import ROIConfig
 
@@ -48,6 +49,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("models/manifests/product-manifest.json"),
         help="Output manifest path",
     )
+    product.add_argument(
+        "--rule",
+        type=Path,
+        default=None,
+        help="Optional product-rule.yaml to suggest the required version bump",
+    )
 
     prepare = sub.add_parser("prepare-components", help="Prepare ROI-cropped component dataset")
     prepare.add_argument("dataset", type=Path, help="YOLO dataset with full-frame component labels")
@@ -79,6 +86,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("models/manifests/component-manifest.json"),
         help="Output manifest path",
     )
+    component.add_argument(
+        "--rule",
+        type=Path,
+        default=None,
+        help="Optional product-rule.yaml to suggest the required version bump",
+    )
 
     return parser
 
@@ -99,6 +112,29 @@ def main(argv: list[str] | None = None) -> int:
     if cmd == "component":
         return _run_component(args)
     parser.error(f"unknown command: {cmd}")
+
+
+def _print_improvement_hints(task: str, weights_path: Path, rule_path: Path | None) -> None:
+    tag = weights_path.stem
+    print("\n=== Next steps: model improved ===")
+    if task == "COMPONENT_DETECTION":
+        print(f"1. pipeline.yaml: set component_detection.model_version: {tag!r}")
+        print(f"2. product-rule.yaml: add {tag!r} to compatible_component_model_versions")
+        if rule_path is not None and rule_path.is_file():
+            try:
+                raw = yaml.safe_load(rule_path.read_text(encoding="utf-8"))
+                current = int(raw.get("rule_version", 0))
+                comp = list(raw.get("compatible_component_model_versions", []))
+                print(f"   suggested: rule_version {current} -> {current + 1}")
+                print(f"   suggested compatible: {comp} -> {comp + [tag]}")
+            except (OSError, yaml.YAMLError, TypeError, ValueError) as exc:
+                print(f"   (could not read rule {rule_path} for suggestions: {exc})")
+    else:
+        print(f"1. pipeline.yaml: set product_detection.model_version: {tag!r}")
+        print("2. regenerate the component ROI dataset with prepare-components")
+        print("   using the new product weights, then retrain the component detector")
+    print("3. re-run: assemblyvision verify <test> --config <pipeline.yaml> --rule <rule.yaml> --output out/")
+    print("   see docs/runbooks/10-model-improvement.md")
 
 
 def _run_product(args: argparse.Namespace) -> int:
@@ -138,6 +174,7 @@ def _run_product(args: argparse.Namespace) -> int:
         output_path=manifest_path,
     )
     log.info("manifest written: %s (version_id=%s)", manifest_path, manifest.model_version_id)
+    _print_improvement_hints("PRODUCT_DETECTION", weights_path, args.rule)
     return 0
 
 
@@ -207,6 +244,7 @@ def _run_component(args: argparse.Namespace) -> int:
         output_path=manifest_path,
     )
     log.info("manifest written: %s (version_id=%s)", manifest_path, manifest.model_version_id)
+    _print_improvement_hints("COMPONENT_DETECTION", weights_path, args.rule)
     return 0
 
 
