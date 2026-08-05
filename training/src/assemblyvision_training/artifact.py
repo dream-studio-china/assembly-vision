@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid5
@@ -31,15 +32,18 @@ def write_manifest(
 ) -> ModelManifest:
     """Write a versioned model manifest JSON file and return the manifest.
 
-    ``weights_uri`` is stored as a relative path from the repo root
-    (``models/weights/``) so the manifest stays portable.
+    ``weights_uri`` is stored relative to the manifest directory so the
+    manifest stays portable.
     """
     checksum = _sha256(weights_path)
     size = weights_path.stat().st_size
+    relative_uri = os.path.relpath(
+        Path(weights_path).resolve(), output_path.parent.resolve()
+    )
 
     artifact = Artifact(
         name="weights",
-        uri=str(weights_path),
+        uri=relative_uri,
         sha256=checksum,
         size_bytes=size,
     )

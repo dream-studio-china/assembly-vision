@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from pathlib import Path
 
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 
 from assemblyvision_domain.errors import ImageReadError
 
@@ -31,10 +31,15 @@ class FolderSource:
                 yield path
 
     def read(self, path: Path) -> Image.Image:
-        """Decode an image as RGB; raises ImageReadError on failure."""
+        """Decode an image as RGB; raises ImageReadError on failure.
+
+        Any decode failure maps to ImageReadError so the pipeline fails safe
+        (NG); third-party PIL patches (e.g. Ultralytics HEIF) must not turn a
+        corrupt image into an uncaught exception.
+        """
         try:
             with Image.open(path) as handle:
                 image: Image.Image = handle.convert("RGB")
                 return image
-        except (UnidentifiedImageError, OSError) as exc:
+        except Exception as exc:
             raise ImageReadError(f"cannot decode image: {path}") from exc

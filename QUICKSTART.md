@@ -35,7 +35,7 @@ uv run pytest                     # 42 tests
 ## Run the inspection CLI
 
 ```bash
-# inspect a folder of images (prints one line per image)
+# train the models first (see av-train), then inspect a folder of images
 uv run assemblyvision inspect /path/to/images \
   --config config/examples/pipeline.yaml \
   --rule config/examples/product-rule.yaml \
@@ -91,10 +91,11 @@ docs/                           # architecture, contracts, ADRs, runbooks
 
 ## What's next
 
-- **M2 `training/`** — developer-only training CLI (`av-train`) using Ultralytics
-- **M3 Real detectors** — replace stub adapters with YOLO weights
 - **M4 `verify`** — held-out verification with NG recall / false negative reporting
+- **M5 End-to-end demo** — train on real labeled data and inspect
 
-> No application code trains models today. The two detector adapters are scaffold stubs
-> that raise `DetectionError`, causing every inspection to return `NG`. This is the
-> documented fail-safe: incomplete evidence never produces `OK`.
+> `assemblyvision inspect` now runs real Ultralytics YOLO detectors. It loads
+> weights from the model manifests; if the trained weights are missing it exits
+> with a configuration error before processing any image. To use it, first train
+> the product and component detectors with `av-train`, then point the pipeline
+> config at the resulting manifests.

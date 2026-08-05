@@ -65,9 +65,11 @@ def _run_inspect(args: argparse.Namespace) -> int:
         rule = load_rule_definition(args.rule)
         product_manifest = load_model_manifest(config.product_manifest)
         component_manifest = load_model_manifest(config.component_manifest)
-        product_detector = ProductDetector.from_manifest(product_manifest, config.product_detection)
+        product_detector = ProductDetector.from_manifest(
+            product_manifest, config.product_detection, config.product_manifest
+        )
         component_detector = ComponentDetector.from_manifest(
-            component_manifest, config.component_detection, config.components
+            component_manifest, config.component_detection, config.components, config.component_manifest
         )
         pipeline = InspectionPipeline(
             product_detector=product_detector,

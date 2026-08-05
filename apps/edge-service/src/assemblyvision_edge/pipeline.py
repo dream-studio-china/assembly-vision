@@ -136,7 +136,11 @@ class InspectionPipeline:
                         gates["roi_valid"] = True
                         try:
                             observations = self._component_detector.detect(
-                                generated.roi_image, frame_id, tuple(self._rule.required_components)
+                                generated.roi_image,
+                                frame_id,
+                                tuple(self._rule.required_components),
+                                generated.result.transform_full_to_roi,
+                                (frame.width, frame.height),
                             )
                         except DetectionError as exc:
                             extra_reasons.append(exc.reason_code)

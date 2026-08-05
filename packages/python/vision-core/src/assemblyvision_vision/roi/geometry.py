@@ -77,6 +77,12 @@ def translation_transform(offset_x: float, offset_y: float) -> Transform:
     return (1.0, 0.0, -offset_x, 0.0, 1.0, -offset_y)
 
 
+def inverse_transform(transform: Transform) -> Transform:
+    """Inverse of a translation-only affine transform (ROI to full-frame)."""
+    a, b, c, d, e, f = transform
+    return (a, b, -c, d, e, -f)
+
+
 def apply_transform(box: Box, transform: Transform) -> Box:
     """Apply a 2D affine transform to a box."""
     a, b, c, d, e, f = transform

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
+from uuid import uuid4
 
 import yaml
 from assemblyvision_domain.models import BoundingBox
@@ -62,13 +64,13 @@ def prepare_component_dataset(
 
             frame = Image.open(img_path).convert("RGB")
 
-            results = model(frame, verbose=False)
+            results = model(frame, verbose=False, conf=0.10)
             boxes = results[0].boxes  # type: ignore[index, union-attr]
             if boxes is None or len(boxes) == 0:
                 log.warning("no product detected in %s, skipping", img_path.name)
                 continue
 
-            best_idx = int(boxes.conf.argmax())
+            best_idx = _largest_box_index(boxes)
             x1, y1, x2, y2 = (float(v) for v in boxes.xyxy[best_idx].tolist())
             product_box = BoundingBox(
                 x_min=x1, y_min=y1, x_max=x2, y_max=y2,
@@ -76,12 +78,19 @@ def prepare_component_dataset(
             )
 
             try:
-                generated = engine.generate(frame, None, product_box)  # type: ignore[arg-type]
+                generated = engine.generate(frame, uuid4(), product_box)
             except Exception:
                 log.warning("ROI invalid for %s, skipping", img_path.name)
                 continue
 
-            roi_labels = _remap_labels(lbl_path, generated.roi_image.width, generated.roi_image.height, generated.result.transform_full_to_roi)
+            roi_labels = _remap_labels(
+                lbl_path,
+                frame.width,
+                frame.height,
+                generated.roi_image.width,
+                generated.roi_image.height,
+                generated.result.transform_full_to_roi,
+            )
             if not roi_labels:
                 continue
 
@@ -98,8 +107,22 @@ def prepare_component_dataset(
     (output_dir / "data.yaml").write_text(yaml.dump(out_data, default_flow_style=False), encoding="utf-8")
 
 
+def _largest_box_index(boxes: Any) -> int:
+    best = 0
+    best_area = -1.0
+    for i in range(len(boxes)):
+        x1, y1, x2, y2 = (float(v) for v in boxes.xyxy[i].tolist())
+        area = (x2 - x1) * (y2 - y1)
+        if area > best_area:
+            best_area = area
+            best = i
+    return best
+
+
 def _remap_labels(
     lbl_path: Path,
+    frame_width: int,
+    frame_height: int,
     roi_width: int,
     roi_height: int,
     transform: tuple[float, float, float, float, float, float],
@@ -112,10 +135,10 @@ def _remap_labels(
         parts = line.split()
         cls_id = int(parts[0])
         cx, cy, w, h = float(parts[1]), float(parts[2]), float(parts[3]), float(parts[4])
-        px_cx = cx * roi_width  # full-frame pixel x (from normalized)
-        px_cy = cy * roi_height
-        px_w = w * roi_width
-        px_h = h * roi_height
+        px_cx = cx * frame_width
+        px_cy = cy * frame_height
+        px_w = w * frame_width
+        px_h = h * frame_height
         box = Box(px_cx - px_w / 2, px_cy - px_h / 2, px_cx + px_w / 2, px_cy + px_h / 2)
         mapped = apply_transform(box, transform)
         if mapped.x_min < 0 or mapped.y_min < 0 or mapped.x_max > roi_width or mapped.y_max > roi_height:
