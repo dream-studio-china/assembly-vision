@@ -55,6 +55,8 @@ def make_evidence(
     component_code: str,
     state: Literal["PRESENT", "MISSING", "UNCERTAIN"],
     detection_count: int = 1,
+    box_area_ratios: list[float] | None = None,
+    box_centers: list[tuple[float, float]] | None = None,
 ) -> AggregatedComponentEvidence:
     return AggregatedComponentEvidence(
         component_code=component_code,
@@ -64,4 +66,6 @@ def make_evidence(
         detection_count=detection_count,
         adjacent_detection_run=1 if detection_count else 0,
         supporting_frame_ids=[uuid4()],
+        box_area_ratios=box_area_ratios or [],
+        box_centers=box_centers or [],
     )

@@ -181,7 +181,13 @@ class ComponentDetection(APIModel):
 
 
 class AggregatedComponentEvidence(APIModel):
-    """Per-component aggregated evidence. State is limited to the MVP subset."""
+    """Per-component aggregated evidence. State is limited to the MVP subset.
+
+    ``box_area_ratios`` and ``box_centers`` are per-detection spatial
+    summaries in normalized ROI coordinates; each entry corresponds to one
+    detection in ``detection_count`` order. They let the rule engine validate
+    declared spatial constraints without depending on any detector package.
+    """
 
     component_code: str
     state: Literal["PRESENT", "MISSING", "UNCERTAIN"]
@@ -191,6 +197,8 @@ class AggregatedComponentEvidence(APIModel):
     adjacent_detection_run: NonNegativeInt = 0
     supporting_frame_ids: list[UUID] = Field(default_factory=list)
     policy_reason_codes: list[str] = Field(default_factory=list)
+    box_area_ratios: list[float] = Field(default_factory=list)
+    box_centers: list[tuple[float, float]] = Field(default_factory=list)
 
 
 class InspectionDecision(APIModel):

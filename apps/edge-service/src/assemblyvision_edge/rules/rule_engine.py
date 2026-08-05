@@ -20,7 +20,7 @@ from assemblyvision_domain.models import (
     InspectionDecision,
     InternalDecision,
 )
-from pydantic import Field
+from pydantic import Field, model_validator
 
 _COMPONENT_REASON_PREFIX = {
     "MISSING": rc.COMPONENT_MISSING,
@@ -36,6 +36,21 @@ class ComponentRequirement(APIModel):
     min_box_area_ratio: Annotated[float, Field(ge=0.0)] | None = None
     max_box_area_ratio: Annotated[float, Field(ge=0.0, le=1.0)] | None = None
     allowed_zone: tuple[float, float, float, float] | None = None
+
+    @model_validator(mode="after")
+    def validate_spatial_bounds(self) -> ComponentRequirement:
+        if (
+            self.min_box_area_ratio is not None
+            and self.max_box_area_ratio is not None
+            and self.min_box_area_ratio > self.max_box_area_ratio
+        ):
+            raise ValueError("min_box_area_ratio cannot exceed max_box_area_ratio")
+        zone = self.allowed_zone
+        if zone is not None:
+            zx1, zy1, zx2, zy2 = zone
+            if not (0.0 <= zx1 < zx2 <= 1.0 and 0.0 <= zy1 < zy2 <= 1.0):
+                raise ValueError("allowed_zone must be a normalized [x1, y1, x2, y2] box")
+        return self
 
 
 class RuleDefinition(APIModel):
@@ -63,6 +78,34 @@ class RuleContext(APIModel):
 def rule_version_id(rule: RuleDefinition) -> UUID:
     """Deterministic UUID for a rule version, stable across runs."""
     return uuid5(UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8"), f"{rule.rule_id}:{rule.rule_version}")
+
+
+def _spatial_violation(requirement: ComponentRequirement, evidence: AggregatedComponentEvidence) -> bool:
+    """Return True when PRESENT evidence violates a declared spatial constraint.
+
+    A constraint that cannot be evaluated against the supplied evidence is
+    treated as a violation so that the rule can never release an OK.
+    """
+    if (
+        requirement.min_box_area_ratio is None
+        and requirement.max_box_area_ratio is None
+        and requirement.allowed_zone is None
+    ):
+        return False
+    for i in range(evidence.detection_count):
+        if i >= len(evidence.box_area_ratios) or i >= len(evidence.box_centers):
+            return True
+        ratio = evidence.box_area_ratios[i]
+        if requirement.min_box_area_ratio is not None and ratio < requirement.min_box_area_ratio:
+            return True
+        if requirement.max_box_area_ratio is not None and ratio > requirement.max_box_area_ratio:
+            return True
+        if requirement.allowed_zone is not None:
+            zx1, zy1, zx2, zy2 = requirement.allowed_zone
+            cx, cy = evidence.box_centers[i]
+            if not (zx1 <= cx <= zx2 and zy1 <= cy <= zy2):
+                return True
+    return False
 
 
 class RuleEngine:
@@ -95,8 +138,12 @@ class RuleEngine:
                     else:
                         low_confidence.append(key)
                     continue
-                if evidence.detection_count < requirement.expected_count:
+                if evidence.detection_count != requirement.expected_count:
                     reasons.append(rc.component_reason(rc.COMPONENT_COUNT_INVALID, key))
+                    missing.append(key)
+                    continue
+                if _spatial_violation(requirement, evidence):
+                    reasons.append(rc.component_reason(rc.COMPONENT_SPATIAL_INVALID, key))
                     missing.append(key)
             internal = InternalDecision.NG if reasons else InternalDecision.OK
             return InspectionDecision(

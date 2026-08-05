@@ -81,6 +81,128 @@ def test_count_invalid_produces_ng() -> None:
     assert "COMPONENT_COUNT_INVALID:component_b" in decision.reason_codes
 
 
+def test_count_exceeded_produces_ng() -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {"expected_count": 1},
+            "component_b": {"expected_count": 1},
+        }
+    )
+    context = make_context(
+        components={
+            "component_a": make_evidence("component_a", "PRESENT"),
+            "component_b": make_evidence("component_b", "PRESENT", detection_count=2),
+        }
+    )
+    decision = ENGINE.evaluate(context, rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "COMPONENT_COUNT_INVALID:component_b" in decision.reason_codes
+    assert "component_b" in decision.missing_components
+
+
+def test_min_area_ratio_violation_produces_ng() -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {"expected_count": 1, "min_box_area_ratio": 0.5},
+            "component_b": {"expected_count": 1},
+        }
+    )
+    context = make_context(
+        components={
+            "component_a": make_evidence(
+                "component_a", "PRESENT", box_area_ratios=[0.1], box_centers=[(0.5, 0.5)]
+            ),
+            "component_b": make_evidence("component_b", "PRESENT"),
+        }
+    )
+    decision = ENGINE.evaluate(context, rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "COMPONENT_SPATIAL_INVALID:component_a" in decision.reason_codes
+
+
+def test_max_area_ratio_violation_produces_ng() -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {"expected_count": 1, "max_box_area_ratio": 0.3},
+            "component_b": {"expected_count": 1},
+        }
+    )
+    context = make_context(
+        components={
+            "component_a": make_evidence(
+                "component_a", "PRESENT", box_area_ratios=[0.8], box_centers=[(0.5, 0.5)]
+            ),
+            "component_b": make_evidence("component_b", "PRESENT"),
+        }
+    )
+    decision = ENGINE.evaluate(context, rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "COMPONENT_SPATIAL_INVALID:component_a" in decision.reason_codes
+
+
+def test_allowed_zone_violation_produces_ng() -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {"expected_count": 1, "allowed_zone": [0.2, 0.2, 0.8, 0.8]},
+            "component_b": {"expected_count": 1},
+        }
+    )
+    context = make_context(
+        components={
+            "component_a": make_evidence(
+                "component_a", "PRESENT", box_area_ratios=[0.2], box_centers=[(0.05, 0.5)]
+            ),
+            "component_b": make_evidence("component_b", "PRESENT"),
+        }
+    )
+    decision = ENGINE.evaluate(context, rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "COMPONENT_SPATIAL_INVALID:component_a" in decision.reason_codes
+
+
+def test_spatial_constraints_satisfied_produce_ok() -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {
+                "expected_count": 1,
+                "min_box_area_ratio": 0.1,
+                "max_box_area_ratio": 0.5,
+                "allowed_zone": [0.2, 0.2, 0.8, 0.8],
+            },
+            "component_b": {"expected_count": 1},
+        }
+    )
+    context = make_context(
+        components={
+            "component_a": make_evidence(
+                "component_a", "PRESENT", box_area_ratios=[0.2], box_centers=[(0.5, 0.5)]
+            ),
+            "component_b": make_evidence("component_b", "PRESENT"),
+        }
+    )
+    decision = ENGINE.evaluate(context, rule)
+    assert decision.business_result is BusinessResult.OK
+    assert decision.reason_codes == []
+
+
+def test_spatial_constraint_with_missing_evidence_produces_ng() -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {"expected_count": 1, "min_box_area_ratio": 0.1},
+            "component_b": {"expected_count": 1},
+        }
+    )
+    context = make_context(
+        components={
+            "component_a": make_evidence("component_a", "PRESENT"),
+            "component_b": make_evidence("component_b", "PRESENT"),
+        }
+    )
+    decision = ENGINE.evaluate(context, rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "COMPONENT_SPATIAL_INVALID:component_a" in decision.reason_codes
+
+
 def test_gate_failure_produces_ng() -> None:
     rule = make_rule()
     context = make_context(

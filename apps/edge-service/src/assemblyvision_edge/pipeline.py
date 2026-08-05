@@ -222,6 +222,17 @@ class InspectionPipeline:
         for key in self._rule.required_components:
             hits = [obs for obs in observations if obs.component_code == key]
             if roi_valid and hits:
+                ratios = [
+                    obs.roi_bbox.area / (obs.roi_bbox.image_width * obs.roi_bbox.image_height)
+                    for obs in hits
+                ]
+                centers = [
+                    (
+                        (obs.roi_bbox.x_min + obs.roi_bbox.x_max) / 2 / obs.roi_bbox.image_width,
+                        (obs.roi_bbox.y_min + obs.roi_bbox.y_max) / 2 / obs.roi_bbox.image_height,
+                    )
+                    for obs in hits
+                ]
                 evidence_map[key] = AggregatedComponentEvidence(
                     component_code=key,
                     state="PRESENT",
@@ -230,6 +241,8 @@ class InspectionPipeline:
                     detection_count=len(hits),
                     adjacent_detection_run=1,
                     supporting_frame_ids=[frame_id],
+                    box_area_ratios=ratios,
+                    box_centers=centers,
                 )
             elif roi_valid:
                 evidence_map[key] = AggregatedComponentEvidence(
