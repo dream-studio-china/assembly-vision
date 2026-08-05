@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import pytest
 from assemblyvision_domain.models import BusinessResult, InternalDecision
-from assemblyvision_edge.rules.rule_engine import RuleEngine
+from assemblyvision_edge.rules.rule_engine import RuleDefinition, RuleEngine
 
 from tests.conftest import make_context, make_evidence, make_rule
 
@@ -298,3 +299,31 @@ def test_adding_component_without_evidence_cannot_preserve_ok() -> None:
     decision = ENGINE.evaluate(context, extended_rule)
     assert decision.business_result is BusinessResult.NG
     assert "COMPONENT_UNVERIFIABLE:manual" in decision.reason_codes
+
+
+def test_empty_required_components_rejected_at_validation() -> None:
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError, match="at least one required component"):
+        RuleDefinition.model_validate(
+            {
+                "schema_version": 1,
+                "rule_id": "permissive",
+                "rule_version": 1,
+                "product_type": "model_a",
+                "required_components": {},
+            }
+        )
+
+
+def test_empty_rule_cannot_produce_ok_in_engine() -> None:
+    rule = RuleDefinition.model_construct(
+        schema_version=1,
+        rule_id="permissive",
+        rule_version=1,
+        product_type="model_a",
+        required_components={},
+    )
+    decision = ENGINE.evaluate(make_context(components={}), rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "CONFIG_INVALID" in decision.reason_codes

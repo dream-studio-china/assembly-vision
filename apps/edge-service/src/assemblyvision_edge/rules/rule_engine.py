@@ -65,6 +65,12 @@ class RuleDefinition(APIModel):
     required_components: dict[str, ComponentRequirement]
     mandatory_gates: dict[str, bool] = Field(default_factory=dict)
 
+    @model_validator(mode="after")
+    def require_components(self) -> RuleDefinition:
+        if not self.required_components:
+            raise ValueError("a rule must declare at least one required component")
+        return self
+
 
 class RuleContext(APIModel):
     """Typed evidence snapshot evaluated by the rule engine."""
@@ -117,6 +123,8 @@ class RuleEngine:
             reasons: list[str] = []
             missing: list[str] = []
             low_confidence: list[str] = []
+            if not rule.required_components:
+                reasons.append(rc.CONFIG_INVALID)
             if rule.compatible_component_model_versions and context.component_model_version not in rule.compatible_component_model_versions:
                 reasons.append(rc.VERSION_INCOMPATIBLE)
             if rule.barcode_required and not context.product_identity_verified:
