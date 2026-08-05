@@ -77,6 +77,14 @@ Report conflicts before changing public architecture or behavior.
 6. Do not add placeholder implementations unless clearly marked.
 7. Report unresolved assumptions and hardware dependencies.
 
+### 5.1 Comments and Docstrings
+
+1. Let clear names, types, structure, and tests explain ordinary behavior.
+2. Use comments only for non-obvious rationale: safety invariants, industrial or hardware assumptions, units or coordinate-space rules, failure semantics, reproducibility constraints, external-library quirks, and deliberate temporary limitations.
+3. Do not restate code, narrate control flow, retain commented-out code, or add vague `TODO` or `FIXME` notes.
+4. Put cross-module or long-lived rationale in design documents or ADRs; source comments should remain short and link there when needed.
+5. Update or remove a comment when its associated behavior changes.
+
 ## 6. Quality Rules
 
 For every behavioral change:
