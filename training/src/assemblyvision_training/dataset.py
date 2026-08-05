@@ -76,11 +76,7 @@ def validate_dataset(dataset_dir: Path) -> DatasetInfo:
             image_count += 1
             lbl_path = lbl_dir / f"{img_path.stem}.txt"
             if lbl_path.is_file():
-                try:
-                    _validate_label_file(lbl_path, nc, img_path)
-                except ConfigError as exc:
-                    info.warnings.append(f"{lbl_path.name}: {exc}")
-                    continue
+                _validate_label_file(lbl_path, nc, img_path)
                 labeled_count += 1
             else:
                 info.warnings.append(f"no label file for {img_path.name}")
@@ -108,6 +104,8 @@ def validate_dataset(dataset_dir: Path) -> DatasetInfo:
 
     if info.train_images == 0:
         raise ConfigError("dataset has no training images in images/train/")
+    if info.val_images == 0:
+        raise ConfigError("dataset has no validation images in images/val/")
     return info
 
 
@@ -128,5 +126,19 @@ def _validate_label_file(path: Path, nc: int, img_path: Path) -> None:
         if not (0 <= cls_id < nc):
             raise ConfigError(f"line {lineno}: class id {cls_id} out of range [0, {nc - 1}]")
         for name, val in [("cx", cx), ("cy", cy), ("w", w), ("h", h)]:
-            if not (0.0 <= val <= 1.0):
+            if not (-1e-4 <= val <= 1.0 + 1e-4):
                 raise ConfigError(f"line {lineno}: {name}={val} is not normalized")
+        if w <= 0.0 or h <= 0.0:
+            raise ConfigError(f"line {lineno}: width and height must be positive")
+        if not _box_inside_image(cx, cy, w, h):
+            raise ConfigError(f"line {lineno}: box extends outside the image bounds")
+
+
+def _box_inside_image(cx: float, cy: float, w: float, h: float) -> bool:
+    eps = 1e-4
+    return (
+        -eps <= cx - w / 2
+        and cx + w / 2 <= 1.0 + eps
+        and -eps <= cy - h / 2
+        and cy + h / 2 <= 1.0 + eps
+    )

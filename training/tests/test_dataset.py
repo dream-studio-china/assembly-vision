@@ -53,11 +53,36 @@ def test_warns_on_unpaired_images(yolo_dataset_dir: Path) -> None:
 
 def test_rejects_out_of_range_class(yolo_dataset_dir: Path) -> None:
     (yolo_dataset_dir / "labels" / "train" / "img000.txt").write_text("9 0.5 0.5 0.3 0.3\n")
-    info = validate_dataset(yolo_dataset_dir)
-    assert any("class id 9 out of range" in w for w in info.warnings)
+    with pytest.raises(ConfigError, match="class id 9 out of range"):
+        validate_dataset(yolo_dataset_dir)
 
 
 def test_rejects_unormalized_label(yolo_dataset_dir: Path) -> None:
     (yolo_dataset_dir / "labels" / "train" / "img000.txt").write_text("0 5.0 0.5 0.3 0.3\n")
-    info = validate_dataset(yolo_dataset_dir)
-    assert any("is not normalized" in w for w in info.warnings)
+    with pytest.raises(ConfigError, match="is not normalized"):
+        validate_dataset(yolo_dataset_dir)
+
+
+def test_rejects_zero_sized_box(yolo_dataset_dir: Path) -> None:
+    (yolo_dataset_dir / "labels" / "train" / "img000.txt").write_text("0 0.5 0.5 0.0 0.3\n")
+    with pytest.raises(ConfigError, match="width and height must be positive"):
+        validate_dataset(yolo_dataset_dir)
+
+
+def test_rejects_box_outside_image(yolo_dataset_dir: Path) -> None:
+    (yolo_dataset_dir / "labels" / "train" / "img000.txt").write_text("0 0.02 0.5 0.1 0.3\n")
+    with pytest.raises(ConfigError, match="outside the image bounds"):
+        validate_dataset(yolo_dataset_dir)
+
+
+def test_rejects_missing_val_split(tmp_path: Path) -> None:
+    d = tmp_path / "no-val"
+    (d / "images" / "train").mkdir(parents=True)
+    (d / "labels" / "train").mkdir(parents=True)
+    from PIL import Image
+
+    Image.new("RGB", (64, 64), (0, 0, 0)).save(d / "images" / "train" / "a.png")
+    (d / "labels" / "train" / "a.txt").write_text("0 0.5 0.5 0.3 0.3\n", encoding="utf-8")
+    (d / "data.yaml").write_text("nc: 1\nnames: ['a']\n", encoding="utf-8")
+    with pytest.raises(ConfigError, match="no validation images"):
+        validate_dataset(d)
