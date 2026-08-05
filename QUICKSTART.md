@@ -42,6 +42,19 @@ uv run assemblyvision inspect /path/to/images \
   --output out/
 ```
 
+## Verify against expected labels
+
+```bash
+# compare decisions with expected OK/NG and report NG recall / FN / FP
+# (expected JSON comes from scripts/adapt-roboflow-dataset.py; without it the
+#  filename fallback treats ok_* as OK and ng_*/missing_* as NG)
+uv run assemblyvision verify /path/to/test-images \
+  --config config/examples/pipeline.yaml \
+  --rule config/examples/product-rule.yaml \
+  --expected test-expected.json \
+  --output out/
+```
+
 Each image gets its own output directory under `out/<inspection_id>/`:
 
 ```text
@@ -91,11 +104,10 @@ docs/                           # architecture, contracts, ADRs, runbooks
 
 ## What's next
 
-- **M4 `verify`** — held-out verification with NG recall / false negative reporting
 - **M5 End-to-end demo** — train on real labeled data and inspect
 
-> `assemblyvision inspect` now runs real Ultralytics YOLO detectors. It loads
-> weights from the model manifests; if the trained weights are missing it exits
-> with a configuration error before processing any image. To use it, first train
-> the product and component detectors with `av-train`, then point the pipeline
-> config at the resulting manifests.
+> `assemblyvision inspect` and `verify` run real Ultralytics YOLO detectors.
+> They load weights from the model manifests; if the trained weights are
+> missing they exit with a configuration error before processing any image.
+> To use them, first train the product and component detectors with
+> `av-train`, then point the pipeline config at the resulting manifests.

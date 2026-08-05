@@ -20,6 +20,7 @@ from assemblyvision_edge.detection import ComponentDetector, ProductDetector
 from assemblyvision_edge.output.writer import OutputWriter
 from assemblyvision_edge.pipeline import InspectionPipeline
 from assemblyvision_edge.rules.rule_engine import RuleEngine
+from assemblyvision_edge.verify import format_per_image, format_report, load_expected, run_verify
 
 log = logging.getLogger("assemblyvision")
 
@@ -44,15 +45,65 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stable device UUID; a random UUID is generated when omitted",
     )
     inspect.add_argument("-q", "--quiet", action="store_true", help="Suppress INFO logs")
+
+    verify = sub.add_parser("verify", help="Inspect images and compare with expected OK/NG labels")
+    verify.add_argument("paths", nargs="+", help="Input images or folders")
+    verify.add_argument("--config", required=True, type=Path, help="Pipeline configuration file")
+    verify.add_argument("--rule", required=True, type=Path, help="Product rule definition file")
+    verify.add_argument(
+        "--expected",
+        type=Path,
+        default=None,
+        help="Expected-labels JSON (test-expected.json); filename fallback when omitted",
+    )
+    verify.add_argument(
+        "--output",
+        required=True,
+        type=Path,
+        help="Output directory for inspection records",
+    )
+    verify.add_argument(
+        "--device-id",
+        type=str,
+        default=None,
+        help="Stable device UUID; a random UUID is generated when omitted",
+    )
+    verify.add_argument("-q", "--quiet", action="store_true", help="Suppress INFO logs")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    if args.command != "inspect":
-        parser.error("unknown command")
-    return _run_inspect(args)
+    if args.command == "inspect":
+        return _run_inspect(args)
+    if args.command == "verify":
+        return _run_verify(args)
+    parser.error(f"unknown command: {args.command}")
+
+
+def _build_pipeline(args: argparse.Namespace) -> InspectionPipeline:
+    config = load_pipeline_config(args.config)
+    rule = load_rule_definition(args.rule)
+    product_manifest = load_model_manifest(config.product_manifest)
+    component_manifest = load_model_manifest(config.component_manifest)
+    product_detector = ProductDetector.from_manifest(
+        product_manifest, config.product_detection, config.product_manifest
+    )
+    component_detector = ComponentDetector.from_manifest(
+        component_manifest, config.component_detection, config.components, config.component_manifest
+    )
+    return InspectionPipeline(
+        product_detector=product_detector,
+        component_detector=component_detector,
+        roi_engine=ROIEngine(config.roi),
+        rule_engine=RuleEngine(),
+        rule=rule,
+        product_manifest=product_manifest,
+        component_manifest=component_manifest,
+        config=config,
+        device_id=uuid4() if args.device_id is None else UUID(args.device_id),
+    )
 
 
 def _run_inspect(args: argparse.Namespace) -> int:
@@ -61,27 +112,7 @@ def _run_inspect(args: argparse.Namespace) -> int:
         format="%(levelname)s %(name)s: %(message)s",
     )
     try:
-        config = load_pipeline_config(args.config)
-        rule = load_rule_definition(args.rule)
-        product_manifest = load_model_manifest(config.product_manifest)
-        component_manifest = load_model_manifest(config.component_manifest)
-        product_detector = ProductDetector.from_manifest(
-            product_manifest, config.product_detection, config.product_manifest
-        )
-        component_detector = ComponentDetector.from_manifest(
-            component_manifest, config.component_detection, config.components, config.component_manifest
-        )
-        pipeline = InspectionPipeline(
-            product_detector=product_detector,
-            component_detector=component_detector,
-            roi_engine=ROIEngine(config.roi),
-            rule_engine=RuleEngine(),
-            rule=rule,
-            product_manifest=product_manifest,
-            component_manifest=component_manifest,
-            config=config,
-            device_id=uuid4() if args.device_id is None else UUID(args.device_id),
-        )
+        pipeline = _build_pipeline(args)
     except (ConfigError, ValueError) as exc:
         log.error("configuration error: %s", exc)
         return 2
@@ -106,6 +137,28 @@ def _run_inspect(args: argparse.Namespace) -> int:
         print(f"{path}\t{record.decision.business_result.value}\t{reasons}\t{record.inspection_id}")
     log.info("summary: %d OK, %d NG, %d errors", ok_count, ng_count, error_count)
     return 0 if error_count == 0 else 1
+
+
+def _run_verify(args: argparse.Namespace) -> int:
+    logging.basicConfig(
+        level=logging.ERROR if args.quiet else logging.INFO,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
+    try:
+        pipeline = _build_pipeline(args)
+        expected = load_expected(args.expected) if args.expected is not None else {}
+    except (ConfigError, ValueError) as exc:
+        log.error("configuration error: %s", exc)
+        return 2
+
+    writer = OutputWriter(args.output)
+    report = run_verify(pipeline, _collect_sources(args.paths), expected, writer)
+    print(format_per_image(report))
+    print()
+    print(format_report(report))
+    if report.false_negative > 0:
+        return 1
+    return 0
 
 
 def _collect_sources(paths: list[str]) -> list[tuple[FolderSource, Path]]:
