@@ -687,7 +687,7 @@
   <a href="#71-purpose-and-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.1 Purpose and Boundary
+        7.1 目的和边界
       
     </span>
   </a>
@@ -786,7 +786,7 @@
   <a href="#710-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.10 Open Questions and Validation Required
+        7.10 开放式问题和需要验证
       
     </span>
   </a>
@@ -1736,6 +1736,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -2794,7 +2822,7 @@
   <a href="#71-purpose-and-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.1 Purpose and Boundary
+        7.1 目的和边界
       
     </span>
   </a>
@@ -2893,7 +2921,7 @@
   <a href="#710-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.10 Open Questions and Validation Required
+        7.10 开放式问题和需要验证
       
     </span>
   </a>
@@ -2921,7 +2949,7 @@
 
 
 <h1 id="7-camera-and-image-acquisition">7. 相机和图像采集<a class="headerlink" href="#7-camera-and-image-acquisition" title="Permanent link">&para;</a></h1>
-<h2 id="71-purpose-and-boundary">7.1 Purpose and Boundary<a class="headerlink" href="#71-purpose-and-boundary" title="Permanent link">&para;</a></h2>
+<h2 id="71-purpose-and-boundary">7.1 目的和边界<a class="headerlink" href="#71-purpose-and-boundary" title="Permanent link">&para;</a></h2>
 <p>采集子系统拥有工业相机集成、触发处理、时间戳、帧缓冲和图像质量元数据。它发出帧；它不检测产品、决定检验结果或依赖于中央服务器。下游处理由<a href="../06-ai-detection-pipeline/">AI detection pipeline</a>定义。</p>
 <h2 id="72-scope-by-delivery-phase">7.2 按交付阶段划分的范围<a class="headerlink" href="#72-scope-by-delivery-phase" title="Permanent link">&para;</a></h2>
 <table>
@@ -2966,7 +2994,7 @@
 <p>去抖触发器并立即分配唯一的 <code>inspection_id</code>。仅当物理进程验证该策略时，才会记录并抑制配置的死区时间内的重复触发器。重叠窗口被明确拒绝或支持；他们绝不能分享可变的证据。</p>
 <h2 id="75-real-time-inspection-sequence">7.5 实时检查顺序<a class="headerlink" href="#75-real-time-inspection-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
-    participant Sensor as Trigger or Sensor
+    participant Sensor as 触发器或传感器
     participant Capture as 相机适配器
     participant Window as 产品窗口管理器
     participant Vision as 愿景管道
@@ -2977,11 +3005,11 @@
     Sensor-&gt;&gt;Window:产品入驻活动
     Window-&gt;&gt;Window:创建检查和引脚版本
 loop 直到退出或超时
-        Capture-&gt;&gt;Window:Frame with timestamps
+        Capture-&gt;&gt;Window:带时间戳的帧
         Window-&gt;&gt;Vision:相关框架
         Vision--&gt;&gt;Aggregate:每个组件的框架证据
     end
-    Sensor-&gt;&gt;Window:Product exit event
+    Sensor-&gt;&gt;Window:产品退出事件
     Window-&gt;&gt;Aggregate:关闭检查窗口
     Aggregate--&gt;&gt;Rules:每个所需组件的证据
     Rules--&gt;&gt;Store:OK 或 NG 以及原因代码
@@ -3015,7 +3043,7 @@ loop 直到退出或超时
 <li>在序列间隙或缓冲区溢出时，增加指标并将受影响的窗口标记为降级；证据不足产生<code>NG</code>。</li>
 <li>对于陈旧或重复的帧，拒绝这些帧并报告相机运行状况恶化。</li>
 <li>在时钟调整时，继续使用单调时钟计算持续时间并记录挂钟的不连续性。</li>
-<li>在捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断<code>NG</code>。</li>
+<li>捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断<code>NG</code>。</li>
 <li>服务器中断时，不要进行采集更改。在储存能力允许的情况下，当地捕获和检查将继续进行。</li>
 </ul>
 <p>滚动视频写入分段文件以限制断电后的损坏。媒体持久化和删除规则在<a href="../12-local-storage-and-retention/">local storage and retention</a>中定义。</p>
@@ -3023,12 +3051,12 @@ loop 直到退出或超时
 <ul>
 <li>根据记录和模拟的 SDK 行为对每个供应商适配器进行合同测试。</li>
 <li>测试断开、重新连接、丢帧、重复序列号、损坏的缓冲区和延迟帧。</li>
-<li>验证触发去抖、相邻产品、超时以及每个窗口阶段的重新启动。</li>
+<li>在每个窗口阶段验证触发去抖、相邻产品、超时和重新启动。</li>
 <li>使用正常、模糊、黑暗、明亮、反射和空的生产场景校准质量阈值。</li>
 <li>浸泡测试捕获时间比正常生产班次长，同时监控内存和缓冲区增长。</li>
 <li>验证文件源排序和输出 ID 是否可重复。</li>
 </ul>
-<h2 id="710-open-questions-and-validation-required">7.10 Open Questions and Validation Required<a class="headerlink" href="#710-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="710-open-questions-and-validation-required">7.10 开放式问题和需要验证<a class="headerlink" href="#710-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>选择相机供应商、型号、SDK、镜头、接口和支持的操作系统。</li>
 <li>测量帧速率、曝光、传送带速度、触发时间和最大产品窗口重叠。</li>

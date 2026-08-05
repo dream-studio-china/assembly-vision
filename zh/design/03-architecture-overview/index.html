@@ -722,10 +722,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#101-two-day-mvp" class="md-nav__link">
+  <a href="#101-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.1 两天 MVP
+        10.1 静态训练和检查 MVP
       
     </span>
   </a>
@@ -1847,6 +1847,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -3052,10 +3080,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#101-two-day-mvp" class="md-nav__link">
+  <a href="#101-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.1 两天 MVP
+        10.1 静态训练和检查 MVP
       
     </span>
   </a>
@@ -3144,7 +3172,7 @@
 
 <h1 id="assemblyvision-architecture-overview">AssemblyVision 架构概述<a class="headerlink" href="#assemblyvision-architecture-overview" title="Permanent link">&para;</a></h1>
 <h2 id="1-architectural-drivers">1. 架构驱动因素<a class="headerlink" href="#1-architectural-drivers" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision 必须在受控但不完美注册的成像环境中做出保守的产品决策，在网络和中央中断时保持运行，保留可复制的证据，并从两天的静态图像校样发展为公认的生产系统。结果是具有异步中央同步的边缘优先架构。</p>
+<p>AssemblyVision 必须在受控但不完全注册的成像环境中做出保守的产品决策，在网络和中央中断时保持运行，保留可重复的证据，并从带标签的静态图像训练和检查证明发展为公认的生产系统。结果是具有异步中央同步的边缘优先架构。</p>
 <p>详细义务见<a href="../02-requirements/">Requirements</a>；共享条款和决策规则位于<a href="../appendices/">Appendices</a>中。</p>
 <h2 id="2-system-context">2. 系统上下文<a class="headerlink" href="#2-system-context" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
@@ -3190,7 +3218,7 @@
         ApiC[FastAPI中央API]
         JobC[后台工作者仅用于异步作业]
         DbC[(PostgreSQL)]
-        ObjC[(S3 compatible or filesystem media store)]
+        ObjC[(S3 兼容或文件系统媒体存储)]
         RedisC[(Redis 合理时)]
         ProxyC --&gt; WebC
         ProxyC --&gt; ApiC
@@ -3323,8 +3351,8 @@
 <p>中央 API 需要经过身份验证、授权和加密的传输。设备凭证必须是唯一且可替换的；图像中没有嵌入长期的秘密。应根据批准的本地威胁模型来保护边缘管理控制。审核记录涵盖配置、模型/规则激活、审查、用户/角色更改以及所需的证据访问。</p>
 <p>客户端映像使用多阶段构建、构建的 Web 资产、非根运行时、显式卷和只读文件系统（如果可行）。在可行的情况下，Python 可以作为编译后的 <code>.pyc</code> 进行分发，而无需原始 <code>.py</code>，但 <code>.pyc</code> 和 Docker 不会阻止高级逆向工程。公认的目标是避免随意浏览源代码；未部署 Git 存储库、数据集、笔记本和实验配置。</p>
 <h2 id="10-delivery-evolution">10. 交付的演变<a class="headerlink" href="#10-delivery-evolution" title="Permanent link">&para;</a></h2>
-<h3 id="101-two-day-mvp">10.1 两天 MVP<a class="headerlink" href="#101-two-day-mvp" title="Permanent link">&para;</a></h3>
-<p>使用进程内 CLI 和最少的可重用视觉/规则模块。基于文件的输入/输出代表获取和持久性，同时保留未来的模式和版本字段。</p>
+<h3 id="101-static-train-and-inspect-mvp">10.1 静态训练和检查 MVP<a class="headerlink" href="#101-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
+<p>使用仅限开发人员的培训 CLI 从 X-AnyLabeling YOLO 标签生成产品和组件模型工件。进程内边缘 CLI 使用这些工件来检查文件夹输入并写入证据，同时保留未来的架构和版本字段。训练代码独立于边缘运行时，并且永远不会由边缘运行时导入。</p>
 <h3 id="102-one-month-target">10.2 一个月目标<a class="headerlink" href="#102-one-month-target" title="Permanent link">&para;</a></h3>
 <p>在有界任务中运行捕获和决策工作，可以选择在监督推理子流程中运行，因此 UI/API 负载在不提前添加第二个边缘部署单元的情况下无法阻止捕获。添加硬件适配器、产品窗口、SQLite/媒体卷、队列调度程序、本地 Web 资产、中央摄取/历史记录和初始管理。使用 Compose 进行部署并练习中断并重新启动恢复。</p>
 <h3 id="103-production-target">10.3 生产目标<a class="headerlink" href="#103-production-target" title="Permanent link">&para;</a></h3>
@@ -3347,7 +3375,7 @@
 <li>REST 轮询、WebSocket 或其他批准的渠道是否适合通过客户网络进行配置交付？</li>
 <li>需要哪些设备身份、PKI、静态加密、签名和秘密轮换控制？</li>
 <li>哪些中央异步作业证明代理和 Redis 在预期规模上是合理的？</li>
-<li>适用哪些本地和中央恢复目标、保留期和容量裕度？</li>
+<li>适用哪些地方和中央恢复目标、保留期限和容量裕度？</li>
 <li>参见<a href="../appendices/#3-global-open-questions">Global Open Questions</a>。</li>
 </ol>
 

@@ -644,10 +644,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#61-two-day-mvp" class="md-nav__link">
+  <a href="#61-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 两天 MVP
+        6.1 静态训练和检查 MVP
       
     </span>
   </a>
@@ -1849,6 +1849,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3019,10 +3047,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#61-two-day-mvp" class="md-nav__link">
+  <a href="#61-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 两天 MVP
+        6.1 静态训练和检查 MVP
       
     </span>
   </a>
@@ -3123,14 +3151,14 @@
 <h1 id="assemblyvision-introduction">AssemblyVision简介<a class="headerlink" href="#assemblyvision-introduction" title="Permanent link">&para;</a></h1>
 <h2 id="1-purpose">1. 目的<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 是一种输送线计算机视觉系统，旨在检查成品中是否存在所需的装配组件。检查目标可能包括完整的产品、大型部件、手册或说明书、条形码以及产品型号或类型。</p>
-<p>对于每个实物产品，业务结果是：</p>
+<p>对于每个物理产品，业务结果是：</p>
 <ul>
 <li><code>OK</code>：所有必需的组件在活动规则下都有足够的有效证据。</li>
 <li><code>NG</code>：组件缺失、证据不确定、产品身份无法可靠解析或检验无法可靠完成。</li>
 </ul>
 <p>系统优先避免放行错误标记为 <code>OK</code> 的有缺陷或不完整的产品。因此，它倾向于保守的 <code>NG</code> 决策和早期操作期间的人工审查。这是一个工程目标，而不是精度保证。</p>
 <h2 id="2-confirmed-operating-context">2. 确认的操作环境<a class="headerlink" href="#2-confirmed-operating-context" title="Permanent link">&para;</a></h2>
-<p>已知环境包括大约四兆像素的工业相机、固定照明、通常固定的相机和受控检查区域。产品可能会轻微移动且无法完美套准，但大幅不受控制的旋转是不正常的。目前的检查涉及大型零件和组件的存在，而不是微型组件或微小的螺钉。</p>
+<p>已知环境包括大约四兆像素的工业相机、固定照明、通常固定的相机和受控检查区域。产品可能会轻微移动且无法完美套准，但大幅不受控制的旋转并不正常。目前的检查涉及大型零件和组件的存在，而不是微型组件或微小的螺钉。</p>
 <p>AssemblyVision 必须实现相机捕获、条形码识别、图像/视频持久性和结果持久性。这些是必需的功能，而不是预先存在的工厂服务。当与中央服务器断开连接时，边缘机器必须继续检查。</p>
 <h2 id="3-stakeholders-and-concerns">3. 利益相关者和关注点<a class="headerlink" href="#3-stakeholders-and-concerns" title="Permanent link">&para;</a></h2>
 <table>
@@ -3190,10 +3218,10 @@
 <h3 id="54-deterministic-policy-around-probabilistic-models">5.4 围绕概率模型的确定性策略<a class="headerlink" href="#54-deterministic-policy-around-probabilistic-models" title="Permanent link">&para;</a></h3>
 <p>模型提供检测和置信值。单独可测试的确定性规则引擎应用批准的阈值和所需组件策略。时间聚合通过结合帧证据来提高系统的鲁棒性；它不会提高模型固有的单帧精度。</p>
 <h3 id="55-incremental-delivery">5.5 增量交付<a class="headerlink" href="#55-incremental-delivery" title="Permanent link">&para;</a></h3>
-<p>该实施从静态图像垂直切片开始，然后添加物理采集和本地持久性，然后是同步和中央工作流程，最后是基于测量证据的生产强化。</p>
+<p>该实施从标记的静态图像训练和检查垂直切片开始，然后添加物理采集和本地持久性，然后是同步和中央工作流程，最后是基于测量证据的生产强化。</p>
 <h2 id="6-scope-by-horizon">6. 范围范围<a class="headerlink" href="#6-scope-by-horizon" title="Permanent link">&para;</a></h2>
-<h3 id="61-two-day-mvp">6.1 两天 MVP<a class="headerlink" href="#61-two-day-mvp" title="Permanent link">&para;</a></h3>
-<p>静态图像 CLI 读取输入文件夹、检测产品、生成具有坐标映射的有界 ROI、检测配置的组件、评估规则并写入 JSON、ROI 图像和带注释的图像。它无需摄像头、视频、中央服务或仪表板即可建立模式和确定性行为。</p>
+<h3 id="61-static-train-and-inspect-mvp">6.1 静态训练和检查 MVP<a class="headerlink" href="#61-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
+<p>X-AnyLabeling 生产 YOLO 产品和组件盒标签。仅限开发人员的培训 CLI 训练全框架产品和 ROI 组件模型，而静态图像运行时 CLI 则使用其清单、检查单独的文件夹、评估规则并写入 JSON、ROI 图像、带注释的图像和保留的验证报告。它无需摄像头、视频、中央服务或仪表板即可建立模式和确定性行为。训练代码不是运行时分发的一部分。</p>
 <h3 id="62-one-month-target">6.2 一个月目标<a class="headerlink" href="#62-one-month-target" title="Permanent link">&para;</a></h3>
 <p>目标连接相机和条形码解码器，为每个物理产品窗口创建一个检查记录，在本地保留，公开本地 FastAPI/Vue 接口，聚合每个组件的帧证据，并将选定的记录/证据上传到初始中央服务。包括 Docker Compose 打包、离线测试、重试、保留、运行状况和客户现场评估。</p>
 <h3 id="63-production-target">6.3 生产目标<a class="headerlink" href="#63-production-target" title="Permanent link">&para;</a></h3>

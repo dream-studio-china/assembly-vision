@@ -1393,7 +1393,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Context
+        2. 背景
       
     </span>
   </a>
@@ -1426,19 +1426,19 @@
   <a href="#5-consequences" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Consequences
+        5. 后果
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. Consequences">
+    <nav class="md-nav" aria-label="5. 后果">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#51-positive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1 正面
+        5.1 Positive
       
     </span>
   </a>
@@ -1742,6 +1742,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -2811,7 +2839,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Context
+        2. 背景
       
     </span>
   </a>
@@ -2844,19 +2872,19 @@
   <a href="#5-consequences" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Consequences
+        5. 后果
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. Consequences">
+    <nav class="md-nav" aria-label="5. 后果">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#51-positive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1 正面
+        5.1 Positive
       
     </span>
   </a>
@@ -2932,45 +2960,45 @@
   
 
 
-<h1 id="adr-001-edge-first-inspection">ADR-001: Edge-First Inspection<a class="headerlink" href="#adr-001-edge-first-inspection" title="Permanent link">&para;</a></h1>
+<h1 id="adr-001-edge-first-inspection">ADR-001：边缘优先检查<a class="headerlink" href="#adr-001-edge-first-inspection" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
-<p>Accepted</p>
-<h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision inspects moving products in a factory where the network and central server may be unavailable. Camera capture, barcode resolution, two-stage detection, temporal aggregation, deterministic rules, and durable evidence form one production-critical decision path. A network round trip would add an uncontrolled dependency and could stop inspection or leave products without a timely result.</p>
-<p>The central system remains necessary for fleet history, configuration and model management, review, reporting, users, audit, and synchronization.</p>
+<p>已接受</p>
+<h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
+<p>AssemblyVision 在网络和中央服务器可能不可用的工厂中检查移动的产品。相机捕获、条形码分辨率、两阶段检测、时间聚合、确定性规则和持久证据形成了一条生产关键决策路径。网络往返会增加不受控制的依赖性，并可能停止检查或留下产品而无法及时获得结果。</p>
+<p>中央系统对于车队历史记录、配置和模型管理、审查、报告、用户、审计和同步仍然是必需的。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>All production-critical image processing and final per-product <code>OK</code>/<code>NG</code> decisions execute on the edge industrial computer. The edge stores decisions and required evidence locally and continues inspecting while disconnected. Central services receive delayed, idempotent uploads and are never required for the real-time decision.</p>
-<p>The edge owns camera and trigger integration, product windows, barcode recognition, product-type mapping, inference, ROI, aggregation, rule evaluation, local database/media, upload queue, and local operational UI. The central server owns cross-device and administrative functions.</p>
+<p>所有生产关键型图像处理和最终的每个产品 <code>OK</code>/<code>NG</code> 决策都在边缘工业计算机上执行。边缘在本地存储决策和所需的证据，并在断开连接时继续检查。中央服务接收延迟的幂等上传，并且不需要实时决策。</p>
+<p>边缘拥有摄像头和触发器集成、产品窗口、条形码识别、产品类型映射、推理、ROI、聚合、规则评估、本地数据库/媒体、上传队列和本地操作 UI。中央服务器拥有跨设备和管理功能。</p>
 <h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
-<p>This decision applies to the one-month target and production architecture. The static-image MVP exercises the same decision core without camera, offline synchronization, or central services. It does not require every administrative feature to run at the edge.</p>
-<h2 id="5-consequences">5. Consequences<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
-<h3 id="51-positive">5.1 正面<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
+<p>这一决定适用于一个月的目标和生产架构。静态图像 MVP 执行相同的决策核心，无需摄像头、离线同步或中央服务。它不需要每个管理功能都在边缘运行。</p>
+<h2 id="5-consequences">5. 后果<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
+<h3 id="51-positive">5.1 Positive<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Inspection availability and latency are independent of WAN and central availability.</li>
-<li>Decisions and evidence can be correlated at their source.</li>
-<li>Network use is bounded by selected evidence rather than every video frame.</li>
-<li>Central maintenance cannot directly interrupt line decisions.</li>
+<li>检查可用性和延迟独立于 WAN 和中央可用性。</li>
+<li>决策和证据可以在其来源处关联起来。</li>
+<li>网络使用受选定的证据而不是每个视频帧的限制。</li>
+<li>中央维护不能直接中断生产线决策。</li>
 </ul>
 <h3 id="52-negative-and-trade-offs">5.2 负面和权衡<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Edge hardware must support inference, storage, monitoring, and upgrades.</li>
-<li>Fleet deployments duplicate runtime components and require version governance.</li>
-<li>Delayed uploads mean central dashboards and review can be stale.</li>
-<li>Offline capacity and queue reconciliation become production concerns.</li>
+<li>边缘硬件必须支持推理、存储、监控和升级。</li>
+<li>队列部署重复运行时组件并需要版本治理。</li>
+<li>延迟上传意味着中央仪表板和审核可能会过时。</li>
+<li>离线容量和队列协调成为生产问题。</li>
 </ul>
 <h2 id="6-alternatives">6.替代方案<a class="headerlink" href="#6-alternatives" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Central-only inference:</strong> rejected because it makes network/server availability and latency part of every decision.</li>
-<li><strong>Cloud inference with edge fallback:</strong> rejected initially because two decision paths complicate validation and consistency.</li>
-<li><strong>Camera appliance decides, server records:</strong> rejected because required barcode, rules, aggregation, traceability, and configurable models exceed an unspecified camera appliance capability.</li>
+<li><strong>仅集中推理：</strong> 被拒绝，因为它使网络/服务器可用性和延迟成为每个决策的一部分。</li>
+<li><strong>带有边缘回退的云推理：</strong>最初被拒绝，因为两个决策路径使验证和一致性变得复杂。</li>
+<li><strong>相机设备决定，服务器记录：</strong> 被拒绝，因为所需的条形码、规则、聚合、可追溯性和可配置模型超出了未指定的相机设备功能。</li>
 </ul>
 <h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Candidate edge CPU/GPU capacity and production-resolution latency.</li>
-<li>Maximum expected disconnection and required local storage capacity.</li>
-<li>Physical line behavior when the edge is unavailable.</li>
+<li>候选边缘 CPU/GPU 容量和生产分辨率延迟。</li>
+<li>最大预期断开连接和所需的本地存储容量。</li>
+<li>边缘不可用时的物理线路行为。</li>
 </ul>
-<p>These questions affect sizing and operations, not the accepted edge-first boundary.</p>
+<p>这些问题影响尺寸和操作，而不是公认的边缘优先边界。</p>
 <h2 id="8-links">8. 链接<a class="headerlink" href="#8-links" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../20-deployment-and-operations/">Deployment and Operations</a></li>

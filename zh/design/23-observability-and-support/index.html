@@ -1185,19 +1185,19 @@
   <a href="#234-metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.4 Metrics
+        23.4 指标
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="23.4 Metrics">
+    <nav class="md-nav" aria-label="23.4 指标">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#2341-edge-health-and-workload" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.4.1 Edge Health and Workload
+        23.4.1 边缘健康状况和工作负载
       
     </span>
   </a>
@@ -1208,7 +1208,7 @@
   <a href="#2342-central-and-quality-metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.4.2 Central and Quality Metrics
+        23.4.2 中心指标和质量指标
       
     </span>
   </a>
@@ -1224,7 +1224,7 @@
   <a href="#235-health-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.5 Health Model
+        23.5 健康模型
       
     </span>
   </a>
@@ -1313,7 +1313,7 @@
   <a href="#23103-repeated-process-restart" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.10.3 Repeated Process Restart
+        23.10.3 重复进程重启
       
     </span>
   </a>
@@ -1324,7 +1324,7 @@
   <a href="#23104-clock-drift" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.10.4 Clock Drift
+        23.10.4 时钟漂移
       
     </span>
   </a>
@@ -1864,6 +1864,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -2972,19 +3000,19 @@
   <a href="#234-metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.4 Metrics
+        23.4 指标
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="23.4 Metrics">
+    <nav class="md-nav" aria-label="23.4 指标">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#2341-edge-health-and-workload" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.4.1 Edge Health and Workload
+        23.4.1 边缘健康状况和工作负载
       
     </span>
   </a>
@@ -2995,7 +3023,7 @@
   <a href="#2342-central-and-quality-metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.4.2 Central and Quality Metrics
+        23.4.2 中心指标和质量指标
       
     </span>
   </a>
@@ -3011,7 +3039,7 @@
   <a href="#235-health-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.5 Health Model
+        23.5 健康模型
       
     </span>
   </a>
@@ -3100,7 +3128,7 @@
   <a href="#23103-repeated-process-restart" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.10.3 Repeated Process Restart
+        23.10.3 重复进程重启
       
     </span>
   </a>
@@ -3111,7 +3139,7 @@
   <a href="#23104-clock-drift" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.10.4 Clock Drift
+        23.10.4 时钟漂移
       
     </span>
   </a>
@@ -3178,7 +3206,7 @@
 
 <h1 id="23-observability-and-support">23. 可观察性和支持<a class="headerlink" href="#23-observability-and-support" title="Permanent link">&para;</a></h1>
 <h2 id="231-purpose-and-scope">23.1 目的和范围<a class="headerlink" href="#231-purpose-and-scope" title="Permanent link">&para;</a></h2>
-<p>可观察性必须解释检查行为、设备运行状况、同步状态和配置来源，而无需中央连接进行本地诊断。支持程序保留生产证据，并且永远不会将不可用或不明确的检查变成<code>OK</code>。</p>
+<p>可观察性必须解释检查行为、设备运行状况、同步状态和配置来源，而无需中央连接进行本地诊断。支持程序保留生产证据，并且决不会将不可用或不明确的检查变成<code>OK</code>。</p>
 <h3 id="2311-delivery-scope">23.1.1 交付范围<a class="headerlink" href="#2311-delivery-scope" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>MVP：</strong> 结构化本地日志、每阶段计时、决策 JSON、模型/规则版本和 CLI 运行状况输出。</li>
@@ -3214,8 +3242,8 @@
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="p">}</span>
 </code></pre></div>
 <p>不记录凭据、授权标头、完整图像字节或任意异常负载。仅在获得批准后才会记录完整的条形码值；否则存储屏蔽值或稳定的限制访问引用。回溯通过访问控制保留在本地并集中汇总。</p>
-<h2 id="234-metrics">23.4 Metrics<a class="headerlink" href="#234-metrics" title="Permanent link">&para;</a></h2>
-<h3 id="2341-edge-health-and-workload">23.4.1 Edge Health and Workload<a class="headerlink" href="#2341-edge-health-and-workload" title="Permanent link">&para;</a></h3>
+<h2 id="234-metrics">23.4 指标<a class="headerlink" href="#234-metrics" title="Permanent link">&para;</a></h2>
+<h3 id="2341-edge-health-and-workload">23.4.1 边缘健康状况和工作负载<a class="headerlink" href="#2341-edge-health-and-workload" title="Permanent link">&para;</a></h3>
 <ul>
 <li>相机连接、帧龄、采集失败、曝光/配置偏差和重新连接计数。</li>
 <li>产品窗口打开/完成/中止以及不明确/多个产品计数。</li>
@@ -3226,7 +3254,7 @@
 <li>上传队列深度/字节/最旧年龄、重试计数、终端故障和接收延迟。</li>
 <li>活动应用程序、模型、规则、产品配置版本及其校验和。</li>
 </ul>
-<h3 id="2342-central-and-quality-metrics">23.4.2 Central and Quality Metrics<a class="headerlink" href="#2342-central-and-quality-metrics" title="Permanent link">&para;</a></h3>
+<h3 id="2342-central-and-quality-metrics">23.4.2 中心指标和质量指标<a class="headerlink" href="#2342-central-and-quality-metrics" title="Permanent link">&para;</a></h3>
 <ul>
 <li>摄取请求结果、重复收据、校验和失败以及处理积压。</li>
 <li>设备上次查看、队列延迟、时钟偏移估计和版本合规性。</li>
@@ -3236,7 +3264,7 @@
 <li>API 延迟/错误率、数据库饱和度、对象存储故障和工作人员积压。</li>
 </ul>
 <p>公制标签必须避免使用无界值，例如检验 ID 或条形码。这些属于日志/痕迹。</p>
-<h2 id="235-health-model">23.5 Health Model<a class="headerlink" href="#235-health-model" title="Permanent link">&para;</a></h2>
+<h2 id="235-health-model">23.5 健康模型<a class="headerlink" href="#235-health-model" title="Permanent link">&para;</a></h2>
 <p><code>/api/v1/health/live</code> 报告进程是否可以应答。 <code>/api/v1/health/ready</code> 报告决策关键本地依赖项是否允许有效检查。经过身份验证的 <code>/api/v1/device/status</code> 报告摄像头、型号、规则、磁盘、数据库、时钟、网络、中央连接、<code>inspection_ready</code> 和 <code>sync_ready</code> 状态。</p>
 <p>当 <code>edge-service</code> 内的决策运行时无法持久记录决策、没有兼容的活动模型/规则或没有可用的相机时，它还没有准备好。仅靠中央连接并不意味着它尚未准备好。仪表板显示 <code>healthy</code>、<code>degraded</code> 和 <code>unavailable</code> 以及原因代码和时间戳，而不是单个绿色指示器。</p>
 <h2 id="236-events-and-traceability">23.6 事件和可追溯性<a class="headerlink" href="#236-events-and-traceability" title="Permanent link">&para;</a></h2>
@@ -3252,7 +3280,7 @@
 </ul>
 <h2 id="237-dashboards-and-alerts">23.7 仪表板和警报<a class="headerlink" href="#237-dashboards-and-alerts" title="Permanent link">&para;</a></h2>
 <p>边缘仪表板优先考虑摄像头可用性、最新决策、活动版本、磁盘预留、队列寿命和中央连接。中央仪表板优先考虑陈旧设备、质量趋势、队列延迟、版本推出、审查积压和重复出现的组件/条形码故障。</p>
-<p>警报阈值是在基线测量后配置的。所需的警报条件包括相机不可用、预计生产时没有最新帧、磁盘关键、数据库写入失败、无活动兼容版本、重复工作器重新启动、队列年龄/大小增长、包签名失败、时钟漂移、中央摄取失败以及具有统计意义的质量回归。警报需要重复数据删除、严重性、所有者、操作手册链接和恢复通知。</p>
+<p>警报阈值在基线测量后配置。所需的警报条件包括相机不可用、预计生产时没有最新帧、磁盘关键、数据库写入失败、无活动兼容版本、重复工作器重新启动、队列年龄/大小增长、包签名失败、时钟漂移、中央摄取失败以及具有统计意义的质量回归。警报需要重复数据删除、严重性、所有者、操作手册链接和恢复通知。</p>
 <h2 id="238-diagnostic-bundle">23.8 诊断包<a class="headerlink" href="#238-diagnostic-bundle" title="Permanent link">&para;</a></h2>
 <p>授权的支持操作可以导出包含清单/版本校验和、有效的非秘密配置、最近的结构化日志、健康历史、数据库完整性结果、队列摘要、选定的检查元数据和明确选择的证据的有界的、加密的包。 UI 预览包含敏感数据。创建和下载均经过审核；凭证和不相关的生产媒体被排除在外。</p>
 <p>远程 shell 访问不是默认支持机制。如果客户政策允许，访问必须有时间限制、可单独归属、批准并记录在应用程序外部以及审核日志中。</p>
@@ -3292,7 +3320,7 @@
 <h2 id="2310-operational-runbooks">23.10 操作手册<a class="headerlink" href="#2310-operational-runbooks" title="Permanent link">&para;</a></h2>
 <h3 id="23101-potential-missed-ng">23.10.1 潜在的漏检 NG<a class="headerlink" href="#23101-potential-missed-ng" title="Permanent link">&para;</a></h3>
 <ol>
-<li>保存检查、相邻证据、活动版本、日志和审查记录。</li>
+<li>保存检查、相邻证据、有效版本、日志和审查记录。</li>
 <li>确定受影响的产品/组件/版本/时间/设备范围。
 3、根据客户流程增加审核或暂时暂停OK产品的自动发布。</li>
 <li>重新评估保留的证据而不覆盖原来的决定。</li>
@@ -3307,7 +3335,7 @@
 4、恢复服务并允许限速引流；不要手动克隆任务。</li>
 <li>核对幂等性收据和校验和；仅在修复其原因后重试终端任务。</li>
 </ol>
-<h3 id="23103-repeated-process-restart">23.10.3 Repeated Process Restart<a class="headerlink" href="#23103-repeated-process-restart" title="Permanent link">&para;</a></h3>
+<h3 id="23103-repeated-process-restart">23.10.3 重复进程重启<a class="headerlink" href="#23103-repeated-process-restart" title="Permanent link">&para;</a></h3>
 <ol>
 <li>使线路保持安全的不可用/降级状态并保留重启计数器。</li>
 <li>检查退出代码、资源耗尽、驱动程序状态、数据库完整性和最后事件。</li>
@@ -3315,11 +3343,11 @@
 <li>恢复失败的依赖项或回滚版本。</li>
 <li>在恢复之前运行相机和已知样本检查。</li>
 </ol>
-<h3 id="23104-clock-drift">23.10.4 Clock Drift<a class="headerlink" href="#23104-clock-drift" title="Permanent link">&para;</a></h3>
+<h3 id="23104-clock-drift">23.10.4 时钟漂移<a class="headerlink" href="#23104-clock-drift" title="Permanent link">&para;</a></h3>
 <ol>
 <li>将边缘墙时间与批准的时间源和中心接收时间进行比较。</li>
 <li>保留单调序列和源时间戳；不要重写历史记录。</li>
-<li>恢复时间同步，避免不安全的突变，平台支持逐步校正。</li>
+<li>恢复时间同步，避免不安全的突变，平台支持逐步修正。</li>
 <li>标记受影响的记录并验证产品窗口订购和上传核对。</li>
 </ol>
 <h2 id="2311-data-retention-for-telemetry">23.11 遥测数据保留<a class="headerlink" href="#2311-data-retention-for-telemetry" title="Permanent link">&para;</a></h2>

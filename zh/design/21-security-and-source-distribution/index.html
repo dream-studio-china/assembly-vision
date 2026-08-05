@@ -1184,7 +1184,7 @@
   <a href="#219-secrets-management" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.9 Secrets Management
+        21.9 秘密管理
       
     </span>
   </a>
@@ -1218,7 +1218,7 @@
   <a href="#21102-unauthorized-configuration-change" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.10.2 Unauthorized Configuration Change
+        21.10.2 未经授权的配置更改
       
     </span>
   </a>
@@ -1256,7 +1256,7 @@
   <a href="#2112-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.12 未解决的问题和需要验证
+        21.12 未决问题和需要验证
       
     </span>
   </a>
@@ -1825,6 +1825,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -2988,7 +3016,7 @@
   <a href="#219-secrets-management" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.9 Secrets Management
+        21.9 秘密管理
       
     </span>
   </a>
@@ -3022,7 +3050,7 @@
   <a href="#21102-unauthorized-configuration-change" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.10.2 Unauthorized Configuration Change
+        21.10.2 未经授权的配置更改
       
     </span>
   </a>
@@ -3060,7 +3088,7 @@
   <a href="#2112-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.12 未解决的问题和需要验证
+        21.12 未决问题和需要验证
       
     </span>
   </a>
@@ -3103,7 +3131,7 @@
 <p>AssemblyVision 可以保护生产证据、配置完整性、凭证和管理操作，同时保留离线边缘检查。安全控制是基于风险的； Docker 和 Python 字节码都没有被表示为强大的源代码安全边界。</p>
 <h3 id="2111-scope-distinction">21.1.1 范围区别<a class="headerlink" href="#2111-scope-distinction" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>MVP：</strong> 两天静态映像 CLI 不需要身份验证，前提是它仅在具有非生产数据的隔离开发环境中使用。</li>
+<li><strong>静态训练和检查 MVP：</strong> 不需要身份验证，而训练和检查 CLI 仅在具有非生产数据的隔离开发环境中使用。训练代码、数据集、笔记本和实验配置仅供开发人员使用，不包含在运行时发行版中。模型加密和仅限 <code>.pyc</code> 的打包被推迟。</li>
 <li><strong>一个月目标：</strong> 本地访问控制、中央身份验证、TLS、设备凭证、审核日志、非根容器和受控工件分发。</li>
 <li><strong>生产目标：</strong> 实用的客户集成身份、基于角色的授权、证书生命周期管理、签名模型/配置包、漏洞管理、备份加密和事件响应。</li>
 <li><strong>未来范围：</strong> 硬件支持的密钥、远程证明、更强大的本机编译/混淆或仅在合同威胁分析证明合理的情况下进行许可控制。</li>
@@ -3177,7 +3205,7 @@
 <li>删除导入和诊断仍然可靠的原始项目 <code>.py</code> 文件。</li>
 <li>仅将运行时依赖项和工件复制到最终映像中。</li>
 <li>构建 Vue 应用程序并仅部署生成的静态资产。</li>
-<li>排除 <code>.git</code>、测试、运行时不需要的文档、源映射（除非操作批准）、训练数据集、模型训练代码、笔记本和内部实验配置。</li>
+<li>排除<code>.git</code>、测试、运行时不需要的文档、除非操作批准的源映射、训练数据集、模型训练代码、笔记本和内部实验配置。</li>
 <li>在可行的情况下，在具有只读根文件系统的非 root 用户下运行。</li>
 <li>将模型、规则、数据库、日志、媒体和临时文件以最小权限显式挂载。</li>
 <li>在部署时注入短期或可轮换的秘密；永远不要将长期秘密烘焙到图像中。</li>
@@ -3193,7 +3221,7 @@
 <li>当授权机器在没有额外可信硬件的情况下主动执行代码时，图像加密无法保护代码。</li>
 </ul>
 <p>MVP 接受此级别是因为直接要求是避免直接随意的源浏览，而不是保证免受高级逆向工程的影响。如果没有具体的商业和运营要求，则不会故意引入许可服务器、激进的混淆、自定义加壳程序和硬件绑定激活。</p>
-<h2 id="219-secrets-management">21.9 Secrets Management<a class="headerlink" href="#219-secrets-management" title="Permanent link">&para;</a></h2>
+<h2 id="219-secrets-management">21.9 秘密管理<a class="headerlink" href="#219-secrets-management" title="Permanent link">&para;</a></h2>
 <p>秘密被分类、清点并分配所有者和轮换方法。本地机密应只能由服务帐户读取，并通过客户批准的操作系统机密存储、Docker 机密挂载或受保护的文件提供。仅当了解流程和支持工具暴露时，环境变量才是可接受的。前端构建时变量是公共的，绝不能包含秘密。</p>
 <p>轮换必须支持重叠，以便排队上传能够在凭证替换后幸存下来。撤销一台设备不得使其他设备失效。日志显示凭证标识符，而不是凭证值。</p>
 <h2 id="2110-security-operations">21.10 安全操作<a class="headerlink" href="#2110-security-operations" title="Permanent link">&para;</a></h2>
@@ -3205,7 +3233,7 @@
 <li>根据客户事件策略重新映像或检查边缘主机。
 5、只有在主机信任恢复后才颁发新的唯一凭证；通过检查 ID 和校验和协调排队记录。</li>
 </ol>
-<h3 id="21102-unauthorized-configuration-change">21.10.2 Unauthorized Configuration Change<a class="headerlink" href="#21102-unauthorized-configuration-change" title="Permanent link">&para;</a></h3>
+<h3 id="21102-unauthorized-configuration-change">21.10.2 未经授权的配置更改<a class="headerlink" href="#21102-unauthorized-configuration-change" title="Permanent link">&para;</a></h3>
 <ol>
 <li>停止进一步激活并保留当前证据和审计跟踪。</li>
 <li>识别参与者、范围、旧/新校验和、受影响的设备和检查时间范围。</li>
@@ -3222,7 +3250,7 @@
 </ol>
 <h2 id="2111-verification">21.11 验证<a class="headerlink" href="#2111-verification" title="Permanent link">&para;</a></h2>
 <p>安全验证包括授权矩阵测试、租户/站点隔离测试、设备吊销、畸形上传处理、依赖项/容器扫描、秘密扫描、包签名失败、回滚安全、审核日志完整性、备份恢复以及合同要求的广泛部署之前的外部渗透测试。</p>
-<h2 id="2112-open-questions-and-validation-required">21.12 未解决的问题和需要验证<a class="headerlink" href="#2112-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="2112-open-questions-and-validation-required">21.12 未决问题和需要验证<a class="headerlink" href="#2112-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>客户身份提供商、MFA 政策、帐户生命周期和角色分离可行性。</li>
 <li>边缘用户、物理访问控制、本地网络可达性和信息亭/浏览器模型。</li>

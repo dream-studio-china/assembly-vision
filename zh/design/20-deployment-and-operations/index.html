@@ -1294,7 +1294,7 @@
   <a href="#2014-related-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.14 Related Decisions
+        20.14 相关决定
       
     </span>
   </a>
@@ -1880,6 +1880,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -3181,7 +3209,7 @@
   <a href="#2014-related-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.14 Related Decisions
+        20.14 相关决定
       
     </span>
   </a>
@@ -3213,7 +3241,8 @@
 <p>本文档定义了 AssemblyVision 的打包、安装、升级、操作、备份和恢复方式。它涵盖了边缘检测系统和中央服务，而不使中央服务器成为实时检测的依赖。</p>
 <h3 id="2011-current-and-mvp-scope">20.1.1 当前和 MVP 范围<a class="headerlink" href="#2011-current-and-mvp-scope" title="Permanent link">&para;</a></h3>
 <ul>
-<li>为期两天的静态图像 MVP 在开发人员环境中运行，并生成 JSON、ROI 图像和带注释的图像。</li>
+<li>静态训练和检查 MVP 在开发人员环境中运行。仅供开发人员使用的培训 CLI 会生成本地模型工件；检查 CLI 生成 JSON、ROI 图像、带注释的图像和保留的验证输出。</li>
+<li>此 MVP 未实现加密模型工件或仅限 <code>.pyc</code> 的客户运行时打包；训练代码被简单地排除在任何运行时分发之外。</li>
 <li>为期一个月的目标是使用 Docker Compose 打包边缘和中央应用程序。</li>
 <li>SQLite 可接受作为初始边缘数据库； PostgreSQL 是中央数据库。</li>
 <li>持久运行时数据存储在容器层之外。</li>
@@ -3536,7 +3565,7 @@ else 验证或健康检查失败
 <li>TLS 证书颁发机构、设备注册、注册表访问和离线安装过程。</li>
 <li>最大关键帧和 NG 剪辑大小以及是否需要断点续传。</li>
 </ul>
-<h2 id="2014-related-decisions">20.14 Related Decisions<a class="headerlink" href="#2014-related-decisions" title="Permanent link">&para;</a></h2>
+<h2 id="2014-related-decisions">20.14 相关决定<a class="headerlink" href="#2014-related-decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../decisions/ADR-001-edge-first-inspection/">ADR-001: Edge-first inspection</a></li>
 <li><a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/">ADR-005: Local-first storage and delayed upload</a></li>

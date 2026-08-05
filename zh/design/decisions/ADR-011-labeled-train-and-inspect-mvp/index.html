@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/design/05-central-server-architecture/">
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/design/decisions/ADR-011-labeled-train-and-inspect-mvp/">
       
       
-        <link rel="prev" href="../04-edge-client-architecture/">
+        <link rel="prev" href="../ADR-010-per-component-temporal-aggregation/">
       
       
-        <link rel="next" href="../06-ai-detection-pipeline/">
+        <link rel="next" href="../../../contracts/">
       
       
         
@@ -26,19 +26,19 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>中心端架构 - AssemblyVision</title>
+        <title>ADR-011：标记为训练和检查 MVP - AssemblyVision</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -57,7 +57,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#assemblyvision-central-server-architecture" class="md-skip">
+        <a href="#adr-011-labeled-train-and-inspect-mvp" class="md-skip">
           跳转至
         </a>
       
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+    <a href="../../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              中心端架构
+              ADR-011：标记为训练和检查 MVP
             
           </span>
         </div>
@@ -262,7 +262,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+    <a href="../../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -292,7 +292,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -319,7 +319,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../source-brief/" class="md-nav__link">
+      <a href="../../../source-brief/" class="md-nav__link">
         
   
   
@@ -400,7 +400,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         
   
   
@@ -428,7 +428,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../00-cover-and-status/" class="md-nav__link">
+      <a href="../../00-cover-and-status/" class="md-nav__link">
         
   
   
@@ -456,7 +456,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../01-introduction/" class="md-nav__link">
+      <a href="../../01-introduction/" class="md-nav__link">
         
   
   
@@ -484,7 +484,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../02-requirements/" class="md-nav__link">
+      <a href="../../02-requirements/" class="md-nav__link">
         
   
   
@@ -512,7 +512,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../03-architecture-overview/" class="md-nav__link">
+      <a href="../../03-architecture-overview/" class="md-nav__link">
         
   
   
@@ -540,7 +540,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../04-edge-client-architecture/" class="md-nav__link">
+      <a href="../../04-edge-client-architecture/" class="md-nav__link">
         
   
   
@@ -548,6 +548,1037 @@
     
   
     边缘端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 检测流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    相机与图像采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    产品检测与 ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组件检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规则引擎
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    本地存储与保留
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    上传与同步
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型与数据库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API 与事件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心管理看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo 与代码组织
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    训练与评估
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署与运维
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全与源码分发
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试与质量保证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    可观测性与支持
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    人在回路
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    客户验收
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    风险与缓解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_31" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构决策
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构决策
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001：边缘优先检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002：Python 后端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003：Vue 3 与 TypeScript 前端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004：两阶段检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005：本地优先存储与延迟上传
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006：REST 与 WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007：Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008：Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009：静态图像优先 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010：按组件时序聚合
   
 
     
@@ -584,7 +1615,7 @@
   <span class="md-ellipsis">
     
   
-    中心端架构
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -602,7 +1633,7 @@
   <span class="md-ellipsis">
     
   
-    中心端架构
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -628,10 +1659,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-responsibilities-and-boundary" class="md-nav__link">
+  <a href="#1-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 职责与边界
+        1. 现状
       
     </span>
   </a>
@@ -639,10 +1670,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-central-component-architecture" class="md-nav__link">
+  <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 中心组件架构
+        2. 背景
       
     </span>
   </a>
@@ -650,22 +1681,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-ingestion-architecture" class="md-nav__link">
+  <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 摄取架构
+        3. 决定
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 摄取架构">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 后果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 后果">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-inspection-envelope" class="md-nav__link">
+  <a href="#41-positive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1 检验范围
+        4.1 正面
       
     </span>
   </a>
@@ -673,10 +1715,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32-media-transfer" class="md-nav__link">
+  <a href="#42-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 媒体传输
+        4.2 负面和权衡
       
     </span>
   </a>
@@ -689,10 +1731,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-domain-and-persistence-model" class="md-nav__link">
+  <a href="#5-supersession" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 领域和持久化模型
+        5. 取代
       
     </span>
   </a>
@@ -700,176 +1742,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-administration-and-configuration" class="md-nav__link">
+  <a href="#6-links" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 管理和配置
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. 管理和配置">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#51-device-and-product-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.1 设备和产品管理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#52-distribution-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.2 分发生命周期
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-manual-review-and-reporting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 人工审核和报告
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-api-and-web-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. API 和 Web 架构
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-authorization-audit-and-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 授权、审计和安全
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-reliability-jobs-and-operations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. 可靠性、工作和运营
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-deployment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. 部署
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-delivery-horizons" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. 交付范围
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="11. 交付范围">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#111-static-train-and-inspect-mvp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.1 静态训练和检查 MVP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#112-one-month-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.2 一个月目标
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#113-production-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.3 生产目标
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#114-future" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.4 未来
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-assumptions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. 假设
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-open-questions-and-validation-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. 开放性问题和需要验证
+        6. 链接
       
     </span>
   </a>
@@ -880,1037 +1756,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    AI 检测流水线
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    相机与图像采集
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../08-product-detection-and-roi/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    产品检测与 ROI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../09-component-detection/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    组件检测
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../10-temporal-aggregation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    时序聚合
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../11-rule-engine/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    规则引擎
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../12-local-storage-and-retention/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    本地存储与保留
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../13-upload-and-synchronization/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    上传与同步
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../14-data-model-and-database/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    数据模型与数据库
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../15-rest-api-and-events/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    REST API 与事件
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../16-edge-dashboard/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    边缘端看板
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../17-central-admin-dashboard/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    中心管理看板
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../18-monorepo-and-code-organization/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Monorepo 与代码组织
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../19-training-and-evaluation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    训练与评估
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../20-deployment-and-operations/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    部署与运维
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../21-security-and-source-distribution/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    安全与源码分发
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    测试与质量保证
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../23-observability-and-support/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    可观测性与支持
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../24-human-in-the-loop/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    人在回路
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../25-roadmap/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    路线图
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../26-customer-acceptance/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    客户验收
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../27-risks-and-mitigations/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    风险与缓解
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../appendices/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    附录
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
-        
-          
-          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    架构决策
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_31">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    架构决策
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR 索引
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-001：边缘优先检测
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-002-python-backend/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-002：Python 后端
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-003：Vue 3 与 TypeScript 前端
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-004-two-stage-detection/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-004：两阶段检测
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-005：本地优先存储与延迟上传
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-006：REST 与 WebSocket
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-007-monorepo/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-007：Monorepo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-008-docker-deployment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-008：Docker 部署
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-009：静态图像优先 MVP
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-010：按组件时序聚合
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-011：标记为训练和检查 MVP
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1992,7 +1837,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/" class="md-nav__link">
+      <a href="../../../contracts/" class="md-nav__link">
         
   
   
@@ -2020,7 +1865,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/01-architecture-boundaries/" class="md-nav__link">
+      <a href="../../../contracts/01-architecture-boundaries/" class="md-nav__link">
         
   
   
@@ -2048,7 +1893,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
+      <a href="../../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
         
   
   
@@ -2076,7 +1921,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
+      <a href="../../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
         
   
   
@@ -2104,7 +1949,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
+      <a href="../../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
         
   
   
@@ -2132,7 +1977,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
+      <a href="../../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
         
   
   
@@ -2160,7 +2005,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
+      <a href="../../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
         
   
   
@@ -2188,7 +2033,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
+      <a href="../../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
         
   
   
@@ -2216,7 +2061,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
+      <a href="../../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
         
   
   
@@ -2244,7 +2089,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
+      <a href="../../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
         
   
   
@@ -2272,7 +2117,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
+      <a href="../../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
         
   
   
@@ -2300,7 +2145,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
+      <a href="../../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
         
   
   
@@ -2389,7 +2234,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/" class="md-nav__link">
+      <a href="../../../runbooks/" class="md-nav__link">
         
   
   
@@ -2417,7 +2262,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/01-camera-disconnection/" class="md-nav__link">
+      <a href="../../../runbooks/01-camera-disconnection/" class="md-nav__link">
         
   
   
@@ -2445,7 +2290,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/02-model-loading-failure/" class="md-nav__link">
+      <a href="../../../runbooks/02-model-loading-failure/" class="md-nav__link">
         
   
   
@@ -2473,7 +2318,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/03-low-disk-space/" class="md-nav__link">
+      <a href="../../../runbooks/03-low-disk-space/" class="md-nav__link">
         
   
   
@@ -2501,7 +2346,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/04-upload-backlog/" class="md-nav__link">
+      <a href="../../../runbooks/04-upload-backlog/" class="md-nav__link">
         
   
   
@@ -2529,7 +2374,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/05-database-recovery/" class="md-nav__link">
+      <a href="../../../runbooks/05-database-recovery/" class="md-nav__link">
         
   
   
@@ -2557,7 +2402,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/06-repeated-container-restart/" class="md-nav__link">
+      <a href="../../../runbooks/06-repeated-container-restart/" class="md-nav__link">
         
   
   
@@ -2585,7 +2430,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/07-network-recovery-synchronization/" class="md-nav__link">
+      <a href="../../../runbooks/07-network-recovery-synchronization/" class="md-nav__link">
         
   
   
@@ -2613,7 +2458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/08-model-rollback/" class="md-nav__link">
+      <a href="../../../runbooks/08-model-rollback/" class="md-nav__link">
         
   
   
@@ -2641,7 +2486,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbooks/09-rule-rollback/" class="md-nav__link">
+      <a href="../../../runbooks/09-rule-rollback/" class="md-nav__link">
         
   
   
@@ -2730,7 +2575,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+      <a href="../../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
         
   
   
@@ -2758,7 +2603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+      <a href="../../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
         
   
   
@@ -2786,7 +2631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+      <a href="../../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
         
   
   
@@ -2875,7 +2720,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/" class="md-nav__link">
+      <a href="../../../contributing/" class="md-nav__link">
         
   
   
@@ -2903,7 +2748,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ai/context/" class="md-nav__link">
+      <a href="../../../ai/context/" class="md-nav__link">
         
   
   
@@ -2958,10 +2803,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-responsibilities-and-boundary" class="md-nav__link">
+  <a href="#1-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 职责与边界
+        1. 现状
       
     </span>
   </a>
@@ -2969,10 +2814,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-central-component-architecture" class="md-nav__link">
+  <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 中心组件架构
+        2. 背景
       
     </span>
   </a>
@@ -2980,22 +2825,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-ingestion-architecture" class="md-nav__link">
+  <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 摄取架构
+        3. 决定
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 摄取架构">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 后果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 后果">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-inspection-envelope" class="md-nav__link">
+  <a href="#41-positive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1 检验范围
+        4.1 正面
       
     </span>
   </a>
@@ -3003,10 +2859,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32-media-transfer" class="md-nav__link">
+  <a href="#42-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 媒体传输
+        4.2 负面和权衡
       
     </span>
   </a>
@@ -3019,10 +2875,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-domain-and-persistence-model" class="md-nav__link">
+  <a href="#5-supersession" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 领域和持久化模型
+        5. 取代
       
     </span>
   </a>
@@ -3030,176 +2886,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-administration-and-configuration" class="md-nav__link">
+  <a href="#6-links" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 管理和配置
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. 管理和配置">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#51-device-and-product-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.1 设备和产品管理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#52-distribution-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.2 分发生命周期
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-manual-review-and-reporting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 人工审核和报告
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-api-and-web-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. API 和 Web 架构
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-authorization-audit-and-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 授权、审计和安全
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-reliability-jobs-and-operations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. 可靠性、工作和运营
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-deployment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. 部署
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-delivery-horizons" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. 交付范围
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="11. 交付范围">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#111-static-train-and-inspect-mvp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.1 静态训练和检查 MVP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#112-one-month-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.2 一个月目标
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#113-production-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.3 生产目标
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#114-future" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.4 未来
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-assumptions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. 假设
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-open-questions-and-validation-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. 开放性问题和需要验证
+        6. 链接
       
     </span>
   </a>
@@ -3226,108 +2916,52 @@
   
 
 
-<h1 id="assemblyvision-central-server-architecture">AssemblyVision 中央服务器架构<a class="headerlink" href="#assemblyvision-central-server-architecture" title="Permanent link">&para;</a></h1>
-<h2 id="1-responsibilities-and-boundary">1. 职责与边界<a class="headerlink" href="#1-responsibilities-and-boundary" title="Permanent link">&para;</a></h2>
-<p>中央服务器接收延迟的检查结果和选定的证据，维护跨设备历史记录和报告，管理设备/产品/规则/模型/用户，支持手动审核，记录审核事件并分发批准的配置。它是一个管理和证据平面，从来不是生产检验的同步依赖。</p>
-<p>最初的自动化决策是来自边缘的仅附加事实。中央审查和更正是相互关联的事实；它们不会覆盖原始结果。请参阅<a href="../03-architecture-overview/">Architecture Overview</a>和<a href="../04-edge-client-architecture/">Edge Client Architecture</a>。</p>
-<h2 id="2-central-component-architecture">2. 中心组件架构<a class="headerlink" href="#2-central-component-architecture" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>flowchart LR
-    Edge[边缘上传客户端] --&gt; Gateway[Nginx 和中央 FastAPI]
-    Admin[Vue 管理应用程序] --&gt; Gateway
-    Gateway --&gt; Auth[身份与授权]
-    Gateway --&gt; Ingest[检查摄取]
-    Gateway --&gt; Query[历史记录和仪表板查询]
-    Gateway --&gt; Config[设备产品规则和型号管理]
-    Gateway --&gt; Review[人工审核]
-    Ingest --&gt; DB[(PostgreSQL)]
-    Ingest --&gt; Media[(对象存储抽象)]
-    Ingest --&gt; Jobs[后台工作]
-    Query --&gt; DB
-    Query --&gt; Media
-    Config --&gt; DB
-    Config --&gt; Jobs
-    Review --&gt; DB
-    Auth --&gt; DB
-    Jobs --&gt; DB
-    Jobs --&gt; Media
-    Jobs -. 仅在合理的情况下经纪人 .-&gt; Redis[(雷迪斯)]
-    Config --&gt;|版本化的包交付| Edge</code></pre>
-<p>模块可以从一个具有明确域边界的可部署 FastAPI 开始。仅出于可衡量的扩展、隔离或所有权需求而引入单独的服务。工作人员有理由进行长期运行的媒体衍生品、导出/报告、通知、包组装和完整性/协调扫描，而不是简单的 CRUD。</p>
-<h2 id="3-ingestion-architecture">3. 摄取架构<a class="headerlink" href="#3-ingestion-architecture" title="Permanent link">&para;</a></h2>
-<h3 id="31-inspection-envelope">3.1 检验范围<a class="headerlink" href="#31-inspection-envelope" title="Permanent link">&para;</a></h3>
-<p>边缘发布一个版本化信封，其中包含身份、时间戳、产品解决方案、业务/内部结果、组件和聚合证据、原因代码、框架/投资回报率摘要、不可变版本和媒体清单。服务器对设备进行身份验证，验证架构和大小，验证设备所有权/状态和兼容引用，计算规范的有效负载哈希，并保留在事务中。</p>
-<p><code>(device_id, inspection_id)</code> 和幂等键是唯一的。相同的重试将返回先前的收据。具有不同规范散列的重用身份/密钥返回 <code>409 Conflict</code>，记录安全/数据完整性事件，并保留原始事件。收据包括中央记录 ID、接受的模式版本、服务器接收时间和媒体上传状态。</p>
-<h3 id="32-media-transfer">3.2 媒体传输<a class="headerlink" href="#32-media-transfer" title="Permanent link">&para;</a></h3>
-<p>OK通常会贡献一帧代表性的帧。 NG 提供多个关键帧、注释、ROI 以及可选的简短事件剪辑。例外情况只能提供有限的诊断证据。 API最初可以直接接受小媒体；生产应使用经过验证的大小限制，并可选择为较大对象发出上传会话。</p>
-<p>字节被暂存、校验和/大小验证，然后在不透明的存储密钥下最终确定。 PostgreSQL 存储媒体类型、校验和、大小、内容类型、状态、保留类别和对象密钥，而不是公共文件系统路径。部分/孤立上传是异步协调的。根据安全模型，检索使用授权的 API 流或限时链接。</p>
-<h2 id="4-domain-and-persistence-model">4. 领域和持久化模型<a class="headerlink" href="#4-domain-and-persistence-model" title="Permanent link">&para;</a></h2>
-<p>核心 PostgreSQL 聚合是：</p>
-<ul>
-<li>租户/位置：验证所需租户层次结构的组织、站点、生产线和设备。</li>
-<li>身份/访问：用户、角色、分配、设备凭证和会话/令牌。</li>
-<li>配置：产品、所需组件、不可变规则版本、模型包/版本、兼容性声明和设备分配。</li>
-<li>检查：检查、组件结果、证据摘要、媒体元数据、设备事件和上传收据。</li>
-<li>审查/审计：审查记录和仅附加审计事件。</li>
-</ul>
-<p>使用 UUID/ULID 样式的不透明主键，同时保留唯一的边缘业务标识符。基于测量的查询，对接收和检查时间、设备/时间、条形码（在政策允许的情况下）、产品/结果、模型/规则版本、审核状态和原因代码进行索引。时间存储为时区感知 UTC；边缘观察时间和服务器接收时间均被保留。当必须保留引用时，软删除适用于托管配置；检查/审查使用保留工作流程而不是随意删除。</p>
-<p>PostgreSQL 事务保护聚合不变量。对象存储与 PostgreSQL 不是事务性的，因此需要显式的 <code>PENDING</code>、<code>AVAILABLE</code>、<code>FAILED</code> 和 <code>DELETED</code> 媒体状态以及协调。</p>
-<h2 id="5-administration-and-configuration">5. 管理和配置<a class="headerlink" href="#5-administration-and-configuration" title="Permanent link">&para;</a></h2>
-<h3 id="51-device-and-product-management">5.1 设备和产品管理<a class="headerlink" href="#51-device-and-product-management" title="Permanent link">&para;</a></h3>
-<p>管理员注册设备、将其分配到批准的组织/线路范围、轮换凭据、查看上次查看/队列/版本运行状况以及隔离受损或不兼容的设备。产品识别所需的组件集，但不嵌入可变的生产策略。规则版本参考产品配置并声明阈值/聚合策略；模型清单标识工件校验和、类、运行时兼容性、培训/评估沿袭和批准状态。</p>
-<h3 id="52-distribution-lifecycle">5.2 分发生命周期<a class="headerlink" href="#52-distribution-lifecycle" title="Permanent link">&para;</a></h3>
-<p>包会经历草稿、验证、批准、分配、下载、边缘验证、激活和确认状态。不可变内容收到新版本而不是就地编辑。在更广泛的分配之前，推出支持较小的设备群。边缘保留最后一次已知良好的包裹，并仅在检查之间激活。中心地位将分配与实际确认区分开来；任何仪表板都不应暗示仅通过分配即可激活。</p>
-<p>模型和远程配置/规则交付是生产目标功能。一个月的演示者可以集中注册所需的版本，同时在边缘手动安装软件包；安装仍会在本地验证不可变内容、校验和、兼容性和最后一次正确的回滚。分配绝不能显示为激活。</p>
-<h2 id="6-manual-review-and-reporting">6. 人工审核和报告<a class="headerlink" href="#6-manual-review-and-reporting" title="Permanent link">&para;</a></h2>
-<p>审核呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
-<p>报告将自动计数与经过审查的真实情况分开，并清楚地说明样本覆盖范围。所需的视图包括 OK/NG 趋势、缺失组件、条形码故障、产品/系列/设备故障、模型/规则版本性能、设备运行状况/上次查看、上传延迟、审核率和纠正率。估计的假阴性指标需要抽样 OK 审核或独立标记的验收数据；未经审查不能被解释为正确性。</p>
-<h2 id="7-api-and-web-architecture">7. API 和 Web 架构<a class="headerlink" href="#7-api-and-web-architecture" title="Permanent link">&para;</a></h2>
-<p>建议的版本组为 <code>/api/v1/device-ingest</code>、<code>/devices</code>、<code>/lines</code>、<code>/inspections</code>、<code>/media</code>、<code>/reviews</code>、<code>/products</code>、<code>/rules</code>、<code>/models</code>、<code>/device-configurations</code>、<code>/dashboard</code>、<code>/reports</code>、<code>/events</code>、<code>/audit-logs</code> 和 <code>/auth</code>。集合 API 使用游标分页和有界过滤器。变异请求在客户端重试时使用乐观并发和幂等性。</p>
-<p>FastAPI生成OpenAPI； Vue 3 TypeScript 应用程序使用生成的客户端。 Pinia 保存会话/UI 状态而不是复制服务器事实。路由器级和组件级防护改善了用户体验，而服务器授权仍然具有权威性。 WebSocket 或 SSE 可以提供设备/仪表板更新，并在重新连接后通过 REST 重新同步。</p>
-<h2 id="8-authorization-audit-and-security">8. 授权、审计和安全<a class="headerlink" href="#8-authorization-audit-and-security" title="Permanent link">&para;</a></h2>
-<ul>
-<li>设备身份验证与人工身份验证不同，其范围仅限于该设备的摄取/配置。</li>
-<li>根据策略要求，人员权限可单独查看、审查、配置编辑、批准、推出、用户管理、导出和审核访问。</li>
-<li>TLS 保护传输；秘密存储/轮换和静态加密遵循选定的托管/客户控制。</li>
-<li>审核记录包括参与者、操作、目标、先前/新版本引用或有界差异、时间戳、请求/相关 ID 和结果。</li>
-<li>根据经过验证的数据分类处理条形码和媒体访问；日志避免凭证和不必要的原始负载。</li>
-<li>上传强制执行内容类型、大小、校验和、恶意软件/内容策略（如果需要）、速率限制和不透明对象密钥。</li>
-</ul>
-<p>确切的身份提供商和租赁模型尚未解决，并且不得由初始表列表暗示。</p>
-<h2 id="9-reliability-jobs-and-operations">9. 可靠性、工作和运营<a class="headerlink" href="#9-reliability-jobs-and-operations" title="Permanent link">&para;</a></h2>
-<p>除了数据库/对象存储依赖项之外，API 是水平无状态的。 PostgreSQL 在需要时使用经过测试的备份和时间点恢复。对象存储使用与数据库保留和备份策略兼容的生命周期规则。健康检查区分活跃度/就绪度；可观察性将请求、设备、检查、媒体、作业和用户/审核 ID 关联起来。</p>
-<p>异步作业是可重试的和幂等的，持久存储状态，对瞬时/永久故障进行分类，并在合理的情况下使用死信/运算符处理。仪表板查询优化仅在查询测量之后从索引和预聚合表/物化视图开始； Redis 是可选的而不是记录系统。</p>
-<p>指标涵盖摄取量/错误/幂等重播/冲突、媒体验证、API 延迟/错误、数据库/对象存储运行状况、作业滞后/失败、设备上次查看、上传延迟、包确认、审核积压和审核失败。警报必须是可操作的，并避免将故意离线的设备视为无法解释的健康设备。</p>
-<h2 id="10-deployment">10. 部署<a class="headerlink" href="#10-deployment" title="Permanent link">&para;</a></h2>
-<p>最初的中央部署是 Docker Compose 友好的：Nginx、内置管理资产、FastAPI API、PostgreSQL、对象存储实现以及只有合理的工作人员/代理。容器使用多阶段构建、非 root 用户、运行状况检查、重启策略、显式机密/配置和持久卷。架构迁移是一个受控发布步骤，并非由每个 API 副本同时运行。</p>
-<p>未来的 Kubernetes 部署可能会取代编排，同时保留 API 和持久性边界。不假定确切的托管位置、可用性拓扑、备份目标和数据驻留。</p>
-<h2 id="11-delivery-horizons">11. 交付范围<a class="headerlink" href="#11-delivery-horizons" title="Permanent link">&para;</a></h2>
-<h3 id="111-static-train-and-inspect-mvp">11.1 静态训练和检查 MVP<a class="headerlink" href="#111-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
-<p>没有建立中央服务器。单独的仅供开发人员使用的培训 CLI 和静态检查 CLI 使用未来兼容的标识符、原因代码、清单和版本，因此集成不需要重新定义决策。</p>
-<h3 id="112-one-month-target">11.2 一个月目标<a class="headerlink" href="#112-one-month-target" title="Permanent link">&para;</a></h3>
-<p>实施设备范围的幂等摄取、PostgreSQL 检查历史记录、选定的证据存储、初始设备/产品/规则元数据、最小检查/审查视图、最小试点身份验证和 Compose 部署。推迟一般管理、复杂分析、报告/导出作业和远程包分发。</p>
-<h3 id="113-production-target">11.3 生产目标<a class="headerlink" href="#113-production-target" title="Permanent link">&para;</a></h3>
-<p>添加批准的身份/授权、凭证轮换、审计、备份/恢复测试、保留、安全媒体访问、转出/回滚、协调、警报、报告正确性控制、性能/浸泡测试和操作运行手册。</p>
-<h3 id="114-future">11.4 未来<a class="headerlink" href="#114-future" title="Permanent link">&para;</a></h3>
-<p>仅当需求和负载合理时才添加签名模型分发、更大规模的工作人员和分析、外部身份/集成以及 Kubernetes。</p>
-<h2 id="12-assumptions">12. 假设<a class="headerlink" href="#12-assumptions" title="Permanent link">&para;</a></h2>
-<ul>
-<li>边缘客户端可以进行身份验证并最终到达 HTTPS 端点。</li>
-<li>中央关系数据库和持久对象存储可以在选定的托管环境中运行。</li>
-<li>设备/产品标识符可以集中管理，无需在检查期间进行集中查找。</li>
-<li>只有在标签批准和数据集治理之后，审核结果才可以用作培训候选。</li>
-</ul>
-<h2 id="13-open-questions-and-validation-required">13. 开放性问题和需要验证<a class="headerlink" href="#13-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h1 id="adr-011-labeled-train-and-inspect-mvp">ADR-011：标记为训练和检查 MVP<a class="headerlink" href="#adr-011-labeled-train-and-inspect-mvp" title="Permanent link">&para;</a></h1>
+<h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
+<p>已接受</p>
+<h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
+<p>ADR-009 建立了静态图像优先的实施顺序，并将模型训练排除在其两天的范围之外。当前的 MVP 目标要求开发人员从带标签的静态图像集进行训练，然后检查单独的图像集，一次一张图像，并提供可追踪的 <code>OK</code> 或 <code>NG</code> 结果。</p>
+<p>所选的注释工具是X-AnyLabeling。它以 Ultralytics YOLO 文本格式导出产品和组件边界框。文件名 <code>OK</code> 或 <code>NG</code> 标签对于保留验证仍然有用，但不能单独训练边界框检测器。</p>
+<p>MVP 在开发人员控制的具有 16 GB 内存的 Apple Silicon Mac 上运行。它必须保留最终的两阶段架构：全帧上的产品检测、生成的产品 ROI、该 ROI 中的组件检测以及确定性规则评估。培训必须与边缘运行时保持分离，因此它不会与客户运行时包一起分发。</p>
+<h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
+<p>仅替换 MVP 的 ADR-009 中的训练排除项。标记的培训和检查 MVP 应：</p>
 <ol>
-<li>系统是单客户还是多租户，什么组织/站点/线路层次结构是真实的？</li>
-<li>中央托管在哪里，适用哪些可用性/恢复目标，以及允许哪些连接路径？</li>
-<li>需要哪些身份提供商、角色、设备凭证机制、TLS/PKI、签名和秘密存储？</li>
-<li>适用哪些条形码/介质分类、驻留、保留、删除、导出和审核义务？</li>
-<li>哪些检查/媒体量、有效负载大小、查询并发性和报告计划决定工作/存储设计？</li>
-<li>哪些审核结果和工作流程状态得到批准，谁可以更改标签或发布包？</li>
-<li>在一个月的手动安装演示程序之后，哪个生产增量引入了远程配置交付？</li>
-<li>哪些工作适合使用代理/Redis，哪些对象存储实现可用？</li>
-<li>参见<a href="../appendices/#3-global-open-questions">Global Open Questions</a>。</li>
+<li>使用 X-AnyLabeling 以标准 YOLO 格式创建全框架产品和组件边界框标签。</li>
+<li>提供仅供开发人员使用的<code>training/</code>工作区以及与<code>edge-service</code>分离的<code>av-train</code> CLI；运行时代码不得导入训练代码。</li>
+<li>根据全帧图像和标签训练产品检测器。</li>
+<li>在训练组件检测器之前，通过生成产品 ROI、裁剪图像以及将组件框从全帧坐标映射到 ROI 坐标来准备组件数据集。</li>
+<li>在 Git 外部编写版本化模型权重并生成 <code>assemblyvision inspect</code> 使用的校验和模型清单。</li>
+<li>使用真正的两阶段 Ultralytics YOLO 适配器、确定性规则、JSON 证据、ROI 图像和带注释的图像运行现有的静态检查管道。</li>
+<li>提供 <code>assemblyvision verify</code> 将检查结果与从配置的文件名约定解析的预期 <code>OK</code> 或 <code>NG</code> 标签进行比较，并报告误报、误报和 NG 召回。</li>
 </ol>
+<p>该 MVP 使用适合开发人员硬件的小型模型和测量的输入大小。它展示了可重复的培训到检查流程，而不是生产精度或生产准备情况。</p>
+<p>模型加密和仅限 <code>.pyc</code> 的运行时打包被推迟。直接的保护边界是训练代码、数据集、笔记本和实验配置永远不会包含在客户运行时分发中。</p>
+<h2 id="4-consequences">4. 后果<a class="headerlink" href="#4-consequences" title="Permanent link">&para;</a></h2>
+<h3 id="41-positive">4.1 正面<a class="headerlink" href="#41-positive" title="Permanent link">&para;</a></h3>
+<ul>
+<li>执行用于生产的相同两阶段检测路径，而不是引入仅分类的替代路径。</li>
+<li>使用标准 YOLO 标签和训练工具，最大限度地减少自定义模型训练行为。</li>
+<li>在引入相机、时序和网络复杂性之前，生成模型清单、校验和和保留的验证证据。</li>
+<li>保留 monorepo 架构所需的运行时/训练分离。</li>
+</ul>
+<h3 id="42-negative-and-trade-offs">4.2 负面和权衡<a class="headerlink" href="#42-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
+<ul>
+<li>需要初始手动或模型辅助框注释，而不仅仅是文件名标签。</li>
+<li>组件训练需要明确的 ROI 准备步骤和坐标转换测试。</li>
+<li>Apple Silicon 开发人员硬件限制模型大小、批量大小和训练持续时间。</li>
+<li>普通模型权重和 Python 源代码仍然是此 MVP 中的开发工件；它们不是分发安全控制。</li>
+<li>生成的指标仅对已标记和保留的静态图像集有效，而不是生产验收声明。</li>
+</ul>
+<h2 id="5-supersession">5. 取代<a class="headerlink" href="#5-supersession" title="Permanent link">&para;</a></h2>
+<p>此 ADR 仅取代 ADR-009 的两天范围及其对模型训练的排除。 ADR-009 对于静态图像优先排序、排除摄像头/视频/中央/仪表板工作以及静态工件保持确定性回归装置的要求仍然有效。</p>
+<h2 id="6-links">6. 链接<a class="headerlink" href="#6-links" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../ADR-009-static-image-first-mvp/">ADR-009: Static-Image-First MVP</a></li>
+<li><a href="../ADR-004-two-stage-detection/">ADR-004: Two-stage detection</a></li>
+<li><a href="../../19-training-and-evaluation/">Training and Evaluation</a></li>
+<li><a href="../../18-monorepo-and-code-organization/">Monorepo and Code Organization</a></li>
+<li><a href="../../25-roadmap/">Implementation Roadmap</a></li>
+</ul>
 
 
 
@@ -3385,10 +3019,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

@@ -1590,6 +1590,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2898,7 +2926,7 @@
 
 <h1 id="assemblyvision-full-project-context">AssemblyVision - Full Project Context<a class="headerlink" href="#assemblyvision-full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Context snapshot. Last updated: 2026-08-04</p>
+<p>Context snapshot. Last updated: 2026-08-05</p>
 <p>Read this file first in a new session to reconstruct the project state quickly.</p>
 </blockquote>
 <hr />
@@ -2913,12 +2941,13 @@ and verifies that all required assembly components are present.</p>
 <li><strong>Architecture</strong>: edge-client + central-server. All production-critical image processing and
   final decisions execute on the edge industrial computer; the central server is never required
   for real-time inspection.</li>
-<li><strong>Current repository state</strong>: documentation and architecture baseline only. No application
-  code exists yet. The next concrete milestone is the two-day static-image MVP.</li>
+<li><strong>Current repository state</strong>: the static-image edge-service scaffold exists on <code>feat/mvp</code>
+  (uv workspace, domain models, ROI/rule logic, CLI, output writer, and tests). The next
+  concrete milestone is the labeled static train-and-inspect MVP defined by ADR-011.</li>
 </ul>
 <h2 id="2-repository-state">2. Repository State<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>; active documentation work is on branch <code>dev</code>.</li>
+<li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>; current MVP work is on branch <code>feat/mvp</code>.</li>
 <li><code>dev</code> includes engineering contracts, cross-references, expanded contributor rules, and editor ignores on top of <code>origin/main</code>.</li>
 <li><code>.obsidian/</code>, <code>.idea/</code>, and <code>.vscode/</code> are ignored local editor state.</li>
 <li>Runtime data, model weights, production media, datasets, and secrets must never be stored in
@@ -2936,23 +2965,28 @@ and verifies that all required assembly components are present.</p>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   └── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── .github/workflows/docs.yml       # GitHub Pages deploy on push to main
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>└── docs/
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    ├── index.md            # MkDocs home page
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    ├── README.md           # Documentation index
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    ├── overrides/main.html # Theme override placeholder
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    ├── ai/context.md       # THIS file
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    ├── runbooks/           # 9 mandatory operational recovery runbooks + index
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    ├── design/             # 28 design documents + appendices + decisions/
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    │   └── decisions/      # ADR-001 ... ADR-010 + README
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    └── research/           # 3 external-research reports
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        ├── 01-industrial-inspection-success-rates.md
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        ├── 02-yolo-capabilities-and-success-rates.md
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        └── 03-imaging-workflow-and-training-cost.md
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>├── apps/edge-service/                # Current static inspection CLI scaffold
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── pyproject.toml                    # Root uv workspace configuration
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>└── docs/
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    ├── index.md            # MkDocs home page
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    ├── README.md           # Documentation index
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    ├── overrides/main.html # Theme override placeholder
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    ├── ai/context.md       # THIS file
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    ├── runbooks/           # 9 mandatory operational recovery runbooks + index
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    ├── design/             # 28 design documents + appendices + decisions/
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    │   └── decisions/      # ADR-001 ... ADR-011 + README
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>    └── research/           # 3 external-research reports
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        ├── 01-industrial-inspection-success-rates.md
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        ├── 02-yolo-capabilities-and-success-rates.md
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        └── 03-imaging-workflow-and-training-cost.md
 </code></pre></div>
 <h2 id="4-architecture-summary-from-docsdesign">4. Architecture Summary (from docs/design/)<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
 <ul>
@@ -2988,7 +3022,8 @@ and verifies that all required assembly components are present.</p>
 <li><code>docs/design/decisions/</code>: ADR-001 edge-first inspection, ADR-002 Python backend, ADR-003 Vue 3</li>
 <li>TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage &amp; delayed
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
-  static-image-first MVP, ADR-010 per-component temporal aggregation.</li>
+   static-image-first MVP, ADR-010 per-component temporal aggregation, and ADR-011 labeled
+   train-and-inspect MVP.</li>
 <li><a href="../../design/appendices/">docs/design/appendices.md</a> holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.</li>
 <li><code>docs/research/</code>: industry success rates, YOLO capabilities, imaging/workflow/training cost.</li>
@@ -3030,7 +3065,7 @@ and verifies that all required assembly components are present.</p>
 </ul>
 <h2 id="8-latest-session-decisions">8. Latest Session Decisions<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Generated the full architecture document set under <code>docs/design/</code> (28 docs + 10 ADRs +
+<li>Generated the full architecture document set under <code>docs/design/</code> (28 docs + 11 ADRs +
   appendices) from <a href="../../source-brief/">docs/source-brief.md</a> (formerly <code>docs/doc-task.md</code>).</li>
 <li>Created <code>docs/research/</code> (3 reports) via internet research.</li>
 <li>Built the bilingual MkDocs with automatic translation, adapted from the <code>crud-skeleton</code> project.</li>
@@ -3041,11 +3076,17 @@ and verifies that all required assembly components are present.</p>
 <li>Inspections pin both product-detector and component-detector model versions separately.</li>
 <li>The one-month scope is a bounded controlled integration demonstrator, not complete production
   acceptance; generalized administration, remote distribution, and full resilience/soak work follow.</li>
+<li>ADR-011 supersedes ADR-009 only for the MVP training exclusion and two-day scope. The selected
+  annotation tool is X-AnyLabeling; the MVP uses standard YOLO labels, a separate developer-only
+  training CLI, real two-stage models, and held-out filename-ground-truth verification.</li>
+<li>Model encryption and <code>.pyc</code>-only runtime packaging are deferred. The MVP protection boundary is
+  that training code, datasets, notebooks, and experiment configuration are not distributed.</li>
 </ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Two-day static-image MVP is the next engineering milestone (folder input, two-stage detection,
-  ROI, rules, JSON + annotated images, CLI).</li>
+<li>Labeled static train-and-inspect MVP is the next engineering milestone: extract shared domain/
+  vision packages, add the separate training CLI, train from X-AnyLabeling YOLO labels, replace
+  detector stubs, and add held-out verification.</li>
 <li>Hardware/conditions still unconfirmed (see <a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.</li>

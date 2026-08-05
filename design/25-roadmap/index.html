@@ -1221,22 +1221,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#254-two-day-static-image-mvp" class="md-nav__link">
+  <a href="#254-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.4 Two-Day Static-Image MVP
+        25.4 Static Train-and-Inspect MVP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="25.4 Two-Day Static-Image MVP">
+    <nav class="md-nav" aria-label="25.4 Static Train-and-Inspect MVP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#2541-day-one" class="md-nav__link">
+  <a href="#2541-foundation-and-dataset-preparation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.4.1 Day One
+        25.4.1 Foundation and Dataset Preparation
       
     </span>
   </a>
@@ -1244,10 +1244,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2542-day-two" class="md-nav__link">
+  <a href="#2542-train-inspect-and-verify" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.4.2 Day Two
+        25.4.2 Train, Inspect, and Verify
       
     </span>
   </a>
@@ -1847,6 +1847,34 @@
     
   
     ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
   
 
     
@@ -2935,22 +2963,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#254-two-day-static-image-mvp" class="md-nav__link">
+  <a href="#254-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.4 Two-Day Static-Image MVP
+        25.4 Static Train-and-Inspect MVP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="25.4 Two-Day Static-Image MVP">
+    <nav class="md-nav" aria-label="25.4 Static Train-and-Inspect MVP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#2541-day-one" class="md-nav__link">
+  <a href="#2541-foundation-and-dataset-preparation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.4.1 Day One
+        25.4.1 Foundation and Dataset Preparation
       
     </span>
   </a>
@@ -2958,10 +2986,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2542-day-two" class="md-nav__link">
+  <a href="#2542-train-inspect-and-verify" class="md-nav__link">
     <span class="md-ellipsis">
       
-        25.4.2 Day Two
+        25.4.2 Train, Inspect, and Verify
       
     </span>
   </a>
@@ -3147,45 +3175,44 @@
 <p>This roadmap sequences AssemblyVision implementation by technical dependency and risk. Dates are planning targets, not guarantees. Camera/SDK access, production data, customer decisions, and hardware availability can change timing. Quality evidence takes precedence over nominal feature completion.</p>
 <h2 id="252-scope-boundaries">25.2 Scope Boundaries<a class="headerlink" href="#252-scope-boundaries" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Two-day MVP:</strong> static images from a folder through two-stage detection, rules, JSON, ROI, and annotated output.</li>
+<li><strong>Static train-and-inspect MVP:</strong> X-AnyLabeling YOLO labels through product/component training, static two-stage inspection, rule decisions, traceable output, and held-out verification.</li>
 <li><strong>One-month target:</strong> first integrated edge and central capability suitable for controlled customer-site evaluation, not unrestricted production autonomy.</li>
 <li><strong>Production target:</strong> hardened offline operation, governed releases, security, observability, acceptance evidence, and support readiness.</li>
 <li><strong>Future scope:</strong> Kubernetes centrally, Tauri wrapper, PLC/MES integration, advanced fleet management, automated retraining, and multi-angle optimization.</li>
 </ul>
 <h2 id="253-preconditions">25.3 Preconditions<a class="headerlink" href="#253-preconditions" title="Permanent link">&para;</a></h2>
-<p>Before implementation, obtain representative camera images, draft product/component rules, runnable model artifacts, class mappings, permitted development data, a small held-out fixture set, and access to candidate edge hardware. Name customer owners for ground truth, camera mechanics, network/security, and acceptance. The two-day clock starts only after this readiness gate passes; unknowns are tracked explicitly rather than encoded as defaults.</p>
-<h2 id="254-two-day-static-image-mvp">25.4 Two-Day Static-Image MVP<a class="headerlink" href="#254-two-day-static-image-mvp" title="Permanent link">&para;</a></h2>
-<h3 id="2541-day-one">25.4.1 Day One<a class="headerlink" href="#2541-day-one" title="Permanent link">&para;</a></h3>
+<p>Before implementation, obtain representative static images, X-AnyLabeling product and component box labels in YOLO format, draft product/component rules, a class mapping, permitted development data, a separate held-out fixture set with filename <code>OK</code> or <code>NG</code> ground truth, and access to the developer Apple Silicon Mac with 16 GB memory. Name owners for ground truth, camera mechanics, network/security, and acceptance. Unknowns are tracked explicitly rather than encoded as defaults.</p>
+<h2 id="254-static-train-and-inspect-mvp">25.4 Static Train-and-Inspect MVP<a class="headerlink" href="#254-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h2>
+<h3 id="2541-foundation-and-dataset-preparation">25.4.1 Foundation and Dataset Preparation<a class="headerlink" href="#2541-foundation-and-dataset-preparation" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Establish one Python workspace/project and the Ruff, MyPy, and Pytest commands needed by the static spike; defer TypeScript workspace setup.</li>
-<li>Implement folder image input and deterministic output naming.</li>
-<li>Load the product detector and record model metadata.</li>
-<li>Detect the product, expand/clip its bounds, and save the mapped ROI.</li>
-<li>Serialize initial inspection/frame/ROI JSON with failure reason codes.</li>
-<li>Add focused tests for image errors, no-product behavior, ROI clipping, and serialization.</li>
+<li>Establish one root <code>uv</code> workspace with <code>edge-service</code>, a developer-only <code>training</code> distribution, and shared <code>domain</code> and <code>vision-core</code> packages; defer TypeScript workspace setup.</li>
+<li>Validate the X-AnyLabeling YOLO export layout, class order, image/label basename pairing, normalized bounds, and leakage-safe train/validation grouping.</li>
+<li>Implement folder image input, deterministic output naming, model-manifest generation, and focused tests for image errors, ROI clipping, coordinate mapping, and serialization.</li>
+<li>Train a small full-frame product detector on the developer hardware and record model metadata, class mapping, artifact checksum, and training configuration.</li>
+<li>Generate product ROIs for component training images, crop them, map component boxes into ROI coordinates, and validate round trips and out-of-ROI handling.</li>
 </ol>
-<h3 id="2542-day-two">25.4.2 Day Two<a class="headerlink" href="#2542-day-two" title="Permanent link">&para;</a></h3>
+<h3 id="2542-train-inspect-and-verify">25.4.2 Train, Inspect, and Verify<a class="headerlink" href="#2542-train-inspect-and-verify" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Load the component detector against the product ROI.</li>
-<li>Define a minimal versioned product rule listing required components.</li>
-<li>Evaluate component presence deterministically and produce <code>OK</code> or <code>NG</code> plus reasons.</li>
-<li>Save annotated full image, annotated ROI where useful, component evidence, and versions.</li>
-<li>Provide a CLI for one image/folder and machine-readable exit/report behavior.</li>
-<li>Run the initial held-out static fixture suite and document limitations.</li>
+<li>Train a component detector on prepared ROI images and produce a versioned, checksummed manifest.</li>
+<li>Replace static detector stubs with real Ultralytics product and component adapters; preserve deterministic single-product selection, ROI mapping, and failure reason codes.</li>
+<li>Define a minimal versioned product rule listing required components, evaluate presence deterministically, and produce <code>OK</code> or <code>NG</code> plus reasons.</li>
+<li>Save annotated full image, annotated ROI where useful, component evidence, model/rule versions, and JSON results.</li>
+<li>Provide <code>av-train</code> commands for product training, component-dataset preparation, and component training; provide <code>assemblyvision inspect</code> for one image/folder and <code>assemblyvision verify</code> for machine-readable held-out reports.</li>
+<li>Run the held-out static fixture suite and report NG recall, false negatives, false positives, per-component support, and documented limitations.</li>
 </ol>
 <h3 id="2543-explicit-exclusions">25.4.3 Explicit Exclusions<a class="headerlink" href="#2543-explicit-exclusions" title="Permanent link">&para;</a></h3>
-<p>Camera SDK, live video, temporal aggregation, barcode implementation, local service/dashboard, central server, authentication, production deployment, PLC/MES integration, and automated retraining are not part of this two-day MVP.</p>
+<p>Camera SDK, live video, temporal aggregation, barcode implementation, local service/dashboard, central server, authentication, production deployment, PLC/MES integration, automated retraining, model encryption, and <code>.pyc</code>-only runtime packaging are not part of this MVP. Training code remains developer-only and is not included in any runtime distribution.</p>
 <h3 id="2544-exit-evidence">25.4.4 Exit Evidence<a class="headerlink" href="#2544-exit-evidence" title="Permanent link">&para;</a></h3>
-<p>The pipeline is repeatable on supplied static images, failures are explicit, coordinate mappings are test-covered, outputs identify model/rule versions, and results can seed baseline evaluation. This proves software flow, not production accuracy.</p>
+<p>The training and inspection flow is repeatable from a locked labeled dataset; failures are explicit; full-frame-to-ROI transforms are test-covered; output identifies dataset, model, and rule versions; and held-out verification reports decision metrics. This proves a static training-to-inspection flow, not production accuracy, timing, or operational readiness.</p>
 <h2 id="255-one-month-controlled-integration-demonstrator">25.5 One-Month Controlled Integration Demonstrator<a class="headerlink" href="#255-one-month-controlled-integration-demonstrator" title="Permanent link">&para;</a></h2>
 <p>This is a multi-stream target for a small team with camera, model, data, and site access already
 available. It is not a promise of production acceptance. The scope is intentionally limited to one
 product family, one camera, one window mechanism, one barcode path, and one central ingestion path.</p>
 <h3 id="2551-week-1-inspection-core-and-baseline">25.5.1 Week 1: Inspection Core and Baseline<a class="headerlink" href="#2551-week-1-inspection-core-and-baseline" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Complete static pipeline, product detector adapter, ROI engine, component detector adapter, deterministic rule engine, schemas, CLI, and baseline evaluation.</li>
-<li>Establish leakage-safe dataset manifests and a locked regression set.</li>
-<li>Profile inference on candidate hardware if available.</li>
+<li>Stabilize the labeled train-and-inspect baseline: dataset validation, product training, ROI component-dataset preparation, component training, real detector adapters, deterministic rules, schemas, CLI, and held-out verification.</li>
+<li>Establish leakage-safe dataset manifests, locked regression sets, and reproducible model manifests.</li>
+<li>Profile training and inference on the developer Apple Silicon hardware if available.</li>
 </ul>
 <p>Dependencies: representative images, initial product/component definitions, candidate models. Risks: insufficient NG examples and model fit.</p>
 <h3 id="2552-week-2-edge-acquisition-and-persistence">25.5.2 Week 2: Edge Acquisition and Persistence<a class="headerlink" href="#2552-week-2-edge-acquisition-and-persistence" title="Permanent link">&para;</a></h3>
@@ -3232,9 +3259,9 @@ product family, one camera, one window mechanism, one barcode path, and one cent
 <li>Reduce manual review only after production evidence supports it.</li>
 </ol>
 <h2 id="257-dependency-and-critical-path">25.7 Dependency and Critical Path<a class="headerlink" href="#257-dependency-and-critical-path" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Production data and product rules
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  -&gt; baseline models
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  -&gt; static pipeline
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Labeled static data and product rules
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  -&gt; dataset validation and baseline models
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  -&gt; static train-and-inspect pipeline
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  -&gt; camera/barcode integration
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  -&gt; product-window identity
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  -&gt; temporal aggregation
@@ -3255,8 +3282,8 @@ product family, one camera, one window mechanism, one barcode path, and one cent
 </thead>
 <tbody>
 <tr>
-<td>Static pipeline complete</td>
-<td>Deterministic fixtures, reason codes, artifacts, version traceability</td>
+<td>Static train-and-inspect complete</td>
+<td>Validated YOLO labels, reproducible product/component artifacts, deterministic fixtures, reason codes, version traceability, held-out verification report</td>
 </tr>
 <tr>
 <td>Edge integration ready</td>
@@ -3303,6 +3330,7 @@ product family, one camera, one window mechanism, one barcode path, and one cent
 <li><a href="../22-testing-and-quality-assurance/">Testing and Quality Assurance</a></li>
 <li><a href="../26-customer-acceptance/">Customer Acceptance</a></li>
 <li><a href="../decisions/ADR-009-static-image-first-mvp/">ADR-009: Static-image-first MVP</a></li>
+<li><a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/">ADR-011: Labeled Train-and-Inspect MVP</a></li>
 </ul>
 
 

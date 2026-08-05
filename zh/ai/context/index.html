@@ -1590,6 +1590,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2673,7 +2701,7 @@
   <a href="#4-architecture-summary-from-docsdesign" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Architecture Summary (from docs/design/)
+        4.架构总结（来自docs/design/）
       
     </span>
   </a>
@@ -2684,7 +2712,7 @@
   <a href="#5-documentation-set" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Documentation Set
+        5. 文档集
       
     </span>
   </a>
@@ -2717,7 +2745,7 @@
   <a href="#8-latest-session-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Latest Session Decisions
+        8. 最新会议决定
       
     </span>
   </a>
@@ -2728,7 +2756,7 @@
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. Open Items / Next Steps
+        9. 未清项目/后续步骤
       
     </span>
   </a>
@@ -2814,7 +2842,7 @@
   <a href="#4-architecture-summary-from-docsdesign" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Architecture Summary (from docs/design/)
+        4.架构总结（来自docs/design/）
       
     </span>
   </a>
@@ -2825,7 +2853,7 @@
   <a href="#5-documentation-set" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Documentation Set
+        5. 文档集
       
     </span>
   </a>
@@ -2858,7 +2886,7 @@
   <a href="#8-latest-session-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Latest Session Decisions
+        8. 最新会议决定
       
     </span>
   </a>
@@ -2869,7 +2897,7 @@
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. Open Items / Next Steps
+        9. 未清项目/后续步骤
       
     </span>
   </a>
@@ -2898,31 +2926,32 @@
 
 <h1 id="assemblyvision---full-project-context">AssemblyVision - 完整的项目背景<a class="headerlink" href="#assemblyvision---full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Context snapshot. Last updated: 2026-08-04</p>
-<p>Read this file first in a new session to reconstruct the project state quickly.</p>
+<p>上下文快照。最后更新: 2026-08-05</p>
+<p>首先在新会话中读取此文件以快速重建项目状态。</p>
 </blockquote>
 <hr />
 <h2 id="1-project-overview">一、项目概况<a class="headerlink" href="#1-project-overview" title="Permanent link">&para;</a></h2>
-<p><strong>AssemblyVision - Industrial Assembly Inspection System</strong> is an edge-first industrial
-computer-vision platform for conveyor-based production lines. It inspects completed products
-and verifies that all required assembly components are present.</p>
+<p><strong>AssemblyVision - 工业装配检测系统</strong>是边缘优先的工业装配检测系统
+用于基于传送带的生产线的计算机视觉平台。检查成品
+并验证是否存在所有必需的组装组件。</p>
 <ul>
-<li><strong>Business output</strong>: <code>OK</code> (all required components reliably detected) or <code>NG</code> (missing,
-  uncertain, or unverifiable). Quality priority is <strong>minimizing false negatives</strong> (high NG
-  recall, extremely low false-negative rate). No 100% accuracy claims are ever made.</li>
-<li><strong>Architecture</strong>: edge-client + central-server. All production-critical image processing and
-  final decisions execute on the edge industrial computer; the central server is never required
-  for real-time inspection.</li>
-<li><strong>Current repository state</strong>: documentation and architecture baseline only. No application
-  code exists yet. The next concrete milestone is the two-day static-image MVP.</li>
+<li><strong>业务输出</strong>：<code>OK</code>（可靠检测到所有必需的组件）或<code>NG</code>（缺失，
+  不确定或无法验证）。质量优先级是<strong>最小化漏报</strong>（高 NG
+  召回率，极低的假阴性率）。从未提出过 100% 准确性的声明。</li>
+<li><strong>架构</strong>：边缘客户端+中央服务器。所有生产关键型图像处理和
+  最终决策在边缘工业计算机上执行；永远不需要中央服务器
+  用于实时检查。</li>
+<li><strong>当前存储库状态</strong>：静态图像边缘服务脚手架存在于 <code>feat/mvp</code> 上
+  （uv 工作区、域模型、ROI/规则逻辑、CLI、输出编写器和测试）。下一个
+  具体的里程碑是 ADR-011 定义的标记静态训练和检查 MVP。</li>
 </ul>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>; active documentation work is on branch <code>dev</code>.</li>
-<li><code>dev</code> includes engineering contracts, cross-references, expanded contributor rules, and editor ignores on top of <code>origin/main</code>.</li>
-<li><code>.obsidian/</code>, <code>.idea/</code>, and <code>.vscode/</code> are ignored local editor state.</li>
-<li>Runtime data, model weights, production media, datasets, and secrets must never be stored in
-  Git. Build artifacts <code>docs-zh/</code>, <code>site/</code>, <code>mkdocs-en.yml</code>, <code>mkdocs-zh.yml</code> are gitignored.</li>
+<li>远程：<code>https://github.com/dream-studio-china/assembly-vision</code>；当前 MVP 工作在分支 <code>feat/mvp</code> 上。</li>
+<li><code>dev</code> 包括<code>origin/main</code> 之上的工程合同、交叉引用、扩展的贡献者规则和编辑器忽略。</li>
+<li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
+<li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
+  吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
 </ul>
 <h2 id="3-directory-structure">3、目录结构<a class="headerlink" href="#3-directory-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>assembly-vision/
@@ -2936,116 +2965,128 @@ and verifies that all required assembly components are present.</p>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   └── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── .github/workflows/docs.yml       # GitHub Pages deploy on push to main
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>└── docs/
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    ├── index.md            # MkDocs home page
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    ├── README.md           # Documentation index
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    ├── overrides/main.html # Theme override placeholder
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    ├── ai/context.md       # THIS file
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    ├── runbooks/           # 9 mandatory operational recovery runbooks + index
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    ├── design/             # 28 design documents + appendices + decisions/
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    │   └── decisions/      # ADR-001 ... ADR-010 + README
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    └── research/           # 3 external-research reports
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        ├── 01-industrial-inspection-success-rates.md
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        ├── 02-yolo-capabilities-and-success-rates.md
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        └── 03-imaging-workflow-and-training-cost.md
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>├── apps/edge-service/                # Current static inspection CLI scaffold
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── pyproject.toml                    # Root uv workspace configuration
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>└── docs/
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    ├── index.md            # MkDocs home page
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    ├── README.md           # Documentation index
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    ├── overrides/main.html # Theme override placeholder
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    ├── ai/context.md       # THIS file
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    ├── runbooks/           # 9 mandatory operational recovery runbooks + index
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    ├── design/             # 28 design documents + appendices + decisions/
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    │   └── decisions/      # ADR-001 ... ADR-011 + README
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>    └── research/           # 3 external-research reports
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        ├── 01-industrial-inspection-success-rates.md
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        ├── 02-yolo-capabilities-and-success-rates.md
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        └── 03-imaging-workflow-and-training-cost.md
 </code></pre></div>
-<h2 id="4-architecture-summary-from-docsdesign">4. Architecture Summary (from docs/design/)<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
+<h2 id="4-architecture-summary-from-docsdesign">4.架构总结（来自docs/design/）<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Edge client responsibilities</strong>: camera integration, capture/trigger, product-window
-  management, barcode recognition, product-type resolution, two-stage YOLO detection, ROI
-  generation, optional OpenCV checks, per-component temporal aggregation, deterministic rule
-  evaluation, local database/media, upload queue with retry, health monitoring, local FastAPI,
-  local Vue dashboard. Inspection continues during central/network outages.</li>
-<li><strong>Central server responsibilities</strong>: ingestion of selected results/media, history, governed
-  metadata, manual review records, bounded pilot status, and later administration/reporting/audit.
-  Remote package distribution is production scope. Central is not required for inspection.</li>
-<li><strong>Two-stage detection</strong>: stage one detects the product in the full frame; the ROI engine
-  expands/clips it; stage two detects required components (<code>component_a</code>, <code>component_b</code>,
-  <code>component_c</code>, <code>manual</code>, ...) inside the ROI. Barcode decoding is separate from YOLO.</li>
-<li><strong>Temporal aggregation</strong>: per-required-component evidence across frames (no whole-product
-  majority voting). Aggregation improves system robustness, not single-frame model accuracy.</li>
-<li><strong>Rule engine</strong>: deterministic, independent of the AI model, versioned. Only complete valid
-  evidence may produce <code>OK</code>; internal <code>UNCERTAIN</code> always maps to business <code>NG</code>.</li>
-<li><strong>Deployment</strong>: Python 3.12 / FastAPI / YOLO / OpenCV edge backend, Vue 3 + TypeScript
-  frontends, Docker Compose (no Kubernetes at the edge), PostgreSQL central + SQLite edge (MVP).</li>
-<li><strong>Upload policy</strong>: selective (OK: metadata + one key frame; NG: full metadata + multiple key
-  frames + optional clip); persistent queue, retry with backoff, idempotency, checksums.</li>
+<li><strong>边缘客户端职责</strong>：相机集成、捕获/触发、产品窗口
+  管理、条形码识别、产品类型解析、两阶段YOLO检测、ROI
+  生成、可选的 OpenCV 检查、每个组件的时间聚合、确定性规则
+  评估、本地数据库/媒体、带重试的上传队列、运行状况监控、本地 FastAPI、
+  本地 Vue 仪表板。在中央/网络中断期间检查仍在继续。</li>
+<li><strong>中央服务器职责</strong>：摄取选定的结果/媒体、历史记录、受管理的
+  元数据、手动审查记录、有界试点状态以及后续管理/报告/审计。
+  远程包分发属于生产范围。中央不需要检查。</li>
+<li><strong>两阶段检测</strong>：第一阶段全画幅检测产品；投资回报率引擎
+  扩展/剪辑它；第二阶段检测所需的组件（<code>component_a</code>、<code>component_b</code>、
+  <code>component_c</code>、<code>manual</code>、...) 在 ROI 内。条形码解码与 YOLO 是分开的。</li>
+<li><strong>时间聚合</strong>：跨框架的每个所需组件证据（没有整个产品
+  多数投票）。聚合提高了系统的鲁棒性，而不是单帧模型的准确性。</li>
+<li><strong>规则引擎</strong>：确定性，独立于人工智能模型，版本化。仅完整有效
+  证据可能会产生<code>OK</code>；内部 <code>UNCERTAIN</code> 始终映射到业务 <code>NG</code>。</li>
+<li><strong>部署</strong>：Python 3.12 / FastAPI / YOLO / OpenCV 边缘后端，Vue 3 + TypeScript
+  前端、Docker Compose（边缘没有 Kubernetes）、PostgreSQL 中心 + SQLite 边缘 (MVP)。</li>
+<li><strong>上传策略</strong>：选择性（OK：元数据+一个关键帧；NG：完整元数据+多个关键帧
+  框架+可选夹子）；持久队列、带有退避、幂等性、校验和的重试。</li>
 </ul>
-<h2 id="5-documentation-set">5. Documentation Set<a class="headerlink" href="#5-documentation-set" title="Permanent link">&para;</a></h2>
+<h2 id="5-documentation-set">5. 文档集<a class="headerlink" href="#5-documentation-set" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>docs/design/00</code> to <code>27</code> + <a href="../../design/appendices/">appendices.md</a>: cover/status, introduction, requirements,
-  architecture overview, edge client, central server, AI detection pipeline, camera &amp; image
-  acquisition, product detection &amp; ROI, component detection, temporal aggregation, rule engine,
-  local storage &amp; retention, upload &amp; synchronization, data model &amp; database, REST API &amp; events,
-  edge dashboard, central admin dashboard, monorepo &amp; code organization, training &amp; evaluation,
-  deployment &amp; operations, security &amp; source distribution, testing &amp; QA, observability &amp; support,
-  human-in-the-loop, roadmap, customer acceptance, risks &amp; mitigations.</li>
-<li><code>docs/design/decisions/</code>: ADR-001 edge-first inspection, ADR-002 Python backend, ADR-003 Vue 3</li>
-<li>TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage &amp; delayed
-  upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
-  static-image-first MVP, ADR-010 per-component temporal aggregation.</li>
-<li><a href="../../design/appendices/">docs/design/appendices.md</a> holds the canonical terminology, decision consistency checklist,
-  global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.</li>
-<li><code>docs/research/</code>: industry success rates, YOLO capabilities, imaging/workflow/training cost.</li>
-<li><a href="../../contracts/">docs/contracts/</a>: 11 enforceable architecture, safety, API, quality,
-  operations, security, change-control, and acceptance contracts.</li>
-<li><a href="../../runbooks/">docs/runbooks/</a>: executable recovery procedures for all contract-required
-  operational scenarios.</li>
+<li><code>docs/design/00</code> 至 <code>27</code> + <a href="../../design/appendices/">appendices.md</a>：封面/状态、介绍、要求、
+  架构概述、边缘客户端、中央服务器、AI 检测管道、摄像头和图像
+  采集、产品检测和 ROI、组件检测、时间聚合、规则引擎、
+  本地存储和保留、上传和同步、数据模型和数据库、REST API 和事件、
+  边缘仪表板、中央管理仪表板、单一存储库和代码组织、培训和评估、
+  部署和操作、安全和源代码分发、测试和质量保证、可观察性和支持、
+  人机交互、路线图、客户接受度、风险和缓解措施。</li>
+<li><code>docs/design/decisions/</code>：ADR-001 边缘优先检查、ADR-002 Python 后端、ADR-003 Vue 3</li>
+<li>TypeScript 前端、ADR-004 两阶段检测、ADR-005 本地优先存储和延迟
+  上传、ADR-006 REST + WebSocket、ADR-007 monorepo、ADR-008 Docker 部署、ADR-009
+   static-image-first MVP、ADR-010 每个组件时间聚合和 ADR-011 标记
+   训练和检查 MVP。</li>
+<li><a href="../../design/appendices/">docs/design/appendices.md</a> 保存规范术语、决策一致性检查表、
+  全局开放问题 (OQ-001 ... OQ-025)、原因代码术语表和可追溯性约定。</li>
+<li><code>docs/research/</code>：行业成功率、YOLO 能力、成像/工作流程/培训成本。</li>
+<li><a href="../../contracts/">docs/contracts/</a>：11个可执行架构、安全、API、质量、
+  运营、安全、变更控制和验收合同。</li>
+<li><a href="../../runbooks/">docs/runbooks/</a>：所有合同要求的可执行恢复程序
+  运营场景。</li>
 </ul>
 <h2 id="6-bilingual-mkdocs-english-chinese">6.双语MkDocs（英文+中文）<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Master config <code>mkdocs.yml</code> is the single source of truth (Material theme, Mermaid rendering via
-  <code>pymdownx.superfences</code> custom fence, <code>extra.alternate</code> language switcher).</li>
-<li><code>scripts/build-docs.sh</code> pipeline: <code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
-  <code>generate-mkdocs-configs.py</code> (produces mkdocs-en.yml + mkdocs-zh.yml) -&gt; build site/ and site/zh/.</li>
-<li>Translation uses <code>deep-translator</code> GoogleTranslator (free, no API key). Rate-limited; a full
-  translation takes ~15-30 minutes. Single-file mode:
-  <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>. On any API failure the
-  original English chunk is kept.</li>
-<li>All content is translated, including <code>research/</code> and Mermaid diagram labels. Mermaid syntax is
-  preserved; only node labels, edge text, subgraph titles, sequence messages, and state/ER labels
-  are translated. <code>research/</code> no longer has a special copy step (removed from build-docs.sh).</li>
-<li>Translated headings keep their original English slug as an explicit <code>{#slug}</code> attribute so
-  cross-document anchors (e.g. <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>) work in Chinese too.</li>
-<li>Known machine-translation quality issues (not script bugs): <code>frames</code> -&gt; 框架 (should be 帧),
-  <code>volume</code> -&gt; 音量 (should be 存储卷), <code>poll</code> -&gt; 民意调查 (should be 轮询). Review before publishing.</li>
-<li><code>docs-zh/</code>, <code>site/</code>, and the generated configs are build artifacts, not committed.</li>
+<li>主配置<code>mkdocs.yml</code>是唯一的事实来源（材质主题，美人鱼渲染通过
+  <code>pymdownx.superfences</code> 自定义围栏，<code>extra.alternate</code> 语言切换器）。</li>
+<li><code>scripts/build-docs.sh</code> 管道：<code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
+  <code>generate-mkdocs-configs.py</code> （生成 mkdocs-en.yml + mkdocs-zh.yml）-&gt; 构建 site/ 和 site/zh/。</li>
+<li>翻译使用 <code>deep-translator</code> GoogleTranslator（免费，无 API 密钥）。限速；一个完整的
+  翻译大约需要 15-30 分钟。单文件模式：
+  <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>。任何 API 失败时
+  保留原始英文块。</li>
+<li>所有内容均已翻译，包括 <code>research/</code> 和美人鱼图标签。美人鱼语法是
+  保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
+  被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
+<li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
+  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
+<li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
+  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民意调查（应该是轮询）。发布前进行审查。</li>
+<li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
 </ul>
 <h2 id="7-conventions-agentsmd">7.约定（AGENTS.md）<a class="headerlink" href="#7-conventions-agentsmd" title="Permanent link">&para;</a></h2>
 <ul>
-<li>English is the base language; all docs/comments/commits/READMEs MUST be English.</li>
-<li>Conventional Commits: <code>feat:</code>, <code>fix:</code>, <code>docs:</code>, <code>chore:</code>, <code>refactor:</code>.</li>
-<li>Branch naming: <code>feat/xxx</code>, <code>fix/xxx</code>, <code>docs/xxx</code>.</li>
-<li>Do NOT commit unless explicitly asked; do NOT push or force-push without explicit approval.</li>
-<li>No secrets committed. Use typed Pydantic models and TypeScript interfaces.</li>
-<li>Engineering rules: preserve edge-first architecture; keep AI inference / rule evaluation /
-  persistence / Web APIs separated; do not put YOLO logic in FastAPI route handlers; do not put
-  business rules in the AI model; edge must not depend on the central server; run tests + Ruff +
-  MyPy; never claim tests passed without executing; never claim 100% accuracy.</li>
+<li>英语为基础语言；所有文档/评论/提交/自述文件必须是英文。</li>
+<li>常规提交：<code>feat:</code>、<code>fix:</code>、<code>docs:</code>、<code>chore:</code>、<code>refactor:</code>。</li>
+<li>分支命名：<code>feat/xxx</code>、<code>fix/xxx</code>、<code>docs/xxx</code>。</li>
+<li>除非明确要求，否则请勿承诺；未经明确批准，请勿推动或强行推动。</li>
+<li>没有泄露任何秘密。使用类型化 Pydantic 模型和 TypeScript 接口。</li>
+<li>工程规则：保留边缘优先架构；保留AI推理/规则评估/
+  持久化/Web API 分离；不要将 YOLO 逻辑放入 FastAPI 路由处理程序中；不要放
+  AI模型中的业务规则；边缘不能依赖于中央服务器；运行测试 + Ruff +
+  我的Py；切勿在未执行的情况下声称测试已通过；永远不要声称 100% 准确。</li>
 </ul>
-<h2 id="8-latest-session-decisions">8. Latest Session Decisions<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
+<h2 id="8-latest-session-decisions">8. 最新会议决定<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 10 个 ADR +
+<li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 11 个 ADR +
   附录）来自<a href="../../source-brief/">docs/source-brief.md</a>（以前的<code>docs/doc-task.md</code>）。</li>
 <li>通过互联网研究创建<code>docs/research/</code>（3份报告）。</li>
 <li>构建了具有自动翻译功能的双语 MkDocs，改编自 <code>crud-skeleton</code> 项目。</li>
 <li>向<code>translate-docs.py</code>添加了美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
-<li><code>UNCERTAIN</code> 决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
+<li><code>UNCERTAIN</code>决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
 <li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（一个单独的
   边缘工作者/API 分割被推迟，直到测量证明其合理为止）。</li>
 <li>检查分别固定产品检测器和组件检测器模型版本。</li>
 <li>一个月的范围是有界受控集成演示，而不是完整的生产
   接受；接下来是通用管理、远程分发和全面恢复/浸泡工作。</li>
+<li>ADR-011 仅在 MVP 培训排除和两天范围内取代 ADR-009。所选择的
+  标注工具是X-AnyLabeling； MVP 使用标准 YOLO 标签，一个单独的仅供开发人员使用的标签
+  训练 CLI、真正的两阶段模型以及保留的文件名真实值验证。</li>
+<li>模型加密和仅限 <code>.pyc</code> 的运行时打包被推迟。 MVP 保护边界为
+  训练代码、数据集、笔记本和实验配置未分发。</li>
 </ul>
-<h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
+<h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>为期两天的静态图像 MVP 是下一个工程里程碑（文件夹输入、两阶段检测、
-  ROI、规则、JSON + 带注释的图像、CLI）。</li>
+<li>标记静态训练和检查 MVP 是下一个工程里程碑：提取共享域/
+  视觉包，添加单独的训练 CLI，从 X-AnyLabeling YOLO 标签进行训练，替换
+  检测器存根，并添加保留验证。</li>
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。</li>

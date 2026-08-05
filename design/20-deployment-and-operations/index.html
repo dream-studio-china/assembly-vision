@@ -1893,6 +1893,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3213,7 +3241,8 @@
 <p>This document defines how AssemblyVision is packaged, installed, upgraded, operated, backed up, and recovered. It covers the edge inspection system and the central services without making the central server a dependency of real-time inspection.</p>
 <h3 id="2011-current-and-mvp-scope">20.1.1 Current and MVP Scope<a class="headerlink" href="#2011-current-and-mvp-scope" title="Permanent link">&para;</a></h3>
 <ul>
-<li>The two-day static-image MVP runs from a developer environment and produces JSON, ROI images, and annotated images.</li>
+<li>The static train-and-inspect MVP runs from a developer environment. A developer-only training CLI produces local model artifacts; the inspection CLI produces JSON, ROI images, annotated images, and held-out verification output.</li>
+<li>This MVP does not implement encrypted model artifacts or <code>.pyc</code>-only customer runtime packaging; training code is simply excluded from any runtime distribution.</li>
 <li>The one-month target packages edge and central applications with Docker Compose.</li>
 <li>SQLite is acceptable for the initial edge database; PostgreSQL is the central database.</li>
 <li>Persistent runtime data is stored outside container layers.</li>

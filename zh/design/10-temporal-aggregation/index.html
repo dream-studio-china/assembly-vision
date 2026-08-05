@@ -804,7 +804,7 @@
   <a href="#104-component-state-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.4 Component State Model
+        10.4 组件状态模型
       
     </span>
   </a>
@@ -1747,6 +1747,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -2838,7 +2866,7 @@
   <a href="#104-component-state-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.4 Component State Model
+        10.4 组件状态模型
       
     </span>
   </a>
@@ -2946,7 +2974,7 @@
 <h2 id="101-purpose">10.1 目的<a class="headerlink" href="#101-purpose" title="Permanent link">&para;</a></h2>
 <p>时间聚合器将 <a href="../09-component-detection/">component detection</a> 的帧级观察结果转换为 <a href="../11-rule-engine/">rule engine</a> 的产品级证据。 YOLO 仍然处理单个帧。聚合通过组合观察结果来提高系统的鲁棒性；它不会提高模型的单帧精度。</p>
 <h2 id="102-scope">10.2 范围<a class="headerlink" href="#102-scope" title="Permanent link">&para;</a></h2>
-<p>时间聚合不包含在为期两天的静态图像 MVP 中。生产目标在一个有限的实物产品窗口内汇总证据。未来的跟踪可能支持更复杂的重叠场景，但证据隔离仍然是强制性的。</p>
+<p>静态训练和检查 MVP 不包括时间聚合。生产目标在一个有限的实物产品窗口内汇总证据。未来的跟踪可能支持更复杂的重叠场景，但证据隔离仍然是强制性的。</p>
 <h2 id="103-core-invariants">10.3 核心不变量<a class="headerlink" href="#103-core-invariants" title="Permanent link">&para;</a></h2>
 <ol>
 <li>证据按 <code>inspection_id</code>、所需组件密钥和固定模型/配置版本进行分区。</li>
@@ -2956,7 +2984,7 @@
 <li>不确定、矛盾或不充分的证据不能成为<code>OK</code>。</li>
 <li>关闭窗口是最终决定；迟到的帧会被记录为丢弃，并且不会改变其决定。</li>
 </ol>
-<h2 id="104-component-state-model">10.4 Component State Model<a class="headerlink" href="#104-component-state-model" title="Permanent link">&para;</a></h2>
+<h2 id="104-component-state-model">10.4 组件状态模型<a class="headerlink" href="#104-component-state-model" title="Permanent link">&para;</a></h2>
 <p>每个必需的组件均以以下证据状态之一结尾：</p>
 <table>
 <thead>
@@ -2993,13 +3021,13 @@
 <h2 id="105-temporal-aggregation-sequence">10.5 时间聚合序列<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Window as 产品展示
-    participant Quality as Frame Quality Gate
+    participant Quality as 框架质量门
     participant Detector as 元件检测器
-    participant Aggregate as Per-Component Aggregator
+    participant Aggregate as 每个组件聚合器
     participant Rules as 规则引擎
     Window-&gt;&gt;Aggregate:打开检查所需的组件
 loop 每个相关帧
-        Window-&gt;&gt;Quality:Validate frame
+        Window-&gt;&gt;Quality:验证框架
 alt 帧有效
             Quality-&gt;&gt;Detector:产品投资回报率
             Detector--&gt;&gt;Aggregate:按组件键控的观察结果
@@ -3009,8 +3037,8 @@ else 帧无效
         end
     end
     Window-&gt;&gt;Aggregate:关闭窗口
-loop Each required component
-        Aggregate-&gt;&gt;Aggregate:解决现有、缺失、不确定或无法验证的问题
+loop 每个必需的组件
+        Aggregate-&gt;&gt;Aggregate:解决当前、缺失、不确定或无法验证的问题
     end
     Aggregate--&gt;&gt;Rules:不可变组件证据集
     Rules--&gt;&gt;Window:仅当所有必需的组件都存在时才可以</code></pre>

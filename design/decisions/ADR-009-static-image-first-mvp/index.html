@@ -1755,6 +1755,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2934,12 +2962,12 @@
 
 <h1 id="adr-009-static-image-first-mvp">ADR-009: Static-Image-First MVP<a class="headerlink" href="#adr-009-static-image-first-mvp" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. Status<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
-<p>Accepted</p>
+<p>Accepted; superseded in part by <a href="../ADR-011-labeled-train-and-inspect-mvp/">ADR-011: Labeled Train-and-Inspect MVP</a>.</p>
 <h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
 <p>The end system requires camera capture, live video, product windows, barcode, temporal aggregation, persistence, synchronization, and Web applications. Implementing all of these before validating core product/ROI/component/rule behavior would combine model, hardware, timing, state, and network uncertainty and make failures difficult to isolate.</p>
 <h2 id="3-decision">3. Decision<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>Build a two-day static-image MVP first. It reads one image or a folder, detects the product, generates and maps the ROI, detects components, evaluates a versioned deterministic rule, outputs <code>OK</code> or <code>NG</code> with reasons, and saves JSON, ROI, and annotated evidence through a CLI.</p>
-<p>The MVP excludes camera SDK integration, real-time video, temporal aggregation, central services, full dashboards, authentication, PLC/MES integration, and automated retraining. Its interfaces and schemas should be reusable by later live acquisition rather than becoming an alternate production pipeline.</p>
+<p>Build a static-image MVP first. It reads one image or a folder, detects the product, generates and maps the ROI, detects components, evaluates a versioned deterministic rule, outputs <code>OK</code> or <code>NG</code> with reasons, and saves JSON, ROI, and annotated evidence through a CLI.</p>
+<p>The MVP excludes camera SDK integration, real-time video, temporal aggregation, central services, full dashboards, authentication, PLC/MES integration, and automated retraining. Its interfaces and schemas should be reusable by later live acquisition rather than becoming an alternate production pipeline. The original training exclusion is superseded by ADR-011; all other exclusions remain in force.</p>
 <h2 id="4-scope">4. Scope<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
 <p>This decision governs initial implementation sequence, not the final operational architecture. Static files also remain valuable as deterministic regression fixtures after live integration.</p>
 <h2 id="5-consequences">5. Consequences<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
@@ -2962,7 +2990,7 @@
 <li><strong>Live camera first:</strong> rejected because hardware/timing failures obscure basic model and rule behavior.</li>
 <li><strong>Central/dashboard first:</strong> rejected because it does not reduce the core inspection risk.</li>
 <li><strong>Model notebook only:</strong> rejected because it omits production-style schemas, rules, evidence, CLI, and tests.</li>
-<li><strong>Simulated video first:</strong> useful after static flow, but unnecessary for the two-day objective.</li>
+<li><strong>Simulated video first:</strong> useful after static flow, but unnecessary for the static-image objective.</li>
 </ul>
 <h2 id="7-open-questions-and-validation-required">7. Open Questions and Validation Required<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
@@ -2975,6 +3003,7 @@
 <li><a href="../../25-roadmap/">Roadmap</a></li>
 <li><a href="../../22-testing-and-quality-assurance/">Testing and Quality Assurance</a></li>
 <li><a href="../ADR-004-two-stage-detection/">ADR-004: Two-stage detection</a></li>
+<li><a href="../ADR-011-labeled-train-and-inspect-mvp/">ADR-011: Labeled Train-and-Inspect MVP</a></li>
 </ul>
 
 

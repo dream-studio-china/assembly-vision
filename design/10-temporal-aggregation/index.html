@@ -1760,6 +1760,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2946,7 +2974,7 @@
 <h2 id="101-purpose">10.1 Purpose<a class="headerlink" href="#101-purpose" title="Permanent link">&para;</a></h2>
 <p>The temporal aggregator converts frame-level observations from <a href="../09-component-detection/">component detection</a> into product-level evidence for the <a href="../11-rule-engine/">rule engine</a>. YOLO still processes individual frames. Aggregation improves system robustness by combining observations; it does not increase the model's single-frame accuracy.</p>
 <h2 id="102-scope">10.2 Scope<a class="headerlink" href="#102-scope" title="Permanent link">&para;</a></h2>
-<p>Temporal aggregation is excluded from the two-day static-image MVP. The production target aggregates evidence within one bounded physical-product window. Future tracking may support more complex overlapping scenes, but evidence isolation remains mandatory.</p>
+<p>Temporal aggregation is excluded from the static train-and-inspect MVP. The production target aggregates evidence within one bounded physical-product window. Future tracking may support more complex overlapping scenes, but evidence isolation remains mandatory.</p>
 <h2 id="103-core-invariants">10.3 Core Invariants<a class="headerlink" href="#103-core-invariants" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Evidence is partitioned by <code>inspection_id</code>, required component key, and pinned model/configuration versions.</li>

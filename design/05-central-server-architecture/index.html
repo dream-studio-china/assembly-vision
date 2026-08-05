@@ -806,10 +806,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#111-two-day-mvp" class="md-nav__link">
+  <a href="#111-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.1 Two-Day MVP
+        11.1 Static Train-and-Inspect MVP
       
     </span>
   </a>
@@ -1875,6 +1875,34 @@
     
   
     ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
   
 
     
@@ -3108,10 +3136,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#111-two-day-mvp" class="md-nav__link">
+  <a href="#111-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.1 Two-Day MVP
+        11.1 Static Train-and-Inspect MVP
       
     </span>
   </a>
@@ -3273,8 +3301,8 @@
 <p>The initial central deployment is Docker Compose friendly: Nginx, built admin assets, FastAPI API, PostgreSQL, object-storage implementation, and only justified workers/broker. Containers use multi-stage builds, non-root users, health checks, restart policies, explicit secrets/configuration, and persistent volumes. Schema migrations are a controlled release step, not run concurrently by every API replica.</p>
 <p>Future Kubernetes deployment may replace orchestration while preserving APIs and persistence boundaries. The exact hosting location, availability topology, backup destination, and data residency are not assumed.</p>
 <h2 id="11-delivery-horizons">11. Delivery Horizons<a class="headerlink" href="#11-delivery-horizons" title="Permanent link">&para;</a></h2>
-<h3 id="111-two-day-mvp">11.1 Two-Day MVP<a class="headerlink" href="#111-two-day-mvp" title="Permanent link">&para;</a></h3>
-<p>No central server is built. Static outputs use future-compatible identifiers, reason codes, and versions so integration does not require redefining decisions.</p>
+<h3 id="111-static-train-and-inspect-mvp">11.1 Static Train-and-Inspect MVP<a class="headerlink" href="#111-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
+<p>No central server is built. The separate developer-only training CLI and the static inspection CLI use future-compatible identifiers, reason codes, manifests, and versions so integration does not require redefining decisions.</p>
 <h3 id="112-one-month-target">11.2 One-Month Target<a class="headerlink" href="#112-one-month-target" title="Permanent link">&para;</a></h3>
 <p>Implement device-scoped idempotent ingestion, PostgreSQL inspection history, selected evidence storage, initial device/product/rule metadata, a minimal inspection/review view, minimum pilot authentication, and Compose deployment. Defer generalized administration, sophisticated analytics, report/export jobs, and remote package distribution.</p>
 <h3 id="113-production-target">11.3 Production Target<a class="headerlink" href="#113-production-target" title="Permanent link">&para;</a></h3>

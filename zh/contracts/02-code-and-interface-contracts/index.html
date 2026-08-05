@@ -1592,6 +1592,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1798,7 +1826,7 @@
   <a href="#2-canonical-domain-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Canonical Domain Models
+        2. 规范领域模型
       
     </span>
   </a>
@@ -2783,7 +2811,7 @@
   <a href="#2-canonical-domain-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Canonical Domain Models
+        2. 规范领域模型
       
     </span>
   </a>
@@ -2876,41 +2904,41 @@
   
 
 
-<h1 id="02-code-and-interface-contracts">02. Code and Interface Contracts<a class="headerlink" href="#02-code-and-interface-contracts" title="Permanent link">&para;</a></h1>
+<h1 id="02-code-and-interface-contracts">02. 代码和接口合约<a class="headerlink" href="#02-code-and-interface-contracts" title="Permanent link">&para;</a></h1>
 <h2 id="1-core-principle">一、核心原则<a class="headerlink" href="#1-core-principle" title="Permanent link">&para;</a></h2>
-<p>Modules must communicate through explicit, stable, typed, testable, and serializable structures.</p>
-<p>Do not use the following as core domain interfaces:</p>
+<p>模块必须通过显式、稳定、类型化、可测试和可序列化的结构进行通信。</p>
+<p>不要使用以下作为核心域接口：</p>
 <ul>
-<li>Arbitrary dictionaries</li>
-<li>Unstable JSON payloads</li>
-<li>Raw YOLO result objects</li>
-<li>OpenCV internal objects</li>
-<li>SQLAlchemy ORM objects</li>
+<li>任意词典</li>
+<li>JSON 负载不稳定</li>
+<li>原始 YOLO 结果对象</li>
+<li>OpenCV 内部对象</li>
+<li>SQLAlchemy ORM 对象</li>
 <li><code>dict[str, Any]</code></li>
 </ul>
-<h2 id="2-canonical-domain-models">2. Canonical Domain Models<a class="headerlink" href="#2-canonical-domain-models" title="Permanent link">&para;</a></h2>
-<p>The canonical Pydantic and matching TypeScript contracts are defined in
-<a href="../../design/14-data-model-and-database/#143-canonical-pydantic-2-models">Data Model and Database</a>.
-This contract does not duplicate simplified model definitions because duplicated examples can
-silently diverge from the API source of truth.</p>
-<p>Mandatory distinctions include:</p>
+<h2 id="2-canonical-domain-models">2. 规范领域模型<a class="headerlink" href="#2-canonical-domain-models" title="Permanent link">&para;</a></h2>
+<p>规范的 Pydantic 和匹配的 TypeScript 合约定义在
+<a href="../../design/14-data-model-and-database/#143-canonical-pydantic-2-models">Data Model and Database</a>。
+该合同不会重复简化的模型定义，因为重复的示例可能会
+默默地偏离 API 的真相来源。</p>
+<p>强制性区别包括：</p>
 <ul>
-<li><code>BoundingBox</code> includes its source image dimensions and uses documented full-frame or ROI space.</li>
-<li>Detections use stable <code>frame_id</code> identifiers, not transport-local frame indexes.</li>
-<li><code>internal_decision</code> is <code>OK | NG | UNCERTAIN</code>; <code>business_result</code> is only <code>OK | NG</code>.</li>
-<li>Each inspection pins product-detector, component-detector, rule, product-configuration, and
-  application versions, including artifact checksums required for replay.</li>
-<li>Upload, media, inspection-lifecycle, and device-operational states use their canonical enums.</li>
+<li><code>BoundingBox</code> 包括其源图像尺寸并使用记录的全帧或 ROI 空间。</li>
+<li>检测使用稳定的<code>frame_id</code>标识符，而不是传输本地帧索引。</li>
+<li><code>internal_decision</code>是<code>OK | NG | UNCERTAIN</code>； <code>business_result</code>只是<code>OK | NG</code>。</li>
+<li>每个检查引脚产品检测器、组件检测器、规则、产品配置和
+  应用程序版本，包括重放所需的工件校验和。</li>
+<li>上传、媒体、检查生命周期和设备操作状态使用其规范枚举。</li>
 </ul>
 <h2 id="3-interface-constraints">3. 接口限制<a class="headerlink" href="#3-interface-constraints" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Public functions and classes must use explicit type annotations.</li>
-<li>External API contracts must use Pydantic models.</li>
-<li>Coordinates must state whether they belong to the original image, an ROI, or a normalized coordinate space.</li>
-<li>Timestamps must use timezone-aware UTC values.</li>
-<li>IDs must have clearly defined ownership and origin.</li>
-<li>Confidence values must use the range <code>0.0</code> to <code>1.0</code>.</li>
-<li>Python and TypeScript types must remain synchronized.</li>
+<li>公共函数和类必须使用显式类型注释。</li>
+<li>外部 API 合约必须使用 Pydantic 模型。</li>
+<li>坐标必须说明它们是否属于原始图像、ROI 或标准化坐标空间。</li>
+<li>时间戳必须使用时区感知的 UTC 值。</li>
+<li>ID 必须具有明确定义的所有权和来源。</li>
+<li>置信度值必须使用<code>0.0</code>到<code>1.0</code>范围。</li>
+<li>Python 和 TypeScript 类型必须保持同步。</li>
 </ul>
 <h2 id="4-detector-protocol">4. 检测器协议<a class="headerlink" href="#4-detector-protocol" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
@@ -2925,20 +2953,20 @@ silently diverge from the API source of truth.</p>
 </code></pre></div>
 <h2 id="5-compatibility-rules">5. 兼容性规则<a class="headerlink" href="#5-compatibility-rules" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Adding an optional field is normally backward compatible.</li>
-<li>Removing a field is a breaking change.</li>
-<li>Renaming a field is a breaking change.</li>
-<li>Changing enum values is a breaking change.</li>
-<li>Breaking changes require an API version change.</li>
+<li>添加可选字段通常是向后兼容的。</li>
+<li>删除字段是一项重大更改。</li>
+<li>重命名字段是一项重大更改。</li>
+<li>更改枚举值是一项重大更改。</li>
+<li>重大更改需要更改 API 版本。</li>
 </ul>
 <h2 id="6-frontend-and-backend-type-synchronization">6.前后端类型同步<a class="headerlink" href="#6-frontend-and-backend-type-synchronization" title="Permanent link">&para;</a></h2>
-<p>Preferred flow:</p>
+<p>首选流程：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Pydantic models
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>→ OpenAPI schema
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>→ Generated TypeScript client
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>→ Vue applications
 </code></pre></div>
-<p>Do not maintain large duplicated sets of handwritten API types.</p>
+<p>不要维护大量重复的手写 API 类型集。</p>
 <h2 id="7-minimum-quality-gates">7. 最低质量门<a class="headerlink" href="#7-minimum-quality-gates" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ruff<span class="w"> </span>check<span class="w"> </span>.
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.

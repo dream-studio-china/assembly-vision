@@ -871,7 +871,7 @@
   <a href="#125-media-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        12.5 Media Policy
+        12.5 媒体政策
       
     </span>
   </a>
@@ -1736,6 +1736,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -2838,7 +2866,7 @@
   <a href="#125-media-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        12.5 Media Policy
+        12.5 媒体政策
       
     </span>
   </a>
@@ -2971,7 +2999,7 @@
 </ol>
 <p>如果媒体成功但事务失败，恢复会查找并隔离未引用的文件。如果数据库提交但缺少所需的介质重命名，完整性扫描会标记检查/介质错误并防止错误声明完整证据。</p>
 <p>SQLite 在实用的情况下使用 WAL 模式、外键、繁忙超时和单个受控编写器。备份使用 SQLite 备份 API，而不是实时数据库的原始副本。</p>
-<h2 id="125-media-policy">12.5 Media Policy<a class="headerlink" href="#125-media-policy" title="Permanent link">&para;</a></h2>
+<h2 id="125-media-policy">12.5 媒体政策<a class="headerlink" href="#125-media-policy" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3018,9 +3046,9 @@
 <h2 id="126-data-retention-lifecycle">12.6 数据保留生命周期<a class="headerlink" href="#126-data-retention-lifecycle" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     [*] --&gt; Staged
-    Staged --&gt; Committed:Atomic file and database commit
+    Staged --&gt; Committed:原子文件和数据库提交
     Staged --&gt; Quarantined:恢复发现不完整的工件
-    Committed --&gt; UploadPending:Upload required
+    Committed --&gt; UploadPending:需要上传
     Committed --&gt; RetentionEligible:无需上传
     UploadPending --&gt; UploadConfirmed:服务器收据和校验和已验证
     UploadPending --&gt; Protected:离线或重试

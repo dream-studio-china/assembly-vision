@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/design/decisions/ADR-005-local-first-storage-and-delayed-upload/">
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/design/decisions/ADR-011-labeled-train-and-inspect-mvp/">
       
       
-        <link rel="prev" href="../ADR-004-two-stage-detection/">
+        <link rel="prev" href="../ADR-010-per-component-temporal-aggregation/">
       
       
-        <link rel="next" href="../ADR-006-rest-plus-websocket/">
+        <link rel="next" href="../../../contracts/">
       
       
         
@@ -31,7 +31,7 @@
     
     
       
-        <title>ADR-005: Local-First Storage and Delayed Upload - AssemblyVision</title>
+        <title>ADR-011: Labeled Train-and-Inspect MVP - AssemblyVision</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#adr-005-local-first-storage-and-delayed-upload" class="md-skip">
+        <a href="#adr-011-labeled-train-and-inspect-mvp" class="md-skip">
           Skip to content
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-005: Local-First Storage and Delayed Upload
+              ADR-011: Labeled Train-and-Inspect MVP
             
           </span>
         </div>
@@ -1428,37 +1428,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-005: Local-First Storage and Delayed Upload
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
         
   
   
@@ -1474,142 +1447,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Status
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-context" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Context
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Decision
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Scope
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Consequences
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Consequences">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#51-positive" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.1 Positive
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#52-negative-and-trade-offs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.2 Negative and Trade-offs
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-alternatives" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Alternatives
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-open-questions-and-validation-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Open Questions and Validation Required
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-links" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Links
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1759,10 +1596,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1778,6 +1642,120 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Consequences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Consequences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-positive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Positive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-negative-and-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Negative and Trade-offs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-supersession" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Supersession
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Links
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2858,33 +2836,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-scope" class="md-nav__link">
+  <a href="#4-consequences" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Scope
+        4. Consequences
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Consequences
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Consequences">
+    <nav class="md-nav" aria-label="4. Consequences">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51-positive" class="md-nav__link">
+  <a href="#41-positive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1 Positive
+        4.1 Positive
       
     </span>
   </a>
@@ -2892,10 +2859,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52-negative-and-trade-offs" class="md-nav__link">
+  <a href="#42-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 Negative and Trade-offs
+        4.2 Negative and Trade-offs
       
     </span>
   </a>
@@ -2908,10 +2875,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-alternatives" class="md-nav__link">
+  <a href="#5-supersession" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Alternatives
+        5. Supersession
       
     </span>
   </a>
@@ -2919,21 +2886,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-open-questions-and-validation-required" class="md-nav__link">
+  <a href="#6-links" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Open Questions and Validation Required
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-links" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Links
+        6. Links
       
     </span>
   </a>
@@ -2960,49 +2916,51 @@
   
 
 
-<h1 id="adr-005-local-first-storage-and-delayed-upload">ADR-005: Local-First Storage and Delayed Upload<a class="headerlink" href="#adr-005-local-first-storage-and-delayed-upload" title="Permanent link">&para;</a></h1>
+<h1 id="adr-011-labeled-train-and-inspect-mvp">ADR-011: Labeled Train-and-Inspect MVP<a class="headerlink" href="#adr-011-labeled-train-and-inspect-mvp" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. Status<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
 <p>Accepted</p>
 <h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
-<p>Edge inspection must continue through network and central outages. Decisions require durable local traceability, while uploading every video frame would consume unnecessary bandwidth and storage. Retries can occur after the central server has committed a request but before the edge receives its response.</p>
+<p>ADR-009 establishes a static-image-first implementation sequence and excludes model training from its two-day scope. The current MVP objective requires a developer to train from a labeled static-image set and then inspect a separate image set one image at a time with traceable <code>OK</code> or <code>NG</code> results.</p>
+<p>The selected annotation tool is X-AnyLabeling. It exports product and component bounding boxes in Ultralytics YOLO text format. Filename <code>OK</code> or <code>NG</code> labels remain useful for held-out verification, but cannot train a bounding-box detector by themselves.</p>
+<p>The MVP runs on a developer-controlled Apple Silicon Mac with 16 GB memory. It must preserve the final two-stage architecture: product detection on the full frame, generated product ROI, component detection in that ROI, and deterministic rule evaluation. Training must remain separate from the edge runtime so it is not distributed with a customer runtime package.</p>
 <h2 id="3-decision">3. Decision<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>Persist inspection metadata, versions, evidence paths, final outcomes, and upload tasks locally before treating an inspection as complete. Store key media and configured rolling/full video locally under retention policy. Upload selected evidence asynchronously through a persistent queue with retry/backoff, idempotency keys, duplicate prevention, status tracking, checksums, and durable central receipts.</p>
-<p>OK uploads normally include metadata and one representative key frame. NG uploads include richer metadata, missing/low-confidence components, multiple and annotated frames, product ROI, optional short clip, and relevant errors. System exceptions include state, evidence, logs, and time.</p>
-<h2 id="4-scope">4. Scope<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
-<p>SQLite is the initial edge store; PostgreSQL may be used for larger edge installations only when justified. The central server uses PostgreSQL and filesystem/object-storage abstraction. Exact retention periods and media selection are deployment configuration.</p>
-<h2 id="5-consequences">5. Consequences<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
-<h3 id="51-positive">5.1 Positive<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
+<p>Replace the training exclusion in ADR-009 for the MVP only. The labeled train-and-inspect MVP shall:</p>
+<ol>
+<li>Use X-AnyLabeling to create full-frame product and component bounding-box labels in standard YOLO format.</li>
+<li>Provide a developer-only <code>training/</code> workspace and <code>av-train</code> CLI that is separate from <code>edge-service</code>; runtime code must not import training code.</li>
+<li>Train the product detector from full-frame images and labels.</li>
+<li>Prepare the component dataset by generating product ROIs, cropping images, and mapping component boxes from full-frame coordinates into ROI coordinates before training the component detector.</li>
+<li>Write versioned model weights outside Git and produce checksummed model manifests consumed by <code>assemblyvision inspect</code>.</li>
+<li>Run the existing static inspection pipeline with real two-stage Ultralytics YOLO adapters, deterministic rules, JSON evidence, ROI images, and annotated images.</li>
+<li>Provide <code>assemblyvision verify</code> to compare inspection results with expected <code>OK</code> or <code>NG</code> labels parsed from a configured filename convention and report false negatives, false positives, and NG recall.</li>
+</ol>
+<p>This MVP uses small models and measured input sizes appropriate for the developer hardware. It demonstrates a reproducible training-to-inspection flow, not production accuracy or production readiness.</p>
+<p>Model encryption and <code>.pyc</code>-only runtime packaging are deferred. The immediate protection boundary is that training code, datasets, notebooks, and experiment configuration are never included in a customer runtime distribution.</p>
+<h2 id="4-consequences">4. Consequences<a class="headerlink" href="#4-consequences" title="Permanent link">&para;</a></h2>
+<h3 id="41-positive">4.1 Positive<a class="headerlink" href="#41-positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Network and central outages do not block decisions.</li>
-<li>Durable queueing supports eventual synchronization and traceability.</li>
-<li>Selective uploads control network and central storage demand.</li>
-<li>Idempotent receipts resolve ambiguous retry outcomes.</li>
+<li>Exercises the same two-stage detection path intended for production instead of introducing a classification-only alternate path.</li>
+<li>Uses standard YOLO labels and training tooling, minimizing custom model-training behavior.</li>
+<li>Produces model manifests, checksums, and held-out verification evidence before camera, timing, and network complexity are introduced.</li>
+<li>Preserves the runtime/training separation required by the monorepo architecture.</li>
 </ul>
-<h3 id="52-negative-and-trade-offs">5.2 Negative and Trade-offs<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
+<h3 id="42-negative-and-trade-offs">4.2 Negative and Trade-offs<a class="headerlink" href="#42-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Edge disk sizing, cleanup, database recovery, and queue monitoring are mandatory.</li>
-<li>Central state is eventually consistent and can be stale.</li>
-<li>Media/database reconciliation is needed after failures.</li>
-<li>Long outages can exceed local capacity and require safe degradation or pause.</li>
+<li>Requires initial manual or model-assisted box annotation rather than filename labels alone.</li>
+<li>Component training requires an explicit ROI preparation step and coordinate-transform tests.</li>
+<li>Apple Silicon developer hardware constrains model size, batch size, and training duration.</li>
+<li>Plain model weights and Python source remain development artifacts in this MVP; they are not a distribution-security control.</li>
+<li>The resulting metrics are valid only for the labeled and held-out static-image sets, not a production acceptance claim.</li>
 </ul>
-<h2 id="6-alternatives">6. Alternatives<a class="headerlink" href="#6-alternatives" title="Permanent link">&para;</a></h2>
+<h2 id="5-supersession">5. Supersession<a class="headerlink" href="#5-supersession" title="Permanent link">&para;</a></h2>
+<p>This ADR supersedes only ADR-009's two-day scope and its exclusion of model training. ADR-009 remains in force for static-image-first sequencing, for exclusion of camera/video/central/dashboard work, and for the requirement that static artifacts remain deterministic regression fixtures.</p>
+<h2 id="6-links">6. Links<a class="headerlink" href="#6-links" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Write directly to the central database:</strong> rejected due to network coupling and security boundary violations.</li>
-<li><strong>In-memory upload queue:</strong> rejected because restart/power loss would lose tasks.</li>
-<li><strong>Upload every frame:</strong> rejected due to bandwidth/storage cost and unnecessary data exposure.</li>
-<li><strong>Metadata only:</strong> rejected because review, support, and acceptance require image evidence.</li>
-</ul>
-<h2 id="7-open-questions-and-validation-required">7. Open Questions and Validation Required<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Retention periods and local disk capacity by media class.</li>
-<li>Expected maximum outage and upload bandwidth/clip size.</li>
-<li>Safe line behavior if durable storage reaches its critical reserve.</li>
-</ul>
-<h2 id="8-links">8. Links<a class="headerlink" href="#8-links" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="../../20-deployment-and-operations/">Deployment and Operations</a></li>
-<li><a href="../../23-observability-and-support/">Observability and Support</a></li>
-<li><a href="../ADR-001-edge-first-inspection/">ADR-001: Edge-first inspection</a></li>
+<li><a href="../ADR-009-static-image-first-mvp/">ADR-009: Static-Image-First MVP</a></li>
+<li><a href="../ADR-004-two-stage-detection/">ADR-004: Two-stage detection</a></li>
+<li><a href="../../19-training-and-evaluation/">Training and Evaluation</a></li>
+<li><a href="../../18-monorepo-and-code-organization/">Monorepo and Code Organization</a></li>
+<li><a href="../../25-roadmap/">Implementation Roadmap</a></li>
 </ul>
 
 

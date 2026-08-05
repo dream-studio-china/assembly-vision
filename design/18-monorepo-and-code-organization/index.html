@@ -1131,10 +1131,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1881-two-day-static-image-mvp" class="md-nav__link">
+  <a href="#1881-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.8.1 Two-Day Static-Image MVP
+        18.8.1 Static Train-and-Inspect MVP
       
     </span>
   </a>
@@ -1880,6 +1880,34 @@
     
   
     ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
   
 
     
@@ -3074,10 +3102,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1881-two-day-static-image-mvp" class="md-nav__link">
+  <a href="#1881-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.8.1 Two-Day Static-Image MVP
+        18.8.1 Static Train-and-Inspect MVP
       
     </span>
   </a>
@@ -3216,7 +3244,7 @@
 <ol>
 <li><code>apps/</code> contains independently runnable/deployable processes and web applications.</li>
 <li><code>packages/</code> contains code reused by at least two applications or a cohesive domain that requires independent tests.</li>
-<li>Keep product detection, ROI, component detection, temporal aggregation, and rules together in <code>vision-core</code> until independent reuse or dependency isolation is demonstrated.</li>
+<li>Keep product detection, ROI, component detection, temporal aggregation, and rules together in <code>vision-core</code>. Extract <code>domain</code> and <code>vision-core</code> once a second concrete consumer requires them; the labeled train-and-inspect MVP is that trigger because training reuses domain schemas and ROI/preprocessing.</li>
 <li>Runtime application code never imports from <code>training/</code>.</li>
 <li>Edge code must not import central persistence or require a central connection.</li>
 <li>Frontends consume generated API contracts and small shared visual primitives; page-specific stores and components remain in their app.</li>
@@ -3294,54 +3322,56 @@
 <a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>│           └── package.json
 <a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>├── training/
 <a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>│   ├── assemblyvision_training/
-<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>│   │   ├── data/
-<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>│   │   ├── product_detector/
-<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>│   │   ├── component_detector/
-<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>│   │   ├── evaluation/
-<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>│   │   └── manifests/
-<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>│   ├── configs/
-<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>│   ├── tests/
-<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>│   └── pyproject.toml
-<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>├── models/
-<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>│   ├── README.md
-<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>│   └── manifests/
-<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>├── deploy/
-<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>│   ├── docker/
-<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>│   │   ├── edge.Dockerfile
-<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>│   │   ├── central-api.Dockerfile
-<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>│   │   ├── central-worker.Dockerfile
-<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>│   │   └── web.Dockerfile
-<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>│   ├── compose/
-<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>│   │   ├── edge.compose.yml
-<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>│   │   └── central.compose.yml
-<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>│   ├── nginx/
-<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>│   └── env/
-<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>├── config/
-<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>│   ├── schemas/
-<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>│   └── examples/
-<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>├── tests/
-<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>│   ├── contract/
-<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>│   ├── e2e/
-<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>│   ├── resilience/
-<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>│   ├── performance/
-<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>│   └── fixtures/
-<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>├── docs/
-<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>│   ├── design/
-<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>│   │   └── decisions/
-<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>│   └── README.md
-<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>├── scripts/
-<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>├── .github/workflows/
-<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>├── pyproject.toml
-<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>├── uv.lock
-<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>├── package.json
-<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>├── pnpm-lock.yaml
-<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>├── pnpm-workspace.yaml
-<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>├── tsconfig.base.json
-<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>├── docker-compose.yml
-<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>├── Makefile
-<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>└── README.md
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>│   │   ├── cli.py
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>│   │   ├── data/
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>│   │   ├── product_detector/
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>│   │   ├── component_detector/
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>│   │   ├── preparation/
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>│   │   ├── evaluation/
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>│   │   └── manifests/
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>│   ├── configs/
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>│   ├── tests/
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>│   └── pyproject.toml
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>├── models/
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>│   ├── README.md
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>│   └── manifests/
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>├── deploy/
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>│   ├── docker/
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>│   │   ├── edge.Dockerfile
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>│   │   ├── central-api.Dockerfile
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>│   │   ├── central-worker.Dockerfile
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>│   │   └── web.Dockerfile
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>│   ├── compose/
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>│   │   ├── edge.compose.yml
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>│   │   └── central.compose.yml
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>│   ├── nginx/
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>│   └── env/
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>├── config/
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>│   ├── schemas/
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>│   └── examples/
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>├── tests/
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>│   ├── contract/
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>│   ├── e2e/
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>│   ├── resilience/
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>│   ├── performance/
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>│   └── fixtures/
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>├── docs/
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>│   ├── design/
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>│   │   └── decisions/
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>│   └── README.md
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>├── scripts/
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>├── .github/workflows/
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>├── pyproject.toml
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>├── uv.lock
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>├── package.json
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>├── pnpm-lock.yaml
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>├── pnpm-workspace.yaml
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>├── tsconfig.base.json
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>├── docker-compose.yml
+<a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a>├── Makefile
+<a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a>└── README.md
 </code></pre></div>
-<p>Brace notation above is explanatory shorthand; actual directories are ordinary directories. <code>edge-service</code> combines API, capture orchestration, pipeline execution, local persistence, and uploader in one process for the first production release. CPU/GPU-heavy inference may run in a supervised subprocess, but a separately deployable <code>edge-worker</code> is not justified until isolation or independent scaling is measured. Likewise, the two-day MVP is exposed as an <code>edge-service</code> CLI entry point rather than a separate <code>edge-cli</code> app.</p>
+<p>Brace notation above is explanatory shorthand; actual directories are ordinary directories. <code>edge-service</code> combines API, capture orchestration, pipeline execution, local persistence, and uploader in one process for the first production release. CPU/GPU-heavy inference may run in a supervised subprocess, but a separately deployable <code>edge-worker</code> is not justified until isolation or independent scaling is measured. The static train-and-inspect MVP exposes inspection through the <code>edge-service</code> CLI and training through the separate developer-only <code>av-train</code> CLI rather than creating an <code>edge-cli</code> app.</p>
 <h2 id="184-application-responsibilities">18.4 Application Responsibilities<a class="headerlink" href="#184-application-responsibilities" title="Permanent link">&para;</a></h2>
 <h3 id="1841-edge-service">18.4.1 <code>edge-service</code><a class="headerlink" href="#1841-edge-service" title="Permanent link">&para;</a></h3>
 <p>Owns dependency composition for camera adapters, barcode readers, the inspection pipeline, SQLite repositories, filesystem media, persistent upload outbox, local API/WebSocket, startup recovery, and health. Infrastructure adapters implement domain-facing protocols. It must start and inspect without central credentials or connectivity.</p>
@@ -3414,10 +3444,10 @@
     ES -. publishes .-&gt; EO</code></pre>
 <p>For month one, durable job handlers remain in the central codebase and may use a second process entry point; no separate <code>central-worker</code> application is required. If independent deployment later becomes necessary, first extract a small central application/domain package consumed by both deployables. A worker must never import FastAPI route modules. No arrow from edge runtime to central runtime denotes a code/runtime dependency. The uploader communicates over the documented network contract.</p>
 <h2 id="188-mvp-versus-later-packages">18.8 MVP Versus Later Packages<a class="headerlink" href="#188-mvp-versus-later-packages" title="Permanent link">&para;</a></h2>
-<h3 id="1881-two-day-static-image-mvp">18.8.1 Two-Day Static-Image MVP<a class="headerlink" href="#1881-two-day-static-image-mvp" title="Permanent link">&para;</a></h3>
-<p>Required: one Python distribution containing the <code>edge-service</code> CLI entry point and cohesive internal modules for domain models, folder source, detectors, ROI, rules, manifests, and focused tests. Separate package publication, TypeScript workspace setup, databases, Web apps, central apps, temporal aggregation, upload, and camera SDK are not required.</p>
+<h3 id="1881-static-train-and-inspect-mvp">18.8.1 Static Train-and-Inspect MVP<a class="headerlink" href="#1881-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
+<p>Required: one root <code>uv</code> workspace containing the <code>edge-service</code> runtime distribution, a separate developer-only <code>training</code> distribution with an <code>av-train</code> CLI, and shared <code>domain</code> and <code>vision-core</code> packages. <code>training</code> produces product and component YOLO artifacts from X-AnyLabeling labels; it is never imported by or included in the edge runtime distribution. <code>vision-core</code> owns shared ROI generation and coordinate mapping so component dataset preparation and runtime inference use the same transforms. TypeScript setup, databases, Web apps, central apps, temporal aggregation, upload, and camera SDK are not required.</p>
 <h3 id="1882-one-month-mvp">18.8.2 One-Month MVP<a class="headerlink" href="#1882-one-month-mvp" title="Permanent link">&para;</a></h3>
-<p>Required: <code>edge-service</code>, <code>edge-web</code>, a central API codebase, and only the minimal central inspection/review Web view needed for the demonstrator. Start with two Python distributions at most (edge runtime/vision and central API); keep domain, configuration, logging, persistence, and jobs as internal modules until two concrete consumers justify extraction. Share only generated API contracts and proven detection-viewer primitives in TypeScript. A separate <code>central-worker</code>, <code>platform-common</code>, shared chart/auth/validation packages, generalized admin UI, and report jobs are deferred.</p>
+<p>Required: <code>edge-service</code>, <code>edge-web</code>, a central API codebase, and only the minimal central inspection/review Web view needed for the demonstrator. Runtime deployment starts with two Python application distributions at most (edge runtime and central API); the already-extracted <code>domain</code> and <code>vision-core</code> packages remain shared with the developer-only training distribution. Keep configuration, logging, persistence, and jobs application-local until another concrete consumer justifies extraction. Share only generated API contracts and proven detection-viewer primitives in TypeScript. A separate <code>central-worker</code>, <code>platform-common</code>, shared chart/auth/validation packages, generalized admin UI, and report jobs are deferred.</p>
 <h3 id="1883-add-only-when-justified">18.8.3 Add Only When Justified<a class="headerlink" href="#1883-add-only-when-justified" title="Permanent link">&para;</a></h3>
 <p>Potential later packages include vendor-specific camera adapters with conflicting native dependencies, a dedicated MES/PLC integration package, central application/domain extraction for multiple processes, chart components reused by another app, and model-distribution tooling. Do not pre-create empty packages for them.</p>
 <h2 id="189-dependency-and-version-management">18.9 Dependency and Version Management<a class="headerlink" href="#189-dependency-and-version-management" title="Permanent link">&para;</a></h2>
@@ -3429,7 +3459,8 @@
 <h2 id="1811-models-data-and-generated-artifacts">18.11 Models, Data, and Generated Artifacts<a class="headerlink" href="#1811-models-data-and-generated-artifacts" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>models/manifests/</code> may contain small manifests and checksums for development references. Model weights live in an artifact registry/object store and are ignored by Git.</li>
-<li><code>training/</code> contains reproducible code and small synthetic test fixtures, not production datasets or uncurated exports.</li>
+<li><code>training/</code> contains reproducible code, X-AnyLabeling-to-YOLO dataset validation, component-ROI preparation, and small synthetic test fixtures, not production datasets or uncurated exports. It is developer-only and excluded from runtime distributions.</li>
+<li>The static train-and-inspect MVP uses plain local model artifacts with checksums. Model encryption and <code>.pyc</code>-only runtime packaging are deferred to a separately justified distribution scope.</li>
 <li>Runtime databases, images, clips, logs, cache, and reports use explicit external volumes, never repository paths.</li>
 <li>OpenAPI documents and generated clients are produced deterministically. The chosen policy may commit generated output for easy frontend builds or regenerate in CI, but CI always checks drift.</li>
 <li>Built frontend assets and compiled Python runtime layers are build outputs, not source directories.</li>

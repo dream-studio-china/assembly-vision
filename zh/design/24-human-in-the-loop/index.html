@@ -1163,7 +1163,7 @@
   <a href="#241-purpose-and-safety-position" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.1 Purpose and Safety Position
+        24.1 目的和安全位置
       
     </span>
   </a>
@@ -1186,7 +1186,7 @@
   <a href="#2421-initial-production-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.2.1 Initial Production Phase
+        24.2.1 初始生产阶段
       
     </span>
   </a>
@@ -1312,7 +1312,7 @@
   <a href="#2411-operational-exceptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.11 Operational Exceptions
+        24.11 操作异常
       
     </span>
   </a>
@@ -1808,6 +1808,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -2866,7 +2894,7 @@
   <a href="#241-purpose-and-safety-position" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.1 Purpose and Safety Position
+        24.1 目的和安全位置
       
     </span>
   </a>
@@ -2889,7 +2917,7 @@
   <a href="#2421-initial-production-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.2.1 Initial Production Phase
+        24.2.1 初始生产阶段
       
     </span>
   </a>
@@ -3015,7 +3043,7 @@
   <a href="#2411-operational-exceptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.11 Operational Exceptions
+        24.11 操作异常
       
     </span>
   </a>
@@ -3065,10 +3093,10 @@
 
 
 <h1 id="24-human-in-the-loop-operations">24. 人机交互操作<a class="headerlink" href="#24-human-in-the-loop-operations" title="Permanent link">&para;</a></h1>
-<h2 id="241-purpose-and-safety-position">24.1 Purpose and Safety Position<a class="headerlink" href="#241-purpose-and-safety-position" title="Permanent link">&para;</a></h2>
+<h2 id="241-purpose-and-safety-position">24.1 目的和安全位置<a class="headerlink" href="#241-purpose-and-safety-position" title="Permanent link">&para;</a></h2>
 <p>人工审核是一个受控的质量流程，旨在谨慎推出、模糊证据、NG 处理和持续改进。它不会隐藏模型限制或改变原始机器决策。 AssemblyVision 优先考虑高 NG 召回率：早期操作接受额外的错误 NG 决策，因为它们可以进行审查，而错误地发布为 OK 的真正 NG 是主要的质量风险。</p>
 <h2 id="242-scope-by-phase">24.2 阶段范围<a class="headerlink" href="#242-scope-by-phase" title="Permanent link">&para;</a></h2>
-<h3 id="2421-initial-production-phase">24.2.1 Initial Production Phase<a class="headerlink" href="#2421-initial-production-phase" title="Permanent link">&para;</a></h3>
+<h3 id="2421-initial-production-phase">24.2.1 初始生产阶段<a class="headerlink" href="#2421-initial-production-phase" title="Permanent link">&para;</a></h3>
 <ul>
 <li>使所有 NG 检查可供审查。</li>
 <li>路由其内部决定为<code>UNCERTAIN</code>的业务<code>NG</code>案例作为独特的解释类别进行审查。</li>
@@ -3141,10 +3169,10 @@
     participant E as 边缘客户端
     participant C as 中央服务器
     participant Q as 审核队列
-    participant R as Reviewer
+    participant R as 审稿人
     participant T as 培训待办事项
     E-&gt;&gt;C:上传决定、版本和证据
-    C-&gt;&gt;C:Verify receipt and evidence checksum
+    C-&gt;&gt;C:验证收据和证据校验和
     C-&gt;&gt;Q:应用版本化路由策略
     Q--&gt;&gt;R:分配优先审查项目
     R-&gt;&gt;C:打开原始和带注释的证据
@@ -3155,7 +3183,7 @@ alt 机器决策修正
         C-&gt;&gt;T:添加具有审查出处的受治理候选人
         C--&gt;&gt;E:仅报告汇总反馈
 else 机器决策确认
-        C-&gt;&gt;C:Update review metrics
+        C-&gt;&gt;C:更新审核指标
     end</code></pre>
 <p>审核完成绝不会将临时阈值或模型更改直接推送到边缘设备。</p>
 <h2 id="246-reviewer-interface-requirements">24.6 审阅者界面要求<a class="headerlink" href="#246-reviewer-interface-requirements" title="Permanent link">&para;</a></h2>
@@ -3164,53 +3192,53 @@ else 机器决策确认
 <h2 id="247-review-data-model-and-auditability">24.7 审查数据模型和可审计性<a class="headerlink" href="#247-review-data-model-and-auditability" title="Permanent link">&para;</a></h2>
 <p>审核记录包括：</p>
 <ul>
-<li>Stable review and inspection identifiers.</li>
-<li>Queue policy/version and assignment history.</li>
-<li>Original machine outcome and reason codes.</li>
-<li>Reviewer disposition and component-level ground truth.</li>
-<li>Reviewer identity, role, timestamps, and reason.</li>
-<li>Evidence identifiers/checksums and versions shown.</li>
-<li>Superseded review reference if corrected.</li>
-<li>Adjudication state and adjudicator where required.</li>
-<li>Training-backlog eligibility and exclusion reason.</li>
+<li>稳定的审查和检查标识符。</li>
+<li>队列策略/版本和分配历史记录。</li>
+<li>原始机器结果和原因代码。</li>
+<li>审阅者处置和组件级基本事实。</li>
+<li>审阅者身份、角色、时间戳和原因。</li>
+<li>显示证据标识符/校验和和版本。</li>
+<li>如果更正，则取代审查参考。</li>
+<li>需要时裁决国家和裁决者。</li>
+<li>培训积压资格和排除原因。</li>
 </ul>
-<p>Review records are append-only. Corrections supersede rather than overwrite. Access and exports are audited.</p>
+<p>审核记录仅供追加。更正是取代而不是覆盖。访问和导出均经过审核。</p>
 <h2 id="248-quality-control-for-human-review">24.8 人工审核的质量控制<a class="headerlink" href="#248-quality-control-for-human-review" title="Permanent link">&para;</a></h2>
-<p>Reviewers need product-specific instructions and examples agreed with the customer. Quality controls include periodic calibration cases, blinded overlap review, disagreement analysis, and adjudication by an authorized product expert. Ground truth that cannot be established from retained evidence remains inconclusive and must not be forced to match the machine output.</p>
-<p>Reviewer performance data is used to improve instructions and resolve ambiguity, not as a substitute for representative system evaluation.</p>
+<p>审核人员需要与客户商定的特定于产品的说明和示例。质量控制包括定期校准案例、盲法重叠审查、分歧分析以及授权产品专家的裁决。无法从保留的证据中确定的基本事实仍然是不确定的，并且不得被迫与机器输出相匹配。</p>
+<p>审阅者绩效数据用于改进说明并解决歧义，而不是替代代表性系统评估。</p>
 <h2 id="249-feedback-and-model-improvement">24.9 反馈和模型改进<a class="headerlink" href="#249-feedback-and-model-improvement" title="Permanent link">&para;</a></h2>
-<p>Confirmed errors enter a candidate backlog with provenance and data-use permission. Before training use, an authorized curator checks image quality, product identity, component labels, leakage grouping, privacy, and duplicate/adjacent-frame relationships. Dataset versions record inclusion decisions.</p>
-<p>The update cycle is:</p>
+<p>已确认的错误会进入候选待办事项列表，并具有出处和数据使用权限。在培训使用之前，授权管理者会检查图像质量、产品标识、组件标签、泄漏分组、隐私和重复/相邻帧关系。数据集版本记录包含决策。</p>
+<p>更新周期为：</p>
 <ol>
-<li>Analyze errors by product, component, site condition, and release version.</li>
-<li>Select representative, authorized examples and preserve held-out acceptance data.</li>
-<li>Train or tune outside the production edge runtime.</li>
-<li>Evaluate against locked regression and independent validation sets.</li>
-<li>Approve a signed model/rule release through the normal release process.</li>
-<li>Stage, monitor, and roll back if measured behavior regresses.</li>
+<li>按产品、组件、现场条件和发布版本分析错误。</li>
+<li>选择有代表性的、授权的示例并保留保留的验收数据。</li>
+<li>在生产边缘运行时之外进行训练或调整。</li>
+<li>针对锁定回归和独立验证集进行评估。</li>
+<li>通过正常发布流程批准已签名的模型/规则发布。</li>
+<li>如果测量到的行为出现退化，则进行暂存、监视和回滚。</li>
 </ol>
-<p>No individual review causes online learning or silently changes a production decision policy.</p>
+<p>没有个人审查会导致在线学习或默默地改变生产决策政策。</p>
 <h2 id="2410-metrics-and-review-reduction">24.10 指标和审查减少<a class="headerlink" href="#2410-metrics-and-review-reduction" title="Permanent link">&para;</a></h2>
-<p>Track review rate, queue age, reviewer turnaround, correction rate, false-positive rate, estimated false-negative rate from OK audits, inconclusive rate, disagreement rate, and per-product/per-component/model/rule results. Every rate includes its sample count and sampling method.</p>
-<p>Manual review is reduced only when measured production evidence supports the change. The decision considers NG recall, OK-audit findings, novelty, review correction rate, sample representativeness, recent camera/product/configuration changes, and customer risk tolerance. There is no fixed calendar date or unvalidated numeric trigger.</p>
-<h2 id="2411-operational-exceptions">24.11 Operational Exceptions<a class="headerlink" href="#2411-operational-exceptions" title="Permanent link">&para;</a></h2>
+<p>跟踪审核率、队列年龄、审核者周转率、纠正率、误报率、OK 审核的估计误报率、不确定率、分歧率以及每个产品/每个组件/模型/规则结果。每个比率都包括其样本数量和抽样方法。</p>
+<p>仅当测量的生产证据支持更改时，才会减少手动审核。该决定考虑了 NG 召回、OK 审核结果、新颖性、审查纠正率、样本代表性、最近的相机/产品/配置更改以及客户风险承受能力。没有固定的日历日期或未经验证的数字触发器。</p>
+<h2 id="2411-operational-exceptions">24.11 操作异常<a class="headerlink" href="#2411-operational-exceptions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>If the central server is unavailable, edge inspection continues and review items synchronize later.</li>
-<li>If required evidence is missing or corrupt, the review is inconclusive and an operational incident is raised.</li>
-<li>If queue growth exceeds staffing capacity, priority policy protects highest-risk items; it does not automatically convert NG to OK.</li>
-<li>If a reviewer discovers a potential missed-NG pattern, follow the containment runbook in <a href="../23-observability-and-support/">Observability and Support</a>.</li>
-<li>If product configuration changes, maintain separate review metrics before and after activation.</li>
+<li>如果中央服务器不可用，边缘检查将继续并稍后同步审核项目。</li>
+<li>如果所需的证据缺失或损坏，则审查没有结论，并且会引发操作事件。</li>
+<li>如果队列增长超过人员配置能力，优先政策将保护最高风险的物品；它不会自动将 NG 转换为 OK。</li>
+<li>如果审核者发现潜在的漏检 NG 模式，请遵循 <a href="../23-observability-and-support/">Observability and Support</a> 中的遏制运行手册。</li>
+<li>如果产品配置发生变化，请在激活之前和之后维护单独的审核指标。</li>
 </ul>
 <h2 id="2412-open-questions-and-validation-required">24.12 未解决的问题和需要验证<a class="headerlink" href="#2412-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>How internal <code>UNCERTAIN</code> is displayed as a distinct review category while retaining business result <code>NG</code>.</li>
-<li>Who has authority to define ground truth, adjudicate disagreements, and release a product after review.</li>
-<li>Review staffing, shifts, languages, response expectations, and queue ownership.</li>
-<li>Initial and continuing OK audit sampling policy after production baseline measurement.</li>
-<li>Component criticality and review priority by product type.</li>
-<li>Evidence retention needed to complete delayed reviews and quality audits.</li>
-<li>Whether review outcomes integrate with PLC/MES or remain advisory in the first release.</li>
-<li>Customer permission and governance for using reviewed production evidence in training.</li>
+<li>内部<code>UNCERTAIN</code>如何显示为独特的评论类别，同时保留业务结果<code>NG</code>。</li>
+<li>谁有权定义基本事实、裁决分歧并在审查后发布产品。</li>
+<li>审查人员配置、轮班、语言、响应期望和队列所有权。</li>
+<li>生产基线测量后初始和持续的 OK 审核抽样政策。</li>
+<li>按产品类型划分的组件重要性和审查优先级。</li>
+<li>完成延迟审查和质量审核所需的证据保留。</li>
+<li>审核结果是否与 PLC/MES 集成，还是在第一个版本中保持咨询性。</li>
+<li>在培训中使用经过审查的生产证据的客户许可和管理。</li>
 </ul>
 <h2 id="2413-related-documents">24.13 相关文件<a class="headerlink" href="#2413-related-documents" title="Permanent link">&para;</a></h2>
 <ul>

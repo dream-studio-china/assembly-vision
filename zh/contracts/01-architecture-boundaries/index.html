@@ -1592,6 +1592,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1781,7 +1809,7 @@
   <a href="#3-forbidden-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Forbidden Dependencies
+        3. 禁止的依赖关系
       
     </span>
   </a>
@@ -1814,7 +1842,7 @@
   <a href="#6-enforcement" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Enforcement
+        6. 执行
       
     </span>
   </a>
@@ -2783,7 +2811,7 @@
   <a href="#3-forbidden-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Forbidden Dependencies
+        3. 禁止的依赖关系
       
     </span>
   </a>
@@ -2816,7 +2844,7 @@
   <a href="#6-enforcement" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Enforcement
+        6. 执行
       
     </span>
   </a>
@@ -2854,10 +2882,10 @@
   
 
 
-<h1 id="01-architecture-boundaries">01. Architecture Boundaries<a class="headerlink" href="#01-architecture-boundaries" title="Permanent link">&para;</a></h1>
+<h1 id="01-architecture-boundaries">01. 架构边界<a class="headerlink" href="#01-architecture-boundaries" title="Permanent link">&para;</a></h1>
 <h2 id="1-layer-model">1. 层模型<a class="headerlink" href="#1-layer-model" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision uses dependency inversion. Source-code dependencies point toward domain contracts;
-infrastructure implements domain-owned protocols and is wired at the composition root:</p>
+<p>AssemblyVision 使用依赖倒置。源代码依赖关系指向领域契约；
+基础设施实现域拥有的协议并连接到组合根：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>API / CLI / Scheduled Entry Points
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                |
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                v
@@ -2871,7 +2899,7 @@ infrastructure implements domain-owned protocols and is wired at the composition
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>Composition Root -&gt; Application + Infrastructure
 </code></pre></div>
-<p>Initial repository mapping:</p>
+<p>初始存储库映射：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>apps/
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  edge-service       # API, CLI entry point, inspection runtime, persistence, uploader
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  edge-web
@@ -2888,23 +2916,23 @@ infrastructure implements domain-owned protocols and is wired at the composition
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>  api-client
 <a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>  ui                 # only proven shared presentation primitives
 </code></pre></div>
-<p>Product detection, ROI, component detection, temporal aggregation, and deterministic rules are
-logical modules inside <code>vision-core</code>; they are not separate packages until reuse, native dependency
-isolation, or independent release requirements are demonstrated. Edge persistence and upload
-implementations remain in <code>edge-service</code> behind domain-facing protocols. In-process worker tasks or
-a supervised inference subprocess are not separate deployment units.</p>
+<p>产品检测、ROI、组件检测、时间聚合和确定性规则
+<code>vision-core</code>内的逻辑模块；在重用、本机依赖之前它们不是单独的包
+隔离或独立发布要求得到证明。边缘持久化和上传
+实现仍保留在面向域协议后面的 <code>edge-service</code> 中。进程中的工作任务或
+监督推理子流程不是单独的部署单元。</p>
 <h2 id="2-mandatory-rules">2. 强制性规则<a class="headerlink" href="#2-mandatory-rules" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>apps/</code> owns composition, transport, application orchestration, and app-specific infrastructure.</li>
-<li>Shared packages are created only for cohesive domain logic or demonstrated reuse by multiple applications.</li>
-<li>FastAPI routes must only validate requests, call services, and serialize responses.</li>
-<li>YOLO inference logic must not be implemented directly inside FastAPI routes.</li>
-<li>Database logic must not be implemented directly inside Vue components or FastAPI routes.</li>
-<li>The Rule Engine must remain independent from Web, database, and YOLO dependencies.</li>
-<li>Real-time inspection on the edge must not depend on the central server.</li>
+<li><code>apps/</code> 拥有组合、传输、应用程序编排和特定于应用程序的基础设施。</li>
+<li>共享包仅为内聚域逻辑或多个应用程序演示的重用而创建。</li>
+<li>FastAPI 路由必须仅验证请求、调用服务和序列化响应。</li>
+<li>YOLO 推理逻辑不得直接在 FastAPI 路由内部实现。</li>
+<li>数据库逻辑不得直接在 Vue 组件或 FastAPI 路由内部实现。</li>
+<li>规则引擎必须保持独立于 Web、数据库和 YOLO 依赖关系。</li>
+<li>边缘实时检测不能依赖于中央服务器。</li>
 </ul>
-<h2 id="3-forbidden-dependencies">3. Forbidden Dependencies<a class="headerlink" href="#3-forbidden-dependencies" title="Permanent link">&para;</a></h2>
-<p>The following dependencies are forbidden:</p>
+<h2 id="3-forbidden-dependencies">3. 禁止的依赖关系<a class="headerlink" href="#3-forbidden-dependencies" title="Permanent link">&para;</a></h2>
+<p>禁止以下依赖关系：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>rule-engine → FastAPI
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>rule-engine → SQLAlchemy
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>roi-engine → Vue
@@ -2912,7 +2940,7 @@ a supervised inference subprocess are not separate deployment units.</p>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>component-detector → HTTP
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>persistence → YOLO
 </code></pre></div>
-<p>The following implementation style is forbidden:</p>
+<p>禁止以下实现方式：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/inspect&quot;</span><span class="p">)</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">UploadFile</span><span class="p">):</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="s2">&quot;best.pt&quot;</span><span class="p">)</span>
@@ -2930,22 +2958,20 @@ a supervised inference subprocess are not separate deployment units.</p>
 </code></pre></div>
 <h2 id="5-dependency-direction-rules">5. 依赖方向规则<a class="headerlink" href="#5-dependency-direction-rules" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Lower-level modules must not depend on application modules.</li>
-<li>Domain modules must not depend on FastAPI, Vue, or Docker.</li>
-<li>Detector modules must not produce final <code>OK</code> or <code>NG</code> decisions.</li>
-<li>The Rule Engine must not call YOLO.</li>
-<li>Persistence modules must not contain business decisions.</li>
-<li>The Upload Client must not modify local inspection results.</li>
+<li>较低层模块不得依赖于应用程序模块。</li>
+<li>域模块不得依赖于 FastAPI、Vue 或 Docker。</li>
+<li>检测器模块不得产生最终的<code>OK</code>或<code>NG</code>决策。</li>
+<li>规则引擎不得调用YOLO。</li>
+<li>持久性模块不得包含业务决策。</li>
+<li>上传客户端不得修改本地检查结果。</li>
 </ul>
-<h2 id="6-enforcement">6. Enforcement<a class="headerlink" href="#6-enforcement" title="Permanent link">&para;</a></h2>
-<p>Recommended tools:</p>
-<ul>
-<li>Ruff</li>
-<li>MyPy</li>
-<li>Import Linter</li>
-<li>Semgrep</li>
-<li>Custom CI dependency checks</li>
-</ul>
+<h2 id="6-enforcement">6. 执行<a class="headerlink" href="#6-enforcement" title="Permanent link">&para;</a></h2>
+<p>推荐工具：</p>
+<p>-拉夫
+- 我的Py
+- 导入短绒
+- 塞姆格雷普
+- 自定义 CI 依赖性检查</p>
 <h2 id="related-documents">相关文件<a class="headerlink" href="#related-documents" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../design/03-architecture-overview/">Architecture Overview</a></li>

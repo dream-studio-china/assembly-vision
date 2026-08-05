@@ -1028,6 +1028,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="19.1 Objective and Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1911-static-train-and-inspect-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.1.1 Static Train-and-Inspect MVP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1880,6 +1897,34 @@
     
   
     ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
   
 
     
@@ -2943,6 +2988,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="19.1 Objective and Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1911-static-train-and-inspect-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.1.1 Static Train-and-Inspect MVP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3212,6 +3274,17 @@
 <h2 id="191-objective-and-scope">19.1 Objective and Scope<a class="headerlink" href="#191-objective-and-scope" title="Permanent link">&para;</a></h2>
 <p>Training produces a product detector for full frames and a component detector for product ROIs. Evaluation measures both detector behavior and the complete product-level inspection system. The principal safety objective is extremely high NG recall and a correspondingly low false-negative rate, demonstrated on held-out production data; no dataset size or model metric guarantees perfect performance.</p>
 <p>Model metadata follows <a href="../14-data-model-and-database/">Data Model and Database</a>. Model registration and review surfaces are described in <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a>, and code ownership in <a href="../18-monorepo-and-code-organization/">Monorepo and Code Organization</a>.</p>
+<h3 id="1911-static-train-and-inspect-mvp">19.1.1 Static Train-and-Inspect MVP<a class="headerlink" href="#1911-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
+<p>The MVP implements a developer-controlled training-to-inspection loop before camera integration. X-AnyLabeling is the selected annotation tool and exports standard YOLO text labels. Product and component boxes are annotated in full-frame coordinates. The training CLI validates the exported dataset, trains the product detector from full-frame images, then uses the product ROI transform to crop component training images and remap component boxes into ROI coordinates before component training.</p>
+<p>The runtime inspection CLI consumes only the resulting immutable weight artifacts and manifests. Training code is in a separate <code>training/</code> workspace, is never imported by the runtime, and is excluded from runtime distributions. A configured filename convention provides expected <code>OK</code> or <code>NG</code> labels for held-out verification; it is not a substitute for bounding-box labels during detector training.</p>
+<p>The first MVP runs small models and measured image sizes on the developer's Apple Silicon Mac with 16 GB memory. It records reproducibility metadata and reports held-out static-set results, but does not claim production accuracy, production throughput, or production acceptance. Plain model artifacts with SHA-256 manifests are sufficient for this MVP; model encryption and <code>.pyc</code>-only distribution packaging are deferred.</p>
+<p>The minimum YOLO dataset layout is:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>dataset/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── images/{train,val}/
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── labels/{train,val}/
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>└── data.yaml
+</code></pre></div>
+<p>Each label file shares its image basename and contains normalized YOLO class and box coordinates. The <code>data.yaml</code> class-name order is the authoritative class-ID mapping. Train and validation groups must keep derived crops and their source product/session together.</p>
 <h2 id="192-task-definitions">19.2 Task Definitions<a class="headerlink" href="#192-task-definitions" title="Permanent link">&para;</a></h2>
 <h3 id="1921-product-detector">19.2.1 Product Detector<a class="headerlink" href="#1921-product-detector" title="Permanent link">&para;</a></h3>
 <p>Input is a full approximately four-megapixel production frame. Output is product class, bounding box, and confidence. The first target is one <code>product</code> class unless product classes are visually necessary for ROI handling. Product identity should normally come from the barcode/product mapping rather than visual classification.</p>
@@ -3330,10 +3403,10 @@
 <p>mAP is useful for model development but is not the production acceptance metric. Thresholds are selected on validation data with higher cost assigned to missed NG outcomes and then frozen before test/acceptance evaluation.</p>
 <h2 id="1910-product-level-system-metrics">19.10 Product-Level System Metrics<a class="headerlink" href="#1910-product-level-system-metrics" title="Permanent link">&para;</a></h2>
 <p>Let <code>NG</code> be a truly defective/incomplete product and predicted <code>OK</code> be a pass:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>NG recall = true NG predicted NG-or-uncertain / all true NG
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>False-negative rate = true NG predicted OK / all true NG = 1 - NG recall
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>False-positive rate = true OK predicted NG-or-uncertain / all true OK
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>OK precision = true OK predicted OK / all predicted OK
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>NG recall = true NG predicted NG-or-uncertain / all true NG
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>False-negative rate = true NG predicted OK / all true NG = 1 - NG recall
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>False-positive rate = true OK predicted NG-or-uncertain / all true OK
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>OK precision = true OK predicted OK / all predicted OK
 </code></pre></div>
 <p>If <code>UNCERTAIN</code> follows the physical NG path, count it as caught for safety recall but report it separately because it increases manual handling. Also report:</p>
 <ul>

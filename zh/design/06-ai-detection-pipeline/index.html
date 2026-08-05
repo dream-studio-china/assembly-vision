@@ -659,7 +659,7 @@
   <a href="#61-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 Purpose
+        6.1 目的
       
     </span>
   </a>
@@ -670,7 +670,7 @@
   <a href="#62-scope-by-delivery-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.2 Scope by Delivery Phase
+        6.2 按交付阶段划分的范围
       
     </span>
   </a>
@@ -714,7 +714,7 @@
   <a href="#66-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.6 Configuration
+        6.6 配置
       
     </span>
   </a>
@@ -736,7 +736,7 @@
   <a href="#68-observability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.8 Observability
+        6.8 可观测性
       
     </span>
   </a>
@@ -1736,6 +1736,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -2794,7 +2822,7 @@
   <a href="#61-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 Purpose
+        6.1 目的
       
     </span>
   </a>
@@ -2805,7 +2833,7 @@
   <a href="#62-scope-by-delivery-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.2 Scope by Delivery Phase
+        6.2 按交付阶段划分的范围
       
     </span>
   </a>
@@ -2849,7 +2877,7 @@
   <a href="#66-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.6 Configuration
+        6.6 配置
       
     </span>
   </a>
@@ -2871,7 +2899,7 @@
   <a href="#68-observability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.8 Observability
+        6.8 可观测性
       
     </span>
   </a>
@@ -2920,15 +2948,15 @@
   
 
 
-<h1 id="6-ai-detection-pipeline">6. AI Detection Pipeline<a class="headerlink" href="#6-ai-detection-pipeline" title="Permanent link">&para;</a></h1>
-<h2 id="61-purpose">6.1 Purpose<a class="headerlink" href="#61-purpose" title="Permanent link">&para;</a></h2>
+<h1 id="6-ai-detection-pipeline">6. AI检测流程<a class="headerlink" href="#6-ai-detection-pipeline" title="Permanent link">&para;</a></h1>
+<h2 id="61-purpose">6.1 目的<a class="headerlink" href="#61-purpose" title="Permanent link">&para;</a></h2>
 <p>本文档定义了从获取的图像到持久的产品级决策的端到端检查流程。详细的子系统行为在 <a href="../07-camera-and-image-acquisition/">camera and image acquisition</a>、<a href="../08-product-detection-and-roi/">product detection and ROI</a>、<a href="../09-component-detection/">component detection</a>、<a href="../10-temporal-aggregation/">temporal aggregation</a> 和 <a href="../11-rule-engine/">rule engine</a> 中指定。</p>
 <p>安全不变量是：</p>
 <blockquote>
 <p>只有当每个必需的组件都有足够的有效证据并且每个强制性管道阶段都可验证时，才可以进行检查。缺失、不确定、无效或不可用的证据会产生 <code>NG</code>，而不是 <code>OK</code>。</p>
 </blockquote>
 <p>这是一种自动防故障的分类策略，而不是完美的检测准确性。</p>
-<h2 id="62-scope-by-delivery-phase">6.2 Scope by Delivery Phase<a class="headerlink" href="#62-scope-by-delivery-phase" title="Permanent link">&para;</a></h2>
+<h2 id="62-scope-by-delivery-phase">6.2 按交付阶段划分的范围<a class="headerlink" href="#62-scope-by-delivery-phase" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2938,8 +2966,8 @@
 </thead>
 <tbody>
 <tr>
-<td>两天静态图像 MVP</td>
-<td>文件夹输入、产品检测、ROI 提取、组件检测、确定性规则、JSON 结果、ROI 和注释图像</td>
+<td>静态训练和检查 MVP</td>
+<td>X-AnyLabeling YOLO 标签、产品和组件模型训练、文件夹输入、产品检测、ROI 提取、组件检测、确定性规则、JSON 结果、ROI 和注释图像、保留验证</td>
 </tr>
 <tr>
 <td>一个月生产目标</td>
@@ -2951,7 +2979,7 @@
 </tr>
 </tbody>
 </table>
-<p>静态 MVP 故意排除视频聚合、中央服务器依赖性和自动驱动。生产检查仍然完全可以在边缘计算机上执行；服务器可用性不能阻止或改变本地决策路径。</p>
+<p>静态 MVP 故意排除视频聚合、中央服务器依赖性和自动驱动。其训练 CLI 仅供开发人员使用，永远不会成为检查运行时的依赖项。生产检查仍然完全可以在边缘计算机上执行；服务器可用性不能阻止或改变本地决策路径。</p>
 <h2 id="63-pipeline-contracts">6.3 管道合同<a class="headerlink" href="#63-pipeline-contracts" title="Permanent link">&para;</a></h2>
 <p>所有阶段都会交换包含 <code>inspection_id</code>、捕获时间戳、坐标空间标识符和版本元数据的类型化、不可变记录。坐标表示为具有明确图像宽度和高度的像素空间 <code>xyxy</code> 值。管道记录：</p>
 <ul>
@@ -2967,31 +2995,31 @@
 <h2 id="64-static-image-inspection-sequence">6.4 静态图像检查顺序<a class="headerlink" href="#64-static-image-inspection-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Operator
-    participant CLI as Edge CLI
-    participant Source as Folder Image Source
+    participant CLI as 边缘 CLI
+    participant Source as 文件夹图像源
     participant Product as 产品检测仪
     participant ROI as 投资回报引擎
     participant Component as 元件检测器
     participant Rules as 规则引擎
     participant Storage as 本地存储
     Operator-&gt;&gt;CLI:使用配置启动批处理
-loop Each supported image
-        CLI-&gt;&gt;Source:Read image
+loop 每个支持的图像
+        CLI-&gt;&gt;Source:读取图像
         Source--&gt;&gt;CLI:图像和源元数据
-        CLI-&gt;&gt;Product:Detect product
-        Product--&gt;&gt;CLI:Product detection or failure
+        CLI-&gt;&gt;Product:检测产品
+        Product--&gt;&gt;CLI:产品检测或故障
 alt 恰好一件有效产品
             CLI-&gt;&gt;ROI:裁剪和地图坐标
             ROI--&gt;&gt;CLI:产品投资回报率和转型
             CLI-&gt;&gt;Component:检测所需的类
-            Component--&gt;&gt;CLI:Frame evidence
+            Component--&gt;&gt;CLI:框架证据
             CLI-&gt;&gt;Rules:评估单帧证据
             Rules--&gt;&gt;CLI:OK 或 NG 并说明原因
 else 产品无法验证
-            CLI-&gt;&gt;Rules:Evaluate pipeline failure
-            Rules--&gt;&gt;CLI:NG with reason
+            CLI-&gt;&gt;Rules:评估管道故障
+            Rules--&gt;&gt;CLI:有理由不合格
         end
-        CLI-&gt;&gt;Storage:Atomically save JSON and media
+        CLI-&gt;&gt;Storage:原子保存 JSON 和媒体
         Storage--&gt;&gt;CLI:持续存在或存储错误
     end
     CLI--&gt;&gt;Operator:批次汇总和退出状态</code></pre>
@@ -3006,12 +3034,12 @@ else 产品无法验证
 <li>检测每个有效 ROI 中的组件并按组件密钥保留证据。</li>
 <li>使用配置的退出、超时或触发条件关闭窗口。</li>
 <li>独立地汇总每个所需组件的证据。</li>
-<li>评估固定规则和配置版本。</li>
+<li>评估固定的规则和配置版本。</li>
 <li>在发布完成之前以事务方式保留结果和媒体。</li>
 <li>独立于检查执行的排队上传。</li>
 </ol>
 <p>仅当批处理保持在产品窗口延迟预算内并保留帧与检查的相关性时，才可以对推理进行批处理。</p>
-<h2 id="66-configuration">6.6 Configuration<a class="headerlink" href="#66-configuration" title="Permanent link">&para;</a></h2>
+<h2 id="66-configuration">6.6 配置<a class="headerlink" href="#66-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">pipeline</span><span class="p">:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">max_inflight_inspections</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">frame_queue_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12</span>
@@ -3028,65 +3056,65 @@ else 产品无法验证
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span><span class="nt">min_mean_brightness</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">35.0</span>
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="nt">max_mean_brightness</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">225.0</span>
 </code></pre></div>
-<p>配置在启动时进行模式验证。无效的配置会妨碍检查准备工作。当产品窗口打开时，活动模型、规则和产品配置版本将被固定，并且无法在该窗口内更改。</p>
+<p>配置在启动时进行架构验证。无效的配置会妨碍检查准备工作。当产品窗口打开时，活动模型、规则和产品配置版本将被固定，并且无法在该窗口内更改。</p>
 <h2 id="67-failure-handling">6.7 故障处理<a class="headerlink" href="#67-failure-handling" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Failure</th>
-<th>Required behavior</th>
+<th>失败</th>
+<th>所需行为</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Image unreadable or camera frame corrupt</td>
-<td>Exclude frame; return <code>NG</code> if evidence becomes insufficient</td>
+<td>图像无法读取或相机帧损坏</td>
+<td>排除框架；如果证据不足，则返回 <code>NG</code></td>
 </tr>
 <tr>
-<td>Barcode absent, ambiguous, or unmapped when required</td>
-<td><code>NG</code>; use no inferred product type</td>
+<td>条形码缺失、不明确或在需要时未映射</td>
+<td><code>NG</code>；不使用推断的产品类型</td>
 </tr>
 <tr>
-<td>No product, multiple products, or invalid ROI</td>
-<td><code>NG</code>; skip component inference when its input is invalid</td>
+<td>没有产品、有多个产品或无效的投资回报率</td>
+<td><code>NG</code>；当输入无效时跳过组件推理</td>
 </tr>
 <tr>
-<td>Model load/inference error</td>
-<td>Mark subsystem unhealthy and inspection <code>NG</code>; never reuse a previous detection</td>
+<td>模型加载/推理错误</td>
+<td>标记子系统不健康并检查<code>NG</code>；永远不要重复使用以前的检测</td>
 </tr>
 <tr>
-<td>Timeout or queue overflow</td>
-<td>Close affected window as <code>NG</code>; preserve diagnostics</td>
+<td>超时或队列溢出</td>
+<td>以 <code>NG</code> 方式关闭受影响的窗口；保留诊断</td>
 </tr>
 <tr>
-<td>Local result cannot be durably persisted</td>
-<td>Do not announce <code>OK</code>; raise a blocking local storage fault</td>
+<td>本地结果无法持久保存</td>
+<td>不要宣布<code>OK</code>；引发阻塞本地存储故障</td>
 </tr>
 <tr>
-<td>Server/network unavailable</td>
-<td>Continue local inspection and queue upload</td>
+<td>服务器/网络不可用</td>
+<td>继续本地检查并排队上传</td>
 </tr>
 </tbody>
 </table>
-<p>Exceptions are converted at subsystem boundaries into explicit reason codes. Raw exceptions and stack traces belong in structured logs, while inspection records contain stable business reason codes.</p>
-<h2 id="68-observability">6.8 Observability<a class="headerlink" href="#68-observability" title="Permanent link">&para;</a></h2>
-<p>Record stage latency, valid/rejected frame counts, product-detection success, ROI failures, barcode-read success, per-component confidence distributions, decision counts by reason, queue depth, inference device, and active versions. Logs include <code>inspection_id</code>, <code>frame_id</code>, and <code>device_id</code>; they must not contain credentials or unbounded image data.</p>
+<p>异常在子系统边界处转换为显式原因代码。原始异常和堆栈跟踪属于结构化日志，而检查记录包含稳定的业务原因代码。</p>
+<h2 id="68-observability">6.8 可观测性<a class="headerlink" href="#68-observability" title="Permanent link">&para;</a></h2>
+<p>记录阶段延迟、有效/拒绝帧计数、产品检测成功、ROI 失败、条形码读取成功、每个组件的置信度分布、按原因的决策计数、队列深度、推理设备和活动版本。日志包括<code>inspection_id</code>、<code>frame_id</code>、<code>device_id</code>；它们不得包含凭据或无限制的图像数据。</p>
 <h2 id="69-verification">6.9 验证<a class="headerlink" href="#69-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Unit-test stage contracts, threshold boundaries, coordinate transforms, and reason-code mapping.</li>
-<li>Run golden-image tests with expected detections and decisions pinned to model manifests.</li>
-<li>Verify that every injected stage exception produces <code>NG</code> or blocks readiness, never <code>OK</code>.</li>
-<li>Test mixed product types and version changes at window boundaries.</li>
-<li>Measure average and P95 latency, throughput, NG recall, product-detection success, and per-component recall.</li>
-<li>Reproduce results from persisted input, configuration, and version metadata where deterministic inference support permits.</li>
+<li>单元测试阶段契约、阈值边界、坐标变换和原因代码映射。</li>
+<li>运行黄金图像测试，并将预期检测和决策固定到模型清单上。</li>
+<li>验证每个注入的阶段异常是否都会生成 <code>NG</code> 或阻止准备就绪，而不会生成 <code>OK</code>。</li>
+<li>在窗口边界测试混合产品类型和版本变化。</li>
+<li>测量平均和 P95 延迟、吞吐量、NG 召回、产品检测成功和每个组件召回。</li>
+<li>在确定性推理支持允许的情况下，从持久输入、配置和版本元数据中再现结果。</li>
 </ul>
 <h2 id="610-open-questions-and-validation-required">6.10 未解决的问题和需要验证<a class="headerlink" href="#610-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Confirm the production latency and throughput budgets after conveyor-speed measurement.</li>
-<li>Select and validate the edge inference hardware and execution provider.</li>
-<li>Confirm whether barcode resolution is mandatory for every product type.</li>
-<li>Determine the approved behavior for multiple products in one frame with customer operations.</li>
-<li>Establish measured acceptance thresholds using production data not used for training.</li>
+<li>测量传送带速度后确认生产延迟和吞吐量预算。</li>
+<li>选择并验证边缘推理硬件和执行提供商。</li>
+<li>确认条形码解析是否对每种产品类型都是强制的。</li>
+<li>通过客户操作确定一个框架中多个产品的批准行为。</li>
+<li>使用未用于培训的生产数据建立测量的验收阈值。</li>
 </ul>
 
 

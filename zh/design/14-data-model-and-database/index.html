@@ -1810,6 +1810,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3501,7 +3529,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 架构版本。事件 <code>sequence</code> 对于 <code>(source_id, channel)</code> 是单调的，并且仅当
 源身份变更。</p>
 <h2 id="145-edge-schema">14.5 边缘模式<a class="headerlink" href="#145-edge-schema" title="Permanent link">&para;</a></h2>
-<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份简短的写入交易；媒体字节保留在文件系统中。</p>
+<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份短写交易；媒体字节保留在文件系统中。</p>
 <table>
 <thead>
 <tr>
@@ -3554,7 +3582,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>rule_installations</code></td>
 <td><code>rule_version_id</code> PK、产品版本 ID、文档 JSON、校验和、状态、安装/激活次数</td>
-<td>激活验证兼容的型号类别和产品版本。</td>
+<td>激活验证兼容的模型类和产品版本。</td>
 </tr>
 </tbody>
 </table>
@@ -3714,7 +3742,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>存储参与者类型（<code>USER</code>、<code>DEVICE</code>、<code>SYSTEM</code>）、参与者 ID、操作、目标、删除机密的前后值、UTC 时间、请求 ID 和原因（如果需要）。</li>
 <li>已发布的产品、模型和规则版本是不可变的。更正创建新版本。</li>
 <li>评论是仅附加的修订。 UI 会预测最新修订版本，而所有修订版本仍可查询。</li>
-<li>审计行仅附加到应用程序角色。行政变更需要单独记录的操作程序。</li>
+<li>审核行仅附加到应用程序角色。行政变更需要单独记录的操作程序。</li>
 <li>根据客户政策，敏感条形码和身份数据必须在一般日志和导出中进行屏蔽。</li>
 </ul>
 <h2 id="1412-migration-and-recovery">14.12 迁移和恢复<a class="headerlink" href="#1412-migration-and-recovery" title="Permanent link">&para;</a></h2>
@@ -3727,7 +3755,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>CI 验证每个文档并检查提交/生成的工件是否存在偏差。</li>
 <li><code>openapi-typescript</code> 或 Orval 生成 TypeScript 模式和客户端到 <code>packages/typescript/api-client/generated</code> 中；生成的文件不需手动编辑。</li>
 <li>前端包装器添加了身份验证和错误映射等传输问题，而无需重新定义有效负载。</li>
-<li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。破坏性架构更改需要版本化端点或协调发布。</li>
+<li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。重大架构更改需要版本化端点或协调发布。</li>
 <li>在需要时在前端边界添加日期时间和 UUID 运行时验证；单独生成的 TypeScript 类型并不能验证 JSON。</li>
 </ol>
 <p>OpenAPI 涵盖按名称引用的 REST 快照和 WebSocket 事件负载模式。由于 OpenAPI 没有完全描述 WebSocket 通道，因此事件信封从相同的 Pydantic 类导出为 JSON 模式，并针对前端验证器进行测试。</p>

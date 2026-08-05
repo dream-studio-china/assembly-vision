@@ -726,7 +726,7 @@
   <a href="#82-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.2 Scope
+        8.2 范围
       
     </span>
   </a>
@@ -1736,6 +1736,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -2805,7 +2833,7 @@
   <a href="#82-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.2 Scope
+        8.2 范围
       
     </span>
   </a>
@@ -2923,7 +2951,7 @@
 <h1 id="8-product-detection-and-roi">8. 产品检测和投资回报率<a class="headerlink" href="#8-product-detection-and-roi" title="Permanent link">&para;</a></h1>
 <h2 id="81-responsibility">8.1 责任<a class="headerlink" href="#81-responsibility" title="Permanent link">&para;</a></h2>
 <p>第一阶段在整个相机帧中定位完整的产品并生成 <a href="../09-component-detection/">component detection</a> 的标准化输入区域。它可以处理适度的位置变化，而无需假设产品位置完美固定。它不能确定组件是否存在或最终的 <code>OK</code>/<code>NG</code> 结果。</p>
-<h2 id="82-scope">8.2 Scope<a class="headerlink" href="#82-scope" title="Permanent link">&para;</a></h2>
+<h2 id="82-scope">8.2 范围<a class="headerlink" href="#82-scope" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2946,7 +2974,7 @@
 </tr>
 </tbody>
 </table>
-<p>配置的全帧捕获区域可能会拒绝不相关的区域或提供诊断，但这不是最终产品的投资回报率。除非单独的部署验证证明产品定位受到机械限制，否则硬编码的最终投资回报率是不可接受的。</p>
+<p>配置的全帧捕获区域可能会拒绝不相关的区域或提供诊断，但这不是最终产品的投资回报率。硬编码的最终投资回报率是不可接受的，除非单独的部署验证证明产品定位受到机械限制。</p>
 <h2 id="83-product-detection-contract">8.3 产品检测合同<a class="headerlink" href="#83-product-detection-contract" title="Permanent link">&para;</a></h2>
 <p>输入是有效的全分辨率框架和固定模型清单。输出包含非极大值抑制后的所有候选检测、所选产品或故障以及诊断。清单定义了类映射、输入大小、预处理、置信阈值限制、校验和和模型版本。</p>
 <p>选择是确定性的：</p>
@@ -2959,7 +2987,7 @@
 </code></pre></div>
 <p>决胜局使重赛更加稳定；它们并不能使多种看似合理的产品变得安全。如果多个候选者通过了可检查性约束，则生产行为为<code>NG</code>，除非经过验证的跟踪器将一个候选者准确地分配给当前窗口。</p>
 <h2 id="84-roi-generation">8.4 投资回报率的产生<a class="headerlink" href="#84-roi-generation" title="Permanent link">&para;</a></h2>
-<p>给定产品框 <code>(x1, y1, x2, y2)</code>，应用可配置的分数或像素边距，然后剪辑到 <code>[0, width] x [0, height]</code>。拒绝零面积、尺寸过小、过度裁剪或不可信的纵横比结果。记录两个盒子以及空间之间的仿射平移。</p>
+<p>给定产品框 <code>(x1, y1, x2, y2)</code>，应用可配置的分数或像素边距，然后剪辑到 <code>[0, width] x [0, height]</code>。拒绝零面积、尺寸过小、过度剪裁或令人难以置信的纵横比结果。记录两个盒子以及空间之间的仿射平移。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">expanded</span> <span class="o">=</span> <span class="n">expand</span><span class="p">(</span><span class="n">product_box</span><span class="p">,</span> <span class="n">margin_x</span><span class="p">,</span> <span class="n">margin_y</span><span class="p">)</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">clipped</span> <span class="o">=</span> <span class="n">clip</span><span class="p">(</span><span class="n">expanded</span><span class="p">,</span> <span class="n">frame_width</span><span class="p">,</span> <span class="n">frame_height</span><span class="p">)</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">if</span> <span class="n">clipped</span><span class="o">.</span><span class="n">area</span> <span class="o">&lt;</span> <span class="n">min_roi_area</span> <span class="ow">or</span> <span class="n">clipped_retention</span><span class="p">(</span><span class="n">expanded</span><span class="p">,</span> <span class="n">clipped</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_retention</span><span class="p">:</span>
@@ -2996,7 +3024,7 @@
 </thead>
 <tbody>
 <tr>
-<td>没有合格产品</td>
+<td>没有合格的产品</td>
 <td>框架无法使用；如果不存在足够的有效框架，产品将变为 <code>NG</code></td>
 </tr>
 <tr>
@@ -3026,20 +3054,20 @@
 <p>保留选定和拒绝的框、置信度、类别、ROI 框、裁剪比、变换、模型版本、推理延迟和原因代码。带注释的图像必须区分全画幅产品盒和 ROI 组件盒，并且不得覆盖原始证据。</p>
 <h2 id="89-verification">8.9 验证<a class="headerlink" href="#89-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Unit-test expansion, clipping, resize reversal, coordinate round trips, and boundary pixels.</li>
-<li>Test empty frames, partial products, two products, reflections, occlusion, and position extremes.</li>
-<li>Evaluate product-detection recall and ROI-generation success separately by product type and position range.</li>
-<li>Verify model manifest checksum and class-map incompatibility prevent readiness.</li>
-<li>Regression-test overlays against persisted transform fixtures.</li>
-<li>Test that every invalid or ambiguous ROI path prevents an <code>OK</code> decision.</li>
+<li>单元测试扩展、裁剪、调整大小反转、坐标往返和边界像素。</li>
+<li>测试空帧、部分产品、两个产品、反射、遮挡和极限位置。</li>
+<li>按产品类型和位置范围分别评估产品检测召回和投资回报率生成成功率。</li>
+<li>验证模型清单校验和和类映射不兼容性会阻止准备就绪。</li>
+<li>针对持久变换装置的回归测试覆盖。</li>
+<li>测试每个无效或不明确的 ROI 路径是否会阻止 <code>OK</code> 决策。</li>
 </ul>
 <h2 id="810-open-questions-and-validation-required">8.10 未解决的问题和需要验证<a class="headerlink" href="#810-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Confirm the number and visual diversity of product types and whether stage one needs one class or type-specific classes.</li>
-<li>Measure valid product size, aspect ratio, position, and clipping ranges from production data.</li>
-<li>Determine whether products can overlap or appear simultaneously.</li>
-<li>Validate whether orientation or perspective normalization is beneficial.</li>
-<li>Agree model-specific confidence and geometric thresholds from held-out production captures.</li>
+<li>确认产品类型的数量和视觉多样性，以及第一阶段是否需要一个类别或特定类型的类别。</li>
+<li>根据生产数据测量有效的产品尺寸、长宽比、位置和裁剪范围。</li>
+<li>确定产品是否可以重叠或同时出现。</li>
+<li>验证方向或视角标准化是否有益。</li>
+<li>就保留的生产捕获中特定于模型的置信度和几何阈值达成一致。</li>
 </ul>
 
 

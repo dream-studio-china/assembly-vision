@@ -1131,10 +1131,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1881-two-day-static-image-mvp" class="md-nav__link">
+  <a href="#1881-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.8.1 两天静态图像 MVP
+        18.8.1 静态训练和检查 MVP
       
     </span>
   </a>
@@ -1880,6 +1880,34 @@
     
   
     ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
   
 
     
@@ -3074,10 +3102,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1881-two-day-static-image-mvp" class="md-nav__link">
+  <a href="#1881-static-train-and-inspect-mvp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.8.1 两天静态图像 MVP
+        18.8.1 静态训练和检查 MVP
       
     </span>
   </a>
@@ -3216,7 +3244,7 @@
 <ol>
 <li><code>apps/</code>包含独立可运行/可部署的进程和Web应用程序。</li>
 <li><code>packages/</code> 包含由至少两个应用程序或需要独立测试的内聚域重用的代码。</li>
-<li>将产品检测、ROI、组件检测、时间聚合和规则放在 <code>vision-core</code> 中，直到证明独立重用或依赖隔离。</li>
+<li>将产品检测、ROI、组件检测、时间聚合和规则放在 <code>vision-core</code> 中。一旦第二个具体消费者需要<code>domain</code>和<code>vision-core</code>，就提取它们；标记为“训练和检查”的 MVP 就是该触发器，因为训练重用了域模式和 ROI/预处理。</li>
 <li>运行时应用程序代码永远不会从 <code>training/</code> 导入。</li>
 <li>边缘代码不得导入中央持久性或需要中央连接。</li>
 <li>前端使用生成的 API 合约和小型共享视觉原语；特定于页面的商店和组件保留在其应用程序中。</li>
@@ -3294,58 +3322,60 @@
 <a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>│           └── package.json
 <a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>├── training/
 <a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>│   ├── assemblyvision_training/
-<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>│   │   ├── data/
-<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>│   │   ├── product_detector/
-<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>│   │   ├── component_detector/
-<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>│   │   ├── evaluation/
-<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>│   │   └── manifests/
-<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>│   ├── configs/
-<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>│   ├── tests/
-<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>│   └── pyproject.toml
-<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>├── models/
-<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>│   ├── README.md
-<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>│   └── manifests/
-<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>├── deploy/
-<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>│   ├── docker/
-<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>│   │   ├── edge.Dockerfile
-<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>│   │   ├── central-api.Dockerfile
-<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>│   │   ├── central-worker.Dockerfile
-<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>│   │   └── web.Dockerfile
-<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>│   ├── compose/
-<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>│   │   ├── edge.compose.yml
-<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>│   │   └── central.compose.yml
-<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>│   ├── nginx/
-<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>│   └── env/
-<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>├── config/
-<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>│   ├── schemas/
-<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>│   └── examples/
-<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>├── tests/
-<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>│   ├── contract/
-<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>│   ├── e2e/
-<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>│   ├── resilience/
-<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>│   ├── performance/
-<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>│   └── fixtures/
-<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>├── docs/
-<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>│   ├── design/
-<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>│   │   └── decisions/
-<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>│   └── README.md
-<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>├── scripts/
-<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>├── .github/workflows/
-<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>├── pyproject.toml
-<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>├── uv.lock
-<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>├── package.json
-<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>├── pnpm-lock.yaml
-<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>├── pnpm-workspace.yaml
-<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>├── tsconfig.base.json
-<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>├── docker-compose.yml
-<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>├── Makefile
-<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>└── README.md
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>│   │   ├── cli.py
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>│   │   ├── data/
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>│   │   ├── product_detector/
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>│   │   ├── component_detector/
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>│   │   ├── preparation/
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>│   │   ├── evaluation/
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>│   │   └── manifests/
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>│   ├── configs/
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>│   ├── tests/
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>│   └── pyproject.toml
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>├── models/
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>│   ├── README.md
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>│   └── manifests/
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>├── deploy/
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>│   ├── docker/
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>│   │   ├── edge.Dockerfile
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>│   │   ├── central-api.Dockerfile
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>│   │   ├── central-worker.Dockerfile
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>│   │   └── web.Dockerfile
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>│   ├── compose/
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>│   │   ├── edge.compose.yml
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>│   │   └── central.compose.yml
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>│   ├── nginx/
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>│   └── env/
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>├── config/
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>│   ├── schemas/
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>│   └── examples/
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>├── tests/
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>│   ├── contract/
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>│   ├── e2e/
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>│   ├── resilience/
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>│   ├── performance/
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>│   └── fixtures/
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>├── docs/
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>│   ├── design/
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>│   │   └── decisions/
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>│   └── README.md
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>├── scripts/
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>├── .github/workflows/
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>├── pyproject.toml
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>├── uv.lock
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>├── package.json
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>├── pnpm-lock.yaml
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>├── pnpm-workspace.yaml
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>├── tsconfig.base.json
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>├── docker-compose.yml
+<a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a>├── Makefile
+<a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a>└── README.md
 </code></pre></div>
-<p>上面的大括号符号是解释性简写；实际目录是普通目录。 <code>edge-service</code> 将 API、捕获编排、管道执行、本地持久性和上传程序结合在第一个生产版本的一个进程中。 CPU/GPU 密集型推理可以在受监督的子进程中运行，但在测量隔离或独立扩展之前，单独部署的 <code>edge-worker</code> 是不合理的。同样，为期两天的 MVP 作为 <code>edge-service</code> CLI 入口点而不是单独的 <code>edge-cli</code> 应用程序公开。</p>
+<p>上面的大括号符号是解释性简写；实际目录是普通目录。 <code>edge-service</code> 将 API、捕获编排、管道执行、本地持久性和上传程序结合在第一个生产版本的一个进程中。 CPU/GPU 密集型推理可以在受监督的子进程中运行，但在测量隔离或独立扩展之前，单独部署的 <code>edge-worker</code> 是不合理的。静态训练和检查 MVP 通过 <code>edge-service</code> CLI 公开检查，​​并通过单独的仅限开发人员的 <code>av-train</code> CLI 公开训练，而不是创建 <code>edge-cli</code> 应用程序。</p>
 <h2 id="184-application-responsibilities">18.4 应用程序的责任<a class="headerlink" href="#184-application-responsibilities" title="Permanent link">&para;</a></h2>
 <h3 id="1841">18.4.1 <code>edge-service</code><a class="headerlink" href="#1841" title="Permanent link">&para;</a></h3>
 <p>拥有相机适配器、条形码读取器、检查管道、SQLite 存储库、文件系统媒体、持久上传发件箱、本地 API/WebSocket、启动恢复和运行状况的依赖组合。基础设施适配器实现面向域的协议。它必须在没有中央凭据或连接的情况下启动和检查。</p>
-<p>建议的内部方向是<code>api -&gt; application -&gt; domain/protocols</code>，其中<code>infrastructure</code>实现协议。 API 处理程序不直接调用 SQLAlchemy。捕获回调不得同步执行数据库上传或浏览器广播。</p>
+<p>建议的内部方向是<code>api -&gt; application -&gt; domain/protocols</code>，并使用<code>infrastructure</code>实现协议。 API 处理程序不直接调用 SQLAlchemy。捕获回调不得同步执行数据库上传或浏览器广播。</p>
 <h3 id="1842">18.4.2 <code>central-api</code><a class="headerlink" href="#1842" title="Permanent link">&para;</a></h3>
 <p>拥有身份验证/授权、租户范围界定、摄取、查询 API、配置/模型注册、审查、审计、预签名媒体会话和 WebSocket 通知发布。它使用 PostgreSQL 和对象存储。小额交易内联完成。</p>
 <h3 id="1843">18.4.3 <code>central-worker</code><a class="headerlink" href="#1843" title="Permanent link">&para;</a></h3>
@@ -3374,8 +3404,8 @@
 </tr>
 <tr>
 <td><code>platform-common</code></td>
-<td>在两个应用程序需要它们后，可选择提取窄记录/配置/校验和/遥测实用程序</td>
-<td>领域业务规则，通用“utils”垃圾场</td>
+<td>在两个应用程序需要它们之后，可选择提取窄记录/配置/校验和/遥测实用程序</td>
+<td>域业务规则，通用“utils”垃圾场</td>
 </tr>
 </tbody>
 </table>
@@ -3414,10 +3444,10 @@
     ES -. 出版 .-&gt; EO</code></pre>
 <p>在第一个月，持久作业处理程序保留在中央代码库中，并可能使用第二个进程入口点；不需要单独的<code>central-worker</code>申请。如果稍后需要独立部署，请首先提取两个可部署项使用的小型中央应用程序/域包。 Worker 绝不能导入 FastAPI 路由模块。从边缘运行时到中央运行时没有箭头表示代码/运行时依赖性。上传者通过记录的网络合同进行通信。</p>
 <h2 id="188-mvp-versus-later-packages">18.8 MVP 与后来的软件包<a class="headerlink" href="#188-mvp-versus-later-packages" title="Permanent link">&para;</a></h2>
-<h3 id="1881-two-day-static-image-mvp">18.8.1 两天静态图像 MVP<a class="headerlink" href="#1881-two-day-static-image-mvp" title="Permanent link">&para;</a></h3>
-<p>必需：一个 Python 发行版，包含 <code>edge-service</code> CLI 入口点和用于域模型、文件夹源、检测器、ROI、规则、清单和重点测试的内聚内部模块。不需要单独的包发布、TypeScript 工作区设置、数据库、Web 应用程序、中央应用程序、时间聚合、上传和相机 SDK。</p>
+<h3 id="1881-static-train-and-inspect-mvp">18.8.1 静态训练和检查 MVP<a class="headerlink" href="#1881-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
+<p>必需：一个包含 <code>edge-service</code> 运行时发行版的根 <code>uv</code> 工作区、具有 <code>av-train</code> CLI 的单独的仅供开发人员使用的 <code>training</code> 发行版以及共享的 <code>domain</code> 和 <code>vision-core</code> 包。 <code>training</code> 从 X-AnyLabeling 标签生成产品和组件 YOLO 工件；它永远不会被边缘运行时发行版导入或包含在其中。 <code>vision-core</code> 拥有共享的 ROI 生成和坐标映射，因此组件数据集准备和运行时推理使用相同的转换。不需要 TypeScript 设置、数据库、Web 应用程序、中央应用程序、时间聚合、上传和相机 SDK。</p>
 <h3 id="1882-one-month-mvp">18.8.2 一个月 MVP<a class="headerlink" href="#1882-one-month-mvp" title="Permanent link">&para;</a></h3>
-<p>必需：<code>edge-service</code>、<code>edge-web</code>、中央 API 代码库以及演示器所需的最小中央检查/审查 Web 视图。最多从两个 Python 发行版开始（边缘运行时/视觉和中央 API）；将域、配置、日志记录、持久性和作业保留为内部模块，直到两个具体的消费者证明提取是合理的。仅共享 TypeScript 中生成的 API 合约和经过验证的检测查看器原语。单独的 <code>central-worker</code>、<code>platform-common</code>、共享图表/身份验证/验证包、通用管理 UI 和报告作业被推迟。</p>
+<p>必需：<code>edge-service</code>、<code>edge-web</code>、中央 API 代码库以及演示器所需的最小中央检查/审查 Web 视图。运行时部署最多从两个Python应用程序发行版开始（边缘运行时和中央API）；已提取的 <code>domain</code> 和 <code>vision-core</code> 包仍与仅限开发人员的培训发行版共享。将配置、日志记录、持久性和作业保留在应用程序本地，直到另一个具体消费者证明提取是合理的。仅共享 TypeScript 中生成的 API 合约和经过验证的检测查看器原语。单独的 <code>central-worker</code>、<code>platform-common</code>、共享图表/身份验证/验证包、通用管理 UI 和报告作业被推迟。</p>
 <h3 id="1883-add-only-when-justified">18.8.3 仅在合理时添加<a class="headerlink" href="#1883-add-only-when-justified" title="Permanent link">&para;</a></h3>
 <p>潜在的后续软件包包括具有冲突的本机依赖性的特定于供应商的相机适配器、专用的 MES/PLC 集成包、多个流程的中央应用程序/域提取、由另一个应用程序重用的图表组件以及模型分发工具。不要为它们预先创建空包。</p>
 <h2 id="189-dependency-and-version-management">18.9 依赖关系和版本管理<a class="headerlink" href="#189-dependency-and-version-management" title="Permanent link">&para;</a></h2>
@@ -3429,7 +3459,8 @@
 <h2 id="1811-models-data-and-generated-artifacts">18.11 模型、数据和生成的工件<a class="headerlink" href="#1811-models-data-and-generated-artifacts" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>models/manifests/</code> 可能包含小清单和校验和以供开发参考。模型权重存在于工件注册表/对象存储中，并被 Git 忽略。</li>
-<li><code>training/</code> 包含可重现的代码和小型综合测试装置，而不是生产数据集或未经策划的导出。</li>
+<li><code>training/</code> 包含可重现的代码、X-AnyLabeling-to-YOLO 数据集验证、组件 ROI 准备和小型综合测试装置，而不是生产数据集或未经策划的导出。它仅供开发人员使用，并且不包含在运行时发行版中。</li>
+<li>静态训练和检查 MVP 使用带有校验和的普通本地模型工件。模型加密和仅限 <code>.pyc</code> 的运行时打包被推迟到单独合理的分发范围。</li>
 <li>运行时数据库、图像、剪辑、日志、缓存和报告使用显式外部卷，而不是存储库路径。</li>
 <li>OpenAPI 文档和生成的客户端是确定性生成的。所选策略可以提交生成的输出以方便前端构建或在 CI 中重新生成，但 CI 始终检查偏差。</li>
 <li>构建的前端资产和编译的 Python 运行时层是构建输出，而不是源目录。</li>
@@ -3486,8 +3517,8 @@
 <li>确认 CI 提供程序、容器注册表、工件/模型注册表和 SBOM/签名要求。</li>
 <li>确认相机 SDK 许可或本机库是否需要单独构建的适配器包/图像。</li>
 <li>决定在每个消费者构建期间是否提交或生成生成的 OpenAPI 客户端。</li>
-<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人合理。</li>
-<li>确认支持的边缘操作系统、CPU/GPU架构和离线依赖安装过程。</li>
+<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人是合理的。</li>
+<li>确认支持的边缘操作系统、CPU/GPU架构以及离线依赖安装过程。</li>
 </ul>
 
 

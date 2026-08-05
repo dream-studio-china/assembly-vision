@@ -1838,6 +1838,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3103,7 +3131,7 @@
 <p>AssemblyVision protects production evidence, configuration integrity, credentials, and administrative actions while preserving offline edge inspection. Security controls are risk-based; neither Docker nor Python bytecode is represented as a strong source-code security boundary.</p>
 <h3 id="2111-scope-distinction">21.1.1 Scope Distinction<a class="headerlink" href="#2111-scope-distinction" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>MVP:</strong> no authentication is required for the two-day static-image CLI, provided it is used only in an isolated development environment with non-production data.</li>
+<li><strong>Static train-and-inspect MVP:</strong> no authentication is required while the training and inspection CLIs are used only in an isolated development environment with non-production data. Training code, datasets, notebooks, and experiment configuration are developer-only and are not included in a runtime distribution. Model encryption and <code>.pyc</code>-only packaging are deferred.</li>
 <li><strong>One-month target:</strong> local access controls, central authentication, TLS, device credentials, audit logs, non-root containers, and controlled artifact distribution.</li>
 <li><strong>Production target:</strong> customer-integrated identity where practical, role-based authorization, certificate lifecycle management, signed model/configuration packages, vulnerability management, backup encryption, and incident response.</li>
 <li><strong>Future scope:</strong> hardware-backed keys, remote attestation, stronger native compilation/obfuscation, or licensing controls only if justified by contractual threat analysis.</li>

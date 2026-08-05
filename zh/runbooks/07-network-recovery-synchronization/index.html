@@ -1592,6 +1592,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2346,7 +2374,7 @@
   <a href="#exit-criteria" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Exit Criteria
+        退出标准
       
     </span>
   </a>
@@ -2739,7 +2767,7 @@
   <a href="#exit-criteria" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Exit Criteria
+        退出标准
       
     </span>
   </a>
@@ -2768,18 +2796,16 @@
 
 <h1 id="runbook-07-network-recovery-synchronization">Runbook 07：网络恢复同步<a class="headerlink" href="#runbook-07-network-recovery-synchronization" title="Permanent link">&para;</a></h1>
 <h2 id="trigger">扳机<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
-<p>Connectivity returns after an edge-to-central outage.</p>
+<p>从边缘到中心的中断后，连接会恢复。</p>
 <h2 id="recovery">恢复<a class="headerlink" href="#recovery" title="Permanent link">&para;</a></h2>
-<ol>
-<li>Keep inspection independent; verify protected local capacity and queue integrity.</li>
-<li>Probe central authentication and health without releasing the entire backlog at once.</li>
-<li>Drain due tasks with bounded concurrency, stable idempotency keys, backoff, and checksums.</li>
-<li>Reconcile identical receipts, content conflicts, missing media, and out-of-order inspections.</li>
-<li>Compare local queued/succeeded totals with central receipts and media availability.</li>
-</ol>
-<h2 id="exit-criteria">Exit Criteria<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
-<p>All eligible tasks are <code>SUCCEEDED</code>, remaining permanent failures are assigned, no duplicates exist,
-and local cleanup becomes eligible only after verified receipts and retention checks.</p>
+<p>1、保持检验独立；验证受保护的本地容量和队列完整性。
+2. 探测中央身份验证和运行状况，而无需立即释放整个待办事项。
+3. 通过有界并发、稳定的幂等键、退避和校验和来排出到期任务。
+4. 核对相同收据、内容冲突、缺失介质和无序检查。
+5. 将本地排队/成功总数与中央收据和媒体可用性进行比较。</p>
+<h2 id="exit-criteria">退出标准<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
+<p>所有符合条件的任务都是<code>SUCCEEDED</code>，分配剩余的永久失败，不存在重复，
+只有在经过验证的收据和保留检查后，本地清理才符合资格。</p>
 
 
 

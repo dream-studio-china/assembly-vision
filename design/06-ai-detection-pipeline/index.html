@@ -1749,6 +1749,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2938,8 +2966,8 @@
 </thead>
 <tbody>
 <tr>
-<td>Two-day static-image MVP</td>
-<td>Folder input, product detection, ROI extraction, component detection, deterministic rules, JSON result, ROI and annotated image</td>
+<td>Static train-and-inspect MVP</td>
+<td>X-AnyLabeling YOLO labels, product and component model training, folder input, product detection, ROI extraction, component detection, deterministic rules, JSON result, ROI and annotated image, held-out verification</td>
 </tr>
 <tr>
 <td>One-month production target</td>
@@ -2951,7 +2979,7 @@
 </tr>
 </tbody>
 </table>
-<p>The static MVP deliberately excludes video aggregation, central-server dependency, and automated actuation. Production inspection remains entirely executable on the edge computer; server availability cannot block or alter the local decision path.</p>
+<p>The static MVP deliberately excludes video aggregation, central-server dependency, and automated actuation. Its training CLI is developer-only and never becomes a dependency of the inspection runtime. Production inspection remains entirely executable on the edge computer; server availability cannot block or alter the local decision path.</p>
 <h2 id="63-pipeline-contracts">6.3 Pipeline Contracts<a class="headerlink" href="#63-pipeline-contracts" title="Permanent link">&para;</a></h2>
 <p>All stages exchange typed, immutable records containing <code>inspection_id</code>, capture timestamps, coordinate-space identifiers, and version metadata. Coordinates are expressed as pixel-space <code>xyxy</code> values with an explicit image width and height. The pipeline records:</p>
 <ul>

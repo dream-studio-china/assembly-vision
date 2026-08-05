@@ -1592,6 +1592,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2497,7 +2525,7 @@
   <a href="#1-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Scope
+        1.范围
       
     </span>
   </a>
@@ -2591,12 +2619,12 @@
   <a href="#6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)
+        6. 为 AssemblyVision 选择 YOLO 版本（两阶段、小规模存在检测）
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)">
+    <nav class="md-nav" aria-label="6. 为 AssemblyVision 选择 YOLO 版本（两阶段、小规模存在检测）">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2625,7 +2653,7 @@
   <a href="#63-specific-guidance-for-the-two-stage-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.3 Specific guidance for the two-stage design
+        6.3 两阶段设计的具体指导
       
     </span>
   </a>
@@ -2839,7 +2867,7 @@
   <a href="#1-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Scope
+        1.范围
       
     </span>
   </a>
@@ -2933,12 +2961,12 @@
   <a href="#6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)
+        6. 为 AssemblyVision 选择 YOLO 版本（两阶段、小规模存在检测）
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)">
+    <nav class="md-nav" aria-label="6. 为 AssemblyVision 选择 YOLO 版本（两阶段、小规模存在检测）">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2967,7 +2995,7 @@
   <a href="#63-specific-guidance-for-the-two-stage-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.3 Specific guidance for the two-stage design
+        6.3 两阶段设计的具体指导
       
     </span>
   </a>
@@ -3017,7 +3045,7 @@
 诚实约定：除非另有说明，下面的所有 mAP/AP 数字均为模型作者或 Ultralytics 发布的 <strong>COCO val 或 LVIS 基准数字</strong>。基准数字是<strong>实验室结果，而不是生产结果</strong>。 FPS/延迟数据由供应商在特定 GPU 上报告（每行注明）。 “截至 2025/2026”受到尊重：涵盖的最新型号是 Ultralytics YOLO26 (2026)。</p>
 </blockquote>
 <hr />
-<h2 id="1-scope">1. Scope<a class="headerlink" href="#1-scope" title="Permanent link">&para;</a></h2>
+<h2 id="1-scope">1.范围<a class="headerlink" href="#1-scope" title="Permanent link">&para;</a></h2>
 <p>本文档涵盖：</p>
 <ul>
 <li>与工业检测相关的YOLO版本：<strong>YOLOv5、v8、v9、v10、v11、v12、YOLO-World和YOLO26</strong>。</li>
@@ -3285,105 +3313,105 @@
 <table>
 <thead>
 <tr>
-<th>Case</th>
-<th>Method</th>
-<th>Task / conditions</th>
-<th>Achieved numbers</th>
-<th>Lessons</th>
-<th>Source</th>
+<th>案例</th>
+<th>方法</th>
+<th>任务/条件</th>
+<th>取得的数字</th>
+<th>课程</th>
+<th>来源</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>VR-YOLO, PCB defect detection</td>
-<td>YOLOv8 + viewpoint robustness</td>
-<td>PCB defects, original vs viewpoint-shifted test</td>
-<td>mAP 98.9% (original), 94.7% (viewpoint shift)</td>
-<td>Robustness augmentation buys ~4 pp under pose change; small cost added</td>
+<td>VR-YOLO、PCB缺陷检测</td>
+<td>YOLOv8 + 视点鲁棒性</td>
+<td>PCB 缺陷、原始测试与视角转移测试</td>
+<td>mAP 98.9%（原始）、94.7%（视角转换）</td>
+<td>在姿势改变下，鲁棒性增强购买了~4 pp；添加少量成本</td>
 <td>https://arxiv.org/abs/2507.02963</td>
 </tr>
 <tr>
-<td>Multi-scale pruned YOLOv8, PCB</td>
-<td>YOLOv8 + pruning/lightweight neck + MPDIoU loss</td>
-<td>Public PCB defect dataset</td>
-<td>mAP50 99.32%, mAP50-95 75.18% (+10.13 pp vs YOLOv8n)</td>
-<td>mAP50 saturates; mAP50-95 is the honest quality bar; small defects dominate error</td>
+<td>多尺度剪枝YOLOv8，PCB</td>
+<td>YOLOv8 + 剪枝/轻量级颈部 + MPDIoU 损失</td>
+<td>公共 PCB 缺陷数据集</td>
+<td>mAP50 99.32%，mAP50-95 75.18%（与 YOLOv8n 相比+10.13 pp）</td>
+<td>mAP50 饱和； mAP50-95是诚实的品质棒；小缺陷主导错误</td>
 <td>https://arxiv.org/abs/2507.17176</td>
 </tr>
 <tr>
-<td>Industrial-YOLO, steel + MVTec AD + automotive</td>
-<td>Fine-tuned YOLOv8 + TensorRT/OpenVINO</td>
-<td>NEU-DET, MVTec AD, custom automotive/battery; claims edge deployment</td>
-<td>mAP 98.5%, &gt;120 FPS Jetson Orin (preprint, unverified)</td>
-<td>Treat as author-reported; useful only as an upper-bound existence claim</td>
+<td>工业-YOLO，钢铁+ MVTec AD + 汽车</td>
+<td>微调 YOLOv8 + TensorRT/OpenVINO</td>
+<td>NEU-DET、MVTec AD、定制汽车/电池；声称边缘部署</td>
+<td>mAP 98.5%，&gt;120 FPS Jetson Orin（预印本，未经验证）</td>
+<td>视为作者报告；仅作为上限存在主张有用</td>
 <td>https://arxiv.org/abs/2606.07659</td>
 </tr>
 <tr>
-<td>YOLOv8 DSA semiconductor inspection</td>
-<td>YOLOv8, data-centric labeling</td>
-<td>SEM images of hexagonal contact-hole patterns</td>
-<td>Defect detection precision &gt;0.9 mAP</td>
-<td>Labeling methodology matters as much as architecture</td>
+<td>YOLOv8 DSA 半导体检测</td>
+<td>YOLOv8，以数据为中心的标签</td>
+<td>六边形接触孔图案的 SEM 图像</td>
+<td>缺陷检测精度&gt;0.9 mAP</td>
+<td>标签方法与架构一样重要</td>
 <td>https://arxiv.org/abs/2307.15516</td>
 </tr>
 <tr>
-<td>ASDF assembly state detection</td>
-<td>YOLOv8 + 6D pose late fusion</td>
-<td>Assembly step/state detection (medical &amp; industrial)</td>
-<td>Beats pure-DL assembly state detection; stronger 6D pose on GBOT</td>
-<td>Combining detection with geometric verification improves state classification</td>
+<td>ASDF装配状态检测</td>
+<td>YOLOv8 + 6D 姿势后期融合</td>
+<td>装配步骤/状态检测（医疗和工业）</td>
+<td>击败纯深度学习装配状态检测； GBOT 上更强的 6D 姿势</td>
+<td>将检测与几何验证相结合可改善状态分类</td>
 <td>https://arxiv.org/abs/2403.16400</td>
 </tr>
 <tr>
-<td>Manual assembly tracking stand</td>
-<td>YOLOv8, multicamera</td>
-<td>120 assemblies at varied speeds, manual assembly stages</td>
-<td>High detection accuracy; stage-level timing deviations found</td>
-<td>YOLOv8 reliably follows assembly stages in a controlled stand</td>
+<td>手动组装跟踪支架</td>
+<td>YOLOv8，多摄像头</td>
+<td>120 个不同速度的装配，手动装配阶段</td>
+<td>检测精度高；发现阶段级时序偏差</td>
+<td>YOLOv8 在受控台上可靠地跟踪装配阶段</td>
 <td>https://arxiv.org/abs/2401.10777</td>
 </tr>
 <tr>
-<td>Roboflow real-time PCB inspection</td>
-<td>RF-DETR Nano (YOLO alternative)</td>
-<td>Forked Universe PCB dataset, 6 classes, conf 0.4</td>
-<td>mAP 0.99 on test</td>
-<td>Managed training; confidence threshold 0.3-0.5 recommended range</td>
+<td>Roboflow 实时 PCB 检测</td>
+<td>RF-DETR Nano（YOLO替代品）</td>
+<td>Forked Universe PCB 数据集，6 类，conf 0.4</td>
+<td>测试中 mAP 0.99</td>
+<td>管理培训；置信阈值推荐范围0.3-0.5</td>
 <td>https://blog.roboflow.com/pcb-defect-detection/</td>
 </tr>
 <tr>
-<td>Roboflow bottle-count missing item</td>
-<td>YOLO counting</td>
-<td>Top-down bottle packaging; 25-50 images for 1 class</td>
-<td>Qualitative pass ("12 bottle tops counted")</td>
-<td>Single-class presence/counting is feasible with tens of images</td>
+<td>Roboflow 瓶数缺失项目</td>
+<td>YOLO 计数</td>
+<td>自上而下的瓶子包装； 1 堂课 25-50 张图片</td>
+<td>定性通过（“计数了 12 个瓶盖”）</td>
+<td>单类存在/计数对于数十张图像是可行的</td>
 <td>https://blog.roboflow.com/missing-item-inspection/</td>
 </tr>
 <tr>
-<td>Roboflow flange inspection</td>
-<td>RF-DETR + workflow triage</td>
-<td>Flange face scratches/cracks/dents/pinholes</td>
-<td>PASS/REVIEW/FAIL triage; thresholds 0.4 (decision), 0.6 (fail)</td>
-<td>Confidence-band triage (REVIEW) reduces wrong auto-decisions; REVIEW feeds retraining</td>
+<td>Roboflow 法兰检查</td>
+<td>RF-DETR + 工作流程分类</td>
+<td>法兰面划痕/裂纹/凹痕/针孔</td>
+<td>通过/审查/失败分类；阈值 0.4（决策）、0.6（失败）</td>
+<td>置信带分类（REVIEW）可减少错误的自动决策；回顾饲料再培训</td>
 <td>https://blog.roboflow.com/flanges-uality-inspection/</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Cross-cutting lessons from the case reports:</strong></p>
+<p><strong>案例报告中的跨领域教训：</strong></p>
 <ol>
-<li><strong>Achieved mAP50 for well-defined, well-lit industrial classes is typically 0.90-0.99.</strong> The spread comes from conditions (viewpoint, lighting) and evaluation strictness (mAP50 vs mAP50-95), not from which YOLO version was used.</li>
-<li><strong>Robustness cost:</strong> pose/lighting changes reliably cost several mAP points (VR-YOLO: -4 pp). Design the imaging station to minimize this, and monitor drift.</li>
-<li><strong>Triage beats binary auto-decisions:</strong> the flange and PCB workflows route mid-confidence detections to human review. This maps directly to AssemblyVision's <code>UNCERTAIN</code> handling (see <code>[docs/design/02-requirements.md](../design/02-requirements.md)</code>, BR-006).</li>
-<li><strong>Detector + rules &gt; detector alone:</strong> assembly-state work and AssemblyVision's deterministic rule engine agree: never let the final OK/NG be decided by raw detections alone.</li>
+<li><strong>对于定义明确、光线充足的工业类别，实现的 mAP50 通常为 0.90-0.99。</strong> 差异来自条件（视角、照明）和评估严格性（mAP50 与 mAP50-95），而不是来自使用的 YOLO 版本。</li>
+<li><strong>鲁棒性成本：</strong> 姿态/光照变化确实会消耗几个 mAP 点（VR-YOLO：-4 pp）。设计成像站以最大限度地减少这种情况，并监测漂移。</li>
+<li><strong>分类击败二元自动决策：</strong> 法兰和 PCB 工作流程将中等置信度检测路由至人工审核。这直接映射到 AssemblyVision 的 <code>UNCERTAIN</code> 处理（请参阅 <code>[docs/design/02-requirements.md](../design/02-requirements.md)</code>、BR-006）。</li>
+<li><strong>检测器 + 规则 &gt; 单独检测器：</strong> 装配状态工作和 AssemblyVision 的确定性规则引擎一致：永远不要让最终的 OK/NG 仅由原始检测决定。</li>
 </ol>
 <hr />
-<h2 id="6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection">6. Choosing a YOLO Version for AssemblyVision (Two-Stage, Small-Scale Presence Detection)<a class="headerlink" href="#6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection" title="Permanent link">&para;</a></h2>
+<h2 id="6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection">6. 为 AssemblyVision 选择 YOLO 版本（两阶段、小规模存在检测）<a class="headerlink" href="#6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection" title="Permanent link">&para;</a></h2>
 <h3 id="61-task-profile-from-the-assemblyvision-design-set">6.1 任务配置文件（来自 AssemblyVision 设计集）<a class="headerlink" href="#61-task-profile-from-the-assemblyvision-design-set" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Stage 1: detect exactly one <code>product</code> in a full ~4MP frame (approx 2560x1440 or 2448x2048); ROI crop.</li>
-<li>Stage 2: detect <code>component_a</code>, <code>component_b</code>, ..., <code>manual</code> inside the ROI (fixed classes).</li>
-<li>Data budget: ~300-800 product images; ~300-500 labeled instances per component class (see <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>).</li>
-<li>Runtime: edge box (CPU or modest GPU); product-window latency budget around 2.5 s per inspection incl. multiple frames (see <code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code>).</li>
-<li>Priority: NG recall over throughput; fail-safe behavior.</li>
+<li>第 1 阶段：在完整的 ~4MP 帧（大约 2560x1440 或 2448x2048）中准确检测一个 <code>product</code>；投资回报率作物。</li>
+<li>第 2 阶段：检测 ROI 内的 <code>component_a</code>、<code>component_b</code>、...、<code>manual</code>（固定类）。</li>
+<li>数据预算：约300-800张产品图片；每个组件类大约 300-500 个标记实例（参见 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>）。</li>
+<li>运行时：边缘盒（CPU 或适度的 GPU）；产品窗口延迟预算每次检查大约 2.5 秒，包括。多个帧（参见<code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code>）。</li>
+<li>优先级：NG召回高于吞吐量；故障安全行为。</li>
 </ul>
 <h3 id="62-candidate-choices-and-reasoning">6.2 候选选择和推理<a class="headerlink" href="#62-candidate-choices-and-reasoning" title="Permanent link">&para;</a></h3>
 <table>
@@ -3433,7 +3461,7 @@
 </tbody>
 </table>
 <p>来源：https://docs.ultralytics.com/models/yolo11/； https://docs.ultralytics.com/models/yolov8/； https://docs.ultralytics.com/models/yolov10/； https://docs.ultralytics.com/models/yolo12/； https://docs.ultralytics.com/models/yolo26/； https://docs.ultralytics.com/models/yolo-world/</p>
-<h3 id="63-specific-guidance-for-the-two-stage-design">6.3 Specific guidance for the two-stage design<a class="headerlink" href="#63-specific-guidance-for-the-two-stage-design" title="Permanent link">&para;</a></h3>
+<h3 id="63-specific-guidance-for-the-two-stage-design">6.3 两阶段设计的具体指导<a class="headerlink" href="#63-specific-guidance-for-the-two-stage-design" title="Permanent link">&para;</a></h3>
 <ol>
 <li><strong>在两个阶段使用相同的 YOLO 系列</strong>，以保留一个训练/导出/部署管道（根据 <code>[docs/design/09-component-detection.md](../design/09-component-detection.md)</code>，Ultralytics YOLO 是初始实现）。</li>
 <li><strong>第 1 阶段需要很少的容量。</strong> 单个 <code>product</code> 类、大对象、稳定的框架：YOLO11n 可能就足够了；保持置信度阈值验证（<code>[docs/design/08-product-detection-and-roi.md](../design/08-product-detection-and-roi.md)</code>中默认起始配置0.70）。</li>
@@ -3446,13 +3474,13 @@
 <hr />
 <h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Confirm the actual edge hardware (CPU model/GPU/NPU) and benchmark YOLO11n/s and YOLO26n/s ONNX/TensorRT latency on that specific device; vendor T4/A100 figures are not representative of a conveyor-side box.</li>
-<li>Decide whether stage-2 input resolution (640 vs 1280 vs custom crop size) is required to hit per-component recall targets on the real components; the answer depends on smallest component pixel size in the ROI.</li>
-<li>Verify YOLO26 (2026) toolchain support (ONNX export, TensorRT version, PyTorch version) matches the AssemblyVision monorepo baseline before adopting it.</li>
-<li>Confirm whether deterministic/reproducible inference is achievable with the chosen runtime (required for replay and audit per <code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code>).</li>
-<li>Establish the operating confidence thresholds empirically from held-out production data for both stages; the design documents list starting values (0.70 product; 0.45-0.50 component observation) that are unvalidated.</li>
-<li>Resolve whether YOLO-World fine-tuning or a plain YOLO11 model is better for stage 1 given the small product dataset; no public comparison exists for this specific regime.</li>
-<li>Validate whether the Ultralytics "~1,500 images / 10,000 instances per class" recommendation conflicts with AssemblyVision's 300-800 image target for a single large, visually consistent product class - the guidance is for reliable generalization across diverse classes; a fixed station with one product type is a favorable case, but this needs empirical confirmation.</li>
+<li>确认实际边缘硬件（CPU 型号/GPU/NPU）并在该特定设备上对 YOLO11n/s 和 YOLO26n/s ONNX/TensorRT 延迟进行基准测试；供应商 T4/A100 数字并不代表传送带侧盒子。</li>
+<li>决定是否需要第 2 阶段输入分辨率（640 与 1280 与自定义裁剪尺寸）才能达到实际组件上的每个组件召回目标；答案取决于 ROI 中的最小组成像素大小。</li>
+<li>在采用之前验证 YOLO26 (2026) 工具链支持（ONNX 导出、TensorRT 版本、PyTorch 版本）是否与 AssemblyVision monorepo 基线匹配。</li>
+<li>确认所选运行时是否可以实现确定性/可重现的推理（根据 <code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code> 进行重放和审核所需）。</li>
+<li>根据两个阶段的生产数据，凭经验确定运营信心阈值；设计文件列出了未经验证的起始值（0.70 产品；0.45-0.50 组件观察值）。</li>
+<li>考虑到产品数据集较小，解决第一阶段是 YOLO-World 微调还是普通 YOLO11 模型更好；对于这一具体制度，不存在公开比较。</li>
+<li>验证 Ultralytics“每个类约 1,500 个图像/10,000 个实例”建议是否与 AssemblyVision 针对单个大型、视觉一致的产品类别的 300-800 个图像目标相冲突 - 该指南旨在跨不同类别进行可靠的泛化；具有一种产品类型的固定站是一个有利的案例，但这需要经验证实。</li>
 </ul>
 
 
