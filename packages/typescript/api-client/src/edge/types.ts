@@ -1,0 +1,317 @@
+// Edge API contract types.
+//
+// Synchronized by hand from the canonical Pydantic domain models in
+// packages/python/domain/src/assemblyvision_domain/models.py and the TS
+// interfaces in docs/design/14-data-model-and-database.md (section 14.4).
+// Replace with generated types once FastAPI + OpenAPI generation is in place.
+//
+// Conventions (contract 05): snake_case fields, ISO 8601 UTC timestamps,
+// UUID strings, `application/problem+json` errors.
+
+export type UUID = string;
+export type ISODateTime = string;
+
+export const INTERNAL_DECISIONS = ["OK", "NG", "UNCERTAIN"] as const;
+export type InternalDecision = (typeof INTERNAL_DECISIONS)[number];
+
+export const BUSINESS_RESULTS = ["OK", "NG"] as const;
+export type BusinessResult = (typeof BUSINESS_RESULTS)[number];
+
+export const INSPECTION_LIFECYCLES = ["OPEN", "EVALUATING", "COMPLETED", "ABORTED"] as const;
+export type InspectionLifecycle = (typeof INSPECTION_LIFECYCLES)[number];
+
+export const MEDIA_LIFECYCLES = ["PENDING", "AVAILABLE", "FAILED", "PURGED"] as const;
+export type MediaLifecycle = (typeof MEDIA_LIFECYCLES)[number];
+
+export const DEVICE_OPERATIONAL_STATES = [
+  "INITIALIZING",
+  "READY",
+  "PAUSED",
+  "FAULTED",
+  "INSPECTING",
+] as const;
+export type DeviceOperationalState = (typeof DEVICE_OPERATIONAL_STATES)[number];
+
+export const UPLOAD_TASK_STATES = [
+  "PENDING",
+  "IN_PROGRESS",
+  "RETRY_WAIT",
+  "SUCCEEDED",
+  "PERMANENT_FAILURE",
+  "CANCELLED",
+] as const;
+export type UploadTaskState = (typeof UPLOAD_TASK_STATES)[number];
+
+export const SYNC_STATUSES = ["LOCAL_ONLY", "QUEUED", "PARTIAL", "SYNCED", "FAILED"] as const;
+export type SynchronizationStatus = (typeof SYNC_STATUSES)[number];
+
+export const MEDIA_KINDS = [
+  "KEY_FRAME",
+  "ANNOTATED_FRAME",
+  "PRODUCT_ROI",
+  "NG_CLIP",
+  "ROLLING_VIDEO",
+] as const;
+export type MediaKind = (typeof MEDIA_KINDS)[number];
+
+export type BoundingBox = {
+  x_min: number;
+  y_min: number;
+  x_max: number;
+  y_max: number;
+  image_width: number;
+  image_height: number;
+};
+
+export type FrameQuality = {
+  usable: boolean;
+  blur_score: number;
+  brightness_mean: number;
+  saturation_fraction: number;
+  occlusion_fraction: number | null;
+  reason_codes: string[];
+};
+
+export type ReasonCount = { reason_code: string; count: number };
+
+export type FrameQualitySummary = {
+  total_frame_count: number;
+  usable_frame_count: number;
+  rejected_frame_count: number;
+  reasons: ReasonCount[];
+};
+
+export type BarcodeResult = {
+  status: "READ" | "NOT_READ" | "CONFLICT" | "NOT_REQUIRED";
+  value: string | null;
+  symbology: string | null;
+};
+
+export type ProductResolution = {
+  status: "RESOLVED" | "UNKNOWN" | "CONFLICT";
+  source: "BARCODE" | "MANUAL" | "CONFIGURED_DEFAULT" | "NONE";
+  product_code: string | null;
+  product_version_id: UUID | null;
+};
+
+export type MediaMetadata = {
+  media_id: UUID;
+  kind: MediaKind;
+  lifecycle: MediaLifecycle;
+  relative_path: string;
+  mime_type: string;
+  size_bytes: number;
+  checksum_sha256: string;
+};
+
+export type ProductDetection = {
+  frame_id: UUID;
+  product_class: string;
+  confidence: number;
+  bbox: BoundingBox;
+  model_version_id: UUID;
+  quality: FrameQuality;
+};
+
+export type ROIResult = {
+  frame_id: UUID;
+  product_bbox: BoundingBox;
+  roi_bbox: BoundingBox;
+  roi_width: number;
+  roi_height: number;
+  orientation_degrees: number | null;
+  transform_full_to_roi: [number, number, number, number, number, number];
+  media_id: UUID | null;
+};
+
+export type ComponentDetection = {
+  frame_id: UUID;
+  component_code: string;
+  confidence: number;
+  roi_bbox: BoundingBox;
+  full_frame_bbox: BoundingBox;
+  model_version_id: UUID;
+};
+
+export const EVIDENCE_STATES = ["PRESENT", "MISSING", "UNCERTAIN"] as const;
+export type EvidenceState = (typeof EVIDENCE_STATES)[number];
+
+export type AggregatedComponentEvidence = {
+  component_code: string;
+  state: EvidenceState;
+  best_confidence: number | null;
+  usable_frame_count: number;
+  detection_count: number;
+  adjacent_detection_run: number;
+  supporting_frame_ids: UUID[];
+  policy_reason_codes: string[];
+};
+
+export type InspectionDecision = {
+  internal_decision: InternalDecision;
+  business_result: BusinessResult;
+  missing_components: string[];
+  low_confidence_components: string[];
+  reason_codes: string[];
+  decided_at: ISODateTime;
+};
+
+export type InspectionRecord = {
+  inspection_id: UUID;
+  device_id: UUID;
+  device_sequence: number;
+  lifecycle_status: InspectionLifecycle;
+  started_at: ISODateTime;
+  completed_at: ISODateTime;
+  barcode_result: BarcodeResult;
+  product_resolution: ProductResolution;
+  product_detection: ProductDetection | null;
+  roi_result: ROIResult | null;
+  frame_quality_summary: FrameQualitySummary;
+  application_version: string;
+  product_model_version_id: UUID;
+  product_model_checksum_sha256: string;
+  component_model_version_id: UUID;
+  component_model_checksum_sha256: string;
+  rule_version_id: UUID;
+  aggregation_policy_version: string;
+  evidence: AggregatedComponentEvidence[];
+  media: MediaMetadata[];
+  decision: InspectionDecision;
+  synchronization_status: SynchronizationStatus;
+  processing_ms: number;
+};
+
+export type InspectionSummary = {
+  inspection_id: UUID;
+  completed_at: ISODateTime;
+  business_result: BusinessResult;
+  internal_decision: InternalDecision;
+  barcode: string | null;
+  product_code: string | null;
+  reason_summary: string[];
+  latency_ms: number;
+  upload_state: SynchronizationStatus;
+  model_rule_versions: { product_model: string | null; component_model: string | null; rule: string | null };
+};
+
+export type Artifact = { name: string; uri: string; sha256: string; size_bytes: number };
+
+export type ModelManifest = {
+  model_version_id: UUID;
+  model_id: UUID;
+  semantic_version: string;
+  model_version_label: string | null;
+  task: "PRODUCT_DETECTION" | "COMPONENT_DETECTION";
+  runtime: string;
+  input_width: number;
+  input_height: number;
+  class_names: string[];
+  artifacts: Artifact[];
+  datasets: Array<{ dataset_version: string; purpose: string; manifest_uri: string }>;
+  split_strategy: string;
+  source_revision: string;
+  training_config_revision: string;
+  metrics: Array<{ name: string; value: number; scope: string }>;
+  limitations: string[];
+  approved_by: string | null;
+  approved_at: ISODateTime | null;
+  supersedes_model_version_id: UUID | null;
+  created_at: ISODateTime;
+};
+
+export type UploadTask = {
+  upload_task_id: UUID;
+  device_id: UUID;
+  inspection_id: UUID | null;
+  kind: "INSPECTION" | "MEDIA" | "DEVICE_EVENT";
+  object_id: UUID;
+  payload_hash: string;
+  status: UploadTaskState;
+  idempotency_key: string;
+  checksum_sha256: string | null;
+  attempt_count: number;
+  next_attempt_at: ISODateTime | null;
+  last_error_code: string | null;
+  created_at: ISODateTime;
+  updated_at: ISODateTime;
+  completed_at: ISODateTime | null;
+};
+
+export type DeviceStatus = {
+  device_id: UUID;
+  observed_at: ISODateTime;
+  operational_state: DeviceOperationalState;
+  inspection_ready: boolean;
+  sync_ready: boolean;
+  camera_connected: boolean;
+  model_loaded: boolean;
+  central_connected: boolean;
+  disk_free_bytes: number;
+  upload_pending_count: number;
+  current_product_model_version_id: UUID | null;
+  current_component_model_version_id: UUID | null;
+  current_rule_version_id: UUID | null;
+  alerts: string[];
+};
+
+export type CameraState = {
+  connected: boolean;
+  source_width: number;
+  source_height: number;
+  fps: number | null;
+  last_frame_at: ISODateTime | null;
+  error_code: string | null;
+};
+
+export type InspectionRuntimeState = {
+  window_active: boolean;
+  paused: boolean;
+  faulted: boolean;
+  current_inspection_id: UUID | null;
+  last_result: BusinessResult | null;
+  paused_reason: string | null;
+  paused_by: string | null;
+  paused_at: ISODateTime | null;
+};
+
+export type EffectiveConfiguration = {
+  revision: string;
+  checksum_sha256: string;
+  managed: Record<string, unknown>;
+  local_overrides: Record<string, unknown>;
+};
+
+export type LogEvent = {
+  logged_at: ISODateTime;
+  level: string;
+  component: string;
+  message: string;
+  trace_id: string | null;
+};
+
+export type Problem = {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+  code: string;
+  request_id: string;
+  errors?: Array<{ field: string; message: string }>;
+};
+
+export type Page<T> = {
+  items: T[];
+  next_cursor: string | null;
+};
+
+export type InspectionFilter = {
+  business_result?: BusinessResult;
+  internal_decision?: InternalDecision;
+  barcode?: string;
+  product?: string;
+  from?: ISODateTime;
+  to?: ISODateTime;
+  cursor?: string;
+  limit?: number;
+};
