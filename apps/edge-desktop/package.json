@@ -1,0 +1,22 @@
+{
+  "name": "edge-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron shell that runs the edge-web dashboard as a local edge/kiosk application",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "pnpm build && electron .",
+    "dev": "pnpm build && ELECTRON_DEV=1 electron .",
+    "kiosk": "pnpm build && ELECTRON_KIOSK=1 electron .",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@assemblyvision/eslint-config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "electron": "^33.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

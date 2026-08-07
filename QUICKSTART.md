@@ -9,6 +9,7 @@ apps get their own section instead of blurring this document.
 |---|---|
 | [Edge inspection CLI](#4-app-edge-inspection-cli-appsedge-service) | `assemblyvision` / `av-train`: train, inspect, verify |
 | [Edge dashboard](#5-app-edge-dashboard-appsedge-web) | Vue 3 web UI for inspection history, live view, queue, health |
+| [Edge desktop](#6-app-edge-desktop-appsedge-desktop) | Electron shell that runs the dashboard as a local kiosk app |
 
 Future apps (e.g. a central API or worker) add a numbered section here.
 
@@ -191,7 +192,49 @@ cd apps/edge-web && pnpm test:e2e              # Playwright smoke tests
 
 ---
 
-## 6. Shared packages (`packages/`)
+## 6. App: Edge desktop (`apps/edge-desktop`)
+
+Electron shell that runs the edge dashboard as a local desktop/kiosk app on the
+edge machine. It loads the **built** dashboard from disk in production, or the
+Vite dev server in development, with hardened defaults (context isolation,
+sandboxed renderer, no node integration).
+
+Prerequisites: the dashboard must be built first (`pnpm --filter edge-web build`)
+for production mode; development mode needs the Vite dev server running.
+
+### 6.1 Production mode
+
+```bash
+pnpm --filter edge-web build
+pnpm --filter edge-desktop start
+```
+
+Opens the bundled dashboard in a desktop window (default 1280×800, resizable).
+
+### 6.2 Development mode (live reload)
+
+```bash
+pnpm --filter edge-web dev          # terminal 1: Vite dev server
+pnpm --filter edge-desktop dev      # terminal 2: Electron loads http://localhost:5173
+```
+
+`ELECTRON_DEV=1` is set automatically; override the URL with
+`VITE_DEV_SERVER_URL=http://127.0.0.1:5173`.
+
+### 6.3 Kiosk mode
+
+```bash
+pnpm --filter edge-web build
+pnpm --filter edge-desktop kiosk    # fullscreen, no application menu
+```
+
+### 6.4 Tests
+
+```bash
+pnpm --filter edge-desktop test     # Vitest (load-target resolution)
+```
+
+## 7. Shared packages (`packages/`)
 
 Used by multiple apps; you normally consume them through the app sections
 above, not run them directly.
@@ -203,7 +246,7 @@ above, not run them directly.
 | `packages/typescript/api-client` | Edge API contract (types, Mock/HTTP client) |
 | `packages/typescript/ui` | Shared UI primitives (detection viewer, status, formatters) |
 
-## 7. Quality gates
+## 8. Quality gates
 
 Run all Python + TypeScript gates together:
 
@@ -220,7 +263,7 @@ uv run pytest                                          # Python tests
 pnpm -r build && pnpm -r lint && pnpm -r test          # TypeScript
 ```
 
-## 8. Project layout
+## 9. Project layout
 
 ```text
 pyproject.toml                  # root uv workspace (Python)
@@ -228,6 +271,7 @@ package.json + pnpm-workspace.yaml  # root pnpm workspace (TypeScript)
 apps/
   edge-service/                 # inspection runtime (CLI, pipeline, rules, detectors)
   edge-web/                     # Vue 3 edge dashboard (Vite)
+  edge-desktop/                 # Electron shell for the dashboard (desktop/kiosk)
 packages/
   python/domain/                # shared domain models, errors, reason codes
   python/vision-core/           # shared ROI engine, image sources, manifests
@@ -239,7 +283,7 @@ tests/fixtures/                 # small non-sensitive test fixtures
 docs/                           # architecture, contracts, ADRs, runbooks
 ```
 
-## 9. What's next
+## 10. What's next
 
 - **Real-data baseline** — annotate production images with X-AnyLabeling, then
   run `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.

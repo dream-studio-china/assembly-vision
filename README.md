@@ -12,6 +12,7 @@ rules, edge-first decisions, delayed sync to a central server.
 - **Atomic evidence output** — JSON records + annotated images with SHA-256 checksums
 - **Python monorepo** — uv workspace, strict typing (MyPy), Pydantic domain models
 - **Edge dashboard** — Vue 3 + TypeScript web app with camera overlay, history, queue, and health, decoupled from the backend via a typed API client
+- **Edge desktop** — Electron shell that runs the dashboard as a local desktop/kiosk app
 - **Frontend workspace** — pnpm workspace with a typed `api-client` (synchronized from the domain models) and shared UI primitives
 
 ## Quickstart
@@ -49,9 +50,15 @@ Run the edge dashboard (mock data, no backend required):
 pnpm --filter edge-web dev        # http://localhost:5173
 ```
 
+Run the dashboard as a local desktop/kiosk app:
+
+```bash
+pnpm --filter edge-web build && pnpm --filter edge-desktop start
+```
+
 See [QUICKSTART.md](QUICKSTART.md) for a detailed walkthrough, structured
 per app: section 4 covers the edge inspection CLI, section 5 the edge
-dashboard.
+dashboard, section 6 the edge desktop shell.
 
 ## Usage
 
@@ -91,6 +98,7 @@ the planned next layer.
 apps/
   edge-service/           # inspection runtime (CLI, pipeline, rules, detectors)
   edge-web/               # Vue 3 edge dashboard (Vite)
+  edge-desktop/           # Electron shell for the dashboard (desktop/kiosk)
 packages/
   python/
     domain/               # canonical Pydantic models, errors, reason codes
@@ -129,6 +137,7 @@ from training.
 |---|---|
 | **Static train-and-inspect MVP** | Done — merged to `main` (PR #3) |
 | **Edge dashboard frontend** | In progress (`dev`) — Vue 3 app, decoupled API client |
+| **Edge desktop (Electron)** | In progress (`dev`) — dashboard as a local kiosk app |
 | One-month camera integration + persistence + backend API | Planned |
 | Production hardening + acceptance | Planned |
 
