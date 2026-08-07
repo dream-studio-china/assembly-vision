@@ -283,3 +283,26 @@ def test_static_spa_fallback_serves_index(tmp_path: Path) -> None:
         asset = test_client.get("/asset.js")
         assert asset.status_code == 200
         assert asset.text == "console.log(1)"
+
+
+def test_fresh_inspection_media_served_from_writer(tmp_path: Path) -> None:
+    from assemblyvision_edge.output.writer import OutputWriter
+    from PIL import Image
+
+    root = tmp_path / "out"
+    writer = OutputWriter(root)
+    record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-WRITER")
+    frame = Image.new("RGB", (40, 40), (30, 30, 30))
+    saved = writer.save(record, full_frame=frame, roi_image=None, annotated=None)
+
+    settings = ServerSettings(output_root=root, db_path=tmp_path / "edge.sqlite3")
+    app = create_app(settings)
+    with TestClient(app) as test_client:
+        media = test_client.get(f"/api/v1/inspections/{saved.inspection_id}/media").json()
+        assert len(media) == 1
+        media_id = media[0]["media_id"]
+        content = test_client.get(f"/api/v1/media/{media_id}/content")
+        assert content.status_code == 200
+        raw = (root / str(saved.inspection_id) / "key_frame.jpg").read_bytes()
+        assert content.content == raw
+        assert content.headers["content-type"].startswith("image/jpeg")

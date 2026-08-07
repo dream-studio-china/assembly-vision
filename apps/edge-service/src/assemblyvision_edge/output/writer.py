@@ -114,14 +114,29 @@ class OutputWriter:
         staging = self._output_root / f".staging-{record.inspection_id}-{uuid4().hex}"
         try:
             staging.mkdir(parents=True)
+            final_rel_dir = str(record.inspection_id)
             media: list[MediaMetadata] = []
             if full_frame is not None:
-                media.append(self._save_image(staging, "key_frame.jpg", full_frame, "KEY_FRAME"))
+                media.append(
+                    self._save_image(
+                        staging, "key_frame.jpg", full_frame, "KEY_FRAME", final_rel_dir
+                    )
+                )
             if roi_image is not None:
-                media.append(self._save_image(staging, "product_roi.jpg", roi_image, "PRODUCT_ROI"))
+                media.append(
+                    self._save_image(
+                        staging, "product_roi.jpg", roi_image, "PRODUCT_ROI", final_rel_dir
+                    )
+                )
             if annotated is not None:
                 media.append(
-                    self._save_image(staging, "annotated_frame.jpg", annotated, "ANNOTATED_FRAME")
+                    self._save_image(
+                        staging,
+                        "annotated_frame.jpg",
+                        annotated,
+                        "ANNOTATED_FRAME",
+                        final_rel_dir,
+                    )
                 )
             record.media = media
             payload = json.dumps(record.model_dump(mode="json"), indent=2, sort_keys=True) + "\n"
@@ -140,6 +155,7 @@ class OutputWriter:
         name: str,
         image: Image.Image,
         kind: MediaKind,
+        relative_dir: str,
     ) -> MediaMetadata:
         try:
             buffer = io.BytesIO()
@@ -148,7 +164,7 @@ class OutputWriter:
         except OSError as exc:
             raise OutputError(f"cannot encode image {name}") from exc
         _write_file_atomic(inspection_dir / name, data)
-        relative = f"{inspection_dir.name}/{name}"
+        relative = f"{relative_dir}/{name}"
         return MediaMetadata(
             media_id=uuid4(),
             kind=kind,
