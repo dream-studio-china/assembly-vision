@@ -20,6 +20,7 @@ from assemblyvision_domain.errors import (
     DetectionError,
     ImageReadError,
     ROIGenerationError,
+    RuleEvaluationError,
 )
 from assemblyvision_domain.models import (
     AggregatedComponentEvidence,
@@ -216,16 +217,30 @@ class InspectionPipeline:
             gates=gates,
             components=evidence_map,
         )
-        decided = self._rule_engine.evaluate(context, self._rule)
-        final_reasons = sorted(set(decided.reason_codes) | set(extra_reasons))
-        internal = InternalDecision.NG if final_reasons else InternalDecision.OK
+        decided = None
+        try:
+            decided = self._rule_engine.evaluate(context, self._rule)
+        except RuleEvaluationError as exc:
+            extra_reasons.append(rc.RULE_EVALUATION_ERROR)
+            log.error("rule evaluation failed for inspection %s: %s", inspection_id, exc)
+
+        if decided is None:
+            missing = sorted(set(self._rule.required_components))
+            low: list[str] = []
+            final_reasons = sorted(set(extra_reasons))
+            internal = InternalDecision.NG
+        else:
+            missing = decided.missing_components
+            low = decided.low_confidence_components
+            final_reasons = sorted(set(decided.reason_codes) | set(extra_reasons))
+            internal = InternalDecision.NG if final_reasons else InternalDecision.OK
         decision = InspectionDecision(
             internal_decision=internal,
             business_result=BusinessResult.NG
             if internal is not InternalDecision.OK
             else BusinessResult.OK,
-            missing_components=decided.missing_components,
-            low_confidence_components=decided.low_confidence_components,
+            missing_components=missing,
+            low_confidence_components=low,
             reason_codes=final_reasons,
             decided_at=datetime.now(UTC),
         )

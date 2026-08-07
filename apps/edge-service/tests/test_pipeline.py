@@ -7,7 +7,7 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from assemblyvision_domain import reason_codes as rc
-from assemblyvision_domain.errors import DetectionError, ROIGenerationError
+from assemblyvision_domain.errors import DetectionError, ROIGenerationError, RuleEvaluationError
 from assemblyvision_domain.models import (
     BoundingBox,
     BusinessResult,
@@ -93,9 +93,15 @@ class _Outcome:
         self.reason_code = reason_code
 
 
+class RaisingRuleEngine:
+    def evaluate(self, context: object, rule: object) -> object:
+        raise RuleEvaluationError("boom")
+
+
 def _build_pipeline(
     product_detector: object,
     component_detector: object,
+    rule_engine: object | None = None,
 ) -> InspectionPipeline:
     config = load_pipeline_config(EXAMPLE_PIPELINE)
     rule = load_rule_definition(EXAMPLE_RULE)
@@ -105,7 +111,7 @@ def _build_pipeline(
         product_detector=product_detector,  # type: ignore[arg-type]
         component_detector=component_detector,  # type: ignore[arg-type]
         roi_engine=ROIEngine(config.roi),
-        rule_engine=RuleEngine(),
+        rule_engine=rule_engine or RuleEngine(),  # type: ignore[arg-type]
         rule=rule,
         product_manifest=product_manifest,
         component_manifest=component_manifest,
@@ -189,6 +195,33 @@ def test_ok_when_all_components_present(tmp_path: Path) -> None:
     inspection_dir = tmp_path / "out" / str(record.inspection_id)
     assert (inspection_dir / "product_roi.jpg").is_file()
     assert (inspection_dir / "annotated_frame.jpg").is_file()
+
+
+def test_rule_evaluation_error_is_persisted_failsafe_ng(tmp_path: Path) -> None:
+    image_path = tmp_path / "product.png"
+    _write_image(image_path)
+    component_detector = FakeComponentDetector(
+        [_component_obs(uuid4(), c) for c in ("component_a", "component_b", "manual")]
+    )
+    pipeline = _build_pipeline(
+        FakeProductDetector(_Outcome(selected=_product_detection(uuid4()))),
+        component_detector,
+        rule_engine=RaisingRuleEngine(),
+    )
+    record = pipeline.inspect_image(
+        FolderSource(tmp_path), image_path, OutputWriter(tmp_path / "out")
+    )
+
+    assert record.decision.business_result is BusinessResult.NG
+    assert record.decision.internal_decision.value == "NG"
+    assert "RULE_EVALUATION_ERROR" in record.decision.reason_codes
+    assert len(record.evidence) == 3
+    # Provenance remains present in the persisted record.
+    assert record.product_model_version_id is not None
+    assert record.component_model_version_id is not None
+    assert record.rule_version_id is not None
+    inspection_dir = tmp_path / "out" / str(record.inspection_id)
+    assert (inspection_dir / "inspection.json").is_file()
 
 
 def test_product_detector_failure_is_failsafe_ng(tmp_path: Path) -> None:
