@@ -71,9 +71,13 @@ class ProductDetector:
 
     @property
     def effective_settings(self) -> dict[str, object]:
-        """Effective inference parameters persisted as inference metadata."""
+        """Effective inference parameters persisted as inference metadata.
+
+        Ultralytics interprets a two-element ``imgsz`` as ``[height, width]``,
+        so the manifest width/height are serialized in that order.
+        """
         return {
-            "imgsz": [self._manifest.input_width, self._manifest.input_height],
+            "imgsz": [self._manifest.input_height, self._manifest.input_width],
             "conf": self._settings.confidence_threshold,
             "iou": self._settings.iou_threshold,
             "device": self._device,
@@ -83,7 +87,7 @@ class ProductDetector:
         try:
             results: Any = self._model(
                 frame,
-                imgsz=(self._manifest.input_width, self._manifest.input_height),
+                imgsz=(self._manifest.input_height, self._manifest.input_width),
                 conf=self._settings.confidence_threshold,
                 iou=self._settings.iou_threshold,
                 device=self._device,

@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import math
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Literal
 from uuid import uuid4
 
 import pytest
 from assemblyvision_domain.errors import ConfigError, DetectionError
+from assemblyvision_domain.models import ModelManifest
 from assemblyvision_edge.config import ComponentDetectionSettings, DetectionSettings
 from assemblyvision_edge.detection.component_detector import ComponentDetector
 from assemblyvision_edge.detection.product_detector import ProductDetector
@@ -60,6 +63,27 @@ def _components() -> dict[str, ComponentDetectionSettings]:
         "component_b": ComponentDetectionSettings(observation_threshold=0.5),
         "manual": ComponentDetectionSettings(observation_threshold=0.5),
     }
+
+
+def _non_square_manifest(
+    task: Literal["PRODUCT_DETECTION", "COMPONENT_DETECTION"],
+) -> ModelManifest:
+    return ModelManifest(
+        model_version_id=uuid4(),
+        model_id=uuid4(),
+        semantic_version="1.0.0",
+        task=task,
+        runtime="ultralytics",
+        input_width=1280,
+        input_height=736,
+        class_names=(
+            ["product"] if task == "PRODUCT_DETECTION" else ["component_a", "component_b", "manual"]
+        ),
+        split_strategy="held-out",
+        source_revision="r1",
+        training_config_revision="t1",
+        created_at=datetime.now(UTC),
+    )
 
 
 def test_product_detector_selects_single_product() -> None:
@@ -198,11 +222,11 @@ def test_product_detector_passes_manifest_inference_settings() -> None:
 
     assert len(model.calls) == 1
     call = model.calls[0]
-    assert call["imgsz"] == (manifest.input_width, manifest.input_height)
+    assert call["imgsz"] == (manifest.input_height, manifest.input_width)
     assert call["conf"] == pytest.approx(0.5)
     assert call["iou"] == pytest.approx(0.5)
     assert "device" in call
-    assert detector.effective_settings["imgsz"] == [manifest.input_width, manifest.input_height]
+    assert detector.effective_settings["imgsz"] == [manifest.input_height, manifest.input_width]
 
 
 def test_component_detector_passes_manifest_inference_settings() -> None:
@@ -219,10 +243,36 @@ def test_component_detector_passes_manifest_inference_settings() -> None:
 
     assert len(model.calls) == 1
     call = model.calls[0]
-    assert call["imgsz"] == (manifest.input_width, manifest.input_height)
+    assert call["imgsz"] == (manifest.input_height, manifest.input_width)
     assert call["conf"] == pytest.approx(0.0)
     assert call["iou"] == pytest.approx(0.5)
-    assert detector.effective_settings["conf"] == pytest.approx(0.0)
+    assert detector.effective_settings["imgsz"] == [manifest.input_height, manifest.input_width]
+
+
+def test_product_detector_imgsz_is_height_width_for_non_square_manifest() -> None:
+    manifest = _non_square_manifest("PRODUCT_DETECTION")
+    model = FakeModel([(0, 0.9, (100.0, 80.0, 700.0, 520.0))])
+    detector = ProductDetector(manifest, _product_settings(), model)
+    detector.detect(Image.new("RGB", (800, 600), (128, 128, 128)), uuid4())
+
+    assert model.calls[0]["imgsz"] == (736, 1280)
+    assert detector.effective_settings["imgsz"] == [736, 1280]
+
+
+def test_component_detector_imgsz_is_height_width_for_non_square_manifest() -> None:
+    manifest = _non_square_manifest("COMPONENT_DETECTION")
+    model = FakeModel([(0, 0.9, (10.0, 10.0, 100.0, 100.0))])
+    detector = ComponentDetector(manifest, _component_settings(), _components(), model)
+    detector.detect(
+        Image.new("RGB", (680, 512), (0, 0, 0)),
+        uuid4(),
+        ("component_a",),
+        (1.0, 0.0, -60.0, 0.0, 1.0, -44.0),
+        (800, 600),
+    )
+
+    assert model.calls[0]["imgsz"] == (736, 1280)
+    assert detector.effective_settings["imgsz"] == [736, 1280]
 
 
 def test_component_detector_rejects_wrong_task() -> None:
@@ -359,7 +409,7 @@ def test_from_manifest_loads_and_verifies(tmp_path: Path, monkeypatch: pytest.Mo
     monkeypatch.setattr("ultralytics.YOLO", lambda path: _FakeUltralyticsModel())
     detector = ProductDetector.from_manifest(manifest, _product_settings(), tmp_path / "m.json")
     assert isinstance(detector, ProductDetector)
-    assert detector.effective_settings["imgsz"] == [manifest.input_width, manifest.input_height]
+    assert detector.effective_settings["imgsz"] == [manifest.input_height, manifest.input_width]
 
 
 def test_component_from_manifest_loads_and_verifies(
