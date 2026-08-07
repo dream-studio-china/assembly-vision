@@ -1,61 +1,70 @@
 # AssemblyVision Quickstart
 
-## Prerequisites
+AssemblyVision is organized as a monorepo of independently runnable **apps**
+(`apps/`) sharing `packages/`. This guide is structured **per app**: install
+once, then jump straight to the section for the app you are working on. New
+apps get their own section instead of blurring this document.
 
-- [uv](https://docs.astral.sh/uv/) (Python package manager; installs Python 3.12 automatically)
+| App | What it is |
+|---|---|
+| [Edge inspection CLI](#4-app-edge-inspection-cli-appsedge-service) | `assemblyvision` / `av-train`: train, inspect, verify |
+| [Edge dashboard](#5-app-edge-dashboard-appsedge-web) | Vue 3 web UI for inspection history, live view, queue, health |
+| [Edge desktop](#6-app-edge-desktop-appsedge-desktop) | Electron shell that runs the dashboard as a local kiosk app |
+
+Future apps (e.g. a central API or worker) add a numbered section here.
+
+---
+
+## 1. Prerequisites
+
+- [uv](https://docs.astral.sh/uv/) — Python package manager (installs Python 3.12 automatically)
+- [pnpm](https://pnpm.io/) and Node.js 20+ — frontend workspace
 - macOS / Linux (the edge runtime targets Linux; development works on both)
 
-## Setup
+## 2. One-time setup
 
 ```bash
 git clone https://github.com/dream-studio-china/assembly-vision.git
 cd assembly-vision
-git checkout feat/mvp
-uv sync
+git checkout dev          # `main` = released MVP; `dev` = in-progress work
+uv sync                   # Python workspace (edge-service, packages)
+pnpm install              # TypeScript workspace (edge-web, packages)
 ```
 
-This creates a virtual environment with all workspace packages:
+This prepares both workspaces:
 
-| Package | Description |
-|---|---|
-| `assemblyvision-domain` | Canonical Pydantic models, errors, reason codes |
-| `assemblyvision-vision` | ROI geometry, image sources, manifest loading |
-| `assemblyvision-edge` | Inspection CLI, pipeline, rule engine, detectors |
+| Layer | Tool | Contents |
+|---|---|---|
+| Python | uv | `assemblyvision-domain`, `assemblyvision-vision`, `assemblyvision-edge` |
+| TypeScript | pnpm | `@assemblyvision/api-client`, `@assemblyvision/ui`, `edge-web` |
 
-## Verify everything works
+## 3. Verify the toolchain
 
 ```bash
-uv run ruff check apps          # lint
-uv run mypy apps/edge-service/src \
-  packages/python/domain/src \
-  packages/python/vision-core/src  # type check
-uv run pytest                     # 42 tests
+uv run ruff check . && uv run mypy . && uv run pytest   # Python toolchain
+pnpm -r build && pnpm -r lint && pnpm -r test           # TypeScript toolchain
 ```
 
-## Run the inspection CLI
+If this passes, skip to the section for the app you want to run.
+
+---
+
+## 4. App: Edge inspection CLI (`apps/edge-service`)
+
+The CLI runs the real two-stage Ultralytics YOLO pipeline and writes evidence.
+It requires trained models referenced by the pipeline config; otherwise it
+exits with a configuration error before processing any image.
+
+### 4.1 Inspect a folder of images
 
 ```bash
-# train the models first (see av-train), then inspect a folder of images
 uv run assemblyvision inspect /path/to/images \
   --config config/examples/pipeline.yaml \
   --rule config/examples/product-rule.yaml \
   --output out/
 ```
 
-## Verify against expected labels
-
-```bash
-# compare decisions with expected OK/NG and report NG recall / FN / FP
-# (expected JSON comes from scripts/adapt-roboflow-dataset.py; without it the
-#  filename fallback treats ok_* as OK and ng_*/missing_* as NG)
-uv run assemblyvision verify /path/to/test-images \
-  --config config/examples/pipeline.yaml \
-  --rule config/examples/product-rule.yaml \
-  --expected test-expected.json \
-  --output out/
-```
-
-Each image gets its own output directory under `out/<inspection_id>/`:
+Each image gets an output directory:
 
 ```text
 out/<inspection_id>/
@@ -65,7 +74,42 @@ out/<inspection_id>/
 └── product_roi.jpg        # product ROI crop (when a product is detected)
 ```
 
-### Example with synthetic images
+### 4.2 Verify against expected labels
+
+```bash
+uv run assemblyvision verify /path/to/test-images \
+  --config config/examples/pipeline.yaml \
+  --rule config/examples/product-rule.yaml \
+  --expected test-expected.json \
+  --output out/
+```
+
+Expected JSON comes from `scripts/adapt-roboflow-dataset.py`. Without
+`--expected`, the filename fallback treats `ok_*` as OK and `ng_*`/`missing_*`
+as NG. The command reports NG recall / FN / FP and exits non-zero on a false
+negative or an incomplete report.
+
+### 4.3 Train the models (developer-only `av-train`)
+
+```bash
+uv run av-train product <dataset_product> --semver 0.1.0 --epochs 120 --no-augment \
+  --out-weights models/weights/product-yolo-0.1.0.pt \
+  --out-manifest models/manifests/product-manifest.json
+
+uv run av-train prepare-components <dataset_components> \
+  --product-weights models/weights/product-yolo-0.1.0.pt \
+  --min-area 10000 --min-retention 0.80 --out-dir <roi-dataset>
+
+uv run av-train component <roi-dataset> --semver 0.1.0 --epochs 150 --no-augment \
+  --out-weights models/weights/component-yolo-0.1.0.pt \
+  --out-manifest models/manifests/component-manifest.json
+```
+
+After training, update `pipeline.yaml` `model_version` and the rule's
+`compatible_component_model_versions` together (see
+`docs/runbooks/10-model-improvement.md`).
+
+### 4.4 Demo with synthetic images
 
 ```bash
 uv run python -c "
@@ -82,50 +126,174 @@ uv run assemblyvision inspect demo-images \
   --output out/
 ```
 
-## Run tests
+Full synthetic train -> inspect -> verify loop in one command:
 
 ```bash
-uv run pytest                           # all tests
-uv run pytest apps/edge-service/tests/test_rule_engine.py -v  # rule engine only
+scripts/e2e-demo.sh /tmp/av-e2e
 ```
 
-## Project layout
+Takes ~10 minutes on a laptop CPU. Expected result: 6 OK + 6 NG with NG recall
+1.000 and zero false negatives; exits non-zero if any NG is predicted as OK.
+
+### 4.5 Tests
+
+```bash
+uv run pytest apps/edge-service/tests               # runtime tests
+uv run pytest training/tests                        # training tests
+```
+
+---
+
+## 5. App: Edge dashboard (`apps/edge-web`)
+
+The dashboard runs **fully decoupled** from the backend. By default it uses an
+in-memory mock client with pre-seeded data, so it starts with no trained models
+or running service.
+
+### 5.1 Run the dev server
+
+```bash
+pnpm --filter edge-web dev        # http://localhost:5173
+```
+
+### 5.2 Routes
+
+| Route | Screen |
+|---|---|
+| `/` | **Operator dashboard** — current inspection status (Waiting/Processing/PASS/NG), product SN, rules, confirm/continue/manual actions |
+| `/live` | Live inspection — camera image, detection result, detection regions, progress |
+| `/history` | Inspection history — search by SN, filter by result, image links |
+| `/traceability/:sn` | Product traceability — reinspection attempts and final status |
+| `/images/:id` | Inspection images — original, detection result, annotations |
+| `/statistics` | Production statistics — totals, PASS/NG, pass rate, date/line filters |
+| `/device` | Device status — camera, vision engine, inspection service |
+| `/uploads` | Upload queue with manual retry |
+| `/health` | Disk/queue charts (ECharts) and device status |
+| `/inspections` | Full record history (internal records) |
+| `/configuration`, `/logs` | Read-only placeholders |
+
+All operator data flows through the mock service layer by default and switches
+to FastAPI via `VITE_API_BASE_URL` with no UI changes.
+
+### 5.3 Mock vs real backend
+
+Set `VITE_API_BASE_URL` to use the HTTP client (targets `/api/v1`) instead of
+the mock. The UI does not change:
+
+```bash
+VITE_API_BASE_URL=http://edge-host:8000 pnpm --filter edge-web dev
+```
+
+### 5.4 Build and preview
+
+```bash
+pnpm --filter edge-web build      # bundle to apps/edge-web/dist
+pnpm --filter edge-web preview    # preview the build (default http://localhost:4173)
+```
+
+### 5.5 Tests
+
+```bash
+pnpm --filter edge-web test                    # Vitest (stores, client)
+cd apps/edge-web && pnpm test:e2e              # Playwright smoke tests
+```
+
+---
+
+## 6. App: Edge desktop (`apps/edge-desktop`)
+
+Electron shell that runs the edge dashboard as a local desktop/kiosk app on the
+edge machine. It loads the **built** dashboard from disk in production, or the
+Vite dev server in development, with hardened defaults (context isolation,
+sandboxed renderer, no node integration).
+
+Prerequisites: the dashboard must be built first (`pnpm --filter edge-web build`)
+for production mode; development mode needs the Vite dev server running.
+
+### 6.1 Production mode
+
+```bash
+pnpm --filter edge-web build
+pnpm --filter edge-desktop start
+```
+
+Opens the bundled dashboard in a desktop window (default 1280×800, resizable).
+
+### 6.2 Development mode (live reload)
+
+```bash
+pnpm --filter edge-web dev          # terminal 1: Vite dev server
+pnpm --filter edge-desktop dev      # terminal 2: Electron loads http://localhost:5173
+```
+
+`ELECTRON_DEV=1` is set automatically; override the URL with
+`VITE_DEV_SERVER_URL=http://127.0.0.1:5173`.
+
+### 6.3 Kiosk mode
+
+```bash
+pnpm --filter edge-web build
+pnpm --filter edge-desktop kiosk    # fullscreen, no application menu
+```
+
+### 6.4 Tests
+
+```bash
+pnpm --filter edge-desktop test     # Vitest (load-target resolution)
+```
+
+## 7. Shared packages (`packages/`)
+
+Used by multiple apps; you normally consume them through the app sections
+above, not run them directly.
+
+| Package | Purpose |
+|---|---|
+| `packages/python/domain` | Canonical Pydantic models, errors, reason codes |
+| `packages/python/vision-core` | ROI engine, image sources, manifest loading |
+| `packages/typescript/api-client` | Edge API contract (types, Mock/HTTP client) |
+| `packages/typescript/ui` | Shared UI primitives (detection viewer, status, formatters) |
+
+## 8. Quality gates
+
+Run all Python + TypeScript gates together:
+
+```bash
+make check
+```
+
+Individually:
+
+```bash
+uv run ruff check . && uv run ruff format --check .   # Python lint
+uv run mypy .                                          # Python types
+uv run pytest                                          # Python tests
+pnpm -r build && pnpm -r lint && pnpm -r test          # TypeScript
+```
+
+## 9. Project layout
 
 ```text
-pyproject.toml                  # root uv workspace (members: apps/, packages/)
-apps/edge-service/              # inspection runtime (CLI, pipeline, rules, detectors)
-packages/python/domain/         # shared domain models, errors, reason codes
-packages/python/vision-core/    # shared ROI engine, image sources, manifests
+pyproject.toml                  # root uv workspace (Python)
+package.json + pnpm-workspace.yaml  # root pnpm workspace (TypeScript)
+apps/
+  edge-service/                 # inspection runtime (CLI, pipeline, rules, detectors)
+  edge-web/                     # Vue 3 edge dashboard (Vite)
+  edge-desktop/                 # Electron shell for the dashboard (desktop/kiosk)
+packages/
+  python/domain/                # shared domain models, errors, reason codes
+  python/vision-core/           # shared ROI engine, image sources, manifests
+  typescript/api-client/        # edge API contract (types, Mock/HTTP client)
+  typescript/ui/                # shared UI primitives (detection viewer, status)
 config/examples/                # example pipeline, rule, and manifest config
 models/manifests/               # model metadata (weights outside Git)
 tests/fixtures/                 # small non-sensitive test fixtures
 docs/                           # architecture, contracts, ADRs, runbooks
 ```
 
-## Full end-to-end demo (one command)
+## 10. What's next
 
-```bash
-# synthetic data -> train product -> prepare ROI -> train component ->
-# inspect held-out images -> verify (hard gate on false negatives)
-scripts/e2e-demo.sh /tmp/av-e2e
-```
-
-Takes ~10 minutes on a laptop CPU (120 + 150 epochs, nano model, no
-augmentation). Expected result: 6 OK + 6 NG with NG recall 1.000 and zero
-false negatives; the script exits non-zero if any NG is predicted as OK.
-
-For richer or Roboflow-sourced data:
-```bash
-uv run python scripts/generate-synthetic-dataset.py /tmp/data --n-train 30 --n-val 8
-uv run python scripts/adapt-roboflow-dataset.py <roboflow-export> /tmp/data --drop-missing --required "chip,capacitor,boot"
-```
-
-## What's next
-
-- **M5 End-to-end demo** — train on real labeled data and inspect
-
-> `assemblyvision inspect` and `verify` run real Ultralytics YOLO detectors.
-> They load weights from the model manifests; if the trained weights are
-> missing they exit with a configuration error before processing any image.
-> To use them, first train the product and component detectors with
-> `av-train`, then point the pipeline config at the resulting manifests.
+- **Real-data baseline** — annotate production images with X-AnyLabeling, then
+  run `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
+- **Edge backend API** — expose local inspection records over FastAPI so the
+  dashboard runs against real data (`VITE_API_BASE_URL`).
