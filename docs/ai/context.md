@@ -1,6 +1,6 @@
 # AssemblyVision - Full Project Context
 
-> Context snapshot. Last updated: 2026-08-06
+> Context snapshot. Last updated: 2026-08-07
 >
 > Read this file first in a new session to reconstruct the project state quickly.
 
@@ -18,16 +18,22 @@ and verifies that all required assembly components are present.
 - **Architecture**: edge-client + central-server. All production-critical image processing and
   final decisions execute on the edge industrial computer; the central server is never required
   for real-time inspection.
-- **Current repository state**: the labeled static train-and-inspect MVP (ADR-011) is
-  implemented and validated on `feat/mvp`. The uv workspace ships shared `domain` and
-  `vision-core` packages, a developer-only `av-train` training CLI, real two-stage
-  Ultralytics YOLO inspection (`assemblyvision inspect`), and held-out verification
-  (`assemblyvision verify`) reporting NG recall, false negatives, and false positives.
+- **Current repository state**: the static train-and-inspect MVP (ADR-011) is
+  merged to `main` (PR #3) along with the edge dashboard frontend (PR #6). The
+  Python uv workspace ships shared `domain` and `vision-core` packages, a
+  developer-only `av-train` training CLI, real two-stage Ultralytics YOLO
+  inspection (`assemblyvision inspect`) and held-out verification. The frontend
+  pnpm workspace includes the Vue 3 + TypeScript operator dashboard
+  (`apps/edge-web`), an Electron kiosk shell (`apps/edge-desktop`), a typed
+  `api-client` contract layer, and shared UI primitives. The dashboard runs
+  against a mock service layer by default; wiring it to the FastAPI backend is
+  the next engineering gap.
 
 ## 2. Repository State
 
-- Remote: `https://github.com/dream-studio-china/assembly-vision`; current MVP work is on branch `feat/mvp`.
-- `dev` includes engineering contracts, cross-references, expanded contributor rules, and editor ignores on top of `origin/main`.
+- Remote: `https://github.com/dream-studio-china/assembly-vision`. The static
+  MVP and edge dashboard are merged to `main` (PR #3, #6). `dev` tracks the
+  next milestone (FastAPI backend, real-data baseline, PR-003 P1/P2 items).
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -53,14 +59,23 @@ assembly-vision/
 │   └── tests/                       # tests for the Roboflow adapter
 ├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
 ├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
-├── packages/python/
-│   ├── domain/                       # canonical models, errors, reason codes
-│   └── vision-core/                  # ROI engine, image sources, manifest loading
+├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
+├── apps/edge-desktop/                # Electron kiosk/desktop shell
+├── packages/
+│   ├── python/
+│   │   ├── domain/                   # canonical models, errors, reason codes
+│   │   └── vision-core/              # ROI engine, image sources, manifest loading
+│   └── typescript/
+│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
+│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
 ├── training/                         # developer-only av-train CLI (product/prepare-components/component)
 ├── config/examples/                  # Example pipeline, rule, and manifest configuration
 ├── models/manifests/                 # Checked model metadata; weights remain outside Git
 ├── tests/fixtures/                   # Small non-sensitive test fixtures
-├── pyproject.toml                    # Root uv workspace configuration
+├── pyproject.toml                    # Root uv workspace configuration (Python)
+├── package.json                      # Root pnpm workspace (TypeScript)
+├── pnpm-workspace.yaml               # pnpm workspace definition
+├── pnpm-lock.yaml                    # locked frontend dependencies
 └── docs/
     ├── index.md            # MkDocs home page
     ├── README.md           # Documentation index
@@ -223,16 +238,60 @@ fixed; remaining P1/P2 items tracked in `docs/reviews/PR-003-review.md`):
   `pytest` now cover the whole repository (edge, packages, training, scripts
   tests) via the Makefile and a new `.github/workflows/ci.yml`.
 
+## 8.2 Edge Dashboard and Operator Prototype (PR #6)
+
+The frontend was built as a decoupled Vue 3 + TypeScript layer sharing a
+pnpm workspace with the existing Python uv workspace, then merged to `main`:
+
+- **Contract layer** (`@assemblyvision/api-client`): hand-synchronized TS types
+  from the domain Pydantic models, an `ApiClient` interface, `MockApiClient`
+  (deterministic in-memory data with an operator workflow state machine and mock
+  SVG images), `HttpApiClient` (targeting future `/api/v1` endpoints), and a
+  reconnecting WebSocket service.
+- **Shared UI** (`@assemblyvision/ui`): `DetectionViewer` (contain-scaled
+  preview with source-coordinate overlays, frame-ID reconciliation, stale-frame
+  marker), color-independent `StatusBadge`, and display formatters.
+- **Operator dashboard** (`apps/edge-web`): production inspection dashboard
+  (Waiting/Processing/PASS/NG status, SN metadata, product image with overlay
+  boxes, rule checks, confirm/continue/manual actions), live camera/detection
+  view with runtime logs and inspection details, history (SN search + result
+  filter), traceability per SN with reinspection attempts, statistics (ECharts
+  with date/line filters), image management (original/detection/annotated),
+  device status, and upload queue. All data flows through an API service layer
+  that selects the mock or HTTP client based on `VITE_API_BASE_URL`; switching
+  to FastAPI requires no UI changes.
+- **Electron desktop** (`apps/edge-desktop`): hardened defaults (context
+  isolation, sandbox, no node integration), kiosk mode, and production builds
+  are loaded from the built edge-web output.
+- **Tests and CI**: 39 Vitest unit tests across api-client/ui/edge-web/desktop,
+  11 Playwright e2e, a `web` CI job (build/lint/test/e2e), and `make check`
+  now runs both Python and TypeScript gates.
+- **Documentation**: QUICKSTART restructured per-app with extensible numbered
+  sections; README updated with new features, project structure, and roadmap.
+
 ## 9. Open Items / Next Steps
 
-- The static train-and-inspect MVP is complete and validated on synthetic data (NG recall 1.0,
-  zero false negatives on the held-out set). The next milestone is the one-month target
-  (roadmap 25.5): camera/barcode integration, product windows, local persistence, temporal
-  aggregation, edge dashboard, upload queue, and one central ingestion/history/review path.
-- Real customer data is still required: annotate with X-AnyLabeling (product + component boxes),
-  then run `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`. Public Roboflow
-  datasets (e.g., BoardEye-Missing-Component) can validate the framework but not a specific line.
-- Model improvement workflow is documented (runbook 10) with `av-train --rule` version hints.
+- The static train-and-inspect MVP and the edge dashboard frontend are complete
+  and merged to `main`. The dashboard currently runs against the in-memory mock
+  client; the highest-priority engineering gap is the **edge-service FastAPI
+  backend layer** to expose the inspection pipeline over `/api/v1` (design 15),
+  with a lightweight index (SQLite or directory scan) so the frontend can
+  display real CLI results.
+- A number of PR-003 P1/P2 backend hardening items are still open (see
+  `docs/reviews/PR-003-review.md`): model manifest full-content immutability,
+  inference-parameter pinning, pipeline detection-provenance validation, bundle-
+  atomic evidence output with fsync, rule-version content binding, dataset
+  staging, and component preparation reusing production selection contracts.
+  Several can be addressed in parallel with the FastAPI layer.
+- Real customer data is still required for the one-month baseline: annotate with
+  X-AnyLabeling (product + component boxes), then run `av-train` ->
+  `assemblyvision inspect` -> `assemblyvision verify`. A utility script
+  (`adapt-xanylabeling.py`) is needed to split the X-AnyLabeling export into
+  `dataset_product`/`dataset_components` + `test-expected.json`.
+- Camera/hardware integration, barcode decoding, product-window management,
+  temporal aggregation, SQLite persistence, upload queue, and Docker deployment
+  remain as the roadmap 25.5 one-month scope; they are blocked on hardware and
+  customer-site decisions.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.
