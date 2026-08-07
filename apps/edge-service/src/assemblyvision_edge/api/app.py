@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from assemblyvision_edge import __version__
@@ -76,6 +77,17 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = settings
+
+    # The edge dashboard is served locally on the management network; the Vite
+    # dev server (and any local tooling) calls the API cross-origin during
+    # development. Allow local origins only is not possible while the dev port
+    # varies, so permit all origins for the local-only service (design 15.2.1).
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     install_problem_handlers(app)
     _install_exception_handler(app)
