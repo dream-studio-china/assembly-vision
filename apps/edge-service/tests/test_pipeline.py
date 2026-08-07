@@ -67,10 +67,34 @@ class FakeComponentDetector:
         transform: tuple[float, float, float, float, float, float],
         frame_size: tuple[int, int],
     ) -> list[ComponentDetection]:
-        return [
-            _component_obs(frame_id, obs.component_code, roi.size, frame_size)
-            for obs in self._observations
-        ]
+        from assemblyvision_vision.roi.geometry import Box, apply_transform, inverse_transform
+
+        frame_width, frame_height = frame_size
+        inverse = inverse_transform(transform)
+        result: list[ComponentDetection] = []
+        for obs in self._observations:
+            roi_bbox = BoundingBox(
+                x_min=obs.roi_bbox.x_min,
+                y_min=obs.roi_bbox.y_min,
+                x_max=obs.roi_bbox.x_max,
+                y_max=obs.roi_bbox.y_max,
+                image_width=roi.width,
+                image_height=roi.height,
+            )
+            full = apply_transform(Box.from_bbox(roi_bbox), inverse).to_bbox(
+                frame_width, frame_height
+            )
+            result.append(
+                ComponentDetection(
+                    frame_id=frame_id,
+                    component_code=obs.component_code,
+                    confidence=obs.confidence,
+                    roi_bbox=roi_bbox,
+                    full_frame_bbox=full,
+                    model_version_id=obs.model_version_id,
+                )
+            )
+        return result
 
 
 class RaisingComponentDetector:
@@ -455,6 +479,53 @@ class WrongModelComponentDetector:
         return [obs]
 
 
+class InconsistentCoordinateComponentDetector:
+    """Returns a full-frame box that does not match the recorded transform."""
+
+    def detect(
+        self,
+        roi: Image.Image,
+        frame_id: UUID,
+        required: tuple[str, ...],
+        transform: tuple[float, float, float, float, float, float],
+        frame_size: tuple[int, int],
+    ) -> list[ComponentDetection]:
+        obs = _component_obs(frame_id, "component_a", (roi.width, roi.height), frame_size)
+        obs.full_frame_bbox = BoundingBox(
+            x_min=obs.full_frame_bbox.x_min + 50.0,
+            y_min=obs.full_frame_bbox.y_min,
+            x_max=obs.full_frame_bbox.x_max + 50.0,
+            y_max=obs.full_frame_bbox.y_max,
+            image_width=obs.full_frame_bbox.image_width,
+            image_height=obs.full_frame_bbox.image_height,
+        )
+        return [obs]
+
+
+class ScaledTransformComponentDetector:
+    """Returns observations under a non-translation (scaled) transform."""
+
+    def detect(
+        self,
+        roi: Image.Image,
+        frame_id: UUID,
+        required: tuple[str, ...],
+        transform: tuple[float, float, float, float, float, float],
+        frame_size: tuple[int, int],
+    ) -> list[ComponentDetection]:
+        obs = _component_obs(frame_id, "component_a", (roi.width, roi.height), frame_size)
+        # A valid scaled mapping that the M1 pipeline must reject as unsupported.
+        obs.full_frame_bbox = BoundingBox(
+            x_min=obs.roi_bbox.x_min * 2.0,
+            y_min=obs.roi_bbox.y_min * 2.0,
+            x_max=obs.roi_bbox.x_max * 2.0,
+            y_max=obs.roi_bbox.y_max * 2.0,
+            image_width=obs.full_frame_bbox.image_width,
+            image_height=obs.full_frame_bbox.image_height,
+        )
+        return [obs]
+
+
 def _run_with_component_detector(tmp_path: Path, detector: object) -> InspectionRecord:
     image_path = tmp_path / "product.png"
     _write_image(image_path)
@@ -463,6 +534,31 @@ def _run_with_component_detector(tmp_path: Path, detector: object) -> Inspection
     )
     return pipeline.inspect_image(
         FolderSource(tmp_path), image_path, OutputWriter(tmp_path / "out")
+    )
+
+
+def test_is_translation_transform_rejects_non_translation() -> None:
+    from assemblyvision_edge.pipeline import _is_translation_transform
+
+    assert _is_translation_transform((1.0, 0.0, -60.0, 0.0, 1.0, -44.0))
+    assert not _is_translation_transform((2.0, 0.0, -60.0, 0.0, 1.0, -44.0))
+
+
+def test_provenance_rejects_non_translation_transform() -> None:
+    from assemblyvision_edge.pipeline import _validate_component_provenance
+
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    obs = _component_obs(uuid4(), "component_a")
+    assert (
+        _validate_component_provenance(
+            [obs],
+            obs.frame_id,
+            manifest,
+            Image.new("RGB", (680, 512)),
+            Image.new("RGB", (800, 600)),
+            (2.0, 0.0, -60.0, 0.0, 1.0, -44.0),
+        )
+        is False
     )
 
 
@@ -480,6 +576,18 @@ def test_component_wrong_model_is_ng(tmp_path: Path) -> None:
 
 def test_component_dimension_mismatch_is_ng(tmp_path: Path) -> None:
     record = _run_with_component_detector(tmp_path, DimsMismatchComponentDetector())
+    assert record.decision.business_result is BusinessResult.NG
+    assert "INFERENCE_ERROR" in record.decision.reason_codes
+
+
+def test_component_inconsistent_transform_is_ng(tmp_path: Path) -> None:
+    record = _run_with_component_detector(tmp_path, InconsistentCoordinateComponentDetector())
+    assert record.decision.business_result is BusinessResult.NG
+    assert "INFERENCE_ERROR" in record.decision.reason_codes
+
+
+def test_component_scaled_transform_is_rejected_for_m1(tmp_path: Path) -> None:
+    record = _run_with_component_detector(tmp_path, ScaledTransformComponentDetector())
     assert record.decision.business_result is BusinessResult.NG
     assert "INFERENCE_ERROR" in record.decision.reason_codes
 

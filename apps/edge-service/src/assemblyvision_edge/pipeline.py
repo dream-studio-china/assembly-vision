@@ -9,6 +9,7 @@ fail-safe: any detection, ROI, or read failure produces NG, never OK.
 from __future__ import annotations
 
 import logging
+import math
 import time
 from datetime import UTC, datetime
 from itertools import count
@@ -39,6 +40,7 @@ from assemblyvision_domain.models import (
     ROIResult,
 )
 from assemblyvision_vision.manifests import manifest_model_version
+from assemblyvision_vision.roi.geometry import Box, apply_transform, inverse_transform
 from assemblyvision_vision.roi.roi_engine import ROIEngine
 from assemblyvision_vision.sources.folder_source import FolderSource
 from PIL import Image
@@ -78,14 +80,34 @@ def _validate_product_provenance(
     return box.image_width == frame.width and box.image_height == frame.height
 
 
+_COORD_TOLERANCE = 1e-6
+
+
+def _is_translation_transform(transform: tuple[float, float, float, float, float, float]) -> bool:
+    """Accept only the invertible translation transform used by the M1 ROI engine."""
+    a, b, _c, d, e, _f = transform
+    return a == 1.0 and b == 0.0 and d == 0.0 and e == 1.0
+
+
 def _validate_component_provenance(
     observations: list[ComponentDetection],
     frame_id: UUID,
     manifest: ModelManifest,
     roi: Image.Image,
     frame: Image.Image,
+    transform: tuple[float, float, float, float, float, float],
 ) -> bool:
-    """Reject component observations with stale frame/model or wrong coordinates."""
+    """Reject component observations with stale frame/model or inconsistent geometry.
+
+    Each ROI box is mapped to full-frame space with the recorded transform and
+    compared to the detector-provided full-frame box within a floating-point
+    tolerance, so internally contradictory evidence can never contribute to OK.
+    Only the supported invertible translation transform is accepted for M1
+    (F12).
+    """
+    if not _is_translation_transform(transform):
+        return False
+    inverse = inverse_transform(transform)
     for obs in observations:
         if obs.frame_id != frame_id:
             return False
@@ -96,6 +118,15 @@ def _validate_component_provenance(
         if (
             obs.full_frame_bbox.image_width != frame.width
             or obs.full_frame_bbox.image_height != frame.height
+        ):
+            return False
+        expected = apply_transform(Box.from_bbox(obs.roi_bbox), inverse)
+        actual = obs.full_frame_bbox
+        if not (
+            math.isclose(expected.x_min, actual.x_min, abs_tol=_COORD_TOLERANCE)
+            and math.isclose(expected.y_min, actual.y_min, abs_tol=_COORD_TOLERANCE)
+            and math.isclose(expected.x_max, actual.x_max, abs_tol=_COORD_TOLERANCE)
+            and math.isclose(expected.y_max, actual.y_max, abs_tol=_COORD_TOLERANCE)
         ):
             return False
     return True
@@ -198,6 +229,7 @@ class InspectionPipeline:
                                 self._component_manifest,
                                 generated.roi_image,
                                 frame,
+                                generated.result.transform_full_to_roi,
                             ):
                                 observations = []
                                 extra_reasons.append(rc.INFERENCE_ERROR)
