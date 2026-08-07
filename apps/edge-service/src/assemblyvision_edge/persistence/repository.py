@@ -8,6 +8,7 @@ query recent results without loading the whole record (design 16.10).
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 from dataclasses import dataclass
 from typing import Any
@@ -20,7 +21,7 @@ from assemblyvision_domain.models import (
     MediaMetadata,
     UploadTask,
 )
-from sqlalchemy import create_engine, func, select, text
+from sqlalchemy import create_engine, event, func, select, text
 from sqlalchemy.engine import Engine
 
 from assemblyvision_edge.persistence.schema import (
@@ -113,6 +114,35 @@ def _to_record(row: Any) -> InspectionRecord:
     return InspectionRecord.model_validate(payload)
 
 
+def _install_sqlite_pragmas(engine: Engine) -> None:
+    """Apply connection-scoped SQLite pragmas required by design 14.5.
+
+    WAL is a persistent database property set once in ``open``; foreign keys and
+    the busy timeout are configured on every checked-out connection because they
+    are connection-scoped.
+    """
+
+    @event.listens_for(engine, "connect")
+    def _set_pragmas(dbapi_connection: Any, _connection_record: Any) -> None:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA busy_timeout=5000")
+        cursor.close()
+
+
+def _content_hash(record: InspectionRecord) -> str:
+    """Canonical SHA-256 of the immutable inspection projection.
+
+    ``synchronization_status`` is excluded because it is mutable synchronization
+    state; every other field is part of the immutable evidence (F10, contract
+    05).
+    """
+    payload = record.model_dump(mode="json")
+    payload.pop("synchronization_status", None)
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 class EdgeRepository:
     """SQLite-backed query layer for the local edge API."""
 
@@ -124,21 +154,42 @@ class EdgeRepository:
         from pathlib import Path
 
         engine = create_engine(f"sqlite:///{Path(db_path)}", future=True)
+        _install_sqlite_pragmas(engine)
         if migrate:
             from assemblyvision_edge.persistence.migrate import migrate_to_head
 
             migrate_to_head(str(db_path))
+            with engine.begin() as conn:
+                conn.execute(text("PRAGMA journal_mode=WAL"))
         return cls(engine)
 
     def close(self) -> None:
         self._engine.dispose()
 
-    def upsert_inspection(self, record: InspectionRecord) -> None:
+    def upsert_inspection(self, record: InspectionRecord) -> str:
+        """Insert an inspection idempotently, returning ``inserted`` or ``unchanged``.
+
+        The inspection projection is immutable (F10): re-importing identical
+        content is a no-op, while different content for an existing inspection ID
+        raises :class:`RepositoryError` without any partial mutation.
+        """
+        content_hash = _content_hash(record)
         payload = record.model_dump(mode="json")
         decision = payload["decision"]
         barcode = payload["barcode_result"].get("value")
         product = payload["product_resolution"].get("product_code")
         with self._engine.begin() as conn:
+            existing = conn.execute(
+                text("SELECT content_sha256 FROM inspections WHERE inspection_id = :id"),
+                {"id": str(record.inspection_id)},
+            ).scalar_one_or_none()
+            if existing is not None:
+                if existing != content_hash:
+                    raise RepositoryError(
+                        f"inspection {record.inspection_id} content conflict; "
+                        "immutable evidence cannot be overwritten"
+                    )
+                return "unchanged"
             conn.execute(
                 text(
                     f"""
@@ -150,8 +201,8 @@ class EdgeRepository:
                         product_model_checksum_sha256, component_model_version_id,
                         component_model_checksum_sha256, rule_version_id,
                         aggregation_policy_version, decision, synchronization_status,
-                        processing_ms, inference_metadata, business_result,
-                        internal_decision, barcode_value, product_code
+                        processing_ms, inference_metadata, content_sha256,
+                        business_result, internal_decision, barcode_value, product_code
                     ) VALUES (
                         :inspection_id, :device_id, :device_sequence, :lifecycle_status,
                         :started_at, :completed_at, :barcode_result, :product_resolution,
@@ -160,14 +211,9 @@ class EdgeRepository:
                         :product_model_checksum_sha256, :component_model_version_id,
                         :component_model_checksum_sha256, :rule_version_id,
                         :aggregation_policy_version, :decision, :synchronization_status,
-                        :processing_ms, :inference_metadata, :business_result,
-                        :internal_decision, :barcode_value, :product_code
+                        :processing_ms, :inference_metadata, :content_sha256,
+                        :business_result, :internal_decision, :barcode_value, :product_code
                     )
-                    ON CONFLICT(inspection_id) DO UPDATE SET
-                        device_id = excluded.device_id,
-                        completed_at = excluded.completed_at,
-                        decision = excluded.decision,
-                        synchronization_status = excluded.synchronization_status
                     """
                 ),
                 {
@@ -199,21 +245,12 @@ class EdgeRepository:
                     "inference_metadata": json.dumps(record.inference_metadata)
                     if record.inference_metadata
                     else None,
+                    "content_sha256": content_hash,
                     "business_result": record.decision.business_result.value,
                     "internal_decision": record.decision.internal_decision.value,
                     "barcode_value": barcode,
                     "product_code": product,
                 },
-            )
-            # Replace child rows so an idempotent re-publish does not duplicate
-            # or accumulate stale evidence/media.
-            conn.execute(
-                text(f"DELETE FROM {component_evidence.name} WHERE inspection_id = :inspection_id"),
-                {"inspection_id": str(record.inspection_id)},
-            )
-            conn.execute(
-                text(f"DELETE FROM {media.name} WHERE inspection_id = :inspection_id"),
-                {"inspection_id": str(record.inspection_id)},
             )
             for evidence in record.evidence:
                 conn.execute(
@@ -272,6 +309,7 @@ class EdgeRepository:
                         "checksum_sha256": item.checksum_sha256,
                     },
                 )
+            return "inserted"
 
     def get_inspection(self, inspection_id: str) -> InspectionRecord | None:
         with self._engine.connect() as conn:

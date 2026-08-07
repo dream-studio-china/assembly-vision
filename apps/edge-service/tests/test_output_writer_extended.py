@@ -152,6 +152,34 @@ def test_reconcile_skips_unsafe_media_paths(tmp_path: Path) -> None:
         repo.close()
 
 
+def test_reconcile_skips_conflicting_content(tmp_path: Path) -> None:
+    from datetime import UTC, datetime
+
+    from assemblyvision_domain.models import BusinessResult
+
+    from tests.test_api import _record
+
+    root = tmp_path / "out"
+    root.mkdir()
+    record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-CONFLICT")
+    directory = root / str(record.inspection_id)
+    directory.mkdir()
+    directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        assert reconcile_output_root(repo, root) == 1
+        conflicting = _record(datetime.now(UTC), business=BusinessResult.NG, barcode="SN-CONFLICT")
+        conflicting.inspection_id = record.inspection_id
+        directory.joinpath("inspection.json").write_text(conflicting.model_dump_json(indent=2))
+        assert reconcile_output_root(repo, root) == 0
+        fetched = repo.get_inspection_full(str(record.inspection_id))
+        assert fetched is not None
+        assert fetched.decision.business_result is BusinessResult.OK
+    finally:
+        repo.close()
+
+
 def test_media_path_is_safe_rejects_escapes(tmp_path: Path) -> None:
     from assemblyvision_edge.persistence.reconcile import media_path_is_safe
 

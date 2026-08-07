@@ -41,6 +41,7 @@ def upgrade() -> None:
         sa.Column("synchronization_status", sa.String(32), nullable=False),
         sa.Column("processing_ms", sa.Integer(), nullable=False),
         sa.Column("inference_metadata", sa.Text(), nullable=True),
+        sa.Column("content_sha256", sa.String(64), nullable=False),
         sa.Column("business_result", sa.String(16), nullable=False),
         sa.Column("internal_decision", sa.String(16), nullable=False),
         sa.Column("barcode_value", sa.String(256), nullable=True),

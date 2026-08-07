@@ -47,6 +47,12 @@ inspections = Table(
     Column("synchronization_status", String(32), nullable=False),
     Column("processing_ms", Integer, nullable=False),
     Column("inference_metadata", Text, nullable=True),
+    Column(
+        "content_sha256",
+        String(64),
+        nullable=False,
+        comment="SHA-256 of the immutable inspection projection for conflict detection",
+    ),
     # Denormalized filter columns (contract 05 section 4 indexes).
     Column("business_result", String(16), nullable=False),
     Column("internal_decision", String(16), nullable=False),

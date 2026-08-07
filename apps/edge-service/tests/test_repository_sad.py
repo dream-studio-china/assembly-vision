@@ -204,8 +204,42 @@ def test_list_by_barcode(repo: EdgeRepository) -> None:
 
 def test_upsert_idempotent(repo: EdgeRepository) -> None:
     record = _record(datetime(2026, 1, 1, tzinfo=UTC), business=BusinessResult.OK, barcode="SN-X")
-    repo.upsert_inspection(record)
-    repo.upsert_inspection(record)
+    assert repo.upsert_inspection(record) == "inserted"
+    assert repo.upsert_inspection(record) == "unchanged"
     page = repo.list_inspections(limit=100)
     assert len(page.items) == 1
     assert page.items[0].inspection_id == record.inspection_id
+
+
+def test_upsert_conflicting_content_raises_without_mutation(repo: EdgeRepository) -> None:
+    completed = datetime(2026, 1, 1, tzinfo=UTC)
+    record = _record(completed, business=BusinessResult.OK, barcode="SN-X")
+    assert repo.upsert_inspection(record) == "inserted"
+
+    conflicting = _record(completed, business=BusinessResult.NG, barcode="SN-X")
+    conflicting.inspection_id = record.inspection_id
+    with pytest.raises(RepositoryError, match="content conflict"):
+        repo.upsert_inspection(conflicting)
+
+    fetched = repo.get_inspection_full(str(record.inspection_id))
+    assert fetched is not None
+    assert fetched.decision.business_result is BusinessResult.OK
+    assert fetched.barcode_result.value == "SN-X"
+
+
+def test_reopened_database_uses_wal_and_connection_pragmas(tmp_path: Path) -> None:
+    db_path = tmp_path / "edge.sqlite3"
+    repo = EdgeRepository.open(db_path)
+    repo.upsert_inspection(
+        _record(datetime(2026, 1, 1, tzinfo=UTC), business=BusinessResult.OK, barcode="SN-WAL")
+    )
+    repo.close()
+
+    reopened = EdgeRepository.open(db_path)
+    try:
+        with reopened._engine.connect() as conn:  # noqa: SLF001
+            assert conn.execute(text("PRAGMA journal_mode")).scalar() == "wal"
+            assert conn.execute(text("PRAGMA foreign_keys")).scalar() == 1
+            assert conn.execute(text("PRAGMA busy_timeout")).scalar() == 5000
+    finally:
+        reopened.close()

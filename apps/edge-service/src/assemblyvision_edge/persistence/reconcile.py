@@ -12,7 +12,7 @@ from pathlib import Path
 
 from assemblyvision_domain.models import InspectionRecord
 
-from assemblyvision_edge.persistence.repository import EdgeRepository
+from assemblyvision_edge.persistence.repository import EdgeRepository, RepositoryError
 
 log = logging.getLogger("assemblyvision.reconcile")
 
@@ -38,18 +38,17 @@ def media_path_is_safe(output_root: Path, relative_path: str) -> bool:
 def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
     """Import all inspection.json files found in the output root.
 
-    Returns the number of newly imported inspections. Already-published
-    inspection IDs are skipped; corrupt files are logged and skipped without
-    aborting the scan. Records whose media paths escape the output root are
-    skipped whole so no partially validated record is imported.
+    Returns the number of newly imported inspections. Corrupt files are logged
+    and skipped without aborting the scan. Records whose media paths escape the
+    output root, or whose immutable content conflicts with an existing
+    inspection ID, are skipped whole so no partially validated record is
+    imported.
     """
     if not output_root.is_dir():
         return 0
     imported = 0
     for path in sorted(output_root.glob("*/inspection.json")):
         if path.parent.name.startswith(".staging"):
-            continue
-        if repository.get_inspection(path.parent.name) is not None:
             continue
         try:
             record = InspectionRecord.model_validate_json(path.read_text(encoding="utf-8"))
@@ -66,7 +65,12 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
                 "skipping inspection %s with unsafe media paths: %s", record.inspection_id, unsafe
             )
             continue
-        repository.upsert_inspection(record)
-        imported += 1
-        log.info("imported inspection %s from %s", record.inspection_id, path)
+        try:
+            status = repository.upsert_inspection(record)
+        except RepositoryError as exc:
+            log.warning("skipping conflicting inspection %s: %s", record.inspection_id, exc)
+            continue
+        if status == "inserted":
+            imported += 1
+            log.info("imported inspection %s from %s", record.inspection_id, path)
     return imported
