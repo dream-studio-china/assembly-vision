@@ -6,6 +6,17 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vue-vendor": ["vue", "vue-router", "pinia"],
+          "element-plus": ["element-plus"],
+          echarts: ["echarts"],
+        },
+      },
+    },
+  },
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],

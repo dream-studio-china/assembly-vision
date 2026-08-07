@@ -36,3 +36,35 @@ jobs:
 
       - name: Pytest
         run: uv run pytest
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install workspace
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages and app
+        run: pnpm -r build
+
+      - name: Lint
+        run: pnpm -r lint
+
+      - name: Unit tests
+        run: pnpm -r test
+
+      - name: Playwright install
+        run: cd apps/edge-web && pnpm exec playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: cd apps/edge-web && pnpm test:e2e
