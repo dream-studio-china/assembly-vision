@@ -252,6 +252,42 @@ def test_derived_images_maps_kinds(tmp_path: Path) -> None:
         assert f"/media/{roi_id}/content" in body["annotated"]
 
 
+def test_readiness_reports_config_invalid_for_mismatched_rule(tmp_path: Path) -> None:
+    from tests.conftest import EXAMPLE_PIPELINE
+
+    rule = tmp_path / "rule.yaml"
+    rule.write_text(
+        "schema_version: 1\n"
+        "rule_id: model-a-presence\n"
+        "rule_version: 4\n"
+        "product_type: model_a\n"
+        "compatible_component_model_versions: [component-yolo-1.0.0]\n"
+        "barcode_required: false\n"
+        "required_components:\n"
+        "  ghost:\n"
+        "    expected_count: 1\n"
+        "mandatory_gates:\n"
+        "  product_detected: true\n"
+        "  roi_valid: true\n"
+        "  minimum_valid_frames_met: true\n",
+        encoding="utf-8",
+    )
+    settings = ServerSettings(
+        output_root=tmp_path / "out",
+        db_path=tmp_path / "edge.sqlite3",
+        config_path=EXAMPLE_PIPELINE,
+        rule_path=rule,
+    )
+    app = create_app(settings)
+    with TestClient(app) as c:
+        response = c.get("/api/v1/device/status")
+        assert response.status_code == 200
+        body = response.json()
+        assert body["inspection_ready"] is False
+        assert body["inspection_error_code"] == "CONFIG_INVALID"
+        assert "ghost" not in body["inspection_error_code"]
+
+
 def test_unhandled_exception_returns_problem(tmp_path: Path) -> None:
     root = tmp_path / "out"
     root.mkdir()

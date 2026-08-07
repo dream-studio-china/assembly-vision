@@ -109,6 +109,33 @@ def test_load_pipeline_failure_is_non_fatal(
     runtime.load_pipeline()
     assert runtime.pipeline is None
     assert "boom" in (runtime.pipeline_error or "")
+    assert runtime.pipeline_error_code == "CONFIG_INVALID"
+
+
+def test_load_pipeline_value_error_maps_to_config_invalid(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "assemblyvision_edge.api.state._build_pipeline",
+        lambda settings: (_ for _ in ()).throw(ValueError("bad uuid")),
+    )
+    settings = _settings(
+        tmp_path, config_path=tmp_path / "pipeline.yaml", rule_path=tmp_path / "rule.yaml"
+    )
+    runtime = EdgeRuntime(settings)
+    runtime.load_pipeline()
+    assert runtime.pipeline is None
+    assert runtime.pipeline_error_code == "CONFIG_INVALID"
+
+
+def test_device_status_exposes_stable_config_invalid_reason(tmp_path: Path) -> None:
+    runtime = EdgeRuntime(_settings(tmp_path))
+    runtime.pipeline_error = "rule requires components missing from configuration: ghost"
+    runtime.pipeline_error_code = "CONFIG_INVALID"
+    status = runtime.device_status(0)
+    assert status["inspection_ready"] is False
+    assert status["inspection_error_code"] == "CONFIG_INVALID"
+    assert "ghost" not in status["inspection_error_code"]
 
 
 def test_load_pipeline_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -298,6 +325,9 @@ def test_build_pipeline_constructs_pipeline(
     )
     monkeypatch.setattr(
         "assemblyvision_edge.config.validate_model_version_declaration", lambda *a, **k: None
+    )
+    monkeypatch.setattr(
+        "assemblyvision_edge.config.validate_rule_component_compatibility", lambda *a, **k: None
     )
     monkeypatch.setattr(
         "assemblyvision_edge.detection.ProductDetector.from_manifest", lambda *a, **k: detector

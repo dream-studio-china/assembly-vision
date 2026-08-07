@@ -30,6 +30,7 @@ class EdgeRuntime:
         self._settings = settings
         self.pipeline: Any = None
         self.pipeline_error: str | None = None
+        self.pipeline_error_code: str | None = None
         self.device_id: UUID = self._resolve_device_id(settings.device_id)
         self.paused = False
         self.paused_reason: str | None = None
@@ -47,13 +48,16 @@ class EdgeRuntime:
         """Build the inspection pipeline from configuration; failures are non-fatal."""
         if self._settings.config_path is None or self._settings.rule_path is None:
             self.pipeline_error = "pipeline configuration or rule path is not configured"
+            self.pipeline_error_code = None
             log.warning("%s", self.pipeline_error)
             return
         try:
             self.pipeline = _build_pipeline(self._settings)
             self.pipeline_error = None
+            self.pipeline_error_code = None
         except (ConfigError, ValueError) as exc:
             self.pipeline_error = str(exc)
+            self.pipeline_error_code = "CONFIG_INVALID"
             self.pipeline = None
             log.error("pipeline build failed: %s", exc)
 
@@ -93,6 +97,7 @@ class EdgeRuntime:
             "observed_at": datetime.now(UTC).isoformat(),
             "operational_state": operational,
             "inspection_ready": inspection_ready,
+            "inspection_error_code": self.pipeline_error_code,
             "sync_ready": False,
             "camera_connected": True,
             "model_loaded": self.pipeline is not None,
@@ -200,7 +205,11 @@ def _build_pipeline(settings: ServerSettings) -> Any:
     from assemblyvision_vision.manifests import load_model_manifest
     from assemblyvision_vision.roi.roi_engine import ROIEngine
 
-    from assemblyvision_edge.config import load_pipeline_config, load_rule_definition
+    from assemblyvision_edge.config import (
+        load_pipeline_config,
+        load_rule_definition,
+        validate_rule_component_compatibility,
+    )
     from assemblyvision_edge.detection import ComponentDetector, ProductDetector
     from assemblyvision_edge.pipeline import InspectionPipeline
     from assemblyvision_edge.rules.rule_engine import RuleEngine
@@ -221,6 +230,7 @@ def _build_pipeline(settings: ServerSettings) -> Any:
         component_manifest,
         "component_detection.model_version",
     )
+    validate_rule_component_compatibility(rule, config, component_manifest)
     product_detector = ProductDetector.from_manifest(
         product_manifest, config.product_detection, config.product_manifest
     )

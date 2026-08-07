@@ -30,6 +30,35 @@ def validate_model_version_declaration(declared: str, manifest: ModelManifest, n
         )
 
 
+def validate_rule_component_compatibility(
+    rule: RuleDefinition,
+    config: PipelineConfig,
+    component_manifest: ModelManifest,
+) -> None:
+    """Fail closed when rule/configuration/manifest component sets disagree.
+
+    A rule-required component missing from the configuration would later raise
+    ``KeyError`` inside the component detector on every inspection, and a
+    component-model version outside the rule's compatible set must never be
+    evaluated as valid. Extra manifest classes and extra configured components
+    are allowed; they are not decision evidence unless the active rule requires
+    them (F8).
+    """
+    required = set(rule.required_components)
+    configured = set(config.components)
+    missing = sorted(required - configured)
+    if missing:
+        raise ConfigError(
+            "rule requires components missing from configuration: " + ", ".join(missing)
+        )
+    model_version = manifest_model_version(component_manifest)
+    if model_version not in rule.compatible_component_model_versions:
+        raise ConfigError(
+            f"component model version {model_version!r} is not in rule compatible "
+            f"versions {sorted(rule.compatible_component_model_versions)}"
+        )
+
+
 @dataclass(frozen=True)
 class DetectionSettings:
     """Shared detector settings."""

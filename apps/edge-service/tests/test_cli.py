@@ -122,6 +122,37 @@ def test_inspect_returns_2_on_config_error(tmp_path: Path, monkeypatch: pytest.M
     assert cli._run_inspect(args) == 2
 
 
+def test_inspect_returns_2_on_rule_config_mismatch(tmp_path: Path) -> None:
+    from tests.conftest import EXAMPLE_PIPELINE
+
+    rule = tmp_path / "rule.yaml"
+    rule.write_text(
+        "schema_version: 1\n"
+        "rule_id: model-a-presence\n"
+        "rule_version: 4\n"
+        "product_type: model_a\n"
+        "compatible_component_model_versions: [component-yolo-1.0.0]\n"
+        "barcode_required: false\n"
+        "required_components:\n"
+        "  ghost:\n"
+        "    expected_count: 1\n"
+        "mandatory_gates:\n"
+        "  product_detected: true\n"
+        "  roi_valid: true\n"
+        "  minimum_valid_frames_met: true\n",
+        encoding="utf-8",
+    )
+    args = argparse.Namespace(
+        quiet=True,
+        config=EXAMPLE_PIPELINE,
+        rule=rule,
+        output=tmp_path / "out",
+        paths=[str(tmp_path / "img.png")],
+        device_id=None,
+    )
+    assert cli._run_inspect(args) == 2
+
+
 def test_inspect_runs_and_counts(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -255,6 +286,7 @@ def test_build_pipeline_success(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(cli, "load_rule_definition", lambda p: object())
     monkeypatch.setattr(cli, "load_model_manifest", lambda p: manifest)
     monkeypatch.setattr(cli, "validate_model_version_declaration", lambda *a, **k: None)
+    monkeypatch.setattr(cli, "validate_rule_component_compatibility", lambda *a, **k: None)
     monkeypatch.setattr(
         cli, "ProductDetector", type("PD", (), {"from_manifest": lambda *a, **k: detector})
     )

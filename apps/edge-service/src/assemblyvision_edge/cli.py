@@ -20,6 +20,7 @@ from assemblyvision_edge.config import (
     load_pipeline_config,
     load_rule_definition,
     validate_model_version_declaration,
+    validate_rule_component_compatibility,
 )
 from assemblyvision_edge.detection import ComponentDetector, ProductDetector
 from assemblyvision_edge.output.writer import OutputWriter
@@ -120,6 +121,7 @@ def _build_pipeline(args: argparse.Namespace) -> InspectionPipeline:
         component_manifest,
         "component_detection.model_version",
     )
+    validate_rule_component_compatibility(rule, config, component_manifest)
     product_detector = ProductDetector.from_manifest(
         product_manifest, config.product_detection, config.product_manifest
     )

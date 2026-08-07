@@ -6,10 +6,21 @@ from pathlib import Path
 
 import pytest
 from assemblyvision_domain.errors import ConfigError
-from assemblyvision_edge.config import load_pipeline_config, load_rule_definition
+from assemblyvision_edge.config import (
+    load_pipeline_config,
+    load_rule_definition,
+    validate_rule_component_compatibility,
+)
+from assemblyvision_edge.rules.rule_engine import ComponentRequirement
 from assemblyvision_vision.manifests import load_model_manifest
 
-from tests.conftest import COMPONENT_MANIFEST, EXAMPLE_PIPELINE, EXAMPLE_RULE, PRODUCT_MANIFEST
+from tests.conftest import (
+    COMPONENT_MANIFEST,
+    EXAMPLE_PIPELINE,
+    EXAMPLE_RULE,
+    PRODUCT_MANIFEST,
+    make_rule,
+)
 
 
 def test_load_example_pipeline_config() -> None:
@@ -178,6 +189,32 @@ def test_validate_model_version_declaration_mismatch(tmp_path: Path) -> None:
         validate_model_version_declaration(
             "wrong-version", manifest, "product_detection.model_version"
         )
+
+
+def test_rule_component_missing_from_config_fails_closed() -> None:
+    config = load_pipeline_config(EXAMPLE_PIPELINE)
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    rule = make_rule(required_components={"ghost": ComponentRequirement(expected_count=1)})
+    with pytest.raises(ConfigError, match="missing from configuration.*ghost"):
+        validate_rule_component_compatibility(rule, config, manifest)
+
+
+def test_incompatible_component_model_version_fails_closed() -> None:
+    config = load_pipeline_config(EXAMPLE_PIPELINE)
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    rule = make_rule(compatible_component_model_versions=["component-yolo-9.9.9"])
+    with pytest.raises(ConfigError, match="not in rule compatible versions"):
+        validate_rule_component_compatibility(rule, config, manifest)
+
+
+def test_compatible_rule_config_manifest_sets_are_accepted() -> None:
+    config = load_pipeline_config(EXAMPLE_PIPELINE)
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    rule = make_rule()
+    # Extra manifest classes are allowed; the example rule/config agree here.
+    validate_rule_component_compatibility(rule, config, manifest)
+    assert "manual" in manifest.class_names
+    assert "manual" in config.components
 
 
 def test_config_rejects_empty_components(tmp_path: Path) -> None:
