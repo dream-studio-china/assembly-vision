@@ -25,6 +25,9 @@ test("live inspection shows camera, detection result, and progress", async ({ pa
   await expect(page.getByText("Camera image")).toBeVisible();
   await expect(page.getByText("Detection result")).toBeVisible();
   await expect(page.getByText("Detection regions")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Inspection details" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Runtime logs" })).toBeVisible();
+  await expect(page.getByText("rule evaluation completed")).toBeVisible();
 });
 
 test("history searches by SN and filters by result", async ({ page }) => {

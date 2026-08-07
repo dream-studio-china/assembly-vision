@@ -9,6 +9,7 @@ import type {
   InspectionFilter,
   InspectionImages,
   InspectionSummary,
+  LogEvent,
   Page,
   StatisticsFilter,
   StatisticsSummary,
@@ -47,6 +48,10 @@ export const inspectionService = {
 
   getStatistics(filter?: StatisticsFilter): Promise<StatisticsSummary> {
     return getApiClient().getStatistics(filter);
+  },
+
+  listLogs(): Promise<Page<LogEvent>> {
+    return getApiClient().listLogs(undefined, 50);
   },
 };
 

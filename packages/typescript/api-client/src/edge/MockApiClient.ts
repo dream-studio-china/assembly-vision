@@ -368,6 +368,14 @@ function mockImages(inspectionId: string): InspectionImages {
 
 const LINE = "LINE-1";
 
+const INITIAL_LOGS: LogEvent[] = [
+  { logged_at: ISO(-2), level: "INFO", component: "edge.rule", message: "rule evaluation completed", trace_id: null },
+  { logged_at: ISO(-6), level: "INFO", component: "edge.detection", message: "components: component_a 0.91, component_b 0.84, manual 0.96", trace_id: null },
+  { logged_at: ISO(-9), level: "INFO", component: "edge.detection", message: "product detected (conf 0.93)", trace_id: null },
+  { logged_at: ISO(-12), level: "INFO", component: "edge.inspection", message: "inspection started SN-0001", trace_id: null },
+  { logged_at: ISO(-60), level: "WARN", component: "edge.upload", message: "upload retry scheduled", trace_id: null },
+];
+
 /**
  * In-memory edge client used to develop and test the dashboard without a
  * backend. Data is deterministic and realistic for the MVP scope.
@@ -378,6 +386,11 @@ export class MockApiClient implements ApiClient {
   #paused = false;
   #current: CurrentInspection = buildCurrent("SN-0001", "PROCESSING");
   #queueIndex = 0;
+  #logs: LogEvent[] = INITIAL_LOGS;
+
+  #log(level: "INFO" | "WARN" | "ERROR", component: string, message: string): void {
+    this.#logs = [{ logged_at: ISO(0), level, component, message, trace_id: null }, ...this.#logs];
+  }
   async getHealthLive(): Promise<{ status: string }> {
     return { status: "ok" };
   }
@@ -508,11 +521,7 @@ export class MockApiClient implements ApiClient {
 
   async listLogs(cursor?: string, limit?: number): Promise<Page<LogEvent>> {
     void cursor;
-    const items: LogEvent[] = [
-      { logged_at: ISO(-10), level: "INFO", component: "edge.pipeline", message: "inspection completed", trace_id: null },
-      { logged_at: ISO(-40), level: "WARN", component: "edge.upload", message: "upload retry scheduled", trace_id: null },
-    ].slice(0, limit ?? 50);
-    return { items, next_cursor: null };
+    return { items: this.#logs.slice(0, limit ?? 50), next_cursor: null };
   }
 
   // ---- Operator workflow ----
@@ -525,6 +534,7 @@ export class MockApiClient implements ApiClient {
     if (this.#current.status !== "PROCESSING") return this.#current;
     const item = OPERATOR_QUEUE[this.#queueIndex];
     this.#current = buildCurrent(item.sn, item.result, item.reason);
+    this.#log("INFO", "edge.inspection", `inspection ${this.#current.sn ?? "-"} confirmed ${this.#current.status}`);
     return this.#current;
   }
 
@@ -532,12 +542,14 @@ export class MockApiClient implements ApiClient {
     this.#queueIndex = (this.#queueIndex + 1) % OPERATOR_QUEUE.length;
     const item = OPERATOR_QUEUE[this.#queueIndex];
     this.#current = buildCurrent(item.sn, "PROCESSING");
+    this.#log("INFO", "edge.inspection", "advancing to next product");
     return this.#current;
   }
 
   async triggerManualInspection(): Promise<CurrentInspection> {
     const item = OPERATOR_QUEUE[this.#queueIndex];
     this.#current = buildCurrent(item.sn, "PROCESSING");
+    this.#log("INFO", "edge.inspection", "manual inspection triggered");
     return this.#current;
   }
 

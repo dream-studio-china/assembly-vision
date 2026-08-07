@@ -65,6 +65,17 @@ describe("MockApiClient", () => {
     expect(next.status).toBe("PROCESSING");
   });
 
+  it("emits runtime logs as the operator workflow advances", async () => {
+    const client = new MockApiClient();
+    const before = (await client.listLogs()).items;
+    await client.confirmInspectionResult();
+    await client.continueNextInspection();
+    const after = (await client.listLogs()).items;
+    expect(after.length).toBeGreaterThan(before.length);
+    expect(after[0].message).toContain("advancing to next product");
+    expect(after.some((l) => l.message.includes("confirmed"))).toBe(true);
+  });
+
   it("returns traceability with reinspection attempts", async () => {
     const client = new MockApiClient();
     const view = await client.getTraceability("SN-0001");
