@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
@@ -229,6 +229,35 @@ def test_statistics_derived(client: TestClient) -> None:
     body = client.get("/api/v1/statistics").json()
     assert body["total_inspections"] == 2
     assert body["ng_count"] >= 1
+
+
+def test_statistics_filters_from_to_and_rejects_line(tmp_path: Path) -> None:
+    root = tmp_path / "out"
+    root.mkdir()
+    base = datetime(2026, 1, 1, tzinfo=UTC)
+    for idx in range(4):
+        record = _record(
+            base + timedelta(hours=idx), business=BusinessResult.OK, barcode=f"SN-{idx}"
+        )
+        directory = root / str(record.inspection_id)
+        directory.mkdir()
+        directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+
+    settings = ServerSettings(output_root=root, db_path=tmp_path / "edge.sqlite3")
+    app = create_app(settings)
+    with TestClient(app) as c:
+        total = c.get("/api/v1/statistics").json()
+        assert total["total_inspections"] == 4
+        window = c.get("/api/v1/statistics", params={"from": "2026-01-01T02:00:00+00:00"}).json()
+        assert window["total_inspections"] == 2
+        bounded = c.get(
+            "/api/v1/statistics",
+            params={"from": "2026-01-01T01:00:00+00:00", "to": "2026-01-01T02:00:00+00:00"},
+        ).json()
+        assert bounded["total_inspections"] == 2
+        unsupported = c.get("/api/v1/statistics", params={"line": "L1"})
+        assert unsupported.status_code == 400
+        assert unsupported.json()["code"] == "UNSUPPORTED_FILTER"
 
 
 def test_traceability_and_configuration(client: TestClient) -> None:

@@ -7,7 +7,9 @@ client.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query, Request
 
 from assemblyvision_edge.api.deps import get_repository
 from assemblyvision_edge.api.problems import ApiProblem
@@ -49,11 +51,17 @@ def traceability(
 
 @router.get("/statistics", response_model=StatisticsSummary)
 def statistics(
-    from_: str | None = None,
+    from_: Annotated[str | None, Query(alias="from")] = None,
     to: str | None = None,
     line: str | None = None,
     repository: EdgeRepository = Depends(get_repository),
 ) -> StatisticsSummary:
+    if line is not None:
+        raise ApiProblem(
+            status_code=400,
+            code="UNSUPPORTED_FILTER",
+            detail="line filtering is not supported until line identity exists",
+        )
     counts = repository.statistics(from_iso=from_, to_iso=to)
     total = counts["total"]
     ng = counts["ng"]

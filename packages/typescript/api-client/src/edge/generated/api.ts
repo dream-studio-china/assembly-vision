@@ -1272,7 +1272,7 @@ export interface operations {
     statistics_api_v1_statistics_get: {
         parameters: {
             query?: {
-                from_?: string | null;
+                from?: string | null;
                 to?: string | null;
                 line?: string | null;
             };
