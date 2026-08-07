@@ -160,19 +160,19 @@ onBeforeUnmount(() => {
           <el-table-column prop="result_message" label="Result message" min-width="160" />
         </el-table>
       </section>
-
-      <section class="panel">
-        <h3>Runtime logs</h3>
-        <el-table :data="logs" size="small" height="260">
-          <el-table-column label="Time" width="150">
-            <template #default="{ row }">{{ formatIsoTime(row.logged_at) }}</template>
-          </el-table-column>
-          <el-table-column prop="level" label="Level" width="70" />
-          <el-table-column prop="component" label="Component" width="140" />
-          <el-table-column prop="message" label="Message" min-width="180" />
-        </el-table>
-      </section>
     </div>
+
+    <section class="panel live-inspection__logs">
+      <h3>Runtime logs</h3>
+      <el-table :data="logs" size="small" height="280">
+        <el-table-column label="Time" width="150">
+          <template #default="{ row }">{{ formatIsoTime(row.logged_at) }}</template>
+        </el-table-column>
+        <el-table-column prop="level" label="Level" width="70" />
+        <el-table-column prop="component" label="Component" width="140" />
+        <el-table-column prop="message" label="Message" min-width="200" />
+      </el-table>
+    </section>
   </div>
 </template>
 
@@ -206,8 +206,11 @@ onBeforeUnmount(() => {
 }
 .live-inspection__info {
   display: grid;
-  grid-template-columns: 1fr 1.2fr 1.6fr;
+  grid-template-columns: 1fr 1.4fr;
   gap: 16px;
+}
+.live-inspection__logs {
+  width: 100%;
 }
 .live-inspection__frame img {
   width: 100%;
