@@ -1,13 +1,20 @@
 <script setup lang="ts">
 // Production inspection dashboard: the main operator workflow
-// (status, product, rules, actions).
+// (status, product image, rules, actions).
 
-import { StatusBadge, formatIsoTime, formatLatency } from "@assemblyvision/ui";
+import type { InspectionImages } from "@assemblyvision/api-client";
+import { DetectionViewer, StatusBadge, formatIsoTime, formatLatency } from "@assemblyvision/ui";
+import type { ViewerBox } from "@assemblyvision/ui";
 import { ElMessage } from "element-plus";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useInspectionStore } from "../stores/inspection";
+import { inspectionService } from "../services/inspectionService";
+import { mockCameraFrame } from "../mock/images";
 
 const store = useInspectionStore();
+
+const images = ref<InspectionImages | null>(null);
+const fallback = mockCameraFrame(800, 600);
 
 const statusLabel = computed(() => store.current?.status ?? "WAITING");
 
@@ -22,53 +29,120 @@ const badgeStatus = computed(() => {
 
 const isBusy = computed(() => store.loading);
 
+// Detection regions over the current product image in source coordinates.
+const currentFrameId = computed(() => store.current?.inspection_id ?? "frame");
+const overlayBoxes = computed<ViewerBox[]>(() => {
+  const id = store.current?.inspection_id ?? "frame";
+  const status = store.current?.status;
+  const boxes: ViewerBox[] = [];
+  if (status === "NG") {
+    boxes.push({
+      id: "manual",
+      kind: "component",
+      label: "manual (missing)",
+      box: { x_min: 500, y_min: 420, x_max: 620, y_max: 480 },
+      frameId: id,
+    });
+  } else if (status === "PASS" || status === "PROCESSING") {
+    boxes.push({
+      id: "product",
+      kind: "product",
+      label: "product",
+      box: { x_min: 120, y_min: 90, x_max: 680, y_max: 520 },
+      frameId: id,
+    });
+  }
+  boxes.push({
+    id: "roi",
+    kind: "roi",
+    label: "ROI",
+    box: { x_min: 80, y_min: 60, x_max: 720, y_max: 550 },
+    frameId: id,
+  });
+  return boxes;
+});
+
+async function loadImages(): Promise<void> {
+  const id = store.current?.inspection_id;
+  if (!id) {
+    images.value = null;
+    return;
+  }
+  try {
+    images.value = await inspectionService.getImages(id);
+  } catch {
+    images.value = null;
+  }
+}
+
 async function confirm(): Promise<void> {
   await store.confirmResult();
   if (store.error) ElMessage.error(store.error);
+  await loadImages();
 }
 
 async function next(): Promise<void> {
   await store.continueNext();
   if (store.error) ElMessage.error(store.error);
+  await loadImages();
 }
 
 async function manual(): Promise<void> {
   await store.triggerManual();
   if (store.error) ElMessage.error(store.error);
+  await loadImages();
 }
 
-onMounted(() => void store.loadCurrent());
+onMounted(async () => {
+  await store.loadCurrent();
+  await loadImages();
+});
 </script>
 
 <template>
   <div class="dashboard">
-    <section class="dashboard__status panel">
-      <div class="dashboard__status-row">
-        <span class="dashboard__label">Current status</span>
-        <StatusBadge :status="badgeStatus" />
-        <span class="dashboard__raw-status">{{ statusLabel }}</span>
-      </div>
-      <div class="dashboard__meta">
-        <dl>
-          <dt>Product SN</dt>
-          <dd>{{ store.current?.sn ?? "—" }}</dd>
-          <dt>Product</dt>
-          <dd>{{ store.current?.product_code || "—" }}</dd>
-          <dt>Inspection time</dt>
-          <dd>{{ formatIsoTime(store.current?.started_at) }}</dd>
-          <dt>Duration</dt>
-          <dd>{{ formatLatency(store.current?.duration_ms) }}</dd>
-          <dt>Operator</dt>
-          <dd>{{ store.current?.operator ?? "—" }}</dd>
-        </dl>
-      </div>
-      <div class="dashboard__progress">
-        <el-progress
-          :percentage="Math.round((store.current?.progress ?? 0) * 100)"
-          :stroke-width="12"
-        />
-      </div>
-    </section>
+    <div class="dashboard__top">
+      <section class="panel">
+        <h2 class="dashboard__panel-title">Current product image</h2>
+        <div class="dashboard__image">
+          <DetectionViewer
+            :image-url="images?.detection ?? fallback"
+            :image-width="800"
+            :image-height="600"
+            :boxes="overlayBoxes"
+            :current-frame-id="currentFrameId"
+          />
+        </div>
+      </section>
+
+      <section class="dashboard__status panel">
+        <div class="dashboard__status-row">
+          <span class="dashboard__label">Current status</span>
+          <StatusBadge :status="badgeStatus" />
+          <span class="dashboard__raw-status">{{ statusLabel }}</span>
+        </div>
+        <div class="dashboard__meta">
+          <dl>
+            <dt>Product SN</dt>
+            <dd>{{ store.current?.sn ?? "—" }}</dd>
+            <dt>Product</dt>
+            <dd>{{ store.current?.product_code || "—" }}</dd>
+            <dt>Inspection time</dt>
+            <dd>{{ formatIsoTime(store.current?.started_at) }}</dd>
+            <dt>Duration</dt>
+            <dd>{{ formatLatency(store.current?.duration_ms) }}</dd>
+            <dt>Operator</dt>
+            <dd>{{ store.current?.operator ?? "—" }}</dd>
+          </dl>
+        </div>
+        <div class="dashboard__progress">
+          <el-progress
+            :percentage="Math.round((store.current?.progress ?? 0) * 100)"
+            :stroke-width="12"
+          />
+        </div>
+      </section>
+    </div>
 
     <section class="panel">
       <h2>Inspection rules</h2>
@@ -108,6 +182,22 @@ onMounted(() => void store.loadCurrent());
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+.dashboard__top {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+}
+.dashboard__panel-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #374151;
+}
+.dashboard__image {
+  height: 52vh;
+  min-height: 300px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
 }
 .panel {
   border: 1px solid #e0e0e0;

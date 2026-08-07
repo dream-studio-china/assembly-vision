@@ -3,6 +3,8 @@ import { expect, test } from "@playwright/test";
 test("operator dashboard shows current inspection, rules, and actions", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("Current status")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Current product image" })).toBeVisible();
+  await expect(page.locator(".detection-viewer img").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Inspection rules" })).toBeVisible();
   await expect(page.getByText("Component presence check")).toBeVisible();
   await expect(page.getByRole("button", { name: "Confirm result" })).toBeVisible();
