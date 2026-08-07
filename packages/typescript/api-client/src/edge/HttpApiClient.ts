@@ -1,4 +1,4 @@
-import type { ApiClient, PauseResult, ResumeResult, RetryResult } from "./ApiClient";
+import type { ApiClient } from "./ApiClient";
 import { ApiError } from "./ApiError";
 import type {
   CameraState,
@@ -104,20 +104,6 @@ export class HttpApiClient implements ApiClient {
     return this.#request("/inspection/state");
   }
 
-  pauseInspection(reason: string): Promise<PauseResult> {
-    return this.#request("/inspection/pause", {
-      method: "POST",
-      body: JSON.stringify({ reason }),
-    });
-  }
-
-  resumeInspection(reason: string): Promise<ResumeResult> {
-    return this.#request("/inspection/resume", {
-      method: "POST",
-      body: JSON.stringify({ reason }),
-    });
-  }
-
   listInspections(filter?: InspectionFilter): Promise<Page<InspectionSummary>> {
     return this.#request(`/inspections${toQuery(filter)}`);
   }
@@ -136,13 +122,6 @@ export class HttpApiClient implements ApiClient {
     if (limit !== undefined) params.set("limit", String(limit));
     const qs = params.toString();
     return this.#request(`/uploads${qs ? `?${qs}` : ""}`);
-  }
-
-  retryUpload(uploadTaskId: string, reason: string): Promise<RetryResult> {
-    return this.#request(
-      `/uploads/${encodeURIComponent(uploadTaskId)}/retry`,
-      { method: "POST", body: JSON.stringify({ reason }) },
-    );
   }
 
   getEffectiveConfiguration(): Promise<EffectiveConfiguration> {

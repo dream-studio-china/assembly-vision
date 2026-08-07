@@ -1,4 +1,4 @@
-export type { ApiClient, OperationResult, PauseResult, ResumeResult, RetryResult } from "./edge/ApiClient";
+export type { ApiClient } from "./edge/ApiClient";
 export { ApiError } from "./edge/ApiError";
 export { HttpApiClient } from "./edge/HttpApiClient";
 export { MockApiClient } from "./edge/MockApiClient";

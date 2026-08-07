@@ -85,13 +85,13 @@ assembly-vision/
     ├── contributing.md     # Contributor-facing repository rules and precedence
     ├── overrides/main.html # Theme override placeholder
     ├── ai/context.md       # THIS file
-    ├── reviews/            # Code-review follow-up findings (PR-003-review.md)
+    ├── reviews/            # Code-review follow-up findings (PR-003-review.md, PR-008-review.md)
     ├── contracts/          # 11 mandatory engineering contracts + index
     ├── runbooks/           # 10 operational recovery runbooks + index
     ├── design/             # 28 design documents + appendices + decisions/
     │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
     │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-    │   └── decisions/      # ADR-001 ... ADR-011 + README
+    │   └── decisions/      # ADR-001 ... ADR-012 + README
     └── research/           # 3 external-research reports
         ├── 01-industrial-inspection-success-rates.md
         ├── 02-yolo-capabilities-and-success-rates.md
@@ -132,8 +132,8 @@ assembly-vision/
 - `docs/design/decisions/`: ADR-001 edge-first inspection, ADR-002 Python backend, ADR-003 Vue 3
   + TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage & delayed
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
-   static-image-first MVP, ADR-010 per-component temporal aggregation, and ADR-011 labeled
-   train-and-inspect MVP.
+   static-image-first MVP, ADR-010 per-component temporal aggregation, ADR-011 labeled
+   train-and-inspect MVP, and ADR-012 edge API M1 viewer auth.
 - [docs/design/appendices.md](../design/appendices.md) holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
@@ -286,11 +286,13 @@ dashboard views can display real CLI inspection results:
   evidence, media, upload tasks, device events, and active packages with
   contract-05 indexes. Denormalized filter columns (barcode, product, result)
   drive history queries.
-- **Endpoints**: health/device/camera, inspection state + pause/resume (with
-  reason and idempotent rejection), inspections list (cursor pagination +
-  filters) and detail, inspection media, media content with Range support,
-  uploads (empty in M1), effective configuration, logs (in-memory ring
-  buffer), and derived traceability/statistics/images.
+- **Endpoints**: health/device/camera, inspection state, inspections list
+  (cursor pagination + filters) and detail, inspection media, media content with
+  Range support, uploads (empty in M1), effective configuration, logs (in-memory
+  ring buffer), and derived traceability/statistics/images. The M1 API is
+  read-only (ADR-012): pause/resume, camera reconnect, and upload retry are not
+  exposed, and every route except `/health/live` requires the configured
+  `AV_EDGE_API_TOKEN` bearer token when one is set.
 - **Frontend split**: read-only views route through the HTTP client when
   `VITE_API_BASE_URL` is set; operator workflow actions (current/confirm/next/
   manual) stay on the deterministic mock because they are a demonstration
@@ -323,6 +325,12 @@ dashboard views can display real CLI inspection results:
   dataset staging, and component preparation reusing production selection
   contracts. Rule content binding, bundle-atomic output, inference parameter
   pinning, and detection provenance validation are now fixed (section 8.3).
+- The PR #8 review is recorded in `docs/reviews/PR-008-review.md`: it is not
+  yet mergeable. Blockers include media records published under the renamed
+  staging path, media traversal/absolute-path serving, unauthenticated
+  wildcard-CORS API, pause that does not stop inspection work, and a quickstart
+  that serves the mock dashboard; each finding lists a proposed solution and
+  acceptance criteria.
 - Real customer data is still required for the one-month baseline: annotate with
   X-AnyLabeling (product + component boxes), then run `av-train` ->
   `assemblyvision inspect` -> `assemblyvision verify`. A utility script

@@ -33,20 +33,6 @@ describe("MockApiClient", () => {
     expect(record.evidence.every((e) => ["PRESENT", "MISSING", "UNCERTAIN"].includes(e.state))).toBe(true);
   });
 
-  it("pause then resume changes operational state", async () => {
-    const client = new MockApiClient();
-    const paused = await client.pauseInspection("test");
-    expect(paused.state?.paused).toBe(true);
-    await expect(client.pauseInspection("again")).rejects.toMatchObject({ code: "ALREADY_PAUSED" });
-    const resumed = await client.resumeInspection("done");
-    expect(resumed.state?.paused).toBe(false);
-  });
-
-  it("rejects resume when not paused", async () => {
-    const client = new MockApiClient();
-    await expect(client.resumeInspection("x")).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
-  });
-
   it("404s for unknown inspections", async () => {
     const client = new MockApiClient();
     await expect(client.getInspection("00000000-0000-4000-8000-ffffffffffff")).rejects.toBeInstanceOf(ApiError);

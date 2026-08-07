@@ -36,27 +36,5 @@ export const useRuntimeStore = defineStore("runtime", {
         this.loading = false;
       }
     },
-
-    async pause(reason: string): Promise<void> {
-      this.error = null;
-      try {
-        const result = await getApiClient().pauseInspection(reason);
-        this.runtime = result.state;
-        await this.refresh();
-      } catch (error) {
-        this.error = (error as ApiError).message ?? String(error);
-      }
-    },
-
-    async resume(reason: string): Promise<void> {
-      this.error = null;
-      try {
-        const result = await getApiClient().resumeInspection(reason);
-        this.runtime = result.state;
-        await this.refresh();
-      } catch (error) {
-        this.error = (error as ApiError).message ?? String(error);
-      }
-    },
   },
 });

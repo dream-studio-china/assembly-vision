@@ -29,7 +29,7 @@ test("live inspection shows camera, detection result, and progress", async ({ pa
   await expect(page.getByRole("heading", { name: "Runtime logs" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Inspection readiness" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Connectivity" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Pause inspection" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Pause inspection|Resume inspection/ })).toHaveCount(0);
   await expect(page.getByText("rule evaluation completed")).toBeVisible();
 });
 

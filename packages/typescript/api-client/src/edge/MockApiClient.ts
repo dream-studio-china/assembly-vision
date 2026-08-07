@@ -442,32 +442,6 @@ export class MockApiClient implements ApiClient {
     };
   }
 
-  async pauseInspection(reason: string) {
-    if (this.#paused) {
-      throw new ApiError(409, "ALREADY_PAUSED", "inspection is already paused");
-    }
-    this.#paused = true;
-    return {
-      accepted: true,
-      operation_id: UUID("400"),
-      detail: reason,
-      state: await this.getInspectionState(),
-    };
-  }
-
-  async resumeInspection(reason: string) {
-    if (!this.#paused) {
-      throw new ApiError(409, "PRECONDITION_FAILED", "inspection is not paused");
-    }
-    this.#paused = false;
-    return {
-      accepted: true,
-      operation_id: UUID("401"),
-      detail: reason,
-      state: await this.getInspectionState(),
-    };
-  }
-
   async listInspections(filter?: InspectionFilter): Promise<Page<InspectionSummary>> {
     let items = this.#records.map(summary);
     if (filter?.business_result) items = items.filter((i) => i.business_result === filter.business_result);
@@ -491,19 +465,6 @@ export class MockApiClient implements ApiClient {
     void cursor;
     const items = this.#uploads.slice(0, limit ?? 50);
     return { items, next_cursor: null };
-  }
-
-  async retryUpload(uploadTaskId: string, reason: string) {
-    void reason;
-    const task = this.#uploads.find((u) => u.upload_task_id === uploadTaskId);
-    if (!task) throw new ApiError(404, "TASK_NOT_FOUND", `no upload task ${uploadTaskId}`);
-    if (task.status === "RETRY_WAIT" || task.status === "PERMANENT_FAILURE") {
-      task.status = "PENDING";
-      task.attempt_count += 1;
-      task.next_attempt_at = ISO(15);
-      task.last_error_code = null;
-    }
-    return { accepted: true, operation_id: UUID("402"), detail: null, task };
   }
 
   async getEffectiveConfiguration(): Promise<EffectiveConfiguration> {

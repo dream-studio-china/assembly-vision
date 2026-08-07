@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { UploadTask } from "@assemblyvision/api-client";
-import { ElMessage, ElMessageBox } from "element-plus";
 import { onMounted, ref } from "vue";
 import { getApiClient } from "../services/client";
 
@@ -14,19 +13,6 @@ async function load(): Promise<void> {
     tasks.value = page.items;
   } finally {
     loading.value = false;
-  }
-}
-
-async function retry(task: UploadTask): Promise<void> {
-  const reason = await ElMessageBox.prompt(`Retry upload ${task.upload_task_id}?`, "Retry upload", {
-    confirmButtonText: "Retry",
-    inputPlaceholder: "Required reason",
-    inputValidator: (value: string) => (value.trim() ? true : "A reason is required"),
-  });
-  const result = await getApiClient().retryUpload(task.upload_task_id, reason.value);
-  if (result.accepted) {
-    ElMessage.success("Upload queued for retry");
-    await load();
   }
 }
 
@@ -47,21 +33,10 @@ onMounted(load);
       <el-table-column prop="last_error_code" label="Last error" min-width="140">
         <template #default="{ row }">{{ row.last_error_code ?? "-" }}</template>
       </el-table-column>
-      <el-table-column label="" width="110">
-        <template #default="{ row }">
-          <el-button
-            v-if="row.status === 'RETRY_WAIT' || row.status === 'PERMANENT_FAILURE'"
-            size="small"
-            type="primary"
-            @click="retry(row)"
-          >
-            Retry
-          </el-button>
-        </template>
-      </el-table-column>
     </el-table>
     <p class="uploads__hint">
-      Retries continue even when this page is closed (design 16.6).
+      Manual retry is not available in the read-only M1 API (ADR-012); the
+      scheduler will own retry in a later milestone.
     </p>
   </div>
 </template>

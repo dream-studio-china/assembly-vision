@@ -6,7 +6,6 @@
 import type { InspectionImages, LogEvent } from "@assemblyvision/api-client";
 import { DetectionViewer, StatusBadge, formatBytes, formatIsoTime, formatLatency } from "@assemblyvision/ui";
 import type { ViewerBox } from "@assemblyvision/ui";
-import { ElMessage, ElMessageBox } from "element-plus";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { mockCameraFrame } from "../mock/images";
 import { useInspectionStore } from "../stores/inspection";
@@ -69,29 +68,6 @@ async function refresh(): Promise<void> {
   await Promise.all([loadImages(), loadLogs()]);
 }
 
-async function changePausedState(): Promise<void> {
-  const pausing = !runtime.runtime?.paused;
-  const action = pausing ? "Pause" : "Resume";
-  try {
-    const reason = await ElMessageBox.prompt(
-      pausing
-        ? "Pause stops new inspection windows. The active window follows the configured safety policy."
-        : "Resume is available only when camera, model, rule, database, and disk preconditions pass.",
-      `${action} inspection`,
-      {
-        confirmButtonText: action,
-        inputPlaceholder: "Required reason",
-        inputValidator: (value: string) => (value.trim() ? true : "A reason is required"),
-      },
-    );
-    if (pausing) await runtime.pause(reason.value);
-    else await runtime.resume(reason.value);
-    if (runtime.error) ElMessage.error(runtime.error);
-  } catch {
-    // Dismissing the confirmation is not an operational failure.
-  }
-}
-
 onMounted(() => {
   void refresh();
   timer = setInterval(() => void refresh(), 5000);
@@ -112,29 +88,7 @@ onBeforeUnmount(() => {
       <StatusBadge :status="badgeStatus" />
       <span class="live-inspection__sn">{{ store.current?.sn ?? "waiting" }}</span>
       <span class="live-inspection__inspection-id">{{ store.current?.inspection_id }}</span>
-      <el-button
-        class="live-inspection__pause"
-        :type="runtime.runtime?.paused ? 'success' : 'warning'"
-        :loading="runtime.loading"
-        @click="changePausedState"
-      >
-        {{ runtime.runtime?.paused ? "Resume inspection" : "Pause inspection" }}
-      </el-button>
     </div>
-
-    <el-alert
-      v-if="runtime.runtime?.paused"
-      class="live-inspection__paused"
-      type="warning"
-      :closable="false"
-      show-icon
-      title="Inspection is paused. No new product windows will be opened."
-    >
-      <template #default>
-        <span>Reason: {{ runtime.runtime.paused_reason ?? "not recorded" }}.</span>
-        <span v-if="runtime.runtime.paused_by"> Requested by {{ runtime.runtime.paused_by }}.</span>
-      </template>
-    </el-alert>
 
     <div class="live-inspection__progress">
       <el-progress
@@ -273,7 +227,6 @@ onBeforeUnmount(() => {
   color: #9aa2ae;
   font-size: 12px;
 }
-.live-inspection__pause { margin-left: auto; }
 .live-inspection__strips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .status-strip { border: 1px solid #cbd7dc; border-left: 4px solid #176b87; border-radius: 6px; background: #fff; padding: 11px 12px; }
 .status-strip h3 { margin: 0 0 8px; color: #46555c; font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase; }
@@ -359,7 +312,6 @@ onBeforeUnmount(() => {
   .live-inspection__grid > :last-child { grid-column: span 2; }
 }
 @media (max-width: 760px) {
-  .live-inspection__pause { margin-left: 0; }
   .live-inspection__strips, .live-inspection__grid, .live-inspection__info { grid-template-columns: 1fr; }
   .live-inspection__grid > :last-child { grid-column: auto; }
   .live-inspection__viewer { height: 42vh; min-height: 220px; }

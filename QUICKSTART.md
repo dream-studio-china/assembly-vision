@@ -165,9 +165,15 @@ Endpoints follow design 15.3: `GET /api/v1/health/live`, `GET
 /api/v1/inspections`, `GET /api/v1/inspections/{id}`, `GET
 /api/v1/inspections/{id}/media`, `GET /api/v1/media/{id}/content` (Range
 supported), `GET /api/v1/device/status`, `GET /api/v1/inspection/state`,
-`POST /api/v1/inspection/{pause,resume}`, `GET /api/v1/uploads`, `GET
+`GET /api/v1/uploads`, `GET
 /api/v1/configuration/effective`, `GET /api/v1/logs`, and the derived
 `/api/v1/traceability/{sn}` and `/api/v1/statistics`.
+
+The M1 API is **read-only** (ADR-012): mutation controls such as
+`POST /api/v1/inspection/{pause,resume}`, camera reconnect, and upload retry
+are not exposed. When `AV_EDGE_API_TOKEN` (or `--api-token`) is configured,
+every route except `GET /api/v1/health/live` requires
+`Authorization: Bearer <token>`.
 
 ---
 
