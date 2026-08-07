@@ -212,19 +212,17 @@ def test_media_content_and_range(client: TestClient) -> None:
     assert invalid.status_code == 416
 
 
-def test_pause_resume_and_duplicate_rejection(client: TestClient) -> None:
+def test_m1_removed_controls_return_404(client: TestClient) -> None:
     state = client.get("/api/v1/inspection/state").json()
     assert state["paused"] is False
-    paused = client.post("/api/v1/inspection/pause", json={"reason": "shift change"})
-    assert paused.status_code == 200
-    assert paused.json()["state"]["paused"] is True
-    duplicate = client.post("/api/v1/inspection/pause", json={"reason": "again"})
-    assert duplicate.status_code == 409
-    assert duplicate.json()["code"] == "ALREADY_PAUSED"
-    # Resume requires a ready inspection engine; the test app has no pipeline.
-    not_ready = client.post("/api/v1/inspection/resume", json={"reason": "shift start"})
-    assert not_ready.status_code == 409
-    assert not_ready.json()["code"] == "PRECONDITION_FAILED"
+    for endpoint, payload in (
+        ("/api/v1/inspection/pause", {"reason": "shift change"}),
+        ("/api/v1/inspection/resume", {"reason": "shift start"}),
+        ("/api/v1/camera/reconnect", {"reason": "fault"}),
+        ("/api/v1/uploads/00000000-0000-4000-8000-0000000000cc/retry", {"reason": "retry"}),
+    ):
+        response = client.post(endpoint, json=payload)
+        assert response.status_code == 404
 
 
 def test_statistics_derived(client: TestClient) -> None:

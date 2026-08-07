@@ -166,3 +166,21 @@ def test_media_path_is_safe_rejects_escapes(tmp_path: Path) -> None:
     outside.mkdir()
     (root / "link").symlink_to(outside, target_is_directory=True)
     assert not media_path_is_safe(root, "link/secret.txt")
+
+
+def test_media_path_is_safe_oserror_is_unsafe(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from assemblyvision_edge.persistence.reconcile import media_path_is_safe
+
+    root = tmp_path / "out"
+    root.mkdir()
+    real_resolve = Path.resolve
+
+    def boom(self: Path, strict: bool = False) -> Path:
+        if "key.jpg" in str(self):
+            raise OSError("cannot resolve")
+        return real_resolve(self, strict)
+
+    monkeypatch.setattr(Path, "resolve", boom)
+    assert not media_path_is_safe(root, "key.jpg")

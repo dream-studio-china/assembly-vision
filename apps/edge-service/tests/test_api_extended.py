@@ -1,18 +1,15 @@
-"""Extended API tests: health-ready with pipeline, resume success, upload
-retry, SPA api-prefix branch, HTTP-problem handler, and __main__ module."""
+"""Extended API tests: health-ready with pipeline, M1 mutation removal, SPA
+api-prefix branch, HTTP-problem handler, and __main__ module."""
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import cast
-from uuid import uuid4
 
 from assemblyvision_edge.api.app import create_app
 from assemblyvision_edge.api.settings import ServerSettings
-from assemblyvision_edge.persistence.schema import upload_tasks
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from sqlalchemy import text
 
 from tests.test_state import _fake_pipeline
 
@@ -44,68 +41,17 @@ def test_health_ready_ok_with_pipeline(tmp_path: Path) -> None:
         assert response.json()["inspection_ready"] is True
 
 
-def test_pause_and_resume_cycle_with_pipeline(tmp_path: Path) -> None:
+def test_m1_removed_mutations_return_404_with_pipeline(tmp_path: Path) -> None:
     app = _app(tmp_path)
     with TestClient(app) as c:
         app_state = _app_state(c)
         app_state.state.runtime.pipeline = _fake_pipeline()
-        paused = c.post("/api/v1/inspection/pause", json={"reason": "break"})
-        assert paused.status_code == 200
-        assert paused.json()["state"]["paused"] is True
-        resumed = c.post("/api/v1/inspection/resume", json={"reason": "back"})
-        assert resumed.status_code == 200
-        assert resumed.json()["state"]["paused"] is False
-
-
-def test_resume_when_not_paused_409(tmp_path: Path) -> None:
-    app = _app(tmp_path)
-    with TestClient(app) as c:
-        app_state = _app_state(c)
-        app_state.state.runtime.pipeline = _fake_pipeline()
-        response = c.post("/api/v1/inspection/resume", json={"reason": "why"})
-        assert response.status_code == 409
-        assert response.json()["code"] == "PRECONDITION_FAILED"
-
-
-def _seed_upload(app: FastAPI, *, status: str) -> str:
-    task_id = str(uuid4())
-    with app.state.repository._engine.begin() as conn:  # noqa: SLF001
-        conn.execute(
-            text(
-                f"""
-                INSERT INTO {upload_tasks.name} (
-                    upload_task_id, device_id, inspection_id, kind, object_id,
-                    payload_hash, status, idempotency_key, checksum_sha256,
-                    attempt_count, next_attempt_at, last_error_code, created_at,
-                    updated_at, completed_at
-                ) VALUES (:id, :device, NULL, 'INSPECTION', :object, :h, :status,
-                          :idem, :ck, 2, NULL, 'TIMEOUT', :now, :now, NULL)
-                """
-            ),
-            {
-                "id": task_id,
-                "device": str(uuid4()),
-                "object": str(uuid4()),
-                "h": "abc",
-                "status": status,
-                "idem": f"inspection:device:{task_id}",
-                "ck": "0" * 64,
-                "now": "2026-01-01T00:00:00+00:00",
-            },
-        )
-    return task_id
-
-
-def test_upload_retry_success_path(tmp_path: Path) -> None:
-    app = _app(tmp_path)
-    with TestClient(app) as c:
-        task_id = _seed_upload(_app_state(c), status="RETRY_WAIT")
-        response = c.post(f"/api/v1/uploads/{task_id}/retry", json={"reason": "operator"})
-        assert response.status_code == 200
-        body = response.json()
-        assert body["accepted"] is True
-        assert body["task"]["status"] == "PENDING"
-        assert body["task"]["attempt_count"] == 3
+        for endpoint, payload in (
+            ("/api/v1/inspection/pause", {"reason": "break"}),
+            ("/api/v1/inspection/resume", {"reason": "back"}),
+        ):
+            response = c.post(endpoint, json=payload)
+            assert response.status_code == 404, endpoint
 
 
 def test_spa_returns_index_for_unknown_api_path(tmp_path: Path) -> None:

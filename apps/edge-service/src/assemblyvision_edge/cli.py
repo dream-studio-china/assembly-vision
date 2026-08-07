@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -83,6 +84,13 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--host", default="127.0.0.1", help="Bind host")
     serve.add_argument("--port", type=int, default=8000, help="Bind port")
     serve.add_argument("--device-id", type=str, default=None, help="Stable device UUID")
+    serve.add_argument(
+        "--api-token",
+        type=str,
+        default=None,
+        help="Bearer token required by every read route except /health/live "
+        "(falls back to AV_EDGE_API_TOKEN)",
+    )
     return parser
 
 
@@ -198,6 +206,7 @@ def _run_serve(args: argparse.Namespace) -> int:
         from assemblyvision_edge.api.settings import ServerSettings
 
         db_path = args.db or (args.output / "edge.sqlite3")
+        api_token = args.api_token or os.environ.get("AV_EDGE_API_TOKEN")
         settings = ServerSettings(
             output_root=args.output,
             db_path=db_path,
@@ -205,6 +214,7 @@ def _run_serve(args: argparse.Namespace) -> int:
             rule_path=args.rule,
             device_id=args.device_id,
             static_dir=args.static,
+            api_token=api_token,
         )
         app = create_app(settings)
         uvicorn.run(app, host=args.host, port=args.port, log_level="info")

@@ -156,33 +156,27 @@ def test_health_ready_503_when_engine_not_ready(tmp_path: Path) -> None:
         assert response.json()["code"] == "NOT_READY"
 
 
-def test_camera_endpoints(client: TestClient) -> None:
+def test_camera_state_and_removed_reconnect(client: TestClient) -> None:
     state = client.get("/api/v1/camera/state")
     assert state.status_code == 200
     assert state.json()["connected"] is True
     reconnect = client.post("/api/v1/camera/reconnect", json={"reason": "fault"})
-    assert reconnect.status_code == 200
-    assert reconnect.json()["accepted"] is True
+    assert reconnect.status_code == 404
 
 
 def test_upload_retry_404(client: TestClient) -> None:
     response = client.post("/api/v1/uploads/nope/retry", json={"reason": "why"})
     assert response.status_code == 404
-    assert response.json()["code"] == "TASK_NOT_FOUND"
+    assert response.json()["code"] == "HTTP_404"
 
 
 def test_validation_error_is_problem(client: TestClient) -> None:
-    # Pause requires a non-empty reason.
-    response = client.post("/api/v1/inspection/pause", json={"reason": ""})
+    # Invalid query parameters trigger the 422 problem handler.
+    response = client.get("/api/v1/inspections", params={"limit": "not-an-int"})
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_FAILED"
     assert response.headers["content-type"].startswith("application/problem+json")
     assert response.json()["errors"]
-
-
-def test_pause_missing_reason_is_422(client: TestClient) -> None:
-    response = client.post("/api/v1/inspection/pause", json={})
-    assert response.status_code == 422
 
 
 def test_inspection_media_404_for_unknown_inspection(client: TestClient) -> None:
@@ -319,6 +313,23 @@ def test_media_content_rejects_traversal_and_absolute(tmp_path: Path) -> None:
             response = c.get(f"/api/v1/media/{media_id}/content")
             assert response.status_code == 404
             assert response.json()["code"] == "MEDIA_NOT_FOUND"
+
+
+def test_resolve_media_path_handles_oserror(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from assemblyvision_edge.api.routers import media as media_mod
+
+    root = tmp_path / "out"
+    real_resolve = Path.resolve
+
+    def boom(self: Path, strict: bool = False) -> Path:
+        if "key.jpg" in str(self):
+            raise OSError("cannot resolve")
+        return real_resolve(self, strict)
+
+    monkeypatch.setattr(Path, "resolve", boom)
+    assert media_mod._resolve_media_path(root, "key.jpg") is None
 
 
 def test_media_content_uses_mime_allowlist_not_persisted_mime(tmp_path: Path) -> None:

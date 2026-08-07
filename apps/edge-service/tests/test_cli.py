@@ -215,6 +215,7 @@ def test_serve_returns_2_when_create_app_raises(
         static=None,
         host="127.0.0.1",
         port=8000,
+        api_token=None,
     )
     assert cli._run_serve(args) == 2
 
@@ -317,6 +318,7 @@ def test_serve_success_starts_uvicorn(tmp_path: Path, monkeypatch: pytest.Monkey
         static=None,
         host="127.0.0.1",
         port=8000,
+        api_token=None,
     )
     assert cli._run_serve(args) == 0
     assert calls and calls[0]["port"] == 8000

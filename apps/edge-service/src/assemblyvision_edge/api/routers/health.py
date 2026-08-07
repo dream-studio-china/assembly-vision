@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
-from assemblyvision_edge.api.deps import get_repository, get_runtime
+from assemblyvision_edge.api.deps import get_repository, get_runtime, require_viewer
 from assemblyvision_edge.api.problems import ApiProblem
 from assemblyvision_edge.api.state import EdgeRuntime
 from assemblyvision_edge.persistence.repository import EdgeRepository
@@ -22,6 +22,7 @@ def health_live() -> dict[str, str]:
 def health_ready(
     runtime: EdgeRuntime = Depends(get_runtime),
     repository: EdgeRepository = Depends(get_repository),
+    _: None = Depends(require_viewer),
 ) -> dict[str, object]:
     if runtime.pipeline is None:
         raise ApiProblem(

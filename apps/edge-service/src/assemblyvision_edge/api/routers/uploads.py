@@ -1,21 +1,13 @@
-"""Upload queue visibility and retry endpoints (design 15.3.3, 16.6)."""
+"""Upload queue visibility endpoint (design 15.3.3, M1 read-only)."""
 
 from __future__ import annotations
 
-from uuid import uuid4
-
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
 
 from assemblyvision_edge.api.deps import get_repository
-from assemblyvision_edge.api.problems import ApiProblem
 from assemblyvision_edge.persistence.repository import EdgeRepository
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
-
-
-class RetryRequest(BaseModel):
-    reason: str = Field(min_length=1)
 
 
 @router.get("")
@@ -48,17 +40,3 @@ def list_uploads(
         ],
         "next_cursor": page.next_cursor,
     }
-
-
-@router.post("/{upload_task_id}/retry")
-def retry_upload(
-    upload_task_id: str,
-    body: RetryRequest,
-    repository: EdgeRepository = Depends(get_repository),
-) -> dict[str, object]:
-    task = repository.retry_upload(upload_task_id, body.reason)
-    if task is None:
-        raise ApiProblem(
-            status_code=404, code="TASK_NOT_FOUND", detail=f"no upload task {upload_task_id}"
-        )
-    return {"accepted": True, "operation_id": str(uuid4()), "detail": None, "task": task}

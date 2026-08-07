@@ -19,3 +19,5 @@ class ServerSettings:
     camera_width: int = 800
     camera_height: int = 600
     camera_fps: int | None = None
+    api_token: str | None = None
+    cors_allow_loopback: bool = True

@@ -78,22 +78,27 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     )
     app.state.settings = settings
 
-    # The edge dashboard is served locally on the management network; the Vite
-    # dev server (and any local tooling) calls the API cross-origin during
-    # development. Allow local origins only is not possible while the dev port
-    # varies, so permit all origins for the local-only service (design 15.2.1).
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    # The Vite dev server calls the API cross-origin during development; the
+    # served dashboard is same-origin and needs no CORS. Allow only anchored
+    # loopback origins (any dev port) instead of "*"; production binds the
+    # service locally and authenticates via the edge API token (ADR-012).
+    if settings.cors_allow_loopback:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+            allow_methods=["GET"],
+            allow_headers=["Authorization"],
+            allow_credentials=False,
+        )
 
     install_problem_handlers(app)
     _install_exception_handler(app)
 
+    from fastapi import Depends
+
+    from assemblyvision_edge.api.deps import require_viewer
+
     for router in (
-        health.router,
         device.router,
         camera.router,
         inspection.router,
@@ -104,7 +109,10 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         logs.router,
         derived.router,
     ):
-        app.include_router(router, prefix="/api/v1")
+        app.include_router(router, prefix="/api/v1", dependencies=[Depends(require_viewer)])
+    # Health keeps /health/live deliberately unauthenticated (design 15.3.1);
+    # /health/ready requires the viewer credential.
+    app.include_router(health.router, prefix="/api/v1")
 
     _install_static_routes(app, settings.static_dir)
     return app
