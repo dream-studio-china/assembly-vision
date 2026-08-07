@@ -150,7 +150,8 @@ existing CLI inspection output, and (when configuration is supplied) loads the
 same verified pipeline as `inspect`.
 
 ```bash
-# Build the dashboard once, then serve everything on one port:
+# Build the dashboard once (production mode talks to the same-origin API), then
+# serve everything on one port:
 pnpm --filter edge-web build
 uv run assemblyvision serve \
   --output out/ \
@@ -210,23 +211,32 @@ to FastAPI via `VITE_API_BASE_URL` with no UI changes.
 
 ### 5.3 Mock vs real backend
 
-Read-only views (history, detail, media, statistics, traceability, device
-health, configuration, logs) route through the HTTP client when
-`VITE_API_BASE_URL` is set, showing real data from `assemblyvision serve`. The
-operator workflow actions (current inspection, confirm, next, manual) remain on
-the deterministic mock client because they model a demonstration queue rather
-than a design 15.3 contract endpoint:
+Data mode is explicit (F5, ADR-012):
+
+- `VITE_API_MODE=mock` (the dev default via `.env.development`) runs the
+  deterministic in-memory mock client.
+- `VITE_API_MODE=http` (the production default via `.env.production`) talks to
+  the FastAPI backend. An omitted `VITE_API_BASE_URL` means **same-origin**
+  `/api/v1`, so the bundle served by `assemblyvision serve` reads its own API.
 
 ```bash
-VITE_API_BASE_URL=http://edge-host:8000 pnpm --filter edge-web dev
+# Dev against a remote edge host:
+VITE_API_MODE=http VITE_API_BASE_URL=http://edge-host:8000 pnpm --filter edge-web dev
 ```
+
+The operator workflow actions (current inspection, confirm, next, manual) always
+run on the deterministic mock client because they model a demonstration queue
+rather than a design 15.3 contract endpoint.
 
 ### 5.4 Build and preview
 
 ```bash
-pnpm --filter edge-web build      # bundle to apps/edge-web/dist
+pnpm --filter edge-web build      # bundle to apps/edge-web/dist (http mode)
 pnpm --filter edge-web preview    # preview the build (default http://localhost:4173)
 ```
+
+A production build selects the HTTP client by default, so the served dashboard
+reads real data from the same-origin API with no extra flags.
 
 ### 5.5 Tests
 
