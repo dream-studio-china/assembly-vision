@@ -49,7 +49,9 @@ Run the edge dashboard (mock data, no backend required):
 pnpm --filter edge-web dev        # http://localhost:5173
 ```
 
-See [QUICKSTART.md](QUICKSTART.md) for a detailed walkthrough.
+See [QUICKSTART.md](QUICKSTART.md) for a detailed walkthrough, structured
+per app: section 4 covers the edge inspection CLI, section 5 the edge
+dashboard.
 
 ## Usage
 
