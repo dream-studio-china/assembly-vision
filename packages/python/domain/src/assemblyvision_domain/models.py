@@ -145,6 +145,28 @@ class MediaMetadata(APIModel):
     checksum_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
+class UploadTask(APIModel):
+    """Persistent upload work item (design 04 section 7, ADR-005)."""
+
+    upload_task_id: UUID
+    device_id: UUID
+    inspection_id: UUID | None = None
+    kind: Literal["INSPECTION", "MEDIA", "DEVICE_EVENT"]
+    object_id: UUID
+    payload_hash: str
+    status: Literal[
+        "PENDING", "IN_PROGRESS", "RETRY_WAIT", "SUCCEEDED", "PERMANENT_FAILURE", "CANCELLED"
+    ]
+    idempotency_key: str
+    checksum_sha256: str | None = None
+    attempt_count: NonNegativeInt = 0
+    next_attempt_at: datetime | None = None
+    last_error_code: str | None = None
+    created_at: datetime
+    updated_at: datetime
+    completed_at: datetime | None = None
+
+
 class ProductDetection(APIModel):
     """Stage-one product detection on the full frame."""
 
@@ -238,6 +260,7 @@ class InspectionRecord(APIModel):
     decision: InspectionDecision
     synchronization_status: Literal["LOCAL_ONLY", "QUEUED", "PARTIAL", "SYNCED", "FAILED"]
     processing_ms: NonNegativeInt
+    inference_metadata: dict[str, object] | None = None
 
 
 class Artifact(APIModel):

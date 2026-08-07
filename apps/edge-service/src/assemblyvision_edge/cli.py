@@ -73,6 +73,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stable device UUID; a random UUID is generated when omitted",
     )
     verify.add_argument("-q", "--quiet", action="store_true", help="Suppress INFO logs")
+
+    serve = sub.add_parser("serve", help="Run the local edge API and dashboard")
+    serve.add_argument("--output", required=True, type=Path, help="Inspection output root")
+    serve.add_argument("--db", type=Path, default=None, help="SQLite database path")
+    serve.add_argument("--config", type=Path, default=None, help="Pipeline configuration file")
+    serve.add_argument("--rule", type=Path, default=None, help="Product rule definition file")
+    serve.add_argument("--static", type=Path, default=None, help="Built frontend directory")
+    serve.add_argument("--host", default="127.0.0.1", help="Bind host")
+    serve.add_argument("--port", type=int, default=8000, help="Bind port")
+    serve.add_argument("--device-id", type=str, default=None, help="Stable device UUID")
     return parser
 
 
@@ -83,7 +93,10 @@ def main(argv: list[str] | None = None) -> int:
         return _run_inspect(args)
     if args.command == "verify":
         return _run_verify(args)
-    parser.error(f"unknown command: {args.command}")
+    if args.command == "serve":
+        return _run_serve(args)
+    # Unreachable: argparse only accepts the three subcommands above.
+    return 1  # pragma: no cover
 
 
 def _build_pipeline(args: argparse.Namespace) -> InspectionPipeline:
@@ -173,6 +186,34 @@ def _run_verify(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_serve(args: argparse.Namespace) -> int:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    try:
+        import uvicorn
+
+        from assemblyvision_edge.api.app import create_app
+        from assemblyvision_edge.api.settings import ServerSettings
+
+        db_path = args.db or (args.output / "edge.sqlite3")
+        settings = ServerSettings(
+            output_root=args.output,
+            db_path=db_path,
+            config_path=args.config,
+            rule_path=args.rule,
+            device_id=args.device_id,
+            static_dir=args.static,
+        )
+        app = create_app(settings)
+        uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+    except (ConfigError, ValueError) as exc:
+        log.error("configuration error: %s", exc)
+        return 2
+    return 0
+
+
 def _collect_sources(paths: list[str]) -> list[tuple[FolderSource, Path]]:
     work: list[tuple[FolderSource, Path]] = []
     for raw in paths:
@@ -185,5 +226,5 @@ def _collect_sources(paths: list[str]) -> list[tuple[FolderSource, Path]]:
     return work
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

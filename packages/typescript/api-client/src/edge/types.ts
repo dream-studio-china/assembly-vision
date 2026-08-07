@@ -180,6 +180,7 @@ export type InspectionRecord = {
   decision: InspectionDecision;
   synchronization_status: SynchronizationStatus;
   processing_ms: number;
+  inference_metadata?: Record<string, unknown> | null;
 };
 
 export type InspectionSummary = {

@@ -142,6 +142,33 @@ uv run pytest apps/edge-service/tests               # runtime tests
 uv run pytest training/tests                        # training tests
 ```
 
+### 4.6 Run the local API and dashboard (`serve`)
+
+`assemblyvision serve` exposes the inspection pipeline and the local index over
+`/api/v1` and serves the built dashboard. It opens a SQLite index, imports any
+existing CLI inspection output, and (when configuration is supplied) loads the
+same verified pipeline as `inspect`.
+
+```bash
+# Build the dashboard once, then serve everything on one port:
+pnpm --filter edge-web build
+uv run assemblyvision serve \
+  --output out/ \
+  --db out/edge.sqlite3 \
+  --config config/examples/pipeline.yaml \
+  --rule config/examples/product-rule.yaml \
+  --static apps/edge-web/dist \
+  --host 127.0.0.1 --port 8000
+```
+
+Endpoints follow design 15.3: `GET /api/v1/health/live`, `GET
+/api/v1/inspections`, `GET /api/v1/inspections/{id}`, `GET
+/api/v1/inspections/{id}/media`, `GET /api/v1/media/{id}/content` (Range
+supported), `GET /api/v1/device/status`, `GET /api/v1/inspection/state`,
+`POST /api/v1/inspection/{pause,resume}`, `GET /api/v1/uploads`, `GET
+/api/v1/configuration/effective`, `GET /api/v1/logs`, and the derived
+`/api/v1/traceability/{sn}` and `/api/v1/statistics`.
+
 ---
 
 ## 5. App: Edge dashboard (`apps/edge-web`)
@@ -177,8 +204,12 @@ to FastAPI via `VITE_API_BASE_URL` with no UI changes.
 
 ### 5.3 Mock vs real backend
 
-Set `VITE_API_BASE_URL` to use the HTTP client (targets `/api/v1`) instead of
-the mock. The UI does not change:
+Read-only views (history, detail, media, statistics, traceability, device
+health, configuration, logs) route through the HTTP client when
+`VITE_API_BASE_URL` is set, showing real data from `assemblyvision serve`. The
+operator workflow actions (current inspection, confirm, next, manual) remain on
+the deterministic mock client because they model a demonstration queue rather
+than a design 15.3 contract endpoint:
 
 ```bash
 VITE_API_BASE_URL=http://edge-host:8000 pnpm --filter edge-web dev
