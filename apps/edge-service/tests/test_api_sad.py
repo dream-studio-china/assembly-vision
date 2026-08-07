@@ -273,3 +273,70 @@ def test_unhandled_exception_returns_problem(tmp_path: Path) -> None:
         assert response.status_code == 500
         assert response.json()["code"] == "INTERNAL_ERROR"
         assert response.headers["content-type"].startswith("application/problem+json")
+
+
+def _crafted_record(relative_path: str, mime_type: str) -> InspectionRecord:
+    record = _pipeline_record()
+    payload = record.model_dump(mode="json")
+    payload["media"] = [
+        {
+            "media_id": str(uuid4()),
+            "kind": "KEY_FRAME",
+            "lifecycle": "AVAILABLE",
+            "relative_path": relative_path,
+            "mime_type": mime_type,
+            "size_bytes": 6,
+            "checksum_sha256": "0" * 64,
+        }
+    ]
+    return InspectionRecord.model_validate(payload)
+
+
+def test_media_content_rejects_traversal_and_absolute(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.repository import EdgeRepository
+
+    root = tmp_path / "out"
+    root.mkdir()
+    (root / "secret.txt").write_bytes(b"SECRET")
+    db = tmp_path / "edge.sqlite3"
+
+    for relative in ("../secret.txt", "/etc/hostname", "link/secret.txt"):
+        outside = tmp_path / "outside"
+        outside.mkdir(exist_ok=True)
+        outside.joinpath("secret.txt").write_bytes(b"SECRET")
+        link = root / "link"
+        if not link.exists():
+            link.symlink_to(outside, target_is_directory=True)
+        record = _crafted_record(relative, "image/jpeg")
+        repo = EdgeRepository.open(db)
+        repo.upsert_inspection(record)
+        repo.close()
+
+        settings = ServerSettings(output_root=root, db_path=db)
+        app = create_app(settings)
+        with TestClient(app) as c:
+            media_id = record.media[0].media_id
+            response = c.get(f"/api/v1/media/{media_id}/content")
+            assert response.status_code == 404
+            assert response.json()["code"] == "MEDIA_NOT_FOUND"
+
+
+def test_media_content_uses_mime_allowlist_not_persisted_mime(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.repository import EdgeRepository
+
+    root = tmp_path / "out"
+    root.mkdir()
+    record = _crafted_record("key.jpg", "text/html")
+    (root / "key.jpg").write_bytes(b"fake-jpeg-0000")
+    db = tmp_path / "edge.sqlite3"
+    repo = EdgeRepository.open(db)
+    repo.upsert_inspection(record)
+    repo.close()
+
+    settings = ServerSettings(output_root=root, db_path=db)
+    app = create_app(settings)
+    with TestClient(app) as c:
+        media_id = record.media[0].media_id
+        response = c.get(f"/api/v1/media/{media_id}/content")
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("image/jpeg")

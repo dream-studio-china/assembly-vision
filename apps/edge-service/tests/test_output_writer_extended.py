@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from uuid import uuid4
 
@@ -120,3 +121,48 @@ def test_reconcile_skips_already_imported(tmp_path: Path) -> None:
         assert reconcile_output_root(repo, root) == 0
     finally:
         repo.close()
+
+
+def test_reconcile_skips_unsafe_media_paths(tmp_path: Path) -> None:
+    root = tmp_path / "out"
+    root.mkdir()
+    for _name, relative in (("traversal", "../secret.txt"), ("absolute", "/etc/hostname")):
+        record = _make_record(uuid4())
+        directory = root / str(record.inspection_id)
+        directory.mkdir()
+        payload = record.model_dump(mode="json")
+        payload["media"] = [
+            {
+                "media_id": str(uuid4()),
+                "kind": "KEY_FRAME",
+                "lifecycle": "AVAILABLE",
+                "relative_path": relative,
+                "mime_type": "image/jpeg",
+                "size_bytes": 4,
+                "checksum_sha256": "0" * 64,
+            }
+        ]
+        directory.joinpath("inspection.json").write_text(json.dumps(payload), encoding="utf-8")
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        assert reconcile_output_root(repo, root) == 0
+        assert repo.list_inspections().items == []
+    finally:
+        repo.close()
+
+
+def test_media_path_is_safe_rejects_escapes(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.reconcile import media_path_is_safe
+
+    root = tmp_path / "out"
+    root.mkdir()
+    assert media_path_is_safe(root, "inspection-1/key_frame.jpg")
+    assert not media_path_is_safe(root, "../secret.txt")
+    assert not media_path_is_safe(root, "/etc/hostname")
+    assert not media_path_is_safe(root, "")
+    assert not media_path_is_safe(root, "inspection-1/../../secret.txt")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (root / "link").symlink_to(outside, target_is_directory=True)
+    assert not media_path_is_safe(root, "link/secret.txt")

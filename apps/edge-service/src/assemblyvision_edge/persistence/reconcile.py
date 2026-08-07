@@ -17,12 +17,31 @@ from assemblyvision_edge.persistence.repository import EdgeRepository
 log = logging.getLogger("assemblyvision.reconcile")
 
 
+def media_path_is_safe(output_root: Path, relative_path: str) -> bool:
+    """Return False for empty, absolute, or traversal-escaping media paths.
+
+    The resolved path must stay inside the media root so that reconciliation
+    never imports a record whose content could later be served outside it.
+    """
+    if not relative_path:
+        return False
+    path = Path(relative_path)
+    if path.is_absolute() or ".." in path.parts:
+        return False
+    root = output_root.resolve()
+    try:
+        return (root / path).resolve().is_relative_to(root)
+    except OSError:
+        return False
+
+
 def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
     """Import all inspection.json files found in the output root.
 
     Returns the number of newly imported inspections. Already-published
     inspection IDs are skipped; corrupt files are logged and skipped without
-    aborting the scan.
+    aborting the scan. Records whose media paths escape the output root are
+    skipped whole so no partially validated record is imported.
     """
     if not output_root.is_dir():
         return 0
@@ -36,6 +55,16 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
             record = InspectionRecord.model_validate_json(path.read_text(encoding="utf-8"))
         except (OSError, ValueError) as exc:
             log.warning("skipping invalid inspection record %s: %s", path, exc)
+            continue
+        unsafe = [
+            item.relative_path
+            for item in record.media
+            if not media_path_is_safe(output_root, item.relative_path)
+        ]
+        if unsafe:
+            log.warning(
+                "skipping inspection %s with unsafe media paths: %s", record.inspection_id, unsafe
+            )
             continue
         repository.upsert_inspection(record)
         imported += 1

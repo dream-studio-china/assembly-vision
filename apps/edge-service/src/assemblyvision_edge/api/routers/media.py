@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from assemblyvision_domain.models import MediaMetadata
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import Response
 
@@ -13,6 +14,35 @@ from assemblyvision_edge.api.settings import ServerSettings
 from assemblyvision_edge.persistence.repository import EdgeRepository
 
 router = APIRouter(prefix="/media", tags=["media"])
+
+_MIME_BY_KIND: dict[str, str] = {
+    "KEY_FRAME": "image/jpeg",
+    "ANNOTATED_FRAME": "image/jpeg",
+    "PRODUCT_ROI": "image/jpeg",
+    "NG_CLIP": "video/mp4",
+    "ROLLING_VIDEO": "video/mp4",
+}
+
+
+def _content_type(media: MediaMetadata) -> str:
+    """Derive a safe response type from the media kind, never the persisted MIME."""
+    return _MIME_BY_KIND.get(media.kind, "application/octet-stream")
+
+
+def _resolve_media_path(output_root: Path, relative_path: str) -> Path | None:
+    """Resolve a media path and return it only when it stays inside the root.
+
+    Absolute paths and symlink escapes resolve outside ``output_root`` and are
+    rejected here, so callers never read filesystem content outside the root.
+    """
+    root = output_root.resolve()
+    try:
+        candidate = (root / relative_path).resolve()
+    except OSError:
+        return None
+    if not candidate.is_relative_to(root):
+        return None
+    return candidate
 
 
 def _parse_range(header: str, size: int) -> tuple[int, int] | None:
@@ -50,8 +80,8 @@ def media_content(
     if found is None:
         raise ApiProblem(status_code=404, code="MEDIA_NOT_FOUND", detail=f"no media {media_id}")
     media, _inspection_id = found
-    path = Path(settings.output_root) / media.relative_path
-    if not path.is_file():
+    path = _resolve_media_path(settings.output_root, media.relative_path)
+    if path is None or not path.is_file():
         if media.lifecycle.value == "PURGED":
             raise ApiProblem(status_code=410, code="MEDIA_PURGED", detail="media has been purged")
         raise ApiProblem(status_code=404, code="MEDIA_NOT_FOUND", detail=f"no media {media_id}")
@@ -71,11 +101,13 @@ def media_content(
         return Response(
             content=body,
             status_code=206,
-            media_type=media.mime_type,
+            media_type=_content_type(media),
             headers={
                 "Content-Range": f"bytes {start}-{end}/{size}",
                 "Accept-Ranges": "bytes",
                 "Content-Length": str(len(body)),
             },
         )
-    return Response(content=body, media_type=media.mime_type, headers={"Accept-Ranges": "bytes"})
+    return Response(
+        content=body, media_type=_content_type(media), headers={"Accept-Ranges": "bytes"}
+    )
