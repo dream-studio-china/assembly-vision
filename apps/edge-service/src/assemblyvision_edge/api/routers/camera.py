@@ -5,11 +5,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from assemblyvision_edge.api.deps import get_runtime
+from assemblyvision_edge.api.schemas import CameraState
 from assemblyvision_edge.api.state import EdgeRuntime
 
 router = APIRouter(prefix="/camera", tags=["camera"])
 
 
-@router.get("/state")
-def camera_state(runtime: EdgeRuntime = Depends(get_runtime)) -> dict[str, object]:
-    return runtime.camera_state()
+@router.get("/state", response_model=CameraState)
+def camera_state(runtime: EdgeRuntime = Depends(get_runtime)) -> CameraState:
+    return CameraState.model_validate(runtime.camera_state())

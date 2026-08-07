@@ -304,3 +304,15 @@ def test_fresh_inspection_media_served_from_writer(tmp_path: Path) -> None:
         raw = (root / str(saved.inspection_id) / "key_frame.jpg").read_bytes()
         assert content.content == raw
         assert content.headers["content-type"].startswith("image/jpeg")
+
+
+def test_openapi_matches_committed_document(tmp_path: Path) -> None:
+    import json
+
+    repo_root = Path(__file__).resolve().parents[3]
+    committed = json.loads(
+        (repo_root / "apps/edge-service/openapi/edge-openapi.json").read_text(encoding="utf-8")
+    )
+    settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
+    app = create_app(settings)
+    assert app.openapi() == committed

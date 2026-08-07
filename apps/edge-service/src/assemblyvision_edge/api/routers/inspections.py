@@ -4,17 +4,18 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from assemblyvision_domain.models import InspectionRecord
+from assemblyvision_domain.models import InspectionRecord, MediaMetadata
 from fastapi import APIRouter, Depends, Query
 
 from assemblyvision_edge.api.deps import get_repository
 from assemblyvision_edge.api.problems import ApiProblem
+from assemblyvision_edge.api.schemas import InspectionSummary, Page, Problem
 from assemblyvision_edge.persistence.repository import EdgeRepository
 
 router = APIRouter(prefix="/inspections", tags=["inspections"])
 
 
-@router.get("")
+@router.get("", response_model=Page[InspectionSummary])
 def list_inspections(
     business_result: str | None = None,
     internal_decision: str | None = None,
@@ -25,7 +26,7 @@ def list_inspections(
     cursor: str | None = None,
     limit: int = 50,
     repository: EdgeRepository = Depends(get_repository),
-) -> dict[str, object]:
+) -> Page[InspectionSummary]:
     page = repository.list_inspections(
         business_result=business_result,
         internal_decision=internal_decision,
@@ -36,28 +37,32 @@ def list_inspections(
         cursor=cursor,
         limit=limit,
     )
-    return {
-        "items": [
-            {
-                "inspection_id": str(s.inspection_id),
-                "completed_at": s.completed_at,
-                "business_result": s.business_result,
-                "internal_decision": s.internal_decision,
-                "barcode": s.barcode,
-                "product_code": s.product_code,
-                "sn": s.sn,
-                "reason_summary": s.reason_summary,
-                "latency_ms": s.latency_ms,
-                "upload_state": s.upload_state,
-                "model_rule_versions": s.model_rule_versions,
-            }
+    return Page(
+        items=[
+            InspectionSummary(
+                inspection_id=str(s.inspection_id),
+                completed_at=s.completed_at,
+                business_result=s.business_result,
+                internal_decision=s.internal_decision,
+                barcode=s.barcode,
+                product_code=s.product_code,
+                sn=s.sn,
+                reason_summary=s.reason_summary,
+                latency_ms=s.latency_ms,
+                upload_state=s.upload_state,
+                model_rule_versions=s.model_rule_versions,
+            )
             for s in page.items
         ],
-        "next_cursor": page.next_cursor,
-    }
+        next_cursor=page.next_cursor,
+    )
 
 
-@router.get("/{inspection_id}")
+@router.get(
+    "/{inspection_id}",
+    response_model=InspectionRecord,
+    responses={404: {"model": Problem, "description": "Inspection not found"}},
+)
 def get_inspection(
     inspection_id: str,
     repository: EdgeRepository = Depends(get_repository),
@@ -70,25 +75,13 @@ def get_inspection(
     return record
 
 
-@router.get("/{inspection_id}/media")
+@router.get("/{inspection_id}/media", response_model=list[MediaMetadata])
 def list_inspection_media(
     inspection_id: str,
     repository: EdgeRepository = Depends(get_repository),
-) -> list[dict[str, object]]:
+) -> list[MediaMetadata]:
     if repository.get_inspection(inspection_id) is None:
         raise ApiProblem(
             status_code=404, code="INSPECTION_NOT_FOUND", detail=f"no inspection {inspection_id}"
         )
-    media = repository.list_inspection_media(inspection_id)
-    return [
-        {
-            "media_id": str(m.media_id),
-            "kind": m.kind,
-            "lifecycle": m.lifecycle.value,
-            "relative_path": m.relative_path,
-            "mime_type": m.mime_type,
-            "size_bytes": m.size_bytes,
-            "checksum_sha256": m.checksum_sha256,
-        }
-        for m in media
-    ]
+    return repository.list_inspection_media(inspection_id)

@@ -1,0 +1,165 @@
+"""Typed Pydantic response schemas for the edge API (design 14.4.1).
+
+These models give every edge endpoint a named OpenAPI schema instead of an
+arbitrary ``dict[str, object]`` response (F9, contract 02). Canonical domain
+records (``InspectionRecord``, ``MediaMetadata``, ``UploadTask``) live in the
+shared domain package and are reused directly.
+"""
+
+from __future__ import annotations
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class Problem(BaseModel):
+    """RFC 7807 problem response (contract 05 section 6)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: str
+    title: str
+    status: int
+    detail: str
+    code: str
+    request_id: str | None = None
+    errors: list[dict[str, str]] = Field(default_factory=list)
+
+
+class HealthLive(BaseModel):
+    status: str
+
+
+class Page[T](BaseModel):
+    items: list[T]
+    next_cursor: str | None = None
+
+
+class DeviceStatus(BaseModel):
+    device_id: str
+    observed_at: str
+    operational_state: str
+    inspection_ready: bool
+    inspection_error_code: str | None = None
+    sync_ready: bool
+    camera_connected: bool
+    model_loaded: bool
+    central_connected: bool
+    disk_free_bytes: int
+    upload_pending_count: int
+    current_product_model_version_id: str | None = None
+    current_component_model_version_id: str | None = None
+    current_rule_version_id: str | None = None
+    alerts: list[str] = Field(default_factory=list)
+
+
+class CameraState(BaseModel):
+    connected: bool
+    source_width: int
+    source_height: int
+    fps: int | None = None
+    last_frame_at: str | None = None
+    error_code: str | None = None
+
+
+class InspectionRuntimeState(BaseModel):
+    window_active: bool
+    paused: bool
+    faulted: bool
+    current_inspection_id: str | None = None
+    last_result: str | None = None
+    paused_reason: str | None = None
+    paused_by: str | None = None
+    paused_at: str | None = None
+
+
+class InspectionSummary(BaseModel):
+    inspection_id: str
+    completed_at: str
+    business_result: str
+    internal_decision: str
+    barcode: str | None = None
+    product_code: str | None = None
+    sn: str | None = None
+    reason_summary: list[str] = Field(default_factory=list)
+    latency_ms: int
+    upload_state: str
+    model_rule_versions: dict[str, str | None] = Field(default_factory=dict)
+
+
+class LogEvent(BaseModel):
+    logged_at: str
+    level: str
+    component: str
+    message: str
+    trace_id: str | None = None
+
+
+class ProductDetectionSnapshot(BaseModel):
+    model_version: str
+    confidence_threshold: float
+    iou_threshold: float
+
+
+class ComponentDetectionSnapshot(BaseModel):
+    model_version: str
+    iou_threshold: float
+    components: dict[str, float] = Field(default_factory=dict)
+
+
+class ROISnapshot(BaseModel):
+    margin_x_ratio: float
+    margin_y_ratio: float
+    min_area_pixels: int
+    min_expanded_area_retained: float
+    normalize_perspective: bool
+
+
+class RuleSnapshot(BaseModel):
+    rule_id: str
+    rule_version: int
+    product_type: str
+    required_components: list[str] = Field(default_factory=list)
+
+
+class ManagedConfiguration(BaseModel):
+    application_version: str | None = None
+    product_detection: ProductDetectionSnapshot | None = None
+    component_detection: ComponentDetectionSnapshot | None = None
+    roi: ROISnapshot | None = None
+    rule: RuleSnapshot | None = None
+
+
+class EffectiveConfiguration(BaseModel):
+    revision: str
+    checksum_sha256: str
+    managed: ManagedConfiguration = Field(default_factory=ManagedConfiguration)
+    local_overrides: dict[str, object] = Field(default_factory=dict)
+
+
+class TraceabilityAttempt(BaseModel):
+    attempt: int
+    inspection_id: str
+    timestamp: str
+    result: str
+    reason: str
+    operator: str
+
+
+class TraceabilityView(BaseModel):
+    sn: str
+    final_status: str
+    attempts: list[TraceabilityAttempt] = Field(default_factory=list)
+
+
+class StatisticsSummary(BaseModel):
+    total_inspections: int
+    pass_count: int
+    ng_count: int
+    pass_rate: float
+
+
+class InspectionImages(BaseModel):
+    inspection_id: str
+    original: str
+    detection: str
+    annotated: str
