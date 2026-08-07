@@ -160,12 +160,20 @@ pnpm --filter edge-web dev        # http://localhost:5173
 
 | Route | Screen |
 |---|---|
-| `/` | Live inspection: camera overlay, latest decision, component matrix, readiness/connectivity, recent results, pause/resume |
-| `/inspections` | Inspection history (filter by OK/NG) |
-| `/inspections/:id` | Detail: evidence, overlay toggles, versions, media |
+| `/` | **Operator dashboard** — current inspection status (Waiting/Processing/PASS/NG), product SN, rules, confirm/continue/manual actions |
+| `/live` | Live inspection — camera image, detection result, detection regions, progress |
+| `/history` | Inspection history — search by SN, filter by result, image links |
+| `/traceability/:sn` | Product traceability — reinspection attempts and final status |
+| `/images/:id` | Inspection images — original, detection result, annotations |
+| `/statistics` | Production statistics — totals, PASS/NG, pass rate, date/line filters |
+| `/device` | Device status — camera, vision engine, inspection service |
 | `/uploads` | Upload queue with manual retry |
 | `/health` | Disk/queue charts (ECharts) and device status |
+| `/inspections` | Full record history (internal records) |
 | `/configuration`, `/logs` | Read-only placeholders |
+
+All operator data flows through the mock service layer by default and switches
+to FastAPI via `VITE_API_BASE_URL` with no UI changes.
 
 ### 5.3 Mock vs real backend
 

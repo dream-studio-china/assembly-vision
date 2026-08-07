@@ -1,14 +1,19 @@
 import type {
   CameraState,
+  CurrentInspection,
   DeviceStatus,
   EffectiveConfiguration,
   InspectionFilter,
+  InspectionImages,
   InspectionRecord,
   InspectionRuntimeState,
   InspectionSummary,
   LogEvent,
   MediaMetadata,
   Page,
+  StatisticsFilter,
+  StatisticsSummary,
+  TraceabilityView,
   UploadTask,
 } from "./types";
 
@@ -30,6 +35,11 @@ export type RetryResult = OperationResult & { task: UploadTask | null };
  * development and tests without a backend; the HTTP implementation is used
  * against the future FastAPI service. UI code never imports either
  * implementation directly.
+ *
+ * Operator-workflow methods (current inspection, traceability, statistics,
+ * images) target the future `/api/v1/inspection/current`,
+ * `/api/v1/inspections/{id}/images`, `/api/v1/traceability/{sn}` and
+ * `/api/v1/statistics` endpoints.
  */
 export interface ApiClient {
   getHealthLive(): Promise<{ status: string }>;
@@ -46,4 +56,13 @@ export interface ApiClient {
   retryUpload(uploadTaskId: string, reason: string): Promise<RetryResult>;
   getEffectiveConfiguration(): Promise<EffectiveConfiguration>;
   listLogs(cursor?: string, limit?: number): Promise<Page<LogEvent>>;
+
+  // Operator workflow
+  getCurrentInspection(): Promise<CurrentInspection>;
+  confirmInspectionResult(): Promise<CurrentInspection>;
+  continueNextInspection(): Promise<CurrentInspection>;
+  triggerManualInspection(): Promise<CurrentInspection>;
+  getInspectionImages(inspectionId: string): Promise<InspectionImages>;
+  getTraceability(sn: string): Promise<TraceabilityView>;
+  getStatistics(filter?: StatisticsFilter): Promise<StatisticsSummary>;
 }

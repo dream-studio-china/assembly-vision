@@ -51,6 +51,47 @@ describe("MockApiClient", () => {
     const client = new MockApiClient();
     await expect(client.getInspection("00000000-0000-4000-8000-ffffffffffff")).rejects.toBeInstanceOf(ApiError);
   });
+
+  it("walks the operator workflow through confirm and continue", async () => {
+    const client = new MockApiClient();
+    const initial = await client.getCurrentInspection();
+    expect(initial.status).toBe("PROCESSING");
+
+    const confirmed = await client.confirmInspectionResult();
+    expect(["PASS", "NG"]).toContain(confirmed.status);
+    expect(confirmed.progress).toBe(1);
+
+    const next = await client.continueNextInspection();
+    expect(next.status).toBe("PROCESSING");
+  });
+
+  it("returns traceability with reinspection attempts", async () => {
+    const client = new MockApiClient();
+    const view = await client.getTraceability("SN-0001");
+    expect(view.final_status).toBe("PASS");
+    expect(view.attempts.length).toBe(2);
+    expect(view.attempts[0].result).toBe("NG");
+    expect(view.attempts[1].result).toBe("PASS");
+    await expect(client.getTraceability("SN-UNKNOWN")).rejects.toMatchObject({ code: "SN_NOT_FOUND" });
+  });
+
+  it("computes statistics from the record set", async () => {
+    const client = new MockApiClient();
+    const stats = await client.getStatistics();
+    expect(stats.total_inspections).toBeGreaterThan(0);
+    expect(stats.pass_count + stats.ng_count).toBe(stats.total_inspections);
+    expect(stats.pass_rate).toBeGreaterThanOrEqual(0);
+    expect(stats.pass_rate).toBeLessThanOrEqual(1);
+  });
+
+  it("returns inspection images for a known inspection", async () => {
+    const client = new MockApiClient();
+    const page = await client.listInspections();
+    const images = await client.getInspectionImages(page.items[0].inspection_id);
+    expect(images.original.startsWith("data:image/svg+xml")).toBe(true);
+    expect(images.detection).toBeTruthy();
+    expect(images.annotated).toBeTruthy();
+  });
 });
 
 describe("HttpApiClient", () => {

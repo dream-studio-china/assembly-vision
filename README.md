@@ -11,7 +11,7 @@ rules, edge-first decisions, delayed sync to a central server.
 - **Full traceability** — every decision records model, rule, and configuration versions
 - **Atomic evidence output** — JSON records + annotated images with SHA-256 checksums
 - **Python monorepo** — uv workspace, strict typing (MyPy), Pydantic domain models
-- **Edge dashboard** — Vue 3 + TypeScript web app with camera overlay, history, queue, and health, decoupled from the backend via a typed API client
+- **Edge dashboard** — Vue 3 + TypeScript operator UI (current inspection, live view, history, traceability, statistics, device status, images), decoupled from the backend via a typed API client
 - **Edge desktop** — Electron shell that runs the dashboard as a local desktop/kiosk app
 - **Frontend workspace** — pnpm workspace with a typed `api-client` (synchronized from the domain models) and shared UI primitives
 

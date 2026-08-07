@@ -2,9 +2,11 @@ import type { ApiClient, PauseResult, ResumeResult, RetryResult } from "./ApiCli
 import { ApiError } from "./ApiError";
 import type {
   CameraState,
+  CurrentInspection,
   DeviceStatus,
   EffectiveConfiguration,
   InspectionFilter,
+  InspectionImages,
   InspectionRecord,
   InspectionRuntimeState,
   InspectionSummary,
@@ -12,6 +14,9 @@ import type {
   MediaMetadata,
   Page,
   Problem,
+  StatisticsFilter,
+  StatisticsSummary,
+  TraceabilityView,
   UploadTask,
 } from "./types";
 
@@ -150,6 +155,40 @@ export class HttpApiClient implements ApiClient {
     if (limit !== undefined) params.set("limit", String(limit));
     const qs = params.toString();
     return this.#request(`/logs${qs ? `?${qs}` : ""}`);
+  }
+
+  // Operator workflow (future FastAPI endpoints; see ApiClient contract).
+  getCurrentInspection(): Promise<CurrentInspection> {
+    return this.#request("/inspection/current");
+  }
+
+  confirmInspectionResult(): Promise<CurrentInspection> {
+    return this.#request("/inspection/confirm", { method: "POST" });
+  }
+
+  continueNextInspection(): Promise<CurrentInspection> {
+    return this.#request("/inspection/next", { method: "POST" });
+  }
+
+  triggerManualInspection(): Promise<CurrentInspection> {
+    return this.#request("/inspection/manual", { method: "POST" });
+  }
+
+  getInspectionImages(inspectionId: string): Promise<InspectionImages> {
+    return this.#request(`/inspections/${encodeURIComponent(inspectionId)}/images`);
+  }
+
+  getTraceability(sn: string): Promise<TraceabilityView> {
+    return this.#request(`/traceability/${encodeURIComponent(sn)}`);
+  }
+
+  getStatistics(filter?: StatisticsFilter): Promise<StatisticsSummary> {
+    const params = new URLSearchParams();
+    if (filter?.from) params.set("from", filter.from);
+    if (filter?.to) params.set("to", filter.to);
+    if (filter?.line) params.set("line", filter.line);
+    const qs = params.toString();
+    return this.#request(`/statistics${qs ? `?${qs}` : ""}`);
   }
 }
 

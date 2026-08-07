@@ -6,19 +6,25 @@ import type {
   BoundingBox,
   BusinessResult,
   CameraState,
+  CurrentInspection,
   DeviceStatus,
   EffectiveConfiguration,
   EvidenceState,
   InspectionDecision,
   InspectionFilter,
+  InspectionImages,
   InspectionRecord,
   InspectionRuntimeState,
+  InspectionRule,
   InspectionSummary,
   InternalDecision,
   LogEvent,
   MediaMetadata,
   Page,
   ProductResolution,
+  StatisticsFilter,
+  StatisticsSummary,
+  TraceabilityView,
   UploadTask,
 } from "./types";
 
@@ -142,6 +148,7 @@ function summary(r: InspectionRecord): InspectionSummary {
     internal_decision: r.decision.internal_decision,
     barcode: r.barcode_result.value,
     product_code: r.product_resolution.product_code,
+    sn: SN_BY_SEQ[r.device_sequence] ?? null,
     reason_summary: r.decision.reason_codes,
     latency_ms: r.processing_ms,
     upload_state: r.synchronization_status,
@@ -153,8 +160,7 @@ function summary(r: InspectionRecord): InspectionSummary {
   };
 }
 
-const UPLOADS: UploadTask[] = [
-  {
+const UPLOADS: UploadTask[] = [  {
     upload_task_id: UUID("300"),
     device_id: DEVICE_ID,
     inspection_id: UUID("104"),
@@ -207,6 +213,161 @@ const UPLOADS: UploadTask[] = [
   },
 ];
 
+// ---- Operator workflow mock data (production inspection dashboard) ----
+
+const SN_BY_SEQ: Record<number, string> = {
+  1: "SN-0001",
+  2: "SN-0003",
+  3: "SN-0002",
+  4: "SN-0001",
+  5: "SN-0003",
+  6: "SN-0002",
+  7: "SN-0001",
+};
+
+const OPERATOR = "operator-01";
+
+/** Deterministic reinspection history per SN (product traceability). */
+const TRACEABILITY: Record<string, TraceabilityView> = {
+  "SN-0001": {
+    sn: "SN-0001",
+    final_status: "PASS",
+    attempts: [
+      {
+        attempt: 1,
+        inspection_id: UUID("104"),
+        timestamp: ISO(-1800),
+        result: "NG",
+        reason: "Missing component",
+        operator: OPERATOR,
+      },
+      {
+        attempt: 2,
+        inspection_id: UUID("106"),
+        timestamp: ISO(-1200),
+        result: "PASS",
+        reason: "",
+        operator: OPERATOR,
+      },
+    ],
+  },
+  "SN-0002": {
+    sn: "SN-0002",
+    final_status: "NG",
+    attempts: [
+      {
+        attempt: 1,
+        inspection_id: UUID("103"),
+        timestamp: ISO(-2400),
+        result: "NG",
+        reason: "Manual not detected",
+        operator: OPERATOR,
+      },
+      {
+        attempt: 2,
+        inspection_id: UUID("105"),
+        timestamp: ISO(-1800),
+        result: "NG",
+        reason: "Manual not detected",
+        operator: OPERATOR,
+      },
+    ],
+  },
+  "SN-0003": {
+    sn: "SN-0003",
+    final_status: "PASS",
+    attempts: [
+      {
+        attempt: 1,
+        inspection_id: UUID("102"),
+        timestamp: ISO(-3600),
+        result: "PASS",
+        reason: "",
+        operator: OPERATOR,
+      },
+    ],
+  },
+};
+
+/** Operator queue walked by continue/confirm actions, cycling through states. */
+type QueueItem = { sn: string | null; result: "PASS" | "NG"; reason: string };
+const OPERATOR_QUEUE: QueueItem[] = [
+  { sn: "SN-0001", result: "NG", reason: "Missing component" },
+  { sn: "SN-0003", result: "PASS", reason: "" },
+  { sn: null, result: "PASS", reason: "" }, // idle: waiting for a product
+  { sn: "SN-0002", result: "NG", reason: "Manual not detected" },
+];
+
+const RULE_TEMPLATES: Array<{ id: string; name: string }> = [
+  { id: "presence", name: "Component presence check" },
+  { id: "manual", name: "Document / manual check" },
+  { id: "label", name: "Label placement check" },
+];
+
+function buildRules(
+  status: CurrentInspection["status"],
+  ngRuleId: string | null,
+  reason: string,
+): InspectionRule[] {
+  return RULE_TEMPLATES.map((template) => {
+    if (status === "WAITING") {
+      return { ...template, status: "PENDING", result_message: "Waiting for product" };
+    }
+    if (status === "PROCESSING") {
+      const inspecting = template.id === "manual" || template.id === "presence";
+      return {
+        ...template,
+        status: inspecting ? "CHECKING" : "PASS",
+        result_message: inspecting ? "Inspecting..." : "OK",
+      };
+    }
+    if (status === "NG" && template.id === ngRuleId) {
+      return { ...template, status: "NG", result_message: reason };
+    }
+    return { ...template, status: "PASS", result_message: "OK" };
+  });
+}
+
+function buildCurrent(sn: string | null, status: CurrentInspection["status"], reason = ""): CurrentInspection {
+  const ngRule = status === "NG" ? (reason.includes("Manual") ? "manual" : "presence") : null;
+  const inspecting = status === "PROCESSING";
+  return {
+    inspection_id: inspecting || status === "WAITING" ? UUID("500") : UUID("510"),
+    sn,
+    product_code: sn === null ? "" : "model_a",
+    operator: OPERATOR,
+    status,
+    started_at: ISO(-8),
+    completed_at: status === "PROCESSING" || status === "WAITING" ? null : ISO(0),
+    duration_ms: status === "PROCESSING" || status === "WAITING" ? null : 4850,
+    progress: status === "PROCESSING" ? 0.65 : status === "WAITING" ? 0 : 1,
+    rules: buildRules(status, ngRule, reason),
+    reason_codes: status === "NG" ? [reason.replace(/ /g, "_").toUpperCase()] : [],
+  };
+}
+
+/** SVG data-URL mock frames: plain camera, detection boxes, annotated overlay. */
+function frameSvg(width: number, height: number, overlay: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${overlay}</svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+const PRODUCT_BOX = `<rect x="120" y="90" width="560" height="430" fill="none" stroke="#43a047" stroke-width="4"/><text x="126" y="116" fill="#43a047" font-size="20">product</text>`;
+const COMPONENT_BOXES = `<rect x="150" y="130" width="90" height="60" fill="none" stroke="#ff5252" stroke-width="3"/><text x="156" y="154" fill="#ff5252" font-size="16">component_a</text><rect x="320" y="150" width="80" height="50" fill="none" stroke="#ff5252" stroke-width="3"/><text x="326" y="174" fill="#ff5252" font-size="16">component_b</text><rect x="500" y="420" width="120" height="60" fill="none" stroke="#ff5252" stroke-width="3"/><text x="506" y="444" fill="#ff5252" font-size="16">manual</text>`;
+const GRID = Array.from({ length: 6 }, (_, i) => `<rect x="0" y="${(i * 100) % 600}" width="800" height="2" fill="#1f2329"/><rect x="${(i * 130) % 800}" y="0" width="2" height="600" fill="#1f2329"/>`).join("");
+
+function mockImages(inspectionId: string): InspectionImages {
+  const base = GRID + PRODUCT_BOX;
+  return {
+    inspection_id: inspectionId,
+    original: frameSvg(800, 600, GRID),
+    detection: frameSvg(800, 600, base + COMPONENT_BOXES),
+    annotated: frameSvg(800, 600, base + COMPONENT_BOXES + `<text x="20" y="40" fill="#fff" font-size="22">${inspectionId.slice(-6)}</text>`),
+  };
+}
+
+const LINE = "LINE-1";
+
 /**
  * In-memory edge client used to develop and test the dashboard without a
  * backend. Data is deterministic and realistic for the MVP scope.
@@ -215,7 +376,8 @@ export class MockApiClient implements ApiClient {
   #records: InspectionRecord[] = RECORDS;
   #uploads: UploadTask[] = UPLOADS;
   #paused = false;
-
+  #current: CurrentInspection = buildCurrent("SN-0001", "PROCESSING");
+  #queueIndex = 0;
   async getHealthLive(): Promise<{ status: string }> {
     return { status: "ok" };
   }
@@ -351,5 +513,57 @@ export class MockApiClient implements ApiClient {
       { logged_at: ISO(-40), level: "WARN", component: "edge.upload", message: "upload retry scheduled", trace_id: null },
     ].slice(0, limit ?? 50);
     return { items, next_cursor: null };
+  }
+
+  // ---- Operator workflow ----
+
+  async getCurrentInspection(): Promise<CurrentInspection> {
+    return this.#current;
+  }
+
+  async confirmInspectionResult(): Promise<CurrentInspection> {
+    if (this.#current.status !== "PROCESSING") return this.#current;
+    const item = OPERATOR_QUEUE[this.#queueIndex];
+    this.#current = buildCurrent(item.sn, item.result, item.reason);
+    return this.#current;
+  }
+
+  async continueNextInspection(): Promise<CurrentInspection> {
+    this.#queueIndex = (this.#queueIndex + 1) % OPERATOR_QUEUE.length;
+    const item = OPERATOR_QUEUE[this.#queueIndex];
+    this.#current = buildCurrent(item.sn, "PROCESSING");
+    return this.#current;
+  }
+
+  async triggerManualInspection(): Promise<CurrentInspection> {
+    const item = OPERATOR_QUEUE[this.#queueIndex];
+    this.#current = buildCurrent(item.sn, "PROCESSING");
+    return this.#current;
+  }
+
+  async getInspectionImages(inspectionId: string): Promise<InspectionImages> {
+    await this.getInspection(inspectionId); // 404 on unknown
+    return mockImages(inspectionId);
+  }
+
+  async getTraceability(sn: string): Promise<TraceabilityView> {
+    const view = TRACEABILITY[sn];
+    if (!view) throw new ApiError(404, "SN_NOT_FOUND", `no traceability for ${sn}`);
+    return view;
+  }
+
+  async getStatistics(filter?: StatisticsFilter): Promise<StatisticsSummary> {
+    let records = this.#records;
+    if (filter?.from) records = records.filter((r) => r.completed_at >= (filter.from as string));
+    if (filter?.to) records = records.filter((r) => r.completed_at <= (filter.to as string));
+    void LINE;
+    const passCount = records.filter((r) => r.decision.business_result === "OK").length;
+    const total = records.length;
+    return {
+      total_inspections: total,
+      pass_count: passCount,
+      ng_count: total - passCount,
+      pass_rate: total === 0 ? 0 : passCount / total,
+    };
   }
 }

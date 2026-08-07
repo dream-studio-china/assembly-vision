@@ -1,22 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-test("live screen shows recent inspections and latest decision", async ({ page }) => {
+test("app shell renders navigation and the operator dashboard", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Latest result" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Recent inspections" })).toBeVisible();
   await expect(page.getByText("AssemblyVision Edge")).toBeVisible();
-});
-
-test("pause requires a reason and rejects duplicate pause", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Pause" }).click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: "Pause" }).click();
-  await expect(page.getByText("A reason is required")).toBeVisible();
-  await dialog.locator("input").fill("shift change");
-  await dialog.getByRole("button", { name: "Pause" }).click();
-  await expect(page.getByRole("button", { name: "Resume" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Operator" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Live" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Statistics" })).toBeVisible();
+  await expect(page.getByText("Current status")).toBeVisible();
 });
 
 test("inspection history filters by result", async ({ page }) => {

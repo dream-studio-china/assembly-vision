@@ -14,12 +14,13 @@ onMounted(() => {
     <el-header class="app-shell__header">
       <div class="app-shell__brand">AssemblyVision Edge</div>
       <nav class="app-shell__nav">
-        <router-link to="/">Live</router-link>
-        <router-link to="/inspections">Inspections</router-link>
+        <router-link to="/">Operator</router-link>
+        <router-link to="/live">Live</router-link>
+        <router-link to="/history">History</router-link>
+        <router-link to="/statistics">Statistics</router-link>
+        <router-link to="/device">Device</router-link>
         <router-link to="/uploads">Uploads</router-link>
         <router-link to="/health">Health</router-link>
-        <router-link to="/configuration">Configuration</router-link>
-        <router-link to="/logs">Logs</router-link>
       </nav>
       <div class="app-shell__status">
         <span

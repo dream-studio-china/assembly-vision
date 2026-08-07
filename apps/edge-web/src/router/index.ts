@@ -3,7 +3,13 @@ import { createRouter, createWebHistory } from "vue-router";
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: "/", name: "live", component: () => import("../pages/LiveView.vue") },
+    { path: "/", name: "operator-dashboard", component: () => import("../pages/OperatorDashboard.vue") },
+    { path: "/live", name: "live", component: () => import("../pages/LiveInspection.vue") },
+    { path: "/history", name: "history", component: () => import("../pages/HistoryView.vue") },
+    { path: "/traceability/:sn", name: "traceability", component: () => import("../pages/TraceabilityView.vue") },
+    { path: "/images/:id", name: "images", component: () => import("../pages/ImageViewer.vue") },
+    { path: "/statistics", name: "statistics", component: () => import("../pages/StatisticsView.vue") },
+    { path: "/device", name: "device", component: () => import("../pages/DeviceStatus.vue") },
     { path: "/inspections", name: "inspections", component: () => import("../pages/InspectionsView.vue") },
     {
       path: "/inspections/:id",

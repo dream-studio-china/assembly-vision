@@ -189,12 +189,12 @@ export type InspectionSummary = {
   internal_decision: InternalDecision;
   barcode: string | null;
   product_code: string | null;
+  sn: string | null;
   reason_summary: string[];
   latency_ms: number;
   upload_state: SynchronizationStatus;
   model_rule_versions: { product_model: string | null; component_model: string | null; rule: string | null };
 };
-
 export type Artifact = { name: string; uri: string; sha256: string; size_bytes: number };
 
 export type ModelManifest = {
@@ -310,8 +310,80 @@ export type InspectionFilter = {
   internal_decision?: InternalDecision;
   barcode?: string;
   product?: string;
+  sn?: string;
+  line?: string;
   from?: ISODateTime;
   to?: ISODateTime;
   cursor?: string;
   limit?: number;
+};
+
+// ---- Operator workflow domain (production inspection dashboard) ----
+//
+// These types model the operator-facing workflow: a current inspection with
+// rule checks, SN traceability across reinspection attempts, and production
+// statistics. They are independent of the internal inspection record so the
+// mock can be swapped for the future FastAPI endpoints without UI changes.
+
+export const INSPECTION_STATUSES = ["WAITING", "PROCESSING", "PASS", "NG"] as const;
+export type InspectionStatus = (typeof INSPECTION_STATUSES)[number];
+
+export const RULE_STATUSES = ["PENDING", "CHECKING", "PASS", "NG"] as const;
+export type RuleStatus = (typeof RULE_STATUSES)[number];
+
+export type InspectionRule = {
+  id: string;
+  name: string;
+  status: RuleStatus;
+  result_message: string;
+};
+
+export type CurrentInspection = {
+  inspection_id: UUID;
+  sn: string | null;
+  product_code: string;
+  operator: string;
+  status: InspectionStatus;
+  started_at: ISODateTime;
+  completed_at: ISODateTime | null;
+  duration_ms: number | null;
+  progress: number;
+  rules: InspectionRule[];
+  reason_codes: string[];
+};
+
+export type InspectionAttempt = {
+  attempt: number;
+  inspection_id: UUID;
+  timestamp: ISODateTime;
+  result: "PASS" | "NG";
+  reason: string;
+  operator: string;
+};
+
+export type TraceabilityView = {
+  sn: string;
+  final_status: "PASS" | "NG";
+  attempts: InspectionAttempt[];
+};
+
+/** Image references for one inspection (original, detection result, annotations). */
+export type InspectionImages = {
+  inspection_id: UUID;
+  original: string;
+  detection: string;
+  annotated: string;
+};
+
+export type StatisticsFilter = {
+  from?: ISODateTime;
+  to?: ISODateTime;
+  line?: string;
+};
+
+export type StatisticsSummary = {
+  total_inspections: number;
+  pass_count: number;
+  ng_count: number;
+  pass_rate: number;
 };
