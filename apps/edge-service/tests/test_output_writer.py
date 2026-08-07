@@ -8,6 +8,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
+import pytest
+from assemblyvision_domain.errors import OutputError
 from assemblyvision_domain.models import (
     BarcodeResult,
     BusinessResult,
@@ -95,3 +97,29 @@ def test_writer_leaves_no_temp_files(tmp_path: Path) -> None:
         if p.name.endswith(".tmp")
     ]
     assert leftover == []
+
+
+def test_writer_rejects_republishing_same_inspection(tmp_path: Path) -> None:
+    writer = OutputWriter(tmp_path / "out")
+    record = _make_record(uuid4())
+    writer.save(record, full_frame=None, roi_image=None, annotated=None)
+
+    with pytest.raises(OutputError):
+        writer.save(record, full_frame=None, roi_image=None, annotated=None)
+
+
+def test_writer_publishes_bundle_atomically_without_partial_output(tmp_path: Path) -> None:
+    writer = OutputWriter(tmp_path / "out")
+    record = _make_record(uuid4())
+    saved = writer.save(
+        record,
+        full_frame=Image.new("RGB", (32, 32), (10, 10, 10)),
+        roi_image=None,
+        annotated=None,
+    )
+
+    inspection_dir = tmp_path / "out" / str(saved.inspection_id)
+    assert (inspection_dir / "inspection.json").is_file()
+    assert (inspection_dir / "key_frame.jpg").is_file()
+    staging = [p for p in (tmp_path / "out").iterdir() if p.name.startswith(".staging-")]
+    assert staging == []

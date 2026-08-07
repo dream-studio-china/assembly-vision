@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Literal
@@ -28,14 +29,40 @@ def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _atomic_write_bytes(path: Path, data: bytes) -> None:
+def _fsync_path(path: Path) -> None:
+    """Flush a file to durable storage."""
+    with path.open("rb") as handle:
+        os.fsync(handle.fileno())
+
+
+def _fsync_dir(path: Path) -> None:
+    """Fsync a directory so a rename into it becomes durable."""
+    fd = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def _write_file_atomic(path: Path, data: bytes) -> None:
+    """Write bytes to a temp file, flush, fsync, then rename in place."""
     tmp = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
     try:
-        tmp.write_bytes(data)
+        with tmp.open("wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
         tmp.rename(path)
     except OSError as exc:
         tmp.unlink(missing_ok=True)
         raise OutputError(f"cannot persist {path}") from exc
+
+
+def _rmtree_quiet(path: Path) -> None:
+    """Best-effort recursive removal used to clean a failed staging directory."""
+    import shutil
+
+    shutil.rmtree(path, ignore_errors=True)
 
 
 def _draw_rect(
@@ -74,28 +101,37 @@ class OutputWriter:
         roi_image: Image.Image | None,
         annotated: Image.Image | None,
     ) -> InspectionRecord:
-        """Persist media first, then the inspection record, and return it updated."""
-        inspection_dir = self._output_root / str(record.inspection_id)
+        """Persist an inspection bundle atomically and return it updated.
+
+        Media and the record JSON are written into a staging directory, fsynced,
+        then the whole directory is renamed into place. A publish is rejected for
+        an inspection ID that already exists so a retry can never combine newer
+        media with an older record (PR-003 P2 bundle-atomic output).
+        """
+        final_dir = self._output_root / str(record.inspection_id)
+        if final_dir.exists():
+            raise OutputError(f"inspection {record.inspection_id} is already published")
+        staging = self._output_root / f".staging-{record.inspection_id}-{uuid4().hex}"
         try:
-            inspection_dir.mkdir(parents=True, exist_ok=True)
-        except OSError as exc:
-            raise OutputError(f"cannot create output directory {inspection_dir}") from exc
-        media: list[MediaMetadata] = []
-        if full_frame is not None:
-            media.append(self._save_image(inspection_dir, "key_frame.jpg", full_frame, "KEY_FRAME"))
-        if roi_image is not None:
-            media.append(
-                self._save_image(inspection_dir, "product_roi.jpg", roi_image, "PRODUCT_ROI")
-            )
-        if annotated is not None:
-            media.append(
-                self._save_image(
-                    inspection_dir, "annotated_frame.jpg", annotated, "ANNOTATED_FRAME"
+            staging.mkdir(parents=True)
+            media: list[MediaMetadata] = []
+            if full_frame is not None:
+                media.append(self._save_image(staging, "key_frame.jpg", full_frame, "KEY_FRAME"))
+            if roi_image is not None:
+                media.append(self._save_image(staging, "product_roi.jpg", roi_image, "PRODUCT_ROI"))
+            if annotated is not None:
+                media.append(
+                    self._save_image(staging, "annotated_frame.jpg", annotated, "ANNOTATED_FRAME")
                 )
-            )
-        record.media = media
-        payload = json.dumps(record.model_dump(mode="json"), indent=2, sort_keys=True) + "\n"
-        _atomic_write_bytes(inspection_dir / "inspection.json", payload.encode("utf-8"))
+            record.media = media
+            payload = json.dumps(record.model_dump(mode="json"), indent=2, sort_keys=True) + "\n"
+            _write_file_atomic(staging / "inspection.json", payload.encode("utf-8"))
+            _fsync_dir(staging)
+            staging.rename(final_dir)
+            _fsync_dir(self._output_root)
+        except (OSError, OutputError) as exc:
+            _rmtree_quiet(staging)
+            raise OutputError(f"cannot publish inspection {record.inspection_id}: {exc}") from exc
         return record
 
     def _save_image(
@@ -111,7 +147,7 @@ class OutputWriter:
             data = buffer.getvalue()
         except OSError as exc:
             raise OutputError(f"cannot encode image {name}") from exc
-        _atomic_write_bytes(inspection_dir / name, data)
+        _write_file_atomic(inspection_dir / name, data)
         relative = f"{inspection_dir.name}/{name}"
         return MediaMetadata(
             media_id=uuid4(),

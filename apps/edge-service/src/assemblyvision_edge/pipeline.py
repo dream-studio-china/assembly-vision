@@ -62,6 +62,44 @@ def _artifact_checksum(manifest: ModelManifest) -> str:
     return manifest.artifacts[0].sha256
 
 
+def _validate_product_provenance(
+    detection: ProductDetection,
+    frame_id: UUID,
+    manifest: ModelManifest,
+    frame: Image.Image,
+) -> bool:
+    """Reject detections that do not belong to the current frame/model (P1)."""
+    if detection.frame_id != frame_id:
+        return False
+    if detection.model_version_id != manifest.model_version_id:
+        return False
+    box = detection.bbox
+    return box.image_width == frame.width and box.image_height == frame.height
+
+
+def _validate_component_provenance(
+    observations: list[ComponentDetection],
+    frame_id: UUID,
+    manifest: ModelManifest,
+    roi: Image.Image,
+    frame: Image.Image,
+) -> bool:
+    """Reject component observations with stale frame/model or wrong coordinates."""
+    for obs in observations:
+        if obs.frame_id != frame_id:
+            return False
+        if obs.model_version_id != manifest.model_version_id:
+            return False
+        if obs.roi_bbox.image_width != roi.width or obs.roi_bbox.image_height != roi.height:
+            return False
+        if (
+            obs.full_frame_bbox.image_width != frame.width
+            or obs.full_frame_bbox.image_height != frame.height
+        ):
+            return False
+    return True
+
+
 class InspectionPipeline:
     """Coordinates a single static-image inspection end to end."""
 
@@ -126,6 +164,11 @@ class InspectionPipeline:
             else:
                 if outcome.selected is None:
                     extra_reasons.append(outcome.reason_code or rc.NO_PRODUCT)
+                elif not _validate_product_provenance(
+                    outcome.selected, frame_id, self._product_manifest, frame
+                ):
+                    extra_reasons.append(rc.INFERENCE_ERROR)
+                    log.warning("product detection provenance mismatch for frame %s", frame_id)
                 else:
                     product_detection = outcome.selected
                     gates["product_detected"] = True
@@ -148,7 +191,20 @@ class InspectionPipeline:
                                 generated.result.transform_full_to_roi,
                                 (frame.width, frame.height),
                             )
-                            gates["component_inference_valid"] = True
+                            if not _validate_component_provenance(
+                                observations,
+                                frame_id,
+                                self._component_manifest,
+                                generated.roi_image,
+                                frame,
+                            ):
+                                observations = []
+                                extra_reasons.append(rc.INFERENCE_ERROR)
+                                log.warning(
+                                    "component detection provenance mismatch for frame %s", frame_id
+                                )
+                            else:
+                                gates["component_inference_valid"] = True
                         except DetectionError as exc:
                             extra_reasons.append(exc.reason_code)
                             log.warning("component detection failed: %s", exc)
@@ -173,6 +229,8 @@ class InspectionPipeline:
             reason_codes=final_reasons,
             decided_at=datetime.now(UTC),
         )
+
+        inference_metadata = self._collect_inference_metadata()
 
         record = InspectionRecord(
             inspection_id=inspection_id,
@@ -206,16 +264,29 @@ class InspectionPipeline:
             decision=decision,
             synchronization_status="LOCAL_ONLY",
             processing_ms=int((time.monotonic() - started) * 1000),
+            inference_metadata=inference_metadata,
         )
 
         annotated = None
         if frame is not None:
+            product_box = product_detection.bbox if product_detection is not None else None
             annotated = annotate_full_frame(
                 frame,
-                product_detection.bbox if product_detection is not None else None,
+                product_box,
                 [(obs.component_code, obs.full_frame_bbox) for obs in observations],
             )
         return writer.save(record, full_frame=frame, roi_image=roi_image, annotated=annotated)
+
+    def _collect_inference_metadata(self) -> dict[str, object] | None:
+        """Snapshot effective inference parameters declared by the detectors."""
+        product = getattr(self._product_detector, "effective_settings", None)
+        component = getattr(self._component_detector, "effective_settings", None)
+        if product is None and component is None:
+            return None
+        return {
+            **({"product_detection": dict(product)} if product is not None else {}),
+            **({"component_detection": dict(component)} if component is not None else {}),
+        }
 
     def _build_evidence(
         self,
