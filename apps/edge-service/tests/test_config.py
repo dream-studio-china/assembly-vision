@@ -102,3 +102,103 @@ def test_invalid_rule_raises(tmp_path: Path) -> None:
 def test_missing_manifest_raises(tmp_path: Path) -> None:
     with pytest.raises(ConfigError):
         load_model_manifest(tmp_path / "missing.json")
+
+
+def test_pipeline_section_must_be_mapping(tmp_path: Path) -> None:
+    path = tmp_path / "pipeline.yaml"
+    path.write_text("models: 42\n", encoding="utf-8")
+    with pytest.raises(ConfigError, match="must be a mapping"):
+        load_pipeline_config(path)
+
+
+def test_config_rejects_bool_number() -> None:
+    from assemblyvision_edge.config import _as_number
+
+    with pytest.raises(ConfigError, match="must be a number"):
+        _as_number(True, "x")
+
+
+def test_config_rejects_non_finite_number() -> None:
+    import math
+
+    from assemblyvision_edge.config import _as_number
+
+    with pytest.raises(ConfigError, match="must be finite"):
+        _as_number(math.inf, "x")
+
+
+def test_config_rejects_threshold_out_of_range() -> None:
+    from assemblyvision_edge.config import _as_threshold
+
+    with pytest.raises(ConfigError, match="within \\[0, 1\\]"):
+        _as_threshold(-0.1, "x", 0.5)
+
+
+def test_config_rejects_application_version_not_string(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError, match="application_version"):
+        load_pipeline_config(_write_pipeline(tmp_path, "application_version: 123\n"))
+
+
+def test_config_rejects_invalid_roi_type(tmp_path: Path) -> None:
+    # normalize_perspective=true raises ROIGenerationError from ROIConfig; the
+    # loader must surface it as a configuration error, not leak a raw error.
+    with pytest.raises(ConfigError, match="roi configuration is invalid"):
+        load_pipeline_config(_write_pipeline(tmp_path, "roi:\n  normalize_perspective: true\n"))
+
+
+def test_config_wraps_roi_constructor_value_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class _BrokenROIConfig:
+        def __init__(self, **kwargs: object) -> None:
+            raise ValueError("bad roi")
+
+    monkeypatch.setattr("assemblyvision_edge.config.ROIConfig", _BrokenROIConfig)
+    with pytest.raises(ConfigError, match="roi configuration is invalid"):
+        load_pipeline_config(EXAMPLE_PIPELINE)
+
+
+def test_load_rule_missing_file(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError, match="cannot load rule definition"):
+        load_rule_definition(tmp_path / "missing-rule.yaml")
+
+
+def test_load_rule_invalid_yaml(tmp_path: Path) -> None:
+    path = tmp_path / "broken.yaml"
+    path.write_text("schema_version: 1\n  bad: [\n", encoding="utf-8")
+    with pytest.raises(ConfigError, match="cannot load rule definition"):
+        load_rule_definition(path)
+
+
+def test_validate_model_version_declaration_mismatch(tmp_path: Path) -> None:
+    from assemblyvision_edge.config import validate_model_version_declaration
+
+    manifest = load_model_manifest(PRODUCT_MANIFEST)
+    with pytest.raises(ConfigError, match="does not match"):
+        validate_model_version_declaration(
+            "wrong-version", manifest, "product_detection.model_version"
+        )
+
+
+def test_config_rejects_empty_components(tmp_path: Path) -> None:
+    path = tmp_path / "pipeline.yaml"
+    path.write_text(
+        "application_version: '0.1.0'\n"
+        "models:\n"
+        "  product_manifest: m.json\n"
+        "  component_manifest: c.json\n"
+        "product_detection:\n"
+        "  model_version: product-yolo-1.0.0\n"
+        "  confidence_threshold: 0.7\n"
+        "  iou_threshold: 0.5\n"
+        "component_detection:\n"
+        "  model_version: component-yolo-1.0.0\n"
+        "  iou_threshold: 0.5\n"
+        "  components: {}\n"
+        "roi:\n"
+        "  margin_x_ratio: 0.05\n"
+        "  margin_y_ratio: 0.05\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ConfigError, match="at least one component"):
+        load_pipeline_config(path)

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from assemblyvision_domain.errors import ConfigError
+from assemblyvision_domain.errors import ConfigError, ROIGenerationError
 from assemblyvision_domain.models import ModelManifest
 from assemblyvision_vision.manifests import manifest_model_version
 from assemblyvision_vision.roi.roi_engine import ROIConfig
@@ -214,8 +214,8 @@ def load_pipeline_config(path: Path) -> PipelineConfig:
                 roi_raw.get("normalize_perspective"), "roi.normalize_perspective", False
             ),
         )
-    except ConfigError:
-        raise
+    except ROIGenerationError as exc:
+        raise ConfigError(f"roi configuration is invalid: {exc}") from exc
     except (TypeError, ValueError) as exc:
         raise ConfigError(f"roi configuration is invalid: {exc}") from exc
     return PipelineConfig(

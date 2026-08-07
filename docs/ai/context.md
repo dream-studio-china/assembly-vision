@@ -25,9 +25,11 @@ and verifies that all required assembly components are present.
   inspection (`assemblyvision inspect`) and held-out verification. The frontend
   pnpm workspace includes the Vue 3 + TypeScript operator dashboard
   (`apps/edge-web`), an Electron kiosk shell (`apps/edge-desktop`), a typed
-  `api-client` contract layer, and shared UI primitives. The dashboard runs
-  against a mock service layer by default; wiring it to the FastAPI backend is
-  the next engineering gap.
+  `api-client` contract layer, and shared UI primitives. A first backend layer
+  (FastAPI + SQLite local index + `assemblyvision serve`) is implemented on
+  `dev` (see section 8.3): read-only dashboard views can now display real CLI
+  results through the HTTP client, while the operator workflow actions remain
+  on the mock client.
 
 ## 2. Repository State
 
@@ -269,20 +271,58 @@ pnpm workspace with the existing Python uv workspace, then merged to `main`:
 - **Documentation**: QUICKSTART restructured per-app with extensible numbered
   sections; README updated with new features, project structure, and roadmap.
 
+## 8.3 Edge Backend Layer (M1)
+
+A first FastAPI + SQLite backend layer is implemented on `dev` so read-only
+dashboard views can display real CLI inspection results:
+
+- **`assemblyvision serve`**: starts the local API on `/api/v1` (design 15.3),
+  serves the built dashboard as static assets with SPA fallback, opens a SQLite
+  index, and reconciles existing CLI `inspection.json` output idempotently on
+  startup. Configuration/rule/manifest loading reuses the same verified
+  pipeline build as `inspect`.
+- **Persistence**: SQLAlchemy Core schema + Alembic initial migration
+  (`apps/edge-service/migrations/`); tables for inspections, component
+  evidence, media, upload tasks, device events, and active packages with
+  contract-05 indexes. Denormalized filter columns (barcode, product, result)
+  drive history queries.
+- **Endpoints**: health/device/camera, inspection state + pause/resume (with
+  reason and idempotent rejection), inspections list (cursor pagination +
+  filters) and detail, inspection media, media content with Range support,
+  uploads (empty in M1), effective configuration, logs (in-memory ring
+  buffer), and derived traceability/statistics/images.
+- **Frontend split**: read-only views route through the HTTP client when
+  `VITE_API_BASE_URL` is set; operator workflow actions (current/confirm/next/
+  manual) stay on the deterministic mock because they are a demonstration
+  queue, not a design 15.3 endpoint.
+- **PR-003 hardening folded in**: rule version identity is now bound to
+  canonical rule content; the output writer publishes inspection bundles
+  atomically (staging + fsync + rename, rejects republish); detectors pass
+  manifest `imgsz`/`iou`/`conf` explicitly and persist effective values in
+  `InspectionRecord.inference_metadata`; the pipeline validates detection
+  provenance (frame/model/coordinate space) at the boundary.
+- **Packaging**: `py.typed` markers added to `domain` and `vision-core` so MyPy
+  strict passes repo-wide.
+- **Test hardening**: test coverage for the edge Python packages is at 100%
+  (pytest-cov). The expansion surfaced three defects that were fixed:
+  `upsert_inspection` now replaces child evidence/media rows instead of
+  failing on the media unique constraint; `load_pipeline_config` wraps
+  `ROIGenerationError` (e.g. `normalize_perspective: true`) as `ConfigError`
+  instead of leaking a raw error; and `OutputWriter.save` cleans up its
+  staging directory when a child write fails.
+
 ## 9. Open Items / Next Steps
 
-- The static train-and-inspect MVP and the edge dashboard frontend are complete
-  and merged to `main`. The dashboard currently runs against the in-memory mock
-  client; the highest-priority engineering gap is the **edge-service FastAPI
-  backend layer** to expose the inspection pipeline over `/api/v1` (design 15),
-  with a lightweight index (SQLite or directory scan) so the frontend can
-  display real CLI results.
+- The FastAPI + SQLite backend layer (`assemblyvision serve`, section 8.3) now
+  serves read-only dashboard views from the local index; the **upload queue
+  scheduler** (real `upload_tasks` rows, retry backoff, idempotency) and the
+  **WebSocket runtime channel** are the next backend gaps. The dashboard read
+  views switch to real data automatically via `VITE_API_BASE_URL`.
 - A number of PR-003 P1/P2 backend hardening items are still open (see
   `docs/reviews/PR-003-review.md`): model manifest full-content immutability,
-  inference-parameter pinning, pipeline detection-provenance validation, bundle-
-  atomic evidence output with fsync, rule-version content binding, dataset
-  staging, and component preparation reusing production selection contracts.
-  Several can be addressed in parallel with the FastAPI layer.
+  dataset staging, and component preparation reusing production selection
+  contracts. Rule content binding, bundle-atomic output, inference parameter
+  pinning, and detection provenance validation are now fixed (section 8.3).
 - Real customer data is still required for the one-month baseline: annotate with
   X-AnyLabeling (product + component boxes), then run `av-train` ->
   `assemblyvision inspect` -> `assemblyvision verify`. A utility script
