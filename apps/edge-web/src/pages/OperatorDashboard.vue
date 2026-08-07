@@ -8,10 +8,17 @@ import type { ViewerBox } from "@assemblyvision/ui";
 import { ElMessage } from "element-plus";
 import { computed, onMounted, ref } from "vue";
 import { useInspectionStore } from "../stores/inspection";
+import { isMockMode } from "../services/client";
 import { inspectionService } from "../services/inspectionService";
 import { mockCameraFrame } from "../mock/images";
 
 const store = useInspectionStore();
+
+// The operator workflow (current inspection, confirm, continue, manual) is a
+// deterministic mock demonstration and must never be shown alongside live
+// device state (F6, ADR-012). In real mode the dashboard explains that and the
+// read-only views display the actual inspection data.
+const operatorWorkflow = isMockMode();
 
 const images = ref<InspectionImages | null>(null);
 const fallback = mockCameraFrame(800, 600);
@@ -94,6 +101,7 @@ async function manual(): Promise<void> {
 }
 
 onMounted(async () => {
+  if (!operatorWorkflow) return;
   await store.loadCurrent();
   await loadImages();
 });
@@ -101,7 +109,8 @@ onMounted(async () => {
 
 <template>
   <div class="dashboard">
-    <div class="dashboard__top">
+    <template v-if="operatorWorkflow">
+      <div class="dashboard__top">
       <section class="panel">
         <h2 class="dashboard__panel-title">Current product image</h2>
         <div class="dashboard__image">
@@ -174,6 +183,19 @@ onMounted(async () => {
         Trigger manual inspection
       </el-button>
     </section>
+    </template>
+
+    <section v-else class="panel dashboard__real-mode">
+      <h2>Operator workflow is a mock demonstration</h2>
+      <p>
+        The confirm / continue / manual actions and the current-inspection
+        status are deterministic mock data and are hidden while the dashboard is
+        connected to the live read-only API (ADR-012). Use
+        <router-link to="/history">History</router-link>,
+        <router-link to="/live">Live inspection</router-link>, and
+        <router-link to="/statistics">Statistics</router-link> for real data.
+      </p>
+    </section>
   </div>
 </template>
 
@@ -237,6 +259,16 @@ onMounted(async () => {
 .dashboard__actions {
   display: flex;
   gap: 12px;
+}
+.dashboard__real-mode h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #374151;
+}
+.dashboard__real-mode p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
 }
 .rule {
   display: inline-block;

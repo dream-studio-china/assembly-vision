@@ -18,6 +18,10 @@ import type { ApiClient } from "@assemblyvision/api-client";
 let client: ApiClient | null = null;
 const mode = (import.meta.env.VITE_API_MODE as string | undefined) ?? "mock";
 
+export function isMockMode(): boolean {
+  return mode === "mock";
+}
+
 export function getApiClient(): ApiClient {
   if (client !== null) return client;
   if (mode === "http") {

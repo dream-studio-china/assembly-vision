@@ -125,6 +125,18 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
     await expect(page.getByText("SN-E2E-REAL")).toBeVisible();
     await page.goto(`http://127.0.0.1:${port}/statistics`);
     await expect(page.getByText("Total inspections")).toBeVisible();
+
+    // Real mode must not mix the mock operator workflow with live state (F6).
+    await page.goto(`http://127.0.0.1:${port}/`);
+    await expect(page.getByText("Operator workflow is a mock demonstration")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Confirm result" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Continue next inspection" })).toHaveCount(0);
+
+    // Absent media renders an unavailable state, never a fabricated frame.
+    await page.goto(`http://127.0.0.1:${port}/live`);
+    await expect(page.getByText("No camera feed in read-only mode")).toBeVisible();
+    await expect(page.getByText("No detection image available")).toBeVisible();
+    await expect(page.locator('img[alt="camera preview"]')).toHaveCount(0);
   } finally {
     proc.kill("SIGTERM");
   }

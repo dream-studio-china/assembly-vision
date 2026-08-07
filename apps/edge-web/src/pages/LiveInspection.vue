@@ -10,6 +10,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { mockCameraFrame } from "../mock/images";
 import { useInspectionStore } from "../stores/inspection";
 import { useRuntimeStore } from "../stores/runtime";
+import { isMockMode } from "../services/client";
 import { inspectionService } from "../services/inspectionService";
 
 const store = useInspectionStore();
@@ -18,14 +19,21 @@ const images = ref<InspectionImages | null>(null);
 const logs = ref<LogEvent[]>([]);
 let timer: ReturnType<typeof setInterval> | null = null;
 
+// In real mode there is no live operator window (M1, ADR-012), so simulated
+// frames and the mock current inspection must never be shown alongside live
+// device state (F6). Media that is absent or unreachable renders as an explicit
+// unavailable state instead of a fabricated frame.
+const isMock = isMockMode();
+const cameraFrame = computed(() => (isMock ? mockCameraFrame(800, 600) : null));
+const detectionUrl = computed(() => images.value?.detection || cameraFrame.value || null);
+const annotatedUrl = computed(() => images.value?.annotated || cameraFrame.value || null);
+
 const badgeStatus = computed(() => {
   const s = store.current?.status ?? "WAITING";
   if (s === "PASS") return "OK";
   if (s === "NG") return "NG";
   return "UNCERTAIN";
 });
-
-const cameraFrame = computed(() => mockCameraFrame(800, 600));
 
 const currentFrameId = computed(() => (store.current?.inspection_id ?? "frame") as string);
 
@@ -64,7 +72,8 @@ async function loadLogs(): Promise<void> {
 }
 
 async function refresh(): Promise<void> {
-  await Promise.all([store.loadCurrent(), runtime.refresh()]);
+  if (isMock) await store.loadCurrent();
+  await runtime.refresh();
   await Promise.all([loadImages(), loadLogs()]);
 }
 
@@ -121,7 +130,13 @@ onBeforeUnmount(() => {
       <section class="panel">
         <h3>Camera image</h3>
         <div class="live-inspection__frame">
-          <img :src="cameraFrame" alt="camera preview" />
+          <img v-if="cameraFrame" :src="cameraFrame" alt="camera preview" />
+          <el-empty
+            v-else
+            description="No camera feed in read-only mode"
+            :image-size="72"
+            class="live-inspection__unavailable"
+          />
         </div>
       </section>
 
@@ -129,11 +144,18 @@ onBeforeUnmount(() => {
         <h3>Detection result</h3>
         <div class="live-inspection__viewer">
           <DetectionViewer
-            :image-url="images?.detection ?? cameraFrame"
+            v-if="detectionUrl"
+            :image-url="detectionUrl"
             :image-width="800"
             :image-height="600"
             :boxes="detectionBoxes"
             :current-frame-id="currentFrameId"
+          />
+          <el-empty
+            v-else
+            description="No detection image available"
+            :image-size="72"
+            class="live-inspection__unavailable"
           />
         </div>
       </section>
@@ -142,11 +164,18 @@ onBeforeUnmount(() => {
         <h3>Detection regions</h3>
         <div class="live-inspection__viewer">
           <DetectionViewer
-            :image-url="images?.annotated ?? cameraFrame"
+            v-if="annotatedUrl"
+            :image-url="annotatedUrl"
             :image-width="800"
             :image-height="600"
             :boxes="detectionBoxes"
             :current-frame-id="currentFrameId"
+          />
+          <el-empty
+            v-else
+            description="No annotated image available"
+            :image-size="72"
+            class="live-inspection__unavailable"
           />
         </div>
       </section>
@@ -259,6 +288,13 @@ onBeforeUnmount(() => {
   min-height: 280px;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
+}
+.live-inspection__unavailable {
+  height: 100%;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .panel {
   border: 1px solid #cbd7dc;

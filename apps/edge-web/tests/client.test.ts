@@ -6,6 +6,7 @@ async function load() {
   const mod = await import("../src/services/client");
   return {
     getApiClient: mod.getApiClient,
+    isMockMode: mod.isMockMode,
     MockApiClient: api.MockApiClient,
     HttpApiClient: api.HttpApiClient,
   };
@@ -30,8 +31,14 @@ describe("dashboard client mode selection (F5)", () => {
 
   it("selects the HTTP client in http mode", async () => {
     vi.stubEnv("VITE_API_MODE", "http");
-    const { getApiClient, HttpApiClient } = await load();
+    const { getApiClient, isMockMode, HttpApiClient } = await load();
     expect(getApiClient()).toBeInstanceOf(HttpApiClient);
+    expect(isMockMode()).toBe(false);
+  });
+
+  it("reports mock mode for the dev/mock client", async () => {
+    const { isMockMode } = await load();
+    expect(isMockMode()).toBe(true);
   });
 
   it("http mode without a base URL talks to the same-origin API", async () => {
