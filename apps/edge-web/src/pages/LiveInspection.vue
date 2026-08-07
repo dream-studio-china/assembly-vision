@@ -4,14 +4,17 @@
 // (docs/design/16-edge-dashboard.md 16.4).
 
 import type { InspectionImages, LogEvent } from "@assemblyvision/api-client";
-import { DetectionViewer, StatusBadge, formatIsoTime, formatLatency } from "@assemblyvision/ui";
+import { DetectionViewer, StatusBadge, formatBytes, formatIsoTime, formatLatency } from "@assemblyvision/ui";
 import type { ViewerBox } from "@assemblyvision/ui";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { mockCameraFrame } from "../mock/images";
 import { useInspectionStore } from "../stores/inspection";
+import { useRuntimeStore } from "../stores/runtime";
 import { inspectionService } from "../services/inspectionService";
 
 const store = useInspectionStore();
+const runtime = useRuntimeStore();
 const images = ref<InspectionImages | null>(null);
 const logs = ref<LogEvent[]>([]);
 let timer: ReturnType<typeof setInterval> | null = null;
@@ -62,8 +65,31 @@ async function loadLogs(): Promise<void> {
 }
 
 async function refresh(): Promise<void> {
-  await store.loadCurrent();
+  await Promise.all([store.loadCurrent(), runtime.refresh()]);
   await Promise.all([loadImages(), loadLogs()]);
+}
+
+async function changePausedState(): Promise<void> {
+  const pausing = !runtime.runtime?.paused;
+  const action = pausing ? "Pause" : "Resume";
+  try {
+    const reason = await ElMessageBox.prompt(
+      pausing
+        ? "Pause stops new inspection windows. The active window follows the configured safety policy."
+        : "Resume is available only when camera, model, rule, database, and disk preconditions pass.",
+      `${action} inspection`,
+      {
+        confirmButtonText: action,
+        inputPlaceholder: "Required reason",
+        inputValidator: (value: string) => (value.trim() ? true : "A reason is required"),
+      },
+    );
+    if (pausing) await runtime.pause(reason.value);
+    else await runtime.resume(reason.value);
+    if (runtime.error) ElMessage.error(runtime.error);
+  } catch {
+    // Dismissing the confirmation is not an operational failure.
+  }
 }
 
 onMounted(() => {
@@ -79,17 +105,62 @@ onBeforeUnmount(() => {
 <template>
   <div class="live-inspection">
     <div class="live-inspection__head">
-      <h2>Live inspection</h2>
+      <div>
+        <p class="live-inspection__eyebrow">LOCAL INSPECTION</p>
+        <h2>Live inspection</h2>
+      </div>
       <StatusBadge :status="badgeStatus" />
       <span class="live-inspection__sn">{{ store.current?.sn ?? "waiting" }}</span>
       <span class="live-inspection__inspection-id">{{ store.current?.inspection_id }}</span>
+      <el-button
+        class="live-inspection__pause"
+        :type="runtime.runtime?.paused ? 'success' : 'warning'"
+        :loading="runtime.loading"
+        @click="changePausedState"
+      >
+        {{ runtime.runtime?.paused ? "Resume inspection" : "Pause inspection" }}
+      </el-button>
     </div>
+
+    <el-alert
+      v-if="runtime.runtime?.paused"
+      class="live-inspection__paused"
+      type="warning"
+      :closable="false"
+      show-icon
+      title="Inspection is paused. No new product windows will be opened."
+    >
+      <template #default>
+        <span>Reason: {{ runtime.runtime.paused_reason ?? "not recorded" }}.</span>
+        <span v-if="runtime.runtime.paused_by"> Requested by {{ runtime.runtime.paused_by }}.</span>
+      </template>
+    </el-alert>
 
     <div class="live-inspection__progress">
       <el-progress
         :percentage="Math.round((store.current?.progress ?? 0) * 100)"
         :stroke-width="10"
       />
+    </div>
+
+    <div class="live-inspection__strips" aria-label="Inspection readiness and connectivity">
+      <section class="status-strip">
+        <h3>Inspection readiness</h3>
+        <div class="status-strip__items">
+          <span class="status-chip" :class="runtime.status?.inspection_ready ? 'status-chip--ready' : 'status-chip--critical'">Engine {{ runtime.status?.inspection_ready ? "ready" : "not ready" }}</span>
+          <span class="status-chip" :class="runtime.status?.camera_connected ? 'status-chip--ready' : 'status-chip--critical'">Camera {{ runtime.status?.camera_connected ? "connected" : "offline" }}</span>
+          <span class="status-chip" :class="runtime.status?.model_loaded ? 'status-chip--ready' : 'status-chip--critical'">Model {{ runtime.status?.model_loaded ? "loaded" : "unavailable" }}</span>
+          <span class="status-chip" :class="(runtime.status?.disk_free_bytes ?? 0) >= 5 * 1024 ** 3 ? 'status-chip--ready' : 'status-chip--warning'">Disk {{ runtime.status ? formatBytes(runtime.status.disk_free_bytes) + " free" : "unknown" }}</span>
+        </div>
+      </section>
+      <section class="status-strip">
+        <h3>Connectivity</h3>
+        <div class="status-strip__items">
+          <span class="status-chip status-chip--ready">Local API available</span>
+          <span class="status-chip" :class="runtime.status?.central_connected ? 'status-chip--ready' : 'status-chip--warning'">Central {{ runtime.status?.central_connected ? "connected" : "offline" }}</span>
+          <span class="status-chip status-chip--neutral">Uploads pending {{ runtime.status?.upload_pending_count ?? "-" }}</span>
+        </div>
+      </section>
     </div>
 
     <div class="live-inspection__grid">
@@ -190,7 +261,10 @@ onBeforeUnmount(() => {
 }
 .live-inspection__head h2 {
   margin: 0;
+  color: #17202a;
+  font-size: 24px;
 }
+.live-inspection__eyebrow { margin: 0 0 3px; color: #176b87; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; }
 .live-inspection__sn {
   color: #6b7280;
   font-size: 14px;
@@ -199,6 +273,16 @@ onBeforeUnmount(() => {
   color: #9aa2ae;
   font-size: 12px;
 }
+.live-inspection__pause { margin-left: auto; }
+.live-inspection__strips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.status-strip { border: 1px solid #cbd7dc; border-left: 4px solid #176b87; border-radius: 6px; background: #fff; padding: 11px 12px; }
+.status-strip h3 { margin: 0 0 8px; color: #46555c; font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase; }
+.status-strip__items { display: flex; flex-wrap: wrap; gap: 7px; }
+.status-chip { border-radius: 3px; padding: 4px 7px; font-size: 12px; font-weight: 650; }
+.status-chip--ready { background: #e5f3ed; color: #17633c; }
+.status-chip--critical { background: #fde7e4; color: #a72d24; }
+.status-chip--warning { background: #fff1d8; color: #825600; }
+.status-chip--neutral { background: #e9eef0; color: #405159; }
 .live-inspection__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -224,9 +308,10 @@ onBeforeUnmount(() => {
   border-radius: 6px;
 }
 .panel {
-  border: 1px solid #e0e0e0;
+  border: 1px solid #cbd7dc;
   border-radius: 6px;
-  padding: 12px;
+  padding: 14px;
+  background: #fff;
 }
 .panel h3 {
   margin: 0 0 10px;
@@ -268,5 +353,15 @@ onBeforeUnmount(() => {
 .rule--pending {
   background: #eceff1;
   color: #546e7a;
+}
+@media (max-width: 1180px) {
+  .live-inspection__grid { grid-template-columns: repeat(2, 1fr); }
+  .live-inspection__grid > :last-child { grid-column: span 2; }
+}
+@media (max-width: 760px) {
+  .live-inspection__pause { margin-left: 0; }
+  .live-inspection__strips, .live-inspection__grid, .live-inspection__info { grid-template-columns: 1fr; }
+  .live-inspection__grid > :last-child { grid-column: auto; }
+  .live-inspection__viewer { height: 42vh; min-height: 220px; }
 }
 </style>
