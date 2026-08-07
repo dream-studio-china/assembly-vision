@@ -11,24 +11,27 @@ rules, edge-first decisions, delayed sync to a central server.
 - **Full traceability** — every decision records model, rule, and configuration versions
 - **Atomic evidence output** — JSON records + annotated images with SHA-256 checksums
 - **Python monorepo** — uv workspace, strict typing (MyPy), Pydantic domain models
+- **Edge dashboard** — Vue 3 + TypeScript web app with camera overlay, history, queue, and health, decoupled from the backend via a typed API client
+- **Frontend workspace** — pnpm workspace with a typed `api-client` (synchronized from the domain models) and shared UI primitives
 
 ## Quickstart
 
 ```bash
 git clone https://github.com/dream-studio-china/assembly-vision.git
 cd assembly-vision
-git checkout feat/mvp
-uv sync
+git checkout dev            # `main` = released MVP; `dev` = in-progress work
+uv sync                     # Python workspace
+pnpm install                # TypeScript workspace (frontend)
 ```
 
 Verify everything:
 
 ```bash
-uv run ruff check apps                                   # lint
-uv run mypy apps/edge-service/src \
-  packages/python/domain/src \
-  packages/python/vision-core/src                          # type check
-uv run pytest                                              # 42 tests
+uv run ruff check .                                    # Python lint
+uv run mypy .                                          # Python type check
+uv run pytest                                          # Python tests (136)
+
+pnpm -r build && pnpm -r lint && pnpm -r test          # frontend build/lint/unit tests
 ```
 
 Run the inspection CLI:
@@ -38,6 +41,12 @@ uv run assemblyvision inspect /path/to/images \
   --config config/examples/pipeline.yaml \
   --rule  config/examples/product-rule.yaml \
   --output out/
+```
+
+Run the edge dashboard (mock data, no backend required):
+
+```bash
+pnpm --filter edge-web dev        # http://localhost:5173
 ```
 
 See [QUICKSTART.md](QUICKSTART.md) for a detailed walkthrough.
@@ -70,18 +79,26 @@ img/product_001.jpg  NG  INFERENCE_ERROR,GATE_FAILED:product_detected,...  <insp
 ```
 
 The edge makes every inspection decision. Central is never in the real-time
-path. The MVP runs as a CLI; production adds a local FastAPI/Vue dashboard.
+path. The MVP runs as a CLI; a Vue dashboard (`apps/edge-web`) consumes the
+edge API contract through a decoupled client, and a local FastAPI service is
+the planned next layer.
 
 ## Project Structure
 
 ```text
-apps/edge-service/       # inspection runtime (CLI, pipeline, rules, detectors)
-packages/python/
-  domain/                # canonical Pydantic models, errors, reason codes
-  vision-core/           # ROI geometry, image sources, manifest loading
-config/examples/         # pipeline, rule, and manifest examples
-models/manifests/        # model metadata (weights outside Git)
-docs/                    # architecture, contracts, ADRs, runbooks
+apps/
+  edge-service/           # inspection runtime (CLI, pipeline, rules, detectors)
+  edge-web/               # Vue 3 edge dashboard (Vite)
+packages/
+  python/
+    domain/               # canonical Pydantic models, errors, reason codes
+    vision-core/          # ROI geometry, image sources, manifest loading
+  typescript/
+    api-client/           # edge API contract (types, Mock/HTTP client)
+    ui/                   # shared UI primitives (detection viewer, status)
+config/examples/          # pipeline, rule, and manifest examples
+models/manifests/         # model metadata (weights outside Git)
+docs/                     # architecture, contracts, ADRs, runbooks
 ```
 
 ## Documentation
@@ -108,8 +125,9 @@ from training.
 
 | Phase | Status |
 |---|---|
-| **Static train-and-inspect MVP** | In progress (`feat/mvp`) |
-| One-month camera integration + persistence + dashboard | Planned |
+| **Static train-and-inspect MVP** | Done — merged to `main` (PR #3) |
+| **Edge dashboard frontend** | In progress (`dev`) — Vue 3 app, decoupled API client |
+| One-month camera integration + persistence + backend API | Planned |
 | Production hardening + acceptance | Planned |
 
 ## License
