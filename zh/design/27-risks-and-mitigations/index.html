@@ -1772,6 +1772,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3121,103 +3177,103 @@
 <li><strong>生产目标：</strong>验证客户硬件和独立数据的缓解措施，分配所有者并明确接受剩余风险。</li>
 <li><strong>未来范围：</strong> 硬件互锁、PLC/MES 集成、冗余基础设施和先进的漂移自动化（如果合理）。</li>
 </ul>
-<p>默认的安全行为是在产品身份、所需证据、配置兼容性或持久记录不确定时避免发出 <code>OK</code>。人工审查和物理生产线程序在推出过程中仍然是必要的控制。</p>
+<p>默认的安全行为是在产品身份、所需证据、配置兼容性或持久记录不确定时避免发出 <code>OK</code>。在推出过程中，人工审查和物理生产线程序仍然是必要的控制。</p>
 <h2 id="273-comprehensive-risk-register">27.3 综合风险登记册<a class="headerlink" href="#273-comprehensive-risk-register" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>身份与风险</th>
-<th>原因</th>
-<th>影响</th>
-<th>检测方法</th>
-<th>预防</th>
-<th>恢复</th>
-<th>剩余风险</th>
+<th>ID and risk</th>
+<th>Cause</th>
+<th>Impact</th>
+<th>Detection method</th>
+<th>Prevention</th>
+<th>Recovery</th>
+<th>Residual risk</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>R-01 相机移位</td>
-<td>松动安装、振动、维护、冲击</td>
-<td>ROI/域转移可能会错过所需的组件并造成错误的 OK 或错误的 NG</td>
-<td>参考场景几何、产品盒分布、校准图像、操作员检查、质量趋势</td>
-<td>刚性/防篡改安装、启动清单、检测到的产品投资回报率、经批准的相机外壳</td>
-<td>暂停、恢复/对齐检查、捕获验证集、恢复前重新验证</td>
-<td>小的转变可能会在改变外观的同时逃避几何警报</td>
+<td>R-01 Camera shift</td>
+<td>Loose mount, vibration, maintenance, impact</td>
+<td>ROI/domain shift can miss required components and create false OK or false NG</td>
+<td>Reference-scene geometry, product-box distribution, calibration image, operator check, quality trend</td>
+<td>Rigid/tamper-evident mount, startup checklist, detected product ROI, approved camera envelope</td>
+<td>Pause, restore/alignment check, capture validation set, revalidate before resume</td>
+<td>Small shifts may evade geometric alarms while changing appearance</td>
 </tr>
 <tr>
-<td>R-02 相机断线</td>
-<td>电缆/电源/驱动/SDK/设备故障</td>
-<td>没有可检查的框架；如果外部控制薄弱，生产可能会在没有决定的情况下通过</td>
-<td>帧年龄看门狗、适配器错误、链接状态、重新连接计数</td>
-<td>工业布线/电源、应力消除、一致性测试、受监控适配器</td>
-<td>停止窗户、警报、重新连接适配器、使用测试产品验证框架</td>
-<td>间歇性故障可能在诊断前恢复；线路联锁取决于客户集成</td>
+<td>R-02 Camera disconnection</td>
+<td>Cable/power/driver/SDK/device failure</td>
+<td>No inspectable frames; production may pass without a decision if external controls are weak</td>
+<td>Frame-age watchdog, adapter errors, link state, reconnect count</td>
+<td>Industrial cabling/power, strain relief, conformance tests, supervised adapter</td>
+<td>Stop windows, alarm, reconnect adapter, verify framing with test product</td>
+<td>Intermittent faults may recover before diagnosis; line interlock depends on customer integration</td>
 </tr>
 <tr>
-<td>R-03 曝光不正确</td>
-<td>照明/相机设置更改、自动曝光、污染</td>
-<td>失去细节或信心；假 NG 和可能假 OK</td>
-<td>直方图/饱和度/亮度指标、配置校验和、参考图像</td>
-<td>锁定经过验证的曝光/增益、固定照明、变更控制、清洁程序</td>
-<td>正确的设置/照明、清洁光学器件、重新运行已知样品</td>
-<td>局部眩光或逐渐老化的灯可能会通过全球指标</td>
+<td>R-03 Incorrect exposure</td>
+<td>Lighting/camera setting change, auto-exposure, contamination</td>
+<td>Lost detail or confidence; false NG and possible false OK</td>
+<td>Histogram/saturation/brightness metrics, config checksum, reference images</td>
+<td>Lock validated exposure/gain, fixed lighting, change control, cleaning procedure</td>
+<td>Correct settings/lighting, clean optics, rerun known samples</td>
+<td>Local glare or gradual lamp aging may pass global metrics</td>
 </tr>
 <tr>
-<td>R-04 运动模糊</td>
-<td>传送带速度、曝光时间、振动、触发时机</td>
-<td>组件/条形码变得不可读且检测失败</td>
-<td>模糊分数、帧质量拒绝、延迟/计时日志、图像审查</td>
-<td>充足的照明、短曝光、稳定的安装、触发器/窗口调整、多个可用框架</td>
-<td>路线NG/不确定，调整光学/定时，重新捕获/重新检查</td>
-<td>模糊指标不完善；所有帧在某些操作点可能会变得模糊</td>
+<td>R-04 Motion blur</td>
+<td>Conveyor speed, exposure time, vibration, trigger timing</td>
+<td>Components/barcodes become unreadable and detections fail</td>
+<td>Blur score, frame-quality rejection, latency/timing logs, image review</td>
+<td>Adequate lighting, short exposure, stable mount, trigger/window tuning, multiple usable frames</td>
+<td>Route NG/uncertain, adjust optics/timing, recapture/reinspect</td>
+<td>Blur metrics are imperfect; all frames may be blurred at some operating points</td>
 </tr>
 <tr>
-<td>R-05 反射</td>
-<td>光泽表面、光线/摄像机角度、环境变化</td>
-<td>视觉特征被遮挡，信心不稳定</td>
-<td>饱和度/镜面反射指标、热图/证据审查、场景测试</td>
-<td>漫射/偏振控制照明，其中经过验证的、具有代表性的训练数据</td>
-<td>在变更控制下调整照明/角度、收集数据、重新验证</td>
-<td>反射可能因材料批次和位置而异</td>
+<td>R-05 Reflection</td>
+<td>Glossy surfaces, light/camera angle, environmental change</td>
+<td>Occluded visual features and unstable confidence</td>
+<td>Saturation/specular metrics, heatmaps/evidence review, scenario tests</td>
+<td>Diffuse/polarized controlled lighting where validated, representative training data</td>
+<td>Adjust lighting/angle under change control, collect data, revalidate</td>
+<td>Reflection can vary by material batch and position</td>
 </tr>
 <tr>
-<td>R-06 产品遮挡</td>
-<td>包装、手/工具、重叠部件、不完整的视野</td>
-<td>所需组件隐藏；错误的存在决策或过多的 NG</td>
-<td>可见区域/方框检查、质量原因、时间一致性、审查</td>
-<td>物理检查区域、操作员程序、多个框架、最低能见度规则</td>
-<td>标记 NG/不确定并在清除遮挡后重新检查</td>
-<td>遮挡可能类似于真正的缺席，并且可能无法与一种视图分开</td>
+<td>R-06 Product occlusion</td>
+<td>Packaging, hands/tools, overlapping parts, incomplete field of view</td>
+<td>Required component hidden; incorrect presence decision or excess NG</td>
+<td>Visible-area/box checks, quality reasons, temporal consistency, review</td>
+<td>Physical inspection zone, operator procedure, multiple frames, minimum visibility rules</td>
+<td>Mark NG/uncertain and reinspect after clearing occlusion</td>
+<td>Occlusion can resemble true absence and may not be separable from one view</td>
 </tr>
 <tr>
-<td>R-07 产品位置变化</td>
-<td>输送机导轨/公差、产品放置</td>
-<td>产品裁剪截断或观点陌生</td>
-<td>产品盒位置/尺寸趋势、ROI 剪裁标志、验收转移案例</td>
-<td>第一阶段产品检测、投资回报率、捕获区域指南、代表性数据</td>
-<td>重新定位/重新检查、调整验证的边距、收集/重新验证转移的案例</td>
-<td>超出训练范围的运动可以在没有硬性边界的情况下发生</td>
+<td>R-07 Product-position variation</td>
+<td>Conveyor guides/tolerances, product placement</td>
+<td>Product crop truncation or unfamiliar viewpoint</td>
+<td>Product-box position/size trends, ROI clipping flags, acceptance shift cases</td>
+<td>Stage-one product detection, ROI margins, capture-zone guides, representative data</td>
+<td>Reposition/reinspect, tune validated margins, collect/revalidate shifted cases</td>
+<td>Movement beyond trained envelope can occur without a hard boundary</td>
 </tr>
 <tr>
-<td>R-08 条码读取失败</td>
-<td>模糊、损坏、眩光、不支持的符号系统、解码器故障</td>
-<td>未知的产品类型/规则；失去可追溯性</td>
-<td>解码器状态、重复尝试、校验和/格式验证、不匹配率</td>
-<td>专用解码器/ROI、多帧、经过验证的标准、标签质量流程</td>
-<td>未经验证请勿推断OK；重试/重新检查或授权手动解决</td>
-<td>有些标签仍然无法辨认；手动输入可能会引入错误</td>
+<td>R-08 Barcode-read failure</td>
+<td>Blur, damage, glare, unsupported symbology, decoder fault</td>
+<td>Unknown product type/rule; loss of traceability</td>
+<td>Decoder status, repeated attempts, checksum/format validation, mismatch rate</td>
+<td>Dedicated decoder/ROI, multiple frames, validated standards, label quality process</td>
+<td>Do not infer unverified OK; retry/reinspect or authorized manual resolution</td>
+<td>Some labels remain unreadable; manual entry can introduce error</td>
 </tr>
 </tbody>
 </table>
-<p>| R-09 产品类型映射错误 |陈旧/不正确的主数据、重复使用的代码、手动错误 |错误的必需组件规则可能会产生错误的 OK |条形码/产品/配置一致性检查、可视化产品类别比较、审核 |版本化权威映射、审批工作流程、测试向量 |暂停受影响的映射、恢复上次批准的版本、审查受影响的检查 |格式正确但语义错误的源数据可能会逃避检查 |
-| R-10 错误的规则配置 |遗漏的组件、错误的阈值/策略、编辑错误 |缺陷产品可能被分类为 OK 或有效产品 NG |模式/语义验证、差异/批准、回归集模拟、审计 |版本控制、最小权限、可行的情况下两人批准、分阶段激活 |回滚、识别受影响的版本/时间范围、重新评估证据 |回归集可能无法代表所有生产条件 |
-| R-11 模型和规则版本不匹配 |部分更新、手动文件替换、兼容性错误 |规则期望类/证据模型无法提供 |签署清单兼容性矩阵、启动/就绪验证、检查记录版本 |原子发布集、只读模型/规则安装、无临时替换 |拒绝就绪，激活最后一个已知良好的兼容集，报告失败|如果没有端到端测试，兼容性元数据本身可能会被错误地编写 |
-| R-12 一个检查窗口中的多种产品 |间距不足、触发重叠、跟踪失败 |证据结合了产品或遗漏了一种产品 |产品计数/轨迹、进入/退出事件、窗口持续时间和几何检查 |传感器/触发器设计、间距规则、明确的多产品拒绝 |因不明确/NG而中止，清除区域，单独重新检查产品 |被遮挡的重叠产品可能会显示为一个 |
-| R-13 重复检查 |触发弹跳、重启、重复条码事件、跟踪重入|重复记录/处置和扭曲的统计数据 |窗口身份状态机、产品/条形码/时间关联、重复事件度量 |触发去抖、稳定的检查 ID、明确的生命周期和幂等性 |标记/链接重复项而不删除审核历史记录；协调下游行动|相同的连续乘积会使启发式重复数据删除变得不安全 |
-| R-14 产品之间的框架混合 |窗口重叠、过时的缓冲区、异步竞争、错误的时间戳 |来自其他产品的组件可以支持 false OK |每帧窗口/轨道 ID、单调序列检查、边界测试、出处审计 |帧的单一所有权、刷新/绑定缓冲区、传感器/条形码边界、状态机测试 |中止不明确的窗口、保留证据、修复边界逻辑并重新测试 |如果没有传感器，弱物理分离可能会保持模糊性。
-| R-15 网络中断 |工厂 WAN/LAN、DNS、防火墙、代理故障 |中央历史记录/审查延迟；队列和磁盘增长|连接状态、队列深度/字节/最旧年龄、重试类 |边缘优先设计、持久队列、容量规划、退避/抖动 |本地继续、恢复网络、限制流量、核对收据 |中断时间超过本地容量需要降级录制或暂停制作 |
-| R-16 中央服务器中断 | API/数据库/对象存储/部署失败 |无法跨设备上传/审查/报告 |中央运行状况/警报、边缘 5xx/超时、积压指标 |解耦边缘、备份、经过测试的中央恢复、适当的冗余 |继续边缘操作，恢复服务/数据，幂等地排出队列 |长时间的停电延迟了人工审查和整个车队的可见性|</p>
+<p>| R-09 Wrong product-type mapping | Stale/incorrect master data, reused code, manual error | Wrong required-component rule can produce false OK | Barcode/product/config consistency checks, visual product class comparison, audits | Versioned authoritative mapping, approval workflow, test vectors | Pause affected mapping, restore last approved version, review affected inspections | Correctly formatted but semantically wrong source data may evade checks |
+| R-10 Wrong rule configuration | Omitted component, wrong threshold/policy, editing error | Defective product may be classified OK or valid product NG | Schema/semantic validation, diff/approval, simulation on regression set, audit | Versioning, least privilege, two-person approval where feasible, staged activation | Roll back, identify affected version/time range, re-evaluate evidence | Regression set may not represent every production condition |
+| R-11 Model and rule version mismatch | Partial update, manual file replacement, compatibility error | Rule expects classes/evidence model cannot supply | Signed manifest compatibility matrix, startup/readiness validation, inspection record versions | Atomic release set, read-only model/rule mounts, no ad hoc replacement | Refuse readiness, activate last known-good compatible set, report failure | Compatibility metadata itself may be authored incorrectly without end-to-end tests |
+| R-12 Multiple products in one inspection window | Insufficient spacing, trigger overlap, tracking failure | Evidence combines products or misses one product | Product count/tracks, entry/exit events, window duration and geometry checks | Sensor/trigger design, spacing rules, explicit multi-product rejection | Abort as ambiguous/NG, clear zone, reinspect products individually | Occluded overlapping products may appear as one |
+| R-13 Duplicate inspection | Trigger bounce, restart, repeated barcode event, tracking re-entry | Duplicate records/disposition and distorted statistics | Window identity state machine, product/barcode/time correlation, duplicate event metric | Trigger debounce, stable inspection IDs, explicit lifecycle and idempotency | Mark/link duplicate without deleting audit history; reconcile downstream action | Identical consecutive products can make heuristic deduplication unsafe |
+| R-14 Frame mixing between products | Window overlap, stale buffers, async race, wrong timestamps | Components from another product can support false OK | Window/track IDs per frame, monotonic sequence checks, boundary tests, provenance audit | Single ownership of frames, flush/bound buffers, sensor/barcode boundaries, state-machine tests | Abort ambiguous windows, preserve evidence, fix boundary logic and retest | Weak physical separation can remain ambiguous without a sensor |
+| R-15 Network outage | Factory WAN/LAN, DNS, firewall, proxy failure | Central history/review delayed; queue and disk grow | Connectivity state, queue depth/bytes/oldest age, retry classes | Edge-first design, persistent queue, capacity planning, backoff/jitter | Continue locally, restore network, rate-limit drain, reconcile receipts | Outage longer than local capacity requires degraded recording or production pause |
+| R-16 Central-server outage | API/database/object storage/deployment failure | Upload/review/reporting unavailable across devices | Central health/alerts, edge 5xx/timeouts, backlog metrics | Decoupled edge, backups, tested central recovery, appropriate redundancy | Continue edge operation, recover service/data, drain queues idempotently | Extended outage delays human review and fleet-wide visibility |</p>
 <p>| R-17 上传重复项 |提交后超时、重试、操作员重试、队列重播 |重复的中央记录/媒体和不正确的报告 |幂等性密钥、唯一源检查约束、收据查找、校验和 |幂等 API 和确认前的持久收据 |返回原始收据、通过校验和合并/拒绝重复媒体、审核冲突 |重用密钥下更改的有效负载需要显式冲突处理 |
 | R-18 本地磁盘已满 |停电积压、视频/日志增长、清理失败、规模过小 |无法存储证据/数据库；崩溃或可追溯性丢失|可用字节/索引节点、增长预测、媒体类/队列指标、写入错误 |配额、有界日志/视频、分层保留、容量保留、保护待处理文件 |安全清理上传的过期数据、禁用可选录制、扩展磁盘或暂停 |突然的突发/文件系统开销可能会在响应之前耗尽储备 |
 | R-19 本地数据库损坏 |断电、存储故障、不安全复制、软件缺陷 |丢失决策/队列状态并且无法协调证据 | SQLite 完整性检查、I/O 错误、备份/恢复测试、介质协调 |事务/WAL 已验证、原子写入、可靠存储、在线备份 |隔离数据库、恢复备份、从清单/媒体重建有限元数据、协调中央收据 |上次有效备份后的记录可能需要手动重建或仍然丢失 |
@@ -3234,7 +3290,7 @@
 <li>确定性状态机将每一帧和决策绑定到一个产品窗口。</li>
 <li>产品检测产生ROI；硬编码的全帧区域仅是后备/粗略区域。</li>
 <li>每个组件的时间聚合排除了不可用的帧，并且从未声称可以提高单帧模型的准确性。</li>
-<li>每个决策都会保留产品标识、模型、规则、配置和证据版本。</li>
+<li>每个决策都会保留产品身份、模型、规则、配置和证据版本。</li>
 <li>边缘以事务方式存储决策和上传任务，并且无需中央服务器即可继续。</li>
 <li>签名的、兼容的版本集在窗口之间自动激活并支持回滚。</li>
 <li>人工审核、OK 审核和客户验收使用独立证据来检测质量故障。</li>

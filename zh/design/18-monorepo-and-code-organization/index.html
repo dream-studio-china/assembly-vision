@@ -1089,7 +1089,7 @@
   <a href="#185-python-package-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.5 Python 包边界
+        18.5 Python Package Boundaries
       
     </span>
   </a>
@@ -1227,7 +1227,7 @@
   <a href="#1814-ownership-and-change-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.14 所有权和变更规则
+        18.14 Ownership and Change Rules
       
     </span>
   </a>
@@ -1936,6 +1936,62 @@
     
   
     ADR-012：Edge API M1 查看器身份验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
   
 
     
@@ -3289,7 +3345,7 @@
   <a href="#185-python-package-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.5 Python 包边界
+        18.5 Python Package Boundaries
       
     </span>
   </a>
@@ -3427,7 +3483,7 @@
   <a href="#1814-ownership-and-change-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.14 所有权和变更规则
+        18.14 Ownership and Change Rules
       
     </span>
   </a>
@@ -3611,7 +3667,7 @@
 <p>仅运行应比 HTTP 请求寿命更长的作业：报告/导出生成、昂贵时的媒体验证/衍生品创建、保留批次以及通知扇出（如果引入）。普通的 CRUD 或检查元数据摄取不需要它。 MVP 可以使用 PostgreSQL 支持的作业表；仅当重试、调度或吞吐量证明合理时，才会添加 Redis 和工作框架。</p>
 <h3 id="1844-web-applications">18.4.4 Web 应用程序<a class="headerlink" href="#1844-web-applications" title="Permanent link">&para;</a></h3>
 <p><code>edge-web</code> 和 <code>admin-web</code> 拥有路由级功能和部署品牌。它们共享生成的 API 客户端、检测坐标渲染、基本状态指示器和格式。复杂的产品/规则编辑器和车队图表仍然仅位于中央；边缘运行状况/队列控制仍然仅限边缘。</p>
-<h2 id="185-python-package-boundaries">18.5 Python 包边界<a class="headerlink" href="#185-python-package-boundaries" title="Permanent link">&para;</a></h2>
+<h2 id="185-python-package-boundaries">18.5 Python Package Boundaries<a class="headerlink" href="#185-python-package-boundaries" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3633,8 +3689,8 @@
 </tr>
 <tr>
 <td><code>platform-common</code></td>
-<td>在两个应用程序需要它们之后，可选择提取窄记录/配置/校验和/遥测实用程序</td>
-<td>域业务规则，通用“utils”垃圾场</td>
+<td>在两个应用程序需要它们后，可选择提取窄记录/配置/校验和/遥测实用程序</td>
+<td>领域业务规则，通用“utils”垃圾场</td>
 </tr>
 </tbody>
 </table>
@@ -3652,8 +3708,8 @@
     EV --&gt; UI[TS用户界面]
     AW[管理网] --&gt; AC
     AW --&gt; UI
-    AC -. 产生于 .-&gt; EO[边缘开放API]
-    AC -. 产生于 .-&gt; CO[中央开放API]
+    AC -. 产生自 .-&gt; EO[边缘开放API]
+    AC -. 产生自 .-&gt; CO[中央开放API]
 
     ES[边缘服务] --&gt; VD[Python域]
     ES --&gt; VC[愿景核心]
@@ -3665,7 +3721,7 @@
     CA --&gt; PC
     CW[中央工作人员] --&gt; VD
     CW --&gt; PC
-    CW --&gt; CAI[中央应用程序接口]
+    CW --&gt; CAI[central application interfaces]
 
     TR[训练] --&gt; VC
     TR --&gt; VD
@@ -3738,7 +3794,7 @@
 <li>仅发布经过审查、标记的修订版的不可变图像/工件；在清单中记录源修订。</li>
 </ol>
 <p>培训作业并不是 CI 运行的每个应用程序的一部分。他们的代码测试在 CI 中运行；完整的培训/评估在受控的机器学习环境中运行，并发布签名/验证的报告和模型工件。</p>
-<h2 id="1814-ownership-and-change-rules">18.14 所有权和变更规则<a class="headerlink" href="#1814-ownership-and-change-rules" title="Permanent link">&para;</a></h2>
+<h2 id="1814-ownership-and-change-rules">18.14 Ownership and Change Rules<a class="headerlink" href="#1814-ownership-and-change-rules" title="Permanent link">&para;</a></h2>
 <p>使用代码所有者进行愿景/规则、边缘运行时、中央/安全、前端共享包、迁移和培训/评估。 Pydantic 合约变更需要 API/客户端漂移检查。已发布的事件更改需要兼容性审查。数据库更改需要迁移和回滚/前恢复注释。共享 UI 添加需要两个具体的消费者；否则他们仍然是本地人。</p>
 <h2 id="1815-open-questions-and-validation-required">18.15 未解决的问题和需要验证<a class="headerlink" href="#1815-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3746,8 +3802,8 @@
 <li>确认 CI 提供程序、容器注册表、工件/模型注册表和 SBOM/签名要求。</li>
 <li>确认相机 SDK 许可或本机库是否需要单独构建的适配器包/图像。</li>
 <li>决定在每个消费者构建期间是否提交或生成生成的 OpenAPI 客户端。</li>
-<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人是合理的。</li>
-<li>确认支持的边缘操作系统、CPU/GPU架构以及离线依赖安装过程。</li>
+<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人合理。</li>
+<li>确认支持的边缘操作系统、CPU/GPU架构和离线依赖安装过程。</li>
 </ul>
 
 

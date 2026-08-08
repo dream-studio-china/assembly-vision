@@ -1966,6 +1966,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013: Camera Frame Sources and Multi-Instance Edge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014: Web Dev Test Harness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3530,6 +3586,13 @@
     Health --&gt; Media
     Health --&gt; API</code></pre>
 <p>The one-month target deploys one <code>edge-service</code> containing FastAPI, capture orchestration, persistence, and upload scheduling. Decision-critical work runs in bounded worker tasks and may use a supervised inference subprocess for SDK/GPU isolation; it is not a separately deployed service until measured isolation or scaling needs justify that complexity. API or browser request failure must not stop capture and decision tasks.</p>
+<p>One <code>edge-service</code> process may run several independent inspection instances,
+each pairing its own camera source with its own models/rule/product and its
+own stable device identity (<code>device_id = uuid5(namespace, instance_id)</code> unless
+configured explicitly), matching the fleet model of one device per line
+(ADR-013). Instances share the process and its storage but never share
+evidence; per-instance model loading means memory grows with the instance
+count until weight sharing is justified.</p>
 <h2 id="3-inspection-processing">3. Inspection Processing<a class="headerlink" href="#3-inspection-processing" title="Permanent link">&para;</a></h2>
 <h3 id="31-window-and-identity">3.1 Window and Identity<a class="headerlink" href="#31-window-and-identity" title="Permanent link">&para;</a></h3>
 <p>The coordinator creates <code>inspection_id</code> before accepting evidence and pins active package versions. A hardware trigger gives the clearest boundary when available; barcode events add identity but may arrive late or fail; tracking/zones handle image-only flows but require careful tuning; a timeout bounds resource usage but cannot by itself prove physical separation. The production mechanism should combine only validated signals and test consecutive/multiple products explicitly.</p>

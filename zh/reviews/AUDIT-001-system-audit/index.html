@@ -1648,6 +1648,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2648,7 +2704,7 @@
   <a href="#h2-published-references-the-removed-staging-directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H2。发布的 data.yaml 引用已删除的暂存目录
+        H2. Published data.yaml references the removed staging directory
       
     </span>
   </a>
@@ -3229,7 +3285,7 @@
   <a href="#h2-published-references-the-removed-staging-directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H2。发布的 data.yaml 引用已删除的暂存目录
+        H2. Published data.yaml references the removed staging directory
       
     </span>
   </a>
@@ -3431,7 +3487,7 @@ API、前端、培训、脚本和文档），于 2026 年 8 月 8 日执行。
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv run pytest
 </code></pre></div>
 <p>仅文档更改也必须通过 <code>uv run mkdocs build --strict</code> 时
-文档环境已安装。调查结果只有在以下情况下才会结束：
+文档环境已安装。调查结果仅在以下情况下结束：
 CI 中的具体验收标准和适用的共享门通行证。</p>
 <h2 id="overall-verdict">总体判断<a class="headerlink" href="#overall-verdict" title="Permanent link">&para;</a></h2>
 <p>本次审查中没有任何证据与先前的结论相矛盾，即当前的
@@ -3464,7 +3520,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
   显式空标签（接受）、同干碰撞（拒绝）和
   记录的 <code>valid</code> 布局（仅在规范化为 <code>val</code> 时接受）。</li>
 </ul>
-<h3 id="h2-published-references-the-removed-staging-directory">H2。发布的 <code>data.yaml</code> 引用已删除的暂存目录<a class="headerlink" href="#h2-published-references-the-removed-staging-directory" title="Permanent link">&para;</a></h3>
+<h3 id="h2-published-references-the-removed-staging-directory">H2. Published <code>data.yaml</code> references the removed staging directory<a class="headerlink" href="#h2-published-references-the-removed-staging-directory" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>状态：</strong> 关闭 (7af307b)。</li>
 <li><strong>证据：</strong> 两个适配器和 <code>prepare_components.py:181-189</code> 序列化
@@ -3484,7 +3540,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <h3 id="h3-relative-can-select-the-wrong-ultralytics-run-path">H3。相对<code>--out-weights</code>可以选择错误的Ultralytics运行路径<a class="headerlink" href="#h3-relative-can-select-the-wrong-ultralytics-run-path" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>状态：</strong> 关闭 (fcfcf7c)。</li>
-<li><strong>证据：</strong> <code>cli.py:226,313</code> 通过了潜在的亲戚
+<li><strong>证据：</strong> <code>cli.py:226,313</code> 通过了潜在的亲属
   <code>weights_path.parent / ".train-runs"</code>； <code>train.py:71-77</code> 然后假设
   固定返回路径。这与记录的相对路径命令不同
   并且可能与 Ultralytics 对相关项目的处理发生冲突。</li>
@@ -3520,7 +3576,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tbody>
 <tr>
 <td>M1</td>
-<td>已关闭 (7d987e7)。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
+<td>已关闭（7d987e7）。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
 <td>将路径构建/解析期间引发的 <code>ValueError</code> 视为格式错误的媒体并跳过该记录。隔离单个包中的错误。</td>
 <td>包含 NUL 字节媒体路径的协调测试会导入有效的同级包，跳过格式错误的包，返回正确的导入计数，并发出警告而不引发警告。</td>
 </tr>
@@ -3592,7 +3648,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
   或多写入器部署，为权威添加 Alembic 迁移
   模式，保留一个非空的受控产品配置版本，并制作
   等内容并发检查更新插入幂等返回<code>unchanged</code>。</li>
-<li><strong>接受：</strong> 边界文件指出投影的非权威性
+<li><strong>接受：</strong> 边界文件指出了投影的非权威性
   限制。权威商店测试验证所有合同 04/05 约束，
   租赁字段、产品版本追溯、并发等内容
   更新插入返回<code>unchanged</code>；不同的内容必须在没有突变的情况下失败。</li>
@@ -3619,7 +3675,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </tr>
 <tr>
 <td>会话交换缺乏限制，会话存储没有扫描/上限</td>
-<td>已关闭（056e712）。</td>
+<td>已关闭 (056e712)。</td>
 <td>添加有界的每个源失败尝试限制和有界会话存储以及到期清除；文件 M1 限制。测试重复失败、冷却后成功交换、过期清理和容量行为。</td>
 </tr>
 <tr>
@@ -3654,7 +3710,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </tr>
 <tr>
 <td>缺少 CSP</td>
-<td>已关闭 (056e712)。</td>
+<td>已关闭（056e712）。</td>
 <td>添加与本地服务的仪表板兼容的最低权限 CSP 并测试响应标头。</td>
 </tr>
 <tr>
@@ -3728,16 +3784,16 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tr>
 <td>Design 14 描述了一个权威的可操作 SQLite 存储，而不是 M1 可重建投影</td>
 <td>已关闭 (5488804)。</td>
-<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
+<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作联系起来。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
 </tr>
 <tr>
-<td>附录原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
+<td>附录 原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
 <td>已关闭 (5488804)。</td>
 <td>使 <code>reason_codes.py</code> 成为显式规范列表或从中生成术语表。测试必须比较所有声明的静态代码和记录的参数化前缀。</td>
 </tr>
 <tr>
 <td>承保范围索赔</td>
-<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍然需要基于来源的验证。</td>
+<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍需要基于来源的验证。</td>
 <td>将数字声明替换为带日期的命令/输出参考，或更新来自一个 CI 工件的所有源。</td>
 </tr>
 <tr>

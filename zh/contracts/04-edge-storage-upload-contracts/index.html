@@ -1648,6 +1648,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1921,7 +1977,7 @@
   <a href="#3-local-persistence-order" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 本地持久化顺序
+        3. Local Persistence Order
       
     </span>
   </a>
@@ -1943,7 +1999,7 @@
   <a href="#5-idempotency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.幂等性
+        5. 幂等性
       
     </span>
   </a>
@@ -1954,7 +2010,7 @@
   <a href="#6-file-integrity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. 文件完整性
+        6. File Integrity
       
     </span>
   </a>
@@ -3073,7 +3129,7 @@
   <a href="#3-local-persistence-order" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 本地持久化顺序
+        3. Local Persistence Order
       
     </span>
   </a>
@@ -3095,7 +3151,7 @@
   <a href="#5-idempotency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.幂等性
+        5. 幂等性
       
     </span>
   </a>
@@ -3106,7 +3162,7 @@
   <a href="#6-file-integrity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. 文件完整性
+        6. File Integrity
       
     </span>
   </a>
@@ -3202,14 +3258,14 @@
 <li>本地持久性</li>
 <li>上传队列管理</li>
 </ul>
-<h2 id="3-local-persistence-order">3. 本地持久化顺序<a class="headerlink" href="#3-local-persistence-order" title="Permanent link">&para;</a></h2>
+<h2 id="3-local-persistence-order">3. Local Persistence Order<a class="headerlink" href="#3-local-persistence-order" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>1. Complete inspection
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>2. Finalize required media files with size and checksum
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>3. Atomically commit inspection, media manifests, and upload outbox tasks
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>4. Publish/return the committed local result
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>5. Upload asynchronously
 </code></pre></div>
-<p>第 2 步和第 3 步构成一个可恢复单元：碰撞事故不得留下未完成的检查
+<p>第 2 步和第 3 步形成一个可恢复单元：碰撞事故不得留下未完成的检查
 所需的上传任务。临时文件和不完整的事务在启动时进行协调。</p>
 <p>在确认上传和保留检查之前，不得删除本地媒体和记录。</p>
 <h2 id="4-upload-task-fields">4. 上传任务字段<a class="headerlink" href="#4-upload-task-fields" title="Permanent link">&para;</a></h2>
@@ -3233,13 +3289,13 @@
 </ul>
 <p>规范状态有 <code>PENDING</code>、<code>IN_PROGRESS</code>、<code>RETRY_WAIT</code>、<code>SUCCEEDED</code>、
 <code>PERMANENT_FAILURE</code>和<code>CANCELLED</code>。</p>
-<h2 id="5-idempotency">5.幂等性<a class="headerlink" href="#5-idempotency" title="Permanent link">&para;</a></h2>
+<h2 id="5-idempotency">5. 幂等性<a class="headerlink" href="#5-idempotency" title="Permanent link">&para;</a></h2>
 <p>中央服务器必须支持幂等上传。</p>
 <p>推荐的幂等键：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>inspection:{device_id}:{inspection_id}
 </code></pre></div>
 <p>重复上传尝试不得创建重复的检查记录。</p>
-<h2 id="6-file-integrity">6. 文件完整性<a class="headerlink" href="#6-file-integrity" title="Permanent link">&para;</a></h2>
+<h2 id="6-file-integrity">6. File Integrity<a class="headerlink" href="#6-file-integrity" title="Permanent link">&para;</a></h2>
 <p>媒体上传必须：</p>
 <ul>
 <li>计算校验和</li>

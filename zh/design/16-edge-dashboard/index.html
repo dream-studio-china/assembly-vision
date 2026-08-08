@@ -972,12 +972,12 @@
   <a href="#164-live-inspection-screen" class="md-nav__link">
     <span class="md-ellipsis">
       
-        16.4 现场检查屏幕
+        16.4 Live Inspection Screen
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="16.4 现场检查屏幕">
+    <nav class="md-nav" aria-label="16.4 Live Inspection Screen">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -995,7 +995,7 @@
   <a href="#1642-result-presentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        16.4.2 结果呈现
+        16.4.2 Result Presentation
       
     </span>
   </a>
@@ -1122,6 +1122,17 @@
     <span class="md-ellipsis">
       
         16.14 MVP 及后续范围
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16141-developer-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.14.1 开发者工具（/dev）
       
     </span>
   </a>
@@ -1886,6 +1897,62 @@
     
   
     ADR-012：Edge API M1 查看器身份验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
   
 
     
@@ -3178,12 +3245,12 @@
   <a href="#164-live-inspection-screen" class="md-nav__link">
     <span class="md-ellipsis">
       
-        16.4 现场检查屏幕
+        16.4 Live Inspection Screen
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="16.4 现场检查屏幕">
+    <nav class="md-nav" aria-label="16.4 Live Inspection Screen">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3201,7 +3268,7 @@
   <a href="#1642-result-presentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        16.4.2 结果呈现
+        16.4.2 Result Presentation
       
     </span>
   </a>
@@ -3335,6 +3402,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#16141-developer-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.14.1 开发者工具（/dev）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#1615-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3435,12 +3513,12 @@
 </tbody>
 </table>
 <p>顶部栏始终显示设备代码、线路标签（如果已配置）、检查状态、本地时钟、中央连接、磁盘警告和经过身份验证的用户。如果预览流不可用，应用程序必须保持可导航。</p>
-<h2 id="164-live-inspection-screen">16.4 现场检查屏幕<a class="headerlink" href="#164-live-inspection-screen" title="Permanent link">&para;</a></h2>
+<h2 id="164-live-inspection-screen">16.4 Live Inspection Screen<a class="headerlink" href="#164-live-inspection-screen" title="Permanent link">&para;</a></h2>
 <h3 id="1641-layout">16.4.1 布局<a class="headerlink" href="#1641-layout" title="Permanent link">&para;</a></h3>
 <p>桌面使用主摄像头/证据窗格和固定宽度的决策窗格。在 1280 像素及以上，两者均可见，无需垂直滚动。平板电脑/移动设备堆栈首先是决策，然后是证据，最后是诊断；暂停/恢复仍然可以访问，但不是可以意外触发的浮动控件。</p>
 <p>屏幕包括：</p>
 <ul>
-<li>相机预览包含缩放、源分辨率、捕获时间戳和陈旧帧标记。</li>
+<li>相机预览包含缩放、源分辨率、捕获时间戳和过时帧标记。</li>
 <li>从源坐标映射的可选产品和组件边界框，从不预先缩放服务器坐标。</li>
 <li>最终的 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code> 面板，包含检查 ID、条形码、产品类型、处理延迟和完成时间。</li>
 <li>所需组件矩阵：存在、缺失、不确定、最佳置信度、支持框架计数和政策原因。</li>
@@ -3448,130 +3526,145 @@
 <li>连接条分隔本地 API、网络接口、DNS/中央可达性和上传积压。</li>
 <li>最近的结果栏至少显示最近十次检查，并带有可通过键盘访问的详细信息链接。</li>
 </ul>
-<h3 id="1642-result-presentation">16.4.2 结果呈现<a class="headerlink" href="#1642-result-presentation" title="Permanent link">&para;</a></h3>
+<h3 id="1642-result-presentation">16.4.2 Result Presentation<a class="headerlink" href="#1642-result-presentation" title="Permanent link">&para;</a></h3>
 <p><code>OK</code> 可以使用绿色，但包含单词“OK”和复选图标。 <code>NG</code> 使用红色、“NG”一词、警报图标以及缺失/不确定的组件名称。 <code>UNCERTAIN</code> 使用琥珀色并说明物理处理路径是否将其视为 NG。新结果使用简短的非阻塞转换；动画必须尊重简化动作偏好。</p>
 <p>条形码故障、未知产品、不可用框架、型号故障和缺少组件是单独的原因代码。 UI 不得将所有 NG 结果折叠为“组件缺失”。</p>
 <h3 id="1643-preview-transport">16.4.3 预览传输<a class="headerlink" href="#1643-preview-transport" title="Permanent link">&para;</a></h3>
-<p>仅当延迟要求合理时才使用带宽受限的 JPEG/MJPEG 或 WebRTC 预览。不要通过 JSON WebSocket 消息发送完整的生产帧。覆盖事件携带源维度和框； UI 会丢弃帧 ID 与显示的预览帧不匹配的叠加。预览丢失永远不会改变检查引擎的状态。</p>
+<p>Use a bandwidth-limited JPEG/MJPEG or WebRTC preview only if justified by latency requirements. Do not send full production frames through JSON WebSocket messages. Overlay events carry source dimensions and boxes; the UI discards overlays whose frame ID does not match the displayed preview frame. Preview loss never changes the inspection engine state.</p>
+<p>Until the WebSocket runtime channel lands, the dashboard live view consumes
+the per-instance REST preview <code>GET /api/v1/camera/{instance_id}/preview</code>
+(rate-limited latest-frame JPEG, ADR-013). The WebSocket milestone reuses the
+same frame pipeline and supersedes this stopgap without changing the
+inspection engine.</p>
 <h2 id="165-inspection-history-and-detail">16.5 检查历史和详细信息<a class="headerlink" href="#165-inspection-history-and-detail" title="Permanent link">&para;</a></h2>
-<p>历史记录默认为最新的优先，并支持业务结果、内部决策、条形码、产品和有界日期过滤器。搜索已去抖且在服务器端进行；游标分页会阻止加载完整的本地数据库。一行显示完成时间、业务结果、内部决策详细信息、条形码、产品、原因摘要、延迟、上传状态和模型/规则版本。</p>
-<p>详细信息页面包含：</p>
+<p>History defaults to newest first and supports business result, internal decision, barcode, product, and bounded date filters. Search is debounced and server-side; cursor pagination prevents loading the full local database. A row displays completion time, business result, internal decision detail, barcode, product, reason summary, latency, upload state, and model/rule versions.</p>
+<p>The detail page contains:</p>
 <ul>
-<li>不可变的身份和捕获时间戳。</li>
-<li>决策原因代码和每个组件的汇总证据。</li>
-<li>产品和组件检测叠加，带有切换开关和可访问的组件列表。</li>
-<li>仅当媒体存在时，关键帧、产品 ROI、带注释的图像和剪辑选项卡。</li>
-<li>帧质量指标和源/全帧坐标元数据。</li>
-<li>模型、规则和产品配置版本标识符。</li>
-<li>上传任务状态和上次失败，而不暴露凭据或堆栈跟踪。</li>
+<li>Immutable identity and capture timestamps.</li>
+<li>Decision reason codes and per-component aggregated evidence.</li>
+<li>Product and component detection overlays with toggles and accessible component list.</li>
+<li>Key frame, product ROI, annotated image, and clip tabs only when media exists.</li>
+<li>Frame-quality indicators and source/full-frame coordinate metadata.</li>
+<li>Model, rule, and product configuration version identifiers.</li>
+<li>Upload task state and last failure without exposing credentials or stack traces.</li>
 </ul>
-<p>清除的媒体显示元数据和清除原因，而不是损坏的图像。视频使用范围请求并提供静态后备关键帧。</p>
+<p>Purged media displays metadata and purge reason rather than a broken image. Video uses range requests and provides a static fallback key frame.</p>
 <h2 id="166-upload-queue">16.6 上传队列<a class="headerlink" href="#166-upload-queue" title="Permanent link">&para;</a></h2>
-<p>队列页面组 <code>PENDING</code>、<code>IN_PROGRESS</code>、<code>RETRY_WAIT</code>、<code>PERMANENT_FAILURE</code>、<code>CANCELLED</code> 和 <code>SUCCEEDED</code> 计数。默认行显示未完成的任务、下一次尝试、尝试计数、对象类型、检查链接、字节和已清理的错误代码。仪表板解释说，在页面未打开的情况下会继续重试。</p>
-<p>手动重试仅针对重试/死信任务启用，需要确认和原因，并发送幂等密钥。它不会创建第二个任务。批量重试被推迟，直到操作证据表明有必要；无限制的批量重试可能会在中断后使中央服务器过载。</p>
+<p>The queue page groups <code>PENDING</code>, <code>IN_PROGRESS</code>, <code>RETRY_WAIT</code>, <code>PERMANENT_FAILURE</code>, <code>CANCELLED</code>, and <code>SUCCEEDED</code> counts. Default rows show unfinished tasks, next attempt, attempt count, object kind, inspection link, bytes, and sanitized error code. The dashboard explains that retries continue without the page being open.</p>
+<p>Manual retry is enabled only for retry/dead-letter tasks, requires confirmation and reason, and sends an idempotency key. It does not create a second task. Bulk retry is deferred until operational evidence shows it is needed; unbounded bulk retry can overload the central server after an outage.</p>
 <h2 id="167-health-and-alerts">16.7 健康状况和警报<a class="headerlink" href="#167-health-and-alerts" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>状况</th>
-<th>用户界面状态</th>
-<th>所需的操作员指导</th>
+<th>Condition</th>
+<th>UI state</th>
+<th>Required operator guidance</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>相机已断开连接</td>
-<td>严重，检查尚未准备好</td>
-<td>检查电缆/电源；管理员可能会请求重新连接</td>
+<td>Camera disconnected</td>
+<td>Critical, inspection not ready</td>
+<td>Check cable/power; administrator may request reconnect</td>
 </tr>
 <tr>
-<td>模型或规则不可用/不兼容</td>
-<td>严重，没有新窗口</td>
-<td>显示活动/所需版本和升级说明</td>
+<td>Model or rule unavailable/incompatible</td>
+<td>Critical, no new windows</td>
+<td>Show active/desired versions and escalation instruction</td>
 </tr>
 <tr>
-<td>磁盘低于警告阈值</td>
-<td>警告</td>
-<td>在没有发明剩余时间的情况下显示可用字节、保留活动和估计风险</td>
+<td>Disk below warning threshold</td>
+<td>Warning</td>
+<td>Show free bytes, retention activity, and estimated risk without invented time remaining</td>
 </tr>
 <tr>
-<td>盘面低于停止阈值</td>
-<td>关键</td>
-<td>说明捕获是否暂停；永远不要默默地丢弃所需的证据</td>
+<td>Disk below stop threshold</td>
+<td>Critical</td>
+<td>State whether capture is paused; never silently discard required evidence</td>
 </tr>
 <tr>
-<td>中央无法到达</td>
-<td>降级，而非检查失败</td>
-<td>显示离线持续时间和持久队列计数</td>
+<td>Central unreachable</td>
+<td>Degraded, not inspection-failed</td>
+<td>Show offline duration and persistent queue count</td>
 </tr>
 <tr>
-<td>队列死信存在</td>
-<td>警告</td>
-<td>显示任务/错误和重试/升级路径</td>
+<td>Queue dead-letter present</td>
+<td>Warning</td>
+<td>Show task/error and retry/escalation path</td>
 </tr>
 <tr>
-<td>检测到时钟漂移</td>
-<td>警告或严重阈值</td>
-<td>显示测量的漂移和时间源检查</td>
+<td>Clock drift detected</td>
+<td>Warning or critical by threshold</td>
+<td>Show measured drift and time-source check</td>
 </tr>
 <tr>
-<td>检查暂停</td>
-<td>突出的中立/琥珀状态</td>
-<td>如有可能，请显示演员、原因和时间</td>
+<td>Inspection paused</td>
+<td>Prominent neutral/amber state</td>
+<td>Show actor, reason, and time where available</td>
 </tr>
 </tbody>
 </table>
-<p>警报具有稳定的代码、严重性、第一个/最后一个观察到的时间戳以及活动/清除状态。浏览器 toast 通知是补充，但绝不会取代持久状态。</p>
+<p>Alerts have stable codes, severity, first/last observed timestamps, and active/cleared state. Browser toast notifications supplement but never replace persistent status.</p>
 <h2 id="168-local-configuration">16.8 本地配置<a class="headerlink" href="#168-local-configuration" title="Permanent link">&para;</a></h2>
-<p>该页面将集中管理值、本地覆盖值和有效值分开。托管字段是只读的。可编辑 MVP 字段应仅限于明确批准的操作设置，例如预览首选项或允许的本地存储阈值；检测器阈值和决策规则通常应集中版本化。</p>
-<p>配置工作流程：</p>
+<p>The page separates centrally managed values, local overrides, and effective values. Managed fields are read-only. Editable MVP fields should be limited to explicitly approved operational settings such as preview preferences or allowed local storage thresholds; detector thresholds and decision rules should normally be centrally versioned.</p>
+<p>Configuration workflow:</p>
 <ol>
-<li>加载有效配置和修订。</li>
-<li>编辑包含字段级单位、范围和说明的草稿。
-3.通过API验证，无需激活。</li>
-<li>显示语义差异和需要重新启动或检查暂停的影响。</li>
-<li>需要管理员确认并说明理由。</li>
-<li>使用<code>If-Match</code>提交；如果发生冲突，请故意重新加载并重新应用。</li>
-<li>显示激活结果和审核/事件标识符。</li>
+<li>Load effective configuration and revision.</li>
+<li>Edit a draft with field-level units, ranges, and descriptions.</li>
+<li>Validate through the API without activation.</li>
+<li>Show the semantic difference and effects requiring restart or inspection pause.</li>
+<li>Require administrator confirmation and reason.</li>
+<li>Submit with <code>If-Match</code>; on conflict, reload and reapply deliberately.</li>
+<li>Display activation result and audit/event identifier.</li>
 </ol>
-<p>切勿在生产中向操作员提供任意 JSON 编辑。</p>
+<p>Never offer arbitrary JSON editing to operators in production.</p>
 <h2 id="169-pause-and-resume-safety">16.9 暂停和恢复安全<a class="headerlink" href="#169-pause-and-resume-safety" title="Permanent link">&para;</a></h2>
-<p>暂停意味着停止打开新产品窗口。 API 拥有活动窗口的行为：安全完成或根据配置的策略标记为中止。确认确定了结果并捕获了原因。在相机、模型、规则、数据库和磁盘先决条件通过之前，恢复将保持禁用状态。 UI 显示 API 拒绝详细信息，并且在确认之前不得乐观地显示 <code>READY</code>。</p>
-<p>紧急机器停止是工厂安全控制问题，不得以网络按钮表示，除非与经过验证的机械控制集成。仪表板暂停是应用程序级检查控制，而不是紧急停止。</p>
+<p>Pause means stop opening new product windows. The API owns behavior for an active window: finish safely or mark aborted according to configured policy. The confirmation identifies the consequence and captures a reason. Resume remains disabled until camera, model, rule, database, and disk preconditions pass. The UI displays API rejection detail and must not optimistically show <code>READY</code> before confirmation.</p>
+<p>Emergency machine stopping is a factory safety-control concern and must not be represented as a web button unless integrated with validated machinery controls. The dashboard pause is an application-level inspection control, not an emergency stop.</p>
 <h2 id="1610-state-and-data-flow">16.10 状态和数据流<a class="headerlink" href="#1610-state-and-data-flow" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Vue Router 控制路由授权和深度链接。</li>
-<li>Pinia 仅存储会话、有效权限、运行时快照、警报状态和轻量级 UI 首选项。</li>
-<li>历史查询仍然是页面本地/服务器驱动的；不要将检查数据库镜像到 Pinia 中。</li>
-<li>生成的 OpenAPI 客户端处理键入的 REST。单个 WebSocket 服务验证信封并调度资源失效。</li>
-<li>启动时：获取会话、权限、状态和当前检查；然后连接WebSocket。</li>
-<li>重新连接或序列间隙时：将数据标记为过时，重新获取快照，然后清除过时状态。</li>
-<li>使用带有抖动和上限的指数重新连接退避。浏览器重新连接行为不得影响边缘上传重试。</li>
+<li>Vue Router controls route authorization and deep links.</li>
+<li>Pinia stores only session, effective permissions, runtime snapshot, alert state, and lightweight UI preferences.</li>
+<li>Historical queries remain page-local/server-driven; do not mirror the inspection database into Pinia.</li>
+<li>A generated OpenAPI client handles typed REST. A single WebSocket service validates envelopes and dispatches resource invalidations.</li>
+<li>On startup: fetch session, permissions, status, and current inspection; then connect WebSocket.</li>
+<li>On reconnect or sequence gap: mark data stale, refetch snapshots, then clear stale state.</li>
+<li>Use exponential reconnect backoff with jitter and an upper bound. Browser reconnect behavior must not affect edge upload retries.</li>
 </ul>
 <h2 id="1611-failure-loading-and-empty-states">16.11 失败、加载和空状态<a class="headerlink" href="#1611-failure-loading-and-empty-states" title="Permanent link">&para;</a></h2>
-<p>每个窗格都定义加载、无数据、陈旧数据、授权拒绝和服务错误状态。最后已知的状态可能会通过明确的“最后更新”时间戳保持可见；它看起来一定不是最新的。失败的命令保留表单输入和请求 ID。缺少预览不会使结果面板变为空白。 Service Worker 不得缓存经过身份验证的 API 响应；静态资产可以通过版本安全更新进行缓存，以实现本地恢复。</p>
+<p>Every pane defines loading, no-data, stale-data, authorization-denied, and service-error states. Last-known status may remain visible with an explicit “last updated” timestamp; it must not look current. Failed commands retain form input and request ID. Missing preview does not blank the result panel. The service worker must not cache authenticated API responses; static assets may be cached for local resilience with version-safe updates.</p>
 <h2 id="1612-accessibility-performance-and-security">16.12 可访问性、性能和安全性<a class="headerlink" href="#1612-accessibility-performance-and-security" title="Permanent link">&para;</a></h2>
 <ul>
-<li>键盘操作、焦点、对比度、标签、对话框、表格和非颜色状态指示器符合 WCAG 2.1 AA。</li>
-<li>仅虚拟化已证明较大的表；光标分页是第一个控件。</li>
-<li>延迟加载视频和高级查看器代码。保持初始实时屏幕资源对于目标边缘硬件而言足够小。</li>
-<li>清理文件名和日志文本，禁止原始 HTML，并使用限制性内容安全策略。</li>
-<li>在使用会话的地方使用安全、仅限 HTTP、同站点 cookie；保护突变免受 CSRF 的影响。</li>
-<li>不要在分析中放置令牌、条形码或媒体 URL。本地仪表板不应依赖于第三方 CDN。</li>
+<li>Meet WCAG 2.1 AA for keyboard operation, focus, contrast, labels, dialogs, tables, and non-color status indicators.</li>
+<li>Virtualize only tables proven large; cursor pagination is the first control.</li>
+<li>Lazy-load video and advanced viewer code. Keep initial live screen assets small enough for the target edge hardware.</li>
+<li>Sanitize filenames and log text, prohibit raw HTML, and use a restrictive Content Security Policy.</li>
+<li>Use secure, HTTP-only, same-site cookies where sessions are used; protect mutations against CSRF.</li>
+<li>Do not place tokens, barcodes, or media URLs in analytics. The local dashboard should not depend on third-party CDNs.</li>
 </ul>
 <h2 id="1613-testing-and-acceptance">16.13 测试与验收<a class="headerlink" href="#1613-testing-and-acceptance" title="Permanent link">&para;</a></h2>
-<p>Vitest 涵盖存储、原因代码渲染、坐标转换、权限和重新连接协调。组件测试涵盖所有结果/健康状态和键盘行为。 Playwright 练习实时结果到达、过时连接恢复、历史记录/详细信息、清除媒体、队列重试、配置冲突、暂停/恢复拒绝和离线中心操作。视觉测试使用代表性的 4:3 图像和长组件/条形码字符串。</p>
-<p>验收检查包括：</p>
+<p>Vitest covers stores, reason-code rendering, coordinate transforms, permissions, and reconnect reconciliation. Component tests cover all result/health states and keyboard behavior. Playwright exercises live result arrival, stale connection recovery, history/detail, purged media, queue retry, configuration conflict, pause/resume rejection, and offline-central operation. Visual tests use representative 4:3 images and long component/barcode strings.</p>
+<p>Acceptance checks include:</p>
 <ul>
-<li>在仪表板关闭且中央断开的情况下，检查仍处于活动状态。</li>
-<li>在不丢失最新结果的情况下协调 WebSocket 间隙。</li>
-<li>不打开模态即可看到 NG 原因和缺少的组件。</li>
-<li>边界框在调整大小和全屏模式下保持对齐。</li>
-<li>未授权控件不可用，服务器授权仍拒绝直接调用。</li>
-<li>实时视图在商定的工业显示分辨率和狭窄的维护设备上仍然可用。</li>
+<li>Inspection remains active with the dashboard closed and central disconnected.</li>
+<li>A WebSocket gap is reconciled without losing the latest result.</li>
+<li>NG reasons and missing components are visible without opening a modal.</li>
+<li>Bounding boxes remain aligned under resize and full-screen modes.</li>
+<li>Unauthorized controls are unavailable and server authorization still rejects direct calls.</li>
+<li>The live view remains usable at the agreed industrial display resolution and on a narrow maintenance device.</li>
 </ul>
 <h2 id="1614-mvp-and-later-scope">16.14 MVP 及后续范围<a class="headerlink" href="#1614-mvp-and-later-scope" title="Permanent link">&para;</a></h2>
 <p>MVP 包括实时状态/最新结果、最近历史记录/详细信息、运行状况、队列可见性/手动重试以及暂停/恢复（如果操作获得批准）。本地覆盖编辑和日志可能是仅限管理员的后期 MVP 功能。后续添加的内容可能包括 WebRTC 预览、信息亭打包/Tauri、警报确认工作流程、引导相机校准和更丰富的多帧证据回放。静态训练和检查 MVP 不需要任何操作。</p>
+<h2 id="16141-developer-tools">16.14.1 开发者工具（<code>/dev</code>）<a class="headerlink" href="#16141-developer-tools" title="Permanent link">&para;</a></h2>
+<p><code>/dev</code> 路由组开发人员模式工具 (ADR-014)，包括 <strong>测试</strong> 选项卡
+拍照（通过文件捕获的移动操作系统相机）、上传图像，或者
+上传短视频并立即显示检查决定，
+产品边界框覆盖客户端的源图像和每帧
+视频汇总表。 <strong>日志</strong>选项卡重用有界日志视图，并且
+未来的工具（相机预览、配置/数据库检查）可能会加入同一页面。
+这些工具需要 <code>VITE_API_MODE=http</code> 和 <code>serve</code> 运行
+<code>--enable-web-test</code>；否则该页面将解释如何启用它们。开发者
+工具从不流式传输视频，也不是生产获取路径。</p>
 <h2 id="1615-open-questions-and-validation-required">16.15 未决问题和需要验证<a class="headerlink" href="#1615-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>确认生产线上的显示尺寸、浏览器、信息亭模式、触摸/键盘使用、语言和辅助功能需求。</li>

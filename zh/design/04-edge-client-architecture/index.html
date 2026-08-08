@@ -1966,6 +1966,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3530,6 +3586,13 @@
     Health --&gt; Media
     Health --&gt; API</code></pre>
 <p>一月目标部署一个包含 FastAPI、捕获编排、持久性和上传调度的 <code>edge-service</code>。决策关键型工作在有界工作任务中运行，并且可以使用监督推理子进程进行 SDK/GPU 隔离；在测量的隔离或扩展需求证明其复杂性合理之前，它不是单独部署的服务。 API 或浏览器请求失败不得停止捕获和决策任务。</p>
+<p>一个<code>edge-service</code>进程可以运行多个独立的检查实例，
+每个将自己的相机源与其自己的模型/规则/产品及其
+拥有稳定的设备身份（<code>device_id = uuid5(namespace, instance_id)</code>除非
+显式配置），匹配每条线路一台设备的车队模型
+（ADR-013）。实例共享进程及其存储，但从不共享
+证据；每个实例的模型加载意味着内存随着实例的增长而增长
+计数直至重量分配合理。</p>
 <h2 id="3-inspection-processing">3、检验处理<a class="headerlink" href="#3-inspection-processing" title="Permanent link">&para;</a></h2>
 <h3 id="31-window-and-identity">3.1 窗口和身份<a class="headerlink" href="#31-window-and-identity" title="Permanent link">&para;</a></h3>
 <p>协调员在接受证据并固定活动包版本之前创建 <code>inspection_id</code>。硬件触发可在可用时提供最清晰的边界；条形码事件添加身份，但可能会延迟到达或失败；跟踪/区域处理仅图像流，但需要仔细调整；超时限制资源使用，但其本身不能证明物理分离。生产机制应仅结合经过验证的信号并明确测试连续/多个产品。</p>
@@ -3539,7 +3602,7 @@
 <p>组件检测器在生成的 ROI 上运行并发出类别、框、置信度、帧 ID 和模型版本。所需的类来自固定的产品配置。可选的 OpenCV 检查使用自己的算法/配置版本发出命名观察结果；它们不能无形地改变检测器的输出。</p>
 <h3 id="33-per-component-aggregation-and-rules">3.3 每个组件的聚合和规则<a class="headerlink" href="#33-per-component-aggregation-and-rules" title="Permanent link">&para;</a></h3>
 <p>聚合器排除无效/模糊的帧，并使用配置的策略评估每个所需的组件，例如一个高置信度观察、两个中等置信度观察、相邻帧证据、可见区域限制和最小可用帧计数。阈值仍然特定于型号/产品，并且需要评估。</p>
-<p>规则引擎仅使用类型化的聚合证据和固定配置。它返回内部 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code>、组件列表和原因代码。 <code>UNCERTAIN</code> 始终映射到业务<code>NG</code>；演示文稿可以显示内部原因，但不能将业务结果更改为<code>OK</code>。</p>
+<p>规则引擎仅使用类型化的聚合证据和固定配置。它返回内部 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code>、组件列表和原因代码。 <code>UNCERTAIN</code>始终映射到业务<code>NG</code>；演示可以显示内部原因，但不能将业务结果更改为<code>OK</code>。</p>
 <h2 id="4-inspection-state-model">4. 检验状态模型<a class="headerlink" href="#4-inspection-state-model" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     [*] --&gt; Idle
@@ -3592,7 +3655,7 @@
 </ol>
 <p>SQLite 使用 Alembic 迁移、外键、WAL 模式（如果在所选文件系统上进行验证）、有界繁忙超时、定期完整性检查和支持的备份过程。单个存储库编写器或短事务可以减少锁争用。</p>
 <h3 id="62-retention-and-disk-pressure">6.2 保留和磁盘压力<a class="headerlink" href="#62-retention-and-disk-pressure" title="Permanent link">&para;</a></h3>
-<p>保留类别针对完整/滚动视频、关键帧、NG 剪辑、带注释的图像、ROI 图像、日志和数据库记录进行独立配置。清理从过期的、成功上传的、未受保护的工件到价值较低的数据。它必须尊重参考资料、法律/审查保留、待处理/失败的上传以及最低证据政策。警告和严重水印会触发原因编码的健康事件；无法保留强制性证据的缺陷或保守地终止检查。</p>
+<p>保留类别针对完整/滚动视频、关键帧、NG 剪辑、带注释的图像、ROI 图像、日志和数据库记录进行独立配置。清理从过期的、成功上传的、未受保护的工件到价值较低的数据。它必须遵守参考资料、法律/审查保留、待处理/失败的上传以及最低证据政策。警告和严重水印会触发原因编码的健康事件；无法保留强制性证据的缺陷或保守地终止检查。</p>
 <p>确切的持续时间和水印有意未指定，以待容量和策略验证。</p>
 <h2 id="7-upload-scheduler">7. 上传调度程序<a class="headerlink" href="#7-upload-scheduler" title="Permanent link">&para;</a></h2>
 <p>上传任务包含任务 ID、检查 ID、工件类型、适用的本地路径、校验和、有效负载哈希、尝试计数、下次尝试时间和状态。幂等性密钥在重试后保持稳定。指数退避使用抖动和配置的上限；永久性验证/身份验证失败会停止自动重试并引发可操作事件，而暂时性网络/5xx 故障仍会排队。</p>
@@ -3617,15 +3680,15 @@
 <h3 id="121-static-train-and-inspect-mvp">12.1 静态训练和检查 MVP<a class="headerlink" href="#121-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
 <p>使用文件夹源、经过训练的模型适配器、ROI、组件证据、规则、JSON/媒体输出、保留验证和重点测试来实现边缘 CLI 路径。一个单独的仅供开发人员使用的培训 CLI 会生成模型工件；它不是边缘运行时的一部分。</p>
 <h3 id="122-one-month-target">12.2 一个月目标<a class="headerlink" href="#122-one-month-target" title="Permanent link">&para;</a></h3>
-<p>添加选定的硬件适配器、产品窗口、条形码解析器、<code>edge-service</code> 内的有界决策工作者、SQLite/媒体管理器、聚合、队列/重试、本地 Web UI、撰写和恢复/运行状况测试。整合最初的集中摄取，而不将其引入决策中。</p>
+<p>添加选定的硬件适配器、产品窗口、条形码解析器、<code>edge-service</code> 内的有界决策工作者、SQLite/媒体管理器、聚合、队列/重试、本地 Web UI、Compose 和恢复/运行状况测试。整合最初的集中摄取，而不将其引入决策中。</p>
 <h3 id="123-production-target">12.3 生产目标<a class="headerlink" href="#123-production-target" title="Permanent link">&para;</a></h3>
-<p>验证时序/硬件、强化迁移/备份/保留、凭据、包签名/回滚、故障状态、长时间运行的操作、支持诊断和验收指标。通过 NG 审查和抽样 OK 审核进行谨慎的推出。</p>
+<p>验证时序/硬件、强化迁移/备份/保留、凭据、包签名/回滚、故障状态、长时间运行的操作、支持诊断和验收指标。通过 NG 审核和抽样 OK 审核进行谨慎的推出。</p>
 <h3 id="124-future">12.4 未来<a class="headerlink" href="#124-future" title="Permanent link">&para;</a></h3>
 <p>仅通过明确的要求和验证来考虑 Tauri、更大的边缘 PostgreSQL、PLC/MES 适配器、高级跟踪和远程包自动化。</p>
 <h2 id="13-assumptions">13. 假设<a class="headerlink" href="#13-assumptions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>硬件 SDK 可以隔离在适配器后面并允许可恢复的重新连接。</li>
-<li>所选主机支持容器对硬件和持久安装存储的访问。</li>
+<li>所选主机支持容器访问硬件和持久安装的存储。</li>
 <li>产品吞吐量允许在硬件基准测试后进行有界两阶段推理。</li>
 <li>经批准的流程可以在边缘失去连接之前提供活动包。</li>
 </ul>
@@ -3635,7 +3698,7 @@
 <li>支持哪些操作系统、CPU/GPU、内存、磁盘类型/容量和容器运行时？</li>
 <li>什么打开/关闭窗口，观察到的传送带时间是多少，以及产品在视图中是否可以重叠？</li>
 <li>每个产品/型号验证了哪些帧质量、ROI、置信度、聚合和超时阈值？</li>
-<li>在向外部报告结果之前，特别是在磁盘压力下，哪些本地证据是强制性的？</li>
+<li>在对外报告结果之前，特别是在磁盘压力下，哪些本地证据是强制性的？</li>
 <li>适用哪些保留、隐私、加密、本地访问控制和维护策略？</li>
 <li>什么协议和安全状态行为将结果/设备故障连接到生产线？</li>
 <li>除了休闲浏览威慑之外，合同还要求什么级别的源代码打包？</li>

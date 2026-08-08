@@ -1013,6 +1013,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1534-web-dev-test-harness-adr-014" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.4 Web Dev Test Harness (ADR-014)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1909,6 +1920,62 @@
     
   
     ADR-012: Edge API M1 Viewer Auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013: Camera Frame Sources and Multi-Instance Edge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014: Web Dev Test Harness
   
 
     
@@ -3270,6 +3337,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1534-web-dev-test-harness-adr-014" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.4 Web Dev Test Harness (ADR-014)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3481,6 +3559,15 @@
 <td>R</td>
 </tr>
 <tr>
+<td><code>GET /api/v1/camera/{instance_id}/preview</code></td>
+<td>Latest captured frame as a rate-limited JPEG for the configured instance (interim REST preview, ADR-013).</td>
+<td>Path instance ID / JPEG bytes</td>
+<td><code>404 INSTANCE_NOT_FOUND</code>, <code>503 CAMERA_UNAVAILABLE</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
 <td><code>POST /api/v1/camera/reconnect</code></td>
 <td>Request a supervised camera reconnect.</td>
 <td><code>{reason}</code> / <code>OperationAccepted</code></td>
@@ -3637,6 +3724,44 @@
 <td>Safe GET</td>
 <td>Cursor</td>
 <td>A</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1534-web-dev-test-harness-adr-014">15.3.4 Web Dev Test Harness (ADR-014)<a class="headerlink" href="#1534-web-dev-test-harness-adr-014" title="Permanent link">&para;</a></h3>
+<p>These file-based endpoints are <strong>disabled by default</strong> and return
+<code>404 DEV_TOOLS_DISABLED</code> unless <code>serve</code> runs with <code>--enable-web-test</code>. They are
+a developer test harness, not a production acquisition path; production
+real-time inspection uses the native app / RTSP / camera sources.</p>
+<table>
+<thead>
+<tr>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /api/v1/dev/inspect-frame</code></td>
+<td>Analyze one uploaded image through an instance pipeline; writes an evidence bundle unless <code>persist=false</code>.</td>
+<td>Raw image bytes / <code>InspectionRecord</code></td>
+<td><code>400 INVALID_IMAGE</code>, <code>404 INSTANCE_NOT_FOUND</code>, <code>413 PAYLOAD_TOO_LARGE</code>, <code>503 PIPELINE_UNAVAILABLE</code></td>
+<td>Deterministic</td>
+<td>-</td>
+<td>R + dev flag</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/dev/inspect-video</code></td>
+<td>Analyze an uploaded video frame by frame (≤30 sampled frames) and return a summary; nothing is persisted.</td>
+<td>Raw video bytes / <code>VideoInspectResult</code></td>
+<td><code>400 INVALID_VIDEO</code>, <code>404 INSTANCE_NOT_FOUND</code>, <code>413 PAYLOAD_TOO_LARGE</code>, <code>503 PIPELINE_UNAVAILABLE</code></td>
+<td>Deterministic</td>
+<td>-</td>
+<td>R + dev flag</td>
 </tr>
 </tbody>
 </table>

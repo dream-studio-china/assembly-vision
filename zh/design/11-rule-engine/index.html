@@ -810,7 +810,7 @@
   <a href="#112-decision-semantics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.2 决策语义
+        11.2 Decision Semantics
       
     </span>
   </a>
@@ -876,7 +876,7 @@
   <a href="#118-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.8 验证
+        11.8 Verification
       
     </span>
   </a>
@@ -1781,6 +1781,62 @@
     
   
     ADR-012：Edge API M1 查看器身份验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
   
 
     
@@ -3051,7 +3107,7 @@
   <a href="#112-decision-semantics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.2 决策语义
+        11.2 Decision Semantics
       
     </span>
   </a>
@@ -3117,7 +3173,7 @@
   <a href="#118-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.8 验证
+        11.8 Verification
       
     </span>
   </a>
@@ -3158,7 +3214,7 @@
 <h1 id="11-rule-engine">11. 规则引擎<a class="headerlink" href="#11-rule-engine" title="Permanent link">&para;</a></h1>
 <h2 id="111-purpose-and-independence">11.1 目的和独立性<a class="headerlink" href="#111-purpose-and-independence" title="Permanent link">&para;</a></h2>
 <p>规则引擎将解析的产品身份、管道状态和每个组件的聚合证据转换为确定性的检查决策。它独立于YOLO，不包含图像推理。输入来自 <a href="../06-ai-detection-pipeline/">AI detection pipeline</a> 和 <a href="../10-temporal-aggregation/">temporal aggregation</a>。</p>
-<h2 id="112-decision-semantics">11.2 决策语义<a class="headerlink" href="#112-decision-semantics" title="Permanent link">&para;</a></h2>
+<h2 id="112-decision-semantics">11.2 Decision Semantics<a class="headerlink" href="#112-decision-semantics" title="Permanent link">&para;</a></h2>
 <p>外部产生结果为<code>OK</code>或<code>NG</code>：</p>
 <ul>
 <li><code>OK</code>：产品类型和规则有效，每个强制管道门都通过，并且每个所需组件独立地具有满足计数和约束规则的<code>PRESENT</code>证据。</li>
@@ -3233,7 +3289,7 @@
 <li>新下载的无效规则无法替换活动规则。</li>
 </ul>
 <p>边缘仪表板可能会因全局配置错误而显示系统未就绪状态。当决策持久性失败时，它不得显示 <code>OK</code> 结果。</p>
-<h2 id="118-verification">11.8 验证<a class="headerlink" href="#118-verification" title="Permanent link">&para;</a></h2>
+<h2 id="118-verification">11.8 Verification<a class="headerlink" href="#118-verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>对每个证据状态、门、身份状态、计数和原因代码使用表驱动的单元测试。</li>
 <li>属性测试：<code>OK</code> 意味着每个必需的组件都存在并且每个强制门都为真。</li>
@@ -3245,11 +3301,11 @@
 </ul>
 <h2 id="119-open-questions-and-validation-required">11.9 未决问题和需要验证<a class="headerlink" href="#119-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>确认面向客户的界面是否仅支持<code>OK</code>/<code>NG</code>，还是还显示内部不确定类别。</li>
-<li>当条形码可读但未知时，定义精确的产品到条形码映射和行为。</li>
-<li>按产品变体定义所需的组件数量和任何条件要求。</li>
-<li>建立规则发布、批准、签署和紧急回滚角色。</li>
-<li>确认下游驱动语义和时序；这里假设没有 PLC 行为。</li>
+<li>Confirm whether the customer-facing interface supports only <code>OK</code>/<code>NG</code> or also displays an internal uncertain category.</li>
+<li>Define exact product-to-barcode mapping and behavior when a barcode is readable but unknown.</li>
+<li>Define required component counts and any conditional requirements by product variant.</li>
+<li>Establish rule publication, approval, signing, and emergency rollback roles.</li>
+<li>Confirm downstream actuation semantics and timing; no PLC behavior is assumed here.</li>
 </ul>
 
 

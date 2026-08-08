@@ -1805,6 +1805,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3237,7 +3293,7 @@ loop 每个支持的图像
         Source--&gt;&gt;CLI:图像和源元数据
         CLI-&gt;&gt;Product:检测产品
         Product--&gt;&gt;CLI:产品检测或故障
-alt 恰好一件有效产品
+alt Exactly one valid product
             CLI-&gt;&gt;ROI:裁剪和地图坐标
             ROI--&gt;&gt;CLI:产品投资回报率和转型
             CLI-&gt;&gt;Component:检测所需的类
@@ -3245,7 +3301,7 @@ alt 恰好一件有效产品
             CLI-&gt;&gt;Rules:评估单帧证据
             Rules--&gt;&gt;CLI:OK 或 NG 并说明原因
 else 产品无法验证
-            CLI-&gt;&gt;Rules:评估管道故障
+            CLI-&gt;&gt;Rules:Evaluate pipeline failure
             Rules--&gt;&gt;CLI:有理由不合格
         end
         CLI-&gt;&gt;Storage:原子保存 JSON 和媒体
@@ -3336,7 +3392,7 @@ deferred：M1静态单帧CLI仅接受<code>product_detection</code>，
 <ul>
 <li>单元测试阶段契约、阈值边界、坐标变换和原因代码映射。</li>
 <li>运行黄金图像测试，并将预期检测和决策固定到模型清单上。</li>
-<li>验证每个注入的阶段异常是否都会生成 <code>NG</code> 或阻止就绪，而不是 <code>OK</code>。</li>
+<li>验证每个注入的阶段异常是否都会产生 <code>NG</code> 或阻止就绪，而不会产生 <code>OK</code>。</li>
 <li>在窗口边界测试混合产品类型和版本变化。</li>
 <li>测量平均和 P95 延迟、吞吐量、NG 召回、产品检测成功和每个组件召回。</li>
 <li>在确定性推理支持允许的情况下，从持久输入、配置和版本元数据中再现结果。</li>

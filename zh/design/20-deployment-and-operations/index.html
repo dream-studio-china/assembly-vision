@@ -1949,6 +1949,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3662,7 +3718,7 @@
 </code></pre></div>
 <p>生产 TLS 策略、证书自动化、上传限制和请求超时必须反映客户网络和预期的 NG 剪辑大小。媒体上传 API 应支持可恢复或有界分段上传，而不是依赖于任意大的代理限制。</p>
 <h2 id="207-configuration-and-secrets">20.7 配置和秘密<a class="headerlink" href="#207-configuration-and-secrets" title="Permanent link">&para;</a></h2>
-<p>配置优先级是键入的应用程序默认值、受管理的不可变包、批准的站点配置和仅部署环境覆盖。环境/本地覆盖可能会更改连接、路径、资源限制和非安全显示选项；他们不得更改产品映射、所需组件、阈值或模型/规则兼容性。产品规则和模型清单是签名/版本化的域工件，而不是普通的环境变量。机密包括中央凭据、设备凭据、TLS 私钥和对象存储凭据。它们是从具有最低权限的主机秘密存储或部署系统安装的。</p>
+<p>配置优先级是键入的应用程序默认值、受管理的不可变包、批准的站点配置和仅部署环境覆盖。环境/本地覆盖可能会更改连接、路径、资源限制和非安全显示选项；他们不得更改产品映射、所需组件、阈值或模型/规则兼容性。产品规则和模型清单是签名/版本控制的域工件，而不是普通的环境变量。机密包括中央凭据、设备凭据、TLS 私钥和对象存储凭据。它们是从具有最低权限的主机秘密存储或部署系统安装的。</p>
 <p>每个有效的配置快照都会记录其版本和校验和。验证发生在激活之前。无效配置会使最后一个已知良好的版本保持活动状态并发出事件。影响相机几何形状、产品映射、所需组件、阈值或模型的更改需要审核记录和明确的激活操作。</p>
 <h2 id="208-model-and-rule-update-sequence">20.8 模型和规则更新顺序<a class="headerlink" href="#208-model-and-rule-update-sequence" title="Permanent link">&para;</a></h2>
 <p>更新是拉取式或集中式启动的，但绝不会直接从未经验证的下载中激活。模型和兼容规则版本作为原子发行集安装。</p>
@@ -3674,11 +3730,11 @@
     participant I as 检验员
     A-&gt;&gt;C:批准签署的发布清单
     C--&gt;&gt;E:宣布可用版本
-    E-&gt;&gt;C:下载包和清单
+    E-&gt;&gt;C:Download package and manifest
     E-&gt;&gt;E:验证身份、校验和和签名
     E-&gt;&gt;V:运行兼容性和烟雾检查
 alt 验证成功
-        V--&gt;&gt;E:有效的
+        V--&gt;&gt;E:Valid
         E-&gt;&gt;I:请求安全窗口激活
         I--&gt;&gt;E:检查窗口关闭
         E-&gt;&gt;E:原子切换主动释放
@@ -3687,10 +3743,10 @@ alt 验证成功
         E-&gt;&gt;C:报告安装成功
 else 验证或健康检查失败
         V--&gt;&gt;E:无效的
-        E-&gt;&gt;E:保留或恢复最后的已知良好版本
+        E-&gt;&gt;E:Keep or restore last known-good release
         E-&gt;&gt;C:报告故障和诊断
     end</code></pre>
-<p>激活不得将物理产品检查拆分到多个版本。回滚恢复以前的应用程序/模型/规则集，同时保留检查和上传数据。</p>
+<p>激活不得将物理产品检查拆分为多个版本。回滚恢复以前的应用程序/模型/规则集，同时保留检查和上传数据。</p>
 <h2 id="209-release-and-upgrade-procedure">20.9 发布和升级流程<a class="headerlink" href="#209-release-and-upgrade-procedure" title="Permanent link">&para;</a></h2>
 <ol>
 <li>根据经过审查的提交构建不可变的工件并生成软件物料清单。</li>

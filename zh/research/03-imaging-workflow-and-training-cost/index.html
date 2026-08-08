@@ -1648,6 +1648,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3555,7 +3611,7 @@
   
 
 
-<h1 id="research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection">研究3：固定线路巡检的成像工作流程、数据实践和培训成本<a class="headerlink" href="#research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection" title="Permanent link">&para;</a></h1>
+<h1 id="research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection">Research 3: Imaging Workflow, Data Practices, and Training Cost for Fixed-Line Inspection<a class="headerlink" href="#research-3-imaging-workflow-data-practices-and-training-cost-for-fixed-line-inspection" title="Permanent link">&para;</a></h1>
 <blockquote>
 <p>状态：AssemblyVision 项目的研究综合（固定 4MP 工业相机、固定照明、大型部件的存在检查、300-800 个图像目标）。
 编译日期：2026-08-04
@@ -3633,7 +3689,7 @@
 <h3 id="23-filters-and-glare-control">2.3 滤光片和眩光控制<a class="headerlink" href="#23-filters-and-glare-control" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>偏振滤光片</strong>（相机侧和/或光侧）“可以消除反射到相机中的光产生的眩光”-金属或闪亮塑料上镜面反射的标准修复（https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting）。</li>
-<li><strong>彩色/红外/紫外线滤镜</strong>可以提高对比度或阻挡不需要的环境光。在受控站中，排除环境光的外壳通常比依赖过滤器更简单。</li>
+<li><strong>彩色/红外线/紫外线滤镜</strong>可以提高对比度或阻挡不需要的环境光。在受控站中，排除环境光的外壳通常比依赖过滤器更简单。</li>
 <li>工程指南中将玻璃和反射表面称为“受控照明很重要，因为反射可能看起来与真实缺陷相似”的情况 (https://blog.roboflow.com/surface-defects/)。</li>
 </ul>
 <h3 id="24-exposure-aperture-depth-of-field-and-motion">2.4 曝光、光圈、景深和运动<a class="headerlink" href="#24-exposure-aperture-depth-of-field-and-motion" title="Permanent link">&para;</a></h3>
@@ -3707,7 +3763,7 @@
 </ul>
 <h3 id="42-training-time-and-compute">4.2 训练时间和计算<a class="headerlink" href="#42-training-time-and-compute" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Ultralytics 参考时间表：</strong> 从 <strong>300 epoch 左右开始</strong>；如果早期过度拟合则减少，如果没有则延长至 600-1200+；使用早期停止（耐心）、预训练权重（迁移学习）、混合精度 (AMP) 和子集训练进行迭代 (https://docs.ultralytics.com/guides/model-training-tips/)。</li>
+<li><strong>Ultralytics 参考时间表：</strong> 从 <strong>300 epoch 左右开始</strong>；如果早期过度拟合则减少，如果没有过度拟合则延长至 600-1200+；使用早期停止（耐心）、预训练权重（迁移学习）、混合精度 (AMP) 和子集训练进行迭代 (https://docs.ultralytics.com/guides/model-training-tips/)。</li>
 <li><strong>托管训练：</strong> Roboflow Train 默认为 100 个 epoch，支持从 COCO 检查点进行训练，NAS 自动训练 10-100 个候选模型（https://blog.roboflow.com/roboflow-train-3-0/）。 Roboflow 的 PCB 演练报告称，对于分叉数据集“训练需要几个小时”(https://blog.roboflow.com/pcb-defect-detection/)。</li>
 <li><strong>从业者的估计（明确标记，不是来自单个可引用的基准）：</strong></li>
 <li>单个现代消费者/数据中心 GPU 上的 <strong>数百个图像</strong> 上的纳米/小型 YOLO 通常在 <strong>分钟到约 1 小时</strong>内收敛，持续 100-300 个周期。 Roboflow 的“几个小时”是托管管道的安全规划数字。</li>

@@ -1944,6 +1944,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013：相机帧源和多实例边缘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014：Web 开发测试工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3461,7 +3517,7 @@
 <p>最初的自动化决策是来自边缘的仅附加事实。中央审查和更正是相互关联的事实；它们不会覆盖原始结果。请参阅<a href="../03-architecture-overview/">Architecture Overview</a>和<a href="../04-edge-client-architecture/">Edge Client Architecture</a>。</p>
 <h2 id="2-central-component-architecture">2. 中心组件架构<a class="headerlink" href="#2-central-component-architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
-    Edge[边缘上传客户端] --&gt; Gateway[Nginx 和中央 FastAPI]
+    Edge[Edge upload clients] --&gt; Gateway[Nginx 和中央 FastAPI]
     Admin[Vue 管理应用程序] --&gt; Gateway
     Gateway --&gt; Auth[身份与授权]
     Gateway --&gt; Ingest[检查摄取]

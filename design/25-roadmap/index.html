@@ -1916,6 +1916,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013: Camera Frame Sources and Multi-Instance Edge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014: Web Dev Test Harness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3446,7 +3502,11 @@ product family, one camera, one window mechanism, one barcode path, and one cent
 <p>Dependencies: representative images, initial product/component definitions, candidate models. Risks: insufficient NG examples and model fit.</p>
 <h3 id="2552-week-2-edge-acquisition-and-persistence">25.5.2 Week 2: Edge Acquisition and Persistence<a class="headerlink" href="#2552-week-2-edge-acquisition-and-persistence" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Integrate the selected camera adapter and trigger/window prototype.</li>
+<li>Integrate the selected camera adapter and trigger/window prototype. The
+  <code>FrameSource</code> abstraction (ADR-013) ships first with simulated sources
+  (folder, video, OpenCV local/virtual device, RTSP, HTTP-image) so the
+  acquisition path is developed and tested without camera hardware; the vendor
+  SDK adapter then implements the same protocol.</li>
 <li>Implement barcode reading as a separate capability and product-type resolution.</li>
 <li>Add SQLite schema/migrations, atomic media storage, recovery states, and retention safeguards.</li>
 <li>Add local FastAPI and a basic Vue dashboard for camera, latest result, health, and recent history.</li>
