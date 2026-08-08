@@ -299,8 +299,26 @@ def test_serve_returns_2_when_create_app_raises(
         host="127.0.0.1",
         port=8000,
         api_token=None,
+        allow_dev_auth=False,
     )
     assert cli._run_serve(args) == 2
+
+
+@pytest.mark.parametrize("host", ["127.0.0.1", "localhost", "::1"])
+def test_validate_serve_bind_allows_loopback_without_token(host: str) -> None:
+    cli._validate_serve_bind(host, api_token=None, allow_dev_auth=False)
+
+
+def test_validate_serve_bind_rejects_non_loopback_without_token() -> None:
+    with pytest.raises(ConfigError, match="without an API token"):
+        cli._validate_serve_bind("0.0.0.0", api_token=None, allow_dev_auth=False)  # noqa: S104
+    with pytest.raises(ConfigError, match="without an API token"):
+        cli._validate_serve_bind("192.168.1.10", api_token=None, allow_dev_auth=False)
+
+
+def test_validate_serve_bind_allows_token_or_dev_override() -> None:
+    cli._validate_serve_bind("0.0.0.0", api_token="tok", allow_dev_auth=False)  # noqa: S104, S106
+    cli._validate_serve_bind("0.0.0.0", api_token=None, allow_dev_auth=True)  # noqa: S104
 
 
 def test_main_module_runs(tmp_path: Path) -> None:
@@ -438,6 +456,7 @@ def test_serve_success_starts_uvicorn(tmp_path: Path, monkeypatch: pytest.Monkey
         host="127.0.0.1",
         port=8000,
         api_token=None,
+        allow_dev_auth=False,
     )
     assert cli._run_serve(args) == 0
     assert calls and calls[0]["port"] == 8000

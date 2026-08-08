@@ -80,6 +80,7 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     )
     app.state.settings = settings
     app.state.viewer_sessions = {}
+    app.state.auth_failures = {}
 
     # The Vite dev server calls the API cross-origin during development; the
     # served dashboard is same-origin and needs no CORS. Allow only anchored
@@ -156,7 +157,7 @@ def _install_static_routes(app: FastAPI, static_dir: Path | None) -> None:
     async def spa(full_path: str) -> FileResponse:
         # API routes never fall back to the SPA; unknown API paths must produce
         # a normal API 404 instead of returning the dashboard HTML (P2).
-        if full_path.startswith("api/"):
+        if full_path == "api" or full_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="Not Found")
         candidate = (root / full_path).resolve()
         if candidate.is_file() and candidate.is_relative_to(root):

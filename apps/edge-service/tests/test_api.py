@@ -388,6 +388,91 @@ def test_static_spa_fallback_serves_index(tmp_path: Path) -> None:
         assert asset.text == "console.log(1)"
 
 
+def test_api_paths_never_fall_back_to_spa(tmp_path: Path) -> None:
+    static = tmp_path / "dist"
+    static.mkdir()
+    static.joinpath("index.html").write_text("<html>edge-dashboard</html>")
+
+    settings = ServerSettings(
+        output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3", static_dir=static
+    )
+    app = create_app(settings)
+    with TestClient(app) as test_client:
+        bare_api = test_client.get("/api")
+        assert bare_api.status_code == 404
+        assert "edge-dashboard" not in bare_api.text
+        unknown_api = test_client.get("/api/unknown")
+        assert unknown_api.status_code == 404
+        assert "edge-dashboard" not in unknown_api.text
+        # Client-side routes still get the SPA fallback.
+        assert test_client.get("/history").text == "<html>edge-dashboard</html>"
+
+
+def test_invalid_cursor_returns_400(client: TestClient) -> None:
+    response = client.get("/api/v1/inspections", params={"cursor": "not-a-cursor"})
+    assert response.status_code == 400
+    assert response.json()["code"] == "INVALID_CURSOR"
+
+
+def test_cursor_bound_to_filter_set(client: TestClient) -> None:
+    page = client.get("/api/v1/inspections", params={"business_result": "OK", "limit": 1})
+    cursor = page.json().get("next_cursor")
+    if cursor is None:
+        return
+    # Reusing the cursor with a different filter set is rejected, not silently
+    # applied to the wrong result set.
+    mismatched = client.get(
+        "/api/v1/inspections",
+        params={"business_result": "NG", "limit": 1, "cursor": cursor},
+    )
+    assert mismatched.status_code == 400
+    assert mismatched.json()["code"] == "INVALID_CURSOR"
+    # The same filter set accepts the cursor.
+    matching = client.get(
+        "/api/v1/inspections",
+        params={"business_result": "OK", "limit": 1, "cursor": cursor},
+    )
+    assert matching.status_code == 200
+
+
+def test_purged_media_returns_410_even_when_file_exists(tmp_path: Path) -> None:
+    import sqlite3
+
+    from assemblyvision_edge.persistence.reconcile import reconcile_output_root
+
+    root = tmp_path / "out"
+    root.mkdir()
+    record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-PURGED")
+    directory = root / str(record.inspection_id)
+    directory.mkdir()
+    directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+    # The file still exists on disk; the metadata says PURGED.
+    directory.joinpath("key_frame.jpg").write_bytes(b"still-here")
+
+    db = tmp_path / "edge.sqlite3"
+    repo = EdgeRepository.open(db)
+    try:
+        reconcile_output_root(repo, root)
+    finally:
+        repo.close()
+    conn = sqlite3.connect(db)
+    try:
+        conn.execute(
+            "UPDATE media SET lifecycle = 'PURGED' WHERE media_id = ?",
+            (str(record.media[0].media_id),),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    settings = ServerSettings(output_root=root, db_path=db)
+    app = create_app(settings)
+    with TestClient(app) as test_client:
+        response = test_client.get(f"/api/v1/media/{record.media[0].media_id}/content")
+        assert response.status_code == 410
+        assert response.json()["code"] == "MEDIA_PURGED"
+
+
 def test_fresh_inspection_media_served_from_writer(tmp_path: Path) -> None:
     from assemblyvision_edge.output.writer import OutputWriter
     from PIL import Image

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, Query
 from assemblyvision_edge.api.deps import get_repository
 from assemblyvision_edge.api.problems import ApiProblem
 from assemblyvision_edge.api.schemas import InspectionSummary, Page, Problem
-from assemblyvision_edge.persistence.repository import EdgeRepository
+from assemblyvision_edge.persistence.repository import EdgeRepository, InvalidCursorError
 
 router = APIRouter(prefix="/inspections", tags=["inspections"])
 
@@ -27,16 +27,23 @@ def list_inspections(
     limit: int = 50,
     repository: EdgeRepository = Depends(get_repository),
 ) -> Page[InspectionSummary]:
-    page = repository.list_inspections(
-        business_result=business_result,
-        internal_decision=internal_decision,
-        barcode=barcode,
-        product=product,
-        from_iso=from_,
-        to_iso=to,
-        cursor=cursor,
-        limit=limit,
-    )
+    try:
+        page = repository.list_inspections(
+            business_result=business_result,
+            internal_decision=internal_decision,
+            barcode=barcode,
+            product=product,
+            from_iso=from_,
+            to_iso=to,
+            cursor=cursor,
+            limit=limit,
+        )
+    except InvalidCursorError as exc:
+        raise ApiProblem(
+            status_code=400,
+            code="INVALID_CURSOR",
+            detail="the cursor is malformed or does not match the current filters",
+        ) from exc
     return Page(
         items=[
             InspectionSummary(
