@@ -142,7 +142,8 @@ assembly-vision/
   + TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage & delayed
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
    static-image-first MVP, ADR-010 per-component temporal aggregation, ADR-011 labeled
-   train-and-inspect MVP, and ADR-012 edge API M1 viewer auth.
+   train-and-inspect MVP, ADR-012 edge API M1 viewer auth, and ADR-013 camera frame
+   sources and multi-instance edge.
 - [docs/design/appendices.md](../design/appendices.md) holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
@@ -407,6 +408,29 @@ verified and its findings closed with acceptance tests, merged via PR #12
   version, lease fields, concurrent equal-content upserts) is gated on the
   upload-scheduler milestone.
 
+## 8.5 Camera Frame Sources and Multi-Instance Edge (ADR-013, in progress)
+
+Documentation and ADR-013 are landed; implementation follows. The design:
+
+- **`FrameSource` protocol in `vision-core`** (design 07 §7.3): `open /
+  configure / frames(stop) / close` yielding `CapturedFrame` with monotonic +
+  UTC timestamps, sequence, dimensions, pixel format, status, and PIL RGB
+  image; decode failures raise a frame-stream error (fail-safe).
+- **Pluggable sources**: `folder` (loopable), `video` (OpenCV), `opencv-device`
+  (local/virtual camera, e.g. v4l2loopback or OBS), `rtsp` (PyAV + OpenCV
+  fallback), `http-image` (httpx polling). Vendor SDKs are future protocol
+  implementations.
+- **Multi-instance `serve`**: `instances:` list in `pipeline.yaml`; each
+  instance pairs a camera source with its own models/rule/product; flat
+  single-config form stays backward compatible. `device_id` defaults to
+  `uuid5(namespace, instance_id)` (explicit override wins).
+- **Preview before WebSocket**: `GET /api/v1/camera/{instance_id}/preview`
+  (rate-limited latest-frame JPEG; 404 unknown instance, 503 not ready); the
+  WebSocket runtime channel later supersedes it.
+- **Defaults**: `inspection.enabled: false` per instance (preview-only until
+  the window/temporal milestone); dependencies `opencv-python-headless`, `av`,
+  `httpx` in edge-service with vision-core optional extras.
+
 ## 9. Open Items / Next Steps
 
 - The FastAPI + SQLite backend layer (`assemblyvision serve`, section 8.3) is
@@ -419,7 +443,9 @@ verified and its findings closed with acceptance tests, merged via PR #12
   PR #12 on 2026-08-09. The only deferred item is 4.4 authoritative
   persistence, gated on the upload-scheduler milestone. Phase 3 still needs a
   decision on the multi-edge-per-host "shared" model before the upload
-  scheduler, WebSocket, camera/barcode, and temporal aggregation work.
+  scheduler, WebSocket, camera/barcode, and temporal aggregation work; ADR-013
+  partially addresses it with per-instance pipelines (each instance loads its
+  own models, so weight sharing remains an open optimization).
 - Resilience documentation (2026-08-09, new docs PR): design 22 adds
   Accelerator/GPU failure and Repeated network disconnect to the resilience
   fault matrix, design 09 and contracts 06 are aligned, and README gained a
@@ -457,11 +483,17 @@ verified and its findings closed with acceptance tests, merged via PR #12
   images-first and split-first layouts) into
   `dataset_product`/`dataset_components` + `test-expected.json`, then run
   `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
-- Camera/hardware integration, barcode decoding, product-window management,
-  temporal aggregation, authoritative SQLite persistence (the current index is
-  a rebuildable read projection), the upload queue scheduler, and Docker
-  deployment remain as the roadmap 25.5 one-month scope; they are blocked on
-  hardware and customer-site decisions.
+- Camera acquisition milestone (ADR-013) is in progress: the `FrameSource`
+  abstraction, simulated sources (folder/video/OpenCV-device/RTSP/HTTP-image),
+  multi-instance `serve`, and the per-instance REST preview are being
+  implemented with docs already landed; vendor SDK adapters and the
+  window/temporal milestone remain hardware/design-gated.
+- Camera/hardware integration (vendor SDK), barcode decoding, product-window
+  management, temporal aggregation, authoritative SQLite persistence (the
+  current index is a rebuildable read projection), the upload queue scheduler,
+  and Docker deployment remain as the roadmap 25.5 one-month scope; only the
+  vendor-SDK, barcode, and site-coupling parts are blocked on hardware and
+  customer-site decisions.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.

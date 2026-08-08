@@ -38,6 +38,14 @@ flowchart LR
 
 The one-month target deploys one `edge-service` containing FastAPI, capture orchestration, persistence, and upload scheduling. Decision-critical work runs in bounded worker tasks and may use a supervised inference subprocess for SDK/GPU isolation; it is not a separately deployed service until measured isolation or scaling needs justify that complexity. API or browser request failure must not stop capture and decision tasks.
 
+One `edge-service` process may run several independent inspection instances,
+each pairing its own camera source with its own models/rule/product and its
+own stable device identity (`device_id = uuid5(namespace, instance_id)` unless
+configured explicitly), matching the fleet model of one device per line
+(ADR-013). Instances share the process and its storage but never share
+evidence; per-instance model loading means memory grows with the instance
+count until weight sharing is justified.
+
 ## 3. Inspection Processing
 
 ### 3.1 Window and Identity

@@ -1,0 +1,109 @@
+# Multi-instance pipeline example with camera sources (ADR-013).
+#
+# `assemblyvision serve --config config/examples/pipeline.cameras.yaml`
+# opens one camera source per instance and, when `inspection.enabled` is true,
+# runs an independent single-frame inspection pipeline per captured frame.
+# Each instance carries its own models, thresholds, ROI, and rule; when
+# `device_id` is null it defaults to uuid5(namespace, instance_id).
+#
+# Non-production thresholds: require model-specific validation before use.
+
+application_version: "0.1.0"
+
+instances:
+  - instance_id: line-1
+    device_id: null                     # default = uuid5(namespace, "line-1")
+    camera:
+      source: rtsp
+      url: rtsp://192.168.1.10/stream
+      fps: null
+      reconnect:
+        initial_delay_ms: 250
+        maximum_delay_ms: 10000
+    inspection:
+      enabled: false                    # preview-only until the window milestone
+    models:
+      product_manifest: ../../models/manifests/product-manifest.json
+      component_manifest: ../../models/manifests/component-manifest.json
+    product_detection:
+      model_version: product-yolo-1.0.0
+      confidence_threshold: 0.70
+      iou_threshold: 0.50
+    component_detection:
+      model_version: component-yolo-1.0.0
+      iou_threshold: 0.50
+      components:
+        manual:
+          observation_threshold: 0.45
+        component_a:
+          observation_threshold: 0.50
+        component_b:
+          observation_threshold: 0.50
+    roi:
+      margin_x_ratio: 0.05
+      margin_y_ratio: 0.05
+      min_area_pixels: 250000
+      min_expanded_area_retained: 0.90
+      normalize_perspective: false
+    rule: ../../config/examples/product-rule.yaml
+
+  - instance_id: line-2
+    camera:
+      source: video
+      path: /data/line2.mp4
+      fps: 25
+    inspection:
+      enabled: false
+    models:
+      product_manifest: ../../models/manifests/product-manifest.json
+      component_manifest: ../../models/manifests/component-manifest.json
+    product_detection:
+      model_version: product-yolo-1.0.0
+      confidence_threshold: 0.70
+      iou_threshold: 0.50
+    component_detection:
+      model_version: component-yolo-1.0.0
+      iou_threshold: 0.50
+      components:
+        manual:
+          observation_threshold: 0.45
+        component_a:
+          observation_threshold: 0.50
+    roi:
+      margin_x_ratio: 0.05
+      margin_y_ratio: 0.05
+      min_area_pixels: 250000
+      min_expanded_area_retained: 0.90
+      normalize_perspective: false
+    rule: ../../config/examples/product-rule.yaml
+
+  - instance_id: bench
+    camera:
+      source: folder
+      path: /data/images
+      loop: true
+      fps: 5
+    inspection:
+      enabled: true
+    models:
+      product_manifest: ../../models/manifests/product-manifest.json
+      component_manifest: ../../models/manifests/component-manifest.json
+    product_detection:
+      model_version: product-yolo-1.0.0
+      confidence_threshold: 0.70
+      iou_threshold: 0.50
+    component_detection:
+      model_version: component-yolo-1.0.0
+      iou_threshold: 0.50
+      components:
+        manual:
+          observation_threshold: 0.45
+        component_a:
+          observation_threshold: 0.50
+    roi:
+      margin_x_ratio: 0.05
+      margin_y_ratio: 0.05
+      min_area_pixels: 250000
+      min_expanded_area_retained: 0.90
+      normalize_perspective: false
+    rule: ../../config/examples/product-rule.yaml

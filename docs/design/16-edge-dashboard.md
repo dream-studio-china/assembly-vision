@@ -56,6 +56,12 @@ Barcode failure, unknown product, unusable frames, model failure, and missing co
 
 Use a bandwidth-limited JPEG/MJPEG or WebRTC preview only if justified by latency requirements. Do not send full production frames through JSON WebSocket messages. Overlay events carry source dimensions and boxes; the UI discards overlays whose frame ID does not match the displayed preview frame. Preview loss never changes the inspection engine state.
 
+Until the WebSocket runtime channel lands, the dashboard live view consumes
+the per-instance REST preview `GET /api/v1/camera/{instance_id}/preview`
+(rate-limited latest-frame JPEG, ADR-013). The WebSocket milestone reuses the
+same frame pipeline and supersedes this stopgap without changing the
+inspection engine.
+
 ## 16.5 Inspection History and Detail
 
 History defaults to newest first and supports business result, internal decision, barcode, product, and bounded date filters. Search is debounced and server-side; cursor pagination prevents loading the full local database. A row displays completion time, business result, internal decision detail, barcode, product, reason summary, latency, upload state, and model/rule versions.
