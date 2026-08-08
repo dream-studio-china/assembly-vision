@@ -13,7 +13,11 @@ from assemblyvision_vision.roi.roi_engine import ROIConfig
 
 from assemblyvision_training import __version__
 from assemblyvision_training.artifact import place_weights, write_manifest
-from assemblyvision_training.dataset import validate_dataset
+from assemblyvision_training.dataset import (
+    DatasetInfo,
+    record_missing_labels_optin,
+    validate_dataset,
+)
 from assemblyvision_training.prepare_components import prepare_component_dataset
 from assemblyvision_training.train import train_detector
 
@@ -44,6 +48,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Disable heavy augmentation (stable for small datasets)",
     )
     product.add_argument(
+        "--allow-missing-labels",
+        action="store_true",
+        help="Legacy opt-in: accept images without a label file (recorded in data.yaml)",
+    )
+    product.add_argument(
         "--out-weights",
         type=Path,
         default=Path("models/weights/product-yolo.pt"),
@@ -65,7 +74,10 @@ def build_parser() -> argparse.ArgumentParser:
     prepare = sub.add_parser("prepare-components", help="Prepare ROI-cropped component dataset")
     prepare.add_argument("dataset", type=Path, help="YOLO dataset with full-frame component labels")
     prepare.add_argument(
-        "--product-weights", required=True, type=Path, help="Trained product detector weights"
+        "--product-manifest",
+        required=True,
+        type=Path,
+        help="Verified product detector manifest (weights are checksum-verified)",
     )
     prepare.add_argument("--margin-x", type=float, default=0.05, help="ROI X margin ratio")
     prepare.add_argument("--margin-y", type=float, default=0.05, help="ROI Y margin ratio")
@@ -73,7 +85,17 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument(
         "--min-retention", type=float, default=0.80, help="Minimum clip retention ratio"
     )
+    prepare.add_argument(
+        "--conf", type=float, default=0.5, help="Product detection confidence threshold"
+    )
+    prepare.add_argument("--iou", type=float, default=0.5, help="Product detection IoU threshold")
+    prepare.add_argument("--device", default="cpu", help="torch device (cpu/mps/cuda)")
     prepare.add_argument("--out-dir", type=Path, required=True, help="Output dataset directory")
+    prepare.add_argument(
+        "--allow-missing-labels",
+        action="store_true",
+        help="Legacy opt-in: accept images without a label file (recorded in data.yaml)",
+    )
 
     component = sub.add_parser("component", help="Train a component detector on ROI images")
     component.add_argument("dataset", type=Path, help="Prepared ROI-cropped YOLO dataset")
@@ -89,6 +111,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-augment",
         action="store_true",
         help="Disable heavy augmentation (stable for small datasets)",
+    )
+    component.add_argument(
+        "--allow-missing-labels",
+        action="store_true",
+        help="Legacy opt-in: accept images without a label file (recorded in data.yaml)",
     )
     component.add_argument(
         "--out-weights",
@@ -155,9 +182,21 @@ def _print_improvement_hints(task: str, weights_path: Path, rule_path: Path | No
     print("   see docs/runbooks/10-model-improvement.md")
 
 
+def _validate_and_record(dataset: Path, allow_missing_labels: bool) -> DatasetInfo:
+    """Validate a dataset and record the legacy missing-label opt-in if used."""
+    info = validate_dataset(dataset, allow_missing_labels=allow_missing_labels)
+    if allow_missing_labels and info.missing_labels_allowed:
+        record_missing_labels_optin(dataset / "data.yaml")
+        log.warning(
+            "recorded allow_missing_labels in %s/data.yaml; pairing is required for new data",
+            dataset,
+        )
+    return info
+
+
 def _run_product(args: argparse.Namespace) -> int:
     try:
-        info = validate_dataset(args.dataset)
+        info = _validate_and_record(args.dataset, args.allow_missing_labels)
     except ConfigError as exc:
         log.error("invalid dataset: %s", exc)
         return 2
@@ -208,14 +247,14 @@ def _run_product(args: argparse.Namespace) -> int:
 
 def _run_prepare(args: argparse.Namespace) -> int:
     try:
-        validate_dataset(args.dataset)
+        _validate_and_record(args.dataset, args.allow_missing_labels)
     except ConfigError as exc:
         log.error("invalid dataset: %s", exc)
         return 2
 
-    product_weights: Path = args.product_weights
-    if not product_weights.is_file():
-        log.error("product weights not found: %s", product_weights)
+    product_manifest: Path = args.product_manifest
+    if not product_manifest.is_file():
+        log.error("product manifest not found: %s", product_manifest)
         return 2
 
     roi_config = ROIConfig(
@@ -225,19 +264,26 @@ def _run_prepare(args: argparse.Namespace) -> int:
         min_expanded_area_retained=args.min_retention,
     )
     log.info("preparing component dataset -> %s", args.out_dir)
-    prepare_component_dataset(
-        dataset_dir=args.dataset,
-        product_weights=product_weights,
-        roi_config=roi_config,
-        output_dir=args.out_dir,
-    )
+    try:
+        prepare_component_dataset(
+            dataset_dir=args.dataset,
+            product_manifest=product_manifest,
+            roi_config=roi_config,
+            output_dir=args.out_dir,
+            confidence_threshold=args.conf,
+            iou_threshold=args.iou,
+            device=args.device,
+        )
+    except ConfigError as exc:
+        log.error("component preparation failed: %s", exc)
+        return 2
     log.info("component dataset prepared at %s", args.out_dir)
     return 0
 
 
 def _run_component(args: argparse.Namespace) -> int:
     try:
-        info = validate_dataset(args.dataset)
+        info = _validate_and_record(args.dataset, args.allow_missing_labels)
     except ConfigError as exc:
         log.error("invalid dataset: %s", exc)
         return 2

@@ -337,11 +337,13 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   tolerance at the boundary.
 - **Packaging**: `py.typed` markers added to `domain` and `vision-core` so MyPy
   strict passes repo-wide.
-- **Test hardening**: edge Python coverage is at 100% (pytest-cov); the full
-  suite is `373 passed`, TypeScript tests are `28 passed` (api-client) and
-  `12 passed` (edge-web), and Playwright e2e is `12 passed` including a
-  token-authenticated served dashboard that asserts real reconciled data and
-  purged-media rendering.
+- **Test hardening**: edge Python coverage is at 99.6% (pytest-cov; the only
+  uncovered branches are the unreachable IntegrityError handler in the
+  repository and two derived-image slot fallbacks); the full suite is
+  `399 passed`, TypeScript tests are `30 passed` (api-client) and `17 passed`
+  (edge-web), and Playwright e2e is `12 passed` including a token-authenticated
+  served dashboard that asserts real reconciled data and purged-media
+  rendering.
 
 ## 9. Open Items / Next Steps
 
@@ -350,22 +352,28 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   scheduler** (real `upload_tasks` rows, retry backoff, idempotency) and the
   **WebSocket runtime channel** are the next backend gaps. The dashboard read
   views switch to real data via `VITE_API_MODE=http`.
-- PR-003 follow-up items still open (see `docs/reviews/PR-003-review.md`):
-  model-manifest full-content immutability (publication checks only the first
-  artifact checksum), strict Roboflow source-label validation (negative class
-  IDs, unvalidated field count/bounds), missing-label policy (currently
-  warn-only implicit negatives), explicit background negatives for the product
-  dataset, manifest-relative verification identity (still basename-based),
-  stale-output-safe dataset adaptation/component preparation, and component
-  preparation reusing the production selection policy. Runtime items are fixed:
-  rule content binding with a durable registry, bundle-atomic output, inference
-  parameter pinning, detection provenance validation, and startup
-  cross-validation.
-- Two remaining medium gaps on the M1 layer: token-protected Vite development
-  across origins is not supported (CORS allows GET only and the viewer session
-  cookie is same-origin; use the same-origin `assemblyvision serve` flow), and
-  the CLI `inspect`/`verify` rule-identity registry is process-local while
-  `serve` persists it in SQLite.
+- PR-003 follow-up items are all resolved (see `docs/reviews/PR-003-review.md`):
+  model-manifest publication now compares full decision-critical content
+  (task, class order, input size, artifact, provenance), the Roboflow adapter
+  validates every source label strictly and keeps explicit background
+  negatives (component-only images without an independent product box are
+  rejected), image/label pairing is required by default with a recorded
+  `--allow-missing-labels` opt-in, verification uses source-relative sample
+  identities, and dataset adaptation/component preparation reject stale output
+  directories and write file manifests. Component preparation now loads a
+  verified product manifest and mirrors the runtime exactly-one-product
+  selection policy, recording ambiguous samples in `exclusions.json`.
+- The two remaining M1 medium gaps are resolved:
+  - **Token-protected Vite development across origins** now works. Loopback
+    dev origins may use `GET`/`POST`/`OPTIONS` with `Authorization` and
+    `Content-Type` headers, and the dashboard keeps the viewer token in memory
+    (never persisted) when it runs cross-origin, attaching it to API and media
+    requests; same-origin deployments keep the HttpOnly-cookie flow.
+  - **CLI rule-identity registry is durable**: `assemblyvision inspect`/`verify`
+    now register the loaded rule identity in the same SQLite `rule_identities`
+    registry that `serve` uses (`<output>/edge.sqlite3`), so a published
+    `(rule_id, rule_version)` stays immutable across CLI invocations and
+    service restarts.
 - Roadmap scope remaining after the M1 layer (section 8.3, PR #8): upload
   queue scheduler, WebSocket channel, camera/barcode adapters, temporal
   aggregation, Docker packaging, and authoritative SQLite persistence/outbox.

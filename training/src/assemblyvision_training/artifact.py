@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 from datetime import UTC, datetime
@@ -43,25 +44,17 @@ def place_weights(best: Path, weights_path: Path) -> None:
     best.replace(weights_path)
 
 
-def _reject_existing_manifest_overwrite(
-    path: Path, new_checksum: str, semantic_version: str
-) -> None:
-    try:
-        existing = ModelManifest.model_validate_json(path.read_text(encoding="utf-8"))
-    except Exception as exc:
-        raise ConfigError(
-            f"existing manifest {path} is invalid; refusing to overwrite: {exc}"
-        ) from exc
-    if (
-        existing.semantic_version == semantic_version
-        and existing.artifacts
-        and existing.artifacts[0].sha256 == new_checksum
-    ):
-        return
-    raise ConfigError(
-        f"refusing to overwrite existing manifest {path} with a different artifact; "
-        "bump --semver or remove the file"
-    )
+def _canonical_manifest_payload(manifest: ModelManifest) -> str:
+    """Canonical JSON of every decision-critical manifest field.
+
+    ``created_at`` is excluded because it changes on every write and carries no
+    release semantics; every other field (task, class order, input size,
+    artifact uri/checksum, provenance) is part of the immutable identity
+    (PR-003 P1: manifest content binding).
+    """
+    payload = manifest.model_dump(mode="json")
+    payload.pop("created_at", None)
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
 def write_manifest(
@@ -76,9 +69,10 @@ def write_manifest(
     """Write a versioned model manifest JSON file and return the manifest.
 
     ``weights_uri`` is stored relative to the manifest directory so the
-    manifest stays portable. An existing manifest for the same semantic
-    version is only preserved when it references the identical artifact;
+    manifest stays portable. An existing manifest for the same semantic version
+    is only accepted when its full decision-critical content matches exactly;
     otherwise publication is refused so versioned identities stay immutable.
+    A matching manifest is returned without being rewritten (idempotent).
     """
     if not _SEMVER_RE.match(semantic_version):
         raise ConfigError(f"semantic_version {semantic_version!r} is not a valid X.Y.Z version")
@@ -116,6 +110,18 @@ def write_manifest(
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if output_path.exists():
-        _reject_existing_manifest_overwrite(output_path, checksum, semantic_version)
+        try:
+            existing = ModelManifest.model_validate_json(output_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            raise ConfigError(
+                f"existing manifest {output_path} is invalid; refusing to overwrite: {exc}"
+            ) from exc
+        if _canonical_manifest_payload(existing) != _canonical_manifest_payload(manifest):
+            raise ConfigError(
+                f"refusing to overwrite existing manifest {output_path}: decision-critical "
+                "content differs (class order, task, input size, artifact, or provenance); "
+                "bump --semver or remove the file"
+            )
+        return existing
     output_path.write_text(manifest.model_dump_json(indent=2) + "\n", encoding="utf-8")
     return manifest

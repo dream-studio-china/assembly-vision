@@ -25,10 +25,12 @@ accepted accuracy improvement.
      --out-weights models/weights/product-yolo-0.2.0.pt \
      --out-manifest models/manifests/product-manifest.json
    ```
-3. **Regenerate the component ROI dataset** from the new product detector:
+3. **Regenerate the component ROI dataset** from the new product detector (the
+   manifest is checksum-verified; frames with zero or multiple products are
+   recorded in `exclusions.json`, not silently picked):
    ```bash
    uv run av-train prepare-components <dataset_components> \
-     --product-weights models/weights/product-yolo-0.2.0.pt \
+     --product-manifest models/manifests/product-manifest.json \
      --min-area 10000 --min-retention 0.80 --out-dir <roi-dataset>
    ```
 4. **Retrain the component detector**:

@@ -84,13 +84,16 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     # The Vite dev server calls the API cross-origin during development; the
     # served dashboard is same-origin and needs no CORS. Allow only anchored
     # loopback origins (any dev port) instead of "*"; production binds the
-    # service locally and authenticates via the edge API token (ADR-012).
+    # service locally and authenticates via the edge API token (ADR-012). The
+    # viewer-session exchange is a POST with a JSON-free Authorization header,
+    # and every client request sends Content-Type, so both must pass the
+    # preflight for the token-protected dev flow to work across origins.
     if settings.cors_allow_loopback:
         app.add_middleware(
             CORSMiddleware,
             allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
-            allow_methods=["GET"],
-            allow_headers=["Authorization"],
+            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_headers=["Authorization", "Content-Type"],
             allow_credentials=False,
         )
 

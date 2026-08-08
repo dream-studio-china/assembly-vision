@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import sqlite3
 import sys
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -17,6 +18,7 @@ from assemblyvision_vision.sources.folder_source import FolderSource
 
 from assemblyvision_edge import __version__
 from assemblyvision_edge.config import (
+    RuleIdentityRegistry,
     load_pipeline_config,
     load_rule_definition,
     validate_model_version_declaration,
@@ -24,6 +26,7 @@ from assemblyvision_edge.config import (
 )
 from assemblyvision_edge.detection import ComponentDetector, ProductDetector
 from assemblyvision_edge.output.writer import OutputWriter
+from assemblyvision_edge.persistence.repository import EdgeRepository, RepositoryError
 from assemblyvision_edge.pipeline import InspectionPipeline
 from assemblyvision_edge.rules.rule_engine import RuleEngine
 from assemblyvision_edge.verify import format_per_image, format_report, load_expected, run_verify
@@ -108,9 +111,12 @@ def main(argv: list[str] | None = None) -> int:
     return 1  # pragma: no cover
 
 
-def _build_pipeline(args: argparse.Namespace) -> InspectionPipeline:
+def _build_pipeline(
+    args: argparse.Namespace,
+    rule_registry: RuleIdentityRegistry | None = None,
+) -> InspectionPipeline:
     config = load_pipeline_config(args.config)
-    rule = load_rule_definition(args.rule)
+    rule = load_rule_definition(args.rule, registry=rule_registry)
     product_manifest = load_model_manifest(config.product_manifest)
     component_manifest = load_model_manifest(config.component_manifest)
     validate_model_version_declaration(
@@ -141,14 +147,34 @@ def _build_pipeline(args: argparse.Namespace) -> InspectionPipeline:
     )
 
 
+def _open_durable_rule_registry(output: Path) -> EdgeRepository:
+    """Open the durable rule-identity registry shared with ``serve``.
+
+    The CLI and the API use the same SQLite registry (``<output>/edge.sqlite3``,
+    the ``serve`` default) so a published ``(rule_id, rule_version)`` remains
+    immutable across CLI invocations and service restarts. A registry that
+    cannot be opened or migrated fails closed because the rule identity cannot
+    be verified (gap 2).
+    """
+    output.mkdir(parents=True, exist_ok=True)
+    try:
+        return EdgeRepository.open(str(output / "edge.sqlite3"))
+    except (OSError, RuntimeError, sqlite3.Error) as exc:
+        raise ConfigError(f"cannot open the durable rule registry: {exc}") from exc
+
+
 def _run_inspect(args: argparse.Namespace) -> int:
     logging.basicConfig(
         level=logging.ERROR if args.quiet else logging.INFO,
         format="%(levelname)s %(name)s: %(message)s",
     )
     try:
-        pipeline = _build_pipeline(args)
-    except (ConfigError, ValueError) as exc:
+        registry = _open_durable_rule_registry(args.output)
+        try:
+            pipeline = _build_pipeline(args, rule_registry=registry.register_rule_identity)
+        finally:
+            registry.close()
+    except (ConfigError, ValueError, RepositoryError) as exc:
         log.error("configuration error: %s", exc)
         return 2
 
@@ -180,9 +206,13 @@ def _run_verify(args: argparse.Namespace) -> int:
         format="%(levelname)s %(name)s: %(message)s",
     )
     try:
-        pipeline = _build_pipeline(args)
+        registry = _open_durable_rule_registry(args.output)
+        try:
+            pipeline = _build_pipeline(args, rule_registry=registry.register_rule_identity)
+        finally:
+            registry.close()
         expected = load_expected(args.expected) if args.expected is not None else {}
-    except (ConfigError, ValueError) as exc:
+    except (ConfigError, ValueError, RepositoryError) as exc:
         log.error("configuration error: %s", exc)
         return 2
 

@@ -132,4 +132,38 @@ describe("HttpApiClient", () => {
     const client = new HttpApiClient("http://edge:8000", fetchImpl);
     await expect(client.getHealthLive()).rejects.toMatchObject({ code: "NETWORK_ERROR" });
   });
+
+  it("attaches the in-memory bearer token when a provider is given", async () => {
+    let captured: Headers | undefined;
+    const fetchImpl = ((input: RequestInfo | URL, init?: RequestInit) => {
+      void input;
+      captured = new Headers(init?.headers);
+      return Promise.resolve(
+        new Response(JSON.stringify({ status: "ok" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+    const client = new HttpApiClient("http://edge:8000", fetchImpl, () => "secret-token");
+    await client.getHealthLive();
+    expect(captured?.get("Authorization")).toBe("Bearer secret-token");
+  });
+
+  it("omits the Authorization header when no token is available", async () => {
+    let captured: Headers | undefined;
+    const fetchImpl = ((input: RequestInfo | URL, init?: RequestInit) => {
+      void input;
+      captured = new Headers(init?.headers);
+      return Promise.resolve(
+        new Response(JSON.stringify({ status: "ok" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    await client.getHealthLive();
+    expect(captured?.has("Authorization")).toBe(false);
+  });
 });

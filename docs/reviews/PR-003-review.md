@@ -5,6 +5,19 @@
 This document records the actionable P1 and P2 findings remaining after the
 P0 fixes committed as `677c094`, `c23d831`, and `1618efb`.
 
+## Resolution Status
+
+All P1 and P2 findings in this document are resolved and validated:
+
+- **P1**: manifest full-content immutability, Roboflow source-label strict
+  validation, required image/label pairing with a recorded opt-in, explicit
+  background negatives for the product dataset, and source-relative
+  verification identity.
+- **P2**: bundle-atomic evidence output, rule version identity bound to
+  content, stale-output-safe dataset adaptation/preparation with file
+  manifests, and component preparation reusing the verified product manifest
+  and the runtime exactly-one-product selection policy.
+
 ## P1 Findings
 
 ### Model manifest immutability is incomplete

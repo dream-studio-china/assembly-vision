@@ -97,7 +97,7 @@ uv run av-train product <dataset_product> --semver 0.1.0 --epochs 120 --no-augme
   --out-manifest models/manifests/product-manifest.json
 
 uv run av-train prepare-components <dataset_components> \
-  --product-weights models/weights/product-yolo-0.1.0.pt \
+  --product-manifest models/manifests/product-manifest.json \
   --min-area 10000 --min-retention 0.80 --out-dir <roi-dataset>
 
 uv run av-train component <roi-dataset> --semver 0.1.0 --epochs 150 --no-augment \
@@ -229,6 +229,12 @@ Data mode is explicit (F5, ADR-012):
 VITE_API_MODE=http VITE_API_BASE_URL=http://edge-host:8000 pnpm --filter edge-web dev
 ```
 
+When the edge host is token-protected, sign in on `/login` as usual. The
+viewer session cookie is same-origin, so a cross-origin dev client keeps the
+entered token **in memory only** (never persisted) and attaches it to API and
+media requests; same-origin deployments (the `assemblyvision serve` flow) keep
+the HttpOnly-cookie exchange and never see the token.
+
 The operator workflow actions (current inspection, confirm, next, manual) always
 run on the deterministic mock client because they model a demonstration queue
 rather than a design 15.3 contract endpoint.
@@ -323,6 +329,9 @@ uv run pytest                                          # Python tests
 pnpm -r build && pnpm -r lint && pnpm -r test          # TypeScript
 ```
 
+See [SECURITY.md](SECURITY.md) for the security policy, the M1
+authentication boundary, and how to report a vulnerability.
+
 ## 9. Project layout
 
 ```text
@@ -347,5 +356,6 @@ docs/                           # architecture, contracts, ADRs, runbooks
 
 - **Real-data baseline** — annotate production images with X-AnyLabeling, then
   run `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
-- **Edge backend API** — expose local inspection records over FastAPI so the
-  dashboard runs against real data (`VITE_API_BASE_URL`).
+- **Upload scheduler + WebSocket channel** — the next backend gaps after the
+  merged M1 layer (PR #8): real `upload_tasks` rows with retry backoff and
+  idempotency, and the runtime WebSocket channel.

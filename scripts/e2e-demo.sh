@@ -75,7 +75,8 @@ uv run av-train product "$WORK/dataset_product" --semver 0.1.0 --epochs "$EPOCHS
 
 echo "=== 2. prepare component ROI dataset ==="
 uv run av-train prepare-components "$WORK/dataset_components" \
-  --product-weights "$WORK/weights/product-yolo-0.1.0.pt" \
+  --product-manifest "$WORK/manifests/product-manifest.json" \
+  --conf 0.10 --iou 0.50 \
   --min-area 10000 --min-retention 0.80 --out-dir "$WORK/dataset_roi"
 
 echo "=== 3. train component detector (${EPOCHS_COMPONENT} epochs) ==="

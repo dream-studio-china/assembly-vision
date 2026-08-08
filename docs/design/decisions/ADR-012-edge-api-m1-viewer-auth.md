@@ -72,6 +72,12 @@ For the M1 read-only edge API:
 - The served dashboard requires one interactive bearer-token exchange when a
   token is configured. The resulting session expires with the edge process or
   after its bounded lifetime; no secret ships in frontend assets.
+- Cross-origin Vite development against a token-protected host is supported:
+  loopback dev origins may use `GET`/`POST`/`OPTIONS` with `Authorization` and
+  `Content-Type` headers, and the dashboard retains the entered token in memory
+  (never persisted) for the page lifetime, attaching it to API and media
+  requests. The in-memory token is a development convenience only; it is not a
+  replacement for the same-origin HttpOnly session in production deployments.
 
 ## 5. Open Questions and Validation Required
 

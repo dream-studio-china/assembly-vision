@@ -14,8 +14,15 @@ import type { ApiClient } from "@assemblyvision/api-client";
  *
  * An absent base URL alone never silently selects the mock in a production
  * build: the build must pass `VITE_API_MODE=http`.
+ *
+ * Token-protected development across origins: the viewer session cookie is
+ * same-origin, so a Vite dev server pointed at a remote edge host keeps the
+ * bearer token in memory (never persisted) and attaches it to every request.
+ * Same-origin deployments keep the HttpOnly-cookie flow and never see the
+ * token.
  */
 let client: ApiClient | null = null;
+let viewerToken: string | null = null;
 const mode = (import.meta.env.VITE_API_MODE as string | undefined) ?? "mock";
 
 export function isMockMode(): boolean {
@@ -30,21 +37,49 @@ export function getApiBaseUrl(): string {
   return (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
 }
 
+function isCrossOrigin(): boolean {
+  const base = getApiBaseUrl();
+  if (!base || typeof window === "undefined") return false;
+  return new URL(base, window.location.origin).origin !== window.location.origin;
+}
+
+/** True when the HTTP client talks to a different origin than the page. */
+export function isCrossOriginHttp(): boolean {
+  return isHttpMode() && isCrossOrigin();
+}
+
 export async function createViewerSession(token: string): Promise<void> {
+  const crossOrigin = isCrossOriginHttp();
   const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/session`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
-    credentials: "same-origin",
+    credentials: crossOrigin ? "omit" : "same-origin",
   });
   if (!response.ok) {
     throw new Error("The edge viewer token was not accepted.");
   }
+  // Same-origin deployments exchange the token for the HttpOnly session
+  // cookie; cross-origin dev cannot receive that cookie, so the token stays in
+  // memory for the lifetime of the page and is attached to each request.
+  viewerToken = crossOrigin ? token : null;
+}
+
+/** Fetch protected media content and return a renderable blob URL. */
+export async function loadMediaBlobUrl(url: string): Promise<string> {
+  const response = await fetch(url, {
+    headers: viewerToken ? { Authorization: `Bearer ${viewerToken}` } : undefined,
+    credentials: isCrossOriginHttp() ? "omit" : "same-origin",
+  });
+  if (!response.ok) {
+    throw new Error(`media load failed with status ${response.status}`);
+  }
+  return URL.createObjectURL(await response.blob());
 }
 
 export function getApiClient(): ApiClient {
   if (client !== null) return client;
   if (mode === "http") {
-    client = new HttpApiClient(getApiBaseUrl());
+    client = new HttpApiClient(getApiBaseUrl(), undefined, () => viewerToken ?? undefined);
   } else {
     client = new MockApiClient();
   }

@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from "pinia";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { inspectionService } from "../src/services/inspectionService";
 import { useInspectionStore } from "../src/stores/inspection";
 
@@ -41,5 +41,55 @@ describe("inspection service", () => {
     const page = await inspectionService.listHistory({ limit: 5 });
     const images = await inspectionService.getImages(page.items[0].inspection_id);
     expect(images.original.startsWith("data:image/svg+xml")).toBe(true);
+  });
+});
+
+describe("inspection service cross-origin media (gap 1)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("resolves token-protected media into blob URLs for cross-origin rendering", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_API_MODE", "http");
+    vi.stubEnv("VITE_API_BASE_URL", "http://edge-host:8000");
+    vi.stubGlobal("window", { location: { origin: "http://localhost:5173" } });
+    const payload = {
+      inspection_id: "00000000-0000-4000-8000-0000000000dd",
+      original: "http://edge-host:8000/api/v1/media/aa/content",
+      detection: "",
+      annotated: "http://edge-host:8000/api/v1/media/bb/content",
+      original_status: "AVAILABLE",
+      detection_status: "UNAVAILABLE",
+      annotated_status: "AVAILABLE",
+    };
+    vi.stubGlobal(
+      "fetch",
+      (async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        const headers = (init?.headers as Record<string, string>) ?? {};
+        expect(headers["Authorization"]).toBe("Bearer secret-token");
+        if (url.includes("/images")) {
+          return new Response(JSON.stringify(payload), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        return new Response(new Blob(["img"], { type: "image/jpeg" }), { status: 200 });
+      }) as typeof fetch,
+    );
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:media-1");
+
+    const { createViewerSession } = await import("../src/services/client");
+    await createViewerSession("secret-token");
+    const { inspectionService: svc } = await import("../src/services/inspectionService");
+
+    const images = await svc.getImages(payload.inspection_id);
+    expect(images.original).toBe("blob:media-1");
+    expect(images.annotated).toBe("blob:media-1");
+    expect(images.detection).toBe("");
+    expect(images.detection_status).toBe("UNAVAILABLE");
   });
 });

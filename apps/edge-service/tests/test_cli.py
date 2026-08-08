@@ -112,10 +112,62 @@ def test_main_dispatches_verify(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_inspect_returns_2_on_config_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    def broken(args: object) -> object:
+    def broken(args: object, **kwargs: object) -> object:
         raise ConfigError("bad config")
 
     monkeypatch.setattr(cli, "_build_pipeline", broken)
+    args = argparse.Namespace(
+        quiet=True, config=tmp_path / "c.yaml", rule=tmp_path / "r.yaml", output=tmp_path / "out"
+    )
+    assert cli._run_inspect(args) == 2
+
+
+def test_inspect_returns_2_when_durable_rule_registry_rejects(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from assemblyvision_edge.persistence.repository import RepositoryError
+
+    def conflicting(args: object, **kwargs: object) -> object:
+        raise RepositoryError("rule identity model-a-presence v1 has different content")
+
+    monkeypatch.setattr(cli, "_build_pipeline", conflicting)
+    args = argparse.Namespace(
+        quiet=True, config=tmp_path / "c.yaml", rule=tmp_path / "r.yaml", output=tmp_path / "out"
+    )
+    assert cli._run_inspect(args) == 2
+
+
+def test_open_durable_rule_registry_shares_the_serve_default_db(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.repository import RepositoryError
+
+    out = tmp_path / "out"
+    first = cli._open_durable_rule_registry(out)
+    try:
+        first.register_rule_identity("model-a-presence", 1, "a" * 64)
+    finally:
+        first.close()
+    assert (out / "edge.sqlite3").is_file()
+
+    # A reopened registry is the same durable store the service reconciles, so
+    # reusing the identity with different content is rejected across processes.
+    second = cli._open_durable_rule_registry(out)
+    try:
+        second.register_rule_identity("model-a-presence", 1, "a" * 64)
+        with pytest.raises(RepositoryError, match="different content"):
+            second.register_rule_identity("model-a-presence", 1, "b" * 64)
+    finally:
+        second.close()
+
+
+def test_inspect_returns_2_when_durable_registry_cannot_open(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from assemblyvision_edge.persistence.repository import EdgeRepository
+
+    def broken_open(path: object, **kwargs: object) -> object:
+        raise RuntimeError("migration failed")
+
+    monkeypatch.setattr(EdgeRepository, "open", staticmethod(broken_open))
     args = argparse.Namespace(
         quiet=True, config=tmp_path / "c.yaml", rule=tmp_path / "r.yaml", output=tmp_path / "out"
     )
@@ -166,7 +218,7 @@ def test_inspect_runs_and_counts(
                 argparse.Namespace(inspection_id=str(uuid4()), business_result=BusinessResult.NG)
             )
 
-    monkeypatch.setattr(cli, "_build_pipeline", lambda args: pipeline)
+    monkeypatch.setattr(cli, "_build_pipeline", lambda args, **kw: pipeline)
     args = argparse.Namespace(
         quiet=True,
         config=tmp_path / "c.yaml",
@@ -179,7 +231,7 @@ def test_inspect_runs_and_counts(
     assert "a.png" in out
 
     # NG-only result still returns 0 (errors, not NG, decide the exit code).
-    monkeypatch.setattr(cli, "_build_pipeline", lambda args: _NgPipeline())
+    monkeypatch.setattr(cli, "_build_pipeline", lambda args, **kw: _NgPipeline())
     assert cli._run_inspect(args) == 0
 
 
@@ -195,7 +247,7 @@ def test_inspect_returns_1_on_pipeline_error(
 
             raise OutputError("cannot write")
 
-    monkeypatch.setattr(cli, "_build_pipeline", lambda args: _RaisingPipeline())
+    monkeypatch.setattr(cli, "_build_pipeline", lambda args, **kw: _RaisingPipeline())
     args = argparse.Namespace(
         quiet=True,
         config=tmp_path / "c.yaml",
@@ -208,7 +260,7 @@ def test_inspect_returns_1_on_pipeline_error(
 
 def test_verify_returns_2_on_config_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        cli, "_build_pipeline", lambda args: (_ for _ in ()).throw(ValueError("boom"))
+        cli, "_build_pipeline", lambda args, **kw: (_ for _ in ()).throw(ValueError("boom"))
     )
     args = argparse.Namespace(
         quiet=True,
@@ -283,7 +335,7 @@ def test_build_pipeline_success(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     monkeypatch.setattr(cli, "load_pipeline_config", lambda p: config)
-    monkeypatch.setattr(cli, "load_rule_definition", lambda p: object())
+    monkeypatch.setattr(cli, "load_rule_definition", lambda p, **kw: object())
     monkeypatch.setattr(cli, "load_model_manifest", lambda p: manifest)
     monkeypatch.setattr(cli, "validate_model_version_declaration", lambda *a, **k: None)
     monkeypatch.setattr(cli, "validate_rule_component_compatibility", lambda *a, **k: None)
@@ -308,7 +360,7 @@ def test_verify_success_and_failure_paths(tmp_path: Path, monkeypatch: pytest.Mo
 
     image = tmp_path / "a.png"
     image.touch()
-    monkeypatch.setattr(cli, "_build_pipeline", lambda args: object())
+    monkeypatch.setattr(cli, "_build_pipeline", lambda args, **kw: object())
     monkeypatch.setattr(cli, "load_expected", lambda path: {})
     monkeypatch.setattr(
         cli, "run_verify", lambda *a, **k: SimpleNamespace(false_negative=0, has_gaps=False)
@@ -342,7 +394,7 @@ def test_verify_disables_filename_fallback_when_expected_supplied(
     image.touch()
     expected = tmp_path / "expected.json"
     expected.write_text('{"a.png": {"ok": true}}', encoding="utf-8")
-    monkeypatch.setattr(cli, "_build_pipeline", lambda args: object())
+    monkeypatch.setattr(cli, "_build_pipeline", lambda args, **kw: object())
     calls: dict[str, object] = {}
 
     def fake_run_verify(*args: object, **kwargs: object) -> object:
