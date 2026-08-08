@@ -69,11 +69,15 @@ def train_detector(
         )
     _ = model.train(**kwargs)
     best_path = project_dir / run_name / "weights" / "best.pt"
-    if not best_path.is_file():
-        candidates = sorted((project_dir / run_name / "weights").glob("*.pt"))
-        if candidates:
-            return candidates[0]
-        raise FileNotFoundError(
-            f"training produced no weight file in {project_dir / run_name / 'weights'}"
-        )
-    return best_path
+    if best_path.is_file():
+        return best_path
+    candidates = sorted(
+        candidate
+        for candidate in (project_dir / run_name / "weights").glob("*.pt")
+        if candidate.is_file()
+    )
+    if candidates:
+        return candidates[0]
+    raise FileNotFoundError(
+        f"training produced no weight file in {project_dir / run_name / 'weights'}"
+    )
