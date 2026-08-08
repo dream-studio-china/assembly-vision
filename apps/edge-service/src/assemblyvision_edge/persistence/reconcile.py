@@ -35,6 +35,31 @@ def media_path_is_safe(output_root: Path, relative_path: str) -> bool:
         return False
 
 
+def quarantine_stale_staging(output_root: Path) -> int:
+    """Move crash-left ``.staging-*`` directories into ``quarantine/``.
+
+    Process termination can bypass the writer's in-process cleanup, leaving
+    orphan staging bundles that consume disk and are not valid inspection
+    directories. They are moved aside and never imported (P2).
+    """
+    if not output_root.is_dir():
+        return 0
+    quarantine_dir = output_root / "quarantine"
+    quarantined = 0
+    for staging in sorted(output_root.glob(".staging-*")):
+        if not staging.is_dir():
+            continue
+        quarantine_dir.mkdir(exist_ok=True)
+        try:
+            staging.rename(quarantine_dir / staging.name)
+        except OSError as exc:
+            log.warning("cannot quarantine staging dir %s: %s", staging, exc)
+            continue
+        quarantined += 1
+        log.warning("quarantined crash-left staging bundle %s", staging.name)
+    return quarantined
+
+
 def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
     """Import all inspection.json files found in the output root.
 
@@ -42,10 +67,11 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
     and skipped without aborting the scan. Records whose media paths escape the
     output root, or whose immutable content conflicts with an existing
     inspection ID, are skipped whole so no partially validated record is
-    imported.
+    imported. Crash-left ``.staging-*`` bundles are quarantined first.
     """
     if not output_root.is_dir():
         return 0
+    quarantine_stale_staging(output_root)
     imported = 0
     for path in sorted(output_root.glob("*/inspection.json")):
         if path.parent.name.startswith(".staging"):

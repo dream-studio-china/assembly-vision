@@ -265,6 +265,76 @@ def test_reconcile_skips_duplicate_media_paths(tmp_path: Path) -> None:
         repo.close()
 
 
+def test_reconcile_quarantines_stale_staging(tmp_path: Path) -> None:
+    root = tmp_path / "out"
+    root.mkdir()
+    staging = root / ".staging-deadbeef-abc"
+    staging.mkdir()
+    staging.joinpath("inspection.json").write_text("{}", encoding="utf-8")
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        assert reconcile_output_root(repo, root) == 0
+        assert not staging.exists()
+        assert (root / "quarantine" / ".staging-deadbeef-abc" / "inspection.json").is_file()
+        assert repo.list_inspections().items == []
+    finally:
+        repo.close()
+
+
+def test_quarantine_missing_root_returns_zero(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.reconcile import quarantine_stale_staging
+
+    assert quarantine_stale_staging(tmp_path / "no-such-root") == 0
+
+
+def test_quarantine_skips_non_directory(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.reconcile import quarantine_stale_staging
+
+    root = tmp_path / "out"
+    root.mkdir()
+    (root / ".staging-file").write_text("x", encoding="utf-8")
+    assert quarantine_stale_staging(root) == 0
+    assert (root / ".staging-file").is_file()
+    assert not (root / "quarantine").exists()
+
+
+def test_quarantine_handles_rename_failure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from assemblyvision_edge.persistence import reconcile as reconcile_mod
+
+    root = tmp_path / "out"
+    root.mkdir()
+    staging = root / ".staging-x"
+    staging.mkdir()
+
+    def broken_rename(self: object, target: object) -> object:
+        raise OSError("busy")
+
+    monkeypatch.setattr(Path, "rename", broken_rename)
+    assert reconcile_mod.quarantine_stale_staging(root) == 0
+    assert staging.is_dir()
+
+
+def test_reconcile_skips_staging_dir_when_quarantine_inactive(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from assemblyvision_edge.persistence import reconcile as reconcile_mod
+
+    root = tmp_path / "out"
+    root.mkdir()
+    staging = root / ".staging-xyz"
+    staging.mkdir()
+    staging.joinpath("inspection.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(reconcile_mod, "quarantine_stale_staging", lambda output_root: 0)
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        assert reconcile_output_root(repo, root) == 0
+        assert repo.list_inspections().items == []
+    finally:
+        repo.close()
+
+
 def test_media_path_is_safe_rejects_escapes(tmp_path: Path) -> None:
     from assemblyvision_edge.persistence.reconcile import media_path_is_safe
 
