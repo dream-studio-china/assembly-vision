@@ -3,251 +3,239 @@
 ## Scope
 
 Read-only audit of the AssemblyVision repository (edge runtime, persistence,
-API, frontend, training, scripts, docs) for vulnerabilities and
-documentation-vs-code inconsistencies, plus dynamic stress testing. Performed
-2026-08-08 to prepare the next development milestone. No files were modified
-during the audit; findings are recorded here for tracking.
+API, frontend, training, scripts, and documentation), performed 2026-08-08.
+This verification update was performed against the current worktree on
+2026-08-09. No production code was changed by this update.
 
 ## Method
 
-- 12 parallel read-only sub-agent audits across: rule engine/config, edge API,
-  persistence, output/media, pipeline/detectors, verify/CLI, training,
-  scripts, frontend, doc-consistency sweep, security, and API contract chain.
-- Dynamic stress tests executed locally (real HTTP load, concurrency, crafted
-  inputs, large-volume reconciliation). Results in section 5.
+- Reviewed the governing safety, storage, data/API, security, and model-release
+  contracts; design 11, 14, and 19; and ADR-011 and ADR-012.
+- Inspected each cited current implementation and its related tests.
+- A finding is retained only where the current code demonstrates the stated
+  behavior or where the current documents demonstrably conflict. A struck item
+  is not an open finding; its original evidence is stale, false, or based on an
+  unsupported requirement.
 
 ## Resolution Status
 
-Findings below are open. The next milestone should close the HIGH items
-(section 3) and the reproduced MED items (section 4) first; DOC items
-(section 6) should be aligned when their related code changes.
+The HIGH findings and reproduced MED findings remain open. Each retained item
+below has a minimum implementation scope and strict acceptance criteria. The
+shared closure gate for every behavioral change is:
+
+```text
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy .
+uv run pytest
+```
+
+Documentation-only changes must also pass `uv run mkdocs build --strict` when
+the documentation environment is installed. A finding closes only when its
+specific acceptance criteria and the applicable shared gate pass in CI.
 
 ## Overall Verdict
 
-No exploitable HIGH-severity runtime vulnerability was found: no path can
-produce `OK` from incomplete or invalid evidence (the fail-safe decision
-invariants hold), no secrets exist in tracked files or history, and SQL
-injection, command injection, path traversal, and symlink escapes are clean.
-The real HTTP read path is robust under load (200 concurrent requests, 2.8 s,
-all 200). The main risks are data-integrity defects in the dataset adapters
-and training CLI (HIGH), concurrency/robustness defects in persistence and
-reconciliation (MED, reproduced), and broad documentation drift.
+No evidence in this review contradicts the prior conclusion that the current
+single-frame pipeline fails closed for ordinary invalid pipeline states. The
+highest concrete risks are dataset-label fabrication, unusable published
+training datasets, and a documented training command that can select the wrong
+Ultralytics run directory. Several lower-severity robustness and contract gaps
+remain. The M1 SQLite database is a rebuildable read projection, not the
+contract-required authoritative inspection/outbox store; future scheduler and
+authoritative-persistence work must not treat its current schema as fulfilling
+that production contract.
 
 ---
 
-## 3. HIGH Findings (data integrity / broken documented flows)
+## 3. HIGH Findings
 
-### H1. Adapters treat a missing label file as an empty annotation (fabricated ground truth)
+### H1. Missing label files fabricate ground truth
 
-- **Location:** `scripts/adapt-roboflow-dataset.py:191`,
-  `scripts/adapt-xanylabeling.py:231` (and downstream branches).
-- **Finding:** A missing label file is parsed as `[]`, so the image becomes a
-  background negative in `dataset_product` and an all-components-missing
-  sample in `dataset_components` (and an expected-NG entry in
-  `test-expected.json`). This is exactly the "fabricated missing-component
-  ground truth" the scripts' own docstrings warn about.
-- **Doc conflict:** design 19.17.3 / runbook 11 step 8 / QUICKSTART 4.2.1 claim
-  the adapters enforce image/label pairing ("missing label files fail
-  validation unless the recorded `--allow-missing-labels` legacy opt-in is
-  used").
-- **Fix (proposal):** raise `ValueError` on a missing label file, or require
-  an explicit `--allow-missing-labels` opt-in mirrored from
-  `validate_dataset`; add tests for both adapters.
+- **Status:** OPEN, verified.
+- **Evidence:** Both adapters use `[]` when `<image-stem>.txt` is absent
+  (`adapt-roboflow-dataset.py:191`, `adapt-xanylabeling.py:231`). The result is
+  interpreted as an explicit negative or an expected missing-component test
+  sample. This contradicts design 19.17.3, which requires explicit empty label
+  files and image/label pairing.
+- **Required change:** Reject every missing label file in every supported split.
+  Do not add an adapter opt-in unless its semantics, provenance, and downstream
+  validation behavior are designed and documented; the minimal safe fix is
+  rejection. Also reject duplicate image stems within a split before output
+  writing, and normalize Roboflow's `valid` split to `val` if it is supported.
+- **Acceptance:** Add parameterized tests for both adapters proving that a
+  missing train, validation, or test label raises `ValueError`, leaves no output
+  or staging directory, and does not write `test-expected.json`. Add tests for
+  an explicit empty label (accepted), same-stem collision (rejected), and the
+  documented `valid` layout (accepted only when normalized to `val`).
 
-### H2. Published `data.yaml` files contain stale staging-directory paths
+### H2. Published `data.yaml` references the removed staging directory
 
-- **Location:** `training/src/assemblyvision_training/prepare_components.py:181-189`
-  (with staging rename at 56-63); `scripts/adapt-roboflow-dataset.py` and
-  `scripts/adapt-xanylabeling.py` `_data()` writers.
-- **Finding:** `train`/`val` paths are written as absolute paths into the
-  sibling `.staging-<uuid>/` directory; after `staging_dir.rename(output_dir)`
-  the published `data.yaml` points at a directory that no longer exists.
-  `validate_dataset` passes (it uses the directory layout), so the defect is
-  silent until training (`av-train component` / `av-train product` on the
-  adapter output fails). Not covered by tests.
-- **Fix (proposal):** write relative paths (`images/train`) or rewrite
-  `data.yaml` with the final paths after the rename; add a test that reloads
-  the published `data.yaml`.
+- **Status:** OPEN, verified.
+- **Evidence:** The two adapters and `prepare_components.py:181-189` serialize
+  absolute paths derived from their staging output, then atomically rename the
+  staging directory. The published YAML therefore points to a non-existent
+  directory.
+- **Required change:** Write portable paths relative to the dataset YAML (for
+  example `images/train` and `images/val`), or write final absolute paths only
+  after publication. Use one documented convention in adapters, preparation,
+  and the synthetic generator.
+- **Acceptance:** For each adapter and component preparation, create a dataset,
+  publish it, parse its `data.yaml`, resolve `train` and `val` according to the
+  selected convention, and assert both directories exist under the final output
+  root and contain the expected images. Assert no serialized value contains
+  `.staging-`.
 
-### H3. `av-train` relative `--out-weights` triggers Ultralytics `runs/detect/` nesting
+### H3. Relative `--out-weights` can select the wrong Ultralytics run path
 
-- **Location:** `training/src/assemblyvision_training/cli.py:226,313` +
-  `training/src/assemblyvision_training/train.py:55-78`.
-- **Finding:** `project_dir = weights_path.parent / ".train-runs"` is relative
-  when `--out-weights` is relative (every documented command in runbook 10 /
-  QUICKSTART 4.3). Ultralytics 8.4.115 prepends `<runs_dir>/detect/` to
-  relative projects, so `train_detector` looks in the wrong path and raises
-  `FileNotFoundError` (reproduced during the audit session). `e2e-demo.sh`
-  uses absolute paths, so CI/demo passes while documented user commands fail.
-- **Fix (proposal):** resolve `project_dir` to an absolute path in
-  `cli.py` and assert the returned best path exists before placing it.
+- **Status:** OPEN, verified by current path construction.
+- **Evidence:** `cli.py:226,313` passes a potentially relative
+  `weights_path.parent / ".train-runs"`; `train.py:71-77` then assumes a
+  fixed return path. This differs from the documented relative-path commands
+  and can conflict with Ultralytics' handling of relative projects.
+- **Required change:** Resolve the project directory before calling Ultralytics.
+  Derive the returned weights path from the resolved project directory, verify
+  it exists and is a regular file before `place_weights`, and raise a clear
+  training error otherwise.
+- **Acceptance:** Unit-test product and component CLI paths using a relative
+  `--out-weights`, with `train_detector`/YOLO mocked, and assert the project is
+  absolute and the expected `best.pt` is selected. Add a regression test for a
+  missing returned artifact. Run one documented relative-path smoke command in
+  CI only when its controlled training fixture is available.
 
-### H4. `docs/ai/context.md` states PR #11 is open; it is merged
+### H4. `context.md` states PR #11 is open
 
-- **Location:** `docs/ai/context.md:41` (and section 1).
-- **Finding:** PR #11 (dev -> main) is MERGED; there are no open PRs. The
-  context snapshot is stale.
-- **Fix (proposal):** rewrite in past tense and list PRs #3-#11 as merged.
+- **Status:** ~~INVALID / STALE AUDIT EVIDENCE~~.
+- **Reason:** `docs/ai/context.md:24,31,40` now states that PR #11 is merged,
+  that there are no open PRs, and that `dev` is in sync with `main`. No change
+  is required for this item.
 
 ---
 
 ## 4. MED Findings
 
-### 4.1 Reproduced dynamically
+### 4.1 Reproduced robustness and concurrency defects
 
-| # | Finding | Location | Evidence |
+| ID | Status and evidence | Required change | Strict acceptance |
 |---|---|---|---|
-| M1 | Reconciliation crashes on a media path containing a NUL byte (`ValueError: lstat: embedded null character`), aborting the whole startup scan despite the "corrupt files are skipped" contract. | `persistence/reconcile.py:42,95` | Reproduced: `ValueError` uncaught. |
-| M2 | Concurrent `register_rule_identity` with the same `(rule_id, rule_version)` raises a raw SQLAlchemy `IntegrityError` (not `ConfigError`/`RepositoryError`), crashing parallel `inspect` runs. | `persistence/repository.py:681-715` | Reproduced: 2 `IntegrityError` across 8 threads. |
-| M3 | Concurrent first-open/migration of the same new SQLite file races in Alembic (`KeyError: 'config'`). Relevant to multi-instance per-host or parallel CLI runs on one output root. | `persistence/repository.py:164`, `persistence/migrate.py:17-29` | Reproduced during API concurrency test noise. |
+| M1 | OPEN. `media_path_is_safe` catches `OSError` only (`reconcile.py:37-42`); `Path.resolve()` can raise `ValueError` for an embedded NUL. The startup scan therefore aborts instead of skipping the malformed bundle. | Treat `ValueError` raised during path construction/resolution as malformed media and skip that record. Keep errors from a single bundle isolated. | A reconciliation test containing a NUL-byte media path imports valid sibling bundles, skips the malformed bundle, returns the correct import count, and emits a warning without raising. |
+| M2 | OPEN. `register_rule_identity` is a select-then-insert without an `IntegrityError` translation or retry (`repository.py:688-715`). | On a unique-race, re-read the stored hash in a new transaction: return successfully when equal and raise `RepositoryError` when different. Translate unexpected database errors. | A barrier-based multi-thread test registers the same identity/hash concurrently with no raw `IntegrityError`; a concurrent differing hash deterministically raises `RepositoryError` and leaves the original hash unchanged. |
+| M3 | OPEN. `EdgeRepository.open()` always calls the process-unsafe Alembic runner for the same new path (`repository.py:155-167`, `migrate.py:17-29`). | Serialize first-open migration with an interprocess lock or explicitly reject concurrent first-open before creating the engine. Define the behavior in the M1 boundary documentation. | A multi-process test opening the same fresh database completes without Alembic `KeyError`, leaves exactly the head revision, enables the required SQLite pragmas, and both repositories can perform a read/write projection operation. |
 
-### 4.2 Rule engine (crafted-input defense in depth)
+### 4.2 Rule engine fail-safe gaps
 
-- **NaN spatial evasion:** `rule_engine.py:113-117` - `NaN` in
-  `box_area_ratios` makes both `ratio < min` and `ratio > max` false, so
-  `_spatial_violation` returns False and a crafted PRESENT component passes,
-  yielding `OK`. Contradicts the function docstring. Fix: reject non-finite
-  ratios/centers.
-- **Incomplete PRESENT evidence:** `rule_engine.py:147-167` - `PRESENT`
-  evidence with `usable_frame_count=0`, `best_confidence=None`, or empty
-  `supporting_frame_ids` yields `OK`. Not reachable from the current
-  single-frame pipeline, but the engine is the documented decision authority.
-  Fix: require `usable_frame_count >= 1` (and confidence present) in the
-  PRESENT branch.
+- **Status:** OPEN, verified.
+- **Evidence:** `_spatial_violation` does not reject non-finite ratios or
+  centers (`rule_engine.py:110-123`); comparisons with `NaN` are false. Also,
+  `PRESENT` evidence is accepted without a usable frame, confidence, or
+  supporting frame (`147-168`). This violates contract 03.5's prohibition on
+  `OK` from incomplete result data/no usable frames and design 11.2's evidence
+  requirement.
+- **Required change:** Explicitly reject non-finite geometry. Before a PRESENT
+  component can satisfy a requirement, require `usable_frame_count >= 1`, a
+  finite `best_confidence`, a non-empty supporting-frame list, and coherent
+  detection/supporting-frame counts. Decide and document whether every
+  detection needs geometry when no spatial constraint is declared.
+- **Acceptance:** Table-driven tests inject `NaN`, `inf`, zero usable frames,
+  absent/non-finite confidence, and empty supporting IDs into otherwise-valid
+  evidence. Every case returns business `NG` with a stable reason code; no test
+  may obtain `OK` from incomplete evidence. Existing valid evidence must still
+  return `OK`.
 
-### 4.3 Manifest loading (`packages/python/vision-core/src/assemblyvision_vision/manifests.py`)
+### 4.3 Manifest validation gaps
 
-- `runtime` field never validated (`product_detector.py:45-51`,
-  `component_detector.py:31-37`); any runtime string loads through
-  Ultralytics. Fix: assert `runtime == "ultralytics"`.
-- `verify_manifest_artifact` rejects only leading `/`/`\`; `../` segments and
-  scheme URIs resolve outside the manifest directory. Fix: reject `..` and
-  schemes; resolve + containment check.
-- `verify_model_class_map` assumes contiguous keys; a non-contiguous
-  `model.names` raises an uncaught `KeyError` at startup. Fix: wrap and raise
-  `ConfigError`.
+- **Status:** OPEN, verified.
+- **Evidence:** `runtime` is not constrained before detector construction;
+  `verify_manifest_artifact` rejects only leading slash/backslash and permits
+  traversal or URI-like artifact paths; `verify_model_class_map` assumes
+  contiguous mapping keys and can leak `KeyError`.
+- **Required change:** Require `runtime == "ultralytics"` at the manifest
+  loading boundary, reject non-file URI schemes and `..` path parts, resolve
+  the artifact and require containment below the manifest directory, and
+  translate malformed/non-contiguous class maps to `ConfigError`.
+- **Acceptance:** Tests reject `runtime="other"`, `../weights.pt`, encoded or
+  scheme URI forms accepted by the path parser, symlink escape, and a
+  non-contiguous `{1: "component"}` map with `ConfigError`. A valid relative
+  artifact and contiguous mapping continue to load and checksum-verify.
 
-### 4.4 Persistence / contracts
+### 4.4 Persistence and contract boundary
 
-- Schema has no `UNIQUE` constraints (C2): `UNIQUE(device_id, device_sequence)`,
-  `UNIQUE(inspection_id, component_code)`, `UNIQUE(relative_path)`,
-  `UNIQUE(device_id, idempotency_key)` all absent; `upload_tasks` lacks lease
-  fields. Application-level checks partially cover single-writer M1.
-- Contract 05 requires a product-configuration version on every inspection;
-  the pipeline builds `ProductResolution` without `product_version_id` and the
-  schema has no such column (silently unmet, C3).
-- `upsert_inspection` idempotency is check-then-insert (TOCTOU); concurrent
-  writers of the same new ID get `RepositoryError` instead of `unchanged`.
+- **Status:** OPEN as documentation/roadmap debt; not a claim that M1 already
+  implements the production outbox.
+- **Evidence:** The current projection schema lacks the uniqueness constraints,
+  product-configuration column, and upload leases specified by design 14 and
+  contracts 04/05. `pipeline.py:303-305` creates a `ProductResolution` without
+  `product_version_id`. `upsert_inspection` remains check-then-insert, although
+  its outer `IntegrityError` translation prevents raw SQLAlchemy leakage.
+- **Required change:** First update design 14 to distinguish the M1 rebuildable
+  projection from the future authoritative store. Before any upload scheduler
+  or multi-writer deployment, add an Alembic migration for the authoritative
+  schema, persist a non-null governed product-configuration version, and make
+  equal-content concurrent inspection upserts idempotently return `unchanged`.
+- **Acceptance:** The boundary document names the projection's non-authoritative
+  limitations. Authoritative-store tests verify all contract 04/05 constraints,
+  lease fields, product version traceability, and concurrent equal-content
+  upserts returning `unchanged`; differing content must fail without mutation.
 
-### 4.5 Security / API
+### 4.5 API and frontend hardening
 
-- `serve --host 0.0.0.0` without `--api-token` disables auth entirely
-  (loopback-only is the default, but non-loopback bind is a misconfiguration
-  hazard). Fix: fail startup when host is non-loopback and no token is set.
-- `GET /api/v1/logs` serves INFO logs including `log.exception` stack traces
-  and filesystem paths to any authenticated viewer (violates SECURITY.md).
-- `POST /auth/session` has no rate limiting / lockout; distinguishable
-  204/401 responses enable brute force if exposed beyond loopback.
-- `X-Request-ID` is reflected verbatim (CRLF injection risk); validate and
-  fall back to a generated UUID.
-- Cursor not bound to the filter set (`repository.py:462-468`); malformed
-  cursor raises `RepositoryError` -> generic 500 instead of `400
-  INVALID_CURSOR`.
-- `410 MEDIA_PURGED` only triggers when the file is already gone; a PURGED
-  record whose file still exists streams 200 (`media.py:110-115`).
-- `viewer_sessions` dict grows unbounded (no cap/sweep).
-- Auth `compare_digest` raises `TypeError` on non-ASCII `Authorization`
-  header -> 500 instead of 401.
-- SPA fallback check `startswith("api/")` lets `GET /api` serve `index.html`.
-- Frontend: `loadMediaBlobUrl` attaches the bearer token to any supplied URL
-  (origin not validated); `VITE_API_MODE` is fail-open in production (mock
-  default); no CSP; `/live` routed to a component that never loads real data
-  while the working `LiveView.vue` is unrouted; WebSocket sequence not reset
-  on reconnect and no gap signal; statistics `line` filter always 400 in real
-  mode; `validateInspectionRecord` validates only top-level fields.
-
----
-
-## 5. Stress Test Results
-
-Executed read-only (writes only under `/tmp/av-stress`):
-
-| Test | Result |
-|---|---|
-| Reconcile 3000 inspection bundles | 7.6 s, DB 4.8 MB, no memory leak |
-| 200 concurrent HTTP GETs (uvicorn + httpx, auth token) | 2.8 s, 200/200 OK, zero errors |
-| Reconcile with NUL-byte media path | Crash reproduced (M1) |
-| Concurrent `register_rule_identity` (8 threads) | `IntegrityError` reproduced (M2) |
-| Concurrent first migration of one SQLite file | Alembic `KeyError: 'config'` reproduced (M3) |
+| Finding | Status | Required change and acceptance |
+|---|---|---|
+| Non-loopback service without token | OPEN hardening gap. ADR-012 permits explicit M1 development mode but says it is not production authentication. | Fail startup for non-loopback bind without a token, or require an explicit development override that logs a high-severity warning. Test loopback/dev, non-loopback/rejected, and non-loopback/explicit override paths. |
+| Authenticated log endpoint exposes exception messages/paths | OPEN. `LogBuffer` stores `record.getMessage()` and the global handler captures `log.exception` output. | Exclude traceback/absolute paths from viewer records or restrict the endpoint to a later privileged role. Test that an induced exception produces no traceback or absolute path in `/logs`. |
+| Session exchange lacks throttling and session storage has no sweep/cap | OPEN hardening gap. | Add bounded per-source failed-attempt throttling and bounded session storage with expiry sweeping; document M1 limits. Test repeated failures, successful exchange after cooldown, expiry cleanup, and capacity behavior. |
+| Cursor errors and filter binding | OPEN. Invalid cursor becomes a generic repository failure, and cursors contain no filter fingerprint. | Map malformed cursors to `400 INVALID_CURSOR`; bind a cursor to a canonical filter hash. Tests must reject malformed/mismatched cursors without 500 and preserve stable pagination for matching filters. |
+| PURGED media can be streamed if its file remains | OPEN. `media.py:110-114` checks the file before lifecycle. | Check `PURGED` first and always return `410 MEDIA_PURGED`. Add a test with a surviving file. |
+| Non-ASCII bearer header can raise from `compare_digest` | OPEN. | Treat comparison type/encoding failure as an invalid credential and return `401`. Add an API test with non-ASCII authorization input. |
+| `/api` may fall through to the SPA | OPEN. The guard only matches `api/`. | Reserve both `api` and `api/` before SPA fallback. Test `/api`, `/api/unknown`, and a normal client-side route. |
+| Bearer token may be sent to arbitrary media URL | OPEN. `loadMediaBlobUrl` accepts any URL. | Require the media URL's origin to equal the configured HTTP API origin before attaching a token. Test same-origin/API-origin allowed and foreign origin rejected with no request. |
+| Production bundle can silently select mock mode | OPEN. `VITE_API_MODE` defaults to mock and no build-time enforcement is present. | Make production builds fail unless the mode is exactly `http`; preserve explicit mock development mode. Add build/config tests for unset, invalid, mock-dev, and http-production modes. |
+| Missing CSP | OPEN hardening gap. | Add a least-privilege CSP compatible with the locally served dashboard and test the response header. |
+| Live view, WebSocket gap, line filter, shallow record validation | OPEN/PARTIAL. `LiveView.vue` exists but `/live` routes to `LiveInspection.vue`; the backend explicitly rejects line filtering; websocket code does not detect sequence gaps; record validation does not validate nested values read by UI. | Route the real live page or clearly remove/defer it; either remove the unsupported line control in HTTP mode or persist line identity; emit/refetch on `sequence > previous + 1`; validate nested consumed fields. Add component/API tests for each selected behavior. |
+| ~~CRLF injection through reflected `X-Request-ID`~~ | ~~INVALID as stated.~~ HTTP servers reject CR/LF in request headers before this application receives the value; the audit did not establish an exploitable CRLF path. | No CRLF-specific fix is required. A separate correlation-ID format/length policy may still be adopted for observability. |
+| ~~WebSocket sequence must reset on reconnect~~ | ~~INVALID.~~ Design 14.4.1 requires sequence reset only when source identity changes, not on reconnect. | Retain the separate missing-gap-signal finding above. |
 
 ---
 
-## 6. Documentation Inconsistencies (LOW/DOC)
+## 5. Stress-Test Record
 
-- **design 14** has not been updated to the M1 boundary: labels SQLite an
-  "operational store" (14.1) and documents authoritative schema
-  (`rule_installations` table, unique constraints, lease fields, `UploadTask`
-  with `lease_owner`/`lease_expires_at`) that the implementation does not
-  have; the implementation uses `rule_identities` and no unique constraints.
-- **appendices.md section 4** reason-code glossary uses a different code set
-  than `reason_codes.py`; design 11.5 omits codes the engine emits
-  (`COMPONENT_SPATIAL_INVALID`, `PRODUCT_IDENTITY_UNVERIFIED`, `GATE_FAILED:*`,
-  `RULE_EVALUATION_ERROR`).
-- **Coverage claims:** PR-008-review "100% coverage" and context.md "99.6%"
-  vs measured ~99.5% statement coverage (specific uncovered lines differ from
-  the claimed two).
-- **Vitest counts:** context.md says 56 (28+13+12+3); current is 63
-  (30+13+17+3).
-- **README/QUICKSTART** `git checkout dev` comments ("main = released MVP;
-  dev = in-progress") are stale; dev is fully merged into main.
-- **SECURITY.md Supported Versions** table omits merged PRs #9-#11.
-- **runbook 10** precondition says "checked-out `feat/mvp` workspace" - should
-  be `dev`/`main`.
-- **design 19.17.4 / runbook 11 / QUICKSTART 4.2.1** claim the adapters
-  enforce pairing and produce usable `data.yaml` - not implemented (H1, H2).
-- **generate-synthetic-dataset.py:** y-coordinate rotation bug displaces
-  drawn components from their labels; chip/diode missing scenarios are
-  unreachable in training (`i % 4 == 0` gate vs 16-entry schedule); rotated
-  drawing vs unrotated axis-aligned label boxes.
-- **config schema:** documented keys in design 06/08/09
-  (`pipeline.max_inflight_inspections`, per-component
-  `high_confidence`/`expected_count`/`allowed_zone`, product
-  `allowed_classes`/`max_inspectable_products`) are rejected as unknown keys
-  by `load_pipeline_config`.
-- **manifest provenance:** `datasets=[]`, `source_revision="av-train"`,
-  `training_config_revision=semver` - no epochs/seed/augmentation/dataset
-  checksum recorded (design 19.8).
-- **contract 10 example manifest** does not match the actual `ModelManifest`
-  schema.
-- **`--allow-missing-labels` opt-in** recorded in data.yaml is never read
-  back; a later run without the flag fails again.
-- **QUICKSTART:** `/configuration` `/logs` described as "placeholders" but
-  they render real data; "endpoints follow design 15.3" list includes derived
-  endpoints not in 15.3.
+The original dynamic observations remain historical evidence, not proof that
+the current worktree has been fixed:
+
+| Test | Recorded result | Current audit status |
+|---|---|---|
+| Reconcile 3000 bundles | 7.6 s, 4.8 MB database | Informational; rerun after reconciliation changes. |
+| 200 concurrent HTTP GETs | 200/200 success | Informational; does not exercise concurrent migration or write races. |
+| NUL-byte media path | Startup crash | Retained as M1. |
+| Concurrent rule registration | Raw `IntegrityError` | Retained as M2. |
+| Concurrent first migration | Alembic `KeyError` | Retained as M3. |
 
 ---
 
-## 7. Next Steps
+## 6. Documentation and Tooling Consistency
 
-Phase 1 (close HIGH + reproduced MED, each with regression tests):
+| Finding | Status | Required change and acceptance |
+|---|---|---|
+| Design 14 describes an authoritative operational SQLite store rather than the M1 rebuildable projection | OPEN. | Update scope, tables, and recovery language; link the authoritative-store design as future work. Review against ADR-012 and context section 8.3. |
+| Appendix reason-code glossary and design 11.5 omit/contradict emitted codes | OPEN. | Make `reason_codes.py` the explicit canonical list or generate the glossary from it. A test must compare all declared static codes and documented parameterized prefixes. |
+| Coverage claims | PARTIAL. `context.md` currently says approximately 99.5%, so its claimed 99.6% discrepancy is ~~STALE~~; PR review claims still require source-based verification. | Replace numeric claims with a dated command/output reference or update all sources from one CI artifact. |
+| Vitest count in `context.md` | ~~INVALID / STALE~~. `context.md:295-297` already records 63 tests (30 + 13 + 17 + 3). | No change required for this item. |
+| README/QUICKSTART branch comments and SECURITY supported versions | OPEN. | Update merged-branch/release statements from current Git state. Validate all branch/PR assertions against `git branch -a` and GitHub before publication. |
+| Runbook 10 requires `feat/mvp` | OPEN. | Replace with the supported `main`/current development workflow and test every documented command in a clean checkout. |
+| Design 19.17.4/runbook 11/QUICKSTART claim strict pairing and usable adapter YAML | OPEN, dependent on H1/H2. | Update only after H1/H2 acceptance passes; documentation must describe the final behavior exactly. |
+| Synthetic generator has rotated-drawing/label mismatch and unreachable chip/diode missing scenarios | OPEN. | Correct the rotation transform and scenario schedule. Add deterministic image/label geometry tests and assert every missing scenario occurs for a representative training count. |
+| Documented pipeline keys are rejected by configuration loader | OPEN, verified by absence from current config implementation. | Either implement and test each documented key with fail-safe semantics, or remove/defer it from design 06/08/09. No documented accepted key may be rejected as unknown. |
+| Manifest provenance omits reproducibility data required by design 19.8 | OPEN. | Extend manifest/run metadata with immutable dataset/split references, seed, epochs, augmentations, framework/environment versions, and checksums. Test a training invocation produces all required values. |
+| Contract 10 example does not match `ModelManifest` | ~~INVALID as a schema violation.~~ Contract 10 says a manifest "similar to" the example; it is not an exact schema declaration. | Improve the example or link it to the canonical schema as documentation quality work, not a contract breach. |
+| `--allow-missing-labels` marker is not read on later runs | ~~NOT AN ESTABLISHED DEFECT~~. The flag is a per-invocation legacy opt-in; recording it is provenance, not a documented persistent authorization. | If persistent authorization is desired, create a separate ADR/contract and validation design; otherwise clarify the help text. |
+| QUICKSTART calls live configuration/log views placeholders and conflates derived endpoints with design 15.3 | OPEN. | Correct the endpoint descriptions and scope labels. Add a documentation link check and an API smoke test matching the published endpoint table. |
 
-1. H1 - adapters: missing label file -> error (or recorded opt-in); Roboflow
-   `valid` -> `val` alias; same-stem collision detection.
-2. H2 - rewrite `data.yaml` paths relative after atomic rename in both
-   adapters and `prepare_components`.
-3. H3 - absolute `project_dir` in `av-train` + best.pt existence assertion.
-4. M1/M2/M3 - reconcile error handling (`OSError, ValueError, RuntimeError`);
-   `register_rule_identity` `IntegrityError` handling; serialize first-open
-   migration (or document single-writer).
-5. Rule engine - non-finite spatial values; PRESENT evidence completeness.
-6. Manifest - runtime validation; `..`/scheme URI rejection; class-map
-   tolerance.
+## 7. Closure Order
 
-Phase 2 (documentation alignment): design 14 M1 boundary, appendices reason
-codes, coverage/test-count claims, PR state in context.md, SECURITY.md
-versions, runbook 10 precondition, QUICKSTART corrections.
-
-Phase 3 (architecture): decide the multi-edge-per-host "shared" model
-(container-per-line vs shared inference) before building the upload
-scheduler, WebSocket channel, camera/barcode adapters, and temporal
-aggregation.
+1. H1, H2, and H3: they block a trustworthy documented train-and-inspect loop.
+2. M1, M2, M3, rule-engine evidence validation, and manifest containment:
+   they are direct robustness or fail-safe defects.
+3. Resolve the M1 projection versus authoritative-persistence boundary before
+   implementing the upload scheduler, WebSocket runtime, or multi-edge hosting.
+4. Complete documentation and tooling corrections only after the behavior they
+   describe has passed its specific acceptance criteria.
