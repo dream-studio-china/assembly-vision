@@ -37,6 +37,9 @@ try:
 except ImportError:  # pragma: no cover
     yaml = None  # type: ignore[assignment]
 
+_SPLIT_ALIASES = {"train": "train", "val": "val", "valid": "val", "test": "test"}
+_SUPPORTED_IMAGE_SUFFIXES = frozenset({".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"})
+
 
 def _load_names(data_yaml: Path) -> list[str]:
     if yaml is None:
@@ -115,6 +118,23 @@ def _check_disjoint(
         )
 
 
+def _check_stem_collisions(img_dir: Path) -> None:
+    """Fail when one split contains two image files with the same stem.
+
+    Output labels are named after the image stem, so colliding stems would
+    silently overwrite each other's label files and fabricate ground truth.
+    """
+    stems: dict[str, list[str]] = {}
+    for img_path in sorted(img_dir.iterdir()):
+        if not img_path.is_file() or img_path.suffix.lower() not in _SUPPORTED_IMAGE_SUFFIXES:
+            continue
+        stems.setdefault(img_path.stem, []).append(img_path.name)
+    collisions = {stem: names for stem, names in stems.items() if len(names) > 1}
+    if collisions:
+        detail = "; ".join(f"{stem} -> {', '.join(names)}" for stem, names in collisions.items())
+        raise ValueError(f"image stem collision in {img_dir}: {detail}")
+
+
 def adapt(src: Path, out: Path, required: list[str] | None, product_class: str = "product") -> None:
     """Adapt into a staging directory and atomically publish on success.
 
@@ -158,11 +178,17 @@ def _adapt_into(
     if missing_in_data:
         raise ValueError(f"required component classes not present in dataset: {missing_in_data}")
 
-    splits = [
-        d.name
+    splits: list[tuple[str, str]] = [
+        (d.name, _SPLIT_ALIASES[d.name])
         for d in (src / "images").iterdir()
-        if d.is_dir() and d.name in ("train", "val", "test")
+        if d.is_dir() and d.name in _SPLIT_ALIASES
     ]
+    canonical = [name for _, name in splits]
+    if len(set(canonical)) != len(canonical):
+        raise ValueError(
+            "duplicate canonical splits in export; a split may appear only once "
+            "(for example both 'val' and 'valid')"
+        )
 
     for split in ("train", "val"):
         for ds in ("dataset_product", "dataset_components"):
@@ -177,10 +203,11 @@ def _adapt_into(
     background_negatives: dict[str, int] = {"train": 0, "val": 0}
     from PIL import Image
 
-    for split in splits:
-        img_dir = src / "images" / split
-        lbl_dir = src / "labels" / split
+    for src_split, split in splits:
+        img_dir = src / "images" / src_split
+        lbl_dir = src / "labels" / src_split
         is_test = split == "test"
+        _check_stem_collisions(img_dir)
         for img_path in sorted(img_dir.iterdir()):
             if not img_path.is_file():
                 continue
@@ -188,12 +215,23 @@ def _adapt_into(
             with Image.open(img_path) as handle:
                 img_w, img_h = handle.size
 
-            parsed = _parse_label_file(lbl_path, names, img_w, img_h) if lbl_path.is_file() else []
+            if not lbl_path.is_file():
+                raise ValueError(
+                    f"{img_path.name} has no label file; image/label pairing is required "
+                    "(add an explicit empty label file for background negatives)"
+                )
+            parsed = _parse_label_file(lbl_path, names, img_w, img_h)
             coords: dict[str, list[tuple[float, float, float, float]]] = {n: [] for n in keep}
             for name, box in parsed:
                 if name in keep:
                     coords[name].append(box)
             product_coords = [box for name, box in parsed if name == product_class]
+
+            if parsed and not product_coords:
+                raise ValueError(
+                    f"{img_path.name} has component annotations but no {product_class!r} "
+                    "product box; every product image must be annotated independently"
+                )
 
             if is_test:
                 data = img_path.read_bytes()
@@ -235,11 +273,6 @@ def _adapt_into(
                 (out / "dataset_product" / "labels" / split / f"{img_path.stem}.txt").write_text(
                     f"0 {n[0]:.6f} {n[1]:.6f} {n[2]:.6f} {n[3]:.6f}\n", encoding="utf-8"
                 )
-            elif parsed:
-                raise ValueError(
-                    f"{img_path.name} has component annotations but no {product_class!r} "
-                    "product box; every product image must be annotated independently"
-                )
             else:
                 (out / "dataset_product" / "labels" / split / f"{img_path.stem}.txt").write_text(
                     "", encoding="utf-8"
@@ -263,22 +296,20 @@ def _adapt_into(
                 f"{len(overlap)} duplicate checksums"
             )
 
-    def _data(names_out: list[str], images_root: Path) -> dict[str, Any]:
+    def _data(names_out: list[str]) -> dict[str, Any]:
         return {
             "nc": len(names_out),
             "names": names_out,
-            "train": str((images_root / "train").resolve()),
-            "val": str((images_root / "val").resolve()),
+            "train": "images/train",
+            "val": "images/val",
         }
 
     (out / "dataset_product" / "data.yaml").write_text(
-        yaml.dump(_data(["product"], out / "dataset_product" / "images"), default_flow_style=False),
+        yaml.dump(_data(["product"]), default_flow_style=False),
         encoding="utf-8",
     )
     (out / "dataset_components" / "data.yaml").write_text(
-        yaml.dump(
-            _data(comp_order, out / "dataset_components" / "images"), default_flow_style=False
-        ),
+        yaml.dump(_data(comp_order), default_flow_style=False),
         encoding="utf-8",
     )
     if expected:

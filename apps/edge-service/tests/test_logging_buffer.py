@@ -30,6 +30,18 @@ def test_log_event_fields() -> None:
     assert event.logged_at.endswith("Z") or "+" in event.logged_at
 
 
+def test_log_event_scrubs_absolute_paths() -> None:
+    message = (
+        "cannot load model manifest: /Volumes/data/edge/models/manifest.json: boom; "
+        "config C:\\Edge\\pipeline.yaml missing"
+    )
+    record = logging.LogRecord("edge.api", logging.ERROR, "mod.py", 10, message, (), None)
+    event = LogEvent(record)
+    assert "/Volumes/data/edge" not in event.message
+    assert "C:\\Edge\\pipeline.yaml" not in event.message
+    assert "<path>" in event.message
+
+
 def test_capacity_is_bounded() -> None:
     buffer = LogBuffer(capacity=3)
     for i in range(10):

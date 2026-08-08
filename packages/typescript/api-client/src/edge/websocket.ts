@@ -22,6 +22,12 @@ export interface WebSocketService {
   disconnect(): void;
   /** Subscribe to typed envelopes. Returns an unsubscribe function. */
   subscribe(listener: (event: WSEventEnvelope) => void): () => void;
+  /**
+   * Subscribe to sequence-gap notifications. A gap means events were lost;
+   * the caller must refetch REST state. Sequence is not reset on reconnect,
+   * so reconnects that preserve continuity do not signal a gap.
+   */
+  onGap(listener: () => void): () => void;
 }
 
 function backoffDelay(attempt: number, baseMs = 1000, maxMs = 30000): number {
@@ -40,6 +46,7 @@ export class ReconnectingWebSocket implements WebSocketService {
   #attempt = 0;
   #timer: ReturnType<typeof setTimeout> | null = null;
   #listeners: Array<(event: WSEventEnvelope) => void> = [];
+  #gapListeners: Array<() => void> = [];
   #lastSequence = new Map<string, number>();
   #manualClose = false;
 
@@ -69,6 +76,13 @@ export class ReconnectingWebSocket implements WebSocketService {
     };
   }
 
+  onGap(listener: () => void): () => void {
+    this.#gapListeners.push(listener);
+    return () => {
+      this.#gapListeners = this.#gapListeners.filter((l) => l !== listener);
+    };
+  }
+
   #open(): void {
     this.status = "connecting";
     let socket: WebSocket;
@@ -91,6 +105,11 @@ export class ReconnectingWebSocket implements WebSocketService {
         return;
       }
       const previous = this.#lastSequence.get(envelope.source_id) ?? -1;
+      if (previous >= 0 && envelope.sequence > previous + 1) {
+        // Missing events after an established baseline: signal the gap so
+        // callers refetch REST state.
+        for (const listener of this.#gapListeners) listener();
+      }
       if (envelope.sequence <= previous) return; // stale or duplicate
       this.#lastSequence.set(envelope.source_id, envelope.sequence);
       for (const listener of this.#listeners) listener(envelope);

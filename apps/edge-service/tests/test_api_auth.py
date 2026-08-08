@@ -168,3 +168,84 @@ def test_cors_disabled_when_loopback_off(tmp_path: Path) -> None:
             },
         )
         assert "access-control-allow-origin" not in preflight.headers
+
+
+def test_failed_auth_attempts_are_rate_limited(token_settings: ServerSettings) -> None:
+    from assemblyvision_edge.api.deps import _AUTH_MAX_FAILURES
+
+    app = create_app(token_settings)
+    with TestClient(app) as client:
+        for _ in range(_AUTH_MAX_FAILURES - 1):
+            denied = client.get("/api/v1/inspections", headers={"Authorization": "Bearer wrong"})
+            assert denied.status_code == 401
+        # The attempt that reaches the budget is throttled.
+        limited = client.get("/api/v1/inspections", headers={"Authorization": "Bearer wrong"})
+        assert limited.status_code == 429
+        assert limited.json()["code"] == "RATE_LIMITED"
+        assert limited.headers["retry-after"] == "60"
+        # A correct token still authenticates once the limit applies.
+        allowed = client.get(
+            "/api/v1/inspections", headers={"Authorization": "Bearer test-edge-token"}
+        )
+        assert allowed.status_code in (200, 503)
+
+
+def test_successful_auth_clears_rate_limit(token_settings: ServerSettings) -> None:
+    from assemblyvision_edge.api.deps import _AUTH_MAX_FAILURES
+
+    app = create_app(token_settings)
+    with TestClient(app) as client:
+        for _ in range(_AUTH_MAX_FAILURES - 1):
+            client.get("/api/v1/inspections", headers={"Authorization": "Bearer wrong"})
+        # A single success resets the failure budget.
+        ok = client.get("/api/v1/inspections", headers={"Authorization": "Bearer test-edge-token"})
+        assert ok.status_code in (200, 503)
+        assert (
+            client.get("/api/v1/inspections", headers={"Authorization": "Bearer wrong"}).status_code
+            == 401
+        )
+
+
+def test_bearer_token_compare_type_failure_is_unauthorized(
+    token_settings: ServerSettings,
+) -> None:
+    from assemblyvision_edge.api import deps
+
+    class _Headers:
+        def get(self, key: str, default: str = "") -> object:
+            # bytes headers trigger TypeError inside compare_digest.
+            return b"Bearer \x00\xff"
+
+    class _Request:
+        headers = _Headers()
+
+    from typing import cast
+
+    from fastapi import Request
+
+    assert deps._has_valid_bearer_token(cast(Request, _Request()), token_settings) is False
+
+
+def test_viewer_sessions_are_bounded(
+    token_settings: ServerSettings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from typing import cast
+
+    from assemblyvision_edge.api import deps
+
+    monkeypatch.setattr(deps, "_SESSION_MAX", 5)
+    app = create_app(token_settings)
+    with TestClient(app) as client:
+        for _ in range(6):
+            response = client.post(
+                "/api/v1/auth/session", headers={"Authorization": "Bearer test-edge-token"}
+            )
+            assert response.status_code == 204
+        sessions = cast(dict[str, object], app.state.viewer_sessions)
+        assert len(sessions) <= 5
+        # Every retained session still authenticates.
+        for session_id in sessions:
+            response = client.get(
+                "/api/v1/inspections", cookies={deps.viewer_session_cookie_name(): session_id}
+            )
+            assert response.status_code in (200, 503)

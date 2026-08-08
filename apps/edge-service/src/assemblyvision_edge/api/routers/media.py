@@ -107,10 +107,12 @@ def media_content(
     if found is None:
         raise ApiProblem(status_code=404, code="MEDIA_NOT_FOUND", detail=f"no media {media_id}")
     media, inspection_id = found
+    if media.lifecycle.value == "PURGED":
+        # Purged media never streams, even if the file still exists on disk:
+        # the metadata is the authority (AUDIT-001 4.5).
+        raise ApiProblem(status_code=410, code="MEDIA_PURGED", detail="media has been purged")
     path = _resolve_media_path(settings.output_root, str(inspection_id), media.relative_path)
     if path is None or not path.is_file():
-        if media.lifecycle.value == "PURGED":
-            raise ApiProblem(status_code=410, code="MEDIA_PURGED", detail="media has been purged")
         raise ApiProblem(status_code=404, code="MEDIA_NOT_FOUND", detail=f"no media {media_id}")
     size = path.stat().st_size
     range_header = request.headers.get("Range")

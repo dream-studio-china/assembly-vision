@@ -62,16 +62,38 @@ def _draw_board(draw: ImageDraw.ImageDraw) -> None:
             draw.point((i, j), fill=(c, c + 8, c + 16))
 
 
+def _rotated_point(px: float, py: float, cx: float, cy: float, rad: float) -> tuple[float, float]:
+    """Rotate a point around (cx, cy) by rad radians (image y-down)."""
+    rx = (px - cx) * math.cos(rad) - (py - cy) * math.sin(rad) + cx
+    ry = (px - cx) * math.sin(rad) + (py - cy) * math.cos(rad) + cy
+    return rx, ry
+
+
+def _rotated_aabb(
+    x1: float, y1: float, x2: float, y2: float, cx: float, cy: float, rad: float
+) -> tuple[float, float, float, float]:
+    """Axis-aligned bounding box of a rectangle rotated around (cx, cy).
+
+    The label must describe the drawn (rotated) shape, so both the drawing
+    and the label derive from the same transform (AUDIT-001 section 6).
+    """
+    xs: list[float] = []
+    ys: list[float] = []
+    for px, py in ((x1, y1), (x2, y1), (x2, y2), (x1, y2)):
+        rx, ry = _rotated_point(px, py, cx, cy, rad)
+        xs.append(rx)
+        ys.append(ry)
+    return min(xs), min(ys), max(xs), max(ys)
+
+
 def _draw_component(
     draw: ImageDraw.ImageDraw, code: str, x1: int, y1: int, x2: int, y2: int, rotation: int
 ) -> None:
     cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
-    pts = []
-    for dx, dy in ((x1 - cx, y1 - cy), (x2 - cx, y1 - cy), (x2 - cx, y2 - cy), (x1 - cx, y2 - cy)):
-        rad = math.radians(rotation)
-        rx = dx * math.cos(rad) - dy * math.sin(rad) + cx
-        ry = dx * math.sin(rad) + dy * math.cos(rad) + cx - cy + cy
-        pts.append((rx, ry))
+    rad = math.radians(rotation)
+    pts = [
+        _rotated_point(px, py, cx, cy, rad) for px, py in ((x1, y1), (x2, y1), (x2, y2), (x1, y2))
+    ]
     if code == "screw":
         draw.polygon(pts, fill=(150, 150, 155), outline=(30, 30, 30))
         draw.ellipse((cx - 12, cy - 12, cx + 12, cy + 12), fill=(60, 60, 70))
@@ -90,7 +112,7 @@ def _draw_component(
         draw.polygon([(x2 - 18, cy - 10), (x2 - 18, cy + 10), (x2, cy)], fill=(220, 200, 40))
 
 
-def _make_image(path: Path, present: set[str], dx: int, dy: int) -> None:
+def _make_image(path: Path, present: set[str], dx: int, dy: int, rotations: dict[str, int]) -> None:
     im = Image.new("RGB", (IMG_W, IMG_H), (210, 210, 205))
     noise = Image.effect_noise((IMG_W, IMG_H), 18).convert("L")
     im = Image.blend(im, Image.merge("RGB", (noise, noise, noise)), 0.15)
@@ -98,23 +120,28 @@ def _make_image(path: Path, present: set[str], dx: int, dy: int) -> None:
     _draw_board(draw)
     for code, (x1, y1, x2, y2) in COMPONENTS.items():
         if code in present:
-            rot = random.choice((-6, -3, 0, 3, 6))
-            _draw_component(draw, code, x1 + dx, y1 + dy, x2 + dx, y2 + dy, rot)
+            _draw_component(draw, code, x1 + dx, y1 + dy, x2 + dx, y2 + dy, rotations[code])
     im = im.filter(ImageFilter.GaussianBlur(0.4))
     im.save(path)
 
 
-def _write_labels(lbl_path: Path, present: set[str], dx: int, dy: int) -> None:
+def _write_labels(
+    lbl_path: Path, present: set[str], dx: int, dy: int, rotations: dict[str, int]
+) -> None:
     order = list(COMPONENTS)
     lines = []
     for code, (x1, y1, x2, y2) in COMPONENTS.items():
         if code in present:
-            x1 += dx
-            y1 += dy
-            cx = (x1 + x2) / 2 / IMG_W
-            cy = (y1 + y2) / 2 / IMG_H
-            w = (x2 - x1) / IMG_W
-            h = (y2 - y1) / IMG_H
+            cx_px = (x1 + x2) / 2 + dx
+            cy_px = (y1 + y2) / 2 + dy
+            rad = math.radians(rotations[code])
+            ax1, ay1, ax2, ay2 = _rotated_aabb(
+                x1 + dx, y1 + dy, x2 + dx, y2 + dy, cx_px, cy_px, rad
+            )
+            cx = (ax1 + ax2) / 2 / IMG_W
+            cy = (ay1 + ay2) / 2 / IMG_H
+            w = (ax2 - ax1) / IMG_W
+            h = (ay2 - ay1) / IMG_H
             lines.append(f"{order.index(code)} {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}")
     lbl_path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
 
@@ -127,14 +154,14 @@ def _product_label(lbl_path: Path) -> None:
     lbl_path.write_text(f"0 {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}\n", encoding="utf-8")
 
 
-def _write_data_yaml(path: Path, names: list[str], img_root: Path) -> None:
+def _write_data_yaml(path: Path, names: list[str]) -> None:
     if yaml is None:
         raise RuntimeError("PyYAML is required (uv sync)")
     data = {
         "nc": len(names),
         "names": names,
-        "train": str((img_root / "train").resolve()),
-        "val": str((img_root / "val").resolve()),
+        "train": "images/train",
+        "val": "images/val",
     }
     path.write_text(yaml.dump(data, default_flow_style=False), encoding="utf-8")
 
@@ -174,28 +201,28 @@ def generate(out: Path, n_train: int, n_val: int) -> None:
         for i in range(n):
             dx = random.randint(-24, 24)
             dy = random.randint(-18, 18)
-            missing = (
-                missing_schedule[i % len(missing_schedule)]
-                if split == "train" and i % 4 == 0
-                else None
-            )
+            rotations = {code: random.choice((-6, -3, 0, 3, 6)) for code in COMPONENTS}
+            # Every schedule entry is reachable in training so each missing
+            # scenario (screw/chip/connector/diode) actually occurs.
+            missing = missing_schedule[i % len(missing_schedule)] if split == "train" else None
             present = set(component_names) - (missing or set())
             stem = f"img{idx:03d}"
             for ds in ("dataset_product", "dataset_components"):
-                _make_image(out / ds / "images" / split / f"{stem}.png", present, dx, dy)
+                _make_image(out / ds / "images" / split / f"{stem}.png", present, dx, dy, rotations)
             _product_label(out / "dataset_product" / "labels" / split / f"{stem}.txt")
             _write_labels(
-                out / "dataset_components" / "labels" / split / f"{stem}.txt", present, dx, dy
+                out / "dataset_components" / "labels" / split / f"{stem}.txt",
+                present,
+                dx,
+                dy,
+                rotations,
             )
             idx += 1
 
-    _write_data_yaml(
-        out / "dataset_product" / "data.yaml", ["product"], out / "dataset_product" / "images"
-    )
+    _write_data_yaml(out / "dataset_product" / "data.yaml", ["product"])
     _write_data_yaml(
         out / "dataset_components" / "data.yaml",
         component_names,
-        out / "dataset_components" / "images",
     )
 
     test = out / "test"
@@ -203,9 +230,10 @@ def generate(out: Path, n_train: int, n_val: int) -> None:
     for k in range(6):
         dx = random.randint(-15, 15)
         dy = random.randint(-10, 10)
-        _make_image(test / f"ok_{k:03d}.png", set(component_names), dx, dy)
+        rotations = {code: random.choice((-6, -3, 0, 3, 6)) for code in COMPONENTS}
+        _make_image(test / f"ok_{k:03d}.png", set(component_names), dx, dy, rotations)
         missing = set(component_names) - {random.choice(component_names)}
-        _make_image(test / f"ng_missing_{k:03d}.png", missing, dx, dy)
+        _make_image(test / f"ng_missing_{k:03d}.png", missing, dx, dy, rotations)
     print(f"synthetic dataset generated under {out} ({n_train} train, {n_val} val, 12 test)")
 
 

@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import platform
 import re
 from datetime import UTC, datetime
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from uuid import UUID, uuid5
 
@@ -125,3 +128,77 @@ def write_manifest(
         return existing
     output_path.write_text(manifest.model_dump_json(indent=2) + "\n", encoding="utf-8")
     return manifest
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def write_run_metadata(
+    *,
+    task: str,
+    semantic_version: str,
+    dataset_dir: Path,
+    weights_path: Path,
+    epochs: int,
+    imgsz: int,
+    seed: int,
+    model_size: str,
+    device: str,
+    no_augment: bool,
+    output_path: Path,
+) -> Path:
+    """Record training-run reproducibility metadata next to the manifest.
+
+    Design 19.8 requires each run to record seeds, dataset references,
+    architecture, image size, epochs, augmentation, and framework versions.
+    The sidecar is written beside the manifest (``<name>.run.json``) and is
+    immutable per published version; a repeat run with identical bytes is
+    idempotent.
+    """
+    dataset_manifest = dataset_dir / "data.yaml"
+    dataset_sha = sha256_file(dataset_manifest) if dataset_manifest.is_file() else None
+    try:
+        ultralytics_version = version("ultralytics")
+    except PackageNotFoundError:  # pragma: no cover - environment dependent
+        ultralytics_version = "unknown"
+    payload: dict[str, object] = {
+        "task": task,
+        "semantic_version": semantic_version,
+        "dataset_dir": str(dataset_dir.resolve()),
+        "dataset_data_yaml_sha256": dataset_sha,
+        "epochs": epochs,
+        "imgsz": imgsz,
+        "seed": seed,
+        "model_size": model_size,
+        "augmentations_disabled": no_augment,
+        "device": device,
+        "weights_sha256": sha256_file(weights_path),
+        "weights_size_bytes": weights_path.stat().st_size,
+        "python_version": platform.python_version(),
+        "ultralytics_version": ultralytics_version,
+        "created_at": datetime.now(UTC).isoformat(),
+    }
+    # created_at changes on every run and carries no reproducibility meaning,
+    # so it is excluded from the immutability comparison.
+    stable_payload = {k: v for k, v in payload.items() if k != "created_at"}
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    if output_path.exists():
+        try:
+            existing = json.loads(output_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ConfigError(
+                f"existing run metadata {output_path} is invalid; refusing to overwrite: {exc}"
+            ) from exc
+        if {k: v for k, v in existing.items() if k != "created_at"} != stable_payload:
+            raise ConfigError(
+                f"refusing to overwrite existing run metadata {output_path}: content differs; "
+                "bump --semver or remove the file"
+            )
+        return output_path
+    output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return output_path

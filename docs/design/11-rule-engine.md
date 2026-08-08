@@ -67,11 +67,15 @@ Sorting and stable component iteration produce reproducible reason ordering. The
 
 Reason codes are stable machine-readable identifiers grouped as:
 
-- identity: `BARCODE_UNREADABLE`, `PRODUCT_TYPE_UNKNOWN`, `PRODUCT_MAPPING_AMBIGUOUS`;
-- pipeline: `CAMERA_DISCONNECTED`, `NO_PRODUCT`, `MULTIPLE_PRODUCTS`, `ROI_INVALID`, `INSUFFICIENT_VALID_FRAMES`, `INFERENCE_ERROR`;
-- component: `COMPONENT_MISSING`, `COMPONENT_UNCERTAIN`, `COMPONENT_UNVERIFIABLE`, `COMPONENT_COUNT_INVALID` with a component key;
+- identity: `BARCODE_UNREADABLE`, `PRODUCT_TYPE_UNKNOWN`, `PRODUCT_MAPPING_AMBIGUOUS`, `PRODUCT_IDENTITY_UNVERIFIED`;
+- pipeline: `CAMERA_DISCONNECTED`, `NO_PRODUCT`, `MULTIPLE_PRODUCTS`, `ROI_INVALID`, `INSUFFICIENT_VALID_FRAMES`, `INFERENCE_ERROR`, `IMAGE_READ_ERROR`, `GATE_FAILED:<gate>`;
+- component: `COMPONENT_MISSING`, `COMPONENT_UNCERTAIN`, `COMPONENT_UNVERIFIABLE`, `COMPONENT_COUNT_INVALID`, `COMPONENT_SPATIAL_INVALID` with a component key;
 - configuration: `RULE_NOT_FOUND`, `CONFIG_INVALID`, `VERSION_INCOMPATIBLE`;
-- system: `INSPECTION_INTERRUPTED`, `DECISION_PERSISTENCE_FAILED`.
+- system: `INSPECTION_INTERRUPTED`, `DECISION_PERSISTENCE_FAILED`, `RULE_EVALUATION_ERROR`.
+
+The canonical machine-readable set is implemented in
+`packages/python/domain/src/assemblyvision_domain/reason_codes.py`; design 11.5
+and that module must stay in sync (AUDIT-001).
 
 Human-readable text is localized separately. Analytics use reason code plus structured parameters, not parsed display messages.
 

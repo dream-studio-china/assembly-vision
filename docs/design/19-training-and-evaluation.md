@@ -292,9 +292,10 @@ the table above; expand where `verify` exposes missed NG.
   component boxes but no product box is a data error and is rejected; the
   product box can never be derived from the union of present component boxes.
 - **Explicit empty labels.** Every background/negative image must have an
-  explicit empty label file; image/label pairing is required (missing label
-  files fail validation unless the recorded `--allow-missing-labels` legacy
-  opt-in is used).
+  explicit empty label file; image/label pairing is required. The adapters
+  reject any image without a label file in every split, and `av-train`
+  validation rejects missing label files unless the recorded
+  `--allow-missing-labels` legacy opt-in is used.
 - **Physical NG only.** Do not synthesize all NG by digitally erasing
   components; shadows, packaging deformation, and revealed backgrounds differ
   (19.4).
@@ -314,9 +315,11 @@ the table above; expand where `verify` exposes missed NG.
   `classes.txt` or `data.yaml`), then run
   `scripts/adapt-xanylabeling.py <export> <out> --product-class product --required '<comma,separated>'`.
   The adapter validates every label line, enforces 19.17.3, keeps explicit
-  background negatives, builds `dataset_product` + `dataset_components` +
-  `test-expected.json` + `manifest.json`, and rejects stale/populated output
-  directories atomically. Roboflow exports use
+  background negatives, rejects missing label files and same-stem image
+  collisions per split, normalizes Roboflow's `valid` split to `val`, and
+  publishes `dataset_product` + `dataset_components` +
+  `test-expected.json` + `manifest.json` atomically with dataset-relative
+  `data.yaml` paths. Roboflow exports use
   `scripts/adapt-roboflow-dataset.py`.
 - Freeze dataset checksums and the annotation/ontology version with the model
   manifest (19.8, contract 10); the verification set must never be copied into

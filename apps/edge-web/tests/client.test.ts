@@ -167,4 +167,26 @@ describe("token-protected cross-origin development (gap 1)", () => {
       "media load failed",
     );
   });
+
+  it("refuses to fetch media from a foreign origin", async () => {
+    vi.stubEnv("VITE_API_MODE", "http");
+    vi.stubEnv("VITE_API_BASE_URL", "http://edge-host:8000");
+    vi.stubGlobal("window", { location: { origin: "http://localhost:5173" } });
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      void input;
+      void init;
+      return new Response(null, { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchImpl);
+
+    const { createViewerSession, loadMediaBlobUrl } = await load();
+    await createViewerSession("secret-token");
+    await expect(
+      loadMediaBlobUrl("https://evil.example.com/media/abc/content"),
+    ).rejects.toThrow("foreign origin");
+    const mediaRequests = fetchImpl.mock.calls.filter(([url]) =>
+      String(url).includes("/media/"),
+    );
+    expect(mediaRequests).toHaveLength(0);
+  });
 });

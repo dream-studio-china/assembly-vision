@@ -95,6 +95,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Bearer token required by every read route except /health/live "
         "(falls back to AV_EDGE_API_TOKEN)",
     )
+    serve.add_argument(
+        "--allow-dev-auth",
+        action="store_true",
+        help="Allow a non-loopback bind without an API token in explicit M1 "
+        "development mode (not production authentication)",
+    )
     return parser
 
 
@@ -232,6 +238,25 @@ def _run_verify(args: argparse.Namespace) -> int:
     return 0
 
 
+def _is_loopback_host(host: str) -> bool:
+    return host in ("127.0.0.1", "localhost", "::1", "::")
+
+
+def _validate_serve_bind(host: str, api_token: str | None, allow_dev_auth: bool) -> None:
+    """Reject a non-loopback bind without authentication.
+
+    Loopback binding is not authentication (design 15.2.1). Binding beyond
+    loopback without a token disables auth entirely, so it requires either a
+    token or an explicit development override (AUDIT-001 4.5).
+    """
+    if not _is_loopback_host(host) and not api_token and not allow_dev_auth:
+        raise ConfigError(
+            f"binding {host!r} without an API token disables authentication; "
+            "set AV_EDGE_API_TOKEN / --api-token, or pass --allow-dev-auth for "
+            "the documented M1 development mode"
+        )
+
+
 def _run_serve(args: argparse.Namespace) -> int:
     logging.basicConfig(
         level=logging.INFO,
@@ -245,6 +270,7 @@ def _run_serve(args: argparse.Namespace) -> int:
 
         db_path = args.db or (args.output / "edge.sqlite3")
         api_token = args.api_token or os.environ.get("AV_EDGE_API_TOKEN")
+        _validate_serve_bind(args.host, api_token, args.allow_dev_auth)
         settings = ServerSettings(
             output_root=args.output,
             db_path=db_path,

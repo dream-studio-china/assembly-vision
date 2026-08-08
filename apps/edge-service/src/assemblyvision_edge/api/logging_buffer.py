@@ -3,9 +3,22 @@
 from __future__ import annotations
 
 import logging
+import re
 import threading
 from collections import deque
 from datetime import UTC, datetime
+
+# Absolute POSIX paths (/a/b/c) and Windows drive paths (C:\a\b) are scrubbed
+# from viewer-served messages so filesystem layout is never exposed through
+# the log endpoint (AUDIT-001 4.5, contract 05 section 6).
+_ABS_POSIX_PATH = re.compile(r"(?<![A-Za-z0-9_./-])/(?:[A-Za-z0-9_.-]+/)+[A-Za-z0-9_.-]+")
+_ABS_WINDOWS_PATH = re.compile(r"(?<![A-Za-z0-9_./-])[A-Za-z]:\\(?:[^\\\s\"']+)+")
+_PATH_PLACEHOLDER = "<path>"
+
+
+def _scrub_paths(message: str) -> str:
+    message = _ABS_WINDOWS_PATH.sub(_PATH_PLACEHOLDER, message)
+    return _ABS_POSIX_PATH.sub(_PATH_PLACEHOLDER, message)
 
 
 class LogEvent:
@@ -15,7 +28,7 @@ class LogEvent:
         self.logged_at: str = datetime.fromtimestamp(record.created, tz=UTC).isoformat()
         self.level: str = record.levelname
         self.component: str = record.name
-        self.message: str = record.getMessage()
+        self.message: str = _scrub_paths(record.getMessage())
         self.trace_id: str | None = getattr(record, "trace_id", None)
 
 

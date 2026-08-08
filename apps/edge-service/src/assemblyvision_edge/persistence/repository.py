@@ -42,6 +42,10 @@ class RepositoryError(AssemblyVisionError):
     """Raised for database-level failures."""
 
 
+class InvalidCursorError(RepositoryError):
+    """Raised when a cursor is malformed or bound to a different filter set."""
+
+
 @dataclass(frozen=True)
 class InspectionSummary:
     """Dashboard summary derived from a stored inspection record."""
@@ -65,20 +69,38 @@ class Page[T]:
     next_cursor: str | None
 
 
-def _encode_cursor(completed_at: str, inspection_id: str) -> str:
-    raw = json.dumps({"completed_at": completed_at, "inspection_id": inspection_id}, sort_keys=True)
+def _filter_fingerprint(filters: dict[str, object]) -> str:
+    """Canonical SHA-256 of the active filter set.
+
+    A cursor is only valid for the exact filter set that produced it; reusing
+    a cursor across different filters would silently walk the wrong result
+    set (AUDIT-001 4.5).
+    """
+    canonical = json.dumps(filters, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _encode_cursor(completed_at: str, inspection_id: str, filters: str | None = None) -> str:
+    payload: dict[str, str] = {"completed_at": completed_at, "inspection_id": inspection_id}
+    if filters is not None:
+        payload["filters"] = filters
+    raw = json.dumps(payload, sort_keys=True)
     return base64.urlsafe_b64encode(raw.encode("utf-8")).decode("ascii")
 
 
-def _decode_cursor(cursor: str | None) -> tuple[str, str] | None:
+def _decode_cursor(cursor: str | None, filters: str | None = None) -> tuple[str, str] | None:
     if not cursor:
         return None
     try:
         raw = base64.urlsafe_b64decode(cursor.encode("ascii"))
         payload = json.loads(raw)
-        return str(payload["completed_at"]), str(payload["inspection_id"])
+        completed_at = str(payload["completed_at"])
+        inspection_id = str(payload["inspection_id"])
     except (ValueError, KeyError, json.JSONDecodeError) as exc:
-        raise RepositoryError("invalid cursor") from exc
+        raise InvalidCursorError("invalid cursor") from exc
+    if filters is not None and payload.get("filters") != filters:
+        raise InvalidCursorError("cursor does not match the current filters")
+    return completed_at, inspection_id
 
 
 def _json_loads(raw: str | None) -> Any:
@@ -459,7 +481,17 @@ class EdgeRepository:
         if to_iso:
             clauses.append("completed_at <= :to_iso")
             params["to_iso"] = to_iso
-        keys = _decode_cursor(cursor)
+        filter_fingerprint = _filter_fingerprint(
+            {
+                "business_result": business_result,
+                "internal_decision": internal_decision,
+                "barcode": barcode,
+                "product": product,
+                "from_iso": from_iso,
+                "to_iso": to_iso,
+            }
+        )
+        keys = _decode_cursor(cursor, filter_fingerprint)
         if keys is not None:
             clauses.append(
                 "(completed_at < :cursor_at OR (completed_at = :cursor_at AND inspection_id < :cursor_id))"
@@ -484,7 +516,9 @@ class EdgeRepository:
         next_cursor = None
         if has_more and rows:
             last = rows[-1]
-            next_cursor = _encode_cursor(str(last["completed_at"]), str(last["inspection_id"]))
+            next_cursor = _encode_cursor(
+                str(last["completed_at"]), str(last["inspection_id"]), filter_fingerprint
+            )
         return Page(items=items, next_cursor=next_cursor)
 
     @staticmethod
@@ -684,35 +718,58 @@ class EdgeRepository:
         The in-process registry in ``config`` only protects one interpreter
         lifetime; this SQLite registry makes rule identity immutable across
         service restarts (PR-008 P2, design 14.5 rule_installations semantics).
+        Concurrent registrations of the same identity are resolved by
+        re-reading the stored hash: equal content succeeds, differing content
+        fails with :class:`RepositoryError` instead of leaking a raw
+        SQLAlchemy ``IntegrityError``.
         """
-        with self._engine.begin() as conn:
-            existing = conn.execute(
-                text(
-                    f"SELECT content_sha256 FROM {rule_identities.name} "
-                    "WHERE rule_id = :rule_id AND rule_version = :rule_version"
-                ),
-                {"rule_id": rule_id, "rule_version": rule_version},
-            ).scalar_one_or_none()
-            if existing is not None:
-                if existing != content_hash:
-                    raise RepositoryError(
-                        f"rule identity {rule_id} v{rule_version} was previously registered "
-                        "with different content; published rules are immutable"
-                    )
+        try:
+            with self._engine.begin() as conn:
+                existing = conn.execute(
+                    text(
+                        f"SELECT content_sha256 FROM {rule_identities.name} "
+                        "WHERE rule_id = :rule_id AND rule_version = :rule_version"
+                    ),
+                    {"rule_id": rule_id, "rule_version": rule_version},
+                ).scalar_one_or_none()
+                if existing is not None:
+                    if existing != content_hash:
+                        raise RepositoryError(
+                            f"rule identity {rule_id} v{rule_version} was previously registered "
+                            "with different content; published rules are immutable"
+                        )
+                    return
+                conn.execute(
+                    text(
+                        f"INSERT INTO {rule_identities.name} "
+                        "(rule_id, rule_version, content_sha256, registered_at) "
+                        "VALUES (:rule_id, :rule_version, :content_sha256, :registered_at)"
+                    ),
+                    {
+                        "rule_id": rule_id,
+                        "rule_version": rule_version,
+                        "content_sha256": content_hash,
+                        "registered_at": datetime.now(UTC).isoformat(),
+                    },
+                )
+        except IntegrityError as exc:
+            # Unique-race: another writer registered this identity between our
+            # SELECT and INSERT. The failed transaction is rolled back; re-read
+            # the stored hash in a fresh transaction.
+            with self._engine.begin() as conn:
+                stored = conn.execute(
+                    text(
+                        f"SELECT content_sha256 FROM {rule_identities.name} "
+                        "WHERE rule_id = :rule_id AND rule_version = :rule_version"
+                    ),
+                    {"rule_id": rule_id, "rule_version": rule_version},
+                ).scalar_one_or_none()
+            if stored == content_hash:
                 return
-            conn.execute(
-                text(
-                    f"INSERT INTO {rule_identities.name} "
-                    "(rule_id, rule_version, content_sha256, registered_at) "
-                    "VALUES (:rule_id, :rule_version, :content_sha256, :registered_at)"
-                ),
-                {
-                    "rule_id": rule_id,
-                    "rule_version": rule_version,
-                    "content_sha256": content_hash,
-                    "registered_at": datetime.now(UTC).isoformat(),
-                },
-            )
+            raise RepositoryError(
+                f"rule identity {rule_id} v{rule_version} was previously registered "
+                "with different content; published rules are immutable"
+            ) from exc
 
     def latest_business_result(self) -> str | None:
         with self._engine.connect() as conn:

@@ -1,12 +1,20 @@
-# PR-008 Review: FastAPI Local API, SQLite Index, Runtime Hardening, and 100% Test Coverage
+# PR-008 Review: FastAPI Local API, SQLite Index, Runtime Hardening, and Test Coverage
+
+> **Correction (AUDIT-001).** The "100% test coverage" claim in the PR
+> description was not reproduced. Measured edge Python statement coverage on
+> the merged result is approximately 99.5% (pytest-cov); the uncovered lines
+> are viewer-session/no-token branches, derived-image and statistics
+> fallbacks, the verify empty-work branch, and the unreachable IntegrityError
+> handler. Treat coverage numbers as dated measurement artifacts, not
+> guarantees, and record the exact command/output when making claims.
 
 ## Scope
 
 Code review of `dev` -> `main` PR #8 (`feat(edge): FastAPI local API, SQLite
-index, runtime hardening, and 100% test coverage`). The PR wires the edge
+index, runtime hardening, and test coverage`). The PR wires the edge
 dashboard to a real backend (`assemblyvision serve`, `/api/v1`), adds a SQLite
 index with Alembic migration and idempotent CLI-output reconciliation, applies
-PR-003 runtime hardening, and raises Python coverage to 100%.
+PR-003 runtime hardening, and expands Python coverage.
 
 This document records the findings, proposed solutions, and acceptance criteria
 for the items that must be fixed before merge and for the non-blocking follow-up
@@ -27,7 +35,9 @@ described or used as the authoritative production persistence/upload subsystem.
 All findings in this review have been fixed and validated on `dev`:
 
 - **F1-F14** (blocking) resolved. Each commit carried its regression tests; the
-  full suite passes and edge Python coverage is 100%.
+  full suite passes and edge Python coverage is measured and recorded with
+  pytest-cov (approximately 99.5% statement coverage on the merged result; see
+  the correction note above).
 - **C1-C4** (conditional production-persistence) addressed for M1: SQLite is
   documented as a rebuildable read projection with a rebuild-equivalence test,
   migration-head verification, duplicate-child rejection, and quarantine of

@@ -26,7 +26,7 @@ Future apps (e.g. a central API or worker) add a numbered section here.
 ```bash
 git clone https://github.com/dream-studio-china/assembly-vision.git
 cd assembly-vision
-git checkout dev          # `main` = released MVP; `dev` = in-progress work
+git checkout dev          # `dev` is the development branch, kept in sync with `main`
 uv sync                   # Python workspace (edge-service, packages)
 pnpm install              # TypeScript workspace (edge-web, packages)
 ```
@@ -103,8 +103,12 @@ uv run python scripts/adapt-xanylabeling.py <xal-export> <out> \
 ```
 
 This produces `dataset_product/`, `dataset_components/`, and
-`test-expected.json` (plus a file manifest), validating every label line and
-enforcing the two-stage annotation rules. Roboflow exports use
+`test-expected.json` (plus a file manifest). Image/label pairing is enforced:
+every image in every split must have a label file (an explicit empty label
+file for background negatives), image stems must be unique per split, and
+Roboflow's `valid` split is normalized to `val`. The published `data.yaml`
+files use dataset-relative `images/train` and `images/val` paths so they stay
+valid after the atomic publish. Roboflow exports use
 `scripts/adapt-roboflow-dataset.py`. See
 `docs/design/19-training-and-evaluation.md` §19.17 for the collection
 quantities and hard annotation rules, and
@@ -183,13 +187,14 @@ uv run assemblyvision serve \
   --host 127.0.0.1 --port 8000
 ```
 
-Endpoints follow design 15.3: `GET /api/v1/health/live`, `GET
+Endpoints: the design 15.3 read routes `GET /api/v1/health/live`, `GET
 /api/v1/inspections`, `GET /api/v1/inspections/{id}`, `GET
 /api/v1/inspections/{id}/media`, `GET /api/v1/media/{id}/content` (Range
 supported), `GET /api/v1/device/status`, `GET /api/v1/inspection/state`,
 `GET /api/v1/uploads`, `GET
-/api/v1/configuration/effective`, `GET /api/v1/logs`, and the derived
-`/api/v1/traceability/{sn}` and `/api/v1/statistics`.
+/api/v1/configuration/effective`, and `GET /api/v1/logs`, plus the M1 derived
+endpoints `GET /api/v1/traceability/{sn}` and `GET /api/v1/statistics` (not
+part of design 15.3).
 
 The M1 API is **read-only** (ADR-012): mutation controls such as
 `POST /api/v1/inspection/{pause,resume}`, camera reconnect, and upload retry
@@ -228,7 +233,7 @@ pnpm --filter edge-web dev        # http://localhost:5173
 | `/uploads` | Upload queue — read-only in M1 (manual retry is not exposed) |
 | `/health` | Disk/queue charts (ECharts) and device status |
 | `/inspections` | Full record history (internal records) |
-| `/configuration`, `/logs` | Read-only placeholders |
+| `/configuration`, `/logs` | Read-only views of the effective configuration and the bounded log buffer |
 
 The dashboard selects the mock or HTTP client explicitly via `VITE_API_MODE`
 (see 5.3). The operator workflow (current/confirm/continue/manual) always runs

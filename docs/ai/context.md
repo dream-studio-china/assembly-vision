@@ -18,27 +18,28 @@ and verifies that all required assembly components are present.
 - **Architecture**: edge-client + central-server. All production-critical image processing and
   final decisions execute on the edge industrial computer; the central server is never required
   for real-time inspection.
-- **Current repository state**: the static train-and-inspect MVP (ADR-011) is
-  merged to `main` (PR #3) along with the edge dashboard frontend (PR #6). The
-  Python uv workspace ships shared `domain` and `vision-core` packages, a
-  developer-only `av-train` training CLI, real two-stage Ultralytics YOLO
-  inspection (`assemblyvision inspect`) and held-out verification. The frontend
-  pnpm workspace includes the Vue 3 + TypeScript operator dashboard
-  (`apps/edge-web`), an Electron kiosk shell (`apps/edge-desktop`), a typed
-  `api-client` contract layer, and shared UI primitives. The M1 backend layer
-  (FastAPI + SQLite local index + `assemblyvision serve`) is complete on `dev`
-  (see section 8.3) with all PR-008 review findings resolved; PR #8
-  (dev -> main) is open. Read-only dashboard views display real CLI results
-  through the HTTP client, while the operator workflow actions remain on the
-  mock client.
+- **Current repository state**: the static train-and-inspect MVP (ADR-011),
+  the edge dashboard frontend, the M1 FastAPI + SQLite backend layer, the
+  review-driven hardening, and the real-data baseline tooling are all merged
+  to `main` (PRs #3, #6, #8, #9, #10, #11). The Python uv workspace ships
+  shared `domain` and `vision-core` packages, a developer-only `av-train`
+  training CLI, real two-stage Ultralytics YOLO inspection
+  (`assemblyvision inspect`) and held-out verification, plus dataset adapters
+  for Roboflow and X-AnyLabeling exports. The frontend pnpm workspace includes
+  the Vue 3 + TypeScript operator dashboard (`apps/edge-web`), an Electron
+  kiosk shell (`apps/edge-desktop`), a typed `api-client` contract layer, and
+  shared UI primitives. PR #11 (dev -> main) added the real-data baseline
+  tooling: the X-AnyLabeling dataset adapter, the single-product
+  data-acquisition guidance (design §19.17, runbook 11), and README/QUICKSTART
+  updates. Read-only dashboard views display real CLI results through the HTTP
+  client, while the operator workflow actions remain on the mock client.
 
 ## 2. Repository State
 
-- Remote: `https://github.com/dream-studio-china/assembly-vision`. The static
-  MVP and edge dashboard are merged to `main` (PR #3, #6). `dev` carries the
-  completed M1 backend milestone as open PR #8 with all review findings
-  resolved; the next milestone is the real-data baseline and the remaining
-  PR-003 items.
+- Remote: `https://github.com/dream-studio-china/assembly-vision`. All merged
+  to `main` (PRs #3, #6, #8, #9, #10, #11); no open PRs. `dev` is in sync with
+  `main`; the next milestone is the AUDIT-001 Phase 1 fixes and collecting
+  real customer data.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -61,7 +62,9 @@ assembly-vision/
 │   ├── e2e-demo.sh                  # full train->prepare->train->inspect->verify smoke test
 │   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
 │   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -> two-stage layout
-│   └── tests/                       # tests for the Roboflow adapter
+│   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -> two-stage layout
+│   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
+│   └── tests/                       # tests for the dataset adapters
 ├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
 ├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
 ├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
@@ -88,9 +91,9 @@ assembly-vision/
     ├── contributing.md     # Contributor-facing repository rules and precedence
     ├── overrides/main.html # Theme override placeholder
     ├── ai/context.md       # THIS file
-    ├── reviews/            # Code-review follow-up findings (PR-003-review.md, PR-008-review.md)
+    ├── reviews/            # Reviews: PR-003, PR-008, AUDIT-001 system audit
     ├── contracts/          # 11 mandatory engineering contracts + index
-    ├── runbooks/           # 10 operational recovery runbooks + index
+    ├── runbooks/           # 11 operational recovery runbooks + index
     ├── design/             # 28 design documents + appendices + decisions/
     │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
     │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
@@ -143,7 +146,8 @@ assembly-vision/
 - [docs/contracts/](../contracts/README.md): 11 enforceable architecture, safety, API, quality,
   operations, security, change-control, and acceptance contracts.
 - [docs/runbooks/](../runbooks/README.md): executable recovery procedures for all contract-required
-  operational scenarios, including model improvement (runbook 10).
+  operational scenarios, including model improvement (runbook 10) and data
+  collection and annotation (runbook 11).
 
 ## 6. Bilingual MkDocs (English + Chinese)
 
@@ -206,6 +210,24 @@ assembly-vision/
   and requires an independently annotated full-product class (the union of component boxes is
   rejected). The source `test` split becomes the held-out verification set only; it is never
   copied into training or validation, and split overlap is checked by SHA-256.
+  `scripts/adapt-xanylabeling.py` does the same for X-AnyLabeling YOLO exports
+  (classes.txt/data.yaml names; images-first or split-first layouts).
+- Real-data tooling: the collection and annotation guidance lives in
+  `docs/design/19-training-and-evaluation.md` §19.17 (single-product quantities,
+  hard annotation rules) and `docs/runbooks/11-data-collection-and-annotation.md`
+  (operational procedure). A local test drive downloaded the CC0 smdComponents
+  set and the CC BY 4.0 PCBs-detection set under `data/test-training/`
+  (gitignored) and trained a board-level missing-part detector (val mAP50 ~0.94;
+  60-image held-out NG recall 0.848, all misses on multi-missing boards) - a
+  demonstration, not an accuracy claim.
+- A read-only system audit (recorded in
+  `docs/reviews/AUDIT-001-system-audit.md`) ran 12 parallel sub-agent audits
+  plus dynamic stress tests: no HIGH runtime vulnerability and no secrets;
+  the HTTP read path handled 200 concurrent requests with zero errors. Four
+  HIGH data-integrity/doc findings (adapter missing-label fabrication, stale
+  staging paths in published data.yaml, av-train relative-path
+  runs/detect-nesting, stale PR state) and three reproduced concurrency and
+  robustness defects were recorded for the next milestone.
 - Model improvement is a developer-side loop (docs/runbooks/10-model-improvement.md):
   collect/correct data -> retrain -> verify no regression -> bump pipeline config and the rule's
   `compatible_component_model_versions` together (`av-train --rule` prints the suggested bump).
@@ -236,7 +258,8 @@ fixed; remaining P1/P2 items tracked in `docs/reviews/PR-003-review.md`):
   `min_area_pixels` must be a positive integer, and unknown keys are rejected in
   every section.
 - Training data: malformed or out-of-range labels, zero-sized and out-of-frame
-  boxes are fatal; missing label files warn; empty label files are valid
+  boxes are fatal; missing label files fail validation unless the recorded
+  `--allow-missing-labels` legacy opt-in is used; empty label files are valid
   negatives; component preparation keeps negative ROI crops; and published
   model versions refuse to be silently overwritten with different bytes.
 - Quality gates: `ruff check .`, `ruff format --check .`, `mypy .`, and
@@ -269,8 +292,8 @@ pnpm workspace with the existing Python uv workspace, then merged to `main`:
 - **Electron desktop** (`apps/edge-desktop`): hardened defaults (context
   isolation, sandbox, no node integration), kiosk mode, and production builds
   are loaded from the built edge-web output.
-- **Tests and CI**: 56 Vitest unit tests across api-client/ui/edge-web/desktop
-  (28 + 13 + 12 + 3), 12 Playwright e2e, a `web` CI job
+- **Tests and CI**: 63 Vitest unit tests across api-client/ui/edge-web/desktop
+  (30 + 13 + 17 + 3), 12 Playwright e2e, a `web` CI job
   (build/lint/test/e2e), and `make check` now runs both Python and TypeScript
   gates.
 - **Documentation**: QUICKSTART restructured per-app with extensible numbered
@@ -337,21 +360,32 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   tolerance at the boundary.
 - **Packaging**: `py.typed` markers added to `domain` and `vision-core` so MyPy
   strict passes repo-wide.
-- **Test hardening**: edge Python coverage is at 99.6% (pytest-cov; the only
-  uncovered branches are the unreachable IntegrityError handler in the
-  repository and two derived-image slot fallbacks); the full suite is
-  `399 passed`, TypeScript tests are `30 passed` (api-client) and `17 passed`
-  (edge-web), and Playwright e2e is `12 passed` including a token-authenticated
+- **Test hardening**: edge Python statement coverage is ~99.5% (pytest-cov;
+  uncovered lines are viewer-session/no-token branches, derived-image and
+  statistics fallbacks, the verify empty-work branch, and the unreachable
+  IntegrityError handler); the full suite is `405 passed`, TypeScript tests are
+  `30 passed` (api-client), `13 passed` (ui), `17 passed` (edge-web), `3 passed`
+  (desktop), and Playwright e2e is `12 passed` including a token-authenticated
   served dashboard that asserts real reconciled data and purged-media
   rendering.
 
 ## 9. Open Items / Next Steps
 
-- The FastAPI + SQLite backend layer (`assemblyvision serve`, section 8.3) now
-  serves read-only dashboard views from the local index; the **upload queue
-  scheduler** (real `upload_tasks` rows, retry backoff, idempotency) and the
-  **WebSocket runtime channel** are the next backend gaps. The dashboard read
-  views switch to real data via `VITE_API_MODE=http`.
+- The FastAPI + SQLite backend layer (`assemblyvision serve`, section 8.3) is
+  merged; the **upload queue scheduler** (real `upload_tasks` rows, retry
+  backoff, idempotency) and the **WebSocket runtime channel** are the next
+  backend gaps. Read-only dashboard views already route through the HTTP
+  client (`VITE_API_MODE=http`).
+- AUDIT-001 (`docs/reviews/AUDIT-001-system-audit.md`) Phase 1 fixes pending:
+  adapter missing-label enforcement, `valid` alias, and stem-collision
+  detection (H1); relative `data.yaml` paths after the atomic rename in both
+  adapters and `prepare_components` (H2); absolute `project_dir` in `av-train`
+  (H3); reconcile and rule-registry error handling (M1/M2/M3); rule-engine
+  non-finite/evidence-completeness guards; manifest runtime/URI/class-map
+  checks. Phase 2: documentation alignment (design 14 M1 boundary, appendices
+  reason codes, coverage/test-count claims). Phase 3: decide the
+  multi-edge-per-host "shared" model before the upload scheduler, WebSocket,
+  camera/barcode, and temporal aggregation work.
 - PR-003 follow-up items are all resolved (see `docs/reviews/PR-003-review.md`):
   model-manifest publication now compares full decision-critical content
   (task, class order, input size, artifact, provenance), the Roboflow adapter
@@ -374,10 +408,9 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
     registry that `serve` uses (`<output>/edge.sqlite3`), so a published
     `(rule_id, rule_version)` stays immutable across CLI invocations and
     service restarts.
-- Roadmap scope remaining after the M1 layer (section 8.3, PR #8): upload
-  queue scheduler, WebSocket channel, camera/barcode adapters, temporal
-  aggregation, Docker packaging, and authoritative SQLite persistence/outbox.
-  None block PR #8; the PR-008 review findings (F1-F14, C1-C4) are resolved.
+- Roadmap scope remaining after the merged M1 layer: upload queue scheduler,
+  WebSocket channel, camera/barcode adapters, temporal aggregation, Docker
+  packaging, and authoritative SQLite persistence/outbox.
 - Real customer data is still required for the one-month baseline: collect and
   annotate with X-AnyLabeling per
   `docs/design/19-training-and-evaluation.md` §19.17 and

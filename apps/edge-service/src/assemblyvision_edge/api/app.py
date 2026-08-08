@@ -8,14 +8,14 @@ the design 15.3 API routers, and serves the built frontend as static assets.
 from __future__ import annotations
 
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 
 from assemblyvision_edge import __version__
 from assemblyvision_edge.api.logging_buffer import LogBuffer
@@ -50,6 +50,21 @@ _PROBLEM = {
     "errors": [],
 }
 
+# Least-privilege content security policy for the locally served dashboard
+# (AUDIT-001 4.5). Element Plus and ECharts use inline style attributes, so
+# 'unsafe-inline' is required for styles; media is rendered from blob URLs.
+_CSP = (
+    "default-src 'self'; "
+    "script-src 'self'; "
+    "style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' blob: data:; "
+    "font-src 'self' data:; "
+    "connect-src 'self' ws: wss:; "
+    "object-src 'none'; "
+    "base-uri 'self'; "
+    "frame-ancestors 'self'"
+)
+
 
 def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     runtime = EdgeRuntime(settings)
@@ -80,6 +95,7 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     )
     app.state.settings = settings
     app.state.viewer_sessions = {}
+    app.state.auth_failures = {}
 
     # The Vite dev server calls the API cross-origin during development; the
     # served dashboard is same-origin and needs no CORS. Allow only anchored
@@ -99,6 +115,16 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
 
     install_problem_handlers(app)
     _install_exception_handler(app)
+
+    @app.middleware("http")
+    async def _security_headers(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        response = await call_next(request)
+        response.headers.setdefault("Content-Security-Policy", _CSP)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Referrer-Policy", "same-origin")
+        return response
 
     from fastapi import Depends
 
@@ -156,7 +182,7 @@ def _install_static_routes(app: FastAPI, static_dir: Path | None) -> None:
     async def spa(full_path: str) -> FileResponse:
         # API routes never fall back to the SPA; unknown API paths must produce
         # a normal API 404 instead of returning the dashboard HTML (P2).
-        if full_path.startswith("api/"):
+        if full_path == "api" or full_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="Not Found")
         candidate = (root / full_path).resolve()
         if candidate.is_file() and candidate.is_relative_to(root):

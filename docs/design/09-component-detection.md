@@ -66,6 +66,12 @@ components:
 
 Per-component settings are versioned with the rule/product configuration. Product windows pin both configuration and model version. Threshold changes require audit records and regression evaluation.
 
+The M1 static pipeline implements `observation_threshold` per component in the
+pipeline configuration; `high_confidence`, `medium_confidence`,
+`expected_count`, `min_box_area_ratio`, and `allowed_zone` live in the
+**rule** schema (design 11) and are evaluated by the rule engine, not the
+pipeline configuration shown above (AUDIT-001).
+
 ## 9.6 Evidence Semantics
 
 - A qualifying detection is positive frame evidence for only its mapped component.

@@ -70,6 +70,11 @@ roi:
 
 Thresholds are starting configuration only. They require model-version-specific validation and configuration versioning. Runtime code must reject thresholds outside centrally governed safe ranges.
 
+The M1 static pipeline accepts `model_version`, `confidence_threshold`, and
+`iou_threshold` for the product detector; `allowed_classes`,
+`max_inspectable_products`, and the product-level `min_box_area_ratio` shown
+above are deferred to the windowed production pipeline (AUDIT-001).
+
 ## 8.7 Failure Semantics
 
 | Condition | Result |

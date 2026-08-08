@@ -64,6 +64,8 @@ jobs:
 
       - name: Build packages and app
         run: pnpm -r build
+        env:
+          VITE_API_MODE: http
 
       - name: TypeScript contract drift check
         run: |

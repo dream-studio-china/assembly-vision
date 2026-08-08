@@ -457,3 +457,67 @@ def test_engine_wraps_evaluation_failure() -> None:
             make_context(components={"component_a": make_evidence("component_a", "PRESENT")}),
             rule,
         )
+
+
+@pytest.mark.parametrize(
+    ("geometry", "expected_reason"),
+    [
+        ([float("nan")], "COMPONENT_SPATIAL_INVALID:component_a"),
+        ([float("inf")], "COMPONENT_SPATIAL_INVALID:component_a"),
+        ([-float("inf")], "COMPONENT_SPATIAL_INVALID:component_a"),
+    ],
+)
+def test_non_finite_area_ratio_cannot_produce_ok(
+    geometry: list[float], expected_reason: str
+) -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {"expected_count": 1, "min_box_area_ratio": 0.1},
+            "component_b": {"expected_count": 1},
+        }
+    )
+    evidence = make_evidence(
+        "component_a", "PRESENT", box_area_ratios=geometry, box_centers=[(0.5, 0.5)]
+    )
+    decision = ENGINE.evaluate(make_context(components={"component_a": evidence}), rule)
+    assert decision.business_result is BusinessResult.NG
+    assert expected_reason in decision.reason_codes
+
+
+@pytest.mark.parametrize("center", [(float("nan"), 0.5), (0.5, float("nan")), (float("inf"), 0.5)])
+def test_non_finite_center_cannot_produce_ok(center: tuple[float, float]) -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {"expected_count": 1, "allowed_zone": (0.0, 0.0, 1.0, 1.0)},
+            "component_b": {"expected_count": 1},
+        }
+    )
+    evidence = make_evidence("component_a", "PRESENT", box_area_ratios=[0.2], box_centers=[center])
+    decision = ENGINE.evaluate(make_context(components={"component_a": evidence}), rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "COMPONENT_SPATIAL_INVALID:component_a" in decision.reason_codes
+
+
+@pytest.mark.parametrize(
+    ("overrides", "reason"),
+    [
+        ({"usable_frame_count": 0}, "COMPONENT_UNVERIFIABLE:component_a"),
+        ({"best_confidence": None}, "COMPONENT_UNVERIFIABLE:component_a"),
+        ({"supporting_frame_ids": []}, "COMPONENT_UNVERIFIABLE:component_a"),
+    ],
+)
+def test_incomplete_present_evidence_cannot_produce_ok(
+    overrides: dict[str, object], reason: str
+) -> None:
+    rule = make_rule()
+    evidence = make_evidence("component_a", "PRESENT")
+    evidence = evidence.model_copy(update=overrides)
+    context = make_context(
+        components={
+            "component_a": evidence,
+            "component_b": make_evidence("component_b", "PRESENT"),
+        }
+    )
+    decision = ENGINE.evaluate(context, rule)
+    assert decision.business_result is BusinessResult.NG
+    assert reason in decision.reason_codes

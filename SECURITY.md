@@ -10,8 +10,8 @@ authoritative.
 
 | Version | Status |
 |---|---|
-| `main` | Static train-and-inspect MVP (ADR-011) plus the read-only M1 edge API (PR #8). Actively developed and supported. |
-| `dev` | Development branch; in-progress work, not a release. |
+| `main` | Static train-and-inspect MVP (ADR-011), the read-only M1 edge API (PR #8), the real-data baseline tooling and dataset adapters (PRs #9-#11). Actively developed and supported. |
+| `dev` | Development branch, kept in sync with `main`; not a release on its own. |
 
 ## Reporting a Vulnerability
 
