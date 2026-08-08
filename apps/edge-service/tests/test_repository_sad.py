@@ -467,3 +467,37 @@ def test_register_rule_identity_race_different_content(tmp_path: Path) -> None:
         repo.register_rule_identity("race-rule", 1, "a" * 64)
     finally:
         repo.close()
+
+
+def test_concurrent_first_open_migration_is_serialized(tmp_path: Path) -> None:
+    import subprocess
+    import sys
+
+    repo_root = Path(__file__).resolve().parents[3]
+    db = tmp_path / "edge.sqlite3"
+    code = (
+        "import sys\n"
+        "from assemblyvision_edge.persistence.repository import EdgeRepository\n"
+        "repo = EdgeRepository.open(sys.argv[1])\n"
+        "repo.register_rule_identity('mp-rule', 1, 'x' * 64)\n"
+        "repo.close()\n"
+    )
+    processes = [
+        # The command is a fixed constant with no untrusted input; only the
+        # temporary database path is substituted (S603).
+        subprocess.Popen([sys.executable, "-c", code, str(db)], cwd=repo_root),  # noqa: S603
+        subprocess.Popen([sys.executable, "-c", code, str(db)], cwd=repo_root),  # noqa: S603
+    ]
+    for process in processes:
+        assert process.wait(timeout=120) == 0
+
+    # The migrated database is consistent: same content accepted, different
+    # content rejected, and the rule identity registered by both processes
+    # resolves to exactly one row.
+    repo = EdgeRepository.open(db)
+    try:
+        repo.register_rule_identity("mp-rule", 1, "x" * 64)
+        with pytest.raises(RepositoryError, match="different content"):
+            repo.register_rule_identity("mp-rule", 1, "y" * 64)
+    finally:
+        repo.close()
