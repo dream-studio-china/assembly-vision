@@ -62,7 +62,11 @@ export class HttpApiClient implements ApiClient {
     fetchImpl: typeof fetch = globalThis.fetch,
     getToken: () => string | undefined = () => undefined,
   ) {
-    this.#baseUrl = baseUrl.replace(/\/+$/, "");
+    // Strip trailing slashes linearly; a regex like /\/+$/ on uncontrolled
+    // input is flagged as ReDoS-prone by CodeQL.
+    let trimmed = baseUrl;
+    while (trimmed.endsWith("/")) trimmed = trimmed.slice(0, -1);
+    this.#baseUrl = trimmed;
     this.#fetchImpl = fetchImpl.bind(globalThis);
     this.#getToken = getToken;
   }
