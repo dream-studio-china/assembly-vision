@@ -395,3 +395,20 @@ export type StatisticsSummary = {
   ng_count: number;
   pass_rate: number;
 };
+
+/** One analyzed frame's decision summary (web dev test harness, ADR-014). */
+export type VideoFrameInspectResult = {
+  index: number;
+  business_result: string;
+  internal_decision: string;
+  reason_codes: string[];
+};
+
+/** Per-frame summary for an uploaded test video (ADR-014). */
+export type VideoInspectResult = {
+  instance_id: string;
+  analyzed_frames: number;
+  ok_count: number;
+  ng_count: number;
+  frames: VideoFrameInspectResult[];
+};

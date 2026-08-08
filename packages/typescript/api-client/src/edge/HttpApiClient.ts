@@ -20,6 +20,7 @@ import type {
   StatisticsSummary,
   TraceabilityView,
   UploadTask,
+  VideoInspectResult,
 } from "./types";
 
 function toQuery(filter: InspectionFilter | undefined): string {
@@ -209,6 +210,36 @@ export class HttpApiClient implements ApiClient {
     if (filter?.line) params.set("line", filter.line);
     const qs = params.toString();
     return this.#request(`/statistics${qs ? `?${qs}` : ""}`, undefined, validators.statisticsSummary);
+  }
+
+  devInspectFrame(
+    instanceId: string,
+    image: Blob,
+    opts?: { persist?: boolean },
+  ): Promise<InspectionRecord> {
+    const params = new URLSearchParams();
+    params.set("instance_id", instanceId);
+    if (opts?.persist === false) params.set("persist", "false");
+    return this.#request(
+      `/dev/inspect-frame?${params.toString()}`,
+      { method: "POST", body: image, headers: { "Content-Type": "image/jpeg" } },
+      validators.inspectionRecord,
+    );
+  }
+
+  devInspectVideo(
+    instanceId: string,
+    video: Blob,
+    opts?: { step?: number },
+  ): Promise<VideoInspectResult> {
+    const params = new URLSearchParams();
+    params.set("instance_id", instanceId);
+    if (opts?.step !== undefined) params.set("step", String(opts.step));
+    return this.#request(
+      `/dev/inspect-video?${params.toString()}`,
+      { method: "POST", body: video, headers: { "Content-Type": "video/mp4" } },
+      validators.videoInspectResult,
+    );
   }
 }
 

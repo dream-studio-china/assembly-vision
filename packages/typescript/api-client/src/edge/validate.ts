@@ -197,8 +197,7 @@ function validateInspectionRecord(body: unknown): void {
   hasNumber(record, "processing_ms", "$");
   for (const key of ["barcode_result", "product_resolution", "frame_quality_summary", "decision"]) {
     hasRecord(record, key, "$");
-  }
-  // Nested fields the dashboard actually reads are validated so a drifted
+  }  // Nested fields the dashboard actually reads are validated so a drifted
   // payload cannot render a fabricated decision or evidence state.
   const barcode = hasRecord(record, "barcode_result", "$");
   hasOneOf(barcode, "status", ["READ", "NOT_READ", "CONFLICT", "NOT_REQUIRED"], "$.barcode_result");
@@ -218,6 +217,23 @@ function validateInspectionRecord(body: unknown): void {
   });
   const media = hasArray(record, "media", "$");
   media.forEach((item, index) => validateMediaMetadata(item, `$.media[${index}]`));
+}
+
+function validateVideoInspectResult(body: unknown): void {
+  const result = expectRecord(body);
+  hasString(result, "instance_id", "$");
+  hasNumber(result, "analyzed_frames", "$");
+  hasNumber(result, "ok_count", "$");
+  hasNumber(result, "ng_count", "$");
+  const frames = hasArray(result, "frames", "$");
+  frames.forEach((item, index) => {
+    const path = `$.frames[${index}]`;
+    const frame = expectRecord(item, path);
+    hasNumber(frame, "index", path);
+    hasString(frame, "business_result", path);
+    hasString(frame, "internal_decision", path);
+    hasArray(frame, "reason_codes", path);
+  });
 }
 
 function validateInspectionImages(body: unknown): void {
@@ -256,6 +272,7 @@ export const validators: Record<string, Validator> = {
   runtimeState: validateRuntimeState,
   inspectionPage: (body) => pageOf(body, validateInspectionSummary),
   inspectionRecord: validateInspectionRecord,
+  videoInspectResult: validateVideoInspectResult,
   mediaList: (body) => {
     if (!Array.isArray(body)) fail("$", "array", body);
     body.forEach((item) => validateMediaMetadata(item));

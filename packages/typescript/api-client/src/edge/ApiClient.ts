@@ -15,6 +15,7 @@ import type {
   StatisticsSummary,
   TraceabilityView,
   UploadTask,
+  VideoInspectResult,
 } from "./types";
 
 /**
@@ -54,4 +55,17 @@ export interface ApiClient {
   getInspectionImages(inspectionId: string): Promise<InspectionImages>;
   getTraceability(sn: string): Promise<TraceabilityView>;
   getStatistics(filter?: StatisticsFilter): Promise<StatisticsSummary>;
+
+  // Gated web dev test harness (ADR-014); the server 404s unless started
+  // with --enable-web-test.
+  devInspectFrame(
+    instanceId: string,
+    image: Blob,
+    opts?: { persist?: boolean },
+  ): Promise<InspectionRecord>;
+  devInspectVideo(
+    instanceId: string,
+    video: Blob,
+    opts?: { step?: number },
+  ): Promise<VideoInspectResult>;
 }
