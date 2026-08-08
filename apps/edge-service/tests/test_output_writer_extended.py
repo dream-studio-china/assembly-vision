@@ -367,3 +367,49 @@ def test_media_path_is_safe_oserror_is_unsafe(
 
     monkeypatch.setattr(Path, "resolve", boom)
     assert not media_path_is_safe(root, "inspection-1", "inspection-1/key.jpg")
+
+
+def test_media_path_is_safe_rejects_nul_byte(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.reconcile import media_path_is_safe
+
+    root = tmp_path / "out"
+    root.mkdir()
+    # An embedded NUL byte makes Path.resolve raise ValueError, not OSError.
+    assert not media_path_is_safe(root, "inspection-1", "inspection-1/key\x00frame.jpg")
+
+
+def test_reconcile_skips_nul_byte_media_without_aborting(tmp_path: Path) -> None:
+    from assemblyvision_domain.models import MediaLifecycle, MediaMetadata
+    from assemblyvision_edge.persistence.reconcile import reconcile_output_root
+
+    root = tmp_path / "out"
+    root.mkdir()
+
+    valid = _make_record(uuid4())
+    valid_dir = root / str(valid.inspection_id)
+    valid_dir.mkdir()
+    valid_dir.joinpath("inspection.json").write_text(valid.model_dump_json(indent=2))
+
+    malformed = _make_record(uuid4())
+    malformed.media = [
+        MediaMetadata(
+            media_id=uuid4(),
+            kind="KEY_FRAME",
+            lifecycle=MediaLifecycle.AVAILABLE,
+            relative_path=f"{malformed.inspection_id}/key\x00frame.jpg",
+            mime_type="image/jpeg",
+            size_bytes=1,
+            checksum_sha256="0" * 64,
+        )
+    ]
+    malformed_dir = root / str(malformed.inspection_id)
+    malformed_dir.mkdir()
+    malformed_dir.joinpath("inspection.json").write_text(malformed.model_dump_json(indent=2))
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        assert reconcile_output_root(repo, root) == 1
+        assert repo.get_inspection(str(valid.inspection_id)) is not None
+        assert repo.get_inspection(str(malformed.inspection_id)) is None
+    finally:
+        repo.close()

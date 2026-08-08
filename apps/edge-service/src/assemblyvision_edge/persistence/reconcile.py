@@ -39,7 +39,11 @@ def media_path_is_safe(output_root: Path, inspection_id: str, relative_path: str
         return bundle_root.is_relative_to(root) and (root / path).resolve().is_relative_to(
             bundle_root
         )
-    except OSError:
+    except (OSError, ValueError):
+        # OSError: resolution failed (for example a broken symlink).
+        # ValueError: the path contains an embedded NUL byte, which the host
+        # filesystem cannot address. Both mean the media path cannot be
+        # served; treat it as unsafe so a malformed bundle is skipped whole.
         return False
 
 
