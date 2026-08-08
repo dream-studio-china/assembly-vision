@@ -8,6 +8,7 @@ the database, and FastAPI (docs/design/11-rule-engine.md and contract 01).
 from __future__ import annotations
 
 import json
+import math
 from datetime import UTC, datetime
 from typing import Annotated, Literal
 from uuid import UUID, uuid5
@@ -111,6 +112,10 @@ def _spatial_violation(
         if i >= len(evidence.box_area_ratios) or i >= len(evidence.box_centers):
             return True
         ratio = evidence.box_area_ratios[i]
+        # NaN makes both comparisons below false, which would let a crafted
+        # PRESENT component evade a declared spatial constraint; reject it.
+        if not math.isfinite(ratio):
+            return True
         if requirement.min_box_area_ratio is not None and ratio < requirement.min_box_area_ratio:
             return True
         if requirement.max_box_area_ratio is not None and ratio > requirement.max_box_area_ratio:
@@ -118,6 +123,8 @@ def _spatial_violation(
         if requirement.allowed_zone is not None:
             zx1, zy1, zx2, zy2 = requirement.allowed_zone
             cx, cy = evidence.box_centers[i]
+            if not (math.isfinite(cx) and math.isfinite(cy)):
+                return True
             if not (zx1 <= cx <= zx2 and zy1 <= cy <= zy2):
                 return True
     return False
@@ -157,6 +164,17 @@ class RuleEngine:
                         missing.append(key)
                     else:
                         low_confidence.append(key)
+                    continue
+                # Incomplete PRESENT evidence can never release an OK (contract
+                # 03.5: no OK from no usable frames or incomplete result data).
+                if (
+                    evidence.usable_frame_count < 1
+                    or evidence.best_confidence is None
+                    or not math.isfinite(evidence.best_confidence)
+                    or not evidence.supporting_frame_ids
+                ):
+                    reasons.append(rc.component_reason(rc.COMPONENT_UNVERIFIABLE, key))
+                    missing.append(key)
                     continue
                 if evidence.detection_count != requirement.expected_count:
                     reasons.append(rc.component_reason(rc.COMPONENT_COUNT_INVALID, key))
