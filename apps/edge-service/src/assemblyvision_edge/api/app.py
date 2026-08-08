@@ -21,6 +21,7 @@ from assemblyvision_edge import __version__
 from assemblyvision_edge.api.logging_buffer import LogBuffer
 from assemblyvision_edge.api.problems import install_problem_handlers
 from assemblyvision_edge.api.routers import (
+    auth,
     camera,
     configuration,
     derived,
@@ -78,6 +79,7 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = settings
+    app.state.viewer_sessions = {}
 
     # The Vite dev server calls the API cross-origin during development; the
     # served dashboard is same-origin and needs no CORS. Allow only anchored
@@ -111,6 +113,7 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         derived.router,
     ):
         app.include_router(router, prefix="/api/v1", dependencies=[Depends(require_viewer)])
+    app.include_router(auth.router, prefix="/api/v1")
     # Health keeps /health/live deliberately unauthenticated (design 15.3.1);
     # /health/ready requires the viewer credential.
     app.include_router(health.router, prefix="/api/v1")

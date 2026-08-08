@@ -40,6 +40,24 @@ def test_read_routes_require_token_when_configured(token_settings: ServerSetting
             assert allowed.status_code in (200, 503), path
 
 
+def test_viewer_session_authenticates_api_and_media(token_settings: ServerSettings) -> None:
+    app = create_app(token_settings)
+    with TestClient(app) as client:
+        denied = client.post("/api/v1/auth/session")
+        assert denied.status_code == 401
+
+        created = client.post(
+            "/api/v1/auth/session",
+            headers={"Authorization": "Bearer test-edge-token"},
+        )
+        assert created.status_code == 204
+        assert "av_edge_viewer_session" in created.headers["set-cookie"]
+        assert "HttpOnly" in created.headers["set-cookie"]
+        assert "SameSite=strict" in created.headers["set-cookie"]
+        assert client.get("/api/v1/inspections").status_code == 200
+        assert client.get("/api/v1/media/missing/content").status_code == 404
+
+
 def test_removed_mutations_are_404_even_with_token(token_settings: ServerSettings) -> None:
     app = create_app(token_settings)
     with TestClient(app) as client:

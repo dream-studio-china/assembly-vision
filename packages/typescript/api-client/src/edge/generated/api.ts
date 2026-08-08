@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/v1/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Session
+         * @description Exchange a configured bearer token for an HttpOnly same-origin session.
+         */
+        post: operations["create_session_api_v1_auth_session_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/camera/state": {
         parameters: {
             query?: never;
@@ -986,6 +1006,24 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    create_session_api_v1_auth_session_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     camera_state_api_v1_camera_state_get: {
         parameters: {
             query?: never;
