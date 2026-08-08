@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
+import yaml
 from assemblyvision_domain.errors import ConfigError
-from assemblyvision_training.artifact import place_weights, write_manifest
+from assemblyvision_training.artifact import place_weights, write_manifest, write_run_metadata
 
 
 def test_place_weights_installs(tmp_path: Path) -> None:
@@ -189,3 +191,86 @@ def test_write_manifest_identical_republication_is_idempotent(tmp_path: Path) ->
     # The existing manifest is returned without being rewritten.
     assert second.model_version_id == first.model_version_id
     assert manifest_path.read_text(encoding="utf-8") == before
+
+
+def _make_dataset(tmp_path: Path) -> Path:
+    d = tmp_path / "dataset"
+    (d / "images" / "train").mkdir(parents=True)
+    (d / "images" / "val").mkdir(parents=True)
+    (d / "data.yaml").write_text(yaml.dump({"nc": 1, "names": ["product"]}), encoding="utf-8")
+    return d
+
+
+def test_write_run_metadata_records_reproducibility(tmp_path: Path) -> None:
+    weights = tmp_path / "model.pt"
+    weights.write_bytes(b"model")
+    dataset = _make_dataset(tmp_path)
+    run_path = tmp_path / "model.run.json"
+    write_run_metadata(
+        task="PRODUCT_DETECTION",
+        semantic_version="1.0.0",
+        dataset_dir=dataset,
+        weights_path=weights,
+        epochs=50,
+        imgsz=640,
+        seed=7,
+        model_size="n",
+        device="cpu",
+        no_augment=True,
+        output_path=run_path,
+    )
+    data = json.loads(run_path.read_text(encoding="utf-8"))
+    for key in (
+        "task",
+        "semantic_version",
+        "dataset_dir",
+        "dataset_data_yaml_sha256",
+        "epochs",
+        "imgsz",
+        "seed",
+        "model_size",
+        "augmentations_disabled",
+        "device",
+        "weights_sha256",
+        "weights_size_bytes",
+        "python_version",
+        "ultralytics_version",
+        "created_at",
+    ):
+        assert key in data, f"missing run metadata key {key}"
+    assert data["epochs"] == 50
+    assert data["seed"] == 7
+    assert data["imgsz"] == 640
+    assert data["augmentations_disabled"] is True
+    assert len(data["dataset_data_yaml_sha256"]) == 64
+    assert len(data["weights_sha256"]) == 64
+
+
+def test_write_run_metadata_is_idempotent_and_refuses_different_content(
+    tmp_path: Path,
+) -> None:
+    weights = tmp_path / "model.pt"
+    weights.write_bytes(b"model")
+    dataset = _make_dataset(tmp_path)
+    run_path = tmp_path / "model.run.json"
+
+    def write() -> None:
+        write_run_metadata(
+            task="PRODUCT_DETECTION",
+            semantic_version="1.0.0",
+            dataset_dir=dataset,
+            weights_path=weights,
+            epochs=50,
+            imgsz=640,
+            seed=7,
+            model_size="n",
+            device="cpu",
+            no_augment=True,
+            output_path=run_path,
+        )
+
+    write()
+    write()  # identical rerun is a no-op
+    weights.write_bytes(b"model-v2")
+    with pytest.raises(ConfigError, match="refusing to overwrite existing run metadata"):
+        write()

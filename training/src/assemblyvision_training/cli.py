@@ -12,7 +12,7 @@ from assemblyvision_domain.errors import ConfigError
 from assemblyvision_vision.roi.roi_engine import ROIConfig
 
 from assemblyvision_training import __version__
-from assemblyvision_training.artifact import place_weights, write_manifest
+from assemblyvision_training.artifact import place_weights, write_manifest, write_run_metadata
 from assemblyvision_training.dataset import (
     DatasetInfo,
     record_missing_labels_optin,
@@ -240,6 +240,19 @@ def _run_product(args: argparse.Namespace) -> int:
         imgsz=args.imgsz,
         output_path=manifest_path,
     )
+    write_run_metadata(
+        task="PRODUCT_DETECTION",
+        semantic_version=semver,
+        dataset_dir=args.dataset,
+        weights_path=weights_path,
+        epochs=args.epochs,
+        imgsz=args.imgsz,
+        seed=args.seed,
+        model_size=args.model_size,
+        device=args.device,
+        no_augment=args.no_augment,
+        output_path=manifest_path.with_name(f"{manifest_path.stem}.run.json"),
+    )
     log.info("manifest written: %s (version_id=%s)", manifest_path, manifest.model_version_id)
     _print_improvement_hints("PRODUCT_DETECTION", weights_path, args.rule)
     return 0
@@ -326,6 +339,19 @@ def _run_component(args: argparse.Namespace) -> int:
         weights_path=weights_path,
         imgsz=args.imgsz,
         output_path=manifest_path,
+    )
+    write_run_metadata(
+        task="COMPONENT_DETECTION",
+        semantic_version=semver,
+        dataset_dir=args.dataset,
+        weights_path=weights_path,
+        epochs=args.epochs,
+        imgsz=args.imgsz,
+        seed=args.seed,
+        model_size=args.model_size,
+        device=args.device,
+        no_augment=args.no_augment,
+        output_path=manifest_path.with_name(f"{manifest_path.stem}.run.json"),
     )
     log.info("manifest written: %s (version_id=%s)", manifest_path, manifest.model_version_id)
     _print_improvement_hints("COMPONENT_DETECTION", weights_path, args.rule)

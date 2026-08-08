@@ -110,10 +110,15 @@ def _monkeypatch_training(
 
         return SimpleNamespace(model_version_id="test-version")
 
+    def fake_run_metadata(**kwargs: object) -> object:
+        calls["run_metadata_task"] = kwargs["task"]
+        return None
+
     monkeypatch.setattr(cli, "_validate_and_record", fake_validate)
     monkeypatch.setattr(cli, "train_detector", _fake_train_factory(tmp_path, calls))
     monkeypatch.setattr(cli, "place_weights", fake_place)
     monkeypatch.setattr(cli, "write_manifest", fake_manifest)
+    monkeypatch.setattr(cli, "write_run_metadata", fake_run_metadata)
 
 
 def test_product_resolves_project_dir_for_relative_out_weights(
@@ -139,6 +144,7 @@ def test_product_resolves_project_dir_for_relative_out_weights(
     assert calls["project_dir"] == Path("models/weights").resolve() / ".train-runs"
     assert calls["run_name"] == "product"
     assert calls["imgsz"] == 640
+    assert calls["run_metadata_task"] == "PRODUCT_DETECTION"
 
 
 def test_component_resolves_project_dir_for_relative_out_weights(
@@ -164,3 +170,4 @@ def test_component_resolves_project_dir_for_relative_out_weights(
     assert calls["project_dir"] == Path("models/weights").resolve() / ".train-runs"
     assert calls["run_name"] == "component"
     assert calls["imgsz"] == 320
+    assert calls["run_metadata_task"] == "COMPONENT_DETECTION"
