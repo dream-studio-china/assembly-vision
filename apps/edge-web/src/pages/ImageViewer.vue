@@ -2,10 +2,14 @@
 // Inspection image management: original, detection result, and annotated
 // images for one inspection. Images arrive from the API as URLs; the mock
 // returns local SVG frames.
+//
+// In real mode (F14) missing or purged evidence renders an explicit
+// unavailable state, never a fabricated frame.
 
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { inspectionService } from "../services/inspectionService";
+import { isMockMode } from "../services/client";
 import { mockCameraFrame } from "../mock/images";
 import type { InspectionImages } from "@assemblyvision/api-client";
 
@@ -13,7 +17,16 @@ const route = useRoute();
 const images = ref<InspectionImages | null>(null);
 const error = ref<string | null>(null);
 
-const fallback = mockCameraFrame(800, 600);
+const isMock = isMockMode();
+
+function slotUrl(value: string | undefined): string | null {
+  if (value) return value;
+  return isMock ? mockCameraFrame(800, 600) : null;
+}
+
+const originalUrl = computed(() => slotUrl(images.value?.original));
+const detectionUrl = computed(() => slotUrl(images.value?.detection));
+const annotatedUrl = computed(() => slotUrl(images.value?.annotated));
 
 onMounted(async () => {
   try {
@@ -32,13 +45,31 @@ onMounted(async () => {
 
     <el-tabs>
       <el-tab-pane label="Original">
-        <img :src="images?.original ?? fallback" alt="original frame" class="images__img" />
+        <img
+          v-if="originalUrl"
+          :src="originalUrl"
+          alt="original frame"
+          class="images__img"
+        />
+        <el-empty v-else description="No original image available" />
       </el-tab-pane>
       <el-tab-pane label="Detection result">
-        <img :src="images?.detection ?? fallback" alt="detection result" class="images__img" />
+        <img
+          v-if="detectionUrl"
+          :src="detectionUrl"
+          alt="detection result"
+          class="images__img"
+        />
+        <el-empty v-else description="No detection image available" />
       </el-tab-pane>
       <el-tab-pane label="Annotations">
-        <img :src="images?.annotated ?? fallback" alt="annotated frame" class="images__img" />
+        <img
+          v-if="annotatedUrl"
+          :src="annotatedUrl"
+          alt="annotated frame"
+          class="images__img"
+        />
+        <el-empty v-else description="No annotated image available" />
       </el-tab-pane>
     </el-tabs>
   </div>

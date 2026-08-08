@@ -204,6 +204,34 @@ def test_derived_images_empty_when_no_media(tmp_path: Path) -> None:
         assert body["annotated"] == ""
 
 
+def test_derived_images_partial_media_leaves_missing_slots_empty(tmp_path: Path) -> None:
+    root = tmp_path / "out"
+    root.mkdir()
+    record = _pipeline_record()
+    key_id = uuid4()
+    record.media = [
+        MediaMetadata(
+            media_id=key_id,
+            kind="KEY_FRAME",
+            lifecycle=MediaLifecycle.AVAILABLE,
+            relative_path="key.jpg",
+            mime_type="image/jpeg",
+            size_bytes=1,
+            checksum_sha256="0" * 64,
+        ),
+    ]
+    directory = root / str(record.inspection_id)
+    directory.mkdir()
+    directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+    settings = ServerSettings(output_root=root, db_path=tmp_path / "edge.sqlite3")
+    app = create_app(settings)
+    with TestClient(app) as c:
+        body = c.get(f"/api/v1/inspections/{record.inspection_id}/images").json()
+        assert f"/media/{key_id}/content" in body["original"]
+        assert body["detection"] == ""
+        assert body["annotated"] == ""
+
+
 def test_derived_images_maps_kinds(tmp_path: Path) -> None:
     root = tmp_path / "out"
     root.mkdir()
@@ -248,8 +276,8 @@ def test_derived_images_maps_kinds(tmp_path: Path) -> None:
     with TestClient(app) as c:
         body = c.get(f"/api/v1/inspections/{record.inspection_id}/images").json()
         assert f"/media/{key_id}/content" in body["original"]
-        assert f"/media/{annotated_id}/content" in body["detection"]
-        assert f"/media/{roi_id}/content" in body["annotated"]
+        assert f"/media/{roi_id}/content" in body["detection"]
+        assert f"/media/{annotated_id}/content" in body["annotated"]
 
 
 def test_readiness_reports_config_invalid_for_mismatched_rule(tmp_path: Path) -> None:

@@ -88,10 +88,9 @@ def inspection_images(
     by_kind: dict[str, str] = {
         m.kind: f"{request.base_url}api/v1/media/{m.media_id}/content" for m in media
     }
-    annotated = by_kind.get("ANNOTATED_FRAME")
     return InspectionImages(
         inspection_id=inspection_id,
         original=by_kind.get("KEY_FRAME", ""),
-        detection=annotated or by_kind.get("PRODUCT_ROI", ""),
-        annotated=by_kind.get("PRODUCT_ROI", annotated or ""),
+        detection=by_kind.get("PRODUCT_ROI", ""),
+        annotated=by_kind.get("ANNOTATED_FRAME", ""),
     )

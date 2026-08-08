@@ -137,6 +137,13 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
     await expect(page.getByText("No camera feed in read-only mode")).toBeVisible();
     await expect(page.getByText("No detection image available")).toBeVisible();
     await expect(page.locator('img[alt="camera preview"]')).toHaveCount(0);
+
+    await page.goto(`http://127.0.0.1:${port}/images/${inspectionId}`);
+    await expect(page.getByText("No original image available")).toBeVisible();
+    await page.getByRole("tab", { name: "Detection result" }).click();
+    await expect(page.getByText("No detection image available")).toBeVisible();
+    await page.getByRole("tab", { name: "Annotations" }).click();
+    await expect(page.getByText("No annotated image available")).toBeVisible();
   } finally {
     proc.kill("SIGTERM");
   }
