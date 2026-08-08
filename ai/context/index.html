@@ -1618,6 +1618,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-012: Edge API M1 Viewer Auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2392,6 +2420,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Collection and Annotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2431,7 +2487,7 @@
   <span class="md-ellipsis">
     
   
-    Research
+    Reviews
   
 
     
@@ -2444,6 +2500,151 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reviews
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/AUDIT-001-system-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Audit (AUDIT-001)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-003-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-003 Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-008-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-008 Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2566,10 +2767,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -2587,8 +2788,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3035,27 +3236,28 @@ and verifies that all required assembly components are present.</p>
 <li><strong>Architecture</strong>: edge-client + central-server. All production-critical image processing and
   final decisions execute on the edge industrial computer; the central server is never required
   for real-time inspection.</li>
-<li><strong>Current repository state</strong>: the static train-and-inspect MVP (ADR-011) is
-  merged to <code>main</code> (PR #3) along with the edge dashboard frontend (PR #6). The
-  Python uv workspace ships shared <code>domain</code> and <code>vision-core</code> packages, a
-  developer-only <code>av-train</code> training CLI, real two-stage Ultralytics YOLO
-  inspection (<code>assemblyvision inspect</code>) and held-out verification. The frontend
-  pnpm workspace includes the Vue 3 + TypeScript operator dashboard
-  (<code>apps/edge-web</code>), an Electron kiosk shell (<code>apps/edge-desktop</code>), a typed
-  <code>api-client</code> contract layer, and shared UI primitives. The M1 backend layer
-  (FastAPI + SQLite local index + <code>assemblyvision serve</code>) is complete on <code>dev</code>
-  (see section 8.3) with all PR-008 review findings resolved; PR #8
-  (dev -&gt; main) is open. Read-only dashboard views display real CLI results
-  through the HTTP client, while the operator workflow actions remain on the
-  mock client.</li>
+<li><strong>Current repository state</strong>: the static train-and-inspect MVP (ADR-011),
+  the edge dashboard frontend, the M1 FastAPI + SQLite backend layer, the
+  review-driven hardening, and the real-data baseline tooling are all merged
+  to <code>main</code> (PRs #3, #6, #8, #9, #10, #11). The Python uv workspace ships
+  shared <code>domain</code> and <code>vision-core</code> packages, a developer-only <code>av-train</code>
+  training CLI, real two-stage Ultralytics YOLO inspection
+  (<code>assemblyvision inspect</code>) and held-out verification, plus dataset adapters
+  for Roboflow and X-AnyLabeling exports. The frontend pnpm workspace includes
+  the Vue 3 + TypeScript operator dashboard (<code>apps/edge-web</code>), an Electron
+  kiosk shell (<code>apps/edge-desktop</code>), a typed <code>api-client</code> contract layer, and
+  shared UI primitives. PR #11 (dev -&gt; main) added the real-data baseline
+  tooling: the X-AnyLabeling dataset adapter, the single-product
+  data-acquisition guidance (design §19.17, runbook 11), and README/QUICKSTART
+  updates. Read-only dashboard views display real CLI results through the HTTP
+  client, while the operator workflow actions remain on the mock client.</li>
 </ul>
 <h2 id="2-repository-state">2. Repository State<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>. The static
-  MVP and edge dashboard are merged to <code>main</code> (PR #3, #6). <code>dev</code> carries the
-  completed M1 backend milestone as open PR #8 with all review findings
-  resolved; the next milestone is the real-data baseline and the remaining
-  PR-003 items.</li>
+<li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>. All merged
+  to <code>main</code> (PRs #3, #6, #8, #9, #10, #11); no open PRs. <code>dev</code> is in sync with
+  <code>main</code>; the next milestone is the AUDIT-001 Phase 1 fixes and collecting
+  real customer data.</li>
 <li><code>.obsidian/</code>, <code>.idea/</code>, and <code>.vscode/</code> are ignored local editor state.</li>
 <li>Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts <code>docs-zh/</code>, <code>site/</code>, <code>mkdocs-en.yml</code>, <code>mkdocs-zh.yml</code> are gitignored.</li>
@@ -3076,44 +3278,46 @@ and verifies that all required assembly components are present.</p>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── e2e-demo.sh                  # full train-&gt;prepare-&gt;train-&gt;inspect-&gt;verify smoke test
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -&gt; two-stage layout
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   └── tests/                       # tests for the Roboflow adapter
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├── packages/
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   ├── python/
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   └── typescript/
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── package.json                      # Root pnpm workspace (TypeScript)
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>└── docs/
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    ├── index.md            # MkDocs home page
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>    ├── README.md           # Documentation index
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    ├── overrides/main.html # Theme override placeholder
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── ai/context.md       # THIS file
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── reviews/            # Code-review follow-up findings (PR-003-review.md, PR-008-review.md)
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── runbooks/           # 10 operational recovery runbooks + index
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── design/             # 28 design documents + appendices + decisions/
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    │   └── decisions/      # ADR-001 ... ADR-012 + README
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    └── research/           # 3 external-research reports
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        ├── 01-industrial-inspection-success-rates.md
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        ├── 02-yolo-capabilities-and-success-rates.md
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        └── 03-imaging-workflow-and-training-cost.md
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -&gt; two-stage layout
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   └── tests/                       # tests for the dataset adapters
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── packages/
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│   ├── python/
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   └── typescript/
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── package.json                      # Root pnpm workspace (TypeScript)
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>└── docs/
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    ├── index.md            # MkDocs home page
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    ├── README.md           # Documentation index
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── overrides/main.html # Theme override placeholder
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── ai/context.md       # THIS file
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── reviews/            # Reviews: PR-003, PR-008, AUDIT-001 system audit
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    ├── runbooks/           # 11 operational recovery runbooks + index
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    ├── design/             # 28 design documents + appendices + decisions/
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    │   └── decisions/      # ADR-001 ... ADR-012 + README
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    └── research/           # 3 external-research reports
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        ├── 01-industrial-inspection-success-rates.md
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        ├── 02-yolo-capabilities-and-success-rates.md
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        └── 03-imaging-workflow-and-training-cost.md
 </code></pre></div>
 <h2 id="4-architecture-summary-from-docsdesign">4. Architecture Summary (from docs/design/)<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3157,7 +3361,8 @@ and verifies that all required assembly components are present.</p>
 <li><a href="../../contracts/">docs/contracts/</a>: 11 enforceable architecture, safety, API, quality,
   operations, security, change-control, and acceptance contracts.</li>
 <li><a href="../../runbooks/">docs/runbooks/</a>: executable recovery procedures for all contract-required
-  operational scenarios, including model improvement (runbook 10).</li>
+  operational scenarios, including model improvement (runbook 10) and data
+  collection and annotation (runbook 11).</li>
 </ul>
 <h2 id="6-bilingual-mkdocs-english-chinese">6. Bilingual MkDocs (English + Chinese)<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3219,7 +3424,25 @@ and verifies that all required assembly components are present.</p>
   converts a Roboflow YOLOv8 export into the two-stage layout, drops generic <code>missing*</code> classes,
   and requires an independently annotated full-product class (the union of component boxes is
   rejected). The source <code>test</code> split becomes the held-out verification set only; it is never
-  copied into training or validation, and split overlap is checked by SHA-256.</li>
+  copied into training or validation, and split overlap is checked by SHA-256.
+  <code>scripts/adapt-xanylabeling.py</code> does the same for X-AnyLabeling YOLO exports
+  (classes.txt/data.yaml names; images-first or split-first layouts).</li>
+<li>Real-data tooling: the collection and annotation guidance lives in
+  <code>docs/design/19-training-and-evaluation.md</code> §19.17 (single-product quantities,
+  hard annotation rules) and <code>docs/runbooks/11-data-collection-and-annotation.md</code>
+  (operational procedure). A local test drive downloaded the CC0 smdComponents
+  set and the CC BY 4.0 PCBs-detection set under <code>data/test-training/</code>
+  (gitignored) and trained a board-level missing-part detector (val mAP50 ~0.94;
+  60-image held-out NG recall 0.848, all misses on multi-missing boards) - a
+  demonstration, not an accuracy claim.</li>
+<li>A read-only system audit (recorded in
+  <code>docs/reviews/AUDIT-001-system-audit.md</code>) ran 12 parallel sub-agent audits
+  plus dynamic stress tests: no HIGH runtime vulnerability and no secrets;
+  the HTTP read path handled 200 concurrent requests with zero errors. Four
+  HIGH data-integrity/doc findings (adapter missing-label fabrication, stale
+  staging paths in published data.yaml, av-train relative-path
+  runs/detect-nesting, stale PR state) and three reproduced concurrency and
+  robustness defects were recorded for the next milestone.</li>
 <li>Model improvement is a developer-side loop (docs/runbooks/10-model-improvement.md):
   collect/correct data -&gt; retrain -&gt; verify no regression -&gt; bump pipeline config and the rule's
   <code>compatible_component_model_versions</code> together (<code>av-train --rule</code> prints the suggested bump).</li>
@@ -3249,7 +3472,8 @@ fixed; remaining P1/P2 items tracked in <code>docs/reviews/PR-003-review.md</cod
   <code>min_area_pixels</code> must be a positive integer, and unknown keys are rejected in
   every section.</li>
 <li>Training data: malformed or out-of-range labels, zero-sized and out-of-frame
-  boxes are fatal; missing label files warn; empty label files are valid
+  boxes are fatal; missing label files fail validation unless the recorded
+  <code>--allow-missing-labels</code> legacy opt-in is used; empty label files are valid
   negatives; component preparation keeps negative ROI crops; and published
   model versions refuse to be silently overwritten with different bytes.</li>
 <li>Quality gates: <code>ruff check .</code>, <code>ruff format --check .</code>, <code>mypy .</code>, and
@@ -3281,8 +3505,8 @@ pnpm workspace with the existing Python uv workspace, then merged to <code>main<
 <li><strong>Electron desktop</strong> (<code>apps/edge-desktop</code>): hardened defaults (context
   isolation, sandbox, no node integration), kiosk mode, and production builds
   are loaded from the built edge-web output.</li>
-<li><strong>Tests and CI</strong>: 56 Vitest unit tests across api-client/ui/edge-web/desktop
-  (28 + 13 + 12 + 3), 12 Playwright e2e, a <code>web</code> CI job
+<li><strong>Tests and CI</strong>: 63 Vitest unit tests across api-client/ui/edge-web/desktop
+  (30 + 13 + 17 + 3), 12 Playwright e2e, a <code>web</code> CI job
   (build/lint/test/e2e), and <code>make check</code> now runs both Python and TypeScript
   gates.</li>
 <li><strong>Documentation</strong>: QUICKSTART restructured per-app with extensible numbered
@@ -3348,21 +3572,32 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   tolerance at the boundary.</li>
 <li><strong>Packaging</strong>: <code>py.typed</code> markers added to <code>domain</code> and <code>vision-core</code> so MyPy
   strict passes repo-wide.</li>
-<li><strong>Test hardening</strong>: edge Python coverage is at 99.6% (pytest-cov; the only
-  uncovered branches are the unreachable IntegrityError handler in the
-  repository and two derived-image slot fallbacks); the full suite is
-  <code>399 passed</code>, TypeScript tests are <code>30 passed</code> (api-client) and <code>17 passed</code>
-  (edge-web), and Playwright e2e is <code>12 passed</code> including a token-authenticated
+<li><strong>Test hardening</strong>: edge Python statement coverage is ~99.5% (pytest-cov;
+  uncovered lines are viewer-session/no-token branches, derived-image and
+  statistics fallbacks, the verify empty-work branch, and the unreachable
+  IntegrityError handler); the full suite is <code>405 passed</code>, TypeScript tests are
+  <code>30 passed</code> (api-client), <code>13 passed</code> (ui), <code>17 passed</code> (edge-web), <code>3 passed</code>
+  (desktop), and Playwright e2e is <code>12 passed</code> including a token-authenticated
   served dashboard that asserts real reconciled data and purged-media
   rendering.</li>
 </ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The FastAPI + SQLite backend layer (<code>assemblyvision serve</code>, section 8.3) now
-  serves read-only dashboard views from the local index; the <strong>upload queue
-  scheduler</strong> (real <code>upload_tasks</code> rows, retry backoff, idempotency) and the
-  <strong>WebSocket runtime channel</strong> are the next backend gaps. The dashboard read
-  views switch to real data via <code>VITE_API_MODE=http</code>.</li>
+<li>The FastAPI + SQLite backend layer (<code>assemblyvision serve</code>, section 8.3) is
+  merged; the <strong>upload queue scheduler</strong> (real <code>upload_tasks</code> rows, retry
+  backoff, idempotency) and the <strong>WebSocket runtime channel</strong> are the next
+  backend gaps. Read-only dashboard views already route through the HTTP
+  client (<code>VITE_API_MODE=http</code>).</li>
+<li>AUDIT-001 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) Phase 1 fixes pending:
+  adapter missing-label enforcement, <code>valid</code> alias, and stem-collision
+  detection (H1); relative <code>data.yaml</code> paths after the atomic rename in both
+  adapters and <code>prepare_components</code> (H2); absolute <code>project_dir</code> in <code>av-train</code>
+  (H3); reconcile and rule-registry error handling (M1/M2/M3); rule-engine
+  non-finite/evidence-completeness guards; manifest runtime/URI/class-map
+  checks. Phase 2: documentation alignment (design 14 M1 boundary, appendices
+  reason codes, coverage/test-count claims). Phase 3: decide the
+  multi-edge-per-host "shared" model before the upload scheduler, WebSocket,
+  camera/barcode, and temporal aggregation work.</li>
 <li>PR-003 follow-up items are all resolved (see <code>docs/reviews/PR-003-review.md</code>):
   model-manifest publication now compares full decision-critical content
   (task, class order, input size, artifact, provenance), the Roboflow adapter
@@ -3385,10 +3620,9 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
     registry that <code>serve</code> uses (<code>&lt;output&gt;/edge.sqlite3</code>), so a published
     <code>(rule_id, rule_version)</code> stays immutable across CLI invocations and
     service restarts.</li>
-<li>Roadmap scope remaining after the M1 layer (section 8.3, PR #8): upload
-  queue scheduler, WebSocket channel, camera/barcode adapters, temporal
-  aggregation, Docker packaging, and authoritative SQLite persistence/outbox.
-  None block PR #8; the PR-008 review findings (F1-F14, C1-C4) are resolved.</li>
+<li>Roadmap scope remaining after the merged M1 layer: upload queue scheduler,
+  WebSocket channel, camera/barcode adapters, temporal aggregation, Docker
+  packaging, and authoritative SQLite persistence/outbox.</li>
 <li>Real customer data is still required for the one-month baseline: collect and
   annotate with X-AnyLabeling per
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 and

@@ -1838,6 +1838,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-012: Edge API M1 Viewer Auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2612,6 +2640,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Collection and Annotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2651,7 +2707,7 @@
   <span class="md-ellipsis">
     
   
-    Research
+    Reviews
   
 
     
@@ -2664,6 +2720,151 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reviews
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/AUDIT-001-system-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Audit (AUDIT-001)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-003-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-003 Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-008-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-008 Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2786,10 +2987,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -2807,8 +3008,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3101,6 +3302,17 @@
 <h1 id="14-data-model-and-database">14. Data Model and Database<a class="headerlink" href="#14-data-model-and-database" title="Permanent link">&para;</a></h1>
 <h2 id="141-purpose-and-scope">14.1 Purpose and Scope<a class="headerlink" href="#141-purpose-and-scope" title="Permanent link">&para;</a></h2>
 <p>This document defines the canonical AssemblyVision domain models and the separate edge and central persistence schemas. The edge database is an operational store optimized for uninterrupted inspection and upload recovery. The central PostgreSQL database is the system of record for fleet configuration, synchronized inspection history, review, and audit.</p>
+<blockquote>
+<p><strong>M1 implementation boundary.</strong> In the M1 read-only milestone (ADR-012) the
+edge SQLite database is a <strong>rebuildable read projection</strong> of the CLI
+<code>inspection.json</code> bundles, not the authoritative operational store described
+below. It can be deleted and rebuilt from the same bundles, it is not the
+completion/outbox store, and its schema does not yet carry the unique
+constraints, product-configuration column, or upload leases required by the
+production design. The authoritative store is built together with the upload
+scheduler; until then this design describes the target, not the current
+implementation (AUDIT-001).</p>
+</blockquote>
 <p>Related documents: <a href="../15-rest-api-and-events/">REST API and Events</a>, <a href="../16-edge-dashboard/">Edge Dashboard</a>, <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a>, and <a href="../19-training-and-evaluation/">Training and Evaluation</a>.</p>
 <h2 id="142-data-conventions">14.2 Data Conventions<a class="headerlink" href="#142-data-conventions" title="Permanent link">&para;</a></h2>
 <table>

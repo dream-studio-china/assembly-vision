@@ -1838,6 +1838,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-012：Edge API M1 查看器身份验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2612,6 +2640,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据收集和注释
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2651,7 +2707,7 @@
   <span class="md-ellipsis">
     
   
-    调研
+    Reviews
   
 
     
@@ -2664,6 +2720,151 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reviews
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/AUDIT-001-system-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统审核 (AUDIT-001)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-003-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-003 评论
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-008-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-008 评论
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调研
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2786,10 +2987,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -2807,8 +3008,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3101,6 +3302,17 @@
 <h1 id="14-data-model-and-database">14. 数据模型和数据库<a class="headerlink" href="#14-data-model-and-database" title="Permanent link">&para;</a></h1>
 <h2 id="141-purpose-and-scope">14.1 目的和范围<a class="headerlink" href="#141-purpose-and-scope" title="Permanent link">&para;</a></h2>
 <p>本文档定义了规范的 AssemblyVision 域模型以及单独的边缘和中央持久性模式。边缘数据库是一个针对不间断检查和上传恢复进行优化的操作存储。中央 PostgreSQL 数据库是用于车队配置、同步检查历史记录、审查和审计的记录系统。</p>
+<blockquote>
+<p><strong>M1 实现边界。</strong> 在 M1 只读里程碑 (ADR-012) 中
+边缘 SQLite 数据库是 CLI 的 <strong>可重建读取投影</strong>
+<code>inspection.json</code>捆绑包，非权威运营商城描述
+下面。它可以从同一个包中删除和重建，它不是
+完成/发件箱存储，其模式尚未携带唯一的
+约束、产品配置列或上传所需的租约
+生产设计。权威商店与上传一起构建
+调度程序；在此之前，该设计描述的是目标，而不是当前
+实施（AUDIT-001）。</p>
+</blockquote>
 <p>相关文档：<a href="../15-rest-api-and-events/">REST API and Events</a>、<a href="../16-edge-dashboard/">Edge Dashboard</a>、<a href="../17-central-admin-dashboard/">Central Admin Dashboard</a>和<a href="../19-training-and-evaluation/">Training and Evaluation</a>。</p>
 <h2 id="142-data-conventions">14.2 数据约定<a class="headerlink" href="#142-data-conventions" title="Permanent link">&para;</a></h2>
 <table>
@@ -3580,7 +3792,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>local_component_evidence</code></td>
 <td><code>id</code> PK、<code>inspection_id</code> FK、组件代码、状态、置信度/计数字段、原因 JSON</td>
-<td><code>UNIQUE(inspection_id, component_code)</code>；最终每个组件的证据。</td>
+<td><code>UNIQUE(inspection_id, component_code)</code>;最终每个组件的证据。</td>
 </tr>
 <tr>
 <td><code>local_media_files</code></td>
@@ -3589,7 +3801,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 <tr>
 <td><code>upload_tasks</code></td>
-<td><code>id</code> PK、设备/检查/对象 ID、种类、有效负载哈希、校验和、幂等密钥、规范状态、尝试、租约所有者/到期、下次尝试、时间戳、错误</td>
+<td><code>id</code> PK、设备/检查/对象 ID、种类、有效负载哈希、校验和、幂等性密钥、规范状态、尝试、租约所有者/到期、下次尝试、时间戳、错误</td>
 <td><code>UNIQUE(device_id, idempotency_key)</code>；具有可恢复租约的持久发件箱。</td>
 </tr>
 <tr>
@@ -3706,7 +3918,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>upload_receipts</code></td>
 <td>UUID PK、设备FK、幂等密钥、请求哈希、资源类型/ID、状态、响应代码/时间</td>
-<td><code>UNIQUE(device_id, idempotency_key)</code>;哈希不匹配是一种冲突。</td>
+<td><code>UNIQUE(device_id, idempotency_key)</code>；哈希不匹配是一种冲突。</td>
 </tr>
 <tr>
 <td><code>audit_logs</code></td>
@@ -3715,7 +3927,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 </tbody>
 </table>
-<p>仅在测量的数量证明其合理性后，才对 <code>inspections</code>、<code>device_events</code> 和 <code>audit_logs</code> 使用每月范围分区。过早的分区会使外键和迁移变得复杂。</p>
+<p>仅当测量的数量证明其合理性时，才对 <code>inspections</code>、<code>device_events</code> 和 <code>audit_logs</code> 使用每月范围分区。过早的分区会使外键和迁移变得复杂。</p>
 <h2 id="147-entity-relationships">14.7 实体关系<a class="headerlink" href="#147-entity-relationships" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>erDiagram
     ORGANIZATION ||--o{ SITE :包含
@@ -3739,7 +3951,7 @@ OpenAPI 中的模型。最小注册表是：</p>
     DEVICE ||--o{ DEVICE_EVENT :发出
     DEVICE ||--o{ UPLOAD_RECEIPT :上传
     ORGANIZATION ||--o{ AUDIT_LOG :记录</code></pre>
-<p><code>INSPECTION</code>、<code>INSPECTION_COMPONENT</code> 的边缘等效项和媒体保留相同的 ID，允许集中摄取而无需身份转换。</p>
+<p><code>INSPECTION</code>、<code>INSPECTION_COMPONENT</code> 和媒体的边缘等效项保留相同的 ID，允许集中摄取而无需身份转换。</p>
 <h2 id="148-keys-indexes-and-query-paths">14.8 键、索引和查询路径<a class="headerlink" href="#148-keys-indexes-and-query-paths" title="Permanent link">&para;</a></h2>
 <ul>
 <li>主键是持久化之前生成的UUID。因此，边缘可以离线创建记录。</li>
@@ -3751,7 +3963,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>使用键集分页 <code>(completed_at, id) &lt; (:cursor_time, :cursor_id)</code> 来获取历史记录。偏移分页仅适用于小型配置列表。</li>
 </ul>
 <h2 id="149-media-metadata-and-integrity">14.9 媒体元数据和完整性<a class="headerlink" href="#149-media-metadata-and-integrity" title="Permanent link">&para;</a></h2>
-<p>数据库存储媒体元数据，而不是大图像/视频 blob。 Edge 写入临时路径，在支持的情况下 <code>fsync</code>，自动重命名，计算 SHA-256，然后提交元数据及其上传任务。集中上传使用暂存对象密钥； API 在标记媒体可用之前验证大小和校验和。在最终对象存在之前，数据库行不得声明 <code>AVAILABLE</code>。</p>
+<p>数据库存储媒体元数据，而不是大图像/视频 blob。 Edge 写入临时路径（在支持的情况下<code>fsync</code>），自动重命名、计算 SHA-256，然后提交元数据及其上传任务。集中上传使用暂存对象密钥； API 在标记媒体可用之前验证大小和校验和。在最终对象存在之前，数据库行不得声明 <code>AVAILABLE</code>。</p>
 <p>对象键是不透明的且具有租户范围，例如 <code>org/{organization_id}/device/{device_id}/2026/08/04/{media_id}.jpg</code>。 API 响应发出授权的短期 URL，而不是公开存储凭据。</p>
 <h2 id="1410-retention-and-safe-cleanup">14.10 保留和安全清理<a class="headerlink" href="#1410-retention-and-safe-cleanup" title="Permanent link">&para;</a></h2>
 <p>保留值是部署配置，而不是硬编码的默认值。清理工人应用此命令：</p>
@@ -3779,11 +3991,11 @@ OpenAPI 中的模型。最小注册表是：</p>
 <h2 id="1413-openapi-synchronization-strategy">14.13 OpenAPI同步策略<a class="headerlink" href="#1413-openapi-synchronization-strategy" title="Permanent link">&para;</a></h2>
 <ol>
 <li>共享Python域包中的Pydantic模型由FastAPI请求和响应声明直接引用。</li>
-<li>CI 启动/导入每个 API，并使用固定的 FastAPI/Pydantic 工具链发出确定性 <code>edge-openapi.json</code> 和 <code>central-openapi.json</code>。</li>
+<li>CI 启动/导入每个 API，并使用固定的 FastAPI/Pydantic 工具链发出确定性的 <code>edge-openapi.json</code> 和 <code>central-openapi.json</code>。</li>
 <li>CI 验证每个文档并检查提交/生成的工件是否存在偏差。</li>
 <li><code>openapi-typescript</code> 或 Orval 生成 TypeScript 模式和客户端到 <code>packages/typescript/api-client/generated</code> 中；生成的文件不需手动编辑。</li>
 <li>前端包装器添加了身份验证和错误映射等传输问题，而无需重新定义有效负载。</li>
-<li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。破坏性架构更改需要版本化端点或协调发布。</li>
+<li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。重大架构更改需要版本化端点或协调发布。</li>
 <li>在需要时在前端边界添加日期时间和 UUID 运行时验证；单独生成的 TypeScript 类型并不能验证 JSON。</li>
 </ol>
 <p>OpenAPI 涵盖按名称引用的 REST 快照和 WebSocket 事件负载模式。由于 OpenAPI 没有完全描述 WebSocket 通道，因此事件信封从相同的 Pydantic 类导出为 JSON 模式，并针对前端验证器进行测试。</p>

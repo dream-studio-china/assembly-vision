@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/reviews/PR-003-review/">
       
       
+        <link rel="prev" href="../AUDIT-001-system-audit/">
+      
+      
+        <link rel="next" href="../PR-008-review/">
       
       
         
@@ -27,7 +31,7 @@
     
     
       
-        <title>PR-003 后续审查 - AssemblyVision</title>
+        <title>PR-003 评论 - AssemblyVision</title>
       
     
     
@@ -114,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PR-003 后续审查
+              PR-003 评论
             
           </span>
         </div>
@@ -1616,6 +1620,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-012：Edge API M1 查看器身份验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2390,6 +2422,425 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据收集和注释
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reviews
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reviews
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AUDIT-001-system-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统审核 (AUDIT-001)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-003 评论
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-003 评论
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        范围
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resolution-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        解决状态
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p1-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 调查结果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P1 调查结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-manifest-immutability-is-incomplete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模型明显的不变性不完整
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-inference-does-not-apply-declared-model-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        运行时推理不应用声明的模型设置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-configuration-rule-and-manifest-sets-are-not-cross-validated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        组件配置、规则和清单集未进行交叉验证
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-does-not-validate-detection-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline 不验证检测来源
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roboflow-adapter-silently-discards-invalid-source-annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roboflow 适配器默默地丢弃无效的源注释
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#missing-labels-are-still-accepted-as-implicit-negatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        缺失的标签仍然被视为隐含的否定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#product-detector-training-drops-explicit-background-negatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        产品检测器培训消除了明确的背景底片
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expected-label-verification-still-accepts-unexpected-filename-labeled-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        预期标签验证仍然接受意外的文件名标签文件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verification-identifies-samples-only-by-basename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        验证仅通过基本名称识别样本
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p2-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 调查结果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P2 调查结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inspection-evidence-output-is-not-bundle-atomic-or-power-loss-durable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        检查证据输出不具有束原子或断电持久性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-version-identity-is-not-bound-to-rule-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        规则版本标识不与规则内容绑定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataset-adaptation-and-preparation-can-retain-stale-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据集调整和准备可以保留陈旧的输出
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-dataset-preparation-does-not-share-the-production-selection-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        组件数据集准备不共享生产选择策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PR-008-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-008 评论
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2419,10 +2870,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -2440,8 +2891,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2564,10 +3015,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -2585,8 +3036,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   

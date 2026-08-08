@@ -1618,6 +1618,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-012：Edge API M1 查看器身份验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2392,6 +2420,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据收集和注释
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2431,7 +2487,7 @@
   <span class="md-ellipsis">
     
   
-    调研
+    Reviews
   
 
     
@@ -2444,6 +2500,151 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reviews
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/AUDIT-001-system-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统审核 (AUDIT-001)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-003-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-003 评论
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-008-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-008 评论
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调研
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2566,10 +2767,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -2587,8 +2788,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3035,27 +3236,28 @@
 <li><strong>架构</strong>：边缘客户端+中央服务器。所有生产关键型图像处理和
   最终决策在边缘工业计算机上执行；永远不需要中央服务器
   用于实时检查。</li>
-<li><strong>当前存储库状态</strong>：静态训练和检查 MVP (ADR-011) 是
-  与边缘仪表板前端 (PR #6) 合并到 <code>main</code> (PR #3)。的
-  Python uv 工作区提供共享的 <code>domain</code> 和 <code>vision-core</code> 包，
-  仅限开发人员 <code>av-train</code> 训练 CLI，真正的两阶段 Ultralytics YOLO
-  检查（<code>assemblyvision inspect</code>）和保留验证。前端
-  pnpm 工作区包括 Vue 3 + TypeScript 操作员仪表板
-  (<code>apps/edge-web</code>)，一个 Electron kiosk shell (<code>apps/edge-desktop</code>)，一个类型化的
-  <code>api-client</code> 合约层和共享 UI 原语。 M1后端层
-  （FastAPI + SQLite 本地索引 + <code>assemblyvision serve</code>）在 <code>dev</code> 上完成
-  （参见第 8.3 节）所有 PR-008 审查结果均得到解决；公关＃8
-  (dev -&gt; main) 已打开。只读仪表板视图显示真实的 CLI 结果
-  通过 HTTP 客户端，而操作员工作流操作仍保留在
-  模拟客户端。</li>
+<li><strong>当前存储库状态</strong>：静态训练和检查 MVP (ADR-011)，
+  边缘仪表板前端、M1 FastAPI + SQLite 后端层、
+  审查驱动的强化，真实数据基线工具全部合并
+  到 <code>main</code> （PR #3、#6、#8、#9、#10、#11）。 Python uv 工作区发布
+  共享 <code>domain</code> 和 <code>vision-core</code> 包，仅限开发人员使用 <code>av-train</code>
+  训练CLI，真正的两阶段Ultralytics YOLO检查
+  (<code>assemblyvision inspect</code>) 和保留验证，以及数据集适配器
+  用于 Roboflow 和 X-AnyLabeling 导出。前端 pnpm 工作区包括
+  Vue 3 + TypeScript 操作员仪表板 (<code>apps/edge-web</code>)，一个 Electron
+  kiosk shell (<code>apps/edge-desktop</code>)，类型化的 <code>api-client</code> 合约层，以及
+  共享 UI 原语。 PR #11（dev -&gt; main）添加了真实数据基线
+  工具：X-AnyLabeling 数据集适配器、单一产品
+  数据采集指南（设计§19.17，运行手册 11）和自述文件/快速入门
+  更新。只读仪表板视图通过 HTTP 显示真实的 CLI 结果
+  客户端，而操作员工作流操作保留在模拟客户端上。</li>
 </ul>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
-<li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。静态的
-  MVP 和边缘仪表板合并到 <code>main</code> （PR #3、#6）。 <code>dev</code> 携带
-  作为开放 PR #8 完成了 M1 后端里程碑，并包含所有审核结果
-  已解决；下一个里程碑是实际数据基线和剩余的
-  PR-003 项目。</li>
+<li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。全部合并
+  到 <code>main</code> （PR #3、#6、#8、#9、#10、#11）；没有公开的 PR。 <code>dev</code> 与同步
+  <code>main</code>；下一个里程碑是 AUDIT-001 第一阶段修复和收集
+  真实的客户数据。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
   吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
@@ -3076,44 +3278,46 @@
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── e2e-demo.sh                  # full train-&gt;prepare-&gt;train-&gt;inspect-&gt;verify smoke test
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -&gt; two-stage layout
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   └── tests/                       # tests for the Roboflow adapter
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├── packages/
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   ├── python/
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   └── typescript/
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── package.json                      # Root pnpm workspace (TypeScript)
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>└── docs/
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    ├── index.md            # MkDocs home page
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>    ├── README.md           # Documentation index
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    ├── overrides/main.html # Theme override placeholder
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── ai/context.md       # THIS file
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── reviews/            # Code-review follow-up findings (PR-003-review.md, PR-008-review.md)
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── runbooks/           # 10 operational recovery runbooks + index
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── design/             # 28 design documents + appendices + decisions/
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    │   └── decisions/      # ADR-001 ... ADR-012 + README
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    └── research/           # 3 external-research reports
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        ├── 01-industrial-inspection-success-rates.md
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        ├── 02-yolo-capabilities-and-success-rates.md
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        └── 03-imaging-workflow-and-training-cost.md
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -&gt; two-stage layout
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   └── tests/                       # tests for the dataset adapters
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── packages/
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│   ├── python/
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   └── typescript/
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── package.json                      # Root pnpm workspace (TypeScript)
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>└── docs/
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    ├── index.md            # MkDocs home page
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    ├── README.md           # Documentation index
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── overrides/main.html # Theme override placeholder
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── ai/context.md       # THIS file
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── reviews/            # Reviews: PR-003, PR-008, AUDIT-001 system audit
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    ├── runbooks/           # 11 operational recovery runbooks + index
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    ├── design/             # 28 design documents + appendices + decisions/
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    │   └── decisions/      # ADR-001 ... ADR-012 + README
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    └── research/           # 3 external-research reports
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        ├── 01-industrial-inspection-success-rates.md
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        ├── 02-yolo-capabilities-and-success-rates.md
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        └── 03-imaging-workflow-and-training-cost.md
 </code></pre></div>
 <h2 id="4-architecture-summary-from-docsdesign">4.架构总结（来自docs/design/）<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3157,7 +3361,8 @@
 <li><a href="../../contracts/">docs/contracts/</a>：11个可执行架构、安全、API、质量、
   运营、安全、变更控制和验收合同。</li>
 <li><a href="../../runbooks/">docs/runbooks/</a>：所有合同要求的可执行恢复程序
-  运营场景，包括模型改进（运行手册 10）。</li>
+  运营场景，包括模型改进（运行手册 10）和数据
+  收集和注释（运行手册 11）。</li>
 </ul>
 <h2 id="6-bilingual-mkdocs-english-chinese">6.双语MkDocs（英文+中文）<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3165,14 +3370,14 @@
   <code>pymdownx.superfences</code> 自定义围栏，<code>extra.alternate</code> 语言切换器）。</li>
 <li><code>scripts/build-docs.sh</code> 管道：<code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
   <code>generate-mkdocs-configs.py</code> （生成 mkdocs-en.yml + mkdocs-zh.yml）-&gt; 构建 site/ 和 site/zh/。</li>
-<li>翻译使用 <code>deep-translator</code> GoogleTranslator（免费，无 API 密钥）。限速；一个完整的
+<li>翻译使用<code>deep-translator</code> GoogleTranslator（免费，无API密钥）。限速；一个完整的
   翻译大约需要 15-30 分钟。单文件模式：
   <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>。任何 API 失败时
   保留原始英文块。</li>
 <li>所有内容均已翻译，包括<code>research/</code>和美人鱼图标签。美人鱼语法是
   保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
   被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
-<li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
+<li>翻译后的标题保留其原始英文标题作为显式 <code>{#slug}</code> 属性，以便
   跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
 <li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
   <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
@@ -3194,11 +3399,11 @@
 <ul>
 <li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 12 个 ADR +
   附录）来自<a href="../../source-brief/">docs/source-brief.md</a>（以前的<code>docs/doc-task.md</code>）。</li>
-<li>通过互联网研究创建了<code>docs/research/</code>（3份报告）。</li>
+<li>通过互联网研究创建<code>docs/research/</code>（3份报告）。</li>
 <li>构建了具有自动翻译功能的双语MkDocs，改编自<code>crud-skeleton</code>项目。</li>
-<li>添加了对 <code>translate-docs.py</code> 的美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
+<li>向<code>translate-docs.py</code>添加了美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
 <li><code>UNCERTAIN</code>决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
-<li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（一个单独的
+<li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（单独的
   边缘工作者/API 分割被推迟，直到测量证明其合理为止）。</li>
 <li>检查分别固定产品检测器和组件检测器模型版本。</li>
 <li>一个月的范围是有界受控集成演示，而不是完整的生产
@@ -3212,14 +3417,32 @@
   包被提取；仅供开发人员使用的 <code>training/</code> 工作区和 <code>av-train</code>
   添加了（产品/准备组件/组件）；探测器存根被替换为真实的
   Ultralytics YOLO 适配器可加载清单引用的权重并将 ROI 框映射回完整值
-  框架； <code>assemblyvision verify</code> 报告 NG 召回/漏报/误报；和
-  <code>scripts/e2e-demo.sh</code> 使用针对误报的硬门运行整个流程。</li>
+  框架； <code>assemblyvision verify</code>报告NG召回/漏报/误报；和
+  <code>scripts/e2e-demo.sh</code> 在漏报上使用硬门运行整个流程。</li>
 <li>数据集：<code>scripts/generate-synthetic-dataset.py</code>构建一个带标签的程序集数据集（确切地说
   框、缺少组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
   将 Roboflow YOLOv8 导出转换为两阶段布局，删除通用 <code>missing*</code> 类，
   并且需要一个独立注释的完整产品类（组件盒的联合是
   被拒绝）。源 <code>test</code> 分割仅成为保留的验证集；从来没有
-  复制到训练或验证中，并通过 SHA-256 检查分割重叠。</li>
+  复制到训练或验证中，并通过 SHA-256 检查分割重叠。
+  <code>scripts/adapt-xanylabeling.py</code> 对 X-AnyLabeling YOLO 导出执行相同的操作
+  （classes.txt/data.yaml 名称；图像优先或分割优先布局）。</li>
+<li>真实数据工具：收集和注释指南位于
+  <code>docs/design/19-training-and-evaluation.md</code> §19.17（单一产品数量，
+  硬注释规则）和 <code>docs/runbooks/11-data-collection-and-annotation.md</code>
+  （操作流程）。本地试驾下载了CC0 smdComponents
+  设置和 <code>data/test-training/</code> 下的 CC BY 4.0 PCB 检测集
+  （gitignored）并训练了板级缺失部分检测器（val mAP50 ~0.94；
+  60 张图像保留 NG 召回率 0.848，多缺失板上的所有缺失） - a
+  演示，而不是准确性声明。</li>
+<li>只读系统审核（记录在
+  <code>docs/reviews/AUDIT-001-system-audit.md</code>) 运行 12 次并行子代理审核
+  加上动态压力测试：没有高运行时漏洞，没有秘密；
+  HTTP 读取路径处理了 200 个并发请求，且错误为零。四
+  高数据完整性/文档结果（适配器缺失标签制造、陈旧
+  发布的 data.yaml 中的暂存路径，av-train 相对路径
+  运行/检测嵌套、过时的 PR 状态）和三个再现的并发性和
+  为下一个里程碑记录稳健性缺陷。</li>
 <li>模型改进是开发人员端循环（docs/runbooks/10-model-improvement.md）：
   收集/更正数据 -&gt; 重新训练 -&gt; 验证没有回归 -&gt; 碰撞管道配置和规则
   <code>compatible_component_model_versions</code> 在一起（<code>av-train --rule</code> 打印建议的凹凸）。</li>
@@ -3246,10 +3469,11 @@
   或坐标、越界框、不良张量形状）转换为
   <code>INFERENCE_ERROR</code> 在适配器边界，而不是转义或错误索引。</li>
 <li>配置：阈值必须是有限的，并且在<code>[0, 1]</code>中，布尔值是严格的，
-  <code>min_area_pixels</code>必须是正整数，未知的键将被拒绝
+  <code>min_area_pixels</code> 必须是正整数，未知的键将被拒绝
   每个部分。</li>
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
-  盒子是致命的；缺少标签文件警告；空标签文件有效
+  盒子是致命的；丢失的标签文件无法验证，除非已记录
+  <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
   底片；成分制备导致 ROI 作物为负值；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
 <li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code> 和
@@ -3281,8 +3505,8 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
 <li><strong>Electron 桌面</strong> (<code>apps/edge-desktop</code>)：硬化默认值（上下文
   隔离、沙箱、无节点集成）、kiosk 模式和生产构建
   从构建的边缘网络输出加载。</li>
-<li><strong>测试和 CI</strong>：跨 api-client/ui/edge-web/desktop 的 56 个 Vitest 单元测试
-  (28 + 13 + 12 + 3)，12 剧作家 e2e，<code>web</code> CI 工作
+<li><strong>测试和 CI</strong>：跨 api-client/ui/edge-web/desktop 的 63 个 Vitest 单元测试
+  (30 + 13 + 17 + 3), 12 剧作家 e2e, 一项 <code>web</code> CI 工作
   (build/lint/test/e2e)，并且 <code>make check</code> 现在同时运行 Python 和 TypeScript
   盖茨。</li>
 <li><strong>文档</strong>：QUICKSTART 对每个应用程序进行了重组，并具有可扩展的编号
@@ -3292,7 +3516,7 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
 <p><code>dev</code> 上的 FastAPI + SQLite 后端层提供真实的只读仪表板视图
 CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 阻塞结果 (F1-F14) 和 M1 条件项 (C1-C4)
-<code>docs/reviews/PR-008-review.md</code> 在 <code>dev</code> 上得到解决和验证。</p>
+<code>docs/reviews/PR-008-review.md</code> 于 <code>dev</code> 得到解决和验证。</p>
 <ul>
 <li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
   将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
@@ -3346,23 +3570,34 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>InspectionRecord.inference_metadata</code>；管道验证检测
   具有纯绝对坐标的出处（框架/模型/坐标空间）
   边界处的公差。</li>
-<li><strong>打包</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
+<li><strong>包装</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
   strict 在整个仓库范围内传递。</li>
-<li><strong>测试强化</strong>：边缘 Python 覆盖率为 99.6%（pytest-cov；唯一
-  未覆盖的分支是无法访问的 IntegrityError 处理程序
-  存储库和两个派生图像槽后备）；全套套房是
-  <code>399 passed</code>，TypeScript 测试是 <code>30 passed</code>（api-client）和 <code>17 passed</code>
-  (edge-web)，并且 Playwright e2e 是 <code>12 passed</code> ，包括经过令牌验证的
-  提供真实协调数据和清除媒体的仪表板
-  渲染。</li>
+<li><strong>测试强化</strong>：边缘Python语句覆盖率约为99.5%（pytest-cov；
+  未覆盖的行是查看者会话/无令牌分支、派生图像和
+  统计回退、验证空工作分支和无法访问
+  完整性错误处理程序）；全套是 <code>405 passed</code>，TypeScript 测试是
+  <code>30 passed</code>（api 客户端）、<code>13 passed</code>（ui）、<code>17 passed</code>（边缘网络）、<code>3 passed</code>
+  （桌面），Playwright e2e 是 <code>12 passed</code>，包括经过令牌验证的</li>
 </ul>
+<p>提供真实协调数据和清除媒体的仪表板
+  渲染。</p>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>现在 FastAPI + SQLite 后端层（<code>assemblyvision serve</code>，第 8.3 节）
-  提供来自本地索引的只读仪表板视图； <strong>上传队列
-  调度程序</strong>（真实的 <code>upload_tasks</code> 行、重试退避、幂等性）和
-  <strong>WebSocket 运行时通道</strong> 是下一个后端差距。仪表板读取
-  视图通过<code>VITE_API_MODE=http</code>切换到真实数据。</li>
+<li>FastAPI + SQLite 后端层（<code>assemblyvision serve</code>，第 8.3 节）是
+  合并； <strong>上传队列调度程序</strong>（真实的 <code>upload_tasks</code> 行，重试
+  退避、幂等性）和 <strong>WebSocket 运行时通道</strong> 是下一个
+  后端差距。只读仪表板视图已通过 HTTP 路由
+  客户端（<code>VITE_API_MODE=http</code>）。</li>
+<li>AUDIT-001 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 第 1 阶段修复待决：
+  适配器缺失标签强制、<code>valid</code> 别名和词干冲突
+  检测（H1）；原子重命名后的相对 <code>data.yaml</code> 路径
+  适配器和 <code>prepare_components</code> (H2)； <code>av-train</code> 中的绝对 <code>project_dir</code>
+  （H3）；协调和规则注册错误处理（M1/M2/M3）；规则引擎
+  非有限/证据完整性守卫；清单运行时/URI/类映射
+  检查。第 2 阶段：文档对齐（设计 14 M1 边界，附录
+  原因代码、覆盖范围/测试计数声明）。第三阶段：决定
+  上传调度程序之前的多边缘每主机“共享”模型，WebSocket，
+  相机/条形码和时间聚合工作。</li>
 <li>PR-003后续事项全部解决（参见<code>docs/reviews/PR-003-review.md</code>）：
   模型清单出版物现在比较完整的决策关键内容
   （任务、类顺序、输入大小、工件、出处），Roboflow 适配器
@@ -3373,7 +3608,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   身份和数据集适应/组件准备拒绝过时的输出
   目录并写入文件清单。组件准备现在加载
   已验证的产品清单并精确镜像运行时一个产品
-  选择策略，在 <code>exclusions.json</code> 中记录不明确的样本。</li>
+  选择策略，在<code>exclusions.json</code>中记录不明确的样本。</li>
 <li>剩余的两个 M1 介质间隙已解决：</li>
 <li><strong>跨来源的受代币保护的 Vite 开发</strong>现在可以运行。环回
     开发源可以使用 <code>GET</code>/<code>POST</code>/<code>OPTIONS</code> 和 <code>Authorization</code> 以及
@@ -3385,10 +3620,9 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
     <code>serve</code> 使用 (<code>&lt;output&gt;/edge.sqlite3</code>) 的注册表，因此已发布
     <code>(rule_id, rule_version)</code> 在 CLI 调用中保持不变，并且
     服务重新启动。</li>
-<li>M1 层之后剩余的路线图范围（第 8.3 节，PR #8）：上传
-  队列调度程序、WebSocket 通道、相机/条形码适配器、时间
-  聚合、Docker 打包和权威的 SQLite 持久化/发件箱。
-  没有阻止 PR #8； PR-008 审查结果（F1-F14、C1-C4）已得到解决。</li>
+<li>合并M1层后剩余的路线图范围：上传队列调度程序，
+  WebSocket 通道、相机/条形码适配器、时间聚合、Docker
+  打包和权威的 SQLite 持久化/发件箱。</li>
 <li>一个月的基线仍然需要真实的客户数据：收集和
   使用 X-AnyLabeling 进行注释
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
@@ -3405,7 +3639,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。</li>
-<li><code>.obsidian/</code> 仍然选择不被跟踪；在更改该决定之前通知用户。</li>
+<li><code>.obsidian/</code> 根据选择保持不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
 
 

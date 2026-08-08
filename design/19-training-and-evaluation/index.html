@@ -1999,6 +1999,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-012: Edge API M1 Viewer Auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2773,6 +2801,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Collection and Annotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2812,7 +2868,7 @@
   <span class="md-ellipsis">
     
   
-    Research
+    Reviews
   
 
     
@@ -2825,6 +2881,151 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reviews
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/AUDIT-001-system-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Audit (AUDIT-001)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-003-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-003 Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reviews/PR-008-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-008 Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2947,10 +3148,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -2968,8 +3169,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3712,9 +3913,10 @@ the table above; expand where <code>verify</code> exposes missed NG.</p>
   component boxes but no product box is a data error and is rejected; the
   product box can never be derived from the union of present component boxes.</li>
 <li><strong>Explicit empty labels.</strong> Every background/negative image must have an
-  explicit empty label file; image/label pairing is required (missing label
-  files fail validation unless the recorded <code>--allow-missing-labels</code> legacy
-  opt-in is used).</li>
+  explicit empty label file; image/label pairing is required. The adapters
+  reject any image without a label file in every split, and <code>av-train</code>
+  validation rejects missing label files unless the recorded
+  <code>--allow-missing-labels</code> legacy opt-in is used.</li>
 <li><strong>Physical NG only.</strong> Do not synthesize all NG by digitally erasing
   components; shadows, packaging deformation, and revealed backgrounds differ
   (19.4).</li>
@@ -3734,9 +3936,11 @@ the table above; expand where <code>verify</code> exposes missed NG.</p>
   <code>classes.txt</code> or <code>data.yaml</code>), then run
   <code>scripts/adapt-xanylabeling.py &lt;export&gt; &lt;out&gt; --product-class product --required '&lt;comma,separated&gt;'</code>.
   The adapter validates every label line, enforces 19.17.3, keeps explicit
-  background negatives, builds <code>dataset_product</code> + <code>dataset_components</code> +
-  <code>test-expected.json</code> + <code>manifest.json</code>, and rejects stale/populated output
-  directories atomically. Roboflow exports use
+  background negatives, rejects missing label files and same-stem image
+  collisions per split, normalizes Roboflow's <code>valid</code> split to <code>val</code>, and
+  publishes <code>dataset_product</code> + <code>dataset_components</code> +
+  <code>test-expected.json</code> + <code>manifest.json</code> atomically with dataset-relative
+  <code>data.yaml</code> paths. Roboflow exports use
   <code>scripts/adapt-roboflow-dataset.py</code>.</li>
 <li>Freeze dataset checksums and the annotation/ontology version with the model
   manifest (19.8, contract 10); the verification set must never be copied into

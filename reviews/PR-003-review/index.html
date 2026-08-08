@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/reviews/PR-003-review/">
       
       
+        <link rel="prev" href="../AUDIT-001-system-audit/">
+      
+      
+        <link rel="next" href="../PR-008-review/">
       
       
         
@@ -27,7 +31,7 @@
     
     
       
-        <title>PR-003 Follow-up Review - AssemblyVision</title>
+        <title>PR-003 Review - AssemblyVision</title>
       
     
     
@@ -114,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PR-003 Follow-up Review
+              PR-003 Review
             
           </span>
         </div>
@@ -1616,6 +1620,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-012: Edge API M1 Viewer Auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2390,6 +2422,425 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Collection and Annotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reviews
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reviews
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AUDIT-001-system-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Audit (AUDIT-001)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-003 Review
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-003 Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resolution-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resolution Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p1-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P1 Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-manifest-immutability-is-incomplete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model manifest immutability is incomplete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-inference-does-not-apply-declared-model-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime inference does not apply declared model settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-configuration-rule-and-manifest-sets-are-not-cross-validated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component configuration, rule, and manifest sets are not cross-validated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-does-not-validate-detection-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline does not validate detection provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roboflow-adapter-silently-discards-invalid-source-annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roboflow adapter silently discards invalid source annotations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#missing-labels-are-still-accepted-as-implicit-negatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Missing labels are still accepted as implicit negatives
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#product-detector-training-drops-explicit-background-negatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Product detector training drops explicit background negatives
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expected-label-verification-still-accepts-unexpected-filename-labeled-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expected-label verification still accepts unexpected filename-labeled files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verification-identifies-samples-only-by-basename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification identifies samples only by basename
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p2-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P2 Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inspection-evidence-output-is-not-bundle-atomic-or-power-loss-durable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspection evidence output is not bundle-atomic or power-loss durable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-version-identity-is-not-bound-to-rule-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rule version identity is not bound to rule content
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataset-adaptation-and-preparation-can-retain-stale-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dataset adaptation and preparation can retain stale output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-dataset-preparation-does-not-share-the-production-selection-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component dataset preparation does not share the production selection policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PR-008-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PR-008 Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2419,10 +2870,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -2440,8 +2891,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2564,10 +3015,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -2585,8 +3036,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
