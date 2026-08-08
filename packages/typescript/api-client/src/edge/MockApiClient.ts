@@ -47,6 +47,8 @@ function evidence(code: string, state: EvidenceState, confidence: number | null)
     adjacent_detection_run: state === "PRESENT" ? 1 : 0,
     supporting_frame_ids: [UUID("1")],
     policy_reason_codes: state === "MISSING" ? ["COMPONENT_MISSING"] : [],
+    box_area_ratios: state === "PRESENT" ? [0.5] : [],
+    box_centers: state === "PRESENT" ? [[0.5, 0.5]] : [],
   };
 }
 
@@ -363,6 +365,9 @@ function mockImages(inspectionId: string): InspectionImages {
     original: frameSvg(800, 600, GRID),
     detection: frameSvg(800, 600, base + COMPONENT_BOXES),
     annotated: frameSvg(800, 600, base + COMPONENT_BOXES + `<text x="20" y="40" fill="#fff" font-size="22">${inspectionId.slice(-6)}</text>`),
+    original_status: "AVAILABLE",
+    detection_status: "AVAILABLE",
+    annotated_status: "AVAILABLE",
   };
 }
 
