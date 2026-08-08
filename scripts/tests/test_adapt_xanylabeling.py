@@ -28,7 +28,11 @@ adapt = adapter.adapt
 
 
 def _make_export(tmp_path: Path, layout: str = "split-first") -> Path:
-    """Build a small X-AnyLabeling YOLO export (product + components)."""
+    """Build a small X-AnyLabeling YOLO export (product + components).
+
+    Every image gets an explicit empty label file so image/label pairing is
+    satisfied; individual tests overwrite specific labels.
+    """
     src = tmp_path / "xal"
     for split in ("train", "val", "test"):
         if layout == "split-first":
@@ -40,7 +44,9 @@ def _make_export(tmp_path: Path, layout: str = "split-first") -> Path:
     for i, split in enumerate(("train", "val", "test")):
         img = Image.new("RGB", (200, 150), (i * 40, 128, 128))
         img_dir = src / split / "images" if layout == "split-first" else src / "images" / split
+        lbl_dir = src / split / "labels" if layout == "split-first" else src / "labels" / split
         img.save(img_dir / f"img_{split}_{i}.png")
+        (lbl_dir / f"img_{split}_{i}.txt").write_text("", encoding="utf-8")
     (src / "classes.txt").write_text("product\nchip\ncapacitor\n", encoding="utf-8")
     return src
 
@@ -114,3 +120,46 @@ def test_adapter_rejects_populated_output(tmp_path: Path) -> None:
     (out / "stale.txt").write_text("old", encoding="utf-8")
     with pytest.raises(ValueError, match="not empty"):
         adapt(src, out, required=["chip"], product_class="product")
+
+
+@pytest.mark.parametrize("split", ["train", "val", "test"])
+def test_adapter_rejects_missing_label_file(tmp_path: Path, split: str) -> None:
+    src = _make_export(tmp_path)
+    index = {"train": 0, "val": 1, "test": 2}[split]
+    (src / split / "labels" / f"img_{split}_{index}.txt").unlink()
+    out = tmp_path / "out"
+    with pytest.raises(ValueError, match="no label file"):
+        adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    assert not out.exists()
+    assert not (out / "test-expected.json").exists()
+    assert list(tmp_path.glob(".out.staging-*")) == []
+
+
+def test_adapter_accepts_explicit_empty_label_file(tmp_path: Path) -> None:
+    src = _make_export(tmp_path)
+    out = tmp_path / "out"
+    adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    assert (out / "dataset_product" / "labels" / "train" / "img_train_0.txt").read_text() == ""
+
+
+def test_adapter_rejects_stem_collision(tmp_path: Path) -> None:
+    src = _make_export(tmp_path)
+    (src / "train" / "images" / "img_train_0.jpg").write_bytes(
+        (src / "train" / "images" / "img_train_0.png").read_bytes()
+    )
+    out = tmp_path / "out"
+    with pytest.raises(ValueError, match="stem collision"):
+        adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    assert not out.exists()
+    assert list(tmp_path.glob(".out.staging-*")) == []
+
+
+def test_adapter_rejects_duplicate_canonical_splits(tmp_path: Path) -> None:
+    src = _make_export(tmp_path)
+    (src / "valid" / "images").mkdir(parents=True)
+    (src / "valid" / "labels").mkdir(parents=True)
+    img = Image.new("RGB", (200, 150), (90, 90, 90))
+    img.save(src / "valid" / "images" / "img_valid_0.png")
+    (src / "valid" / "labels" / "img_valid_0.txt").write_text("", encoding="utf-8")
+    with pytest.raises(ValueError, match="duplicate canonical splits"):
+        adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")

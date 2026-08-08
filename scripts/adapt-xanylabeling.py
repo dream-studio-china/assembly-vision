@@ -43,6 +43,7 @@ except ImportError:  # pragma: no cover
     yaml = None  # type: ignore[assignment]
 
 _SPLIT_ALIASES = {"train": "train", "val": "val", "valid": "val", "test": "test"}
+_SUPPORTED_IMAGE_SUFFIXES = frozenset({".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"})
 
 
 def _load_names(src: Path) -> list[str]:
@@ -156,6 +157,23 @@ def _check_disjoint(
         )
 
 
+def _check_stem_collisions(img_dir: Path) -> None:
+    """Fail when one split contains two image files with the same stem.
+
+    Output labels are named after the image stem, so colliding stems would
+    silently overwrite each other's label files and fabricate ground truth.
+    """
+    stems: dict[str, list[str]] = {}
+    for img_path in sorted(img_dir.iterdir()):
+        if not img_path.is_file() or img_path.suffix.lower() not in _SUPPORTED_IMAGE_SUFFIXES:
+            continue
+        stems.setdefault(img_path.stem, []).append(img_path.name)
+    collisions = {stem: names for stem, names in stems.items() if len(names) > 1}
+    if collisions:
+        detail = "; ".join(f"{stem} -> {', '.join(names)}" for stem, names in collisions.items())
+        raise ValueError(f"image stem collision in {img_dir}: {detail}")
+
+
 def adapt(src: Path, out: Path, required: list[str] | None, product_class: str = "product") -> None:
     """Adapt into a staging directory and atomically publish on success."""
     _reject_non_empty(out)
@@ -197,6 +215,12 @@ def _adapt_into(
         raise ValueError(
             f"no train/val/test splits found in {src}; expected images/<split> or <split>/images"
         )
+    canonical = [name for _, name in splits]
+    if len(set(canonical)) != len(canonical):
+        raise ValueError(
+            "duplicate canonical splits in export; a split may appear only once "
+            "(for example both 'val' and 'valid')"
+        )
     if yaml is None:
         raise RuntimeError("PyYAML is required (uv sync)")
 
@@ -221,6 +245,7 @@ def _adapt_into(
             labels_root / src_split / "labels" if labels_root is src else labels_root / src_split
         )
         is_test = split == "test"
+        _check_stem_collisions(img_dir)
         for img_path in sorted(img_dir.iterdir()):
             if not img_path.is_file():
                 continue
@@ -228,7 +253,12 @@ def _adapt_into(
             with Image.open(img_path) as handle:
                 img_w, img_h = handle.size
 
-            parsed = _parse_label_file(lbl_path, names, img_w, img_h) if lbl_path.is_file() else []
+            if not lbl_path.is_file():
+                raise ValueError(
+                    f"{img_path.name} has no label file; image/label pairing is required "
+                    "(add an explicit empty label file for background negatives)"
+                )
+            parsed = _parse_label_file(lbl_path, names, img_w, img_h)
             coords: dict[str, list[tuple[float, float, float, float]]] = {n: [] for n in keep}
             for name, box in parsed:
                 if name in keep:

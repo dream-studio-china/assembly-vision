@@ -28,7 +28,11 @@ adapt = adapter.adapt
 
 
 def _make_export(tmp_path: Path, splits: list[str]) -> Path:
-    """Build a small Roboflow-style export with product + component classes."""
+    """Build a small Roboflow-style export with product + component classes.
+
+    Every image gets an explicit empty label file so image/label pairing is
+    satisfied; individual tests overwrite specific labels.
+    """
     src = tmp_path / "roboflow"
     for split in splits:
         (src / "images" / split).mkdir(parents=True)
@@ -36,6 +40,7 @@ def _make_export(tmp_path: Path, splits: list[str]) -> Path:
     for i, split in enumerate(splits):
         img = Image.new("RGB", (200, 150), (i * 30, 128, 128))
         img.save(src / "images" / split / f"img_{split}_{i}.png")
+        (src / "labels" / split / f"img_{split}_{i}.txt").write_text("", encoding="utf-8")
     names = ["product", "chip", "capacitor", "missing_chip"]
     (src / "data.yaml").write_text(yaml.dump({"nc": len(names), "names": names}), encoding="utf-8")
     return src
@@ -179,3 +184,46 @@ def test_adapter_detects_held_out_overlap_with_validation(tmp_path: Path) -> Non
     (src / "images" / "val" / "img_val_1.png").write_bytes(test_bytes)
     with pytest.raises(ValueError, match="overlap"):
         adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")
+
+
+@pytest.mark.parametrize("split", ["train", "val", "test"])
+def test_adapter_rejects_missing_label_file(tmp_path: Path, split: str) -> None:
+    src = _make_export(tmp_path, ["train", "val", "test"])
+    index = {"train": 0, "val": 1, "test": 2}[split]
+    (src / "labels" / split / f"img_{split}_{index}.txt").unlink()
+    out = tmp_path / "out"
+    with pytest.raises(ValueError, match="no label file"):
+        adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    assert not out.exists()
+    assert not (out / "test-expected.json").exists()
+    assert list(tmp_path.glob(".out.staging-*")) == []
+
+
+def test_adapter_accepts_explicit_empty_label_file(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val"])
+    out = tmp_path / "out"
+    adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    assert (out / "dataset_product" / "labels" / "train" / "img_train_0.txt").read_text() == ""
+
+
+def test_adapter_rejects_stem_collision(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val"])
+    # second image sharing the stem of img_train_0.png
+    (src / "images" / "train" / "img_train_0.jpg").write_bytes(
+        (src / "images" / "train" / "img_train_0.png").read_bytes()
+    )
+    (src / "labels" / "train" / "img_train_0.jpg").unlink(missing_ok=True)
+    (src / "labels" / "train" / "img_train_0.txt").write_text("", encoding="utf-8")
+    out = tmp_path / "out"
+    with pytest.raises(ValueError, match="stem collision"):
+        adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    assert not out.exists()
+    assert list(tmp_path.glob(".out.staging-*")) == []
+
+
+def test_adapter_normalizes_valid_split_to_val(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "valid", "test"])
+    out = tmp_path / "out"
+    adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    assert (out / "dataset_product" / "images" / "val").is_dir()
+    assert not (out / "dataset_product" / "images" / "valid").exists()
