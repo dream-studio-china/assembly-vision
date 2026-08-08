@@ -9,6 +9,7 @@ import pytest
 import yaml
 from assemblyvision_domain.errors import ConfigError
 from assemblyvision_training.artifact import place_weights, write_manifest, write_run_metadata
+from assemblyvision_vision.manifests import verify_manifest_artifact
 
 
 def test_place_weights_installs(tmp_path: Path) -> None:
@@ -72,6 +73,23 @@ def test_write_manifest_overwrites_identical_artifact(tmp_path: Path) -> None:
         output_path=manifest_path,
     )
     assert manifest_path.is_file()
+
+
+def test_written_manifest_resolves_documented_sibling_weights_layout(tmp_path: Path) -> None:
+    weights = tmp_path / "models" / "weights" / "model.pt"
+    manifest_path = tmp_path / "models" / "manifests" / "manifest.json"
+    weights.parent.mkdir(parents=True)
+    weights.write_bytes(b"model")
+    manifest = write_manifest(
+        task="PRODUCT_DETECTION",
+        semantic_version="1.0.0",
+        class_names=["product"],
+        weights_path=weights,
+        imgsz=640,
+        output_path=manifest_path,
+    )
+    assert manifest.artifacts[0].uri == "../weights/model.pt"
+    assert verify_manifest_artifact(manifest, manifest_path) == weights
 
 
 def test_write_manifest_refuses_different_artifact(tmp_path: Path) -> None:

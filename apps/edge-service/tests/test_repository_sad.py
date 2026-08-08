@@ -416,13 +416,13 @@ def test_register_rule_identity_race_same_content(tmp_path: Path) -> None:
 
     repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
     barrier = threading.Barrier(8)
-    errors: list[BaseException] = []
+    errors: list[Exception] = []
 
     def worker() -> None:
         barrier.wait()
         try:
             repo.register_rule_identity("race-rule", 1, "a" * 64)
-        except BaseException as exc:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001
             errors.append(exc)
 
     threads = [threading.Thread(target=worker) for _ in range(8)]
@@ -446,13 +446,13 @@ def test_register_rule_identity_race_different_content(tmp_path: Path) -> None:
     repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
     repo.register_rule_identity("race-rule", 1, "a" * 64)
     barrier = threading.Barrier(4)
-    errors: list[BaseException] = []
+    errors: list[Exception] = []
 
     def worker() -> None:
         barrier.wait()
         try:
             repo.register_rule_identity("race-rule", 1, "b" * 64)
-        except BaseException as exc:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001
             errors.append(exc)
 
     threads = [threading.Thread(target=worker) for _ in range(4)]

@@ -157,13 +157,15 @@ that production contract.
   traversal or URI-like artifact paths; `verify_model_class_map` assumes
   contiguous mapping keys and can leak `KeyError`.
 - **Required change:** Require `runtime == "ultralytics"` at the manifest
-  loading boundary, reject non-file URI schemes and `..` path parts, resolve
-  the artifact and require containment below the manifest directory, and
+  loading boundary, reject non-file URI schemes, resolve the artifact and
+  require containment below the model bundle root (which permits the
+  documented `models/manifests` and sibling `models/weights` layout), and
   translate malformed/non-contiguous class maps to `ConfigError`.
-- **Acceptance:** Tests reject `runtime="other"`, `../weights.pt`, encoded or
-  scheme URI forms accepted by the path parser, symlink escape, and a
-  non-contiguous `{1: "component"}` map with `ConfigError`. A valid relative
-  artifact and contiguous mapping continue to load and checksum-verify.
+- **Acceptance:** Tests reject `runtime="other"`, paths escaping the model
+  bundle, encoded or scheme URI forms accepted by the path parser, symlink
+  escape, and a non-contiguous `{1: "component"}` map with `ConfigError`. A
+  valid relative artifact, including documented sibling weights, and a
+  contiguous mapping continue to load and checksum-verify.
 
 ### 4.4 Persistence and contract boundary
 
@@ -266,7 +268,7 @@ closure passed `uv run mkdocs build --strict`.
 | M2 | 5f70071 | Barrier-based 8-thread same-content race yields no raw `IntegrityError`; differing-content race raises `RepositoryError` and preserves the original hash. |
 | M3 | 84e5fd5 | Two subprocesses open the same fresh database and both succeed; the rule identity remains consistent (flock + thread lock). |
 | 4.2 | 653a850 | NaN/inf ratios and centers, zero usable frames, absent confidence, and empty supporting frames all return business `NG`; valid evidence still returns `OK`. |
-| 4.3 | 16448b5 | Tests reject non-ultralytics runtime, `../`, scheme URIs, drive segments, symlink escapes, and non-contiguous class maps with `ConfigError`. |
+| 4.3 | 16448b5 | Tests reject non-ultralytics runtime, paths escaping the model bundle, scheme URIs, drive segments, symlink escapes, and non-contiguous class maps with `ConfigError`; documented sibling weights remain valid. |
 | 4.5 backend | 056e712 | Tests for non-loopback bind rejection, log path scrubbing, auth throttling (429), session cap, `400 INVALID_CURSOR` + filter binding, `410` for surviving purged files, non-ASCII bearer `401`, `/api` SPA guard. |
 | 4.5 frontend | 4aa7254 | `VITE_API_MODE` production enforcement (build fails under mock), foreign-origin media rejection, HTTP-mode line-filter strip, WebSocket gap signal, nested record validation, CSP headers; 12 Playwright tests pass including the served dashboard. |
 | 6 generator | 237f96d | Geometry tests (rotation 0 labels match the rect; rotated AABB contains rotated corners) and a scenario-coverage test asserting every missing component occurs in training. |

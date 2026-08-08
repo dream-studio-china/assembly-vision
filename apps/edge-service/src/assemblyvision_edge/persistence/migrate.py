@@ -16,7 +16,6 @@ _ALEMBIC_INI = _EDGE_ROOT / "alembic.ini"
 _MIGRATIONS_DIR = _EDGE_ROOT / "migrations"
 
 _THREAD_LOCK = threading.Lock()
-_migrated_in_process: set[str] = set()
 
 
 def migrate_to_head(sqlite_path: str) -> None:
@@ -31,10 +30,7 @@ def migrate_to_head(sqlite_path: str) -> None:
     a sibling lock file prevents two processes from migrating the same fresh
     database concurrently. Both paths leave exactly one consistent migration.
     """
-    key = str(Path(sqlite_path).resolve())
     with _THREAD_LOCK:
-        if key in _migrated_in_process:
-            return
         lock_path = Path(f"{sqlite_path}.lock")
         lock_path.parent.mkdir(parents=True, exist_ok=True)
         with lock_path.open("a+") as lock:
@@ -48,7 +44,6 @@ def migrate_to_head(sqlite_path: str) -> None:
                 _verify_revision(sqlite_path, head)
             finally:
                 fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
-        _migrated_in_process.add(key)
 
 
 def _verify_revision(sqlite_path: str, expected: str | None) -> None:

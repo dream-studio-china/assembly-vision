@@ -54,9 +54,10 @@ def verify_manifest_artifact(manifest: ModelManifest, manifest_path: Path) -> Pa
 
     Fails on any mismatch so a tampered, stale, or wrongly paired artifact
     can never reach inference. The artifact URI must be relative to the
-    manifest directory: absolute paths, parent traversal, URI schemes, and
-    paths that resolve outside the manifest directory (including via
-    symlinks) are rejected.
+    manifest directory and resolve within the model bundle root (the manifest
+    directory's parent): absolute paths, URI schemes, and paths that escape
+    the bundle root (including via symlinks) are rejected. This permits the
+    documented ``models/manifests`` and sibling ``models/weights`` layout.
     """
     if not manifest.artifacts:
         raise ConfigError(f"model manifest {manifest_path} has no artifacts")
@@ -67,14 +68,13 @@ def verify_manifest_artifact(manifest: ModelManifest, manifest_path: Path) -> Pa
     if "://" in uri:
         raise ConfigError(f"model artifact uri must not use a scheme: {uri!r}")
     parts = Path(uri).parts
-    if ".." in parts:
-        raise ConfigError(f"model artifact uri must not contain parent traversal: {uri!r}")
     if any(len(part) == 2 and part.endswith(":") for part in parts):
         raise ConfigError(f"model artifact uri must not contain a drive segment: {uri!r}")
     manifest_dir = manifest_path.parent.resolve()
+    bundle_root = manifest_dir.parent
     path = (manifest_dir / uri).resolve()
-    if not path.is_relative_to(manifest_dir):
-        raise ConfigError(f"model artifact uri escapes the manifest directory: {uri!r}")
+    if not path.is_relative_to(bundle_root):
+        raise ConfigError(f"model artifact uri escapes the model bundle: {uri!r}")
     if not path.is_file():
         raise ConfigError(f"model weights not found: {path}")
     try:

@@ -103,7 +103,9 @@ def test_adapter_rejects_component_only_image_without_product_box(tmp_path: Path
 def test_adapter_keeps_background_negatives_and_writes_expected(tmp_path: Path) -> None:
     src = _make_export(tmp_path)
     _lbl(src, "train", "img_train_0").write_text("", encoding="utf-8")
-    _lbl(src, "test", "img_test_2").write_text("1 0.5 0.5 0.2 0.2\n", encoding="utf-8")
+    _lbl(src, "test", "img_test_2").write_text(
+        "0 0.5 0.5 0.8 0.8\n1 0.5 0.5 0.2 0.2\n", encoding="utf-8"
+    )
     out = tmp_path / "out"
     adapt(src, out, required=["chip", "capacitor"], product_class="product")
 
@@ -111,6 +113,13 @@ def test_adapter_keeps_background_negatives_and_writes_expected(tmp_path: Path) 
     expected = json.loads((out / "test-expected.json").read_text(encoding="utf-8"))
     assert expected["img_test_2.png"]["ok"] is False
     assert expected["img_test_2.png"]["missing"] == ["capacitor"]
+
+
+def test_adapter_rejects_test_components_without_product_box(tmp_path: Path) -> None:
+    src = _make_export(tmp_path)
+    _lbl(src, "test", "img_test_2").write_text("1 0.5 0.5 0.2 0.2\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="no 'product' product box"):
+        adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")
 
 
 def test_adapter_rejects_populated_output(tmp_path: Path) -> None:

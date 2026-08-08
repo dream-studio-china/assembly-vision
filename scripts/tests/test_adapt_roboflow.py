@@ -66,8 +66,10 @@ def test_adapter_rejects_missing_required_class(tmp_path: Path) -> None:
 
 def test_adapter_drops_missing_classes_and_builds_expected(tmp_path: Path) -> None:
     src = _make_export(tmp_path, ["train", "val", "test"])
-    # test image has chip only -> NG (capacitor missing)
-    _labels(src, "test", "img_test_2").write_text("1 0.5 0.5 0.2 0.2\n", encoding="utf-8")
+    # test image has a product and chip only -> NG (capacitor missing)
+    _labels(src, "test", "img_test_2").write_text(
+        "0 0.5 0.5 0.8 0.8\n1 0.5 0.5 0.2 0.2\n", encoding="utf-8"
+    )
     out = tmp_path / "out"
     adapt(src, out, required=["chip", "capacitor"], product_class="product")
 
@@ -113,6 +115,13 @@ def test_adapter_skips_product_images_without_product_box(tmp_path: Path) -> Non
         adapt(src, out, required=["chip", "capacitor"], product_class="product")
     assert not out.exists()
     assert list(tmp_path.glob(".out.staging-*")) == []
+
+
+def test_adapter_rejects_test_components_without_product_box(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val", "test"])
+    _labels(src, "test", "img_test_2").write_text("1 0.5 0.5 0.2 0.2\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="no 'product' product box"):
+        adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")
 
 
 def test_adapter_rejects_negative_class_id(tmp_path: Path) -> None:

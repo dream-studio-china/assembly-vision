@@ -131,6 +131,7 @@ def _auth_error(request: Request) -> ApiProblem:
             status_code=429,
             code="RATE_LIMITED",
             detail="too many failed authentication attempts; try again later",
+            headers={"Retry-After": str(int(_AUTH_LOCKOUT_WINDOW.total_seconds()))},
         )
     return ApiProblem(
         status_code=401,

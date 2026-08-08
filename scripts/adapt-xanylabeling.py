@@ -265,6 +265,12 @@ def _adapt_into(
                     coords[name].append(box)
             product_coords = [box for name, box in parsed if name == product_class]
 
+            if parsed and not product_coords:
+                raise ValueError(
+                    f"{img_path.name} has component annotations but no {product_class!r} "
+                    "product box; every product image must be annotated independently"
+                )
+
             if is_test:
                 data = img_path.read_bytes()
                 (test_img_dir / img_path.name).write_bytes(data)
@@ -302,11 +308,6 @@ def _adapt_into(
                 n = _norm(best, img_w, img_h)
                 (out / "dataset_product" / "labels" / split / f"{img_path.stem}.txt").write_text(
                     f"0 {n[0]:.6f} {n[1]:.6f} {n[2]:.6f} {n[3]:.6f}\n", encoding="utf-8"
-                )
-            elif parsed:
-                raise ValueError(
-                    f"{img_path.name} has component annotations but no {product_class!r} "
-                    "product box; every product image must be annotated independently"
                 )
             else:
                 (out / "dataset_product" / "labels" / split / f"{img_path.stem}.txt").write_text(

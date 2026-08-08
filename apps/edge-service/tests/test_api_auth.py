@@ -182,6 +182,7 @@ def test_failed_auth_attempts_are_rate_limited(token_settings: ServerSettings) -
         limited = client.get("/api/v1/inspections", headers={"Authorization": "Bearer wrong"})
         assert limited.status_code == 429
         assert limited.json()["code"] == "RATE_LIMITED"
+        assert limited.headers["retry-after"] == "60"
         # A correct token still authenticates once the limit applies.
         allowed = client.get(
             "/api/v1/inspections", headers={"Authorization": "Bearer test-edge-token"}

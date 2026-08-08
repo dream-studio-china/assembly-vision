@@ -214,13 +214,29 @@ def test_verify_manifest_artifact_rejects_symlink_escape(tmp_path: Path) -> None
     manifest = _manifest(weights, sha, weights.stat().st_size)
     manifest_dir = tmp_path / "manifests"
     manifest_dir.mkdir()
-    outside = tmp_path / "outside"
+    outside = tmp_path.parent / f"{tmp_path.name}-outside"
     outside.mkdir()
     (outside / "weights.pt").write_bytes(b"outside")
     (manifest_dir / "link").symlink_to(outside, target_is_directory=True)
     manifest.artifacts[0].uri = "link/weights.pt"
-    with pytest.raises(ConfigError, match="escapes the manifest directory"):
+    with pytest.raises(ConfigError, match="escapes the model bundle"):
         verify_manifest_artifact(manifest, manifest_dir / "manifest.json")
+
+
+def test_verify_manifest_artifact_accepts_documented_sibling_weights_layout(tmp_path: Path) -> None:
+    manifest_dir = tmp_path / "models" / "manifests"
+    weights_dir = tmp_path / "models" / "weights"
+    manifest_dir.mkdir(parents=True)
+    weights_dir.mkdir()
+    weights = weights_dir / "model.pt"
+    weights.write_bytes(b"weights-bytes")
+    manifest = _manifest(
+        weights,
+        hashlib.sha256(weights.read_bytes()).hexdigest(),
+        weights.stat().st_size,
+    )
+    manifest.artifacts[0].uri = "../weights/model.pt"
+    assert verify_manifest_artifact(manifest, manifest_dir / "manifest.json") == weights
 
 
 def test_verify_model_class_map_rejects_non_contiguous_keys() -> None:
