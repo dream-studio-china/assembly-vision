@@ -17,6 +17,7 @@ from threading import Event
 from assemblyvision_domain.errors import ImageReadError
 from PIL import Image
 
+from assemblyvision_vision.sources._pacing import pace
 from assemblyvision_vision.sources.frame_source import (
     AppliedSettings,
     CameraCapabilities,
@@ -102,7 +103,7 @@ class FolderSource:
                     return
                 yield self._frame(path)
                 if self._loop:
-                    self._pace(stop)
+                    pace(stop, self._fps)
             if not self._loop:
                 return
 
@@ -122,12 +123,3 @@ class FolderSource:
             status="OK",
             image=image,
         )
-
-    def _pace(self, stop: Event) -> None:
-        """Sleep to the configured frame rate, aborting early on stop."""
-        if not self._fps or self._fps <= 0:
-            return
-        delay = 1.0 / self._fps
-        deadline = time.monotonic() + delay
-        while time.monotonic() < deadline and not stop.is_set():
-            time.sleep(min(0.01, delay))
