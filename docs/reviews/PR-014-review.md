@@ -90,12 +90,10 @@ cd apps/edge-web && pnpm test:e2e   # 12 passed
 uv run mkdocs build --strict
 ```
 
-One pre-existing failure is not part of this work: `mypy .` reports
-`apps/edge-service/tests/conftest.py:18: Module "assemblyvision_edge" has no
-attribute "config"`. A stash test against the pre-fix branch state reproduces
-the same (or worse) mypy errors on that untouched file; `assemblyvision_edge`
-is missing the `py.typed` marker that `domain` and `vision-core` carry. Adding
-the marker to `apps/edge-service` is tracked as follow-up packaging work.
+The post-review packaging follow-up is resolved: `assemblyvision_edge` now
+ships `py.typed`, and the test fixture imports `assemblyvision_edge.config`
+directly so mypy resolves the typed submodule. `mypy .` passes across all 119
+source files; the built wheel was verified to contain the marker.
 
 ## Validation Performed
 
