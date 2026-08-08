@@ -8,14 +8,14 @@ the design 15.3 API routers, and serves the built frontend as static assets.
 from __future__ import annotations
 
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 
 from assemblyvision_edge import __version__
 from assemblyvision_edge.api.logging_buffer import LogBuffer
@@ -49,6 +49,21 @@ _PROBLEM = {
     "request_id": None,
     "errors": [],
 }
+
+# Least-privilege content security policy for the locally served dashboard
+# (AUDIT-001 4.5). Element Plus and ECharts use inline style attributes, so
+# 'unsafe-inline' is required for styles; media is rendered from blob URLs.
+_CSP = (
+    "default-src 'self'; "
+    "script-src 'self'; "
+    "style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' blob: data:; "
+    "font-src 'self' data:; "
+    "connect-src 'self' ws: wss:; "
+    "object-src 'none'; "
+    "base-uri 'self'; "
+    "frame-ancestors 'self'"
+)
 
 
 def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
@@ -100,6 +115,16 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
 
     install_problem_handlers(app)
     _install_exception_handler(app)
+
+    @app.middleware("http")
+    async def _security_headers(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        response = await call_next(request)
+        response.headers.setdefault("Content-Security-Policy", _CSP)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Referrer-Policy", "same-origin")
+        return response
 
     from fastapi import Depends
 

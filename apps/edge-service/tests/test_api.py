@@ -408,6 +408,17 @@ def test_api_paths_never_fall_back_to_spa(tmp_path: Path) -> None:
         assert test_client.get("/history").text == "<html>edge-dashboard</html>"
 
 
+def test_security_headers_applied_to_all_responses(client: TestClient) -> None:
+    response = client.get("/api/v1/health/live")
+    assert response.status_code == 200
+    csp = response.headers["content-security-policy"]
+    assert "default-src 'self'" in csp
+    assert "script-src 'self'" in csp
+    assert "object-src 'none'" in csp
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["referrer-policy"] == "same-origin"
+
+
 def test_invalid_cursor_returns_400(client: TestClient) -> None:
     response = client.get("/api/v1/inspections", params={"cursor": "not-a-cursor"})
     assert response.status_code == 400

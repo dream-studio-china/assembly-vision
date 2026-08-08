@@ -22,7 +22,7 @@ import type {
   TraceabilityView,
 } from "@assemblyvision/api-client";
 import { MockApiClient } from "@assemblyvision/api-client";
-import { getApiClient, isCrossOriginHttp, loadMediaBlobUrl } from "./client";
+import { getApiClient, isCrossOriginHttp, isHttpMode, loadMediaBlobUrl } from "./client";
 
 const operatorWorkflow = new MockApiClient();
 
@@ -83,6 +83,14 @@ export const inspectionService = {
   },
 
   getStatistics(filter?: StatisticsFilter): Promise<StatisticsSummary> {
+    // The M1 edge API has no line identity yet, so the line filter only
+    // exists in the mock. Dropping it in HTTP mode avoids a guaranteed 400
+    // and a misleading UI control (AUDIT-001 4.5).
+    if (isHttpMode() && filter && filter.line !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { line: _line, ...rest } = filter;
+      return getApiClient().getStatistics(rest);
+    }
     return getApiClient().getStatistics(filter);
   },
 

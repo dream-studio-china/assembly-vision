@@ -131,14 +131,14 @@ function validateInspectionSummary(body: unknown): void {
   hasRecord(record, "model_rule_versions", "$");
 }
 
-function validateMediaMetadata(body: unknown): void {
-  const record = expectRecord(body);
+function validateMediaMetadata(body: unknown, path = "$"): void {
+  const record = expectRecord(body, path);
   for (const key of ["media_id", "relative_path", "mime_type", "checksum_sha256"]) {
-    hasString(record, key, "$");
+    hasString(record, key, path);
   }
-  hasOneOf(record, "kind", ["KEY_FRAME", "ANNOTATED_FRAME", "PRODUCT_ROI", "NG_CLIP", "ROLLING_VIDEO"], "$");
-  hasOneOf(record, "lifecycle", ["PENDING", "AVAILABLE", "FAILED", "PURGED"], "$");
-  hasNumber(record, "size_bytes", "$");
+  hasOneOf(record, "kind", ["KEY_FRAME", "ANNOTATED_FRAME", "PRODUCT_ROI", "NG_CLIP", "ROLLING_VIDEO"], path);
+  hasOneOf(record, "lifecycle", ["PENDING", "AVAILABLE", "FAILED", "PURGED"], path);
+  hasNumber(record, "size_bytes", path);
 }
 
 function validateUploadTask(body: unknown): void {
@@ -198,8 +198,26 @@ function validateInspectionRecord(body: unknown): void {
   for (const key of ["barcode_result", "product_resolution", "frame_quality_summary", "decision"]) {
     hasRecord(record, key, "$");
   }
-  hasArray(record, "evidence", "$");
-  hasArray(record, "media", "$");
+  // Nested fields the dashboard actually reads are validated so a drifted
+  // payload cannot render a fabricated decision or evidence state.
+  const barcode = hasRecord(record, "barcode_result", "$");
+  hasOneOf(barcode, "status", ["READ", "NOT_READ", "CONFLICT", "NOT_REQUIRED"], "$.barcode_result");
+  const resolution = hasRecord(record, "product_resolution", "$");
+  hasOneOf(resolution, "status", ["RESOLVED", "UNKNOWN", "CONFLICT"], "$.product_resolution");
+  const quality = hasRecord(record, "frame_quality_summary", "$");
+  hasNumber(quality, "usable_frame_count", "$.frame_quality_summary");
+  const decision = hasRecord(record, "decision", "$");
+  hasOneOf(decision, "internal_decision", ["OK", "NG", "UNCERTAIN"], "$.decision");
+  hasOneOf(decision, "business_result", ["OK", "NG"], "$.decision");
+  const evidence = hasArray(record, "evidence", "$");
+  evidence.forEach((item, index) => {
+    const path = `$.evidence[${index}]`;
+    const entry = expectRecord(item, path);
+    hasString(entry, "component_code", path);
+    hasOneOf(entry, "state", ["PRESENT", "MISSING", "UNCERTAIN"], path);
+  });
+  const media = hasArray(record, "media", "$");
+  media.forEach((item, index) => validateMediaMetadata(item, `$.media[${index}]`));
 }
 
 function validateInspectionImages(body: unknown): void {
@@ -240,7 +258,7 @@ export const validators: Record<string, Validator> = {
   inspectionRecord: validateInspectionRecord,
   mediaList: (body) => {
     if (!Array.isArray(body)) fail("$", "array", body);
-    body.forEach(validateMediaMetadata);
+    body.forEach((item) => validateMediaMetadata(item));
   },
   uploadPage: (body) => pageOf(body, validateUploadTask),
   logPage: (body) => pageOf(body, validateLogEvent),

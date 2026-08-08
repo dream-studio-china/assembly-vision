@@ -1,6 +1,7 @@
 import { MockApiClient } from "@assemblyvision/api-client";
 import { HttpApiClient } from "@assemblyvision/api-client";
 import type { ApiClient } from "@assemblyvision/api-client";
+import { assertProductionHttpMode } from "../vite-mode";
 
 /**
  * Single client factory for the dashboard.
@@ -13,7 +14,8 @@ import type { ApiClient } from "@assemblyvision/api-client";
  *   deterministic in-memory mock.
  *
  * An absent base URL alone never silently selects the mock in a production
- * build: the build must pass `VITE_API_MODE=http`.
+ * build: the build must pass `VITE_API_MODE=http` (enforced by the Vite
+ * plugin and re-checked here in the shipped bundle).
  *
  * Token-protected development across origins: the viewer session cookie is
  * same-origin, so a Vite dev server pointed at a remote edge host keeps the
@@ -24,6 +26,7 @@ import type { ApiClient } from "@assemblyvision/api-client";
 let client: ApiClient | null = null;
 let viewerToken: string | null = null;
 const mode = (import.meta.env.VITE_API_MODE as string | undefined) ?? "mock";
+assertProductionHttpMode(mode, import.meta.env.PROD);
 
 export function isMockMode(): boolean {
   return mode === "mock";
@@ -66,6 +69,14 @@ export async function createViewerSession(token: string): Promise<void> {
 
 /** Fetch protected media content and return a renderable blob URL. */
 export async function loadMediaBlobUrl(url: string): Promise<string> {
+  const pageOrigin = window.location.origin;
+  const target = new URL(url, pageOrigin);
+  const apiOrigin = new URL(getApiBaseUrl() || "/", pageOrigin).origin;
+  // Never attach the viewer credential to a foreign origin: only the page
+  // origin or the configured edge API origin may receive it (AUDIT-001 4.5).
+  if (target.origin !== pageOrigin && target.origin !== apiOrigin) {
+    throw new Error(`refusing to fetch media from foreign origin ${target.origin}`);
+  }
   const response = await fetch(url, {
     headers: viewerToken ? { Authorization: `Bearer ${viewerToken}` } : undefined,
     credentials: isCrossOriginHttp() ? "omit" : "same-origin",

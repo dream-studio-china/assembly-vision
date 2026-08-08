@@ -1,8 +1,17 @@
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
+import { assertProductionHttpMode } from "./src/vite-mode";
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    {
+      name: "enforce-http-mode-in-production",
+      configResolved(config) {
+        assertProductionHttpMode(config.env.VITE_API_MODE, config.command === "build");
+      },
+    },
+  ],
   server: {
     port: 5173,
   },
