@@ -265,3 +265,35 @@ def test_run_verify_with_filename_fallback_disabled(tmp_path: Path) -> None:
         filename_fallback=False,
     )
     assert len(report.rows) == 1
+
+
+def test_run_verify_filename_fallback_disabled_rejects_stale_input(tmp_path: Path) -> None:
+    report = run_verify(
+        _FakePipeline(failures=set()),  # type: ignore[arg-type]
+        _work(tmp_path, ["ng_old.png"]),  # type: ignore[arg-type]
+        expected={"a.png": ExpectedResult(True)},
+        writer=object(),  # type: ignore[arg-type]
+        filename_fallback=False,
+    )
+    assert report.rows == []
+    assert report.unlabeled == 1
+    assert report.has_gaps is True
+
+
+def test_run_verify_rejects_duplicate_basenames(tmp_path: Path) -> None:
+    line_a = tmp_path / "line-a"
+    line_b = tmp_path / "line-b"
+    line_a.mkdir()
+    line_b.mkdir()
+    (line_a / "sample.png").touch()
+    (line_b / "sample.png").touch()
+    work: list[tuple[object, Path]] = [(None, line_a / "sample.png"), (None, line_b / "sample.png")]
+    report = run_verify(
+        _FakePipeline(failures=set()),  # type: ignore[arg-type]
+        work,  # type: ignore[arg-type]
+        expected={"sample.png": ExpectedResult(True)},
+        writer=object(),  # type: ignore[arg-type]
+    )
+    assert len(report.rows) == 1
+    assert report.failed == 1
+    assert report.has_gaps is True

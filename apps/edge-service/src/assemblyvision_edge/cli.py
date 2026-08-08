@@ -187,7 +187,13 @@ def _run_verify(args: argparse.Namespace) -> int:
         return 2
 
     writer = OutputWriter(args.output)
-    report = run_verify(pipeline, _collect_sources(args.paths), expected, writer)
+    report = run_verify(
+        pipeline,
+        _collect_sources(args.paths),
+        expected,
+        writer,
+        filename_fallback=args.expected is None,
+    )
     print(format_per_image(report))
     print()
     print(format_report(report))

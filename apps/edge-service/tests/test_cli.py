@@ -333,6 +333,41 @@ def test_verify_success_and_failure_paths(tmp_path: Path, monkeypatch: pytest.Mo
     assert cli._run_verify(args) == 1
 
 
+def test_verify_disables_filename_fallback_when_expected_supplied(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from types import SimpleNamespace
+
+    image = tmp_path / "ng_old.png"
+    image.touch()
+    expected = tmp_path / "expected.json"
+    expected.write_text('{"a.png": {"ok": true}}', encoding="utf-8")
+    monkeypatch.setattr(cli, "_build_pipeline", lambda args: object())
+    calls: dict[str, object] = {}
+
+    def fake_run_verify(*args: object, **kwargs: object) -> object:
+        calls["kwargs"] = kwargs
+        return SimpleNamespace(false_negative=0, has_gaps=False)
+
+    monkeypatch.setattr(cli, "run_verify", fake_run_verify)
+    monkeypatch.setattr(cli, "load_expected", lambda p: {"a.png": object()})
+    monkeypatch.setattr(cli, "format_per_image", lambda report: "")
+    monkeypatch.setattr(cli, "format_report", lambda report: "")
+
+    args = argparse.Namespace(
+        quiet=True,
+        config=tmp_path / "c.yaml",
+        rule=tmp_path / "r.yaml",
+        output=tmp_path / "out",
+        expected=expected,
+        paths=[str(image)],
+    )
+    assert cli._run_verify(args) == 0
+    kwargs = calls["kwargs"]
+    assert isinstance(kwargs, dict)
+    assert kwargs.get("filename_fallback") is False
+
+
 def test_serve_success_starts_uvicorn(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[dict[str, object]] = []
 
