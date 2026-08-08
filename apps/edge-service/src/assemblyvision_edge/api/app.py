@@ -81,10 +81,11 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
             imported = reconcile_output_root(repository, settings.output_root)
             if imported:
                 log.info("reconciled %d inspection records from output root", imported)
-        runtime.load_pipeline(repository)
-        if runtime.pipeline is None:
+        runtime.load_config(repository)
+        if runtime.pipeline is None and not runtime.instances:
             log.warning("inspection engine is not ready: %s", runtime.pipeline_error)
         yield
+        runtime.shutdown()
         repository.close()
         logging.getLogger().removeHandler(app.state.log_buffer)
 

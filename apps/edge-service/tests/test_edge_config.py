@@ -174,3 +174,13 @@ def test_legacy_flat_config_still_loads(tmp_path: Path) -> None:
     config = load_pipeline_config(path)
     assert config.product_manifest == (tmp_path / "models" / "product-manifest.json")
     assert list(config.components) == ["component_a"]
+
+
+def test_committed_camera_example_loads() -> None:
+    example = Path(__file__).resolve().parents[3] / "config" / "examples" / "pipeline.cameras.yaml"
+    config = load_edge_config(example)
+    assert [instance.instance_id for instance in config.instances] == ["line-1", "line-2", "bench"]
+    assert config.instances[0].camera.source == "rtsp"
+    assert config.instances[1].camera.source == "video"
+    assert config.instances[2].camera.source == "folder"
+    assert config.instances[2].inspection.enabled is True

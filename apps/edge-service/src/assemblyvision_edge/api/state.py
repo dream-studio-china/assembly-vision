@@ -102,6 +102,25 @@ class EdgeRuntime:
             self.pipeline = None
             log.error("pipeline build failed: %s", exc)
 
+    def load_config(self, repository: EdgeRepository | None = None) -> None:
+        """Load the single pipeline or the multi-instance camera configuration.
+
+        An ``instances:`` document starts per-instance camera sources; a
+        legacy flat pipeline document builds the single pipeline (ADR-013).
+        """
+        config_path = self._settings.config_path
+        if config_path is None:
+            self.load_pipeline(repository)
+            return
+        try:
+            from assemblyvision_edge.config import load_edge_config
+
+            load_edge_config(config_path)
+        except ConfigError:
+            self.load_pipeline(repository)
+            return
+        self.load_instances(config_path, repository)
+
     def load_instances(
         self, config_path: Path | None, repository: EdgeRepository | None = None
     ) -> None:
