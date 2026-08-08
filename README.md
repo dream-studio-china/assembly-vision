@@ -144,6 +144,16 @@ long-running soak stability (duration agreed from operating patterns). Recovery
 procedures live in the runbooks (camera disconnection, low disk space, database
 recovery, network recovery synchronization).
 
+## Developer Tools (web test harness)
+
+A gated `/api/v1/dev/` endpoint group and a `/dev` dashboard page let you test
+the inspection pipeline from any browser: take a photo with a phone camera,
+upload an image, or upload a short video, and get the decision immediately
+(ADR-014). These endpoints are **disabled by default** — start `serve` with
+`--enable-web-test` to enable them. This is a test harness, not a production
+acquisition path: it never streams video. Production real-time inspection uses
+the native app / RTSP / camera sources. See [QUICKSTART](QUICKSTART.md) §4.8.
+
 ## Roadmap
 
 | Phase | Status |

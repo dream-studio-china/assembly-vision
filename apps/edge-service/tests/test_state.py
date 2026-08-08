@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 import pytest
 from assemblyvision_domain.errors import ConfigError
 from assemblyvision_edge.api.settings import ServerSettings
-from assemblyvision_edge.api.state import EdgeRuntime, _build_pipeline
+from assemblyvision_edge.api.state import EdgeRuntime, InstanceRuntime, _build_pipeline
 
 RULE_ID = "model-a-presence"
 
@@ -282,17 +282,17 @@ def test_device_status_disk_error_reports_low(
 
 def test_model_version_id_without_pipeline(tmp_path: Path) -> None:
     runtime = EdgeRuntime(_settings(tmp_path))
-    assert runtime._model_version_id("product") is None
-    assert runtime._model_version_id("component") is None
+    assert runtime._model_version_id(runtime.pipeline, "product") is None
+    assert runtime._model_version_id(runtime.pipeline, "component") is None
 
 
 def test_model_version_id_with_pipeline(tmp_path: Path) -> None:
     runtime = EdgeRuntime(_settings(tmp_path))
     runtime.pipeline = _fake_pipeline()
-    assert runtime._model_version_id("product") == str(
+    assert runtime._model_version_id(runtime.pipeline, "product") == str(
         runtime.pipeline._product_manifest.model_version_id
     )
-    assert runtime._model_version_id("component") == str(
+    assert runtime._model_version_id(runtime.pipeline, "component") == str(
         runtime.pipeline._component_manifest.model_version_id
     )
 
@@ -310,6 +310,35 @@ def test_inspection_state(tmp_path: Path) -> None:
     assert state["faulted"] is False
     assert state["paused"] is True
     assert state["paused_reason"] == "why"
+
+
+def test_inspection_state_multi_instance_healthy_is_not_faulted(tmp_path: Path) -> None:
+    runtime = EdgeRuntime(_settings(tmp_path))
+    runtime.instances["line-1"] = InstanceRuntime(
+        instance_id="line-1",
+        device_id=uuid4(),
+        pipeline=_fake_pipeline(),
+        pipeline_error=None,
+        inspection_enabled=True,
+        last_result="NG",
+    )
+    state = runtime.inspection_state(last_result="OK")
+    assert state["faulted"] is False
+    # The multi-instance runtime surfaces the most recent per-instance result.
+    assert state["last_result"] == "NG"
+
+
+def test_inspection_state_multi_instance_faulted_without_pipelines(tmp_path: Path) -> None:
+    runtime = EdgeRuntime(_settings(tmp_path))
+    runtime.instances["line-1"] = InstanceRuntime(
+        instance_id="line-1",
+        device_id=uuid4(),
+        pipeline=None,
+        pipeline_error="boom",
+        inspection_enabled=True,
+    )
+    state = runtime.inspection_state(last_result=None)
+    assert state["faulted"] is True
 
 
 def test_camera_state(tmp_path: Path) -> None:

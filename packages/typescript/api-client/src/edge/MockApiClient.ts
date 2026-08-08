@@ -26,6 +26,7 @@ import type {
   StatisticsSummary,
   TraceabilityView,
   UploadTask,
+  VideoInspectResult,
 } from "./types";
 
 const DEVICE_ID = "11111111-1111-4111-8111-111111111111";
@@ -543,5 +544,19 @@ export class MockApiClient implements ApiClient {
       ng_count: total - passCount,
       pass_rate: total === 0 ? 0 : passCount / total,
     };
+  }
+
+  // The web dev test harness only exists in the HTTP client; the in-memory
+  // mock has no inference backend (ADR-014).
+  devInspectFrame(): Promise<InspectionRecord> {
+    return Promise.reject(
+      new ApiError(404, "DEV_TOOLS_DISABLED", "dev test tools require the HTTP client"),
+    );
+  }
+
+  devInspectVideo(): Promise<VideoInspectResult> {
+    return Promise.reject(
+      new ApiError(404, "DEV_TOOLS_DISABLED", "dev test tools require the HTTP client"),
+    );
   }
 }

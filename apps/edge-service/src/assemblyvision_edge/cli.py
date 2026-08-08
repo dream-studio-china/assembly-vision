@@ -101,6 +101,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow a non-loopback bind without an API token in explicit M1 "
         "development mode (not production authentication)",
     )
+    serve.add_argument(
+        "--enable-web-test",
+        action="store_true",
+        help="Enable the gated /api/v1/dev test endpoints (frame/video "
+        "inspection); disabled by default (ADR-014)",
+    )
     return parser
 
 
@@ -279,6 +285,7 @@ def _run_serve(args: argparse.Namespace) -> int:
             device_id=args.device_id,
             static_dir=args.static,
             api_token=api_token,
+            enable_web_test=args.enable_web_test,
         )
         app = create_app(settings)
         uvicorn.run(app, host=args.host, port=args.port, log_level="info")

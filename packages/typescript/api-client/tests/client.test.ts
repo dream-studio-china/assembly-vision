@@ -167,3 +167,119 @@ describe("HttpApiClient", () => {
     expect(captured?.has("Authorization")).toBe(false);
   });
 });
+
+describe("web dev test harness (ADR-014)", () => {
+  const record = {
+    inspection_id: "11111111-1111-4111-8111-111111111111",
+    device_id: "22222222-2222-4222-8222-222222222222",
+    device_sequence: 1,
+    lifecycle_status: "COMPLETED",
+    started_at: "2026-01-01T00:00:00Z",
+    completed_at: "2026-01-01T00:00:01Z",
+    barcode_result: { status: "NOT_REQUIRED", value: null, symbology: null },
+    product_resolution: { status: "RESOLVED", source: "CONFIGURED_DEFAULT", product_code: "p" },
+    product_detection: null,
+    roi_result: null,
+    frame_quality_summary: { total_frame_count: 1, usable_frame_count: 1, rejected_frame_count: 0, reasons: [] },
+    application_version: "0.1.0",
+    product_model_version_id: "33333333-3333-4333-8333-333333333333",
+    product_model_checksum_sha256: "0".repeat(64),
+    component_model_version_id: "44444444-4444-4444-8444-444444444444",
+    component_model_checksum_sha256: "0".repeat(64),
+    rule_version_id: "55555555-5555-4555-8555-555555555555",
+    aggregation_policy_version: "single-frame-mvp-1",
+    evidence: [],
+    media: [],
+    decision: {
+      internal_decision: "OK",
+      business_result: "OK",
+      missing_components: [],
+      low_confidence_components: [],
+      reason_codes: [],
+      decided_at: "2026-01-01T00:00:01Z",
+    },
+    synchronization_status: "LOCAL_ONLY",
+    processing_ms: 5,
+  };
+
+  it("posts raw image bytes to /dev/inspect-frame", async () => {
+    let captured: { url: string; init?: RequestInit } | undefined;
+    const fetchImpl = ((input: RequestInfo | URL, init?: RequestInit) => {
+      captured = { url: String(input), init };
+      return Promise.resolve(
+        new Response(JSON.stringify(record), { status: 200, headers: { "Content-Type": "application/json" } }),
+      );
+    }) as typeof fetch;
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    const result = await client.devInspectFrame("line-1", new Blob(["jpeg"], { type: "image/jpeg" }));
+    expect(result.decision.business_result).toBe("OK");
+    expect(captured?.url).toContain("/api/v1/dev/inspect-frame?instance_id=line-1");
+    expect(captured?.init?.method).toBe("POST");
+    expect(new Headers(captured?.init?.headers).get("Content-Type")).toBe("image/jpeg");
+  });
+
+  it("posts a video and returns the per-frame summary", async () => {
+    const summary = {
+      instance_id: "line-1",
+      analyzed_frames: 2,
+      ok_count: 1,
+      ng_count: 1,
+      frames: [
+        { index: 1, business_result: "OK", internal_decision: "OK", reason_codes: [] },
+        { index: 2, business_result: "NG", internal_decision: "NG", reason_codes: ["TEST"] },
+      ],
+    };
+    const fetchImpl = ((_input: RequestInfo | URL, init?: RequestInit) => {
+      void init;
+      return Promise.resolve(
+        new Response(JSON.stringify(summary), { status: 200, headers: { "Content-Type": "application/json" } }),
+      );
+    }) as typeof fetch;
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    const result = await client.devInspectVideo("line-1", new Blob(["mp4"], { type: "video/mp4" }), {
+      step: 2,
+    });
+    expect(result.analyzed_frames).toBe(2);
+    expect(result.ng_count).toBe(1);
+  });
+
+  it("mock client rejects dev tools with DEV_TOOLS_DISABLED", async () => {
+    const client = new MockApiClient();
+    await expect(client.devInspectFrame("line-1", new Blob(["x"]))).rejects.toMatchObject({
+      code: "DEV_TOOLS_DISABLED",
+    });
+  });
+
+  function captureInit(status: number, body: unknown): { fetchImpl: typeof fetch; init: () => RequestInit | undefined } {
+    let captured: RequestInit | undefined;
+    const fetchImpl = ((_input: RequestInfo | URL, init?: RequestInit) => {
+      captured = init;
+      return Promise.resolve(
+        new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } }),
+      );
+    }) as typeof fetch;
+    return { fetchImpl, init: () => captured };
+  }
+
+  it("preserves the file's own image Content-Type instead of fabricating image/jpeg (F11)", async () => {
+    const { fetchImpl, init } = captureInit(200, record);
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    await client.devInspectFrame("line-1", new File(["png-bytes"], "photo.png", { type: "image/png" }));
+    expect(new Headers(init()?.headers).get("Content-Type")).toBe("image/png");
+  });
+
+  it("preserves the file's own video Content-Type instead of fabricating video/mp4 (F11)", async () => {
+    const summary = { instance_id: "line-1", analyzed_frames: 1, ok_count: 1, ng_count: 0, frames: [] };
+    const { fetchImpl, init } = captureInit(200, summary);
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    await client.devInspectVideo("line-1", new File(["webm-bytes"], "clip.webm", { type: "video/webm" }));
+    expect(new Headers(init()?.headers).get("Content-Type")).toBe("video/webm");
+  });
+
+  it("falls back to application/octet-stream when the blob has no type (F11)", async () => {
+    const { fetchImpl, init } = captureInit(200, record);
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    await client.devInspectFrame("line-1", new Blob(["raw-bytes"]));
+    expect(new Headers(init()?.headers).get("Content-Type")).toBe("application/octet-stream");
+  });
+});

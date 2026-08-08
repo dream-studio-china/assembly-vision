@@ -15,7 +15,7 @@ from assemblyvision_edge.rules.rule_engine import ComponentRequirement, RuleCont
 @pytest.fixture(autouse=True)
 def _reset_rule_identity_registry() -> Iterator[None]:
     """Isolate the process-local rule-identity registry between tests."""
-    from assemblyvision_edge import config as edge_config
+    import assemblyvision_edge.config as edge_config
 
     edge_config._RULE_IDENTITY_REGISTRY.clear()  # noqa: SLF001
     yield

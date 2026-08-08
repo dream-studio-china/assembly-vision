@@ -58,7 +58,11 @@ Dependencies: representative images, initial product/component definitions, cand
 
 ### 25.5.2 Week 2: Edge Acquisition and Persistence
 
-- Integrate the selected camera adapter and trigger/window prototype.
+- Integrate the selected camera adapter and trigger/window prototype. The
+  `FrameSource` abstraction (ADR-013) ships first with simulated sources
+  (folder, video, OpenCV local/virtual device, RTSP, HTTP-image) so the
+  acquisition path is developed and tested without camera hardware; the vendor
+  SDK adapter then implements the same protocol.
 - Implement barcode reading as a separate capability and product-type resolution.
 - Add SQLite schema/migrations, atomic media storage, recovery states, and retention safeguards.
 - Add local FastAPI and a basic Vue dashboard for camera, latest result, health, and recent history.

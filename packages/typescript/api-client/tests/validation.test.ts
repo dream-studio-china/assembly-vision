@@ -174,3 +174,55 @@ describe("HttpApiClient runtime response validation (F9)", () => {
     });
   });
 });
+
+describe("dev video result decision validation (F12)", () => {
+  const baseResult = {
+    instance_id: "line-1",
+    analyzed_frames: 1,
+    ok_count: 0,
+    ng_count: 1,
+    truncated: false,
+    frames: [
+      { index: 1, business_result: "NG", internal_decision: "UNCERTAIN", reason_codes: ["TEST"] },
+    ],
+  };
+
+  it("accepts a video result with valid OK/NG/UNCERTAIN decisions", async () => {
+    const client = clientFor(baseResult);
+    await expect(client.devInspectVideo("line-1", new Blob(["x"]))).resolves.toBeDefined();
+  });
+
+  it("accepts a video result without the optional truncated field", async () => {
+    const { truncated, ...rest } = baseResult;
+    void truncated;
+    const client = clientFor(rest);
+    await expect(client.devInspectVideo("line-1", new Blob(["x"]))).resolves.toBeDefined();
+  });
+
+  it("rejects a video result whose truncated field is not a boolean", async () => {
+    const client = clientFor({ ...baseResult, truncated: "yes" });
+    await expect(client.devInspectVideo("line-1", new Blob(["x"]))).rejects.toMatchObject({
+      code: "INVALID_RESPONSE",
+    });
+  });
+
+  it("rejects a frame whose business_result is UNCERTAIN", async () => {
+    const client = clientFor({
+      ...baseResult,
+      frames: [{ ...baseResult.frames[0], business_result: "UNCERTAIN" }],
+    });
+    await expect(client.devInspectVideo("line-1", new Blob(["x"]))).rejects.toMatchObject({
+      code: "INVALID_RESPONSE",
+    });
+  });
+
+  it("rejects a frame with an unknown internal_decision", async () => {
+    const client = clientFor({
+      ...baseResult,
+      frames: [{ ...baseResult.frames[0], internal_decision: "MAYBE" }],
+    });
+    await expect(client.devInspectVideo("line-1", new Blob(["x"]))).rejects.toMatchObject({
+      code: "INVALID_RESPONSE",
+    });
+  });
+});

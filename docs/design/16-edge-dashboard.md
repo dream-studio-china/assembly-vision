@@ -56,6 +56,12 @@ Barcode failure, unknown product, unusable frames, model failure, and missing co
 
 Use a bandwidth-limited JPEG/MJPEG or WebRTC preview only if justified by latency requirements. Do not send full production frames through JSON WebSocket messages. Overlay events carry source dimensions and boxes; the UI discards overlays whose frame ID does not match the displayed preview frame. Preview loss never changes the inspection engine state.
 
+Until the WebSocket runtime channel lands, the dashboard live view consumes
+the per-instance REST preview `GET /api/v1/camera/{instance_id}/preview`
+(rate-limited latest-frame JPEG, ADR-013). The WebSocket milestone reuses the
+same frame pipeline and supersedes this stopgap without changing the
+inspection engine.
+
 ## 16.5 Inspection History and Detail
 
 History defaults to newest first and supports business result, internal decision, barcode, product, and bounded date filters. Search is debounced and server-side; cursor pagination prevents loading the full local database. A row displays completion time, business result, internal decision detail, barcode, product, reason summary, latency, upload state, and model/rule versions.
@@ -154,6 +160,18 @@ Acceptance checks include:
 ## 16.14 MVP and Later Scope
 
 MVP includes live status/latest result, recent history/detail, health, queue visibility/manual retry, and pause/resume if operationally approved. Local override editing and logs may be administrator-only late-MVP features. Later additions may include WebRTC preview, kiosk packaging/Tauri, alert acknowledgement workflow, guided camera calibration, and richer multi-frame evidence playback. None is required for the static train-and-inspect MVP.
+
+## 16.14.1 Developer Tools (`/dev`)
+
+A `/dev` route groups developer-mode tools (ADR-014), including a **Test** tab
+that takes a photo (mobile OS camera via file capture), uploads an image, or
+uploads a short video and shows the inspection decision immediately, with the
+product bounding box overlaid client-side on the source image and a per-frame
+summary table for videos. A **Logs** tab reuses the bounded log view, and
+future tools (camera preview, config/DB inspection) may join the same page.
+The tools require `VITE_API_MODE=http` and a `serve` run with
+`--enable-web-test`; otherwise the page explains how to enable them. The dev
+tools never stream video and are not a production acquisition path.
 
 ## 16.15 Open Questions and Validation Required
 

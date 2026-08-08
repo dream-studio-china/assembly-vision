@@ -20,6 +20,7 @@ import type {
   StatisticsSummary,
   TraceabilityView,
   UploadTask,
+  VideoInspectResult,
 } from "./types";
 
 function toQuery(filter: InspectionFilter | undefined): string {
@@ -42,6 +43,11 @@ async function parseProblem(body: unknown): Promise<Problem | null> {
   const record = body as Record<string, unknown>;
   if (typeof record.type !== "string" || typeof record.title !== "string") return null;
   return record as unknown as Problem;
+}
+
+/** Outgoing media label for raw image/video uploads (PR-014 F11). */
+function mediaContentType(blob: Blob): string {
+  return blob.type || "application/octet-stream";
 }
 
 /**
@@ -209,6 +215,36 @@ export class HttpApiClient implements ApiClient {
     if (filter?.line) params.set("line", filter.line);
     const qs = params.toString();
     return this.#request(`/statistics${qs ? `?${qs}` : ""}`, undefined, validators.statisticsSummary);
+  }
+
+  devInspectFrame(
+    instanceId: string,
+    image: Blob,
+    opts?: { persist?: boolean },
+  ): Promise<InspectionRecord> {
+    const params = new URLSearchParams();
+    if (instanceId) params.set("instance_id", instanceId);
+    if (opts?.persist === false) params.set("persist", "false");
+    return this.#request(
+      `/dev/inspect-frame?${params.toString()}`,
+      { method: "POST", body: image, headers: { "Content-Type": mediaContentType(image) } },
+      validators.inspectionRecord,
+    );
+  }
+
+  devInspectVideo(
+    instanceId: string,
+    video: Blob,
+    opts?: { step?: number },
+  ): Promise<VideoInspectResult> {
+    const params = new URLSearchParams();
+    if (instanceId) params.set("instance_id", instanceId);
+    if (opts?.step !== undefined) params.set("step", String(opts.step));
+    return this.#request(
+      `/dev/inspect-video?${params.toString()}`,
+      { method: "POST", body: video, headers: { "Content-Type": mediaContentType(video) } },
+      validators.videoInspectResult,
+    );
   }
 }
 

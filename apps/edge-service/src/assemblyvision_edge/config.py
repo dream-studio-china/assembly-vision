@@ -8,13 +8,15 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+from uuid import UUID
 
 import yaml
 from assemblyvision_domain.errors import ConfigError, ROIGenerationError
 from assemblyvision_domain.models import ModelManifest
 from assemblyvision_vision.manifests import manifest_model_version
 from assemblyvision_vision.roi.roi_engine import ROIConfig
+from assemblyvision_vision.sources.factory import FrameSourceConfig
 
 from assemblyvision_edge.rules.rule_engine import RuleDefinition
 
@@ -154,7 +156,11 @@ def load_pipeline_config(path: Path) -> PipelineConfig:
         {"application_version", "models", "product_detection", "component_detection", "roi"},
         "pipeline configuration",
     )
-    base = path.parent
+    return _parse_pipeline_doc(doc, path.parent)
+
+
+def _parse_pipeline_doc(doc: dict[str, Any], base: Path) -> PipelineConfig:
+    """Parse and validate the pipeline sections of a configuration document."""
     application_version = doc.get("application_version", "0.1.0")
     if not isinstance(application_version, str) or not application_version:
         raise ConfigError("application_version must be a non-empty string")
@@ -318,3 +324,230 @@ def _register_rule_identity(rule: RuleDefinition) -> None:
             "with different content; rules are immutable once loaded"
         )
     _RULE_IDENTITY_REGISTRY[key] = digest
+
+
+# -- Multi-instance edge configuration (ADR-013) -------------------------------
+
+_SOURCE_TYPES = {"folder", "video", "opencv-device", "rtsp", "http-image"}
+
+
+@dataclass(frozen=True)
+class CameraSourceConfig:
+    """Per-instance camera source configuration (design 07.7)."""
+
+    source: Literal["folder", "video", "opencv-device", "rtsp", "http-image"]
+    path: Path | None = None
+    url: str | None = None
+    device: int | str | None = None
+    fps: float | None = None
+    loop: bool = False
+    reconnect_initial_delay_ms: int = 250
+    reconnect_maximum_delay_ms: int = 10000
+
+    def as_frame_source_config(self) -> FrameSourceConfig:
+        """Convert to the neutral vision-core factory configuration."""
+        return FrameSourceConfig(
+            source=self.source,
+            path=self.path,
+            url=self.url,
+            device=self.device,
+            fps=self.fps,
+            loop=self.loop,
+            reconnect_initial_delay_ms=self.reconnect_initial_delay_ms,
+            reconnect_maximum_delay_ms=self.reconnect_maximum_delay_ms,
+        )
+
+
+@dataclass(frozen=True)
+class InspectionRunConfig:
+    """Whether the instance runs the single-frame inspection loop."""
+
+    enabled: bool = False
+
+
+@dataclass(frozen=True)
+class InstanceConfig:
+    """One independent inspection instance (camera + own pipeline/rule)."""
+
+    instance_id: str
+    device_id: str | None
+    camera: CameraSourceConfig
+    inspection: InspectionRunConfig
+    pipeline: PipelineConfig
+    rule: Path
+
+
+@dataclass(frozen=True)
+class EdgeConfig:
+    """Multi-instance edge configuration (ADR-013)."""
+
+    application_version: str
+    instances: tuple[InstanceConfig, ...]
+
+
+def load_edge_config(path: Path) -> EdgeConfig:
+    """Load and validate a multi-instance edge configuration YAML file.
+
+    The document carries ``application_version`` and an ``instances:`` list;
+    each instance embeds a full pipeline (models, detector settings, ROI) and
+    its own rule path, so every instance is an independent inspection line
+    (ADR-013). The legacy flat single-config form is unchanged.
+    """
+    try:
+        raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:
+        raise ConfigError(f"cannot load edge configuration: {path}: {exc}") from exc
+    doc = _require_mapping(raw, "edge configuration")
+    _reject_unknown(doc, {"application_version", "instances"}, "edge configuration")
+    application_version = doc.get("application_version", "0.1.0")
+    if not isinstance(application_version, str) or not application_version:
+        raise ConfigError("application_version must be a non-empty string")
+    instances_raw = doc.get("instances")
+    if not isinstance(instances_raw, list) or not instances_raw:
+        raise ConfigError("instances must be a non-empty list")
+    base = path.parent
+    instances: list[InstanceConfig] = []
+    seen: set[str] = set()
+    for index, instance_raw in enumerate(instances_raw):
+        name = f"instances[{index}]"
+        instance = _require_mapping(instance_raw, name)
+        _reject_unknown(
+            instance,
+            {
+                "instance_id",
+                "device_id",
+                "camera",
+                "inspection",
+                "rule",
+                "models",
+                "product_detection",
+                "component_detection",
+                "roi",
+            },
+            name,
+        )
+        instance_id = _require_str(instance.get("instance_id"), f"{name}.instance_id")
+        if instance_id in seen:
+            raise ConfigError(f"duplicate instance_id {instance_id!r}")
+        seen.add(instance_id)
+        device_id_raw = instance.get("device_id")
+        device_id: str | None = None
+        if device_id_raw is not None:
+            try:
+                UUID(_require_str(device_id_raw, f"{name}.device_id"))
+            except ValueError as exc:
+                raise ConfigError(f"{name}.device_id must be a valid UUID") from exc
+            device_id = device_id_raw
+        camera = _parse_camera_source(
+            _require_mapping(instance.get("camera"), f"{name}.camera"), base, f"{name}.camera"
+        )
+        inspection_raw = _require_mapping(instance.get("inspection") or {}, f"{name}.inspection")
+        _reject_unknown(inspection_raw, {"enabled"}, f"{name}.inspection")
+        inspection = InspectionRunConfig(
+            enabled=_as_bool(inspection_raw.get("enabled"), f"{name}.inspection.enabled", False)
+        )
+        rule = _resolve_path(base, instance.get("rule"), f"{name}.rule")
+        pipeline_doc = {
+            "application_version": application_version,
+            "models": instance.get("models"),
+            "product_detection": instance.get("product_detection"),
+            "component_detection": instance.get("component_detection"),
+            "roi": instance.get("roi"),
+        }
+        instances.append(
+            InstanceConfig(
+                instance_id=instance_id,
+                device_id=device_id,
+                camera=camera,
+                inspection=inspection,
+                pipeline=_parse_pipeline_doc(pipeline_doc, base),
+                rule=rule,
+            )
+        )
+    return EdgeConfig(application_version=application_version, instances=tuple(instances))
+
+
+def _parse_camera_source(raw: dict[str, Any], base: Path, name: str) -> CameraSourceConfig:
+    """Parse and validate one camera source mapping (design 07.7)."""
+    _reject_unknown(
+        raw,
+        {
+            "source",
+            "path",
+            "url",
+            "device",
+            "fps",
+            "loop",
+            "reconnect",
+        },
+        name,
+    )
+    source = _require_str(raw.get("source"), f"{name}.source")
+    if source not in _SOURCE_TYPES:
+        raise ConfigError(f"{name}.source {source!r} is not one of {sorted(_SOURCE_TYPES)}")
+    path: Path | None = None
+    if "path" in raw and raw["path"] is not None:
+        path = _resolve_path(base, raw["path"], f"{name}.path")
+    url = _require_optional_str(raw.get("url"), f"{name}.url")
+    device: int | str | None = None
+    if "device" in raw and raw["device"] is not None:
+        device_raw = raw["device"]
+        if isinstance(device_raw, bool) or not isinstance(device_raw, (int, str)):
+            raise ConfigError(f"{name}.device must be an integer or a device path string")
+        device = device_raw
+    if source in ("folder", "video") and path is None:
+        raise ConfigError(f"{name}: source {source!r} requires a path")
+    if source == "opencv-device" and device is None:
+        raise ConfigError(f"{name}: source {source!r} requires a device")
+    if source in ("rtsp", "http-image") and url is None:
+        raise ConfigError(f"{name}: source {source!r} requires a url")
+    if (
+        url is not None
+        and source == "rtsp"
+        and not (url.startswith("rtsp://") or url.startswith("rtsps://"))
+    ):
+        raise ConfigError(f"{name}.url must be an rtsp:// url for source 'rtsp'")
+    if (
+        url is not None
+        and source == "http-image"
+        and not (url.startswith("http://") or url.startswith("https://"))
+    ):
+        raise ConfigError(f"{name}.url must be an http(s):// url for source 'http-image'")
+    fps = raw.get("fps")
+    if fps is not None:
+        fps = _as_number(fps, f"{name}.fps")
+        if fps <= 0:
+            raise ConfigError(f"{name}.fps must be positive")
+    reconnect_raw = raw.get("reconnect")
+    reconnect_initial = 250
+    reconnect_maximum = 10000
+    if reconnect_raw is not None:
+        reconnect = _require_mapping(reconnect_raw, f"{name}.reconnect")
+        _reject_unknown(reconnect, {"initial_delay_ms", "maximum_delay_ms"}, f"{name}.reconnect")
+        reconnect_initial = _as_positive_int(
+            reconnect.get("initial_delay_ms"), f"{name}.reconnect.initial_delay_ms", 250
+        )
+        reconnect_maximum = _as_positive_int(
+            reconnect.get("maximum_delay_ms"), f"{name}.reconnect.maximum_delay_ms", 10000
+        )
+        if reconnect_maximum < reconnect_initial:
+            raise ConfigError(
+                f"{name}.reconnect.maximum_delay_ms ({reconnect_maximum}) must be >= "
+                f"initial_delay_ms ({reconnect_initial})"
+            )
+    return CameraSourceConfig(
+        source=source,  # type: ignore[arg-type]
+        path=path,
+        url=url,
+        device=device,
+        fps=fps,
+        loop=_as_bool(raw.get("loop"), f"{name}.loop", False),
+        reconnect_initial_delay_ms=reconnect_initial,
+        reconnect_maximum_delay_ms=reconnect_maximum,
+    )
+
+
+def _require_optional_str(raw: Any, name: str) -> str | None:
+    if raw is None:
+        return None
+    return _require_str(raw, name)

@@ -25,6 +25,7 @@ from assemblyvision_edge.api.routers import (
     camera,
     configuration,
     derived,
+    dev,
     device,
     health,
     inspection,
@@ -81,10 +82,11 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
             imported = reconcile_output_root(repository, settings.output_root)
             if imported:
                 log.info("reconciled %d inspection records from output root", imported)
-        runtime.load_pipeline(repository)
-        if runtime.pipeline is None:
+        runtime.load_config(repository)
+        if runtime.pipeline is None and not runtime.instances:
             log.warning("inspection engine is not ready: %s", runtime.pipeline_error)
         yield
+        runtime.shutdown()
         repository.close()
         logging.getLogger().removeHandler(app.state.log_buffer)
 
@@ -142,6 +144,10 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         derived.router,
     ):
         app.include_router(router, prefix="/api/v1", dependencies=[Depends(require_viewer)])
+    # The dev router declares its own enablement gate ahead of viewer
+    # authentication, so a disabled harness returns 404 DEV_TOOLS_DISABLED
+    # before any credential check while enabled endpoints keep auth (F8).
+    app.include_router(dev.router, prefix="/api/v1")
     app.include_router(auth.router, prefix="/api/v1")
     # Health keeps /health/live deliberately unauthenticated (design 15.3.1);
     # /health/ready requires the viewer credential.

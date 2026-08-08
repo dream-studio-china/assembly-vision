@@ -34,14 +34,19 @@ and verifies that all required assembly components are present.
   updates. Read-only dashboard views display real CLI results through the HTTP
   client, while the operator workflow actions remain on the mock client.
   PR #12 (dev -> main) closed the AUDIT-001 findings with acceptance tests
-  (merged 2026-08-09); see section 8.4.
+  (merged 2026-08-09); see section 8.4. PR #14 (`feat/camera-frame-sources`,
+  open) adds camera frame sources, multi-instance `serve`, and the gated web
+  dev test harness (ADR-013/014); see section 8.5.
 
 ## 2. Repository State
 
 - Remote: `https://github.com/dream-studio-china/assembly-vision`. PRs #3, #6,
-  #8, #9, #10, #11, #12 are merged to `main`; PR #12 merged the completed
-  AUDIT-001 closure on 2026-08-09. The next milestones are the upload
-  scheduler + authoritative persistence (AUDIT-001 4.4) and collecting real
+  #8, #9, #10, #11, #12 (and docs PR #13) are merged to `main`; PR #12 merged
+  the completed AUDIT-001 closure on 2026-08-09. PR #14
+  (`feat/camera-frame-sources`, open) carries the camera frame sources,
+  multi-instance serve, and web dev test harness (ADR-013/014). The next
+  milestones are the upload scheduler + authoritative persistence (AUDIT-001
+  4.4), the product-window/temporal aggregation milestone, and collecting real
   customer data.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
@@ -142,7 +147,8 @@ assembly-vision/
   + TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage & delayed
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
    static-image-first MVP, ADR-010 per-component temporal aggregation, ADR-011 labeled
-   train-and-inspect MVP, and ADR-012 edge API M1 viewer auth.
+   train-and-inspect MVP, ADR-012 edge API M1 viewer auth, ADR-013 camera frame
+   sources and multi-instance edge, and ADR-014 web dev test harness.
 - [docs/design/appendices.md](../design/appendices.md) holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
@@ -364,8 +370,8 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
 - **Packaging**: `py.typed` markers added to `domain` and `vision-core` so MyPy
   strict passes repo-wide.
 - **Test hardening**: the shared gate (ruff, format, mypy, pytest) passes with
-  `472 passed` (2026-08-09); TypeScript is `34 passed` (api-client), `13 passed`
-  (ui), `25 passed` (edge-web), `3 passed` (desktop), plus 12 Playwright e2e
+  `557 passed` (2026-08-09); TypeScript is `37 passed` (api-client), `13 passed`
+  (ui), `28 passed` (edge-web), `3 passed` (desktop), plus 12 Playwright e2e
   including a token-authenticated served dashboard that asserts real reconciled
   data and purged-media rendering. `uv run mkdocs build --strict` passes.
 
@@ -407,6 +413,59 @@ verified and its findings closed with acceptance tests, merged via PR #12
   version, lease fields, concurrent equal-content upserts) is gated on the
   upload-scheduler milestone.
 
+## 8.5 Camera Frame Sources, Multi-Instance Edge, and Web Dev Test Harness (ADR-013/014, PR #14)
+
+Implemented on `feat/camera-frame-sources` and carried by PR #14 (open; all
+gates green). The review-driven hardening pass is recorded in
+`docs/reviews/PR-014-review.md`; findings F1-F14 are resolved with regression
+tests. The design:
+
+- **`FrameSource` protocol in `vision-core`** (design 07 §7.3): `open /
+  configure / frames(stop) / close` yielding `CapturedFrame` with monotonic +
+  UTC timestamps, sequence, dimensions, pixel format, status, and PIL RGB
+  image; decode failures raise a frame-stream error (fail-safe).
+- **Five pluggable sources** (all implemented): `folder` (loopable), `video`
+  (OpenCV), `opencv-device` (local/virtual camera, e.g. v4l2loopback or OBS),
+  `rtsp` (PyAV + OpenCV fallback), `http-image` (httpx polling). Vendor SDKs
+  are future protocol implementations. `opencv-python-headless`, `av`, `httpx`
+  are vision-core optional extras pulled in by edge-service.
+- **Multi-instance `serve`**: `instances:` list in `pipeline.yaml`; each
+  instance pairs a camera source with its own models/rule/product; the flat
+  single-config form stays backward compatible. `device_id` defaults to
+  `uuid5(namespace, instance_id)` (explicit override wins). A
+  `CameraSourceManager` runs one bounded capture thread per instance (latest
+  frame retained for preview, non-fatal per-instance failures); enabled
+  instances consume a bounded per-instance inspection queue with explicit
+  overflow reporting (`FRAME_OVERFLOW`, PR-014 F1/F2), and
+  `EdgeRuntime.load_instances` starts an independent single-frame inspection
+  loop per instance when `inspection.enabled` (default false).
+- **Preview before WebSocket**: `GET /api/v1/camera/{instance_id}/preview`
+  (rate-limited latest-frame JPEG; 404 unknown instance, 503 not ready) and
+  per-instance `camera_state`; the WebSocket runtime channel later supersedes
+  the preview.
+- **Web dev test harness (ADR-014)**: gated `/api/v1/dev/inspect-frame` and
+  `/api/v1/dev/inspect-video` (404 unless `serve --enable-web-test`) let a
+  browser take a photo (mobile OS camera), upload an image, or upload a short
+  video and get the inspection decision; a `/dev` dashboard page groups the
+  tools with a Logs tab and a client-side product-bbox overlay. Image tests
+  write evidence bundles by default (`persist=false` to skip); video tests
+  return a per-frame summary (≤30 frames, <100 MB) without persisting. It is a
+  test harness, not production acquisition.
+- **Remaining in the milestone**: product-window/temporal aggregation,
+  vendor SDK adapters, per-instance model weight sharing (Phase 3), and
+  folding the REST preview into the WebSocket channel.
+- **Review hardening (PR-014)**: findings F1-F14 are closed with regression
+  tests: no silent frame loss (bounded queue + explicit overflow), pause
+  stops inspection and device status reports `PAUSED`, corrupt sources fail
+  closed while bad instances stay non-fatal, dev-harness uploads are
+  byte/pixel/step bounded with immediate projection persistence, disabled dev
+  endpoints return 404 before authentication, and dev video decisions use the
+  canonical business/internal enums with binary bodies and problem responses
+  documented in the regenerated OpenAPI/TypeScript contract.
+  `assemblyvision_edge` now ships `py.typed` so the strict mypy gate passes
+  repo-wide; the current suite is 586 Python tests, 91 TypeScript unit tests
+  (api-client 45, ui 13, edge-web 30, desktop 3), and 12 Playwright e2e.
+
 ## 9. Open Items / Next Steps
 
 - The FastAPI + SQLite backend layer (`assemblyvision serve`, section 8.3) is
@@ -419,7 +478,9 @@ verified and its findings closed with acceptance tests, merged via PR #12
   PR #12 on 2026-08-09. The only deferred item is 4.4 authoritative
   persistence, gated on the upload-scheduler milestone. Phase 3 still needs a
   decision on the multi-edge-per-host "shared" model before the upload
-  scheduler, WebSocket, camera/barcode, and temporal aggregation work.
+  scheduler, WebSocket, camera/barcode, and temporal aggregation work; ADR-013
+  partially addresses it with per-instance pipelines (each instance loads its
+  own models, so weight sharing remains an open optimization).
 - Resilience documentation (2026-08-09, new docs PR): design 22 adds
   Accelerator/GPU failure and Repeated network disconnect to the resilience
   fault matrix, design 09 and contracts 06 are aligned, and README gained a
@@ -457,11 +518,16 @@ verified and its findings closed with acceptance tests, merged via PR #12
   images-first and split-first layouts) into
   `dataset_product`/`dataset_components` + `test-expected.json`, then run
   `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
-- Camera/hardware integration, barcode decoding, product-window management,
-  temporal aggregation, authoritative SQLite persistence (the current index is
-  a rebuildable read projection), the upload queue scheduler, and Docker
-  deployment remain as the roadmap 25.5 one-month scope; they are blocked on
-  hardware and customer-site decisions.
+- Camera acquisition milestone (ADR-013/014) is **implemented** and carried by
+  PR #14 (open). Remaining in the milestone: the product-window/temporal
+  aggregation work, vendor SDK camera adapters, per-instance model weight
+  sharing, and folding the REST preview into the WebSocket runtime channel.
+- Camera/hardware integration (vendor SDK), barcode decoding, product-window
+  management, temporal aggregation, authoritative SQLite persistence (the
+  current index is a rebuildable read projection), the upload queue scheduler,
+  and Docker deployment remain as the roadmap 25.5 one-month scope; only the
+  vendor-SDK, barcode, and site-coupling parts are blocked on hardware and
+  customer-site decisions.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.

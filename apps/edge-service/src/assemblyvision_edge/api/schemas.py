@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Literal
 
+from assemblyvision_domain.models import BusinessResult, InternalDecision
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -72,6 +73,31 @@ class InspectionRuntimeState(BaseModel):
     paused_reason: str | None = None
     paused_by: str | None = None
     paused_at: str | None = None
+
+
+class VideoFrameInspectResult(BaseModel):
+    """One analyzed frame's decision summary (web dev test harness, ADR-014)."""
+
+    index: int
+    business_result: BusinessResult
+    internal_decision: InternalDecision
+    reason_codes: list[str] = Field(default_factory=list)
+
+
+class VideoInspectResult(BaseModel):
+    """Per-frame summary for an uploaded test video (ADR-014).
+
+    ``truncated`` is true when a decode resource budget (frame count or wall
+    clock) ended iteration early, so consumers do not mistake the summary for a
+    complete analysis of the source video (F6).
+    """
+
+    instance_id: str
+    analyzed_frames: int
+    ok_count: int
+    ng_count: int
+    frames: list[VideoFrameInspectResult] = Field(default_factory=list)
+    truncated: bool = False
 
 
 class InspectionSummary(BaseModel):

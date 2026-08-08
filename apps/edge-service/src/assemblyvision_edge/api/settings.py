@@ -21,3 +21,4 @@ class ServerSettings:
     camera_fps: int | None = None
     api_token: str | None = None
     cors_allow_loopback: bool = True
+    enable_web_test: bool = False

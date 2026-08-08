@@ -205,6 +205,64 @@ Open `/login` in the served dashboard and enter the configured token once; it is
 exchanged for an HttpOnly, same-origin session cookie and is never bundled or
 stored by the dashboard.
 
+### 4.7 Multi-camera serve (`instances`, ADR-013)
+
+`serve` can open several independent camera instances from one config, each
+with its own source (folder / video / OpenCV device / RTSP / HTTP-image) and
+its own models/rule/product. `inspection.enabled` defaults to `false`, so
+`serve` opens the sources and serves previews without writing inspections:
+
+```bash
+uv run assemblyvision serve \
+  --output out/ \
+  --db out/edge.sqlite3 \
+  --config config/examples/pipeline.cameras.yaml \
+  --static apps/edge-web/dist \
+  --host 127.0.0.1 --port 8000
+```
+
+- Per-instance camera state: `GET /api/v1/camera/state` (aggregated) and the
+  preview endpoint `GET /api/v1/camera/{instance_id}/preview` (latest frame as
+  a rate-limited JPEG; `404` unknown instance, `503` not ready).
+- Mock phase without hardware: use `source: folder` (loopable image
+  directory), `source: video` (a local video file), or `source: rtsp` /
+  `source: http-image` for remote TCP/IP inputs. A local camera or a virtual
+  camera driver (Linux `v4l2loopback`, OBS Virtual Camera) plugs in as
+  `source: opencv-device`.
+- Each instance defaults to `device_id = uuid5(namespace, instance_id)` so
+  records stay traceable per line across restarts; set `device_id` explicitly
+  to override.
+
+### 4.8 Web dev test harness (`--enable-web-test`, ADR-014)
+
+For quick testing from any browser (including a phone's camera), `serve` can
+expose gated file-based test endpoints that analyze one image or a short video
+and return the inspection decision. They are **disabled by default** — start
+`serve` with `--enable-web-test` to turn them on:
+
+```bash
+uv run assemblyvision serve \
+  --output out/ \
+  --db out/edge.sqlite3 \
+  --config config/examples/pipeline.cameras.yaml \
+  --static apps/edge-web/dist \
+  --enable-web-test \
+  --host 127.0.0.1 --port 8000
+```
+
+Then open the served dashboard at `/dev` (Test tab): take a photo with the
+phone camera, upload an image, or upload a short video. Image tests write an
+evidence bundle that appears in History (disable with the *persist* checkbox);
+video tests return a per-frame summary without persisting. The endpoints are:
+
+- `POST /api/v1/dev/inspect-frame` — image bytes → `InspectionRecord`
+- `POST /api/v1/dev/inspect-video` — video bytes → `VideoInspectResult`
+  (≤ 30 analyzed frames, < 100 MB)
+
+This is a developer test harness, not a production acquisition path: it never
+streams video and must not be enabled on production hosts. Production
+real-time inspection uses the native app / RTSP / camera sources (ADR-014).
+
 ---
 
 ## 5. App: Edge dashboard (`apps/edge-web`)

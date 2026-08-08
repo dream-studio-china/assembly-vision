@@ -31,8 +31,31 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Camera State */
+        /**
+         * Camera State
+         * @description Camera connection and capture settings; per-instance when requested.
+         */
         get: operations["camera_state_api_v1_camera_state_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/camera/{instance_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Camera Preview
+         * @description Return the latest captured frame as a rate-limited JPEG (ADR-013).
+         */
+        get: operations["camera_preview_api_v1_camera__instance_id__preview_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -52,6 +75,53 @@ export interface paths {
         get: operations["effective_configuration_api_v1_configuration_effective_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dev/inspect-frame": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dev Inspect Frame
+         * @description Inspect one uploaded image; writes an evidence bundle unless persist=false.
+         */
+        post: operations["dev_inspect_frame_api_v1_dev_inspect_frame_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dev/inspect-video": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dev Inspect Video
+         * @description Analyze an uploaded video frame by frame; returns a summary only.
+         *
+         *     The video is streamed to a temporary file (never held fully in memory),
+         *     decoded with the shared :class:`VideoFrameSource`, and at most
+         *     ``_MAX_VIDEO_FRAMES`` sampled frames are inspected without persisting
+         *     evidence (ADR-014). ``step`` is bounded and the total decode work is
+         *     bounded by ``_MAX_DECODED_FRAMES`` and ``_MAX_VIDEO_DECODE_SECONDS``;
+         *     ``truncated`` is set when a decode budget ends iteration early.
+         */
+        post: operations["dev_inspect_video_api_v1_dev_inspect_video_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1021,6 +1091,43 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /**
+         * VideoFrameInspectResult
+         * @description One analyzed frame's decision summary (web dev test harness, ADR-014).
+         */
+        VideoFrameInspectResult: {
+            business_result: components["schemas"]["BusinessResult"];
+            /** Index */
+            index: number;
+            internal_decision: components["schemas"]["InternalDecision"];
+            /** Reason Codes */
+            reason_codes?: string[];
+        };
+        /**
+         * VideoInspectResult
+         * @description Per-frame summary for an uploaded test video (ADR-014).
+         *
+         *     ``truncated`` is true when a decode resource budget (frame count or wall
+         *     clock) ended iteration early, so consumers do not mistake the summary for a
+         *     complete analysis of the source video (F6).
+         */
+        VideoInspectResult: {
+            /** Analyzed Frames */
+            analyzed_frames: number;
+            /** Frames */
+            frames?: components["schemas"]["VideoFrameInspectResult"][];
+            /** Instance Id */
+            instance_id: string;
+            /** Ng Count */
+            ng_count: number;
+            /** Ok Count */
+            ok_count: number;
+            /**
+             * Truncated
+             * @default false
+             */
+            truncated: boolean;
+        };
     };
     responses: never;
     parameters: never;
@@ -1050,7 +1157,9 @@ export interface operations {
     };
     camera_state_api_v1_camera_state_get: {
         parameters: {
-            query?: never;
+            query?: {
+                instance_id?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1064,6 +1173,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CameraState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    camera_preview_api_v1_camera__instance_id__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                instance_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1084,6 +1233,150 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EffectiveConfiguration"];
+                };
+            };
+        };
+    };
+    dev_inspect_frame_api_v1_dev_inspect_frame_post: {
+        parameters: {
+            query?: {
+                instance_id?: string | null;
+                persist?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionRecord"];
+                };
+            };
+            /** @description Problem response (RFC 7807) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Problem response (RFC 7807) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Problem response (RFC 7807) */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Problem response (RFC 7807) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    dev_inspect_video_api_v1_dev_inspect_video_post: {
+        parameters: {
+            query?: {
+                instance_id?: string | null;
+                step?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VideoInspectResult"];
+                };
+            };
+            /** @description Problem response (RFC 7807) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Problem response (RFC 7807) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Problem response (RFC 7807) */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Problem response (RFC 7807) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };

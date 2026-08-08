@@ -9,6 +9,7 @@ The acquisition subsystem owns industrial-camera integration, trigger handling, 
 | Scope | Acquisition source |
 |---|---|
 | Static-image MVP | Deterministically ordered files from an input directory |
+| Camera mock / simulated | Folder (looped), local video file, OpenCV local/virtual device, remote RTSP stream, or remote HTTP-image polling — all through the same `FrameSource` seam (ADR-013) |
 | Production target | One fixed industrial camera with fixed lighting, reconnect handling, product-window correlation, optional rolling video |
 | Future | Additional camera vendors, multiple synchronized cameras, PLC or encoder triggers |
 
@@ -27,6 +28,15 @@ class FrameSource(Protocol):
 ```
 
 `CapturedFrame` includes a process-local monotonic timestamp, wall-clock UTC timestamp, sequence number, dimensions, pixel format, acquisition status, and image buffer. The monotonic clock controls durations; UTC supports traceability. Vendor buffers must be copied or released according to SDK ownership rules before being passed asynchronously.
+
+Implemented sources (ADR-013), all behind this protocol: `folder` (static
+image directory, optional loop), `video` (local video file), `opencv-device`
+(local camera index or `/dev/videoN`, including virtual cameras such as Linux
+`v4l2loopback` or OBS Virtual Camera), `rtsp` (remote RTSP stream via PyAV
+with an OpenCV fallback), and `http-image` (poll a remote JPEG URL at a
+configured interval). Vendor SDK adapters are future implementations of the
+same protocol. Read/decode failures raise a frame-stream error and are never
+silently skipped.
 
 Static files receive stable IDs derived from relative path plus content checksum. Unsupported, partially written, or undecodable files are recorded as failed inputs rather than silently skipped.
 
@@ -68,6 +78,12 @@ sequenceDiagram
     Note over Store,Upload: Upload is asynchronous and cannot block inspection
 ```
 
+Each instance independently exposes its latest captured frame as a
+rate-limited JPEG preview (`GET /api/v1/camera/{instance_id}/preview`,
+ADR-013). The preview is a REST stopgap for the dashboard until the WebSocket
+runtime channel supersedes it; preview loss never changes the inspection
+engine state.
+
 ## 7.6 Frame Quality and Color Handling
 
 Decode into a documented canonical format, normally BGR8 for OpenCV, while preserving original dimensions. Model preprocessing performs its own RGB conversion. Quality checks should include blur, brightness range, corruption, frame age, and optionally saturation or glare. Thresholds are camera-specific and must be calibrated from production captures.
@@ -76,24 +92,50 @@ A rejected frame remains traceable with rejection reasons but contributes no pos
 
 ## 7.7 Configuration
 
+One edge host runs one or more independent inspection instances, each with
+its own camera source and its own models/rule/product (ADR-013). Configuration
+lives under the `instances:` list in the shared pipeline configuration:
+
 ```yaml
-camera:
-  adapter: vendor_adapter_name
-  device_serial: configured-at-site
-  pixel_format: BGR8
-  acquisition_mode: continuous
-  trigger_mode: hardware
-  exposure_us: null
-  gain_db: null
-  reconnect:
-    initial_delay_ms: 250
-    maximum_delay_ms: 10000
-capture:
-  buffer_frames: 32
-  stale_frame_ms: 250
-  trigger_debounce_ms: 100
-  rolling_video_seconds: 30
+instances:
+  - instance_id: line-1
+    device_id: null                 # default = uuid5(namespace, instance_id)
+    camera:
+      source: rtsp
+      url: rtsp://192.168.1.10/stream
+      fps: null
+      reconnect:
+        initial_delay_ms: 250
+        maximum_delay_ms: 10000
+    inspection:
+      enabled: false                # preview-only until the window milestone
+    # models, product_detection, component_detection, roi, rule per instance
+  - instance_id: line-2
+    camera:
+      source: video
+      path: /data/line2.mp4
+      fps: 25
+  - instance_id: bench
+    camera:
+      source: folder
+      path: /data/images
+      loop: true
+      fps: 5
+  - instance_id: webcam-0
+    camera:
+      source: opencv-device
+      device: 0
 ```
+
+Source-specific requirements:
+
+| Source | Required field | Notes |
+|---|---|---|
+| `folder` | `path` | Deterministic sorted order; `loop` re-walks the directory |
+| `video` | `path` | Decoded with OpenCV; `fps` paces emission |
+| `opencv-device` | `device` (index or `/dev/videoN`) | Virtual cameras are plain devices here |
+| `rtsp` | `url` | PyAV primary, OpenCV fallback; bounded reconnect |
+| `http-image` | `url` | Polled at `fps`/interval with a bounded HTTP timeout |
 
 `null` exposure and gain mean site calibration is required, not an automatic default. Applied camera settings and serial number are recorded at startup and on change.
 

@@ -9,6 +9,11 @@ dependencies = [
     "Pillow>=12.3.0,<13",
 ]
 
+[project.optional-dependencies]
+video = ["opencv-python-headless>=4.9"]
+rtsp = ["av>=12,<16"]
+http = ["httpx>=0.27,<1"]
+
 [tool.uv.sources]
 assemblyvision-domain = { workspace = true }
 
