@@ -39,6 +39,7 @@ onBeforeUnmount(() => {
         <router-link to="/health">Health</router-link>
         <router-link to="/configuration">Config</router-link>
         <router-link to="/logs">Logs</router-link>
+        <router-link to="/dev">Dev</router-link>
         <router-link v-if="isHttpMode()" to="/login">Sign in</router-link>
       </nav>
       <div class="app-shell__telemetry" aria-label="Device telemetry">

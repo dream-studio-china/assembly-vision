@@ -218,7 +218,7 @@ export class HttpApiClient implements ApiClient {
     opts?: { persist?: boolean },
   ): Promise<InspectionRecord> {
     const params = new URLSearchParams();
-    params.set("instance_id", instanceId);
+    if (instanceId) params.set("instance_id", instanceId);
     if (opts?.persist === false) params.set("persist", "false");
     return this.#request(
       `/dev/inspect-frame?${params.toString()}`,
@@ -233,7 +233,7 @@ export class HttpApiClient implements ApiClient {
     opts?: { step?: number },
   ): Promise<VideoInspectResult> {
     const params = new URLSearchParams();
-    params.set("instance_id", instanceId);
+    if (instanceId) params.set("instance_id", instanceId);
     if (opts?.step !== undefined) params.set("step", String(opts.step));
     return this.#request(
       `/dev/inspect-video?${params.toString()}`,
