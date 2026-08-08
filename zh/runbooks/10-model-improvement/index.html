@@ -2889,9 +2889,11 @@
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--out-weights<span class="w"> </span>models/weights/product-yolo-0.2.0.pt<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--out-manifest<span class="w"> </span>models/manifests/product-manifest.json
 </code></pre></div></li>
-<li><strong>从新产品检测器重新生成组件 ROI 数据集</strong>：
+<li>**从新产品检测器（
+   清单经过校验和验证；具有零个或多个产品的框架是
+   记录在<code>exclusions.json</code>中，不是默默挑选的）：
    <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>av-train<span class="w"> </span>prepare-components<span class="w"> </span>&lt;dataset_components&gt;<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--product-weights<span class="w"> </span>models/weights/product-yolo-0.2.0.pt<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--product-manifest<span class="w"> </span>models/manifests/product-manifest.json<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--min-area<span class="w"> </span><span class="m">10000</span><span class="w"> </span>--min-retention<span class="w"> </span><span class="m">0</span>.80<span class="w"> </span>--out-dir<span class="w"> </span>&lt;roi-dataset&gt;
 </code></pre></div></li>
 <li><strong>重新训练组件检测器</strong>：

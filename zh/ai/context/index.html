@@ -3348,11 +3348,13 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   边界处的公差。</li>
 <li><strong>打包</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
   strict 在整个仓库范围内传递。</li>
-<li><strong>测试强化</strong>：边缘 Python 覆盖率为 100% (pytest-cov)；完整的
-  套件是 <code>373 passed</code>，TypeScript 测试是 <code>28 passed</code> (api-client) 和
-  <code>12 passed</code> (edge-web)，而 Playwright e2e 是 <code>12 passed</code>，包括
-  经过令牌验证的服务仪表板，断言真实的协调数据和
-  清除媒体渲染。</li>
+<li><strong>测试强化</strong>：边缘 Python 覆盖率为 99.6%（pytest-cov；唯一
+  未覆盖的分支是无法访问的 IntegrityError 处理程序
+  存储库和两个派生图像槽后备）；全套套房是
+  <code>399 passed</code>，TypeScript 测试是 <code>30 passed</code>（api-client）和 <code>17 passed</code>
+  (edge-web)，并且 Playwright e2e 是 <code>12 passed</code> ，包括经过令牌验证的
+  提供真实协调数据和清除媒体的仪表板
+  渲染。</li>
 </ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3361,22 +3363,28 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   调度程序</strong>（真实的 <code>upload_tasks</code> 行、重试退避、幂等性）和
   <strong>WebSocket 运行时通道</strong> 是下一个后端差距。仪表板读取
   视图通过<code>VITE_API_MODE=http</code>切换到真实数据。</li>
-<li>PR-003后续项目仍然开放（参见<code>docs/reviews/PR-003-review.md</code>）：
-  模型清单的完整内容不变性（发布仅检查第一个
-  工件校验和），严格的 Roboflow 源标签验证（负类
-  ID、未验证的字段计数/边界）、缺失标签策略（当前
-  仅警告隐式否定），产品的显式背景否定
-  数据集、清单相关验证身份（仍然基于基本名称）、
-  过时输出安全数据集适应/组件准备和组件
-  准备重用生产选择策略。运行时项目是固定的：
-  规则内容与持久注册表绑定、捆绑原子输出、推理
-  参数固定、检测来源验证和启动
-  交叉验证。</li>
-<li>M1层剩余的两个中等差距：代币保护的Vite开发
-  不支持跨源（CORS 仅允许 GET，查看器会话
-  cookie是同源的；使用同源 <code>assemblyvision serve</code> 流），并且
-  CLI <code>inspect</code>/<code>verify</code> 规则身份注册表是进程本地的，而
-  <code>serve</code> 将其保留在 SQLite 中。</li>
+<li>PR-003后续事项全部解决（参见<code>docs/reviews/PR-003-review.md</code>）：
+  模型清单出版物现在比较完整的决策关键内容
+  （任务、类顺序、输入大小、工件、出处），Roboflow 适配器
+  严格验证每个来源标签并保留明确的背景
+  底片（没有独立产品盒的纯组件图像
+  被拒绝），默认情况下需要图像/标签配对与记录
+  <code>--allow-missing-labels</code> 选择加入，验证使用源相关示例
+  身份和数据集适应/组件准备拒绝过时的输出
+  目录并写入文件清单。组件准备现在加载
+  已验证的产品清单并精确镜像运行时一个产品
+  选择策略，在 <code>exclusions.json</code> 中记录不明确的样本。</li>
+<li>剩余的两个 M1 介质间隙已解决：</li>
+<li><strong>跨来源的受代币保护的 Vite 开发</strong>现在可以运行。环回
+    开发源可以使用 <code>GET</code>/<code>POST</code>/<code>OPTIONS</code> 和 <code>Authorization</code> 以及
+    <code>Content-Type</code> 标头，仪表板将查看者令牌保留在内存中
+    （从未持久化）当它跨域运行时，将其附加到 API 和媒体
+    请求；同源部署保持 HttpOnly-cookie 流。</li>
+<li><strong>CLI 规则身份注册表是持久的</strong>：<code>assemblyvision inspect</code>/<code>verify</code>
+    现在在同一个 SQLite <code>rule_identities</code> 中注册加载的规则标识
+    <code>serve</code> 使用 (<code>&lt;output&gt;/edge.sqlite3</code>) 的注册表，因此已发布
+    <code>(rule_id, rule_version)</code> 在 CLI 调用中保持不变，并且
+    服务重新启动。</li>
 <li>M1 层之后剩余的路线图范围（第 8.3 节，PR #8）：上传
   队列调度程序、WebSocket 通道、相机/条形码适配器、时间
   聚合、Docker 打包和权威的 SQLite 持久化/发件箱。
@@ -3394,7 +3402,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。</li>
-<li><code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</li>
+<li><code>.obsidian/</code> 根据选择保持不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
 
 

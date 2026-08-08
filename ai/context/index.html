@@ -3348,11 +3348,13 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   tolerance at the boundary.</li>
 <li><strong>Packaging</strong>: <code>py.typed</code> markers added to <code>domain</code> and <code>vision-core</code> so MyPy
   strict passes repo-wide.</li>
-<li><strong>Test hardening</strong>: edge Python coverage is at 100% (pytest-cov); the full
-  suite is <code>373 passed</code>, TypeScript tests are <code>28 passed</code> (api-client) and
-  <code>12 passed</code> (edge-web), and Playwright e2e is <code>12 passed</code> including a
-  token-authenticated served dashboard that asserts real reconciled data and
-  purged-media rendering.</li>
+<li><strong>Test hardening</strong>: edge Python coverage is at 99.6% (pytest-cov; the only
+  uncovered branches are the unreachable IntegrityError handler in the
+  repository and two derived-image slot fallbacks); the full suite is
+  <code>399 passed</code>, TypeScript tests are <code>30 passed</code> (api-client) and <code>17 passed</code>
+  (edge-web), and Playwright e2e is <code>12 passed</code> including a token-authenticated
+  served dashboard that asserts real reconciled data and purged-media
+  rendering.</li>
 </ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3361,22 +3363,28 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   scheduler</strong> (real <code>upload_tasks</code> rows, retry backoff, idempotency) and the
   <strong>WebSocket runtime channel</strong> are the next backend gaps. The dashboard read
   views switch to real data via <code>VITE_API_MODE=http</code>.</li>
-<li>PR-003 follow-up items still open (see <code>docs/reviews/PR-003-review.md</code>):
-  model-manifest full-content immutability (publication checks only the first
-  artifact checksum), strict Roboflow source-label validation (negative class
-  IDs, unvalidated field count/bounds), missing-label policy (currently
-  warn-only implicit negatives), explicit background negatives for the product
-  dataset, manifest-relative verification identity (still basename-based),
-  stale-output-safe dataset adaptation/component preparation, and component
-  preparation reusing the production selection policy. Runtime items are fixed:
-  rule content binding with a durable registry, bundle-atomic output, inference
-  parameter pinning, detection provenance validation, and startup
-  cross-validation.</li>
-<li>Two remaining medium gaps on the M1 layer: token-protected Vite development
-  across origins is not supported (CORS allows GET only and the viewer session
-  cookie is same-origin; use the same-origin <code>assemblyvision serve</code> flow), and
-  the CLI <code>inspect</code>/<code>verify</code> rule-identity registry is process-local while
-  <code>serve</code> persists it in SQLite.</li>
+<li>PR-003 follow-up items are all resolved (see <code>docs/reviews/PR-003-review.md</code>):
+  model-manifest publication now compares full decision-critical content
+  (task, class order, input size, artifact, provenance), the Roboflow adapter
+  validates every source label strictly and keeps explicit background
+  negatives (component-only images without an independent product box are
+  rejected), image/label pairing is required by default with a recorded
+  <code>--allow-missing-labels</code> opt-in, verification uses source-relative sample
+  identities, and dataset adaptation/component preparation reject stale output
+  directories and write file manifests. Component preparation now loads a
+  verified product manifest and mirrors the runtime exactly-one-product
+  selection policy, recording ambiguous samples in <code>exclusions.json</code>.</li>
+<li>The two remaining M1 medium gaps are resolved:</li>
+<li><strong>Token-protected Vite development across origins</strong> now works. Loopback
+    dev origins may use <code>GET</code>/<code>POST</code>/<code>OPTIONS</code> with <code>Authorization</code> and
+    <code>Content-Type</code> headers, and the dashboard keeps the viewer token in memory
+    (never persisted) when it runs cross-origin, attaching it to API and media
+    requests; same-origin deployments keep the HttpOnly-cookie flow.</li>
+<li><strong>CLI rule-identity registry is durable</strong>: <code>assemblyvision inspect</code>/<code>verify</code>
+    now register the loaded rule identity in the same SQLite <code>rule_identities</code>
+    registry that <code>serve</code> uses (<code>&lt;output&gt;/edge.sqlite3</code>), so a published
+    <code>(rule_id, rule_version)</code> stays immutable across CLI invocations and
+    service restarts.</li>
 <li>Roadmap scope remaining after the M1 layer (section 8.3, PR #8): upload
   queue scheduler, WebSocket channel, camera/barcode adapters, temporal
   aggregation, Docker packaging, and authoritative SQLite persistence/outbox.

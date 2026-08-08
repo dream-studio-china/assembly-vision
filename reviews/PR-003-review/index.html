@@ -2697,6 +2697,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#resolution-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resolution Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#p1-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2897,6 +2908,18 @@
 <h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
 <p>This document records the actionable P1 and P2 findings remaining after the
 P0 fixes committed as <code>677c094</code>, <code>c23d831</code>, and <code>1618efb</code>.</p>
+<h2 id="resolution-status">Resolution Status<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
+<p>All P1 and P2 findings in this document are resolved and validated:</p>
+<ul>
+<li><strong>P1</strong>: manifest full-content immutability, Roboflow source-label strict
+  validation, required image/label pairing with a recorded opt-in, explicit
+  background negatives for the product dataset, and source-relative
+  verification identity.</li>
+<li><strong>P2</strong>: bundle-atomic evidence output, rule version identity bound to
+  content, stale-output-safe dataset adaptation/preparation with file
+  manifests, and component preparation reusing the verified product manifest
+  and the runtime exactly-one-product selection policy.</li>
+</ul>
 <h2 id="p1-findings">P1 Findings<a class="headerlink" href="#p1-findings" title="Permanent link">&para;</a></h2>
 <h3 id="model-manifest-immutability-is-incomplete">Model manifest immutability is incomplete<a class="headerlink" href="#model-manifest-immutability-is-incomplete" title="Permanent link">&para;</a></h3>
 <p><code>training/src/assemblyvision_training/artifact.py</code> permits an existing manifest

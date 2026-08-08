@@ -2865,6 +2865,12 @@ M1 只读集成演示器不需要。然而，运送
 <li>所服务的仪表板需要一次交互式不记名令牌交换，当
   令牌已配置。生成的会话随着边缘进程或
   在其有限的生命周期之后；前端资产中没有秘密船只。</li>
+<li>支持针对受代币保护的主机进行跨域 Vite 开发：
+  环回开发源可以使用 <code>GET</code>/<code>POST</code>/<code>OPTIONS</code> 和 <code>Authorization</code> 以及
+  <code>Content-Type</code> 标头，仪表板将输入的令牌保留在内存中
+  （从未持久化）页面生命周期，将其附加到 API 和媒体
+  请求。内存中的令牌只是为了开发方便；它不是一个
+  替换生产部署中的同源 HttpOnly 会话。</li>
 </ul>
 <h2 id="5-open-questions-and-validation-required">5. 开放式问题和需要验证<a class="headerlink" href="#5-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
