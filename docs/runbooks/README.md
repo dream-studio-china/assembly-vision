@@ -16,6 +16,7 @@ Site-specific contacts, commands, thresholds, and hardware steps must be added d
 | Model rollback | [08 - Model Rollback](08-model-rollback.md) |
 | Rule rollback | [09 - Rule Rollback](09-rule-rollback.md) |
 | Model improvement | [10 - Model Improvement](10-model-improvement.md) |
+| Data collection and annotation | [11 - Data Collection and Annotation](11-data-collection-and-annotation.md) |
 
 Every execution records device/site, start/end time, actor, affected inspections, evidence/log bundle,
 actions, result, and escalation reference. A runbook never converts incomplete evidence to `OK`.
