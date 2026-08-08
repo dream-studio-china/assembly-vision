@@ -10,19 +10,47 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import threading
+import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import UUID, uuid4, uuid5
 
 from assemblyvision_domain.errors import ConfigError
+from assemblyvision_vision.sources.frame_source import FrameStreamError
 
 from assemblyvision_edge.api.settings import ServerSettings
+from assemblyvision_edge.camera_manager import CameraSourceManager
+from assemblyvision_edge.config import InstanceConfig
 from assemblyvision_edge.persistence.repository import EdgeRepository, RepositoryError
 
 log = logging.getLogger("assemblyvision.runtime")
 
 _LOW_DISK_WARNING_BYTES = 5 * 1024**3
+_INSTANCE_NAMESPACE = UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8")
+
+
+@dataclass
+class InstanceRuntime:
+    """One independent inspection instance (camera + own pipeline, ADR-013)."""
+
+    instance_id: str
+    device_id: UUID
+    pipeline: Any
+    pipeline_error: str | None
+    inspection_enabled: bool
+    last_result: str | None = None
+    thread: threading.Thread | None = None
+
+
+def _instance_device_id(instance: InstanceConfig) -> UUID:
+    """Stable per-instance device identity (uuid5) unless explicitly set."""
+    if instance.device_id is not None:
+        return UUID(instance.device_id)
+    return uuid5(_INSTANCE_NAMESPACE, instance.instance_id)
 
 
 class EdgeRuntime:
@@ -39,6 +67,9 @@ class EdgeRuntime:
         self.paused_by: str | None = None
         self.paused_at: str | None = None
         self.rule_snapshot: dict[str, Any] | None = None
+        self.instances: dict[str, InstanceRuntime] = {}
+        self.camera_manager: Any = None
+        self._stop = threading.Event()
 
     @staticmethod
     def _resolve_device_id(configured: str | None) -> UUID:
@@ -68,6 +99,98 @@ class EdgeRuntime:
             self.pipeline_error_code = "CONFIG_INVALID"
             self.pipeline = None
             log.error("pipeline build failed: %s", exc)
+
+    def load_instances(
+        self, config_path: Path | None, repository: EdgeRepository | None = None
+    ) -> None:
+        """Build per-instance pipelines and start camera sources (ADR-013).
+
+        Configuration or source failures are non-fatal: instances without a
+        usable pipeline or source are reported in their state while the
+        remaining instances and the read-only API keep working.
+        """
+        if config_path is None:
+            self.pipeline_error = "edge configuration path is not configured"
+            self.pipeline_error_code = None
+            log.warning("%s", self.pipeline_error)
+            return
+        from assemblyvision_vision.sources.factory import build_frame_source
+
+        from assemblyvision_edge.config import load_edge_config
+
+        try:
+            edge_config = load_edge_config(Path(config_path))
+        except ConfigError as exc:
+            self.pipeline_error = str(exc)
+            self.pipeline_error_code = "CONFIG_INVALID"
+            self.instances = {}
+            log.error("edge configuration failed: %s", exc)
+            return
+        registry = repository.register_rule_identity if repository is not None else None
+        instances: dict[str, InstanceRuntime] = {}
+        sources: dict[str, Any] = {}
+        for instance in edge_config.instances:
+            pipeline: Any = None
+            pipeline_error: str | None = None
+            try:
+                pipeline = _build_instance_pipeline(instance, rule_registry=registry)
+            except (ConfigError, ValueError, RepositoryError) as exc:
+                pipeline_error = str(exc)
+                log.error("instance %s pipeline build failed: %s", instance.instance_id, exc)
+            instances[instance.instance_id] = InstanceRuntime(
+                instance_id=instance.instance_id,
+                device_id=_instance_device_id(instance),
+                pipeline=pipeline,
+                pipeline_error=pipeline_error,
+                inspection_enabled=instance.inspection.enabled,
+            )
+            try:
+                sources[instance.instance_id] = build_frame_source(
+                    instance.camera.as_frame_source_config()
+                )
+            except FrameStreamError as exc:
+                log.warning("instance %s camera source failed: %s", instance.instance_id, exc)
+        self.instances = instances
+        self.pipeline_error = None
+        self.pipeline_error_code = None
+        self.camera_manager = CameraSourceManager(sources)
+        self.camera_manager.start()
+        for instance_id, runtime in instances.items():
+            if runtime.inspection_enabled and runtime.pipeline is not None:
+                runtime.thread = threading.Thread(
+                    target=self._inspection_loop,
+                    args=(instance_id,),
+                    name=f"inspect-{instance_id}",
+                    daemon=True,
+                )
+                runtime.thread.start()
+
+    def shutdown(self) -> None:
+        """Stop camera capture and inspection threads (ADR-013 lifecycle)."""
+        self._stop.set()
+        if self.camera_manager is not None:
+            self.camera_manager.stop()
+
+    def _inspection_loop(self, instance_id: str) -> None:
+        """Run the single-frame inspection loop for one enabled instance."""
+        from assemblyvision_edge.output.writer import OutputWriter
+
+        runtime = self.instances.get(instance_id)
+        if runtime is None or runtime.pipeline is None or self.camera_manager is None:
+            return
+        writer = OutputWriter(self._settings.output_root)
+        last_sequence = 0
+        while not self._stop.is_set():
+            frame = self.camera_manager.latest_frame(instance_id)
+            if frame is not None and frame.sequence > last_sequence:
+                last_sequence = frame.sequence
+                try:
+                    record = runtime.pipeline.inspect_frame(frame, writer)
+                    runtime.last_result = record.decision.business_result
+                except Exception:  # noqa: BLE001 - loop must survive frame errors
+                    log.exception("inspection failed for instance %s", instance_id)
+            else:
+                time.sleep(0.01)
 
     def pause(self, reason: str, by: str = "operator") -> None:
         self.paused = True
@@ -259,4 +382,55 @@ def _build_pipeline(
         component_manifest=component_manifest,
         config=config,
         device_id=UUID(str(settings.device_id or uuid4())),
+    )
+
+
+def _build_instance_pipeline(
+    instance: InstanceConfig, rule_registry: Callable[[str, int, str], None] | None = None
+) -> Any:
+    """Build the inspection pipeline for one instance (ADR-013)."""
+    from assemblyvision_domain.models import ModelManifest
+    from assemblyvision_vision.manifests import load_model_manifest
+    from assemblyvision_vision.roi.roi_engine import ROIEngine
+
+    from assemblyvision_edge.config import (
+        RuleIdentityRegistry,
+        load_rule_definition,
+        validate_model_version_declaration,
+        validate_rule_component_compatibility,
+    )
+    from assemblyvision_edge.detection import ComponentDetector, ProductDetector
+    from assemblyvision_edge.pipeline import InspectionPipeline
+    from assemblyvision_edge.rules.rule_engine import RuleEngine
+
+    config = instance.pipeline
+    registry: RuleIdentityRegistry | None = rule_registry
+    rule = load_rule_definition(instance.rule, registry=registry)
+    product_manifest: ModelManifest = load_model_manifest(config.product_manifest)
+    component_manifest: ModelManifest = load_model_manifest(config.component_manifest)
+    validate_model_version_declaration(
+        config.product_detection.model_version, product_manifest, "product_detection.model_version"
+    )
+    validate_model_version_declaration(
+        config.component_detection.model_version,
+        component_manifest,
+        "component_detection.model_version",
+    )
+    validate_rule_component_compatibility(rule, config, component_manifest)
+    product_detector = ProductDetector.from_manifest(
+        product_manifest, config.product_detection, config.product_manifest
+    )
+    component_detector = ComponentDetector.from_manifest(
+        component_manifest, config.component_detection, config.components, config.component_manifest
+    )
+    return InspectionPipeline(
+        product_detector=product_detector,
+        component_detector=component_detector,
+        roi_engine=ROIEngine(config.roi),
+        rule_engine=RuleEngine(),
+        rule=rule,
+        product_manifest=product_manifest,
+        component_manifest=component_manifest,
+        config=config,
+        device_id=_instance_device_id(instance),
     )

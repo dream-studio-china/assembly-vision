@@ -46,6 +46,7 @@ from assemblyvision_vision.manifests import manifest_model_version
 from assemblyvision_vision.roi.geometry import Box, apply_transform, inverse_transform
 from assemblyvision_vision.roi.roi_engine import ROIEngine
 from assemblyvision_vision.sources.folder_source import FolderSource
+from assemblyvision_vision.sources.frame_source import CapturedFrame
 from PIL import Image
 
 from assemblyvision_edge.config import PipelineConfig
@@ -166,18 +167,33 @@ class InspectionPipeline:
         self, source: FolderSource, path: Path, writer: OutputWriter
     ) -> InspectionRecord:
         """Run one inspection and persist its evidence, returning the record."""
+        try:
+            image = source.read(path)
+        except ImageReadError as exc:
+            log.warning("image read failed for %s: %s", path, exc)
+            image = None
+        return self._inspect_impl(image=image, image_read_error=image is None, writer=writer)
+
+    def inspect_frame(self, frame: CapturedFrame, writer: OutputWriter) -> InspectionRecord:
+        """Inspect one captured camera frame; each frame is one inspection (ADR-013)."""
+        return self._inspect_impl(image=frame.image, image_read_error=False, writer=writer)
+
+    def _inspect_impl(
+        self,
+        *,
+        image: Image.Image | None,
+        image_read_error: bool,
+        writer: OutputWriter,
+    ) -> InspectionRecord:
         inspection_id = uuid4()
         frame_id = uuid4()
         started_at = datetime.now(UTC)
         started = time.monotonic()
 
         extra_reasons: list[str] = []
-        frame: Image.Image | None = None
-        try:
-            frame = source.read(path)
-        except ImageReadError as exc:
+        frame = image
+        if image_read_error:
             extra_reasons.append(rc.IMAGE_READ_ERROR)
-            log.warning("image read failed for %s: %s", path, exc)
 
         product_detection: ProductDetection | None = None
         roi_result: ROIResult | None = None
