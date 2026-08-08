@@ -16,22 +16,28 @@ import type { ImageSlotStatus, InspectionImages } from "@assemblyvision/api-clie
 const route = useRoute();
 const images = ref<InspectionImages | null>(null);
 const error = ref<string | null>(null);
+const failedSlots = ref(new Set<string>());
 
 const isMock = isMockMode();
 
 type Slot = { url: string | null; status: ImageSlotStatus };
 
-function slot(state: ImageSlotStatus | undefined, url: string | undefined): Slot {
+function slot(kind: string, state: ImageSlotStatus | undefined, url: string | undefined): Slot {
   if (state === "PURGED") return { url: null, status: "PURGED" };
+  if (failedSlots.value.has(kind)) return { url: null, status: "UNAVAILABLE" };
   if (url) return { url, status: "AVAILABLE" };
   return { url: isMock ? mockCameraFrame(800, 600) : null, status: "UNAVAILABLE" };
 }
 
 const slots = computed(() => ({
-  original: slot(images.value?.original_status, images.value?.original),
-  detection: slot(images.value?.detection_status, images.value?.detection),
-  annotated: slot(images.value?.annotated_status, images.value?.annotated),
+  original: slot("original", images.value?.original_status, images.value?.original),
+  detection: slot("detection", images.value?.detection_status, images.value?.detection),
+  annotated: slot("annotated", images.value?.annotated_status, images.value?.annotated),
 }));
+
+function markUnavailable(kind: string): void {
+  failedSlots.value = new Set([...failedSlots.value, kind]);
+}
 
 function slotMessage(noun: string, status: ImageSlotStatus): string {
   return status === "PURGED" ? `${noun} evidence has been purged` : `No ${noun} image available`;
@@ -59,6 +65,7 @@ onMounted(async () => {
           :src="slots.original.url"
           alt="original frame"
           class="images__img"
+          @error="markUnavailable('original')"
         />
         <el-empty
           v-else
@@ -71,6 +78,7 @@ onMounted(async () => {
           :src="slots.detection.url"
           alt="detection result"
           class="images__img"
+          @error="markUnavailable('detection')"
         />
         <el-empty
           v-else
@@ -83,6 +91,7 @@ onMounted(async () => {
           :src="slots.annotated.url"
           alt="annotated frame"
           class="images__img"
+          @error="markUnavailable('annotated')"
         />
         <el-empty
           v-else

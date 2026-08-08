@@ -77,6 +77,15 @@ function makeRecord(inspectionId: string): Record<string, unknown> {
         size_bytes: 0,
         checksum_sha256: "0".repeat(64),
       },
+      {
+        media_id: uuid(),
+        kind: "PRODUCT_ROI",
+        lifecycle: "AVAILABLE",
+        relative_path: `${inspectionId}/missing-roi.jpg`,
+        mime_type: "image/jpeg",
+        size_bytes: 1,
+        checksum_sha256: "0".repeat(64),
+      },
     ],
   };
 }
@@ -158,7 +167,10 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
     await expect(page.getByText("Original evidence has been purged")).toBeVisible();
     await expect(page.locator('img[alt="original frame"]')).toHaveCount(0);
     await page.getByRole("tab", { name: "Detection result" }).click();
+    // AVAILABLE metadata with a missing file must settle into an unavailable
+    // state after the media endpoint returns 404, not remain as a broken image.
     await expect(page.getByText("No detection image available")).toBeVisible();
+    await expect(page.locator('img[alt="detection result"]')).toHaveCount(0);
     await page.getByRole("tab", { name: "Annotations" }).click();
     await expect(page.getByText("No annotated image available")).toBeVisible();
   } finally {
