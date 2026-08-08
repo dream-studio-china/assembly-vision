@@ -323,6 +323,9 @@ uv run pytest                                          # Python tests
 pnpm -r build && pnpm -r lint && pnpm -r test          # TypeScript
 ```
 
+See [SECURITY.md](SECURITY.md) for the security policy, the M1
+authentication boundary, and how to report a vulnerability.
+
 ## 9. Project layout
 
 ```text
@@ -347,5 +350,6 @@ docs/                           # architecture, contracts, ADRs, runbooks
 
 - **Real-data baseline** — annotate production images with X-AnyLabeling, then
   run `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
-- **Edge backend API** — expose local inspection records over FastAPI so the
-  dashboard runs against real data (`VITE_API_BASE_URL`).
+- **Upload scheduler + WebSocket channel** — the next backend gaps after the
+  merged M1 layer (PR #8): real `upload_tasks` rows with retry backoff and
+  idempotency, and the runtime WebSocket channel.

@@ -30,7 +30,7 @@ Verify everything:
 ```bash
 uv run ruff check .                                    # Python lint
 uv run mypy .                                          # Python type check
-uv run pytest                                          # Python tests (136)
+uv run pytest                                          # Python tests
 
 pnpm -r build && pnpm -r lint && pnpm -r test          # frontend build/lint/unit tests
 ```
@@ -89,8 +89,8 @@ img/product_001.jpg  NG  INFERENCE_ERROR,GATE_FAILED:product_detected,...  <insp
 
 The edge makes every inspection decision. Central is never in the real-time
 path. The MVP runs as a CLI; a Vue dashboard (`apps/edge-web`) consumes the
-edge API contract through a decoupled client, and a local FastAPI service is
-the planned next layer.
+edge API contract through a decoupled client backed by a local FastAPI service
+(`assemblyvision serve`, read-only M1 API per ADR-012).
 
 ## Project Structure
 
@@ -123,6 +123,7 @@ docs/                     # architecture, contracts, ADRs, runbooks
 | [Decisions (ADRs)](docs/design/decisions/README.md) | Why major architecture choices were made |
 | [Contracts](docs/contracts/README.md) | Mandatory implementation constraints |
 | [Runbooks](docs/runbooks/README.md) | Operational recovery procedures |
+| [Security policy](SECURITY.md) | Vulnerability reporting and security position |
 
 ## Safety
 
@@ -136,9 +137,9 @@ from training.
 | Phase | Status |
 |---|---|
 | **Static train-and-inspect MVP** | Done — merged to `main` (PR #3) |
-| **Edge dashboard frontend** | In progress (`dev`) — Vue 3 app, decoupled API client |
-| **Edge desktop (Electron)** | In progress (`dev`) — dashboard as a local kiosk app |
-| One-month camera integration + persistence + backend API | Planned |
+| **Edge dashboard + desktop** | Done — merged to `main` (PR #6) |
+| **Edge backend layer (M1)** | Done — merged to `main` (PR #8) — `assemblyvision serve`, SQLite index, read-only API |
+| One-month camera integration + upload scheduler + WebSocket + persistence | Planned |
 | Production hardening + acceptance | Planned |
 
 ## License
