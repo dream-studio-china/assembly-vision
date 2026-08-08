@@ -296,9 +296,10 @@ dashboard views can display real CLI inspection results:
   ring buffer), and derived traceability/statistics/images. The M1 API is
   read-only (ADR-012): pause/resume, camera reconnect, and upload retry are not
   exposed, and every route except `/health/live` requires the configured
-  `AV_EDGE_API_TOKEN` bearer token when one is set.
+  `AV_EDGE_API_TOKEN` bearer token or the HttpOnly same-origin viewer session
+  established at dashboard `/login` when a token is set.
 - **Frontend split**: read-only views route through the HTTP client when
-  `VITE_API_BASE_URL` is set; operator workflow actions (current/confirm/next/
+  `VITE_API_MODE=http`; operator workflow actions (current/confirm/next/
   manual) stay on the deterministic mock because they are a demonstration
   queue, not a design 15.3 endpoint.
 - **PR-003 hardening folded in**: rule version identity is now bound to
@@ -323,7 +324,7 @@ dashboard views can display real CLI inspection results:
   serves read-only dashboard views from the local index; the **upload queue
   scheduler** (real `upload_tasks` rows, retry backoff, idempotency) and the
   **WebSocket runtime channel** are the next backend gaps. The dashboard read
-  views switch to real data automatically via `VITE_API_BASE_URL`.
+  views switch to real data via `VITE_API_MODE=http`.
 - A number of PR-003 P1/P2 backend hardening items are still open (see
   `docs/reviews/PR-003-review.md`): model manifest full-content immutability,
   dataset staging, and component preparation reusing production selection

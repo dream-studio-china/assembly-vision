@@ -29,12 +29,17 @@ For the M1 read-only edge API:
    commands are removed or disabled. An inspection coordinator and operator
    commands are a later milestone and will require the documented operator/admin
    role model before activation.
-2. **Viewer authentication uses a shared-secret bearer token** configured via
+2. **Viewer authentication starts with a shared-secret bearer token** configured via
    `AV_EDGE_API_TOKEN` (or the `serve --api-token` argument). When configured,
    every route except the deliberately minimal `GET /api/v1/health/live`
-   requires `Authorization: Bearer <token>` and returns `401 UNAUTHENTICATED`
-   otherwise. When no token is configured the service runs in an explicit M1
-   development mode; this must never be presented as production authentication.
+   requires `Authorization: Bearer <token>` or a short-lived HttpOnly,
+   same-origin viewer-session cookie and returns `401 UNAUTHENTICATED`
+   otherwise. `POST /api/v1/auth/session` exchanges a valid bearer token for
+   that cookie; the served dashboard provides `/login` for this one-time entry,
+   so neither API JSON requests nor media `<img>` requests need the token in
+   browser-accessible storage. When no token is configured the service runs in
+   an explicit M1 development mode; this must never be presented as production
+   authentication.
 3. **CORS never uses `*`.** Cross-origin requests are allowed only for anchored
    loopback development origins (`localhost` / `127.0.0.1` on any port) so the
    Vite dev server works; the served dashboard is same-origin and needs no CORS.
@@ -62,11 +67,11 @@ For the M1 read-only edge API:
   reach the service; this is a documented development-mode boundary, not
   production authentication.
 - A shared token is coarse: it provides viewer access but no per-actor
-  attribution, no expiry, and no operator/admin separation. This is
-  intentionally deferred to the production edge-session milestone.
-- Embedding a token in the served bundle is not required (same-origin serving
-  uses no CORS and browsers enforce the same-origin policy), so no secret needs
-  to ship in frontend assets.
+  attribution or operator/admin separation. This is intentionally deferred to
+  the production edge-session milestone.
+- The served dashboard requires one interactive bearer-token exchange when a
+  token is configured. The resulting session expires with the edge process or
+  after its bounded lifetime; no secret ships in frontend assets.
 
 ## 5. Open Questions and Validation Required
 

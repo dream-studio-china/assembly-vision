@@ -174,7 +174,10 @@ The M1 API is **read-only** (ADR-012): mutation controls such as
 `POST /api/v1/inspection/{pause,resume}`, camera reconnect, and upload retry
 are not exposed. When `AV_EDGE_API_TOKEN` (or `--api-token`) is configured,
 every route except `GET /api/v1/health/live` requires
-`Authorization: Bearer <token>`.
+`Authorization: Bearer <token>` or an authenticated same-origin viewer session.
+Open `/login` in the served dashboard and enter the configured token once; it is
+exchanged for an HttpOnly, same-origin session cookie and is never bundled or
+stored by the dashboard.
 
 ---
 
