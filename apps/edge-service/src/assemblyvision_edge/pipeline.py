@@ -174,8 +174,14 @@ class InspectionPipeline:
             image = None
         return self._inspect_impl(image=image, image_read_error=image is None, writer=writer)
 
-    def inspect_frame(self, frame: CapturedFrame, writer: OutputWriter) -> InspectionRecord:
-        """Inspect one captured camera frame; each frame is one inspection (ADR-013)."""
+    def inspect_frame(
+        self, frame: CapturedFrame, writer: OutputWriter | None = None
+    ) -> InspectionRecord:
+        """Inspect one captured camera frame; each frame is one inspection (ADR-013).
+
+        ``writer`` is optional: a dev/test call can analyze without persisting
+        evidence (ADR-014).
+        """
         return self._inspect_impl(image=frame.image, image_read_error=False, writer=writer)
 
     def _inspect_impl(
@@ -183,7 +189,7 @@ class InspectionPipeline:
         *,
         image: Image.Image | None,
         image_read_error: bool,
-        writer: OutputWriter,
+        writer: OutputWriter | None,
     ) -> InspectionRecord:
         inspection_id = uuid4()
         frame_id = uuid4()
@@ -351,6 +357,8 @@ class InspectionPipeline:
                 product_box,
                 [(obs.component_code, obs.full_frame_bbox) for obs in observations],
             )
+        if writer is None:
+            return record
         return writer.save(record, full_frame=frame, roi_image=roi_image, annotated=annotated)
 
     def _collect_inference_metadata(

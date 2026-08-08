@@ -25,6 +25,7 @@ from assemblyvision_edge.api.routers import (
     camera,
     configuration,
     derived,
+    dev,
     device,
     health,
     inspection,
@@ -141,6 +142,7 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         configuration.router,
         logs.router,
         derived.router,
+        dev.router,
     ):
         app.include_router(router, prefix="/api/v1", dependencies=[Depends(require_viewer)])
     app.include_router(auth.router, prefix="/api/v1")
