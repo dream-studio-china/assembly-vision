@@ -171,8 +171,18 @@ class EdgeRepository:
 
         The inspection projection is immutable (F10): re-importing identical
         content is a no-op, while different content for an existing inspection ID
-        raises :class:`RepositoryError` without any partial mutation.
+        raises :class:`RepositoryError` without any partial mutation. Duplicate
+        child identities (component evidence codes, media paths) are rejected so
+        an inspection is never partially imported (C2).
         """
+        codes = [evidence.component_code for evidence in record.evidence]
+        if len(codes) != len(set(codes)):
+            raise RepositoryError(
+                f"inspection {record.inspection_id} has duplicate component evidence"
+            )
+        paths = [item.relative_path for item in record.media]
+        if len(paths) != len(set(paths)):
+            raise RepositoryError(f"inspection {record.inspection_id} has duplicate media paths")
         content_hash = _content_hash(record)
         payload = record.model_dump(mode="json")
         decision = payload["decision"]

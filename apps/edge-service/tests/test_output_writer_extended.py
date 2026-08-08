@@ -223,6 +223,48 @@ def test_rebuild_index_from_cli_bundles_is_equivalent(tmp_path: Path) -> None:
     assert detail1.model_dump(mode="json") == detail2.model_dump(mode="json")
 
 
+def test_reconcile_skips_duplicate_media_paths(tmp_path: Path) -> None:
+    from datetime import UTC, datetime
+
+    from assemblyvision_domain.models import BusinessResult, MediaLifecycle, MediaMetadata
+
+    from tests.test_api import _record
+
+    root = tmp_path / "out"
+    root.mkdir()
+    record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-DUPM")
+    record.media = [
+        MediaMetadata(
+            media_id=uuid4(),
+            kind="KEY_FRAME",
+            lifecycle=MediaLifecycle.AVAILABLE,
+            relative_path="key.jpg",
+            mime_type="image/jpeg",
+            size_bytes=1,
+            checksum_sha256="0" * 64,
+        ),
+        MediaMetadata(
+            media_id=uuid4(),
+            kind="PRODUCT_ROI",
+            lifecycle=MediaLifecycle.AVAILABLE,
+            relative_path="key.jpg",
+            mime_type="image/jpeg",
+            size_bytes=1,
+            checksum_sha256="0" * 64,
+        ),
+    ]
+    directory = root / str(record.inspection_id)
+    directory.mkdir()
+    directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        assert reconcile_output_root(repo, root) == 0
+        assert repo.list_inspections().items == []
+    finally:
+        repo.close()
+
+
 def test_media_path_is_safe_rejects_escapes(tmp_path: Path) -> None:
     from assemblyvision_edge.persistence.reconcile import media_path_is_safe
 

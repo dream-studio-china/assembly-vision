@@ -273,6 +273,70 @@ def test_verify_revision_rejects_wrong_head(tmp_path: Path) -> None:
         _verify_revision(str(db), "0001")
 
 
+def test_upsert_rejects_duplicate_component_evidence(repo: EdgeRepository) -> None:
+    from assemblyvision_domain.models import AggregatedComponentEvidence
+
+    record = _record(datetime(2026, 1, 1, tzinfo=UTC), business=BusinessResult.OK, barcode="SN-DUP")
+    record.evidence = [
+        AggregatedComponentEvidence(
+            component_code="component_a",
+            state="PRESENT",
+            best_confidence=0.9,
+            usable_frame_count=1,
+            detection_count=1,
+            adjacent_detection_run=1,
+            supporting_frame_ids=[uuid4()],
+            policy_reason_codes=[],
+            box_area_ratios=[0.5],
+            box_centers=[(0.5, 0.5)],
+        ),
+        AggregatedComponentEvidence(
+            component_code="component_a",
+            state="PRESENT",
+            best_confidence=0.9,
+            usable_frame_count=1,
+            detection_count=1,
+            adjacent_detection_run=1,
+            supporting_frame_ids=[uuid4()],
+            policy_reason_codes=[],
+            box_area_ratios=[0.5],
+            box_centers=[(0.5, 0.5)],
+        ),
+    ]
+    with pytest.raises(RepositoryError, match="duplicate component evidence"):
+        repo.upsert_inspection(record)
+
+
+def test_upsert_rejects_duplicate_media_paths(repo: EdgeRepository) -> None:
+    from assemblyvision_domain.models import MediaLifecycle, MediaMetadata
+
+    record = _record(
+        datetime(2026, 1, 1, tzinfo=UTC), business=BusinessResult.OK, barcode="SN-DUPM"
+    )
+    record.media = [
+        MediaMetadata(
+            media_id=uuid4(),
+            kind="KEY_FRAME",
+            lifecycle=MediaLifecycle.AVAILABLE,
+            relative_path="key.jpg",
+            mime_type="image/jpeg",
+            size_bytes=1,
+            checksum_sha256="0" * 64,
+        ),
+        MediaMetadata(
+            media_id=uuid4(),
+            kind="PRODUCT_ROI",
+            lifecycle=MediaLifecycle.AVAILABLE,
+            relative_path="key.jpg",
+            mime_type="image/jpeg",
+            size_bytes=1,
+            checksum_sha256="0" * 64,
+        ),
+    ]
+    with pytest.raises(RepositoryError, match="duplicate media paths"):
+        repo.upsert_inspection(record)
+
+
 def test_verify_revision_rejects_missing_head(tmp_path: Path) -> None:
     from assemblyvision_edge.persistence.migrate import _verify_revision
 
