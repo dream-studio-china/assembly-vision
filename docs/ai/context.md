@@ -142,8 +142,8 @@ assembly-vision/
   + TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage & delayed
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
    static-image-first MVP, ADR-010 per-component temporal aggregation, ADR-011 labeled
-   train-and-inspect MVP, ADR-012 edge API M1 viewer auth, and ADR-013 camera frame
-   sources and multi-instance edge.
+   train-and-inspect MVP, ADR-012 edge API M1 viewer auth, ADR-013 camera frame
+   sources and multi-instance edge, and ADR-014 web dev test harness.
 - [docs/design/appendices.md](../design/appendices.md) holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
@@ -430,6 +430,13 @@ Documentation and ADR-013 are landed; implementation follows. The design:
 - **Defaults**: `inspection.enabled: false` per instance (preview-only until
   the window/temporal milestone); dependencies `opencv-python-headless`, `av`,
   `httpx` in edge-service with vision-core optional extras.
+- **Web dev test harness (ADR-014)**: gated `/api/v1/dev/inspect-frame` and
+  `/api/v1/dev/inspect-video` (404 unless `serve --enable-web-test`) let a
+  browser take a photo, upload an image, or upload a short video and get the
+  inspection decision; a `/dev` dashboard page groups the tools with a Logs
+  tab. Image tests write evidence bundles by default (`persist=false` to
+  skip); video tests return a per-frame summary (≤30 frames) without
+  persisting. It is a test harness, not production acquisition.
 
 ## 9. Open Items / Next Steps
 

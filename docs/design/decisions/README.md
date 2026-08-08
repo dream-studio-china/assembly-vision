@@ -15,5 +15,6 @@
 | [ADR-011](ADR-011-labeled-train-and-inspect-mvp.md) | Labeled train-and-inspect MVP |
 | [ADR-012](ADR-012-edge-api-m1-viewer-auth.md) | Edge API M1 viewer auth and read-only boundary |
 | [ADR-013](ADR-013-camera-frame-sources-and-multi-instance.md) | Camera frame sources and multi-instance edge |
+| [ADR-014](ADR-014-web-dev-test-harness.md) | Web dev test harness (file-based, not production acquisition) |
 
 All records are currently `Accepted`. ADR-011 supersedes ADR-009 only for the MVP training exclusion and two-day scope. Superseding a decision requires a new ADR and explicit links from the affected record and design documents.

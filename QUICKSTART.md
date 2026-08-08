@@ -233,6 +233,36 @@ uv run assemblyvision serve \
   records stay traceable per line across restarts; set `device_id` explicitly
   to override.
 
+### 4.8 Web dev test harness (`--enable-web-test`, ADR-014)
+
+For quick testing from any browser (including a phone's camera), `serve` can
+expose gated file-based test endpoints that analyze one image or a short video
+and return the inspection decision. They are **disabled by default** — start
+`serve` with `--enable-web-test` to turn them on:
+
+```bash
+uv run assemblyvision serve \
+  --output out/ \
+  --db out/edge.sqlite3 \
+  --config config/examples/pipeline.cameras.yaml \
+  --static apps/edge-web/dist \
+  --enable-web-test \
+  --host 127.0.0.1 --port 8000
+```
+
+Then open the served dashboard at `/dev` (Test tab): take a photo with the
+phone camera, upload an image, or upload a short video. Image tests write an
+evidence bundle that appears in History (disable with the *persist* checkbox);
+video tests return a per-frame summary without persisting. The endpoints are:
+
+- `POST /api/v1/dev/inspect-frame` — image bytes → `InspectionRecord`
+- `POST /api/v1/dev/inspect-video` — video bytes → `VideoInspectResult`
+  (≤ 30 analyzed frames, < 100 MB)
+
+This is a developer test harness, not a production acquisition path: it never
+streams video and must not be enabled on production hosts. Production
+real-time inspection uses the native app / RTSP / camera sources (ADR-014).
+
 ---
 
 ## 5. App: Edge dashboard (`apps/edge-web`)

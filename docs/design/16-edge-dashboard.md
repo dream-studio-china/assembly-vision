@@ -161,6 +161,18 @@ Acceptance checks include:
 
 MVP includes live status/latest result, recent history/detail, health, queue visibility/manual retry, and pause/resume if operationally approved. Local override editing and logs may be administrator-only late-MVP features. Later additions may include WebRTC preview, kiosk packaging/Tauri, alert acknowledgement workflow, guided camera calibration, and richer multi-frame evidence playback. None is required for the static train-and-inspect MVP.
 
+## 16.14.1 Developer Tools (`/dev`)
+
+A `/dev` route groups developer-mode tools (ADR-014), including a **Test** tab
+that takes a photo (mobile OS camera via file capture), uploads an image, or
+uploads a short video and shows the inspection decision immediately, with the
+product bounding box overlaid client-side on the source image and a per-frame
+summary table for videos. A **Logs** tab reuses the bounded log view, and
+future tools (camera preview, config/DB inspection) may join the same page.
+The tools require `VITE_API_MODE=http` and a `serve` run with
+`--enable-web-test`; otherwise the page explains how to enable them. The dev
+tools never stream video and are not a production acquisition path.
+
 ## 16.15 Open Questions and Validation Required
 
 - Confirm display sizes, browser, kiosk mode, touch/keyboard use, language, and accessibility needs at the line.

@@ -63,6 +63,18 @@ In the tables, `R` means authenticated edge viewer, `O` operator, and `A` edge a
 | `POST /api/v1/configuration/validate` | Validate without activation. | `ConfigurationCandidate` / `ValidationResult` | `422 VALIDATION_FAILED` | Deterministic | - | A |
 | `GET /api/v1/logs` | Bounded structured service log query. | level/component/from/to/cursor / `Page[LogEvent]` | `400 INVALID_FILTER` | Safe GET | Cursor | A |
 
+### 15.3.4 Web Dev Test Harness (ADR-014)
+
+These file-based endpoints are **disabled by default** and return
+`404 DEV_TOOLS_DISABLED` unless `serve` runs with `--enable-web-test`. They are
+a developer test harness, not a production acquisition path; production
+real-time inspection uses the native app / RTSP / camera sources.
+
+| Method and endpoint | Purpose | Request / response | Errors | Idempotency | Pagination | Authorization |
+|---|---|---|---|---|---|---|
+| `POST /api/v1/dev/inspect-frame` | Analyze one uploaded image through an instance pipeline; writes an evidence bundle unless `persist=false`. | Raw image bytes / `InspectionRecord` | `400 INVALID_IMAGE`, `404 INSTANCE_NOT_FOUND`, `413 PAYLOAD_TOO_LARGE`, `503 PIPELINE_UNAVAILABLE` | Deterministic | - | R + dev flag |
+| `POST /api/v1/dev/inspect-video` | Analyze an uploaded video frame by frame (≤30 sampled frames) and return a summary; nothing is persisted. | Raw video bytes / `VideoInspectResult` | `400 INVALID_VIDEO`, `404 INSTANCE_NOT_FOUND`, `413 PAYLOAD_TOO_LARGE`, `503 PIPELINE_UNAVAILABLE` | Deterministic | - | R + dev flag |
+
 ## 15.4 Central API Groups
 
 Roles are abbreviated `V` viewer, `R` reviewer, `C` configuration manager, `F` fleet administrator, `O` organization administrator, and `D` enrolled device.
