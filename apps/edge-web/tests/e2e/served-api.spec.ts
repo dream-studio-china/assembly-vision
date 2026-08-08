@@ -67,7 +67,17 @@ function makeRecord(inspectionId: string): Record<string, unknown> {
     },
     synchronization_status: "LOCAL_ONLY",
     processing_ms: 10,
-    media: [],
+    media: [
+      {
+        media_id: uuid(),
+        kind: "KEY_FRAME",
+        lifecycle: "PURGED",
+        relative_path: `${inspectionId}/purged.jpg`,
+        mime_type: "image/jpeg",
+        size_bytes: 0,
+        checksum_sha256: "0".repeat(64),
+      },
+    ],
   };
 }
 
@@ -144,7 +154,9 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
     await expect(page.locator('img[alt="camera preview"]')).toHaveCount(0);
 
     await page.goto(`http://127.0.0.1:${port}/images/${inspectionId}`);
-    await expect(page.getByText("No original image available")).toBeVisible();
+    // Purged media renders an explicit purged state, never a broken image (F14).
+    await expect(page.getByText("Original evidence has been purged")).toBeVisible();
+    await expect(page.locator('img[alt="original frame"]')).toHaveCount(0);
     await page.getByRole("tab", { name: "Detection result" }).click();
     await expect(page.getByText("No detection image available")).toBeVisible();
     await page.getByRole("tab", { name: "Annotations" }).click();
