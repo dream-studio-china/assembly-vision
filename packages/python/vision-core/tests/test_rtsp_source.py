@@ -142,7 +142,9 @@ def test_rtsp_falls_back_to_opencv(
     def no_av() -> object:
         raise FrameStreamError("PyAV is required for RTSP frame sources")
 
-    monkeypatch.setattr(_av, "get_av", no_av)
+    import assemblyvision_vision.sources.rtsp_source as rtsp_source
+
+    monkeypatch.setattr(rtsp_source, "get_av", no_av)
     monkeypatch.setattr(_opencv, "_cv2", FakeOpenCV)
     source = RTSPFrameSource(
         "rtsp://host/stream", reconnect=RTSPReconnectPolicy(initial_delay_ms=1, maximum_delay_ms=2)

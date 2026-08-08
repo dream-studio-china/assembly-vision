@@ -7,6 +7,7 @@ from pathlib import Path
 
 from assemblyvision_edge.camera_manager import CameraSourceManager
 from assemblyvision_vision.sources.folder_source import FolderSource
+from assemblyvision_vision.sources.frame_source import FrameSource
 from PIL import Image
 
 
@@ -28,7 +29,7 @@ def _wait_for_frame(manager: CameraSourceManager, instance_id: str, timeout: flo
 
 
 def test_manager_starts_and_stops_multiple_instances(tmp_path: Path) -> None:
-    sources = {
+    sources: dict[str, FrameSource] = {
         "line-1": FolderSource(_make_folder(tmp_path, "a"), loop=True, fps=100.0),
         "line-2": FolderSource(_make_folder(tmp_path, "b"), loop=True, fps=100.0),
     }
@@ -54,7 +55,7 @@ def test_manager_single_instance_failure_is_non_fatal(tmp_path: Path) -> None:
     broken.mkdir()
     (broken / "zz_corrupt.png").write_bytes(b"not an image")
     healthy = _make_folder(tmp_path, "healthy")
-    sources = {
+    sources: dict[str, FrameSource] = {
         "bad": FolderSource(broken),
         "good": FolderSource(healthy, loop=True, fps=100.0),
     }
@@ -74,7 +75,9 @@ def test_manager_single_instance_failure_is_non_fatal(tmp_path: Path) -> None:
 
 def test_manager_reports_stream_ended(tmp_path: Path) -> None:
     # A single-shot folder source ends its stream; the manager marks it ended.
-    sources = {"cam": FolderSource(_make_folder(tmp_path, "one", count=1), loop=False)}
+    sources: dict[str, FrameSource] = {
+        "cam": FolderSource(_make_folder(tmp_path, "one", count=1), loop=False)
+    }
     manager = CameraSourceManager(sources)
     manager.start()
     try:
@@ -93,7 +96,9 @@ def test_manager_reports_stream_ended(tmp_path: Path) -> None:
 
 def test_manager_latest_frame_is_bounded_to_one(tmp_path: Path) -> None:
     # Loop keeps the thread alive; only the latest frame is retained.
-    sources = {"cam": FolderSource(_make_folder(tmp_path, "loop", count=2), loop=True, fps=100.0)}
+    sources: dict[str, FrameSource] = {
+        "cam": FolderSource(_make_folder(tmp_path, "loop", count=2), loop=True, fps=100.0)
+    }
     manager = CameraSourceManager(sources)
     manager.start()
     try:
