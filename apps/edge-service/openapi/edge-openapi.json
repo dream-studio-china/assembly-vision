@@ -1955,16 +1955,14 @@
         "description": "One analyzed frame's decision summary (web dev test harness, ADR-014).",
         "properties": {
           "business_result": {
-            "title": "Business Result",
-            "type": "string"
+            "$ref": "#/components/schemas/BusinessResult"
           },
           "index": {
             "title": "Index",
             "type": "integer"
           },
           "internal_decision": {
-            "title": "Internal Decision",
-            "type": "string"
+            "$ref": "#/components/schemas/InternalDecision"
           },
           "reason_codes": {
             "items": {
@@ -1983,7 +1981,7 @@
         "type": "object"
       },
       "VideoInspectResult": {
-        "description": "Per-frame summary for an uploaded test video (ADR-014).",
+        "description": "Per-frame summary for an uploaded test video (ADR-014).\n\n``truncated`` is true when a decode resource budget (frame count or wall\nclock) ended iteration early, so consumers do not mistake the summary for a\ncomplete analysis of the source video (F6).",
         "properties": {
           "analyzed_frames": {
             "title": "Analyzed Frames",
@@ -2007,6 +2005,11 @@
           "ok_count": {
             "title": "Ok Count",
             "type": "integer"
+          },
+          "truncated": {
+            "default": false,
+            "title": "Truncated",
+            "type": "boolean"
           }
         },
         "required": [
@@ -2185,6 +2188,17 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -2196,6 +2210,36 @@
             },
             "description": "Successful Response"
           },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Problem response (RFC 7807)"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Problem response (RFC 7807)"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Problem response (RFC 7807)"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -2205,6 +2249,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Problem response (RFC 7807)"
           }
         },
         "summary": "Dev Inspect Frame",
@@ -2215,7 +2269,7 @@
     },
     "/api/v1/dev/inspect-video": {
       "post": {
-        "description": "Analyze an uploaded video frame by frame; returns a summary only.\n\nThe video is streamed to a temporary file (never held fully in memory),\ndecoded with the shared :class:`VideoFrameSource`, and at most\n``_MAX_VIDEO_FRAMES`` sampled frames are inspected without persisting\nevidence (ADR-014).",
+        "description": "Analyze an uploaded video frame by frame; returns a summary only.\n\nThe video is streamed to a temporary file (never held fully in memory),\ndecoded with the shared :class:`VideoFrameSource`, and at most\n``_MAX_VIDEO_FRAMES`` sampled frames are inspected without persisting\nevidence (ADR-014). ``step`` is bounded and the total decode work is\nbounded by ``_MAX_DECODED_FRAMES`` and ``_MAX_VIDEO_DECODE_SECONDS``;\n``truncated`` is set when a decode budget ends iteration early.",
         "operationId": "dev_inspect_video_api_v1_dev_inspect_video_post",
         "parameters": [
           {
@@ -2240,12 +2294,24 @@
             "required": false,
             "schema": {
               "default": 1,
+              "maximum": 100,
               "minimum": 1,
               "title": "Step",
               "type": "integer"
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -2257,6 +2323,36 @@
             },
             "description": "Successful Response"
           },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Problem response (RFC 7807)"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Problem response (RFC 7807)"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Problem response (RFC 7807)"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -2266,6 +2362,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Problem response (RFC 7807)"
           }
         },
         "summary": "Dev Inspect Video",

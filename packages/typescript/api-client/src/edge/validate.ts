@@ -225,13 +225,17 @@ function validateVideoInspectResult(body: unknown): void {
   hasNumber(result, "analyzed_frames", "$");
   hasNumber(result, "ok_count", "$");
   hasNumber(result, "ng_count", "$");
+  const truncated = result.truncated;
+  if (truncated !== undefined && typeof truncated !== "boolean") {
+    fail("$.truncated", "boolean", truncated);
+  }
   const frames = hasArray(result, "frames", "$");
   frames.forEach((item, index) => {
     const path = `$.frames[${index}]`;
     const frame = expectRecord(item, path);
     hasNumber(frame, "index", path);
-    hasString(frame, "business_result", path);
-    hasString(frame, "internal_decision", path);
+    hasOneOf(frame, "business_result", ["OK", "NG"], path);
+    hasOneOf(frame, "internal_decision", ["OK", "NG", "UNCERTAIN"], path);
     hasArray(frame, "reason_codes", path);
   });
 }

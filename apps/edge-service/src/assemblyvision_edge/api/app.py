@@ -142,9 +142,12 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         configuration.router,
         logs.router,
         derived.router,
-        dev.router,
     ):
         app.include_router(router, prefix="/api/v1", dependencies=[Depends(require_viewer)])
+    # The dev router declares its own enablement gate ahead of viewer
+    # authentication, so a disabled harness returns 404 DEV_TOOLS_DISABLED
+    # before any credential check while enabled endpoints keep auth (F8).
+    app.include_router(dev.router, prefix="/api/v1")
     app.include_router(auth.router, prefix="/api/v1")
     # Health keeps /health/live deliberately unauthenticated (design 15.3.1);
     # /health/ready requires the viewer credential.

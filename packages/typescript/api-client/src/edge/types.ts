@@ -399,8 +399,8 @@ export type StatisticsSummary = {
 /** One analyzed frame's decision summary (web dev test harness, ADR-014). */
 export type VideoFrameInspectResult = {
   index: number;
-  business_result: string;
-  internal_decision: string;
+  business_result: BusinessResult;
+  internal_decision: InternalDecision;
   reason_codes: string[];
 };
 
@@ -411,4 +411,5 @@ export type VideoInspectResult = {
   ok_count: number;
   ng_count: number;
   frames: VideoFrameInspectResult[];
+  truncated: boolean;
 };

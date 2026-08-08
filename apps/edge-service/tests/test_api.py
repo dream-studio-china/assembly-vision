@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any, cast
 from uuid import uuid4
 
 import pytest
@@ -507,13 +508,68 @@ def test_fresh_inspection_media_served_from_writer(tmp_path: Path) -> None:
         assert content.headers["content-type"].startswith("image/jpeg")
 
 
-def test_openapi_matches_committed_document(tmp_path: Path) -> None:
+def _load_committed_openapi() -> dict[str, Any]:
     import json
 
     repo_root = Path(__file__).resolve().parents[3]
-    committed = json.loads(
-        (repo_root / "apps/edge-service/openapi/edge-openapi.json").read_text(encoding="utf-8")
+    return cast(
+        dict[str, Any],
+        json.loads(
+            (repo_root / "apps/edge-service/openapi/edge-openapi.json").read_text(encoding="utf-8")
+        ),
     )
+
+
+def _finalize_openapi(spec: dict[str, Any]) -> dict[str, Any]:
+    """Apply the deterministic dev-operation patch shared with the generator."""
+    import importlib.util
+
+    repo_root = Path(__file__).resolve().parents[3]
+    loader_spec = importlib.util.spec_from_file_location(
+        "generate_edge_openapi", repo_root / "scripts" / "generate-edge-openapi.py"
+    )
+    assert loader_spec is not None
+    assert loader_spec.loader is not None
+    module = importlib.util.module_from_spec(loader_spec)
+    loader_spec.loader.exec_module(module)
+    return cast(dict[str, Any], module.finalize_openapi(spec))
+
+
+def test_openapi_matches_committed_document(tmp_path: Path) -> None:
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
     app = create_app(settings)
-    assert app.openapi() == committed
+    assert _finalize_openapi(app.openapi()) == _load_committed_openapi()
+
+
+def test_dev_operations_declare_binary_request_body_and_problem_responses() -> None:
+    """F9: consumers must be able to call and handle the dev endpoints."""
+    spec = _load_committed_openapi()
+    for path in ("/api/v1/dev/inspect-frame", "/api/v1/dev/inspect-video"):
+        op = spec["paths"][path]["post"]
+        request_body = op.get("requestBody")
+        assert request_body is not None, f"{path} must declare a required requestBody"
+        assert request_body["required"] is True
+        media = request_body["content"]["application/octet-stream"]
+        assert media["schema"] == {"type": "string", "format": "binary"}
+        for code in ("400", "404", "413", "503"):
+            response = op["responses"].get(code)
+            assert response is not None, f"{path} must declare the {code} problem response"
+            assert (
+                response["content"]["application/problem+json"]["schema"]["$ref"]
+                == "#/components/schemas/Problem"
+            )
+
+
+def test_video_frame_result_schema_exposes_decision_enums() -> None:
+    """F12: video decisions must use the canonical OK/NG business result set."""
+    spec = _load_committed_openapi()
+    schema = spec["components"]["schemas"]["VideoFrameInspectResult"]
+    business_ref = schema["properties"]["business_result"]["$ref"]
+    internal_ref = schema["properties"]["internal_decision"]["$ref"]
+
+    def enum_values(ref: str) -> list[str]:
+        name = ref.rsplit("/", 1)[-1]
+        return cast(list[str], spec["components"]["schemas"][name]["enum"])
+
+    assert enum_values(business_ref) == ["OK", "NG"]
+    assert enum_values(internal_ref) == ["OK", "NG", "UNCERTAIN"]
