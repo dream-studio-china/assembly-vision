@@ -103,6 +103,23 @@ temporal:
 
 Policies are versioned and validated per model and product type. Configured thresholds must obey `observation_threshold <= medium_confidence < high_confidence`.
 
+## 10.7.1 Implementation Status (ADR-010, product-window milestone)
+
+The per-component temporal aggregator and an edge product-window manager are
+implemented for the live camera path. Each instance that declares a
+`temporal:` block in its pipeline configuration runs a time-based product
+window: frames are grouped until an inter-frame gap or the configured
+`maximum_window_ms` closes the window, and the aggregator resolves one
+per-component evidence set that the rule engine evaluates exactly once. A
+window closed by a shutdown is recorded as interrupted NG without reconstructing
+evidence from un-journaled memory (10.8). In this time-only fallback the
+window duration and the product-separation gap both use `maximum_window_ms`, so
+products arriving faster than the configured window can be merged; hardware
+triggers remain the preferred production boundary (07.4). For count-based
+rules, `detection_count` is the maximum number of instances observed in a
+single valid frame; instances split across frames do not satisfy an exact
+`expected_count` without co-occurrence.
+
 ## 10.8 Window Integrity and Failure Handling
 
 - A trigger timeout closes the window as incomplete; unresolved components become `UNVERIFIABLE`.

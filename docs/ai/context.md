@@ -44,10 +44,10 @@ and verifies that all required assembly components are present.
   #8, #9, #10, #11, #12 (and docs PR #13) are merged to `main`; PR #12 merged
   the completed AUDIT-001 closure on 2026-08-09. PR #14
   (`feat/camera-frame-sources`, open) carries the camera frame sources,
-  multi-instance serve, and web dev test harness (ADR-013/014). The next
+  multi-instance serve, web dev test harness (ADR-013/014), and the
+  product-window/temporal aggregation milestone (ADR-010). The next
   milestones are the upload scheduler + authoritative persistence (AUDIT-001
-  4.4), the product-window/temporal aggregation milestone, and collecting real
-  customer data.
+  4.4) and collecting real customer data.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -451,9 +451,19 @@ tests. The design:
   write evidence bundles by default (`persist=false` to skip); video tests
   return a per-frame summary (≤30 frames, <100 MB) without persisting. It is a
   test harness, not production acquisition.
-- **Remaining in the milestone**: product-window/temporal aggregation,
-  vendor SDK adapters, per-instance model weight sharing (Phase 3), and
-  folding the REST preview into the WebSocket channel.
+- **Product window and temporal aggregation (ADR-010)**: an instance with a
+  `temporal:` block in its pipeline config groups captured frames into
+  time-based per-product windows and emits one
+  `per-component-temporal-v1` inspection record per window via a deterministic
+  per-component aggregator (design 10). The default single-frame mode is
+  unchanged. `UNVERIFIABLE` was added as an aggregated evidence state;
+  insufficient valid frames yield `UNVERIFIABLE`/`INSUFFICIENT_VALID_FRAMES`,
+  an interrupted window is closed as NG with `INSPECTION_INTERRUPTED`, and the
+  OpenAPI/TypeScript contract was regenerated for the new state.
+- **Remaining in the milestone**: vendor SDK adapters, per-instance model
+  weight sharing (Phase 3), folding the REST preview into the WebSocket
+  channel, and hardware trigger / barcode window boundaries to replace the
+  time-only fallback.
 - **Review hardening (PR-014)**: findings F1-F14 are closed with regression
   tests: no silent frame loss (bounded queue + explicit overflow), pause
   stops inspection and device status reports `PAUSED`, corrupt sources fail
@@ -463,7 +473,7 @@ tests. The design:
   canonical business/internal enums with binary bodies and problem responses
   documented in the regenerated OpenAPI/TypeScript contract.
   `assemblyvision_edge` now ships `py.typed` so the strict mypy gate passes
-  repo-wide; the current suite is 586 Python tests, 91 TypeScript unit tests
+  repo-wide; the current suite is 635 Python tests, 91 TypeScript unit tests
   (api-client 45, ui 13, edge-web 30, desktop 3), and 12 Playwright e2e.
 
 ## 9. Open Items / Next Steps
@@ -478,7 +488,8 @@ tests. The design:
   PR #12 on 2026-08-09. The only deferred item is 4.4 authoritative
   persistence, gated on the upload-scheduler milestone. Phase 3 still needs a
   decision on the multi-edge-per-host "shared" model before the upload
-  scheduler, WebSocket, camera/barcode, and temporal aggregation work; ADR-013
+  scheduler, WebSocket, camera/barcode, and hardware-trigger windowing work;
+  ADR-013
   partially addresses it with per-instance pipelines (each instance loads its
   own models, so weight sharing remains an open optimization).
 - Resilience documentation (2026-08-09, new docs PR): design 22 adds
@@ -508,8 +519,8 @@ tests. The design:
     `(rule_id, rule_version)` stays immutable across CLI invocations and
     service restarts.
 - Roadmap scope remaining after the merged M1 layer: upload queue scheduler,
-  WebSocket channel, camera/barcode adapters, temporal aggregation, Docker
-  packaging, and authoritative SQLite persistence/outbox.
+  WebSocket channel, camera/barcode adapters, hardware trigger window
+  boundaries, Docker packaging, and authoritative SQLite persistence/outbox.
 - Real customer data is still required for the one-month baseline: collect and
   annotate with X-AnyLabeling per
   `docs/design/19-training-and-evaluation.md` §19.17 and
@@ -519,13 +530,15 @@ tests. The design:
   `dataset_product`/`dataset_components` + `test-expected.json`, then run
   `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
 - Camera acquisition milestone (ADR-013/014) is **implemented** and carried by
-  PR #14 (open). Remaining in the milestone: the product-window/temporal
-  aggregation work, vendor SDK camera adapters, per-instance model weight
-  sharing, and folding the REST preview into the WebSocket runtime channel.
-- Camera/hardware integration (vendor SDK), barcode decoding, product-window
-  management, temporal aggregation, authoritative SQLite persistence (the
-  current index is a rebuildable read projection), the upload queue scheduler,
-  and Docker deployment remain as the roadmap 25.5 one-month scope; only the
+  PR #14 (open), including the product-window/temporal aggregation milestone
+  (ADR-010). Remaining in the milestone: vendor SDK camera adapters,
+  per-instance model weight sharing, folding the REST preview into the
+  WebSocket runtime channel, and hardware trigger / barcode window boundaries
+  to replace the time-only fallback.
+- Camera/hardware integration (vendor SDK), barcode decoding, hardware-trigger
+  product-window boundaries, authoritative SQLite persistence (the current
+  index is a rebuildable read projection), the upload queue scheduler, and
+  Docker deployment remain as the roadmap 25.5 one-month scope; only the
   vendor-SDK, barcode, and site-coupling parts are blocked on hardware and
   customer-site decisions.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
