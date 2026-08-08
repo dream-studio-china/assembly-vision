@@ -2803,10 +2803,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#83-edge-backend-layer-m1" class="md-nav__link">
+  <a href="#83-edge-backend-layer-m1-pr-8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.3 Edge Backend Layer (M1)
+        8.3 Edge Backend Layer (M1, PR #8)
       
     </span>
   </a>
@@ -2977,10 +2977,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#83-edge-backend-layer-m1" class="md-nav__link">
+  <a href="#83-edge-backend-layer-m1-pr-8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.3 Edge Backend Layer (M1)
+        8.3 Edge Backend Layer (M1, PR #8)
       
     </span>
   </a>
@@ -3020,7 +3020,7 @@
 
 <h1 id="assemblyvision-full-project-context">AssemblyVision - Full Project Context<a class="headerlink" href="#assemblyvision-full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Context snapshot. Last updated: 2026-08-07</p>
+<p>Context snapshot. Last updated: 2026-08-08</p>
 <p>Read this file first in a new session to reconstruct the project state quickly.</p>
 </blockquote>
 <hr />
@@ -3042,17 +3042,20 @@ and verifies that all required assembly components are present.</p>
   inspection (<code>assemblyvision inspect</code>) and held-out verification. The frontend
   pnpm workspace includes the Vue 3 + TypeScript operator dashboard
   (<code>apps/edge-web</code>), an Electron kiosk shell (<code>apps/edge-desktop</code>), a typed
-  <code>api-client</code> contract layer, and shared UI primitives. A first backend layer
-  (FastAPI + SQLite local index + <code>assemblyvision serve</code>) is implemented on
-  <code>dev</code> (see section 8.3): read-only dashboard views can now display real CLI
-  results through the HTTP client, while the operator workflow actions remain
-  on the mock client.</li>
+  <code>api-client</code> contract layer, and shared UI primitives. The M1 backend layer
+  (FastAPI + SQLite local index + <code>assemblyvision serve</code>) is complete on <code>dev</code>
+  (see section 8.3) with all PR-008 review findings resolved; PR #8
+  (dev -&gt; main) is open. Read-only dashboard views display real CLI results
+  through the HTTP client, while the operator workflow actions remain on the
+  mock client.</li>
 </ul>
 <h2 id="2-repository-state">2. Repository State<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>. The static
-  MVP and edge dashboard are merged to <code>main</code> (PR #3, #6). <code>dev</code> tracks the
-  next milestone (FastAPI backend, real-data baseline, PR-003 P1/P2 items).</li>
+  MVP and edge dashboard are merged to <code>main</code> (PR #3, #6). <code>dev</code> carries the
+  completed M1 backend milestone as open PR #8 with all review findings
+  resolved; the next milestone is the real-data baseline and the remaining
+  PR-003 items.</li>
 <li><code>.obsidian/</code>, <code>.idea/</code>, and <code>.vscode/</code> are ignored local editor state.</li>
 <li>Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts <code>docs-zh/</code>, <code>site/</code>, <code>mkdocs-en.yml</code>, <code>mkdocs-zh.yml</code> are gitignored.</li>
@@ -3189,7 +3192,7 @@ and verifies that all required assembly components are present.</p>
 </ul>
 <h2 id="8-latest-session-decisions">8. Latest Session Decisions<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Generated the full architecture document set under <code>docs/design/</code> (28 docs + 11 ADRs +
+<li>Generated the full architecture document set under <code>docs/design/</code> (28 docs + 12 ADRs +
   appendices) from <a href="../../source-brief/">docs/source-brief.md</a> (formerly <code>docs/doc-task.md</code>).</li>
 <li>Created <code>docs/research/</code> (3 reports) via internet research.</li>
 <li>Built the bilingual MkDocs with automatic translation, adapted from the <code>crud-skeleton</code> project.</li>
@@ -3260,8 +3263,9 @@ pnpm workspace with the existing Python uv workspace, then merged to <code>main<
 <li><strong>Contract layer</strong> (<code>@assemblyvision/api-client</code>): hand-synchronized TS types
   from the domain Pydantic models, an <code>ApiClient</code> interface, <code>MockApiClient</code>
   (deterministic in-memory data with an operator workflow state machine and mock
-  SVG images), <code>HttpApiClient</code> (targeting future <code>/api/v1</code> endpoints), and a
-  reconnecting WebSocket service.</li>
+  SVG images), <code>HttpApiClient</code> (talks to the real <code>/api/v1</code> endpoints with
+  runtime response validation at the fetch boundary), and a reconnecting
+  WebSocket service.</li>
 <li><strong>Shared UI</strong> (<code>@assemblyvision/ui</code>): <code>DetectionViewer</code> (contain-scaled
   preview with source-coordinate overlays, frame-ID reconciliation, stale-frame
   marker), color-independent <code>StatusBadge</code>, and display formatters.</li>
@@ -3277,57 +3281,78 @@ pnpm workspace with the existing Python uv workspace, then merged to <code>main<
 <li><strong>Electron desktop</strong> (<code>apps/edge-desktop</code>): hardened defaults (context
   isolation, sandbox, no node integration), kiosk mode, and production builds
   are loaded from the built edge-web output.</li>
-<li><strong>Tests and CI</strong>: 39 Vitest unit tests across api-client/ui/edge-web/desktop,
-  11 Playwright e2e, a <code>web</code> CI job (build/lint/test/e2e), and <code>make check</code>
-  now runs both Python and TypeScript gates.</li>
+<li><strong>Tests and CI</strong>: 56 Vitest unit tests across api-client/ui/edge-web/desktop
+  (28 + 13 + 12 + 3), 12 Playwright e2e, a <code>web</code> CI job
+  (build/lint/test/e2e), and <code>make check</code> now runs both Python and TypeScript
+  gates.</li>
 <li><strong>Documentation</strong>: QUICKSTART restructured per-app with extensible numbered
   sections; README updated with new features, project structure, and roadmap.</li>
 </ul>
-<h2 id="83-edge-backend-layer-m1">8.3 Edge Backend Layer (M1)<a class="headerlink" href="#83-edge-backend-layer-m1" title="Permanent link">&para;</a></h2>
-<p>A first FastAPI + SQLite backend layer is implemented on <code>dev</code> so read-only
-dashboard views can display real CLI inspection results:</p>
+<h2 id="83-edge-backend-layer-m1-pr-8">8.3 Edge Backend Layer (M1, PR #8)<a class="headerlink" href="#83-edge-backend-layer-m1-pr-8" title="Permanent link">&para;</a></h2>
+<p>The FastAPI + SQLite backend layer on <code>dev</code> gives read-only dashboard views real
+CLI inspection results. PR #8 (dev -&gt; main) carries this milestone; the
+blocking findings (F1-F14) and M1 conditional items (C1-C4) in
+<code>docs/reviews/PR-008-review.md</code> are resolved and validated on <code>dev</code>.</p>
 <ul>
 <li><strong><code>assemblyvision serve</code></strong>: starts the local API on <code>/api/v1</code> (design 15.3),
   serves the built dashboard as static assets with SPA fallback, opens a SQLite
   index, and reconciles existing CLI <code>inspection.json</code> output idempotently on
   startup. Configuration/rule/manifest loading reuses the same verified
   pipeline build as <code>inspect</code>.</li>
-<li><strong>Persistence</strong>: SQLAlchemy Core schema + Alembic initial migration
+<li><strong>Persistence</strong>: SQLAlchemy Core schema + Alembic migrations 0001/0002
   (<code>apps/edge-service/migrations/</code>); tables for inspections, component
-  evidence, media, upload tasks, device events, and active packages with
-  contract-05 indexes. Denormalized filter columns (barcode, product, result)
-  drive history queries. The SQLite index is a <strong>rebuildable read projection</strong> of
-  the CLI <code>inspection.json</code> bundles (C1, ADR-012): it can be deleted and rebuilt
-  from the same bundles without changing them, and it is not the authoritative
-  completion/outbox store. The static-MVP <code>device_sequence</code> is per-process and is
-  not a synchronization identity (C3).</li>
+  evidence, media, upload tasks, device events, active packages, and a durable
+  <code>rule_identities</code> registry with contract-05 indexes. Denormalized filter
+  columns (barcode, product, result) drive history queries. The SQLite index is
+  a <strong>rebuildable read projection</strong> of the CLI <code>inspection.json</code> bundles (C1,
+  ADR-012): it can be deleted and rebuilt from the same bundles without changing
+  them, and it is not the authoritative completion/outbox store. The static-MVP
+  <code>device_sequence</code> is per-process and is not a synchronization identity (C3).
+  The <code>rule_identities</code> table makes rule identity immutable across restarts: a
+  <code>(rule_id, rule_version)</code> reused with different content fails pipeline load
+  with <code>CONFIG_INVALID</code>.</li>
 <li><strong>Endpoints</strong>: health/device/camera, inspection state, inspections list
-  (cursor pagination + filters) and detail, inspection media, media content with
-  Range support, uploads (empty in M1), effective configuration, logs (in-memory
-  ring buffer), and derived traceability/statistics/images. The M1 API is
-  read-only (ADR-012): pause/resume, camera reconnect, and upload retry are not
-  exposed, and every route except <code>/health/live</code> requires the configured
-  <code>AV_EDGE_API_TOKEN</code> bearer token or the HttpOnly same-origin viewer session
-  established at dashboard <code>/login</code> when a token is set.</li>
+  (cursor pagination + filters) and detail, inspection media, media content
+  with Range support, uploads (empty in M1), effective configuration, logs
+  (in-memory ring buffer), and derived traceability/statistics/images.
+  Statistics <code>from</code>/<code>to</code> filters are validated as timezone-aware UTC timestamps;
+  the derived images endpoint reports per-slot AVAILABLE/PURGED/UNAVAILABLE
+  status and returns 404 for unknown inspections. The M1 API is read-only
+  (ADR-012): pause/resume, camera reconnect, and upload retry are not exposed.</li>
+<li><strong>Viewer authentication</strong> (ADR-012): every route except <code>/health/live</code>
+  requires the configured <code>AV_EDGE_API_TOKEN</code> bearer token or a short-lived
+  HttpOnly, SameSite=strict, same-origin viewer session. <code>POST
+  /api/v1/auth/session</code> exchanges a valid bearer token for the session cookie;
+  the dashboard <code>/login</code> page provides the one-time entry so neither API JSON
+  requests nor media <code>&lt;img&gt;</code> requests need the token in browser storage.</li>
+<li><strong>Media isolation (F2)</strong>: media content is resolved only inside its
+  inspection bundle directory; traversal, absolute, cross-bundle, and symlink
+  escape paths are rejected at import and serve time, and duplicate media IDs
+  are rejected so malformed bundles are skipped without aborting startup.</li>
+<li><strong>Contract boundary (F9)</strong>: typed Pydantic response schemas with a committed
+  OpenAPI document (<code>apps/edge-service/openapi/edge-openapi.json</code>) and CI drift
+  checks, generated TypeScript types
+  (<code>packages/typescript/api-client/src/edge/generated/api.ts</code>), plus runtime
+  response validation in <code>HttpApiClient</code> (<code>validate.ts</code>) that rejects drifted
+  or malformed payloads instead of blindly casting.</li>
 <li><strong>Frontend split</strong>: read-only views route through the HTTP client when
   <code>VITE_API_MODE=http</code>; operator workflow actions (current/confirm/next/
   manual) stay on the deterministic mock because they are a demonstration
   queue, not a design 15.3 endpoint.</li>
-<li><strong>PR-003 hardening folded in</strong>: rule version identity is now bound to
-  canonical rule content; the output writer publishes inspection bundles
-  atomically (staging + fsync + rename, rejects republish); detectors pass
-  manifest <code>imgsz</code>/<code>iou</code>/<code>conf</code> explicitly and persist effective values in
+<li><strong>PR-003 hardening folded in</strong>: rule version identity is bound to canonical
+  rule content and registered durably; the output writer publishes inspection
+  bundles atomically (staging + fsync + rename, rejects republish); detectors
+  pass manifest <code>imgsz</code>/<code>iou</code>/<code>conf</code> explicitly and persist effective values in
   <code>InspectionRecord.inference_metadata</code>; the pipeline validates detection
-  provenance (frame/model/coordinate space) at the boundary.</li>
+  provenance (frame/model/coordinate space) with an absolute-only coordinate
+  tolerance at the boundary.</li>
 <li><strong>Packaging</strong>: <code>py.typed</code> markers added to <code>domain</code> and <code>vision-core</code> so MyPy
   strict passes repo-wide.</li>
-<li><strong>Test hardening</strong>: test coverage for the edge Python packages is at 100%
-  (pytest-cov). The expansion surfaced three defects that were fixed:
-  <code>upsert_inspection</code> now replaces child evidence/media rows instead of
-  failing on the media unique constraint; <code>load_pipeline_config</code> wraps
-  <code>ROIGenerationError</code> (e.g. <code>normalize_perspective: true</code>) as <code>ConfigError</code>
-  instead of leaking a raw error; and <code>OutputWriter.save</code> cleans up its
-  staging directory when a child write fails.</li>
+<li><strong>Test hardening</strong>: edge Python coverage is at 100% (pytest-cov); the full
+  suite is <code>373 passed</code>, TypeScript tests are <code>28 passed</code> (api-client) and
+  <code>12 passed</code> (edge-web), and Playwright e2e is <code>12 passed</code> including a
+  token-authenticated served dashboard that asserts real reconciled data and
+  purged-media rendering.</li>
 </ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3336,17 +3361,26 @@ dashboard views can display real CLI inspection results:</p>
   scheduler</strong> (real <code>upload_tasks</code> rows, retry backoff, idempotency) and the
   <strong>WebSocket runtime channel</strong> are the next backend gaps. The dashboard read
   views switch to real data via <code>VITE_API_MODE=http</code>.</li>
-<li>A number of PR-003 P1/P2 backend hardening items are still open (see
-  <code>docs/reviews/PR-003-review.md</code>): model manifest full-content immutability,
-  dataset staging, and component preparation reusing production selection
-  contracts. Rule content binding, bundle-atomic output, inference parameter
-  pinning, and detection provenance validation are now fixed (section 8.3).</li>
-<li>The PR #8 review is recorded in <code>docs/reviews/PR-008-review.md</code>: all blocking
-  findings (F1-F14) and the M1 conditional items (C1-C4) are resolved and
-  validated on <code>dev</code>; the remaining roadmap scope (upload queue scheduler,
-  WebSocket channel, camera/barcode adapters, temporal aggregation, Docker
-  packaging, authoritative SQLite persistence/outbox) is tracked as the next
-  milestone and does not block the PR.</li>
+<li>PR-003 follow-up items still open (see <code>docs/reviews/PR-003-review.md</code>):
+  model-manifest full-content immutability (publication checks only the first
+  artifact checksum), strict Roboflow source-label validation (negative class
+  IDs, unvalidated field count/bounds), missing-label policy (currently
+  warn-only implicit negatives), explicit background negatives for the product
+  dataset, manifest-relative verification identity (still basename-based),
+  stale-output-safe dataset adaptation/component preparation, and component
+  preparation reusing the production selection policy. Runtime items are fixed:
+  rule content binding with a durable registry, bundle-atomic output, inference
+  parameter pinning, detection provenance validation, and startup
+  cross-validation.</li>
+<li>Two remaining medium gaps on the M1 layer: token-protected Vite development
+  across origins is not supported (CORS allows GET only and the viewer session
+  cookie is same-origin; use the same-origin <code>assemblyvision serve</code> flow), and
+  the CLI <code>inspect</code>/<code>verify</code> rule-identity registry is process-local while
+  <code>serve</code> persists it in SQLite.</li>
+<li>Roadmap scope remaining after the M1 layer (section 8.3, PR #8): upload
+  queue scheduler, WebSocket channel, camera/barcode adapters, temporal
+  aggregation, Docker packaging, and authoritative SQLite persistence/outbox.
+  None block PR #8; the PR-008 review findings (F1-F14, C1-C4) are resolved.</li>
 <li>Real customer data is still required for the one-month baseline: annotate with
   X-AnyLabeling (product + component boxes), then run <code>av-train</code> -&gt;
   <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>. A utility script

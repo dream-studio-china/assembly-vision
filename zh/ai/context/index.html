@@ -2803,10 +2803,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#83-edge-backend-layer-m1" class="md-nav__link">
+  <a href="#83-edge-backend-layer-m1-pr-8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.3 边缘后端层（M1）
+        8.3 边缘后端层（M1，PR #8）
       
     </span>
   </a>
@@ -2977,10 +2977,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#83-edge-backend-layer-m1" class="md-nav__link">
+  <a href="#83-edge-backend-layer-m1-pr-8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.3 边缘后端层（M1）
+        8.3 边缘后端层（M1，PR #8）
       
     </span>
   </a>
@@ -3020,7 +3020,7 @@
 
 <h1 id="assemblyvision---full-project-context">AssemblyVision - 完整的项目背景<a class="headerlink" href="#assemblyvision---full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>上下文快照。最后更新: 2026-08-07</p>
+<p>上下文快照。最后更新: 2026-08-08</p>
 <p>首先在新会话中读取此文件以快速重建项目状态。</p>
 </blockquote>
 <hr />
@@ -3042,17 +3042,20 @@
   检查（<code>assemblyvision inspect</code>）和保留验证。前端
   pnpm 工作区包括 Vue 3 + TypeScript 操作员仪表板
   (<code>apps/edge-web</code>)，一个 Electron kiosk shell (<code>apps/edge-desktop</code>)，一个类型化的
-  <code>api-client</code> 合约层和共享 UI 原语。第一后端层
-  (FastAPI + SQLite 本地索引 + <code>assemblyvision serve</code>) 实现于
-  <code>dev</code>（参见第 8.3 节）：只读仪表板视图现在可以显示真实的 CLI
-  结果通过 HTTP 客户端传输，而操作员工作流程操作仍然存在
-  在模拟客户端上。</li>
+  <code>api-client</code> 合约层和共享 UI 原语。 M1后端层
+  (FastAPI + SQLite 本地索引 + <code>assemblyvision serve</code>) 在 <code>dev</code> 上完成
+  （参见第 8.3 节）所有 PR-008 审查结果均得到解决；公关 #8
+  (dev -&gt; main) 已打开。只读仪表板视图显示真实的 CLI 结果
+  通过 HTTP 客户端，而操作员工作流操作仍保留在
+  模拟客户端。</li>
 </ul>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
 <li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。静态的
-  MVP 和边缘仪表板合并到 <code>main</code> （PR #3、#6）。 <code>dev</code> 跟踪
-  下一个里程碑（FastAPI 后端、真实数据基线、PR-003 P1/P2 项目）。</li>
+  MVP 和边缘仪表板合并到 <code>main</code> （PR #3、#6）。 <code>dev</code> 携带
+  作为开放 PR #8 完成了 M1 后端里程碑以及所有审核结果
+  已解决；下一个里程碑是真实数据基线和剩余数据
+  PR-003 项目。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
   吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
@@ -3189,7 +3192,7 @@
 </ul>
 <h2 id="8-latest-session-decisions">8. 最新会议决定<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 11 个 ADR +
+<li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 12 个 ADR +
   附录）来自<a href="../../source-brief/">docs/source-brief.md</a>（以前的<code>docs/doc-task.md</code>）。</li>
 <li>通过互联网研究创建了<code>docs/research/</code>（3份报告）。</li>
 <li>构建了具有自动翻译功能的双语MkDocs，改编自<code>crud-skeleton</code>项目。</li>
@@ -3260,8 +3263,9 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
 <li><strong>合约层</strong> (<code>@assemblyvision/api-client</code>)：手动同步的 TS 类型
   来自 Pydantic 模型域、<code>ApiClient</code> 接口、<code>MockApiClient</code>
   （具有操作员工作流程状态机和模拟的确定性内存数据
-  SVG 图像）、<code>HttpApiClient</code>（针对未来的 <code>/api/v1</code> 端点）和
-  重新连接 WebSocket 服务。</li>
+  SVG 图像），<code>HttpApiClient</code> （与真实的 <code>/api/v1</code> 端点对话
+  获取边界处的运行时响应验证），以及重新连接
+  WebSocket 服务。</li>
 <li><strong>共享 UI</strong> (<code>@assemblyvision/ui</code>): <code>DetectionViewer</code> （包含缩放
   使用源坐标叠加、帧 ID 协调、陈旧帧进行预览
   标记）、与颜色无关的 <code>StatusBadge</code> 和显示格式化程序。</li>
@@ -3277,76 +3281,106 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
 <li><strong>Electron 桌面</strong> (<code>apps/edge-desktop</code>)：硬化默认值（上下文
   隔离、沙箱、无节点集成）、kiosk 模式和生产构建
   从构建的边缘网络输出加载。</li>
-<li><strong>测试和 CI</strong>：跨 api-client/ui/edge-web/desktop 的 39 个 Vitest 单元测试，
-  11 Playwright e2e、<code>web</code> CI 作业（构建/lint/测试/e2e）和 <code>make check</code>
-  现在运行 Python 和 TypeScript 门。</li>
+<li><strong>测试和 CI</strong>：跨 api-client/ui/edge-web/desktop 的 56 个 Vitest 单元测试
+  (28 + 13 + 12 + 3)，12 剧作家 e2e，<code>web</code> CI 工作
+  (build/lint/test/e2e)，并且 <code>make check</code> 现在同时运行 Python 和 TypeScript
+  盖茨。</li>
 <li><strong>文档</strong>：QUICKSTART 对每个应用程序进行了重组，并具有可扩展的编号
   部分；自述文件更新了新功能、项目结构和路线图。</li>
 </ul>
-<h2 id="83-edge-backend-layer-m1">8.3 边缘后端层（M1）<a class="headerlink" href="#83-edge-backend-layer-m1" title="Permanent link">&para;</a></h2>
-<p>第一个 FastAPI + SQLite 后端层在 <code>dev</code> 上实现，因此是只读的
-仪表板视图可以显示真实的 CLI 检查结果：</p>
+<h2 id="83-edge-backend-layer-m1-pr-8">8.3 边缘后端层（M1，PR #8）<a class="headerlink" href="#83-edge-backend-layer-m1-pr-8" title="Permanent link">&para;</a></h2>
+<p><code>dev</code> 上的 FastAPI + SQLite 后端层提供真实的只读仪表板视图
+CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
+阻塞结果 (F1-F14) 和 M1 条件项 (C1-C4)
+<code>docs/reviews/PR-008-review.md</code> 在 <code>dev</code> 上得到解决和验证。</p>
 <ul>
 <li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
   将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
   索引，并以幂等方式协调现有 CLI <code>inspection.json</code> 输出
   启动。配置/规则/清单加载重用相同的验证
   管道构建为 <code>inspect</code>。</li>
-<li><strong>持久化</strong>：SQLAlchemy 核心架构 + Alembic 初始迁移
+<li><strong>持久性</strong>：SQLAlchemy 核心架构 + Alembic 迁移 0001/0002
   (<code>apps/edge-service/migrations/</code>);检查表，组件
-  证据、媒体、上传任务、设备事件和活动包
-  05 号合约指数。非规范化过滤列（条形码、产品、结果）
-  驱动历史查询。 SQLite 索引是一个 <strong>可重建的读取投影</strong>
-  CLI <code>inspection.json</code> 捆绑包（C1、ADR-012）：可以删除并重建
-  来自相同的捆绑包而不改变它们，并且它不是权威的
-  完成/发件箱存储。 static-MVP <code>device_sequence</code> 是针对每个进程的，并且是
-  不是同步标识（C3）。</li>
+  证据、媒体、上传任务、设备事件、活动包和持久的
+  <code>rule_identities</code> 具有合约 05 索引的注册表。非规格化过滤器
+  列（条形码、产品、结果）驱动历史查询。 SQLite 索引是
+  CLI <code>inspection.json</code> 包的 <strong>可重建读取投影</strong>（C1、
+  ADR-012)：可以从相同的捆绑包中删除和重建，而无需更改
+  他们，并且它不是权威的完成/发件箱商店。静态 MVP
+  <code>device_sequence</code> 是每个进程的，不是同步标识 (C3)。
+  <code>rule_identities</code> 表使规则身份在重新启动后不可变：
+  <code>(rule_id, rule_version)</code> 与不同内容重用导致管道加载失败
+  与<code>CONFIG_INVALID</code>。</li>
 <li><strong>端点</strong>：健康/设备/相机、检查状态、检查列表
   （光标分页+过滤器）和详细信息，检查媒体，媒体内容
-  范围支持、上传（M1 中为空）、有效配置、日志（内存中
-  环形缓冲区），以及派生的可追溯性/统计数据/图像。 M1 API 是
-  只读 (ADR-012)：不支持暂停/恢复、相机重新连接和上传重试
-  暴露，除了 <code>/health/live</code> 之外的每个路由都需要配置
-  <code>AV_EDGE_API_TOKEN</code> 不记名令牌或 HttpOnly 同源查看器会话
-  设置令牌时在仪表板 <code>/login</code> 处建立。</li>
+  具有范围支持、上传（M1 中为空）、有效配置、日志
+  （内存环形缓冲区），以及派生的可追溯性/统计数据/图像。
+  统计信息 <code>from</code>/<code>to</code> 过滤器被验证为时区感知的 UTC 时间戳；
+  派生映像端点报告每个插槽可用/已清除/不可用
+  状态并返回 404 未知检查。 M1 API 是只读的
+  (ADR-012)：暂停/恢复、相机重新连接和上传重试不会暴露。</li>
+<li><strong>查看者身份验证</strong> (ADR-012)：除 <code>/health/live</code> 之外的所有路由
+  需要配置的 <code>AV_EDGE_API_TOKEN</code> 不记名令牌或短期的
+  HttpOnly、SameSite=严格、同源查看器会话。 <code>POST
+  /api/v1/auth/session</code> 为会话 cookie 交换有效的承载令牌；
+  仪表板 <code>/login</code> 页面提供一次性条目，因此 API JSON 都不是
+  请求和媒体 <code>&lt;img&gt;</code> 请求都需要浏览器存储中的令牌。</li>
+<li><strong>媒体隔离 (F2)</strong>：媒体内容仅在其内部解析
+  检查包目录；遍历、绝对、交叉捆绑和符号链接
+  转义路径在导入和服务时被拒绝，并且重复的媒体 ID
+  被拒绝，因此格式错误的捆绑包将被跳过，而不会中止启动。</li>
+<li><strong>合约边界 (F9)</strong>：带有承诺的类型化 Pydantic 响应模式
+  OpenAPI 文档 (<code>apps/edge-service/openapi/edge-openapi.json</code>) 和 CI 漂移
+  检查、生成的 TypeScript 类型
+  (<code>packages/typescript/api-client/src/edge/generated/api.ts</code>)，加上运行时
+  <code>HttpApiClient</code> (<code>validate.ts</code>) 中的响应验证拒绝漂移
+  或畸形的有效负载，而不是盲目地强制转换。</li>
 <li><strong>前端分割</strong>：只读视图在以下情况下通过 HTTP 客户端路由：
   <code>VITE_API_MODE=http</code>；操作员工作流程操作（当前/确认/下一个/
   手动）留在确定性模拟上，因为它们是演示
   队列，不是设计 15.3 端点。</li>
-<li><strong>PR-003 强化合并</strong>：规则版本身份现在绑定到
-  规范规则内容；输出编写器发布检查包
-  原子地（暂存 + fsync + 重命名，拒绝重新发布）；探测器通过
-  明确地体现 <code>imgsz</code>/<code>iou</code>/<code>conf</code> 并保留有效值
+<li><strong>PR-003 强化合并</strong>：规则版本身份绑定到规范
+  规则内容并持久注册；输出作者发布检查
+  原子捆绑（暂存 + fsync + 重命名，拒绝重新发布）；探测器
+  显式传递清单 <code>imgsz</code>/<code>iou</code>/<code>conf</code> 并保留有效值
   <code>InspectionRecord.inference_metadata</code>；管道验证检测
-  边界处的出处（框架/模型/坐标空间）。</li>
-<li><strong>包装</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
+  具有纯绝对坐标的出处（框架/模型/坐标空间）
+  边界处的公差。</li>
+<li><strong>打包</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
   strict 在整个仓库范围内传递。</li>
-<li><strong>测试强化</strong>：边缘 Python 包的测试覆盖率为 100%
-  （pytest-cov）。该扩展包暴露了三个已修复的缺陷：
-  <code>upsert_inspection</code> 现在替换子证据/媒体行而不是
-  未能满足媒体独特的约束； <code>load_pipeline_config</code> 换行
-  <code>ROIGenerationError</code>（例如<code>normalize_perspective: true</code>）作为<code>ConfigError</code>
-  而不是泄漏原始错误；并且 <code>OutputWriter.save</code> 清理它的
-  子写入失败时的暂存目录。</li>
+<li><strong>测试强化</strong>：边缘 Python 覆盖率为 100% (pytest-cov)；完整的
+  套件是 <code>373 passed</code>，TypeScript 测试是 <code>28 passed</code> (api-client) 和
+  <code>12 passed</code> (edge-web)，而 Playwright e2e 是 <code>12 passed</code>，包括
+  经过令牌验证的服务仪表板，断言真实的协调数据和
+  清除媒体渲染。</li>
 </ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>现在 FastAPI + SQLite 后端层（<code>assemblyvision serve</code>，第 8.3 节）
   提供来自本地索引的只读仪表板视图； <strong>上传队列
-  调度程序</strong>（真正的 <code>upload_tasks</code> 行、重试退避、幂等性）和
+  调度程序</strong>（真实的 <code>upload_tasks</code> 行、重试退避、幂等性）和
   <strong>WebSocket 运行时通道</strong> 是下一个后端差距。仪表板读取
   视图通过<code>VITE_API_MODE=http</code>切换到真实数据。</li>
-<li>许多 PR-003 P1/P2 后端强化项目仍处于开放状态（请参阅
-  <code>docs/reviews/PR-003-review.md</code>): 模型清单完整内容不变性，
-  数据集暂存和组件准备重用生产选择
-  合同。规则内容绑定、捆绑原子输出、推理参数
-  固定和检测来源验证现已修复（第 8.3 节）。</li>
-<li>PR #8 审核记录在 <code>docs/reviews/PR-008-review.md</code> 中：全部屏蔽
-  结果 (F1-F14) 和 M1 条件项目 (C1-C4) 得到解决并且
-  在 <code>dev</code> 上验证；剩余的路线图范围（上传队列调度程序，
-  WebSocket 通道、相机/条形码适配器、时间聚合、Docker
-  包装，权威的 SQLite 持久化/发件箱）被跟踪为下一个
-  里程碑并且不会阻止 PR。</li>
+<li>PR-003后续项目仍然开放（参见<code>docs/reviews/PR-003-review.md</code>）：
+  模型清单的完整内容不变性（发布仅检查第一个
+  工件校验和），严格的 Roboflow 源标签验证（负类
+  ID、未验证的字段计数/边界）、缺失标签策略（当前
+  仅警告隐式否定），产品的显式背景否定
+  数据集、清单相关验证身份（仍然基于基本名称）、
+  过时输出安全数据集适应/组件准备和组件
+  准备重用生产选择策略。运行时项目是固定的：
+  规则内容与持久注册表绑定、捆绑原子输出、推理
+  参数固定、检测来源验证和启动
+  交叉验证。</li>
+<li>M1层剩余的两个中等差距：代币保护的Vite开发
+  不支持跨源（CORS 仅允许 GET，查看器会话
+  cookie是同源的；使用同源 <code>assemblyvision serve</code> 流），并且
+  CLI <code>inspect</code>/<code>verify</code> 规则身份注册表是进程本地的，而
+  <code>serve</code> 将其保留在 SQLite 中。</li>
+<li>M1 层之后剩余的路线图范围（第 8.3 节，PR #8）：上传
+  队列调度程序、WebSocket 通道、相机/条形码适配器、时间
+  聚合、Docker 打包和权威的 SQLite 持久化/发件箱。
+  没有阻止 PR #8； PR-008 审查结果（F1-F14、C1-C4）已得到解决。</li>
 <li>一个月的基线仍然需要真实的客户数据：注释为
   X-AnyLabeling（产品+组件盒），然后运行 <code>av-train</code> -&gt;
   <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。实用程序脚本
@@ -3360,7 +3394,7 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。</li>
-<li><code>.obsidian/</code> 仍然选择不被跟踪；在更改该决定之前通知用户。</li>
+<li><code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
 
 
