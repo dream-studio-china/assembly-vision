@@ -31,6 +31,7 @@ log = logging.getLogger("assemblyvision.runtime")
 
 _LOW_DISK_WARNING_BYTES = 5 * 1024**3
 _INSTANCE_NAMESPACE = UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8")
+_PREVIEW_MIN_INTERVAL_S = 0.5
 
 
 @dataclass
@@ -70,6 +71,7 @@ class EdgeRuntime:
         self.instances: dict[str, InstanceRuntime] = {}
         self.camera_manager: Any = None
         self._stop = threading.Event()
+        self._preview_cache: dict[str, tuple[float, bytes]] = {}
 
     @staticmethod
     def _resolve_device_id(configured: str | None) -> UUID:
@@ -206,18 +208,18 @@ class EdgeRuntime:
 
     def device_status(self, upload_pending: int) -> dict[str, Any]:
         """Assemble the DeviceStatus snapshot (design 15.3.1)."""
+        if self.instances:
+            return self._device_status_instances(upload_pending)
+        return self._device_status_single(upload_pending)
+
+    def _device_status_single(self, upload_pending: int) -> dict[str, Any]:
         if self.pipeline is None:
             operational = "FAULTED" if self.pipeline_error else "INITIALIZING"
             inspection_ready = False
         else:
             operational = "PAUSED" if self.paused else "READY"
             inspection_ready = not self.paused
-        try:
-            import shutil
-
-            disk_free = shutil.disk_usage(self._settings.output_root).free
-        except OSError:
-            disk_free = 0
+        disk_free = self._disk_free_bytes()
         alerts: list[str] = []
         if not inspection_ready:
             alerts.append("NOT_READY")
@@ -235,20 +237,69 @@ class EdgeRuntime:
             "central_connected": False,
             "disk_free_bytes": disk_free,
             "upload_pending_count": upload_pending,
-            "current_product_model_version_id": self._model_version_id("product"),
-            "current_component_model_version_id": self._model_version_id("component"),
+            "current_product_model_version_id": self._model_version_id(self.pipeline, "product"),
+            "current_component_model_version_id": self._model_version_id(
+                self.pipeline, "component"
+            ),
             "current_rule_version_id": None,
             "alerts": alerts,
         }
 
-    def _model_version_id(self, task: str) -> str | None:
-        if self.pipeline is None:
+    def _device_status_instances(self, upload_pending: int) -> dict[str, Any]:
+        """Aggregate device status across configured instances (ADR-013)."""
+        manager = self.camera_manager
+        connected = [
+            instance_id
+            for instance_id in self.instances
+            if manager is not None
+            and manager.state(instance_id) is not None
+            and manager.state(instance_id).connected
+        ]
+        ready_pipelines = [
+            instance_id
+            for instance_id, runtime in self.instances.items()
+            if runtime.inspection_enabled and runtime.pipeline is not None
+        ]
+        inspection_ready = bool(ready_pipelines) and bool(connected)
+        operational = "READY" if inspection_ready else "DEGRADED"
+        disk_free = self._disk_free_bytes()
+        alerts: list[str] = []
+        if not inspection_ready:
+            alerts.append("NOT_READY")
+        if disk_free < _LOW_DISK_WARNING_BYTES:
+            alerts.append("DISK_LOW")
+        first_ready = next((iid for iid in ready_pipelines if iid in connected), None)
+        pipeline = self.instances[first_ready].pipeline if first_ready else None
+        return {
+            "device_id": str(self.device_id),
+            "observed_at": datetime.now(UTC).isoformat(),
+            "operational_state": operational,
+            "inspection_ready": inspection_ready,
+            "inspection_error_code": None,
+            "sync_ready": False,
+            "camera_connected": bool(connected),
+            "model_loaded": bool(ready_pipelines),
+            "central_connected": False,
+            "disk_free_bytes": disk_free,
+            "upload_pending_count": upload_pending,
+            "current_product_model_version_id": self._model_version_id(pipeline, "product"),
+            "current_component_model_version_id": self._model_version_id(pipeline, "component"),
+            "current_rule_version_id": None,
+            "alerts": alerts,
+        }
+
+    def _disk_free_bytes(self) -> int:
+        import shutil
+
+        try:
+            return shutil.disk_usage(self._settings.output_root).free
+        except OSError:
+            return 0
+
+    def _model_version_id(self, pipeline: Any | None, task: str) -> str | None:
+        if pipeline is None:
             return None
-        manifest = (
-            self.pipeline._product_manifest
-            if task == "product"
-            else self.pipeline._component_manifest
-        )
+        manifest = pipeline._product_manifest if task == "product" else pipeline._component_manifest
         return str(manifest.model_version_id)
 
     def inspection_state(self, last_result: str | None) -> dict[str, Any]:
@@ -272,6 +323,47 @@ class EdgeRuntime:
             "last_frame_at": None,
             "error_code": None,
         }
+
+    def instance_camera_state(self, instance_id: str) -> dict[str, Any] | None:
+        """Per-instance camera snapshot (ADR-013); None for unknown instances."""
+        if self.camera_manager is None:
+            return None
+        state = self.camera_manager.state(instance_id)
+        if state is None:
+            return None
+        capabilities = state.capabilities
+        return {
+            "connected": state.connected and state.last_frame is not None,
+            "source_width": capabilities.source_width if capabilities else 0,
+            "source_height": capabilities.source_height if capabilities else 0,
+            "fps": capabilities.fps if capabilities else None,
+            "last_frame_at": state.last_frame_at,
+            "error_code": state.error_code,
+        }
+
+    def preview_jpeg(self, instance_id: str) -> tuple[bytes, str] | None:
+        """Return (jpeg bytes, last frame time) for the latest instance frame.
+
+        The JPEG is re-encoded at most every ``_PREVIEW_MIN_INTERVAL_S`` per
+        instance so preview polling cannot saturate the CPU (ADR-013).
+        """
+        if self.camera_manager is None:
+            return None
+        state = self.camera_manager.state(instance_id)
+        frame = self.camera_manager.latest_frame(instance_id)
+        if state is None or frame is None:
+            return None
+        now = time.monotonic()
+        cached = self._preview_cache.get(instance_id)
+        if cached is not None and now - cached[0] < _PREVIEW_MIN_INTERVAL_S:
+            return cached[1], state.last_frame_at or ""
+        import io
+
+        buffer = io.BytesIO()
+        frame.image.save(buffer, format="JPEG", quality=75)
+        data = buffer.getvalue()
+        self._preview_cache[instance_id] = (now, data)
+        return data, state.last_frame_at or ""
 
     def effective_configuration(self) -> dict[str, Any]:
         """Effective configuration snapshot from the loaded config/rule files."""

@@ -282,17 +282,17 @@ def test_device_status_disk_error_reports_low(
 
 def test_model_version_id_without_pipeline(tmp_path: Path) -> None:
     runtime = EdgeRuntime(_settings(tmp_path))
-    assert runtime._model_version_id("product") is None
-    assert runtime._model_version_id("component") is None
+    assert runtime._model_version_id(runtime.pipeline, "product") is None
+    assert runtime._model_version_id(runtime.pipeline, "component") is None
 
 
 def test_model_version_id_with_pipeline(tmp_path: Path) -> None:
     runtime = EdgeRuntime(_settings(tmp_path))
     runtime.pipeline = _fake_pipeline()
-    assert runtime._model_version_id("product") == str(
+    assert runtime._model_version_id(runtime.pipeline, "product") == str(
         runtime.pipeline._product_manifest.model_version_id
     )
-    assert runtime._model_version_id("component") == str(
+    assert runtime._model_version_id(runtime.pipeline, "component") == str(
         runtime.pipeline._component_manifest.model_version_id
     )
 
