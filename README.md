@@ -1,7 +1,6 @@
 # AssemblyVision
 
-Industrial assembly inspection platform. Two-stage YOLO detection, deterministic
-rules, edge-first decisions, delayed sync to a central server.
+Edge-first industrial AI vision inspection platform powered by YOLO detection and configurable rule engines. Supports automated assembly verification, quality inspection, offline edge inference, and traceable inspection workflows.
 
 ## Features
 
@@ -133,6 +132,17 @@ Only complete, valid evidence for every required component may produce `OK`.
 Missing, uncertain, or unverifiable evidence always yields `NG`. No claim of
 100 % accuracy is made. Production acceptance requires measured data excluded
 from training.
+
+## Testing and Resilience
+
+The resilience test matrix (design 22.8) and the testing contracts (contracts 06)
+grade fault cases by delivery horizon: design cases → targeted pilot subset →
+full approved suite. Covered faults include camera disconnect/reconnect, sudden
+power loss, disk-full recovery, accelerator/GPU failure with validated CPU
+fallback, repeated network disconnects with persistent queue drain, and
+long-running soak stability (duration agreed from operating patterns). Recovery
+procedures live in the runbooks (camera disconnection, low disk space, database
+recovery, network recovery synchronization).
 
 ## Roadmap
 

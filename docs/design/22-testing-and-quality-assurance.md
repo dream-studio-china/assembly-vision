@@ -20,7 +20,7 @@ AssemblyVision testing demonstrates measured behavior under representative produ
 | Integration | Real boundaries | API plus database, object storage checksum, model runtime plus ROI mapping |
 | End-to-end | User/product workflow | capture through local decision; upload through central review |
 | Model evaluation | Statistical performance on held-out groups | NG recall by component/product and confidence distributions |
-| Resilience | Recovery and safe degradation | network outage, power loss, disk full, corruption, restart |
+| Resilience | Recovery and safe degradation | network outage, repeated network flap, power loss, disk full, accelerator/inference failure, corruption, restart |
 | Acceptance | Customer production behavior | agreed matrix in document 26 using unseen production data |
 
 Tests use the same versioned model, rule, application, and configuration artifacts intended for release.
@@ -107,10 +107,12 @@ Overall accuracy may be reported but is never the sole promotion criterion becau
 |---|---|---|
 | Camera disconnect | Remove device/stop simulator | No fabricated `OK`; alarm, reconnect, recover safely |
 | Network outage | Block central endpoint/DNS | Local decisions continue; queue persists |
+| Repeated network disconnect | Oscillate connectivity (up/down cycles, partial packet loss) against the central endpoint | Local decisions continue without a central round trip; the queue persists; backoff with jitter and the circuit breaker bound repeated traffic; no data loss or duplicate uploads; the backlog drains once connectivity returns |
 | Central outage | Return timeout/5xx | Backoff with jitter; no decision blockage |
 | Duplicate upload | Replay same idempotency key | One central inspection and consistent receipt |
 | Power loss | Kill host/process during selected states | Recover database/queue; ambiguous window not marked OK |
 | Disk full | Fill test volume or enforce quota | Alert, safe cleanup, pause before traceability is lost |
+| Accelerator/GPU failure | Kill or stall the inference subprocess; force a CUDA/accelerator error | No fabricated `OK`; a recoverable failure reloads or switches to a validated CPU runtime using the same manifest and records the switch; a non-recoverable failure faults and blocks inspection (design 09.7) |
 | Database failure | Lock/corrupt disposable test database | Fail safely, preserve diagnostics, execute tested restore path |
 | Container restart | Restart each service independently | Supervisory recovery without duplicate product decision |
 | Clock drift | Offset wall clock | Preserve monotonic ordering/correlation and alert on drift |
@@ -122,7 +124,7 @@ Fault tests run only in isolated environments with disposable data. Power-loss t
 
 Performance testing uses production-resolution images and the candidate edge hardware. Measure stage timings for capture, barcode, product detection, ROI, component detection, aggregation, rules, persistence, and UI/event delivery. Report warm-up separately and monitor CPU, GPU, memory, temperature, disk I/O, and queue growth.
 
-Long-running tests include normal product flow, bursts, idle periods, camera reconnects, central outages, and retention cleanup. Passing means no unbounded memory/file-descriptor/queue growth, no data loss, and stable latency within customer-agreed limits. Duration and workload are agreed from actual operating patterns; this document does not invent them.
+Long-running tests include normal product flow, bursts, idle periods, camera reconnects, central outages, repeated network disconnects, accelerator/inference failures, and retention cleanup. Passing means no unbounded memory/file-descriptor/queue growth, no data loss, and stable latency within customer-agreed limits. Duration and workload are agreed from actual operating patterns; this document does not invent them.
 
 ## 22.10 Test Data and Ground Truth Governance
 

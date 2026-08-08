@@ -1,6 +1,6 @@
 # AssemblyVision - Full Project Context
 
-> Context snapshot. Last updated: 2026-08-08
+> Context snapshot. Last updated: 2026-08-09
 >
 > Read this file first in a new session to reconstruct the project state quickly.
 
@@ -33,13 +33,16 @@ and verifies that all required assembly components are present.
   data-acquisition guidance (design §19.17, runbook 11), and README/QUICKSTART
   updates. Read-only dashboard views display real CLI results through the HTTP
   client, while the operator workflow actions remain on the mock client.
+  PR #12 (dev -> main) closed the AUDIT-001 findings with acceptance tests
+  (merged 2026-08-09); see section 8.4.
 
 ## 2. Repository State
 
-- Remote: `https://github.com/dream-studio-china/assembly-vision`. All merged
-  to `main` (PRs #3, #6, #8, #9, #10, #11); no open PRs. `dev` is in sync with
-  `main`; the next milestone is the AUDIT-001 Phase 1 fixes and collecting
-  real customer data.
+- Remote: `https://github.com/dream-studio-china/assembly-vision`. PRs #3, #6,
+  #8, #9, #10, #11, #12 are merged to `main`; PR #12 merged the completed
+  AUDIT-001 closure on 2026-08-09. The next milestones are the upload
+  scheduler + authoritative persistence (AUDIT-001 4.4) and collecting real
+  customer data.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -227,7 +230,7 @@ assembly-vision/
   HIGH data-integrity/doc findings (adapter missing-label fabrication, stale
   staging paths in published data.yaml, av-train relative-path
   runs/detect-nesting, stale PR state) and three reproduced concurrency and
-  robustness defects were recorded for the next milestone.
+  robustness defects were recorded; all are now closed (PR #12, section 8.4).
 - Model improvement is a developer-side loop (docs/runbooks/10-model-improvement.md):
   collect/correct data -> retrain -> verify no regression -> bump pipeline config and the rule's
   `compatible_component_model_versions` together (`av-train --rule` prints the suggested bump).
@@ -360,14 +363,49 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   tolerance at the boundary.
 - **Packaging**: `py.typed` markers added to `domain` and `vision-core` so MyPy
   strict passes repo-wide.
-- **Test hardening**: edge Python statement coverage is ~99.5% (pytest-cov;
-  uncovered lines are viewer-session/no-token branches, derived-image and
-  statistics fallbacks, the verify empty-work branch, and the unreachable
-  IntegrityError handler); the full suite is `405 passed`, TypeScript tests are
-  `30 passed` (api-client), `13 passed` (ui), `17 passed` (edge-web), `3 passed`
-  (desktop), and Playwright e2e is `12 passed` including a token-authenticated
-  served dashboard that asserts real reconciled data and purged-media
-  rendering.
+- **Test hardening**: the shared gate (ruff, format, mypy, pytest) passes with
+  `472 passed` (2026-08-09); TypeScript is `34 passed` (api-client), `13 passed`
+  (ui), `25 passed` (edge-web), `3 passed` (desktop), plus 12 Playwright e2e
+  including a token-authenticated served dashboard that asserts real reconciled
+  data and purged-media rendering. `uv run mkdocs build --strict` passes.
+
+## 8.4 AUDIT-001 Closure and Review Fixes (PR #12)
+
+The read-only system audit (`docs/reviews/AUDIT-001-system-audit.md`) was
+verified and its findings closed with acceptance tests, merged via PR #12
+(dev -> main, 16 commits; CI green):
+
+- **H1-H3**: dataset adapters enforce image/label pairing (explicit empty
+  labels, stem collisions, Roboflow `valid` -> `val`), publish
+  dataset-relative `data.yaml` paths, and `av-train` resolves an absolute
+  Ultralytics project dir and asserts `best.pt` exists.
+- **M1-M3**: reconciliation skips NUL-byte media paths; rule-identity
+  registration resolves concurrent races without leaking `IntegrityError`;
+  first-open SQLite migration is serialized across threads and processes.
+- **Rule/manifest fail-safe**: the rule engine rejects non-finite geometry and
+  incomplete PRESENT evidence; manifest validation enforces runtime, artifact
+  bundle containment, and class maps (`ConfigError`, never a leak).
+- **API hardening**: non-loopback bind requires a token (or explicit dev
+  override); log messages scrub absolute paths; failed-attempt throttling with
+  `Retry-After`; bounded sessions; cursors bound to filter fingerprints
+  (`400 INVALID_CURSOR`); PURGED media always `410`; non-ASCII bearer `401`;
+  `/api` reserved before the SPA fallback; CSP/nosniff/referrer headers.
+- **Frontend hardening**: production builds fail unless `VITE_API_MODE=http`;
+  media blob URLs reject foreign origins; HTTP mode drops the unsupported line
+  filter; WebSocket gaps are signalled; nested records are validated; the
+  unrouted duplicate live view was removed.
+- **Tooling/docs**: synthetic generator rotation geometry and scenario
+  coverage corrected; training-run reproducibility metadata recorded beside
+  manifests; design 14 M1 boundary, reason codes, adapters, runbooks, and
+  QUICKSTART aligned.
+- **PR review follow-up (`c634ca5`)**: preserved the documented sibling
+  `models/manifests` + `models/weights` layout under bundle-root containment,
+  requires independent product boxes in held-out test samples, re-verifies
+  migrations on every database open, and adds `Retry-After` to auth
+  throttling.
+- **Deferred**: 4.4 authoritative persistence schema (product-configuration
+  version, lease fields, concurrent equal-content upserts) is gated on the
+  upload-scheduler milestone.
 
 ## 9. Open Items / Next Steps
 
@@ -376,16 +414,16 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   backoff, idempotency) and the **WebSocket runtime channel** are the next
   backend gaps. Read-only dashboard views already route through the HTTP
   client (`VITE_API_MODE=http`).
-- AUDIT-001 (`docs/reviews/AUDIT-001-system-audit.md`) Phase 1 fixes pending:
-  adapter missing-label enforcement, `valid` alias, and stem-collision
-  detection (H1); relative `data.yaml` paths after the atomic rename in both
-  adapters and `prepare_components` (H2); absolute `project_dir` in `av-train`
-  (H3); reconcile and rule-registry error handling (M1/M2/M3); rule-engine
-  non-finite/evidence-completeness guards; manifest runtime/URI/class-map
-  checks. Phase 2: documentation alignment (design 14 M1 boundary, appendices
-  reason codes, coverage/test-count claims). Phase 3: decide the
-  multi-edge-per-host "shared" model before the upload scheduler, WebSocket,
-  camera/barcode, and temporal aggregation work.
+- AUDIT-001 (`docs/reviews/AUDIT-001-system-audit.md`) is **closed**: all
+  findings fixed and committed on `dev` (section 8.4), merged to `main` via
+  PR #12 on 2026-08-09. The only deferred item is 4.4 authoritative
+  persistence, gated on the upload-scheduler milestone. Phase 3 still needs a
+  decision on the multi-edge-per-host "shared" model before the upload
+  scheduler, WebSocket, camera/barcode, and temporal aggregation work.
+- Resilience documentation (2026-08-09, new docs PR): design 22 adds
+  Accelerator/GPU failure and Repeated network disconnect to the resilience
+  fault matrix, design 09 and contracts 06 are aligned, and README gained a
+  Testing and Resilience section.
 - PR-003 follow-up items are all resolved (see `docs/reviews/PR-003-review.md`):
   model-manifest publication now compares full decision-critical content
   (task, class order, input size, artifact, provenance), the Roboflow adapter

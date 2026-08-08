@@ -85,7 +85,7 @@ pipeline configuration shown above (AUDIT-001).
 
 Inference timeout, out-of-memory, malformed output, model process crash, transform failure, or version mismatch invalidates the affected frame. If required evidence cannot be established, the final result is `NG`. The implementation must never carry detections forward from another frame, ROI, product, or model invocation.
 
-After a recoverable accelerator failure, the worker may reload or use a validated CPU runtime if configured. The fallback runtime must use the same manifest and be separately performance-tested; switching runtime is recorded. Server connectivity has no effect on local inference.
+After a recoverable accelerator failure, the worker may reload or use a validated CPU runtime if configured. The fallback runtime must use the same manifest and be separately performance-tested; switching runtime is recorded. Server connectivity has no effect on local inference. Accelerator/GPU failure is fault-injected per the resilience matrix (22.8): a recoverable failure may fall back, and a non-recoverable failure must fault and block inspection, never producing `OK` from incomplete evidence.
 
 ## 9.8 Performance and Concurrency
 
@@ -99,6 +99,7 @@ Keep model instances warm and bound concurrency to measured GPU/CPU capacity. Ba
 - Include intentionally missing components, difficult present components, empty ROIs, reflections, and occlusions.
 - Split datasets by physical product, capture session, batch, or date, not adjacent video frames.
 - Fault-inject timeout, OOM, malformed tensor, and worker restart; none may yield `OK` from incomplete evidence.
+- Fault-inject accelerator/GPU failure; verify reload or the validated CPU fallback uses the same manifest, records the runtime switch, and never yields `OK` from incomplete evidence.
 - Benchmark average/P95 inference latency and sustained throughput on deployment hardware.
 
 ## 9.10 Open Questions and Validation Required
