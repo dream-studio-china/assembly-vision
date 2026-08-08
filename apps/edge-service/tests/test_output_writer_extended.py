@@ -15,7 +15,7 @@ from assemblyvision_edge.output.writer import (
     _write_file_atomic,
 )
 from assemblyvision_edge.persistence.reconcile import reconcile_output_root
-from assemblyvision_edge.persistence.repository import EdgeRepository
+from assemblyvision_edge.persistence.repository import EdgeRepository, InspectionSummary, Page
 from PIL import Image
 
 from tests.test_output_writer import _make_record
@@ -178,6 +178,49 @@ def test_reconcile_skips_conflicting_content(tmp_path: Path) -> None:
         assert fetched.decision.business_result is BusinessResult.OK
     finally:
         repo.close()
+
+
+def test_rebuild_index_from_cli_bundles_is_equivalent(tmp_path: Path) -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from assemblyvision_domain.models import BusinessResult
+
+    from tests.test_api import _record
+
+    root = tmp_path / "out"
+    root.mkdir()
+    base = datetime(2026, 1, 1, tzinfo=UTC)
+    records = []
+    for idx in range(3):
+        record = _record(
+            base + timedelta(minutes=idx),
+            business=BusinessResult.OK if idx % 2 == 0 else BusinessResult.NG,
+            barcode=f"SN-{idx:04d}",
+        )
+        directory = root / str(record.inspection_id)
+        directory.mkdir()
+        directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+        records.append(record)
+
+    db1 = tmp_path / "edge.sqlite3"
+    repo1 = EdgeRepository.open(db1)
+    assert reconcile_output_root(repo1, root) == 3
+    snapshot1 = repo1.list_inspections(limit=100)
+    detail1 = repo1.get_inspection_full(str(records[0].inspection_id))
+    repo1.close()
+
+    repo2 = EdgeRepository.open(tmp_path / "edge-rebuilt.sqlite3")
+    assert reconcile_output_root(repo2, root) == 3
+    snapshot2 = repo2.list_inspections(limit=100)
+    detail2 = repo2.get_inspection_full(str(records[0].inspection_id))
+    repo2.close()
+
+    def key(page: Page[InspectionSummary]) -> list[tuple[str, str]]:
+        return [(str(i.inspection_id), i.business_result) for i in page.items]
+
+    assert key(snapshot1) == key(snapshot2)
+    assert detail1 is not None and detail2 is not None
+    assert detail1.model_dump(mode="json") == detail2.model_dump(mode="json")
 
 
 def test_media_path_is_safe_rejects_escapes(tmp_path: Path) -> None:

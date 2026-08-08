@@ -285,7 +285,11 @@ dashboard views can display real CLI inspection results:
   (`apps/edge-service/migrations/`); tables for inspections, component
   evidence, media, upload tasks, device events, and active packages with
   contract-05 indexes. Denormalized filter columns (barcode, product, result)
-  drive history queries.
+  drive history queries. The SQLite index is a **rebuildable read projection** of
+  the CLI `inspection.json` bundles (C1, ADR-012): it can be deleted and rebuilt
+  from the same bundles without changing them, and it is not the authoritative
+  completion/outbox store. The static-MVP `device_sequence` is per-process and is
+  not a synchronization identity (C3).
 - **Endpoints**: health/device/camera, inspection state, inspections list
   (cursor pagination + filters) and detail, inspection media, media content with
   Range support, uploads (empty in M1), effective configuration, logs (in-memory

@@ -243,3 +243,53 @@ def test_reopened_database_uses_wal_and_connection_pragmas(tmp_path: Path) -> No
             assert conn.execute(text("PRAGMA busy_timeout")).scalar() == 5000
     finally:
         reopened.close()
+
+
+def test_migration_reaches_head(repo: EdgeRepository) -> None:
+    from alembic.config import Config
+    from alembic.script import ScriptDirectory
+    from assemblyvision_edge.persistence.migrate import _ALEMBIC_INI, _MIGRATIONS_DIR
+
+    cfg = Config(str(_ALEMBIC_INI))
+    cfg.set_main_option("script_location", str(_MIGRATIONS_DIR))
+    head = ScriptDirectory.from_config(cfg).get_current_head()
+    with repo._engine.connect() as conn:  # noqa: SLF001
+        version = conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
+    assert version == head
+
+
+def test_verify_revision_rejects_wrong_head(tmp_path: Path) -> None:
+    import sqlite3
+
+    from assemblyvision_edge.persistence.migrate import _verify_revision
+
+    db = tmp_path / "edge.sqlite3"
+    conn = sqlite3.connect(db)
+    conn.execute("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)")
+    conn.execute("INSERT INTO alembic_version VALUES ('9999')")
+    conn.commit()
+    conn.close()
+    with pytest.raises(RuntimeError, match="expected"):
+        _verify_revision(str(db), "0001")
+
+
+def test_verify_revision_rejects_missing_head(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.migrate import _verify_revision
+
+    with pytest.raises(RuntimeError, match="no alembic head"):
+        _verify_revision(str(tmp_path / "edge.sqlite3"), None)
+
+
+def test_verify_revision_surfaces_sqlite_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import sqlite3
+
+    from assemblyvision_edge.persistence import migrate
+
+    def broken_connect(path: object) -> object:
+        raise sqlite3.Error("cannot open")
+
+    monkeypatch.setattr("assemblyvision_edge.persistence.migrate.sqlite3.connect", broken_connect)
+    with pytest.raises(RuntimeError, match="cannot read edge database migration state"):
+        migrate._verify_revision(str(tmp_path / "edge.sqlite3"), "0001")
