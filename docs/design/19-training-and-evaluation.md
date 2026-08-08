@@ -227,3 +227,97 @@ A challenger with better mAP but worse product-level NG recall is not promoted s
 - Confirm representative edge CPU/GPU, required throughput, conveyor timing, and latency budget.
 - Define allowed camera-position/angle/exposure tolerances and the process that declares a domain change.
 - Confirm production OK-audit sampling needed to estimate false negatives and model drift.
+
+## 19.17 Single-Product Data Acquisition and Annotation Checklist
+
+This section is the authoritative data-quality spec for the common case: **one
+product on one fixed camera/lighting/position station**. It converts the
+planning ranges in 19.2 into a concrete acquisition plan, states the hard
+annotation rules that the dataset adapters enforce, and defines the handover
+that feeds the training pipeline. For the operational step-by-step procedure
+see [Runbook 11](../runbooks/11-data-collection-and-annotation.md); the
+external checklists in [Imaging Workflow and Training Cost](../research/03-imaging-workflow-and-training-cost.md)
+remain supporting material.
+
+### 19.17.1 Why a Single Fixed Product Is Easier
+
+A fixed product under a fixed camera collapses intra-class variance: the
+product-detector task becomes near-constant ("board present / absent / partial /
+multiple"), and the component detector only needs to distinguish "this part is
+here" from "this pad is empty" on the same board. Public multi-board datasets
+(such as generic PCB component sets) spread one class across dozens of visually
+different products, which is why a small multi-board model generalizes poorly
+whereas a small single-product model can be effective. The bottleneck is never
+the OK side; it is the **missing-component (NG) side**: physically missing
+parts are rare on the line, hard to construct, and every failure mode the model
+has never seen is a false-negative risk.
+
+### 19.17.2 Collection Quantities (Planning Ranges, Not Acceptance Thresholds)
+
+Product detector (stage 1, full frame):
+
+| Content | Suggested count |
+|---|---|
+| OK products across batches/dates and position variation | 100-300 |
+| Empty conveyor / background (product absent) - explicit empty labels | 30-60 |
+| Partial entry / exit frames | 20-40 |
+| Multiple products in one frame (anomaly) | 10-20 |
+| Blur, reflection, occlusion, exposure variation | 10-20 each |
+
+Component detector (stage 2, ROI):
+
+| Content | Suggested count |
+|---|---|
+| Labeled instances per required component class | 300-500 per class |
+| Physically missing part per missing scenario | ≥ 100 per missing location |
+| Missing multiple components (combinations) | 20-50 per combination |
+| Negative ROI crops (empty pads, no component) | same order as missing samples |
+
+Barcode (separate from YOLO): readable, damaged/occluded, and unreadable cases
+for product-type resolution and fail-safe paths.
+
+A **minimal closed loop** (get the pipeline running and measure trends) can
+start at 40-60 OK images plus 10-20 samples per missing location, then scale to
+the table above; expand where `verify` exposes missed NG.
+
+### 19.17.3 Hard Annotation Rules (Enforced by the Adapters)
+
+- **Two datasets, two-stage semantics.** `dataset_product` carries one class
+  `product` = an independently annotated full-board box. `dataset_components`
+  carries the required component classes in fixed order (the `data.yaml` order
+  is the class-ID mapping). Missing components are expressed by the **absence
+  of the component's box**; never train a generic `missing_*` class.
+- **Product box is mandatory even when components are missing.** Stage one must
+  localize the complete product for a defective board too. An image with
+  component boxes but no product box is a data error and is rejected; the
+  product box can never be derived from the union of present component boxes.
+- **Explicit empty labels.** Every background/negative image must have an
+  explicit empty label file; image/label pairing is required (missing label
+  files fail validation unless the recorded `--allow-missing-labels` legacy
+  opt-in is used).
+- **Physical NG only.** Do not synthesize all NG by digitally erasing
+  components; shadows, packaging deformation, and revealed backgrounds differ
+  (19.4).
+- **Fixed capture conditions.** Collect with the production camera, optics,
+  mounting, lighting, conveyor background, capture software, and encoding. A
+  significant angle change is a domain change requiring revalidation (19.4).
+- **Second review.** A reviewer examines every NG sample, all ambiguous labels,
+  and a sample of ordinary labels (19.5); disputes are adjudicated against a
+  locked ontology.
+
+### 19.17.4 Leakage-Safe Splits and Handover
+
+- Split by **physical product instance / capture session**, never by random
+  frames; target 70/15/15 by grouped instances (19.6). The held-out `test`
+  split is used once for verification and never for tuning.
+- Annotate with **X-AnyLabeling** and export the YOLO layout (train/val/test +
+  `classes.txt` or `data.yaml`), then run
+  `scripts/adapt-xanylabeling.py <export> <out> --product-class product --required '<comma,separated>'`.
+  The adapter validates every label line, enforces 19.17.3, keeps explicit
+  background negatives, builds `dataset_product` + `dataset_components` +
+  `test-expected.json` + `manifest.json`, and rejects stale/populated output
+  directories atomically. Roboflow exports use
+  `scripts/adapt-roboflow-dataset.py`.
+- Freeze dataset checksums and the annotation/ontology version with the model
+  manifest (19.8, contract 10); the verification set must never be copied into
+  training or validation.

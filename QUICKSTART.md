@@ -84,10 +84,31 @@ uv run assemblyvision verify /path/to/test-images \
   --output out/
 ```
 
-Expected JSON comes from `scripts/adapt-roboflow-dataset.py`. Without
-`--expected`, the filename fallback treats `ok_*` as OK and `ng_*`/`missing_*`
-as NG. The command reports NG recall / FN / FP and exits non-zero on a false
-negative or an incomplete report.
+Expected JSON comes from `scripts/adapt-roboflow-dataset.py` (Roboflow) or
+`scripts/adapt-xanylabeling.py` (X-AnyLabeling). Without `--expected`, the
+filename fallback treats `ok_*` as OK and `ng_*`/`missing_*` as NG. The
+command reports NG recall / FN / FP and exits non-zero on a false negative or
+an incomplete report.
+
+### 4.2.1 Prepare a real annotated dataset
+
+Annotate production images with X-AnyLabeling (product full-board box +
+required component boxes; a missing component is left unlabeled, never a
+generic `missing_*` class), export the YOLO layout, then convert it into the
+two-stage layout:
+
+```bash
+uv run python scripts/adapt-xanylabeling.py <xal-export> <out> \
+  --product-class product --required 'chip,capacitor,boot'
+```
+
+This produces `dataset_product/`, `dataset_components/`, and
+`test-expected.json` (plus a file manifest), validating every label line and
+enforcing the two-stage annotation rules. Roboflow exports use
+`scripts/adapt-roboflow-dataset.py`. See
+`docs/design/19-training-and-evaluation.md` §19.17 for the collection
+quantities and hard annotation rules, and
+`docs/runbooks/11-data-collection-and-annotation.md` for the full procedure.
 
 ### 4.3 Train the models (developer-only `av-train`)
 
@@ -354,8 +375,10 @@ docs/                           # architecture, contracts, ADRs, runbooks
 
 ## 10. What's next
 
-- **Real-data baseline** — annotate production images with X-AnyLabeling, then
-  run `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
+- **Real-data baseline** — collect and annotate production images with
+  X-AnyLabeling per `docs/runbooks/11-data-collection-and-annotation.md`,
+  convert the export with `scripts/adapt-xanylabeling.py`, then run `av-train`
+  -> `assemblyvision inspect` -> `assemblyvision verify`.
 - **Upload scheduler + WebSocket channel** — the next backend gaps after the
   merged M1 layer (PR #8): real `upload_tasks` rows with retry backoff and
   idempotency, and the runtime WebSocket channel.
