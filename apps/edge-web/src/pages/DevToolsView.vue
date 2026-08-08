@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { InspectionRecord, VideoInspectResult } from "@assemblyvision/api-client";
 import LogsView from "./LogsView.vue";
 import { getApiClient, isHttpMode } from "../services/client";
 import { productBoxStyle } from "../services/devOverlay";
+import { useDevInspectSession } from "../services/useDevInspectSession";
 
 const activeTab = ref("test");
 const instanceId = ref("");
 const persist = ref(true);
 const step = ref(1);
-const busy = ref(false);
-const error = ref<string | null>(null);
-const record = ref<InspectionRecord | null>(null);
-const videoResult = ref<VideoInspectResult | null>(null);
-const imageUrl = ref<string | null>(null);
+
+const { busy, error, record, videoResult, imageUrl, inspectFrame, inspectVideo } =
+  useDevInspectSession();
+
 const overlayBox = computed(() => productBoxStyle(record.value));
 const overlayStyle = computed(() => {
   const box = overlayBox.value;
@@ -22,44 +21,12 @@ const overlayStyle = computed(() => {
     : "";
 });
 
-function resetResult(): void {
-  error.value = null;
-  record.value = null;
-  videoResult.value = null;
-}
-
 function handleImageFile(file: File): void {
-  resetResult();
-  imageUrl.value = URL.createObjectURL(file);
-  busy.value = true;
-  getApiClient()
-    .devInspectFrame(instanceId.value, file, { persist: persist.value })
-    .then((result) => {
-      record.value = result;
-    })
-    .catch((err: unknown) => {
-      error.value = err instanceof Error ? err.message : String(err);
-    })
-    .finally(() => {
-      busy.value = false;
-    });
+  inspectFrame(getApiClient(), instanceId.value, file, { persist: persist.value });
 }
 
 function handleVideoFile(file: File): void {
-  resetResult();
-  imageUrl.value = null;
-  busy.value = true;
-  getApiClient()
-    .devInspectVideo(instanceId.value, file, { step: step.value })
-    .then((result) => {
-      videoResult.value = result;
-    })
-    .catch((err: unknown) => {
-      error.value = err instanceof Error ? err.message : String(err);
-    })
-    .finally(() => {
-      busy.value = false;
-    });
+  inspectVideo(getApiClient(), instanceId.value, file, { step: step.value });
 }
 
 function onFileSelected(event: Event, kind: "image" | "video"): void {

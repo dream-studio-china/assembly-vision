@@ -45,6 +45,11 @@ async function parseProblem(body: unknown): Promise<Problem | null> {
   return record as unknown as Problem;
 }
 
+/** Outgoing media label for raw image/video uploads (PR-014 F11). */
+function mediaContentType(blob: Blob): string {
+  return blob.type || "application/octet-stream";
+}
+
 /**
  * HTTP implementation of the edge API contract against a FastAPI backend.
  *
@@ -222,7 +227,7 @@ export class HttpApiClient implements ApiClient {
     if (opts?.persist === false) params.set("persist", "false");
     return this.#request(
       `/dev/inspect-frame?${params.toString()}`,
-      { method: "POST", body: image, headers: { "Content-Type": "image/jpeg" } },
+      { method: "POST", body: image, headers: { "Content-Type": mediaContentType(image) } },
       validators.inspectionRecord,
     );
   }
@@ -237,7 +242,7 @@ export class HttpApiClient implements ApiClient {
     if (opts?.step !== undefined) params.set("step", String(opts.step));
     return this.#request(
       `/dev/inspect-video?${params.toString()}`,
-      { method: "POST", body: video, headers: { "Content-Type": "video/mp4" } },
+      { method: "POST", body: video, headers: { "Content-Type": mediaContentType(video) } },
       validators.videoInspectResult,
     );
   }

@@ -249,4 +249,37 @@ describe("web dev test harness (ADR-014)", () => {
       code: "DEV_TOOLS_DISABLED",
     });
   });
+
+  function captureInit(status: number, body: unknown): { fetchImpl: typeof fetch; init: () => RequestInit | undefined } {
+    let captured: RequestInit | undefined;
+    const fetchImpl = ((_input: RequestInfo | URL, init?: RequestInit) => {
+      captured = init;
+      return Promise.resolve(
+        new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } }),
+      );
+    }) as typeof fetch;
+    return { fetchImpl, init: () => captured };
+  }
+
+  it("preserves the file's own image Content-Type instead of fabricating image/jpeg (F11)", async () => {
+    const { fetchImpl, init } = captureInit(200, record);
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    await client.devInspectFrame("line-1", new File(["png-bytes"], "photo.png", { type: "image/png" }));
+    expect(new Headers(init()?.headers).get("Content-Type")).toBe("image/png");
+  });
+
+  it("preserves the file's own video Content-Type instead of fabricating video/mp4 (F11)", async () => {
+    const summary = { instance_id: "line-1", analyzed_frames: 1, ok_count: 1, ng_count: 0, frames: [] };
+    const { fetchImpl, init } = captureInit(200, summary);
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    await client.devInspectVideo("line-1", new File(["webm-bytes"], "clip.webm", { type: "video/webm" }));
+    expect(new Headers(init()?.headers).get("Content-Type")).toBe("video/webm");
+  });
+
+  it("falls back to application/octet-stream when the blob has no type (F11)", async () => {
+    const { fetchImpl, init } = captureInit(200, record);
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    await client.devInspectFrame("line-1", new Blob(["raw-bytes"]));
+    expect(new Headers(init()?.headers).get("Content-Type")).toBe("application/octet-stream");
+  });
 });
