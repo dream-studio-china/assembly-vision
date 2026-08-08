@@ -459,6 +459,48 @@ export interface components {
             status: string;
         };
         /**
+         * InferenceMetadata
+         * @description Typed inference traceability for both detection stages (P2).
+         */
+        InferenceMetadata: {
+            component_detection?: components["schemas"]["InferenceStageMetadata"] | null;
+            product_detection?: components["schemas"]["InferenceStageMetadata"] | null;
+        };
+        /**
+         * InferenceSettings
+         * @description Effective inference parameters used by one detector invocation.
+         */
+        InferenceSettings: {
+            /** Conf */
+            conf: number;
+            /** Device */
+            device?: string | null;
+            /** Imgsz */
+            imgsz: number[];
+            /** Iou */
+            iou: number;
+        };
+        /**
+         * InferenceStageMetadata
+         * @description Per-stage inference traceability for one inspection (contract 03).
+         */
+        InferenceStageMetadata: {
+            /** Input Size */
+            input_size: number[];
+            /** Latency Ms */
+            latency_ms: number;
+            /** Model Name */
+            model_name: string;
+            /** Model Version */
+            model_version: string;
+            settings: components["schemas"]["InferenceSettings"];
+            /**
+             * Timestamp
+             * Format: date-time
+             */
+            timestamp: string;
+        };
+        /**
          * InspectionDecision
          * @description Deterministic inspection decision produced by the rule engine.
          */
@@ -527,10 +569,7 @@ export interface components {
             /** Evidence */
             evidence: components["schemas"]["AggregatedComponentEvidence"][];
             frame_quality_summary: components["schemas"]["FrameQualitySummary"];
-            /** Inference Metadata */
-            inference_metadata?: {
-                [key: string]: unknown;
-            } | null;
+            inference_metadata?: components["schemas"]["InferenceMetadata"] | null;
             /**
              * Inspection Id
              * Format: uuid

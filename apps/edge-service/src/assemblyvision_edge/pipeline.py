@@ -29,6 +29,9 @@ from assemblyvision_domain.models import (
     BusinessResult,
     ComponentDetection,
     FrameQualitySummary,
+    InferenceMetadata,
+    InferenceSettings,
+    InferenceStageMetadata,
     InspectionDecision,
     InspectionLifecycle,
     InspectionRecord,
@@ -186,14 +189,18 @@ class InspectionPipeline:
             "component_inference_valid": False,
             "minimum_valid_frames_met": True,
         }
+        product_latency_ms: float | None = None
+        component_latency_ms: float | None = None
 
         if frame is not None:
+            product_started = time.monotonic()
             try:
                 outcome = self._product_detector.detect(frame, frame_id)
             except DetectionError as exc:
                 extra_reasons.append(exc.reason_code)
                 log.warning("product detection failed: %s", exc)
             else:
+                product_latency_ms = (time.monotonic() - product_started) * 1000
                 if outcome.selected is None:
                     extra_reasons.append(outcome.reason_code or rc.NO_PRODUCT)
                 elif not _validate_product_provenance(
@@ -215,6 +222,7 @@ class InspectionPipeline:
                         roi_image = generated.roi_image
                         roi_result = generated.result
                         gates["roi_valid"] = True
+                        component_started = time.monotonic()
                         try:
                             observations = self._component_detector.detect(
                                 generated.roi_image,
@@ -223,6 +231,7 @@ class InspectionPipeline:
                                 generated.result.transform_full_to_roi,
                                 (frame.width, frame.height),
                             )
+                            component_latency_ms = (time.monotonic() - component_started) * 1000
                             if not _validate_component_provenance(
                                 observations,
                                 frame_id,
@@ -277,7 +286,11 @@ class InspectionPipeline:
             decided_at=datetime.now(UTC),
         )
 
-        inference_metadata = self._collect_inference_metadata()
+        inference_metadata = self._collect_inference_metadata(
+            product_latency_ms if frame is not None else None,
+            component_latency_ms if gates["roi_valid"] else None,
+            started_at,
+        )
 
         record = InspectionRecord(
             inspection_id=inspection_id,
@@ -324,16 +337,43 @@ class InspectionPipeline:
             )
         return writer.save(record, full_frame=frame, roi_image=roi_image, annotated=annotated)
 
-    def _collect_inference_metadata(self) -> dict[str, object] | None:
-        """Snapshot effective inference parameters declared by the detectors."""
-        product = getattr(self._product_detector, "effective_settings", None)
-        component = getattr(self._component_detector, "effective_settings", None)
-        if product is None and component is None:
+    def _collect_inference_metadata(
+        self,
+        product_latency_ms: float | None,
+        component_latency_ms: float | None,
+        inspected_at: datetime,
+    ) -> InferenceMetadata | None:
+        """Snapshot typed per-stage inference traceability (contract 03, P2).
+
+        Records the model name/version, input size, latency, timestamp, and
+        effective parameters for each detection stage that ran.
+        """
+        stages: dict[str, object] = {}
+        if product_latency_ms is not None:
+            product = getattr(self._product_detector, "effective_settings", None)
+            if product is not None:
+                stages["product_detection"] = InferenceStageMetadata(
+                    model_name=str(self._product_manifest.model_id),
+                    model_version=manifest_model_version(self._product_manifest),
+                    input_size=list(product["imgsz"]),
+                    latency_ms=product_latency_ms,
+                    timestamp=inspected_at,
+                    settings=InferenceSettings(**dict(product)),
+                )
+        if component_latency_ms is not None:
+            component = getattr(self._component_detector, "effective_settings", None)
+            if component is not None:
+                stages["component_detection"] = InferenceStageMetadata(
+                    model_name=str(self._component_manifest.model_id),
+                    model_version=manifest_model_version(self._component_manifest),
+                    input_size=list(component["imgsz"]),
+                    latency_ms=component_latency_ms,
+                    timestamp=inspected_at,
+                    settings=InferenceSettings(**dict(component)),
+                )
+        if not stages:
             return None
-        return {
-            **({"product_detection": dict(product)} if product is not None else {}),
-            **({"component_detection": dict(component)} if component is not None else {}),
-        }
+        return InferenceMetadata.model_validate(stages)
 
     def _build_evidence(
         self,

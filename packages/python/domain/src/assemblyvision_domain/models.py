@@ -234,6 +234,33 @@ class InspectionDecision(APIModel):
     decided_at: datetime
 
 
+class InferenceSettings(APIModel):
+    """Effective inference parameters used by one detector invocation."""
+
+    imgsz: list[int]
+    conf: float
+    iou: float
+    device: str | None = None
+
+
+class InferenceStageMetadata(APIModel):
+    """Per-stage inference traceability for one inspection (contract 03)."""
+
+    model_name: str
+    model_version: str
+    input_size: list[int]
+    latency_ms: float
+    timestamp: datetime
+    settings: InferenceSettings
+
+
+class InferenceMetadata(APIModel):
+    """Typed inference traceability for both detection stages (P2)."""
+
+    product_detection: InferenceStageMetadata | None = None
+    component_detection: InferenceStageMetadata | None = None
+
+
 class InspectionRecord(APIModel):
     """Persisted product-level inspection result."""
 
@@ -260,7 +287,7 @@ class InspectionRecord(APIModel):
     decision: InspectionDecision
     synchronization_status: Literal["LOCAL_ONLY", "QUEUED", "PARTIAL", "SYNCED", "FAILED"]
     processing_ms: NonNegativeInt
-    inference_metadata: dict[str, object] | None = None
+    inference_metadata: InferenceMetadata | None = None
 
 
 class Artifact(APIModel):

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from uuid import UUID, uuid4
 
+import pytest
 from assemblyvision_domain import reason_codes as rc
 from assemblyvision_domain.errors import DetectionError, ROIGenerationError, RuleEvaluationError
 from assemblyvision_domain.models import (
@@ -377,6 +378,35 @@ class SettingsAwareProductDetector(FakeProductDetector):
         return {"imgsz": [640, 640], "conf": 0.5, "iou": 0.5, "device": None}
 
 
+class SettingsAwareComponentDetector(FakeComponentDetector):
+    @property
+    def effective_settings(self) -> dict[str, object]:
+        return {"imgsz": [512, 680], "conf": 0.0, "iou": 0.5, "device": None}
+
+
+def test_inference_metadata_records_both_stages(tmp_path: Path) -> None:
+    image_path = tmp_path / "product.png"
+    _write_image(image_path)
+    pipeline = _build_pipeline(
+        SettingsAwareProductDetector(_Outcome(selected=_product_detection(uuid4()))),
+        SettingsAwareComponentDetector(
+            [_component_obs(uuid4(), c) for c in ("component_a", "component_b", "manual")]
+        ),
+    )
+    record = pipeline.inspect_image(
+        FolderSource(tmp_path), image_path, OutputWriter(tmp_path / "out")
+    )
+
+    assert record.inference_metadata is not None
+    product = record.inference_metadata.product_detection
+    component = record.inference_metadata.component_detection
+    assert product is not None and component is not None
+    assert product.settings.imgsz == [640, 640]
+    assert component.settings.imgsz == [512, 680]
+    assert component.model_version != ""
+    assert component.latency_ms >= 0
+
+
 def test_inference_metadata_is_persisted(tmp_path: Path) -> None:
     image_path = tmp_path / "product.png"
     _write_image(image_path)
@@ -392,12 +422,18 @@ def test_inference_metadata_is_persisted(tmp_path: Path) -> None:
     )
 
     assert record.inference_metadata is not None
-    product_meta = record.inference_metadata["product_detection"]
-    assert isinstance(product_meta, dict) and product_meta.get("conf") == 0.5
+    product_meta = record.inference_metadata.product_detection
+    assert product_meta is not None
+    assert product_meta.settings.conf == pytest.approx(0.5)
+    assert product_meta.model_version != ""
+    assert product_meta.latency_ms >= 0
     payload = json.loads(
         (tmp_path / "out" / str(record.inspection_id) / "inspection.json").read_text()
     )
-    assert payload["inference_metadata"]["product_detection"]["imgsz"] == [640, 640]
+    persisted = payload["inference_metadata"]["product_detection"]
+    assert persisted["settings"]["imgsz"] == [640, 640]
+    assert persisted["model_name"]
+    assert persisted["timestamp"]
 
 
 class WrongModelProductDetector:

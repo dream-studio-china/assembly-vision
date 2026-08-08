@@ -528,6 +528,116 @@
         "title": "HealthLive",
         "type": "object"
       },
+      "InferenceMetadata": {
+        "additionalProperties": false,
+        "description": "Typed inference traceability for both detection stages (P2).",
+        "properties": {
+          "component_detection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InferenceStageMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "product_detection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InferenceStageMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "InferenceMetadata",
+        "type": "object"
+      },
+      "InferenceSettings": {
+        "additionalProperties": false,
+        "description": "Effective inference parameters used by one detector invocation.",
+        "properties": {
+          "conf": {
+            "title": "Conf",
+            "type": "number"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          },
+          "imgsz": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Imgsz",
+            "type": "array"
+          },
+          "iou": {
+            "title": "Iou",
+            "type": "number"
+          }
+        },
+        "required": [
+          "imgsz",
+          "conf",
+          "iou"
+        ],
+        "title": "InferenceSettings",
+        "type": "object"
+      },
+      "InferenceStageMetadata": {
+        "additionalProperties": false,
+        "description": "Per-stage inference traceability for one inspection (contract 03).",
+        "properties": {
+          "input_size": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Input Size",
+            "type": "array"
+          },
+          "latency_ms": {
+            "title": "Latency Ms",
+            "type": "number"
+          },
+          "model_name": {
+            "title": "Model Name",
+            "type": "string"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/InferenceSettings"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_name",
+          "model_version",
+          "input_size",
+          "latency_ms",
+          "timestamp",
+          "settings"
+        ],
+        "title": "InferenceStageMetadata",
+        "type": "object"
+      },
       "InspectionDecision": {
         "additionalProperties": false,
         "description": "Deterministic inspection decision produced by the rule engine.",
@@ -668,14 +778,12 @@
           "inference_metadata": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/InferenceMetadata"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Inference Metadata"
+            ]
           },
           "inspection_id": {
             "format": "uuid",
