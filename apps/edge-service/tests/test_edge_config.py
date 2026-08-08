@@ -149,6 +149,17 @@ def test_load_edge_config_inspection_enabled(tmp_path: Path) -> None:
     assert config.instances[0].inspection.enabled is True
 
 
+def test_load_edge_config_rejects_max_delay_below_initial(tmp_path: Path) -> None:
+    camera = {
+        "source": "rtsp",
+        "url": "rtsp://192.168.1.10/stream",
+        "reconnect": {"initial_delay_ms": 1000, "maximum_delay_ms": 100},
+    }
+    path = _write_edge_config(tmp_path, [_instance_yaml("line-1", camera=camera)])
+    with pytest.raises(ConfigError, match="maximum_delay_ms"):
+        load_edge_config(path)
+
+
 def test_camera_source_config_maps_to_frame_source_config(tmp_path: Path) -> None:
     path = _write_edge_config(
         tmp_path, [_instance_yaml("line-1", camera={"source": "folder", "path": "images"})]

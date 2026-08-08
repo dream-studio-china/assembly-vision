@@ -530,6 +530,11 @@ def _parse_camera_source(raw: dict[str, Any], base: Path, name: str) -> CameraSo
         reconnect_maximum = _as_positive_int(
             reconnect.get("maximum_delay_ms"), f"{name}.reconnect.maximum_delay_ms", 10000
         )
+        if reconnect_maximum < reconnect_initial:
+            raise ConfigError(
+                f"{name}.reconnect.maximum_delay_ms ({reconnect_maximum}) must be >= "
+                f"initial_delay_ms ({reconnect_initial})"
+            )
     return CameraSourceConfig(
         source=source,  # type: ignore[arg-type]
         path=path,
