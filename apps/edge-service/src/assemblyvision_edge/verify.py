@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -177,20 +178,27 @@ def _is_evaluable(record: InspectionRecord) -> bool:
     return all(evidence.state != "UNCERTAIN" for evidence in record.evidence)
 
 
-def _work_identity(source: FolderSource | None, path: Path) -> str:
+def _work_identity(path: Path, root: Path | None) -> str:
     """Stable sample identity for verification (PR-003 P1).
 
-    Uses the path relative to the input source root so same-named images from
-    different folders are distinct samples instead of sharing one label.
-    Single files supplied directly (no source folder) fall back to the
-    basename.
+    Uses the path relative to the common root of all input files so same-named
+    images from different folders are distinct samples instead of sharing one
+    label. A single input file has its parent as the root and therefore keeps
+    the familiar basename identity.
     """
-    if source is None:
+    if root is None:
         return path.name
     try:
-        return str(path.relative_to(source.folder))
+        return str(path.resolve().relative_to(root))
     except ValueError:
         return path.name
+
+
+def _work_root(work: list[tuple[FolderSource, Path]]) -> Path | None:
+    if not work:
+        return None
+    parents = [str(path.resolve().parent) for _, path in work]
+    return Path(os.path.commonpath(parents))
 
 
 def run_verify(
@@ -204,19 +212,20 @@ def run_verify(
     unlabeled = 0
     failed = 0
     seen: set[str] = set()
+    root = _work_root(work)
     for source, path in work:
-        identity = _work_identity(source, path)
+        identity = _work_identity(path, root)
         if identity in seen:
             failed += 1
             log.error("verify rejected duplicate work identity %s", identity)
             continue
+        seen.add(identity)
         exp = expected.get(identity)
         if exp is None and filename_fallback:
             exp = filename_expected(identity)
         if exp is None:
             unlabeled += 1
             continue
-        seen.add(identity)
         try:
             record = pipeline.inspect_image(source, path, writer)
         except AssemblyVisionError as exc:

@@ -247,7 +247,7 @@ def _run_product(args: argparse.Namespace) -> int:
 
 def _run_prepare(args: argparse.Namespace) -> int:
     try:
-        validate_dataset(args.dataset, allow_missing_labels=args.allow_missing_labels)
+        _validate_and_record(args.dataset, args.allow_missing_labels)
     except ConfigError as exc:
         log.error("invalid dataset: %s", exc)
         return 2

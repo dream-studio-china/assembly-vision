@@ -170,6 +170,9 @@ def test_prepare_keeps_negative_roi_crops(tmp_path: Path, monkeypatch: pytest.Mo
     manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["files"]["train"] == ["img000.png"]
     assert manifest["exclusions"] == {}
+    assert json.loads((out / "exclusions.json").read_text(encoding="utf-8")) == {}
+    prepared_data = yaml.safe_load((out / "data.yaml").read_text(encoding="utf-8"))
+    assert prepared_data["names"] == ["chip"]
 
 
 def test_prepare_rejects_populated_output_dir(
@@ -209,7 +212,9 @@ def test_prepare_records_multiple_products_as_exclusion(
     out = _prepare(tmp_path, monkeypatch, model)
     assert not (out / "images" / "train" / "img000.png").exists()
     manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["exclusions"]["img000.png"]["reason"] == "NO_PRODUCT_OR_AMBIGUOUS"
+    assert manifest["exclusions"]["train/img000.png"]["reason"] == "NO_PRODUCT_OR_AMBIGUOUS"
+    exclusions = json.loads((out / "exclusions.json").read_text(encoding="utf-8"))
+    assert exclusions["train/img000.png"]["reason"] == "NO_PRODUCT_OR_AMBIGUOUS"
 
 
 def test_prepare_records_no_product_as_exclusion(
@@ -219,4 +224,32 @@ def test_prepare_records_no_product_as_exclusion(
     out = _prepare(tmp_path, monkeypatch, model)
     assert not (out / "images" / "train" / "img000.png").exists()
     manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["exclusions"]["img000.png"]["reason"] == "NO_PRODUCT_OR_AMBIGUOUS"
+    assert manifest["exclusions"]["train/img000.png"]["reason"] == "NO_PRODUCT_OR_AMBIGUOUS"
+
+
+def test_prepare_cleans_staging_output_after_late_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import ultralytics
+
+    monkeypatch.setattr(ultralytics, "YOLO", lambda *args, **kwargs: _FakeModel())
+
+    def fail_remap(*args: object) -> list[str]:
+        raise RuntimeError("late remap failure")
+
+    monkeypatch.setattr("assemblyvision_training.prepare_components._remap_labels", fail_remap)
+    out = tmp_path / "out"
+    with pytest.raises(RuntimeError, match="late remap failure"):
+        prepare_component_dataset(
+            dataset_dir=_make_source_dataset(tmp_path),
+            product_manifest=_make_product_manifest(tmp_path, b"product-weights"),
+            roi_config=ROIConfig(
+                margin_x_ratio=0.05,
+                margin_y_ratio=0.05,
+                min_area_pixels=1000,
+                min_expanded_area_retained=0.80,
+            ),
+            output_dir=out,
+        )
+    assert not out.exists()
+    assert list(tmp_path.glob(".out.staging-*")) == []

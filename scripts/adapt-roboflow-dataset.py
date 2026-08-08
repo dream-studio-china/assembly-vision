@@ -26,9 +26,11 @@ import argparse
 import hashlib
 import json
 import math
+import shutil
 import sys
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 try:
     import yaml
@@ -114,9 +116,34 @@ def _check_disjoint(
 
 
 def adapt(src: Path, out: Path, required: list[str] | None, product_class: str = "product") -> None:
+    """Adapt into a staging directory and atomically publish on success.
+
+    Rejecting a populated destination prevents stale data from being mixed into
+    a new dataset. Staging also prevents a validation failure discovered late
+    in the source traversal from leaving a partial destination behind.
+    """
+    _reject_non_empty(out)
+    staging_dir = out.parent / f".{out.name}.staging-{uuid4().hex}"
+    try:
+        _adapt_into(src, staging_dir, required, product_class, reported_output=out)
+        if out.exists():
+            out.rmdir()
+        staging_dir.rename(out)
+    except Exception:
+        shutil.rmtree(staging_dir, ignore_errors=True)
+        raise
+
+
+def _adapt_into(
+    src: Path,
+    out: Path,
+    required: list[str] | None,
+    product_class: str,
+    *,
+    reported_output: Path,
+) -> None:
     if yaml is None:
         raise RuntimeError("PyYAML is required (uv sync)")
-    _reject_non_empty(out)
     names = _load_names(src / "data.yaml")
     if product_class not in names:
         raise ValueError(
@@ -273,7 +300,7 @@ def adapt(src: Path, out: Path, required: list[str] | None, product_class: str =
         encoding="utf-8",
     )
 
-    print(f"adapted -> {out}")
+    print(f"adapted -> {reported_output}")
     print(
         f"  product:    train={len(list((out / 'dataset_product/images/train').glob('*')))} val={len(list((out / 'dataset_product/images/val').glob('*')))}"
     )

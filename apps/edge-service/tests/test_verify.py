@@ -280,14 +280,10 @@ def test_run_verify_filename_fallback_disabled_rejects_stale_input(tmp_path: Pat
     assert report.has_gaps is True
 
 
-def test_run_verify_rejects_duplicate_basenames(tmp_path: Path) -> None:
-    line_a = tmp_path / "line-a"
-    line_b = tmp_path / "line-b"
-    line_a.mkdir()
-    line_b.mkdir()
-    (line_a / "sample.png").touch()
-    (line_b / "sample.png").touch()
-    work: list[tuple[object, Path]] = [(None, line_a / "sample.png"), (None, line_b / "sample.png")]
+def test_run_verify_rejects_duplicate_work_identity(tmp_path: Path) -> None:
+    sample = tmp_path / "sample.png"
+    sample.touch()
+    work: list[tuple[object, Path]] = [(None, sample), (None, sample)]
     report = run_verify(
         _FakePipeline(failures=set()),  # type: ignore[arg-type]
         work,  # type: ignore[arg-type]
@@ -295,6 +291,23 @@ def test_run_verify_rejects_duplicate_basenames(tmp_path: Path) -> None:
         writer=object(),  # type: ignore[arg-type]
     )
     assert len(report.rows) == 1
+    assert report.failed == 1
+    assert report.has_gaps is True
+
+
+def test_run_verify_rejects_duplicate_unlabeled_work_identity(tmp_path: Path) -> None:
+    sample = tmp_path / "sample.png"
+    sample.touch()
+    work: list[tuple[object, Path]] = [(None, sample), (None, sample)]
+    report = run_verify(
+        _FakePipeline(failures=set()),  # type: ignore[arg-type]
+        work,  # type: ignore[arg-type]
+        expected={},
+        writer=object(),  # type: ignore[arg-type]
+        filename_fallback=False,
+    )
+    assert report.rows == []
+    assert report.unlabeled == 1
     assert report.failed == 1
     assert report.has_gaps is True
 
@@ -329,7 +342,6 @@ def test_run_verify_uses_source_relative_identity(tmp_path: Path) -> None:
 
 def test_work_identity_falls_back_to_basename_outside_source_root(tmp_path: Path) -> None:
     from assemblyvision_edge.verify import _work_identity
-    from assemblyvision_vision.sources.folder_source import FolderSource
 
     line_a = tmp_path / "line-a"
     line_a.mkdir()
@@ -337,5 +349,5 @@ def test_work_identity_falls_back_to_basename_outside_source_root(tmp_path: Path
     outside.parent.mkdir()
     outside.touch()
 
-    assert _work_identity(FolderSource(line_a), outside) == "sample.png"
-    assert _work_identity(None, outside) == "sample.png"
+    assert _work_identity(outside, line_a.resolve()) == "sample.png"
+    assert _work_identity(outside, None) == "sample.png"

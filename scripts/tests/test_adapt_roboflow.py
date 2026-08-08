@@ -103,8 +103,11 @@ def test_adapter_skips_product_images_without_product_box(tmp_path: Path) -> Non
     src = _make_export(tmp_path, ["train", "val"])
     # chip annotation only, no product box
     _labels(src, "train", "img_train_0").write_text("1 0.5 0.5 0.2 0.2\n", encoding="utf-8")
+    out = tmp_path / "out"
     with pytest.raises(ValueError, match="no 'product' product box"):
-        adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")
+        adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    assert not out.exists()
+    assert list(tmp_path.glob(".out.staging-*")) == []
 
 
 def test_adapter_rejects_negative_class_id(tmp_path: Path) -> None:

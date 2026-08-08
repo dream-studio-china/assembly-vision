@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import shutil
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -37,6 +38,44 @@ def prepare_component_dataset(
     iou_threshold: float = 0.5,
     device: str | None = None,
 ) -> None:
+    """Publish a complete ROI dataset without retaining partial output.
+
+    The destination may be absent or empty. Preparation runs in a sibling
+    staging directory and publishes only after all output files are complete.
+    """
+    if output_dir.exists() and any(output_dir.iterdir()):
+        raise ConfigError(
+            f"output directory {output_dir} is not empty; refusing to write into a stale dataset"
+        )
+    staging_dir = output_dir.parent / f".{output_dir.name}.staging-{uuid4().hex}"
+    try:
+        _prepare_component_dataset_into(
+            dataset_dir=dataset_dir,
+            product_manifest=product_manifest,
+            roi_config=roi_config,
+            output_dir=staging_dir,
+            confidence_threshold=confidence_threshold,
+            iou_threshold=iou_threshold,
+            device=device,
+        )
+        if output_dir.exists():
+            output_dir.rmdir()
+        staging_dir.rename(output_dir)
+    except Exception:
+        shutil.rmtree(staging_dir, ignore_errors=True)
+        raise
+
+
+def _prepare_component_dataset_into(
+    *,
+    dataset_dir: Path,
+    product_manifest: Path,
+    roi_config: ROIConfig,
+    output_dir: Path,
+    confidence_threshold: float,
+    iou_threshold: float,
+    device: str | None,
+) -> None:
     """Generate a component training set from full-frame labels.
 
     The product detector is loaded from a **verified** manifest (weights
@@ -47,15 +86,9 @@ def prepare_component_dataset(
     recorded as an exclusion rather than guessing a box. Ambiguous samples are
     listed in an explicit ``exclusions.json``.
 
-    The output directory must be empty: re-running into a populated directory
-    would leave stale files from a previous dataset. A ``manifest.json`` lists
-    every produced file so dataset membership is auditable.
+    A ``manifest.json`` lists every produced file so dataset membership is
+    auditable.
     """
-    if output_dir.exists() and any(output_dir.iterdir()):
-        raise ConfigError(
-            f"output directory {output_dir} is not empty; refusing to write into a stale dataset"
-        )
-
     manifest = load_model_manifest(product_manifest)
     if manifest.task != "PRODUCT_DETECTION":
         raise ConfigError(f"manifest task {manifest.task!r} is not PRODUCT_DETECTION")
@@ -71,6 +104,13 @@ def prepare_component_dataset(
     model = YOLO(str(weights))
     verify_model_class_map(model.names, manifest)
     engine = ROIEngine(roi_config)
+    try:
+        source_data = yaml.safe_load((dataset_dir / "data.yaml").read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:
+        raise ConfigError(f"cannot load component dataset manifest: {exc}") from exc
+    if not isinstance(source_data, dict) or not isinstance(source_data.get("names"), list):
+        raise ConfigError("component dataset data.yaml must contain a class-name list")
+    component_class_names = [str(name) for name in source_data["names"]]
 
     produced: dict[str, list[str]] = {"train": [], "val": []}
     exclusions: dict[str, dict[str, str]] = {}
@@ -105,7 +145,7 @@ def prepare_component_dataset(
                 device,
             )
             if product_box is None:
-                exclusions[img_path.name] = {
+                exclusions[f"{split}/{img_path.name}"] = {
                     "reason": "NO_PRODUCT_OR_AMBIGUOUS",
                     "detail": "no unambiguous product detection at the declared confidence",
                 }
@@ -114,7 +154,7 @@ def prepare_component_dataset(
             try:
                 generated = engine.generate(frame, uuid4(), product_box)
             except Exception:
-                exclusions[img_path.name] = {
+                exclusions[f"{split}/{img_path.name}"] = {
                     "reason": "ROI_INVALID",
                     "detail": "ROI generation failed",
                 }
@@ -139,13 +179,16 @@ def prepare_component_dataset(
             produced[split].append(img_path.name)
 
     out_data = {
-        "nc": len(manifest.class_names),
-        "names": manifest.class_names,
+        "nc": len(component_class_names),
+        "names": component_class_names,
         "train": str((output_dir / "images" / "train").resolve()),
         "val": str((output_dir / "images" / "val").resolve()),
     }
     (output_dir / "data.yaml").write_text(
         yaml.dump(out_data, default_flow_style=False), encoding="utf-8"
+    )
+    (output_dir / "exclusions.json").write_text(
+        json.dumps(exclusions, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     (output_dir / "manifest.json").write_text(
         json.dumps(

@@ -340,7 +340,7 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
 - **Test hardening**: edge Python coverage is at 99.6% (pytest-cov; the only
   uncovered branches are the unreachable IntegrityError handler in the
   repository and two derived-image slot fallbacks); the full suite is
-  `396 passed`, TypeScript tests are `30 passed` (api-client) and `17 passed`
+  `399 passed`, TypeScript tests are `30 passed` (api-client) and `17 passed`
   (edge-web), and Playwright e2e is `12 passed` including a token-authenticated
   served dashboard that asserts real reconciled data and purged-media
   rendering.
