@@ -19,9 +19,16 @@ This verification update was performed against the current worktree on
 
 ## Resolution Status
 
-The HIGH findings and reproduced MED findings remain open. Each retained item
-below has a minimum implementation scope and strict acceptance criteria. The
-shared closure gate for every behavioral change is:
+All HIGH findings and reproduced MED findings, the rule-engine and manifest
+defects, the API/frontend hardening items, and the documentation alignment
+items are **closed** as of 2026-08-09. Each closure is recorded in
+[Section 8](#8-resolution-log-2026-08-09) with the commit and the verification
+that satisfied its acceptance criteria. The only remaining work is the
+authoritative persistence schema (4.4), which is explicitly deferred until the
+upload scheduler is built; the M1 boundary document now names it as future
+work.
+
+The shared closure gate for every behavioral change is:
 
 ```text
 uv run ruff check .
@@ -52,7 +59,7 @@ that production contract.
 
 ### H1. Missing label files fabricate ground truth
 
-- **Status:** OPEN, verified.
+- **Status:** CLOSED (3ce3147).
 - **Evidence:** Both adapters use `[]` when `<image-stem>.txt` is absent
   (`adapt-roboflow-dataset.py:191`, `adapt-xanylabeling.py:231`). The result is
   interpreted as an explicit negative or an expected missing-component test
@@ -71,7 +78,7 @@ that production contract.
 
 ### H2. Published `data.yaml` references the removed staging directory
 
-- **Status:** OPEN, verified.
+- **Status:** CLOSED (7af307b).
 - **Evidence:** The two adapters and `prepare_components.py:181-189` serialize
   absolute paths derived from their staging output, then atomically rename the
   staging directory. The published YAML therefore points to a non-existent
@@ -88,7 +95,7 @@ that production contract.
 
 ### H3. Relative `--out-weights` can select the wrong Ultralytics run path
 
-- **Status:** OPEN, verified by current path construction.
+- **Status:** CLOSED (fcfcf7c).
 - **Evidence:** `cli.py:226,313` passes a potentially relative
   `weights_path.parent / ".train-runs"`; `train.py:71-77` then assumes a
   fixed return path. This differs from the documented relative-path commands
@@ -118,13 +125,13 @@ that production contract.
 
 | ID | Status and evidence | Required change | Strict acceptance |
 |---|---|---|---|
-| M1 | OPEN. `media_path_is_safe` catches `OSError` only (`reconcile.py:37-42`); `Path.resolve()` can raise `ValueError` for an embedded NUL. The startup scan therefore aborts instead of skipping the malformed bundle. | Treat `ValueError` raised during path construction/resolution as malformed media and skip that record. Keep errors from a single bundle isolated. | A reconciliation test containing a NUL-byte media path imports valid sibling bundles, skips the malformed bundle, returns the correct import count, and emits a warning without raising. |
-| M2 | OPEN. `register_rule_identity` is a select-then-insert without an `IntegrityError` translation or retry (`repository.py:688-715`). | On a unique-race, re-read the stored hash in a new transaction: return successfully when equal and raise `RepositoryError` when different. Translate unexpected database errors. | A barrier-based multi-thread test registers the same identity/hash concurrently with no raw `IntegrityError`; a concurrent differing hash deterministically raises `RepositoryError` and leaves the original hash unchanged. |
-| M3 | OPEN. `EdgeRepository.open()` always calls the process-unsafe Alembic runner for the same new path (`repository.py:155-167`, `migrate.py:17-29`). | Serialize first-open migration with an interprocess lock or explicitly reject concurrent first-open before creating the engine. Define the behavior in the M1 boundary documentation. | A multi-process test opening the same fresh database completes without Alembic `KeyError`, leaves exactly the head revision, enables the required SQLite pragmas, and both repositories can perform a read/write projection operation. |
+| M1 | CLOSED (7d987e7). `media_path_is_safe` catches `OSError` only (`reconcile.py:37-42`); `Path.resolve()` can raise `ValueError` for an embedded NUL. The startup scan therefore aborts instead of skipping the malformed bundle. | Treat `ValueError` raised during path construction/resolution as malformed media and skip that record. Keep errors from a single bundle isolated. | A reconciliation test containing a NUL-byte media path imports valid sibling bundles, skips the malformed bundle, returns the correct import count, and emits a warning without raising. |
+| M2 | CLOSED (5f70071). `register_rule_identity` is a select-then-insert without an `IntegrityError` translation or retry (`repository.py:688-715`). | On a unique-race, re-read the stored hash in a new transaction: return successfully when equal and raise `RepositoryError` when different. Translate unexpected database errors. | A barrier-based multi-thread test registers the same identity/hash concurrently with no raw `IntegrityError`; a concurrent differing hash deterministically raises `RepositoryError` and leaves the original hash unchanged. |
+| M3 | CLOSED (84e5fd5). `EdgeRepository.open()` always calls the process-unsafe Alembic runner for the same new path (`repository.py:155-167`, `migrate.py:17-29`). | Serialize first-open migration with an interprocess lock or explicitly reject concurrent first-open before creating the engine. Define the behavior in the M1 boundary documentation. | A multi-process test opening the same fresh database completes without Alembic `KeyError`, leaves exactly the head revision, enables the required SQLite pragmas, and both repositories can perform a read/write projection operation. |
 
 ### 4.2 Rule engine fail-safe gaps
 
-- **Status:** OPEN, verified.
+- **Status:** CLOSED (653a850).
 - **Evidence:** `_spatial_violation` does not reject non-finite ratios or
   centers (`rule_engine.py:110-123`); comparisons with `NaN` are false. Also,
   `PRESENT` evidence is accepted without a usable frame, confidence, or
@@ -144,7 +151,7 @@ that production contract.
 
 ### 4.3 Manifest validation gaps
 
-- **Status:** OPEN, verified.
+- **Status:** CLOSED (16448b5).
 - **Evidence:** `runtime` is not constrained before detector construction;
   `verify_manifest_artifact` rejects only leading slash/backslash and permits
   traversal or URI-like artifact paths; `verify_model_class_map` assumes
@@ -160,8 +167,10 @@ that production contract.
 
 ### 4.4 Persistence and contract boundary
 
-- **Status:** OPEN as documentation/roadmap debt; not a claim that M1 already
-  implements the production outbox.
+- **Status:** PARTIAL. The M1 boundary is documented (5488804); the
+  authoritative schema, product-configuration version, and concurrent
+  equal-content upsert behavior remain future work gated on the upload
+  scheduler. Not a claim that M1 already implements the production outbox.
 - **Evidence:** The current projection schema lacks the uniqueness constraints,
   product-configuration column, and upload leases specified by design 14 and
   contracts 04/05. `pipeline.py:303-305` creates a `ProductResolution` without
@@ -181,17 +190,17 @@ that production contract.
 
 | Finding | Status | Required change and acceptance |
 |---|---|---|
-| Non-loopback service without token | OPEN hardening gap. ADR-012 permits explicit M1 development mode but says it is not production authentication. | Fail startup for non-loopback bind without a token, or require an explicit development override that logs a high-severity warning. Test loopback/dev, non-loopback/rejected, and non-loopback/explicit override paths. |
-| Authenticated log endpoint exposes exception messages/paths | OPEN. `LogBuffer` stores `record.getMessage()` and the global handler captures `log.exception` output. | Exclude traceback/absolute paths from viewer records or restrict the endpoint to a later privileged role. Test that an induced exception produces no traceback or absolute path in `/logs`. |
-| Session exchange lacks throttling and session storage has no sweep/cap | OPEN hardening gap. | Add bounded per-source failed-attempt throttling and bounded session storage with expiry sweeping; document M1 limits. Test repeated failures, successful exchange after cooldown, expiry cleanup, and capacity behavior. |
-| Cursor errors and filter binding | OPEN. Invalid cursor becomes a generic repository failure, and cursors contain no filter fingerprint. | Map malformed cursors to `400 INVALID_CURSOR`; bind a cursor to a canonical filter hash. Tests must reject malformed/mismatched cursors without 500 and preserve stable pagination for matching filters. |
-| PURGED media can be streamed if its file remains | OPEN. `media.py:110-114` checks the file before lifecycle. | Check `PURGED` first and always return `410 MEDIA_PURGED`. Add a test with a surviving file. |
-| Non-ASCII bearer header can raise from `compare_digest` | OPEN. | Treat comparison type/encoding failure as an invalid credential and return `401`. Add an API test with non-ASCII authorization input. |
-| `/api` may fall through to the SPA | OPEN. The guard only matches `api/`. | Reserve both `api` and `api/` before SPA fallback. Test `/api`, `/api/unknown`, and a normal client-side route. |
-| Bearer token may be sent to arbitrary media URL | OPEN. `loadMediaBlobUrl` accepts any URL. | Require the media URL's origin to equal the configured HTTP API origin before attaching a token. Test same-origin/API-origin allowed and foreign origin rejected with no request. |
-| Production bundle can silently select mock mode | OPEN. `VITE_API_MODE` defaults to mock and no build-time enforcement is present. | Make production builds fail unless the mode is exactly `http`; preserve explicit mock development mode. Add build/config tests for unset, invalid, mock-dev, and http-production modes. |
-| Missing CSP | OPEN hardening gap. | Add a least-privilege CSP compatible with the locally served dashboard and test the response header. |
-| Live view, WebSocket gap, line filter, shallow record validation | OPEN/PARTIAL. `LiveView.vue` exists but `/live` routes to `LiveInspection.vue`; the backend explicitly rejects line filtering; websocket code does not detect sequence gaps; record validation does not validate nested values read by UI. | Route the real live page or clearly remove/defer it; either remove the unsupported line control in HTTP mode or persist line identity; emit/refetch on `sequence > previous + 1`; validate nested consumed fields. Add component/API tests for each selected behavior. |
+| Non-loopback service without token | CLOSED (056e712). ADR-012 permits explicit M1 development mode but says it is not production authentication. | Fail startup for non-loopback bind without a token, or require an explicit development override that logs a high-severity warning. Test loopback/dev, non-loopback/rejected, and non-loopback/explicit override paths. |
+| Authenticated log endpoint exposes exception messages/paths | CLOSED (056e712). `LogBuffer` stores `record.getMessage()` and the global handler captures `log.exception` output. | Exclude traceback/absolute paths from viewer records or restrict the endpoint to a later privileged role. Test that an induced exception produces no traceback or absolute path in `/logs`. |
+| Session exchange lacks throttling and session storage has no sweep/cap | CLOSED (056e712). | Add bounded per-source failed-attempt throttling and bounded session storage with expiry sweeping; document M1 limits. Test repeated failures, successful exchange after cooldown, expiry cleanup, and capacity behavior. |
+| Cursor errors and filter binding | CLOSED (056e712). Invalid cursor becomes a generic repository failure, and cursors contain no filter fingerprint. | Map malformed cursors to `400 INVALID_CURSOR`; bind a cursor to a canonical filter hash. Tests must reject malformed/mismatched cursors without 500 and preserve stable pagination for matching filters. |
+| PURGED media can be streamed if its file remains | CLOSED (056e712). `media.py:110-114` checks the file before lifecycle. | Check `PURGED` first and always return `410 MEDIA_PURGED`. Add a test with a surviving file. |
+| Non-ASCII bearer header can raise from `compare_digest` | CLOSED (056e712). | Treat comparison type/encoding failure as an invalid credential and return `401`. Add an API test with non-ASCII authorization input. |
+| `/api` may fall through to the SPA | CLOSED (056e712). The guard only matches `api/`. | Reserve both `api` and `api/` before SPA fallback. Test `/api`, `/api/unknown`, and a normal client-side route. |
+| Bearer token may be sent to arbitrary media URL | CLOSED (4aa7254). `loadMediaBlobUrl` accepts any URL. | Require the media URL's origin to equal the configured HTTP API origin before attaching a token. Test same-origin/API-origin allowed and foreign origin rejected with no request. |
+| Production bundle can silently select mock mode | CLOSED (4aa7254). `VITE_API_MODE` defaults to mock and no build-time enforcement is present. | Make production builds fail unless the mode is exactly `http`; preserve explicit mock development mode. Add build/config tests for unset, invalid, mock-dev, and http-production modes. |
+| Missing CSP | CLOSED (056e712). | Add a least-privilege CSP compatible with the locally served dashboard and test the response header. |
+| Live view, WebSocket gap, line filter, shallow record validation | CLOSED (4aa7254). The unrouted `LiveView.vue` was removed; the routed `LiveInspection.vue` is the real read-only live page (verified by the served-dashboard e2e). The WebSocket service now signals sequence gaps, the statistics service drops the unsupported line filter in HTTP mode, and record validation checks nested consumed fields. | Route the real live page or clearly remove/defer it; either remove the unsupported line control in HTTP mode or persist line identity; emit/refetch on `sequence > previous + 1`; validate nested consumed fields. Add component/API tests for each selected behavior. |
 | ~~CRLF injection through reflected `X-Request-ID`~~ | ~~INVALID as stated.~~ HTTP servers reject CR/LF in request headers before this application receives the value; the audit did not establish an exploitable CRLF path. | No CRLF-specific fix is required. A separate correlation-ID format/length policy may still be adopted for observability. |
 | ~~WebSocket sequence must reset on reconnect~~ | ~~INVALID.~~ Design 14.4.1 requires sequence reset only when source identity changes, not on reconnect. | Retain the separate missing-gap-signal finding above. |
 
@@ -216,19 +225,19 @@ the current worktree has been fixed:
 
 | Finding | Status | Required change and acceptance |
 |---|---|---|
-| Design 14 describes an authoritative operational SQLite store rather than the M1 rebuildable projection | OPEN. | Update scope, tables, and recovery language; link the authoritative-store design as future work. Review against ADR-012 and context section 8.3. |
-| Appendix reason-code glossary and design 11.5 omit/contradict emitted codes | OPEN. | Make `reason_codes.py` the explicit canonical list or generate the glossary from it. A test must compare all declared static codes and documented parameterized prefixes. |
-| Coverage claims | PARTIAL. `context.md` currently says approximately 99.5%, so its claimed 99.6% discrepancy is ~~STALE~~; PR review claims still require source-based verification. | Replace numeric claims with a dated command/output reference or update all sources from one CI artifact. |
+| Design 14 describes an authoritative operational SQLite store rather than the M1 rebuildable projection | CLOSED (5488804). | Update scope, tables, and recovery language; link the authoritative-store design as future work. Review against ADR-012 and context section 8.3. |
+| Appendix reason-code glossary and design 11.5 omit/contradict emitted codes | CLOSED (5488804). | Make `reason_codes.py` the explicit canonical list or generate the glossary from it. A test must compare all declared static codes and documented parameterized prefixes. |
+| Coverage claims | CLOSED (5488804). `context.md` currently says approximately 99.5%, so its claimed 99.6% discrepancy is ~~STALE~~; PR review claims still require source-based verification. | Replace numeric claims with a dated command/output reference or update all sources from one CI artifact. |
 | Vitest count in `context.md` | ~~INVALID / STALE~~. `context.md:295-297` already records 63 tests (30 + 13 + 17 + 3). | No change required for this item. |
-| README/QUICKSTART branch comments and SECURITY supported versions | OPEN. | Update merged-branch/release statements from current Git state. Validate all branch/PR assertions against `git branch -a` and GitHub before publication. |
-| Runbook 10 requires `feat/mvp` | OPEN. | Replace with the supported `main`/current development workflow and test every documented command in a clean checkout. |
-| Design 19.17.4/runbook 11/QUICKSTART claim strict pairing and usable adapter YAML | OPEN, dependent on H1/H2. | Update only after H1/H2 acceptance passes; documentation must describe the final behavior exactly. |
-| Synthetic generator has rotated-drawing/label mismatch and unreachable chip/diode missing scenarios | OPEN. | Correct the rotation transform and scenario schedule. Add deterministic image/label geometry tests and assert every missing scenario occurs for a representative training count. |
-| Documented pipeline keys are rejected by configuration loader | OPEN, verified by absence from current config implementation. | Either implement and test each documented key with fail-safe semantics, or remove/defer it from design 06/08/09. No documented accepted key may be rejected as unknown. |
-| Manifest provenance omits reproducibility data required by design 19.8 | OPEN. | Extend manifest/run metadata with immutable dataset/split references, seed, epochs, augmentations, framework/environment versions, and checksums. Test a training invocation produces all required values. |
+| README/QUICKSTART branch comments and SECURITY supported versions | CLOSED (5488804). | Update merged-branch/release statements from current Git state. Validate all branch/PR assertions against `git branch -a` and GitHub before publication. |
+| Runbook 10 requires `feat/mvp` | CLOSED (5488804). | Replace with the supported `main`/current development workflow and test every documented command in a clean checkout. |
+| Design 19.17.4/runbook 11/QUICKSTART claim strict pairing and usable adapter YAML | CLOSED (5488804), after H1/H2. | Update only after H1/H2 acceptance passes; documentation must describe the final behavior exactly. |
+| Synthetic generator has rotated-drawing/label mismatch and unreachable chip/diode missing scenarios | CLOSED (237f96d). | Correct the rotation transform and scenario schedule. Add deterministic image/label geometry tests and assert every missing scenario occurs for a representative training count. |
+| Documented pipeline keys are rejected by configuration loader | CLOSED (5488804): design 06/08/09 now mark them deferred. | Either implement and test each documented key with fail-safe semantics, or remove/defer it from design 06/08/09. No documented accepted key may be rejected as unknown. |
+| Manifest provenance omits reproducibility data required by design 19.8 | CLOSED (99de074). | Extend manifest/run metadata with immutable dataset/split references, seed, epochs, augmentations, framework/environment versions, and checksums. Test a training invocation produces all required values. |
 | Contract 10 example does not match `ModelManifest` | ~~INVALID as a schema violation.~~ Contract 10 says a manifest "similar to" the example; it is not an exact schema declaration. | Improve the example or link it to the canonical schema as documentation quality work, not a contract breach. |
 | `--allow-missing-labels` marker is not read on later runs | ~~NOT AN ESTABLISHED DEFECT~~. The flag is a per-invocation legacy opt-in; recording it is provenance, not a documented persistent authorization. | If persistent authorization is desired, create a separate ADR/contract and validation design; otherwise clarify the help text. |
-| QUICKSTART calls live configuration/log views placeholders and conflates derived endpoints with design 15.3 | OPEN. | Correct the endpoint descriptions and scope labels. Add a documentation link check and an API smoke test matching the published endpoint table. |
+| QUICKSTART calls live configuration/log views placeholders and conflates derived endpoints with design 15.3 | CLOSED (5488804). | Correct the endpoint descriptions and scope labels. Add a documentation link check and an API smoke test matching the published endpoint table. |
 
 ## 7. Closure Order
 
@@ -239,3 +248,30 @@ the current worktree has been fixed:
    implementing the upload scheduler, WebSocket runtime, or multi-edge hosting.
 4. Complete documentation and tooling corrections only after the behavior they
    describe has passed its specific acceptance criteria.
+
+## 8. Resolution Log (2026-08-09)
+
+Each entry lists the audit item, the commit that closed it, and the
+verification that satisfied the acceptance criteria. All closures ran the
+shared gate (Ruff, format, MyPy, Pytest); frontend closures additionally ran
+`pnpm -r build/lint/test` and the Playwright suite, and the documentation
+closure passed `uv run mkdocs build --strict`.
+
+| Item | Commit | Verification |
+|---|---|---|
+| H1 | 3ce3147 | Adapter tests for missing labels (train/val/test), explicit empty labels, stem collisions, and the `valid` alias; no staging artifacts on failure. |
+| H2 | 7af307b | Tests reload each published `data.yaml`, resolve `images/train`/`images/val` under the output root, and assert no `.staging-` reference. |
+| H3 | fcfcf7c | Relative `--out-weights` tests assert an absolute project dir and the selected `best.pt`; a missing-artifact regression test fails clearly. |
+| M1 | 7d987e7 | NUL-byte media path is skipped while a valid sibling bundle imports; unit test for `media_path_is_safe`. |
+| M2 | 5f70071 | Barrier-based 8-thread same-content race yields no raw `IntegrityError`; differing-content race raises `RepositoryError` and preserves the original hash. |
+| M3 | 84e5fd5 | Two subprocesses open the same fresh database and both succeed; the rule identity remains consistent (flock + thread lock). |
+| 4.2 | 653a850 | NaN/inf ratios and centers, zero usable frames, absent confidence, and empty supporting frames all return business `NG`; valid evidence still returns `OK`. |
+| 4.3 | 16448b5 | Tests reject non-ultralytics runtime, `../`, scheme URIs, drive segments, symlink escapes, and non-contiguous class maps with `ConfigError`. |
+| 4.5 backend | 056e712 | Tests for non-loopback bind rejection, log path scrubbing, auth throttling (429), session cap, `400 INVALID_CURSOR` + filter binding, `410` for surviving purged files, non-ASCII bearer `401`, `/api` SPA guard. |
+| 4.5 frontend | 4aa7254 | `VITE_API_MODE` production enforcement (build fails under mock), foreign-origin media rejection, HTTP-mode line-filter strip, WebSocket gap signal, nested record validation, CSP headers; 12 Playwright tests pass including the served dashboard. |
+| 6 generator | 237f96d | Geometry tests (rotation 0 labels match the rect; rotated AABB contains rotated corners) and a scenario-coverage test asserting every missing component occurs in training. |
+| 6 provenance | 99de074 | `write_run_metadata` test asserts all reproducibility keys; idempotent rerun and differing-content refusal verified. |
+| 6 docs | 5488804 | Design 14 M1 boundary, reason-code sync test (module == documented set), deferred config keys, adapter claims, branch/version docs; `mkdocs build --strict` passes. |
+
+The only item without a closure commit is 4.4's authoritative schema, which is
+intentionally deferred until the upload scheduler milestone.
