@@ -2698,7 +2698,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -3300,56 +3300,56 @@
 
 <h1 id="assemblyvision-edge-client-architecture">AssemblyVision 边缘客户端架构<a class="headerlink" href="#assemblyvision-edge-client-architecture" title="Permanent link">&para;</a></h1>
 <h2 id="1-responsibilities-and-boundary">1. 职责与边界<a class="headerlink" href="#1-responsibilities-and-boundary" title="Permanent link">&para;</a></h2>
-<p>The edge client owns every operation needed to produce and retain a production decision: hardware capture, trigger/window management, barcode decoding, product-type resolution, two-stage vision, optional OpenCV checks, temporal aggregation, rules, local records/media, health, local API/Web UI, and delayed upload. It must inspect without the network or central server.</p>
-<p>The edge does not train models, depend on central queries for active rules, or upload every frame. The broader boundary is shown in <a href="../03-architecture-overview/">Architecture Overview</a>.</p>
+<p>边缘客户端拥有生成和保留生产决策所需的所有操作：硬件捕获、触发器/窗口管理、条形码解码、产品类型解析、两阶段视觉、可选的 OpenCV 检查、时间聚合、规则、本地记录/媒体、运行状况、本地 API/Web UI 和延迟上传。它必须在没有网络或中央服务器的情况下进行检查。</p>
+<p>边缘不训练模型，依赖于活动规则的中央查询，也不上传每个帧。更广泛的边界如<a href="../03-architecture-overview/">Architecture Overview</a>所示。</p>
 <h2 id="2-edge-component-architecture">2. 边缘组件架构<a class="headerlink" href="#2-edge-component-architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
     Hardware[相机扫描仪传感器适配器] --&gt; Coordinator[检验协调员]
     Coordinator --&gt; Quality[镜框品质]
-    Coordinator --&gt; Identity[Barcode and product resolver]
+    Coordinator --&gt; Identity[条形码和产品解析器]
     Quality --&gt; Product[产品检测仪]
     Product --&gt; ROI[投资回报率引擎]
     ROI --&gt; Component[元件检测器]
-    ROI --&gt; CV[Optional OpenCV checks]
+    ROI --&gt; CV[可选的 OpenCV 检查]
     Component --&gt; Aggregate[每个组件聚合器]
     CV --&gt; Aggregate
     Identity --&gt; Rules[确定性规则引擎]
     Aggregate --&gt; Rules
     Rules --&gt; Persist[本地存储库和媒体管理器]
     Persist --&gt; DB[(SQLite)]
-    Persist --&gt; Media[(Media volume)]
+    Persist --&gt; Media[(媒体音量)]
     Persist --&gt; Upload[(持久上传任务)]
     Upload --&gt; Sync[上传调度程序]
-    Sync --&gt;|当可用时| Central[Central ingestion API]
-    API[Local FastAPI] --&gt; Persist
+    Sync --&gt;|当可用时| Central[中央摄取API]
+    API[本地FastAPI] --&gt; Persist
     API --&gt; Coordinator
     Web[本地Vue应用程序] --&gt; API
     Health[健康监测器] --&gt; Hardware
     Health --&gt; DB
     Health --&gt; Media
     Health --&gt; API</code></pre>
-<p>The one-month target deploys one <code>edge-service</code> containing FastAPI, capture orchestration, persistence, and upload scheduling. Decision-critical work runs in bounded worker tasks and may use a supervised inference subprocess for SDK/GPU isolation; it is not a separately deployed service until measured isolation or scaling needs justify that complexity. API or browser request failure must not stop capture and decision tasks.</p>
+<p>一月目标部署一个包含 FastAPI、捕获编排、持久性和上传调度的 <code>edge-service</code>。决策关键型工作在有界工作任务中运行，并且可以使用监督推理子进程进行 SDK/GPU 隔离；在测量的隔离或扩展需求证明其复杂性合理之前，它不是单独部署的服务。 API 或浏览器请求失败不得停止捕获和决策任务。</p>
 <h2 id="3-inspection-processing">3、检验处理<a class="headerlink" href="#3-inspection-processing" title="Permanent link">&para;</a></h2>
 <h3 id="31-window-and-identity">3.1 窗口和身份<a class="headerlink" href="#31-window-and-identity" title="Permanent link">&para;</a></h3>
-<p>The coordinator creates <code>inspection_id</code> before accepting evidence and pins active package versions. A hardware trigger gives the clearest boundary when available; barcode events add identity but may arrive late or fail; tracking/zones handle image-only flows but require careful tuning; a timeout bounds resource usage but cannot by itself prove physical separation. The production mechanism should combine only validated signals and test consecutive/multiple products explicitly.</p>
-<p>Barcode output includes raw value, symbology if available, timestamp, source, read quality/status, and error. A versioned resolver maps identity to product configuration. No read, conflicting reads, unknown value, or absent configuration prevents <code>OK</code> and emits a reason code.</p>
+<p>协调员在接受证据并固定活动包版本之前创建 <code>inspection_id</code>。硬件触发可在可用时提供最清晰的边界；条形码事件添加身份，但可能会延迟到达或失败；跟踪/区域处理仅图像流，但需要仔细调整；超时限制资源使用，但其本身不能证明物理分离。生产机制应仅结合经过验证的信号并明确测试连续/多个产品。</p>
+<p>条形码输出包括原始值、符号系统（如果可用）、时间戳、来源、读取质量/状态和错误。版本化解析器将身份映射到产品配置。没有读取、读取冲突、未知值或缺少配置会阻止 <code>OK</code> 并发出原因代码。</p>
 <h3 id="32-two-stage-vision">3.2 两阶段愿景<a class="headerlink" href="#32-two-stage-vision" title="Permanent link">&para;</a></h3>
-<p>For each usable frame, the product detector processes the full image. The ROI engine selects an unambiguous product candidate, expands by configured margins, clips to bounds, and records transforms between full-frame and ROI coordinates. Zero-area, excessive clipping, no-product, or multiple-product ambiguity is invalid evidence.</p>
-<p>The component detector runs on the generated ROI and emits class, box, confidence, frame ID, and model version. Required classes come from the pinned product configuration. Optional OpenCV checks emit named observations with their own algorithm/configuration version; they must not mutate detector output invisibly.</p>
+<p>对于每个可用帧，产品检测器都会处理完整图像。 ROI 引擎选择明确的候选产品，通过配置的边距进行扩展，剪辑到边界，并记录全帧和 ROI 坐标之间的转换。零面积、过度剪裁、无产品或多产品模糊性都是无效证据。</p>
+<p>组件检测器在生成的 ROI 上运行并发出类别、框、置信度、帧 ID 和模型版本。所需的类来自固定的产品配置。可选的 OpenCV 检查使用自己的算法/配置版本发出命名观察结果；它们不能无形地改变检测器的输出。</p>
 <h3 id="33-per-component-aggregation-and-rules">3.3 每个组件的聚合和规则<a class="headerlink" href="#33-per-component-aggregation-and-rules" title="Permanent link">&para;</a></h3>
-<p>The aggregator excludes invalid/blurred frames and evaluates each required component using a configured policy, for example one high-confidence observation, two medium-confidence observations, adjacent-frame evidence, visible-area limits, and minimum usable-frame count. Threshold values remain model/product specific and require evaluation.</p>
-<p>The rule engine consumes only typed aggregate evidence and pinned configuration. It returns internal <code>OK</code>, <code>NG</code>, or <code>UNCERTAIN</code>, component lists, and reason codes. <code>UNCERTAIN</code> always maps to business <code>NG</code>; presentation may show the internal reason but cannot change the business result to <code>OK</code>.</p>
+<p>聚合器排除无效/模糊的帧，并使用配置的策略评估每个所需的组件，例如一个高置信度观察、两个中等置信度观察、相邻帧证据、可见区域限制和最小可用帧计数。阈值仍然特定于型号/产品，并且需要评估。</p>
+<p>规则引擎仅使用类型化的聚合证据和固定配置。它返回内部 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code>、组件列表和原因代码。 <code>UNCERTAIN</code> 始终映射到业务<code>NG</code>；演示可以显示内部原因，但不能将业务结果更改为<code>OK</code>。</p>
 <h2 id="4-inspection-state-model">4. 检验状态模型<a class="headerlink" href="#4-inspection-state-model" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     [*] --&gt; Idle
     Idle --&gt; WindowOpen:已验证的开始事件
     WindowOpen --&gt; Collecting:第一个相关帧或身份事件
-    Collecting --&gt; Evaluating:validated end event or bounded timeout
+    Collecting --&gt; Evaluating:已验证的结束事件或有限超时
     Evaluating --&gt; Persisting:做出的决定
     Evaluating --&gt; Persisting:异常产生保守的结果
-    Persisting --&gt; Completed:metadata and required evidence committed
+    Persisting --&gt; Completed:提交的元数据和所需证据
     Persisting --&gt; RecoveryRequired:提交或媒体最终确定失败
-    RecoveryRequired --&gt; Persisting:retry succeeds
+    RecoveryRequired --&gt; Persisting:重试成功
     RecoveryRequired --&gt; Faulted:不可能安全恢复
     Completed --&gt; Queued:上传策略创建任务
     Completed --&gt; Idle:无需上传任务
@@ -3358,7 +3358,7 @@
     Collecting --&gt; Cancelled:根据批准的政策取消运营商
     Cancelled --&gt; Persisting:取消记录及原因
     Faulted --&gt; Idle:授权恢复和健康检查通过</code></pre>
-<p>Every terminal path creates an auditable record where storage remains available. A cancelled or exception path cannot yield <code>OK</code>.</p>
+<p>每个终端路径都会创建一个可审计的记录，其中存储仍然可用。取消或异常路径不能产生 <code>OK</code>。</p>
 <h2 id="5-device-state-model">5. 设备状态模型<a class="headerlink" href="#5-device-state-model" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     [*] --&gt; Starting
@@ -3366,7 +3366,7 @@
     Starting --&gt; Faulted:强制依赖无效
     Ready --&gt; Inspecting:检查窗口打开
     Inspecting --&gt; Ready:已提交检查
-    Ready --&gt; Degraded:noncritical dependency impaired
+    Ready --&gt; Degraded:非关键依赖性受损
     Inspecting --&gt; Degraded:网络或上传不可用
     Degraded --&gt; Ready:健康恢复且积压可接受
     Degraded --&gt; Faulted:决策关键依赖失败
@@ -3374,42 +3374,42 @@
     Degraded --&gt; Paused:授权暂停
     Paused --&gt; Ready:授权简历和检查通过
     Inspecting --&gt; Faulted:相机存储或活动包故障
-    Faulted --&gt; Starting:authorized restart or recovery
+    Faulted --&gt; Starting:授权重启或恢复
     Starting --&gt; Maintenance:维修授权
     Ready --&gt; Maintenance:维修授权
-    Maintenance --&gt; Starting:maintenance complete</code></pre>
-<p>Network or central failure is degraded, not decision-critical. Camera failure, invalid active model/rule compatibility, inability to persist mandatory records, or unsafe disk exhaustion is faulted. Exact line signaling for these states requires site agreement.</p>
+    Maintenance --&gt; Starting:维护完成</code></pre>
+<p>网络或中央故障是降级的，而不是决策关键的。相机故障、无效的活动模型/规则兼容性、无法持久保存强制记录或不安全的磁盘耗尽等故障。这些状态的精确线路信号需要站点协议。</p>
 <h2 id="6-local-persistence-and-recovery">6. 本地持久化和恢复<a class="headerlink" href="#6-local-persistence-and-recovery" title="Permanent link">&para;</a></h2>
 <h3 id="61-data-layout">6.1 数据布局<a class="headerlink" href="#61-data-layout" title="Permanent link">&para;</a></h3>
-<p>SQLite initially stores inspections, frame metadata, component evidence, media manifests, upload tasks, device events, local configuration, and installed model/rule versions. Media lives under an explicit mounted data root, partitioned by date and inspection ID, never inside the container layer or repository.</p>
-<p>A practical write protocol is:</p>
+<p>SQLite 最初存储检查、帧元数据、组件证据、媒体清单、上传任务、设备事件、本地配置和已安装的模型/规则版本。媒体位于显式安装的数据根下，按日期和检查 ID 分区，绝不位于容器层或存储库内。</p>
+<p>实用的写入协议是：</p>
 <ol>
-<li>Write media to a temporary file in the target volume, flush it, calculate checksum and size, then atomically rename it.</li>
-<li>In one database transaction, insert the inspection, evidence, finalized media manifests, and upload tasks.</li>
-<li>Publish the completed event only after commit.</li>
-<li>At startup, reconcile temporary files, incomplete inspections, missing files, and tasks left <code>IN_PROGRESS</code> by a crash.</li>
+<li>将介质写入目标卷中的临时文件，刷新它，计算校验和和大小，然后自动重命名它。</li>
+<li>在一项数据库事务中，插入检查、证据、最终媒体清单和上传任务。
+3.提交后才发布已完成的事件。</li>
+<li>启动时，协调临时文件、不完整的检查、丢失的文件以及崩溃留下的任务<code>IN_PROGRESS</code>。</li>
 </ol>
-<p>SQLite uses Alembic migrations, foreign keys, WAL mode if validated on the selected filesystem, bounded busy timeout, regular integrity checks, and supported backup procedures. A single repository writer or short transactions reduce lock contention.</p>
+<p>SQLite 使用 Alembic 迁移、外键、WAL 模式（如果在所选文件系统上进行验证）、有界繁忙超时、定期完整性检查和支持的备份过程。单个存储库写入器或短事务可以减少锁争用。</p>
 <h3 id="62-retention-and-disk-pressure">6.2 保留和磁盘压力<a class="headerlink" href="#62-retention-and-disk-pressure" title="Permanent link">&para;</a></h3>
-<p>Retention classes are independently configured for full/rolling video, key frames, NG clips, annotated images, ROI images, logs, and database records. Cleanup proceeds from expired, successfully uploaded, unprotected artifacts to lower-value data. It must honor references, legal/review holds, pending/failed uploads, and minimum evidence policy. Warning and critical watermarks trigger reason-coded health events; inability to retain mandatory evidence faults or conservatively terminates inspection.</p>
-<p>Exact durations and watermarks are intentionally unspecified pending capacity and policy validation.</p>
+<p>保留类别针对完整/滚动视频、关键帧、NG 剪辑、带注释的图像、ROI 图像、日志和数据库记录进行独立配置。清理从过期的、成功上传的、未受保护的工件到价值较低的数据。它必须尊重参考资料、法律/审查保留、待处理/失败的上传以及最低证据政策。警告和严重水印会触发原因编码的健康事件；无法保留强制性证据的缺陷或保守地终止检查。</p>
+<p>确切的持续时间和水印是有意未指定的，有待容量和策略验证。</p>
 <h2 id="7-upload-scheduler">7. 上传调度程序<a class="headerlink" href="#7-upload-scheduler" title="Permanent link">&para;</a></h2>
-<p>Upload tasks contain task ID, inspection ID, artifact type, local path where applicable, checksum, payload hash, attempt count, next-attempt time, and state. The idempotency key is stable across retries. Exponential backoff uses jitter and a configured cap; permanent validation/authentication failures stop automatic retry and raise an actionable event, while transient network/5xx failures remain queued.</p>
-<p>Metadata is accepted before or with a media manifest. Large media should use a server-issued upload session or bounded multipart protocol when required by measured sizes. A central durable receipt marks success. Cleanup cannot remove protected local evidence merely because bytes were transmitted; it requires receipt and expiration policy.</p>
+<p>上传任务包含任务 ID、检查 ID、工件类型、适用的本地路径、校验和、有效负载哈希、尝试计数、下次尝试时间和状态。幂等性密钥在重试后保持稳定。指数退避使用抖动和配置的上限；永久性验证/身份验证失败会停止自动重试并引发可操作事件，而暂时性网络/5xx 故障仍会排队。</p>
+<p>元数据在媒体清单之前或与媒体清单一起接受。当测量的大小需要时，大型媒体应使用服务器发出的上传会话或有界多部分协议。中央耐用收据标志着成功。清理不能仅仅因为传输了字节而删除受保护的本地证据；它需要收据和到期政策。</p>
 <h2 id="8-local-api-and-web-application">8. 本地API和Web应用程序<a class="headerlink" href="#8-local-api-and-web-application" title="Permanent link">&para;</a></h2>
-<p>The versioned local API groups are <code>/api/v1/health</code>, <code>/api/v1/device</code>, <code>/api/v1/camera</code>, <code>/api/v1/inspection</code>, <code>/api/v1/inspections</code>, <code>/api/v1/media</code>, <code>/api/v1/uploads</code>, <code>/api/v1/configuration</code>, <code>/api/v1/logs</code>, and <code>/api/v1/ws/runtime</code>, as detailed in <a href="../15-rest-api-and-events/">REST API and Events</a>. Mutating calls use authorization appropriate to the local threat model, validation, audit entries, and idempotency where retried. WebSocket events are advisory; the UI restores truth via REST after reconnect.</p>
-<p>The Vue application shows camera preview, current identity/product, latest result/evidence overlay, latency, camera/model/disk/network/central states, queue depth, recent records, local logs, and retry controls. It uses only local endpoints and remains useful offline. Preview delivery must be rate-limited and must not starve inference.</p>
+<p>版本化本地 API 组为 <code>/api/v1/health</code>、<code>/api/v1/device</code>、<code>/api/v1/camera</code>、<code>/api/v1/inspection</code>、<code>/api/v1/inspections</code>、<code>/api/v1/media</code>、<code>/api/v1/uploads</code>、<code>/api/v1/configuration</code>、<code>/api/v1/logs</code> 和 <code>/api/v1/ws/runtime</code>，详细信息请参见 <a href="../15-rest-api-and-events/">REST API and Events</a>。变异调用使用适合本地威胁模型的授权、验证、审计条目和重试时的幂等性。 WebSocket 事件是建议性的；重新连接后，UI 通过 REST 恢复真实情况。</p>
+<p>Vue 应用程序显示摄像头预览、当前身份/产品、最新结果/证据叠加、延迟、摄像头/模型/磁盘/网络/中央状态、队列深度、最近记录、本地日志和重试控件。它仅使用本地端点并在离线状态下仍然有用。预览交付必须受到速率限制，并且不得阻碍推理。</p>
 <h2 id="9-process-concurrency-and-backpressure">9. 进程、并发和背压<a class="headerlink" href="#9-process-concurrency-and-backpressure" title="Permanent link">&para;</a></h2>
 <ul>
-<li>A bounded capture buffer favors recent frames according to validated window policy; unbounded queues are prohibited.</li>
-<li>Inference concurrency is explicitly limited for selected CPU/GPU resources.</li>
-<li>Each frame carries inspection ID, frame ID, sequence, capture timestamp, and source; late results are discarded from a closed/different window and logged.</li>
-<li>Slow upload, UI, annotation rendering, or central calls cannot block capture/inference.</li>
-<li>Model activation occurs between windows using load/health checks and atomic active-version switching; the previous package remains available for rollback.</li>
-<li>Graceful shutdown stops new windows, gives an active window a bounded completion policy, commits state, and releases hardware.</li>
+<li>根据经过验证的窗口策略，有界捕获缓冲区有利于最近的帧；禁止无界队列。</li>
+<li>对于选定的 CPU/GPU 资源，推理并发性受到明确限制。</li>
+<li>每帧携带检查ID、帧ID、序列、捕获时间戳和来源；较晚的结果将从关闭/不同的窗口中丢弃并记录。</li>
+<li>缓慢上传、UI、注释渲染或中央调用无法阻止捕获/推理。</li>
+<li>使用负载/运行状况检查和原子活动版本切换在窗口之间进行模型激活；以前的包仍然可以回滚。</li>
+<li>正常关闭会停止新窗口，为活动窗口提供有界完成策略，提交状态并释放硬件。</li>
 </ul>
 <h2 id="10-health-and-observability">10. 健康与可观察性<a class="headerlink" href="#10-health-and-observability" title="Permanent link">&para;</a></h2>
-<p>Structured logs and metrics cover capture rate/drops, usable frames, stage latency, product/ROI/barcode success, per-result/reason counts, queue age/depth, retry outcomes, disk watermarks, DB errors, package versions, and service restarts. Correlation uses device, inspection, frame, upload task, and request IDs. Health endpoints distinguish liveness, readiness, and detailed operational state; a camera-disconnected process may be live but not inspection-ready.</p>
+<p>结构化日志和指标涵盖捕获率/丢包、可用帧、阶段延迟、产品/投资回报率/条形码成功、每个结果/原因计数、队列年龄/深度、重试结果、磁盘水印、数据库错误、包版本和服务重启。关联使用设备、检查、帧、上传任务和请求 ID。健康端点区分活跃度、就绪度和详细的运行状态；与相机断开连接的进程可能处于活动状态，但尚未准备好进行检查。</p>
 <h2 id="11-deployment-and-source-packaging">11. 部署与源码打包<a class="headerlink" href="#11-deployment-and-source-packaging" title="Permanent link">&para;</a></h2>
 <p>边缘使用 Compose，无需 Kubernetes。映像是多阶段的，以非 root 身份运行，声明运行状况/重新启动策略，并显式挂载配置/数据/媒体/日志卷。在适配器允许的情况下，运行时文件系统是只读的。前端源代码被编译为静态资源。 Python <code>.pyc</code>-only 打包可能会减少随意浏览，但它不是健壮的混淆；不提供任何 Git 历史记录、训练数据、笔记本、生产数据、实验设置或嵌入的长期机密。</p>
 <h2 id="12-delivery-horizons">12. 交付范围<a class="headerlink" href="#12-delivery-horizons" title="Permanent link">&para;</a></h2>
@@ -3424,7 +3424,7 @@
 <h2 id="13-assumptions">13. 假设<a class="headerlink" href="#13-assumptions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>硬件 SDK 可以隔离在适配器后面并允许可恢复的重新连接。</li>
-<li>所选主机支持容器对硬件和持久安装存储的访问。</li>
+<li>所选主机支持容器访问硬件和持久安装的存储。</li>
 <li>产品吞吐量允许在硬件基准测试后进行有界两阶段推理。</li>
 <li>经批准的流程可以在边缘失去连接之前提供活动包。</li>
 </ul>

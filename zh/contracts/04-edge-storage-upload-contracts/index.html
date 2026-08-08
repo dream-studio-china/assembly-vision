@@ -2537,7 +2537,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -2978,28 +2978,28 @@
 
 <h1 id="04-edge-storage-and-upload-contracts">04. 边缘、存储和上传合约<a class="headerlink" href="#04-edge-storage-and-upload-contracts" title="Permanent link">&para;</a></h1>
 <h2 id="1-edge-first-principle">1. 边缘优先原则<a class="headerlink" href="#1-edge-first-principle" title="Permanent link">&para;</a></h2>
-<p>The edge client must continue inspecting when:</p>
+<p>在以下情况下，边缘客户端必须继续检查：</p>
 <ul>
-<li>The central server is unavailable</li>
-<li>The network is disconnected</li>
-<li>DNS resolution fails</li>
-<li>Upload attempts fail</li>
-<li>The central database is unavailable</li>
+<li>中央服务器不可用</li>
+<li>网络已断开</li>
+<li>DNS解析失败</li>
+<li>上传尝试失败</li>
+<li>中央数据库不可用</li>
 </ul>
-<p>The central server must never participate in the real-time release decision.</p>
+<p>中央服务器绝不能参与实时发布决策。</p>
 <h2 id="2-edge-responsibilities">2. 边缘职责<a class="headerlink" href="#2-edge-responsibilities" title="Permanent link">&para;</a></h2>
-<p>The edge client owns:</p>
+<p>边缘客户端拥有：</p>
 <ul>
-<li>Camera capture</li>
-<li>Barcode recognition</li>
-<li>Product detection</li>
-<li>ROI generation</li>
-<li>Component detection</li>
-<li>Temporal aggregation</li>
-<li>Rule evaluation</li>
-<li>Final inspection decision</li>
-<li>Local persistence</li>
-<li>Upload queue management</li>
+<li>相机捕捉</li>
+<li>条码识别</li>
+<li>产品检测</li>
+<li>投资回报率生成</li>
+<li>元件检测</li>
+<li>时间聚合</li>
+<li>规则评估</li>
+<li>最终检查决定</li>
+<li>本地持久性</li>
+<li>上传队列管理</li>
 </ul>
 <h2 id="3-local-persistence-order">3.本地持久化顺序<a class="headerlink" href="#3-local-persistence-order" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>1. Complete inspection
@@ -3008,19 +3008,19 @@
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>4. Publish/return the committed local result
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>5. Upload asynchronously
 </code></pre></div>
-<p>Steps 2 and 3 form one recoverable unit: a crash must not leave a completed inspection without its
-required upload task. Temporary files and incomplete transactions are reconciled at startup.</p>
-<p>Local media and records must not be deleted before confirmed upload and retention checks.</p>
+<p>第 2 步和第 3 步形成一个可恢复单元：碰撞事故不得留下未完成的检查
+所需的上传任务。临时文件和不完整的事务在启动时进行协调。</p>
+<p>在确认上传和保留检查之前，不得删除本地媒体和记录。</p>
 <h2 id="4-upload-task-fields">4. 上传任务字段<a class="headerlink" href="#4-upload-task-fields" title="Permanent link">&para;</a></h2>
-<p>Each upload task must contain at least:</p>
+<p>每个上传任务必须至少包含：</p>
 <ul>
 <li><code>upload_task_id</code></li>
 <li><code>device_id</code></li>
-<li><code>inspection_id</code> (nullable for device-event tasks)</li>
+<li><code>inspection_id</code>（设备事件任务可为空）</li>
 <li><code>object_id</code></li>
 <li><code>kind</code></li>
 <li><code>payload_hash</code></li>
-<li><code>checksum_sha256</code> when bytes are uploaded</li>
+<li><code>checksum_sha256</code> 当字节上传时</li>
 <li><code>status</code></li>
 <li><code>attempt_count</code></li>
 <li><code>next_attempt_at</code></li>
@@ -3028,59 +3028,59 @@ required upload task. Temporary files and incomplete transactions are reconciled
 <li><code>created_at</code></li>
 <li><code>updated_at</code></li>
 <li><code>completed_at</code></li>
-<li>Lease owner and expiry while in progress</li>
+<li>租赁业主和租赁期间到期</li>
 </ul>
-<p>Canonical states are <code>PENDING</code>, <code>IN_PROGRESS</code>, <code>RETRY_WAIT</code>, <code>SUCCEEDED</code>,
-<code>PERMANENT_FAILURE</code>, and <code>CANCELLED</code>.</p>
+<p>规范状态有 <code>PENDING</code>、<code>IN_PROGRESS</code>、<code>RETRY_WAIT</code>、<code>SUCCEEDED</code>、
+<code>PERMANENT_FAILURE</code>和<code>CANCELLED</code>。</p>
 <h2 id="5-idempotency">5. 幂等性<a class="headerlink" href="#5-idempotency" title="Permanent link">&para;</a></h2>
-<p>The central server must support idempotent uploads.</p>
-<p>Recommended idempotency key:</p>
+<p>中央服务器必须支持幂等上传。</p>
+<p>推荐的幂等键：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>inspection:{device_id}:{inspection_id}
 </code></pre></div>
-<p>Duplicate upload attempts must not create duplicate inspection records.</p>
+<p>重复上传尝试不得创建重复的检查记录。</p>
 <h2 id="6-file-integrity">6. 文件完整性<a class="headerlink" href="#6-file-integrity" title="Permanent link">&para;</a></h2>
-<p>Media uploads must:</p>
+<p>媒体上传必须：</p>
 <ul>
-<li>Compute a checksum</li>
-<li>Validate file size</li>
-<li>Validate upload completion</li>
-<li>Store the central object identifier</li>
-<li>Update local task state only after confirmed success</li>
+<li>计算校验和</li>
+<li>验证文件大小</li>
+<li>验证上传完成</li>
+<li>存储中心对象标识符</li>
+<li>仅在确认成功后更新本地任务状态</li>
 </ul>
 <h2 id="7-restart-recovery">7. 重启恢复<a class="headerlink" href="#7-restart-recovery" title="Permanent link">&para;</a></h2>
-<p>On startup, the edge application must:</p>
+<p>启动时，边缘应用程序必须：</p>
 <ul>
-<li>Recover <code>PENDING</code> tasks</li>
-<li>Recover <code>RETRY_WAIT</code> tasks</li>
-<li>Detect stale <code>IN_PROGRESS</code> tasks</li>
-<li>Move stale tasks back into a retryable state</li>
-<li>Verify referenced media still exists</li>
-<li>Validate database-to-file consistency where practical</li>
+<li>恢复<code>PENDING</code>任务</li>
+<li>恢复<code>RETRY_WAIT</code>任务</li>
+<li>检测陈旧的<code>IN_PROGRESS</code>任务</li>
+<li>将过时的任务移回可重试状态</li>
+<li>验证引用的媒体仍然存在</li>
+<li>在可行的情况下验证数据库到文件的一致性</li>
 </ul>
 <h2 id="8-cleanup-rules">8. 清理规则<a class="headerlink" href="#8-cleanup-rules" title="Permanent link">&para;</a></h2>
-<p>The local cleanup process must not delete:</p>
+<p>本地清理进程不得删除：</p>
 <ul>
-<li>Data not yet uploaded</li>
-<li>Data with unknown upload state</li>
-<li>Media still referenced by local records</li>
-<li>Data locked for acceptance testing or human review</li>
+<li>数据尚未上传</li>
+<li>上传状态未知的数据</li>
+<li>当地记录仍引用媒体</li>
+<li>锁定数据以进行验收测试或人工审核</li>
 </ul>
 <h2 id="9-central-review">9. 中央审查<a class="headerlink" href="#9-central-review" title="Permanent link">&para;</a></h2>
-<p>The central server may append:</p>
+<p>中央服务器可以附加：</p>
 <ul>
 <li><code>review_disposition</code></li>
 <li><code>review_comment</code></li>
 <li><code>reviewer</code></li>
 <li><code>reviewed_at</code></li>
 </ul>
-<p>It must not overwrite:</p>
+<p>它不得覆盖：</p>
 <ul>
 <li><code>original_internal_decision</code></li>
 <li><code>original_business_result</code></li>
-<li>Product-detector model version and checksum</li>
-<li>Component-detector model version and checksum</li>
+<li>产品检测器型号版本和校验和</li>
+<li>组件检测器模型版本和校验和</li>
 <li><code>rule_version</code></li>
-<li>Original media references</li>
+<li>原始媒体参考</li>
 </ul>
 <h2 id="related-documents">相关文件<a class="headerlink" href="#related-documents" title="Permanent link">&para;</a></h2>
 <ul>

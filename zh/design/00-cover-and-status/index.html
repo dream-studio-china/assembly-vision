@@ -491,7 +491,7 @@
   <a href="#1-document-control" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Document Control
+        1. 文件控制
       
     </span>
   </a>
@@ -513,7 +513,7 @@
   <a href="#3-scope-horizons-and-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Scope Horizons and Status
+        3. 范围范围和现状
       
     </span>
   </a>
@@ -2504,7 +2504,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -2817,7 +2817,7 @@
   <a href="#1-document-control" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Document Control
+        1. 文件控制
       
     </span>
   </a>
@@ -2839,7 +2839,7 @@
   <a href="#3-scope-horizons-and-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Scope Horizons and Status
+        3. 范围范围和现状
       
     </span>
   </a>
@@ -2911,7 +2911,7 @@
 
 
 <h1 id="assemblyvision-software-architecture-cover-and-status">AssemblyVision 软件架构：覆盖范围和状态<a class="headerlink" href="#assemblyvision-software-architecture-cover-and-status" title="Permanent link">&para;</a></h1>
-<h2 id="1-document-control">1. Document Control<a class="headerlink" href="#1-document-control" title="Permanent link">&para;</a></h2>
+<h2 id="1-document-control">1. 文件控制<a class="headerlink" href="#1-document-control" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2982,7 +2982,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="3-scope-horizons-and-status">3. Scope Horizons and Status<a class="headerlink" href="#3-scope-horizons-and-status" title="Permanent link">&para;</a></h2>
+<h2 id="3-scope-horizons-and-status">3. 范围范围和现状<a class="headerlink" href="#3-scope-horizons-and-status" title="Permanent link">&para;</a></h2>
 <p>视野是范围标签，而不是仅凭日历时间就可以确定生产准备情况的承诺。</p>
 <table>
 <thead>
@@ -3027,42 +3027,42 @@
 </table>
 <h2 id="4-architecture-decisions-in-force">4. 有效的架构决策<a class="headerlink" href="#4-architecture-decisions-in-force" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Production-critical acquisition, inference, aggregation, rules, and final decisions execute on the edge industrial computer.</li>
-<li>Loss of central connectivity must not stop inspection; local persistence and delayed synchronization are mandatory.</li>
-<li>The first implementation processes static images before integrating camera/video paths.</li>
-<li>Product detection creates the product ROI; component detection operates on that ROI. A hard-coded region may only be a coarse or fallback capture zone.</li>
-<li>Required component presence is detected directly. The design does not depend on a generic <code>missing_component</code> model class.</li>
-<li>Barcode decoding is a separate capability; object detection may locate a barcode but does not replace decoding.</li>
-<li>Temporal evidence is aggregated per required component, not by whole-product majority vote.</li>
-<li>The rule engine is deterministic and versioned independently of models.</li>
-<li><code>UNCERTAIN</code> is an internal decision state and always maps to business <code>NG</code>; uncertainty cannot produce <code>OK</code>.</li>
-<li>Every persisted inspection identifies device, time, product type resolution, model versions, rule version, product-configuration version, evidence, decision, and reason codes.</li>
-<li>The central server receives selected evidence, not every frame. Complete or rolling video remains local where policy requires it.</li>
-<li>Runtime data, production media, secrets, and model weights are not stored in the Git repository.</li>
+<li>生产关键型采集、推理、聚合、规则和最终决策在边缘工业计算机上执行。</li>
+<li>中央连接丢失不得停止检查；本地持久性和延迟同步是强制性的。</li>
+<li>第一个实现在集成相机/视频路径之前处理静态图像。
+4、产品检测创造产品投资回报率；组件检测在该 ROI 上进行。硬编码区域可能只是粗略或后备捕获区域。</li>
+<li>直接检测所需组件的存在。该设计不依赖于通用的 <code>missing_component</code> 模型类。</li>
+<li>条码解码是一项单独的功能；物体检测可以定位条形码，但不能取代解码。</li>
+<li>时间证据是按所需组件汇总的，而不是通过整个产品的多数投票来汇总的。
+8.规则引擎是确定性的并且版本独立于模型。</li>
+<li><code>UNCERTAIN</code>是内部决策状态，始终映射到业务<code>NG</code>；不确定性不能产生<code>OK</code>。
+10.每次持续检查都会识别设备、时间、产品类型解析、模型版本、规则版本、产品配置版本、证据、决策和原因代码。</li>
+<li>中央服务器接收选定的证据，而不是每一帧。在政策要求的情况下，完整或滚动的视频保留在本地。</li>
+<li>运行时数据、生产媒体、秘密和模型权重不存储在 Git 存储库中。</li>
 </ol>
-<p>The <a href="../appendices/#2-decision-consistency-checklist">Appendices</a> contain the consistency checklist used when extending this set.</p>
+<p><a href="../appendices/#2-decision-consistency-checklist">Appendices</a> 包含扩展此集合时使用的一致性检查表。</p>
 <h2 id="5-quality-and-acceptance-position">五、质量及验收情况<a class="headerlink" href="#5-quality-and-acceptance-position" title="Permanent link">&para;</a></h2>
-<p>The engineering objective is high NG recall and an extremely low false-negative rate. Early rollout permits additional false NG outcomes because they can be reviewed manually. Overall accuracy alone is not an acceptable success measure; validation must report NG recall, false-negative and false-positive rates, per-component and per-product performance, barcode/product/ROI success, latency, throughput, and operational resilience.</p>
-<p>No numerical acceptance threshold is defined here. Thresholds and confidence policies require baseline evaluation against segregated customer production data, including intentionally incomplete products and operational failure scenarios.</p>
+<p>工程目标是高 NG 召回率和极低的假阴性率。早期推出允许额外的错误 NG 结果，因为它们可以手动审查。仅整体准确性并不是可接受的成功衡量标准；验证必须报告 NG 召回率、假阴性和假阳性率、每个组件和每个产品的性能、条码/产品/投资回报率成功率、延迟、吞吐量和运营弹性。</p>
+<p>这里没有定义数字接受阈值。阈值和置信策略需要针对隔离的客户生产数据进行基线评估，包括故意不完整的产品和操作故障场景。</p>
 <h2 id="6-ownership-and-change-control">6. 所有权和变更控制<a class="headerlink" href="#6-ownership-and-change-control" title="Permanent link">&para;</a></h2>
-<p>Architecture changes that affect edge autonomy, decision semantics, traceability fields, upload idempotency, or model/rule compatibility require explicit review across all affected documents. A change is complete only when requirements, diagrams, interfaces, state machines, reason codes, and trace links remain consistent.</p>
-<p>Suggested document roles are:</p>
+<p>影响边缘自治、决策语义、可追溯性字段、上传幂等性或模型/规则兼容性的架构更改需要对所有受影响的文档进行明确审查。仅当需求、图表、接口、状态机、原因代码和跟踪链接保持一致时，更改才完成。</p>
+<p>建议的文档角色是：</p>
 <ul>
-<li>Product owner: business classification and review policy.</li>
-<li>Vision lead: datasets, model manifests, thresholds, and evaluation evidence.</li>
-<li>Edge lead: acquisition, decision path, local durability, and recovery.</li>
-<li>Platform lead: ingestion, identity, administration, and central operations.</li>
-<li>Customer operations representative: site constraints and acceptance approval.</li>
+<li>产品负责人：业务分类和审核政策。</li>
+<li>愿景引导：数据集、模型清单、阈值和评估证据。</li>
+<li>优势领先：获取、决策路径、局部持久性和恢复。</li>
+<li>平台领导：摄取、身份、管理和中央操作。</li>
+<li>客户运营代表：场地限制和验收批准。</li>
 </ul>
-<p>These roles are responsibilities, not confirmed staffing facts.</p>
+<p>这些角色是职责，而不是确认的人员配置事实。</p>
 <h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Who approves requirements and production acceptance, and what change-control process will be used?</li>
-<li>Which product types and component classes are in the first release?</li>
-<li>What measured acceptance thresholds will be agreed after baseline evaluation?</li>
-<li>Which target dates are commitments, and what hardware/site access is available before them?</li>
-<li>Which data classifications, retention obligations, and customer policies apply?</li>
-<li>Which items in the global list in <a href="../appendices/#3-global-open-questions">Appendices</a> block the static train-and-inspect MVP, one-month target, and production release?</li>
+<li>谁批准需求和生产验收，将使用什么变更控制流程？</li>
+<li>第一个版本包含哪些产品类型和组件类别？</li>
+<li>基线评估后将商定哪些测量可接受阈值？</li>
+<li>承诺的目标日期是什么？在此之前可以访问哪些硬件/站点？</li>
+<li>适用哪些数据分类、保留义务和客户政策？</li>
+<li><a href="../appendices/#3-global-open-questions">Appendices</a> 中的全局列表中的哪些项目会阻止静态训练和检查 MVP、一个月目标和生产发布？</li>
 </ol>
 
 

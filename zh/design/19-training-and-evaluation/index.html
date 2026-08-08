@@ -1063,7 +1063,7 @@
   <a href="#1921-product-detector" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.2.1 产品检测器
+        19.2.1 Product Detector
       
     </span>
   </a>
@@ -1085,7 +1085,7 @@
   <a href="#1923-system-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.2.3 系统决策
+        19.2.3 System Decision
       
     </span>
   </a>
@@ -1184,7 +1184,7 @@
   <a href="#197-preprocessing-and-augmentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.7 预处理和增强
+        19.7 Preprocessing and Augmentation
       
     </span>
   </a>
@@ -1195,7 +1195,7 @@
   <a href="#198-training-reproducibility" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.8 Training Reproducibility
+        19.8 训练再现性
       
     </span>
   </a>
@@ -1261,7 +1261,7 @@
   <a href="#1914-production-monitoring-and-retraining" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.14 生产监控和再培训
+        19.14 Production Monitoring and Retraining
       
     </span>
   </a>
@@ -1283,7 +1283,7 @@
   <a href="#1916-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.16 未决问题和需要验证
+        19.16 Open Questions and Validation Required
       
     </span>
   </a>
@@ -2698,7 +2698,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -3051,7 +3051,7 @@
   <a href="#1921-product-detector" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.2.1 产品检测器
+        19.2.1 Product Detector
       
     </span>
   </a>
@@ -3073,7 +3073,7 @@
   <a href="#1923-system-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.2.3 系统决策
+        19.2.3 System Decision
       
     </span>
   </a>
@@ -3172,7 +3172,7 @@
   <a href="#197-preprocessing-and-augmentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.7 预处理和增强
+        19.7 Preprocessing and Augmentation
       
     </span>
   </a>
@@ -3183,7 +3183,7 @@
   <a href="#198-training-reproducibility" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.8 Training Reproducibility
+        19.8 训练再现性
       
     </span>
   </a>
@@ -3249,7 +3249,7 @@
   <a href="#1914-production-monitoring-and-retraining" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.14 生产监控和再培训
+        19.14 Production Monitoring and Retraining
       
     </span>
   </a>
@@ -3271,7 +3271,7 @@
   <a href="#1916-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.16 未决问题和需要验证
+        19.16 Open Questions and Validation Required
       
     </span>
   </a>
@@ -3300,32 +3300,32 @@
 
 <h1 id="19-training-and-evaluation">19. 培训与评估<a class="headerlink" href="#19-training-and-evaluation" title="Permanent link">&para;</a></h1>
 <h2 id="191-objective-and-scope">19.1 目标和范围<a class="headerlink" href="#191-objective-and-scope" title="Permanent link">&para;</a></h2>
-<p>Training produces a product detector for full frames and a component detector for product ROIs. Evaluation measures both detector behavior and the complete product-level inspection system. The principal safety objective is extremely high NG recall and a correspondingly low false-negative rate, demonstrated on held-out production data; no dataset size or model metric guarantees perfect performance.</p>
-<p>Model metadata follows <a href="../14-data-model-and-database/">Data Model and Database</a>. Model registration and review surfaces are described in <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a>, and code ownership in <a href="../18-monorepo-and-code-organization/">Monorepo and Code Organization</a>.</p>
+<p>训练生成用于全帧的产品检测器和用于产品 ROI 的组件检测器。评估可衡量探测器行为和完整的产品级检测系统。主要的安全目标是极高的 NG 召回率和相应的低假阴性率，这在保留的生产数据中得到了证明；没有数据集大小或模型指标可以保证完美的性能。</p>
+<p>模型元数据遵循<a href="../14-data-model-and-database/">Data Model and Database</a>。模型注册和审查表面在 <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a> 中描述，代码所有权在 <a href="../18-monorepo-and-code-organization/">Monorepo and Code Organization</a> 中描述。</p>
 <h3 id="1911-static-train-and-inspect-mvp">19.1.1 静态训练和检查 MVP<a class="headerlink" href="#1911-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
-<p>The MVP implements a developer-controlled training-to-inspection loop before camera integration. X-AnyLabeling is the selected annotation tool and exports standard YOLO text labels. Product and component boxes are annotated in full-frame coordinates. The training CLI validates the exported dataset, trains the product detector from full-frame images, then uses the product ROI transform to crop component training images and remap component boxes into ROI coordinates before component training.</p>
-<p>The runtime inspection CLI consumes only the resulting immutable weight artifacts and manifests. Training code is in a separate <code>training/</code> workspace, is never imported by the runtime, and is excluded from runtime distributions. A configured filename convention provides expected <code>OK</code> or <code>NG</code> labels for held-out verification; it is not a substitute for bounding-box labels during detector training.</p>
-<p>The first MVP runs small models and measured image sizes on the developer's Apple Silicon Mac with 16 GB memory. It records reproducibility metadata and reports held-out static-set results, but does not claim production accuracy, production throughput, or production acceptance. Plain model artifacts with SHA-256 manifests are sufficient for this MVP; model encryption and <code>.pyc</code>-only distribution packaging are deferred.</p>
-<p>The minimum YOLO dataset layout is:</p>
+<p>MVP 在相机集成之前实现了开发人员控制的训练到检查循环。 X-AnyLabeling 是选定的注释工具，并导出标准 YOLO 文本标签。产品和组件盒以全框坐标进行注释。训练 CLI 验证导出的数据集，从全帧图像训练产品检测器，然后使用产品 ROI 变换来裁剪组件训练图像，并在组件训练之前将组件框重新映射到 ROI 坐标。</p>
+<p>运行时检查 CLI 仅使用生成的不可变权重工件和清单。训练代码位于单独的 <code>training/</code> 工作区中，永远不会由运行时导入，并且被排除在运行时发行版之外。配置的文件名约定为保留验证提供了预期的 <code>OK</code> 或 <code>NG</code> 标签；它不能替代检测器训练期间的边界框标签。</p>
+<p>第一个 MVP 在开发人员具有 16 GB 内存的 Apple Silicon Mac 上运行小型模型并测量图像尺寸。它记录再现性元数据并报告保留的静态设置结果，但不声明生产精度、生产吞吐量或生产验收。具有 SHA-256 清单的普通模型工件对于此 MVP 来说已经足够了；模型加密和仅限 <code>.pyc</code> 的分发打包被推迟。</p>
+<p>最小 YOLO 数据集布局为：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>dataset/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── images/{train,val}/
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── labels/{train,val}/
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>└── data.yaml
 </code></pre></div>
-<p>Each label file shares its image basename and contains normalized YOLO class and box coordinates. The <code>data.yaml</code> class-name order is the authoritative class-ID mapping. Train and validation groups must keep derived crops and their source product/session together.</p>
+<p>每个标签文件共享其图像基名并包含标准化的 YOLO 类和框坐标。 <code>data.yaml</code> 类名顺序是权威的类 ID 映射。培训和验证小组必须将衍生作物及其源产品/会话放在一起。</p>
 <h2 id="192-task-definitions">19.2 任务定义<a class="headerlink" href="#192-task-definitions" title="Permanent link">&para;</a></h2>
-<h3 id="1921-product-detector">19.2.1 产品检测器<a class="headerlink" href="#1921-product-detector" title="Permanent link">&para;</a></h3>
-<p>Input is a full approximately four-megapixel production frame. Output is product class, bounding box, and confidence. The first target is one <code>product</code> class unless product classes are visually necessary for ROI handling. Product identity should normally come from the barcode/product mapping rather than visual classification.</p>
-<p>Initial collection target is approximately 300 to 800 real production images, including slight position changes, normal production variation, empty conveyor/background negatives, partial entry/exit frames, blur, reflections, and expected occlusion. This is a planning range, not an acceptance threshold.</p>
+<h3 id="1921-product-detector">19.2.1 Product Detector<a class="headerlink" href="#1921-product-detector" title="Permanent link">&para;</a></h3>
+<p>输入是一个完整的大约四兆像素的生产帧。输出是产品类别、边界框和置信度。第一个目标是一个 <code>product</code> 类，除非产品类对于 ROI 处理在视觉上是必需的。产品标识通常应来自条形码/产品映射，而不是视觉分类。</p>
+<p>初始收集目标是大约 300 到 800 个真实生产图像，包括轻微的位置变化、正常生产变化、空传送带/背景底片、部分进入/退出帧、模糊、反射和预期遮挡。这是一个规划范围，而不是接受门槛。</p>
 <h3 id="1922-component-detector">19.2.2 元件检测器<a class="headerlink" href="#1922-component-detector" title="Permanent link">&para;</a></h3>
-<p>Input is the product ROI generated by the production ROI code. Output classes are concrete required components, including the manual where applicable. Train visible required components; do not train a generic <code>missing_component</code> class. Initial planning is approximately 300 to 500 labeled instances per component class, plus intentionally created missing-component scenarios, starting near 100 product instances per missing scenario where practical.</p>
-<h3 id="1923-system-decision">19.2.3 系统决策<a class="headerlink" href="#1923-system-decision" title="Permanent link">&para;</a></h3>
-<p>The system combines frame quality, product detection, ROI generation, component evidence across frames, barcode/product resolution, and deterministic rules. A component-model miss can be recovered by temporal evidence; temporal aggregation does not improve the detector's single-frame accuracy. Final product-level metrics must execute the exact production preprocessing, thresholds, aggregation, and rule versions.</p>
+<p>输入是由生产 ROI 代码生成的产品 ROI。输出类是具体的必需组件，包括适用的手册。训练可见的所需组件；不要训练通用的 <code>missing_component</code> 类。初始规划是每个组件类大约 300 到 500 个标记实例，加上有意创建的缺失组件场景，在可行的情况下，每个缺失场景开始近 100 个产品实例。</p>
+<h3 id="1923-system-decision">19.2.3 System Decision<a class="headerlink" href="#1923-system-decision" title="Permanent link">&para;</a></h3>
+<p>该系统结合了框架质量、产品检测、ROI 生成、跨框架的组件证据、条形码/产品分辨率和确定性规则。组件模型的失误可以通过时间证据来恢复；时间聚合不会提高检测器的单帧精度。最终产品级指标必须执行精确的生产预处理、阈值、聚合和规则版本。</p>
 <h2 id="193-data-inventory-and-provenance">19.3 数据清单和来源<a class="headerlink" href="#193-data-inventory-and-provenance" title="Permanent link">&para;</a></h2>
-<p>Every source image/frame is associated with a manifest containing:</p>
+<p>每个源图像/帧都与一个清单相关联，其中包含：</p>
 <ul>
 <li>数据集/源记录 ID 和不可变文件校验和。</li>
-<li>站点、线路、摄像机和捕捉设置标识符（如果允许）。</li>
+<li>站点、线路、摄像机和捕获设置标识符（如果允许）。</li>
 <li>捕获会话 ID、生产日期、产品批次和物理产品实例 ID。</li>
 <li>视频/检查窗口 ID、帧索引和时间戳。</li>
 <li>在允许的情况下，受保护元数据中的产品代码/类型和条形码。</li>
@@ -3361,7 +3361,7 @@
 <h2 id="196-leakage-safe-data-splits">19.6 防泄漏数据分割<a class="headerlink" href="#196-leakage-safe-data-splits" title="Permanent link">&para;</a></h2>
 <h3 id="1961-split-unit">19.6.1 分割单元<a class="headerlink" href="#1961-split-unit" title="Permanent link">&para;</a></h3>
 <p>最小拆分组是整个检查/视频窗口中的物理产品实例。首选结合捕获会话、产品批次、生产日期和设置修订的更高级别组。从一个源组派生的所有相邻帧、裁剪、增强、重新编码和注释都保留在一个分割中。</p>
-<p>切勿随机分割单个视频帧。训练和验证过程中几乎相同的帧会产生误导性的指标，并根据重复的证据调整时间聚合。</p>
+<p>切勿随机分割单个视频帧。训练和验证中几乎相同的帧会产生误导性的指标，并根据重复的证据调整时间聚合。</p>
 <h3 id="1962-recommended-sets">19.6.2 推荐设置<a class="headerlink" href="#1962-recommended-sets" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3401,7 +3401,7 @@
 </table>
 <p>百分比取决于可用的独立组。合理的计划开始时间为 2015 年 70 月 15 日，按分组实例进行训练/验证/内部测试，但优先考虑每个组件和产品足够的 NG 示例。客户接受集仍然是独立的，不是在调整后雕刻出来的。</p>
 <h3 id="1963-split-construction">19.6.3 分体结构<a class="headerlink" href="#1963-split-construction" title="Permanent link">&para;</a></h3>
-<p>使用具有固定种子和清单的确定性、版本化组分配。在样本量允许的情况下，按产品、缺少组件的情况、地点/设置以及相关操作条件在组级别进行分层。报告任何对于独立评估来说太小的层，而不是跨分割移动类似重复的帧。</p>
+<p>使用具有固定种子和清单的确定性、版本化组分配。在样本量允许的情况下，按产品、缺少组件的情况、站点/设置以及相关操作条件在组级别进行分层。报告任何对于独立评估来说太小的层，而不是跨分割移动类似重复的帧。</p>
 <p>在发布之前，运行泄漏检查：</p>
 <ul>
 <li>跨分割的精确 SHA-256 重复检测。</li>
@@ -3411,16 +3411,16 @@
 <li>条形码/产品实例标识符在允许标识符的情况下重叠检查。</li>
 <li>手动检查最接近的交叉分割图像对。</li>
 </ul>
-<h2 id="197-preprocessing-and-augmentation">19.7 预处理和增强<a class="headerlink" href="#197-preprocessing-and-augmentation" title="Permanent link">&para;</a></h2>
+<h2 id="197-preprocessing-and-augmentation">19.7 Preprocessing and Augmentation<a class="headerlink" href="#197-preprocessing-and-augmentation" title="Permanent link">&para;</a></h2>
 <p>训练和评估使用与生产相同的颜色转换、调整大小/信箱、ROI 扩展/剪切、方向逻辑和图像标准化。将这些参数存储在模型清单中。</p>
 <p>增强可能包括有界平移、缩放、温和透视、曝光/对比度、模糊、传感器噪声、压缩和部分遮挡（如果每个都代表合理的生产变化）。避免在固定相机下物理上不可能出现的大旋转或背景。除确定性生产预处理外，请勿增强验证、测试或验收图像。直观地审核类框转换。</p>
-<h2 id="198-training-reproducibility">19.8 Training Reproducibility<a class="headerlink" href="#198-training-reproducibility" title="Permanent link">&para;</a></h2>
+<h2 id="198-training-reproducibility">19.8 训练再现性<a class="headerlink" href="#198-training-reproducibility" title="Permanent link">&para;</a></h2>
 <p>每次运行都会记录源修订、环境/容器摘要、Python/CUDA/框架版本、随机种子、数据集/本体版本、拆分清单、基本权重、架构、图像大小、纪元、优化器/计划、增强、用于报告的阈值以及输出工件校验和。存储人类可读的配置和机器可读的运行元数据。</p>
 <p>训练代码必须支持 CI 中合成装置的试运行。完整运行在受控 GPU 基础设施上执行，而不是在边缘设备上执行。模型工件是不可变的并链接到评估报告；重新训练不会覆盖已发布的语义版本。</p>
 <h2 id="199-detector-level-metrics">19.9 检测器级指标<a class="headerlink" href="#199-detector-level-metrics" title="Permanent link">&para;</a></h2>
 <p>对于产品和组件检测器报告：</p>
 <ul>
-<li>记录的 IoU 阈值的精度-召回率曲线和平均精度，包括 mAP50 和 mAP50-95（如果适用）。</li>
+<li>记录的 IoU 阈值的精确率-召回率曲线和平均精度，包括 mAP50 和 mAP50-95（如果适用）。</li>
 <li>每类精度、召回率、AP、支持度和置信度分布。</li>
 <li>在操作置信度/IoU 标准下产品检测成功。</li>
 <li>空/背景帧的错误检测。</li>
@@ -3468,22 +3468,22 @@
 <h2 id="1913-acceptance-evaluation">19.13 验收评估<a class="headerlink" href="#1913-acceptance-evaluation" title="Permanent link">&para;</a></h2>
 <p>客户验收集使用未用于培训、验证、阈值选择或内部测试调整的生产数据。该协议在运行前商定，并分别涵盖产品类型、每个缺少的组件/手册、条形码故障、允许的位置偏移、正常变化、连续/混合决策、离线操作、重新启动和长时间运行操作。</p>
 <p>每个结果都保留事实真相、决策、证据、图像/剪辑引用、模型/规则/产品版本、设备、时间戳和相关日志。主要指标是真实的 NG 召回率。在基线数据收集和风险审查之后，与客户一起确定数字验收目标和所需的样本量；本文件不构成任何保证。</p>
-<h2 id="1914-production-monitoring-and-retraining">19.14 生产监控和再培训<a class="headerlink" href="#1914-production-monitoring-and-retraining" title="Permanent link">&para;</a></h2>
+<h2 id="1914-production-monitoring-and-retraining">19.14 Production Monitoring and Retraining<a class="headerlink" href="#1914-production-monitoring-and-retraining" title="Permanent link">&para;</a></h2>
 <p>按版本和产品监控输入和结果信号：产品盒位置/尺寸、框架质量、置信度分布、条形码故障、不确定/NG率、组件原因、手动更正和延迟。漂移警报会触发调查，而不是自动重新训练或阈值更改。</p>
 <p>生产抽样必须包括经审查的不合格案例、低置信​​度案例、例外情况以及预测合格产品的随机/分层样本；仅审查预测的 NG 无法估计假阴性。策展人删除重复项、更正标签、保留来源并批准添加。再培训升级重复泄漏检查、锁定评估、兼容性检查、分阶段推出和回滚准备。</p>
 <h2 id="1915-model-promotion-gates">19.15 模型推广门<a class="headerlink" href="#1915-model-promotion-gates" title="Permanent link">&para;</a></h2>
 <p>仅当满足以下条件时才能发布候选人：</p>
 <ol>
 <li>工件、清单、数据集和评估校验和完整且可重现。</li>
-<li>所需的每个产品/每个组件分层具有足够的数据或记录的限制。</li>
+<li>所需的每个产品/每个组件层具有足够的数据或记录的限制。</li>
 <li>NG召回、假阴性计数、条形码/产品处理或延迟方面没有出现不可接受的回归。</li>
 <li>规则和类兼容性验证通过。</li>
 <li>内部测试结果由指定的工程/质量审批人员审核。</li>
 <li>根据需要完成现场/客户验收。</li>
 <li>确定推出和回滚版本。</li>
 </ol>
-<p>mAP 较好但产品级 NG 召回率较差的挑战者不会仅在 mAP 上得到推广。</p>
-<h2 id="1916-open-questions-and-validation-required">19.16 未决问题和需要验证<a class="headerlink" href="#1916-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<p>mAP 更好但产品级 NG 召回率更差的挑战者不会仅在 mAP 上得到推广。</p>
+<h2 id="1916-open-questions-and-validation-required">19.16 Open Questions and Validation Required<a class="headerlink" href="#1916-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>确认支持的产品/组件、预期缺陷发生率以及每个场景实际创建的 NG 产品的可行数量。</li>
 <li>确认图像、条形码和评论标签的生产许可、隐私、保留和传输规则。</li>
@@ -3492,7 +3492,7 @@
 <li>基线评估后建立客户接受度目标、置信度、样本量和<code>UNCERTAIN</code>的处理方法。</li>
 <li>确认代表性边缘 CPU/GPU、所需吞吐量、传送带时序和延迟预算。</li>
 <li>定义允许的相机位置/角度/曝光容差以及声明域更改的过程。</li>
-<li>确认生产正常审核抽样，以估计误报和模型漂移。</li>
+<li>确认生产正常审核抽样所需，以估计误报和模型漂移。</li>
 </ul>
 
 

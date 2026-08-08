@@ -1291,7 +1291,7 @@
   <a href="#23101-potential-missed-ng" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.10.1 Potential Missed NG
+        23.10.1 潜在的漏检 NG
       
     </span>
   </a>
@@ -1302,7 +1302,7 @@
   <a href="#23102-growing-upload-queue" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.10.2 Growing Upload Queue
+        23.10.2 不断增长的上传队列
       
     </span>
   </a>
@@ -2665,7 +2665,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -3134,7 +3134,7 @@
   <a href="#23101-potential-missed-ng" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.10.1 Potential Missed NG
+        23.10.1 潜在的漏检 NG
       
     </span>
   </a>
@@ -3145,7 +3145,7 @@
   <a href="#23102-growing-upload-queue" class="md-nav__link">
     <span class="md-ellipsis">
       
-        23.10.2 Growing Upload Queue
+        23.10.2 不断增长的上传队列
       
     </span>
   </a>
@@ -3234,25 +3234,25 @@
 
 <h1 id="23-observability-and-support">23. 可观察性和支持<a class="headerlink" href="#23-observability-and-support" title="Permanent link">&para;</a></h1>
 <h2 id="231-purpose-and-scope">23.1 目的和范围<a class="headerlink" href="#231-purpose-and-scope" title="Permanent link">&para;</a></h2>
-<p>Observability must explain inspection behavior, device health, synchronization state, and configuration provenance without requiring central connectivity for local diagnosis. Support procedures preserve production evidence and never turn an unavailable or ambiguous inspection into <code>OK</code>.</p>
+<p>可观察性必须解释检查行为、设备运行状况、同步状态和配置来源，而无需中央连接进行本地诊断。支持程序保留生产证据，并且决不会将不可用或不明确的检查变成<code>OK</code>。</p>
 <h3 id="2311-delivery-scope">23.1.1 交付范围<a class="headerlink" href="#2311-delivery-scope" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>MVP:</strong> structured local logs, per-stage timing, decision JSON, model/rule versions, and CLI health output.</li>
-<li><strong>One-month target:</strong> local health API/dashboard, persistent device events, queue/disk/camera metrics, central upload/device status for the pilot, correlation identifiers, and a bounded diagnostic bundle.</li>
-<li><strong>Production target:</strong> alert routing, service objectives agreed from baseline data, runbooks, clock monitoring, controlled remote diagnostics, and version-segmented quality dashboards.</li>
-<li><strong>Future scope:</strong> OpenTelemetry tracing across fleet services and integration with customer monitoring platforms.</li>
+<li><strong>MVP：</strong> 结构化本地日志、每阶段计时、决策 JSON、模型/规则版本和 CLI 运行状况输出。</li>
+<li><strong>一个月目标：</strong>本地运行状况 API/仪表板、持久设备事件、队列/磁盘/摄像头指标、试点的中央上传/设备状态、相关标识符和有界诊断包。</li>
+<li><strong>生产目标：</strong>警报路由、根据基线数据商定的服务目标、运行手册、时钟监控、受控远程诊断和版本分段质量仪表板。</li>
+<li><strong>未来范围：</strong> OpenTelemetry 跨车队服务跟踪以及与客户监控平台的集成。</li>
 </ul>
 <h2 id="232-observability-principles">23.2 可观察性原则<a class="headerlink" href="#232-observability-principles" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Local inspection observability remains available while offline.</li>
-<li>An inspection ID correlates frames, decision, media, upload tasks, receipt, and manual review.</li>
-<li>Logs and metrics distinguish application, model, rule, product, line, and device versions.</li>
-<li>Health endpoints describe software readiness; they do not replace physical verification of camera framing, lighting, focus, or line behavior.</li>
-<li>Telemetry is bounded and subject to retention so it cannot exhaust the edge disk.</li>
-<li>Barcodes, images, credentials, and customer identifiers are minimized or redacted according to policy.</li>
+<li>离线时本地检查可观察性仍然可用。</li>
+<li>检查 ID 将框架、决策、媒体、上传任务、收据和人工审核关联起来。</li>
+<li>日志和指标区分应用程序、模型、规则、产品、产品线和设备版本。</li>
+<li>健康端点描述软件准备情况；它们不能取代相机取景、照明、焦点或线条行为的物理验证。</li>
+<li>遥测是有界的并受到保留，因此它不能耗尽边缘磁盘。</li>
+<li>根据政策最小化或编辑条形码、图像、凭证和客户标识符。</li>
 </ol>
 <h2 id="233-structured-logs">23.3 结构化日志<a class="headerlink" href="#233-structured-logs" title="Permanent link">&para;</a></h2>
-<p>JSON logs use UTC timestamps and stable event names. Recommended fields are:</p>
+<p>JSON 日志使用 UTC 时间戳和稳定的事件名称。推荐字段有：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-08-04T10:15:31.412Z&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;warning&quot;</span><span class="p">,</span>
@@ -3269,32 +3269,32 @@
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span><span class="nt">&quot;retry_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-08-04T10:16:04Z&quot;</span>
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="p">}</span>
 </code></pre></div>
-<p>Do not log credentials, authorization headers, full image bytes, or arbitrary exception payloads. Full barcode values are logged only when approved; otherwise store a masked value or stable restricted-access reference. Tracebacks are retained locally with access controls and summarized centrally.</p>
+<p>不记录凭据、授权标头、完整图像字节或任意异常负载。仅在获得批准后才会记录完整的条形码值；否则存储屏蔽值或稳定的限制访问引用。回溯通过访问控制保留在本地并集中汇总。</p>
 <h2 id="234-metrics">23.4 指标<a class="headerlink" href="#234-metrics" title="Permanent link">&para;</a></h2>
 <h3 id="2341-edge-health-and-workload">23.4.1 边缘健康状况和工作负载<a class="headerlink" href="#2341-edge-health-and-workload" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Camera connection, frame age, acquisition failures, exposure/configuration deviation, and reconnect count.</li>
-<li>Product windows opened/completed/aborted and ambiguous/multiple-product counts.</li>
-<li>Product detections, ROI failures, barcode reads/failures, and unusable frames.</li>
-<li>Decisions by <code>OK</code>, <code>NG</code>, optional <code>UNCERTAIN</code>, and reason code.</li>
-<li>Stage latency and total durable-decision latency distributions.</li>
-<li>CPU/GPU utilization, inference memory, temperature where available, process memory, disk space/inodes, database size, and file-descriptor use.</li>
-<li>Upload queue depth/bytes/oldest age, retry count, terminal failures, and receipt latency.</li>
-<li>Active application, model, rule, product-configuration versions and their checksums.</li>
+<li>相机连接、帧龄、采集失败、曝光/配置偏差和重新连接计数。</li>
+<li>产品窗口打开/完成/中止以及不明确/多个产品计数。</li>
+<li>产品检测、ROI 失败、条形码读取/失败以及不可用的框架。</li>
+<li>由<code>OK</code>、<code>NG</code>、可选<code>UNCERTAIN</code>和原因代码做出的决定。</li>
+<li>阶段延迟和总持久决策延迟分布。</li>
+<li>CPU/GPU 利用率、推理内存、可用温度、进程内存、磁盘空间/索引节点、数据库大小和文件描述符使用。</li>
+<li>上传队列深度/字节/最旧年龄、重试计数、终端故障和接收延迟。</li>
+<li>活动应用程序、模型、规则、产品配置版本及其校验和。</li>
 </ul>
 <h3 id="2342-central-and-quality-metrics">23.4.2 中心指标和质量指标<a class="headerlink" href="#2342-central-and-quality-metrics" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Ingestion request outcomes, duplicate receipts, checksum failures, and processing backlog.</li>
-<li>Device last seen, queue delay, clock offset estimate, and version compliance.</li>
-<li>NG recall, false-negative estimate, false-positive rate, and review correction rate where reviewed ground truth exists.</li>
-<li>Per-product, per-component, per-model, and per-rule segmentation.</li>
-<li>Review queue depth/age and reviewer turnaround.</li>
-<li>API latency/error rate, database saturation, object-store failures, and worker backlog.</li>
+<li>摄取请求结果、重复收据、校验和失败以及处理积压。</li>
+<li>设备上次查看、队列延迟、时钟偏移估计和版本合规性。</li>
+<li>NG 召回率、假阴性估计、假阳性率以及存在审查的基本事实的审查纠正率。</li>
+<li>按产品、按组件、按模型和按规则细分。</li>
+<li>审核队列深度/年龄和审核者周转时间。</li>
+<li>API 延迟/错误率、数据库饱和度、对象存储故障和工作人员积压。</li>
 </ul>
-<p>Metric labels must avoid unbounded values such as inspection ID or barcode. Those belong in logs/traces.</p>
+<p>公制标签必须避免使用无界值，例如检验 ID 或条形码。这些属于日志/痕迹。</p>
 <h2 id="235-health-model">23.5 健康模型<a class="headerlink" href="#235-health-model" title="Permanent link">&para;</a></h2>
-<p><code>/api/v1/health/live</code> reports whether the process can answer. <code>/api/v1/health/ready</code> reports whether decision-critical local dependencies permit valid inspection. Authenticated <code>/api/v1/device/status</code> reports camera, model, rule, disk, database, clock, network, central connectivity, <code>inspection_ready</code>, and <code>sync_ready</code> states.</p>
-<p>The decision runtime inside <code>edge-service</code> is not ready when it cannot durably record decisions, has no compatible active model/rule, or has no usable camera. Central connectivity alone does not make it unready. The dashboard presents <code>healthy</code>, <code>degraded</code>, and <code>unavailable</code> with reason codes and timestamps rather than a single green indicator.</p>
+<p><code>/api/v1/health/live</code> 报告进程是否可以应答。 <code>/api/v1/health/ready</code> 报告决策关键本地依赖项是否允许有效检查。经过身份验证的 <code>/api/v1/device/status</code> 报告摄像头、型号、规则、磁盘、数据库、时钟、网络、中央连接、<code>inspection_ready</code> 和 <code>sync_ready</code> 状态。</p>
+<p>当 <code>edge-service</code> 内的决策运行时无法持久记录决策、没有兼容的活动模型/规则或没有可用的相机时，它还没有准备好。仅靠中央连接并不意味着它尚未准备好。仪表板显示 <code>healthy</code>、<code>degraded</code> 和 <code>unavailable</code> 以及原因代码和时间戳，而不是单个绿色指示器。</p>
 <h2 id="236-events-and-traceability">23.6 事件和可追溯性<a class="headerlink" href="#236-events-and-traceability" title="Permanent link">&para;</a></h2>
 <p>设备事件是摄像机转换、检查暂停/恢复、磁盘阈值、配置激活、模型/规则激活、上传失败、时钟异常、启动/关闭和恢复的持久记录。中央接收保留源事件时间和中央接收时间。</p>
 <p>每个检查轨迹都会回答：</p>
@@ -3346,7 +3346,7 @@
 </table>
 <p>响应和解决时间是需要商定的合同值，而不是在此架构中发明的。</p>
 <h2 id="2310-operational-runbooks">23.10 操作手册<a class="headerlink" href="#2310-operational-runbooks" title="Permanent link">&para;</a></h2>
-<h3 id="23101-potential-missed-ng">23.10.1 Potential Missed NG<a class="headerlink" href="#23101-potential-missed-ng" title="Permanent link">&para;</a></h3>
+<h3 id="23101-potential-missed-ng">23.10.1 潜在的漏检 NG<a class="headerlink" href="#23101-potential-missed-ng" title="Permanent link">&para;</a></h3>
 <ol>
 <li>保存检查、相邻证据、有效版本、日志和审查记录。</li>
 <li>确定受影响的产品/组件/版本/时间/设备范围。
@@ -3355,7 +3355,7 @@
 <li>纠正groundtruth，添加锁定的回归案例，并决定是否需要规则/配置回滚或模型修复。</li>
 <li>记录遏制、根本原因、受影响的检查和发布验证。</li>
 </ol>
-<h3 id="23102-growing-upload-queue">23.10.2 Growing Upload Queue<a class="headerlink" href="#23102-growing-upload-queue" title="Permanent link">&para;</a></h3>
+<h3 id="23102-growing-upload-queue">23.10.2 不断增长的上传队列<a class="headerlink" href="#23102-growing-upload-queue" title="Permanent link">&para;</a></h3>
 <ol>
 <li>确认本地检查和持久队列健康状况。</li>
 <li>检查网络、DNS、TLS、凭据、中央 API、对象存储和代理限制。</li>
@@ -3365,31 +3365,31 @@
 </ol>
 <h3 id="23103-repeated-process-restart">23.10.3 重复进程重启<a class="headerlink" href="#23103-repeated-process-restart" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Keep the line in a safe unavailable/degraded state and preserve restart counters.</li>
-<li>Inspect exit code, resource exhaustion, driver state, database integrity, and last event.</li>
-<li>Disable automatic restart loops after the configured threshold.</li>
-<li>Recover the failing dependency or roll back the release.</li>
-<li>Run camera and known-sample checks before resuming.</li>
+<li>使线路保持安全的不可用/降级状态并保留重启计数器。</li>
+<li>检查退出代码、资源耗尽、驱动程序状态、数据库完整性和最后事件。</li>
+<li>在配置的阈值之后禁用自动重启循环。</li>
+<li>恢复失败的依赖项或回滚版本。</li>
+<li>在恢复之前运行相机和已知样本检查。</li>
 </ol>
 <h3 id="23104-clock-drift">23.10.4 时钟漂移<a class="headerlink" href="#23104-clock-drift" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Compare edge wall time with the approved time source and central receive times.</li>
-<li>Preserve monotonic sequence and source timestamps; do not rewrite historical records.</li>
-<li>Restore time synchronization without unsafe abrupt changes where the platform supports gradual correction.</li>
-<li>Mark affected records and verify product-window ordering and upload reconciliation.</li>
+<li>将边缘墙时间与批准的时间源和中心接收时间进行比较。</li>
+<li>保留单调序列和源时间戳；不要重写历史记录。</li>
+<li>恢复时间同步，避免不安全的突变，平台支持逐步校正。</li>
+<li>标记受影响的记录并验证产品窗口订购和上传核对。</li>
 </ol>
 <h2 id="2311-data-retention-for-telemetry">23.11 遥测数据保留<a class="headerlink" href="#2311-data-retention-for-telemetry" title="Permanent link">&para;</a></h2>
-<p>Logs rotate by size and age and reserve disk for inspection records. Metrics use bounded local history, then aggregate centrally when connected. Audit records have a longer customer-approved retention and are not silently deleted by ordinary log cleanup. Telemetry cleanup follows the same safeguard as media cleanup: pending evidence and records needed for upload/reconciliation are protected.</p>
+<p>日志按大小和寿命轮换，并为检查记录保留磁盘。指标使用有限的本地历史记录，然后在连接时集中聚合。审计记录具有经客户批准的更长保留期，并且不会通过普通日志清理默默删除。遥测清理遵循与媒体清理相同的保护措施：上传/协调所需的待决证据和记录受到保护。</p>
 <h2 id="2312-open-questions-and-validation-required">23.12 未解决的问题和需要验证<a class="headerlink" href="#2312-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Customer monitoring platform, alert channels, support hours, severity definitions, and escalation contacts.</li>
-<li>Production schedule signal needed to distinguish expected idle time from missing frames.</li>
-<li>Metric/alert thresholds after hardware and production baseline measurement.</li>
-<li>Local and central log, metric, audit, and diagnostic-bundle retention periods.</li>
-<li>Barcode/image data classification, redaction rules, and permission to export diagnostic evidence.</li>
-<li>Time synchronization source and acceptable clock offset.</li>
-<li>Whether remote support is permitted and which access/audit controls are mandatory.</li>
-<li>Contractual response objectives and responsibility boundaries for camera, network, host, and application failures.</li>
+<li>客户监控平台、警报渠道、支持时间、严重性定义和升级联系人。</li>
+<li>需要生产计划信号来区分预期空闲时间和丢失帧。</li>
+<li>硬件和生产基线测量后的指标/警报阈值。</li>
+<li>本地和中央日志、指标、审计和诊断包保留期。</li>
+<li>条形码/图像数据分类、编辑规则以及导出诊断证据的许可。</li>
+<li>时间同步源和可接受的时钟偏移。</li>
+<li>是否允许远程支持以及哪些访问/审核控制是强制性的。</li>
+<li>摄像机、网络、主机和应用程序故障的合同响应目标和责任边界。</li>
 </ul>
 <h2 id="2313-related-documents">23.13 相关文件<a class="headerlink" href="#2313-related-documents" title="Permanent link">&para;</a></h2>
 <ul>

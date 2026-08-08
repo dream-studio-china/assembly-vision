@@ -1121,7 +1121,7 @@
   <a href="#1715-mvp-and-later-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        17.15 MVP and Later Scope
+        17.15 MVP 及后续范围
       
     </span>
   </a>
@@ -1132,7 +1132,7 @@
   <a href="#1716-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        17.16 未决问题和需要验证
+        17.16 未解决的问题和需要验证
       
     </span>
   </a>
@@ -2603,7 +2603,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -3070,7 +3070,7 @@
   <a href="#1715-mvp-and-later-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        17.15 MVP and Later Scope
+        17.15 MVP 及后续范围
       
     </span>
   </a>
@@ -3081,7 +3081,7 @@
   <a href="#1716-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        17.16 未决问题和需要验证
+        17.16 未解决的问题和需要验证
       
     </span>
   </a>
@@ -3108,160 +3108,160 @@
   
 
 
-<h1 id="17-central-administration-dashboard">17. 中央管理仪表板<a class="headerlink" href="#17-central-administration-dashboard" title="Permanent link">&para;</a></h1>
+<h1 id="17-central-administration-dashboard">17. Central Administration Dashboard<a class="headerlink" href="#17-central-administration-dashboard" title="Permanent link">&para;</a></h1>
 <h2 id="171-purpose-and-boundary">17.1 目的和边界<a class="headerlink" href="#171-purpose-and-boundary" title="Permanent link">&para;</a></h2>
-<p>The central administration dashboard provides fleet-wide history, review, configuration, model lifecycle visibility, reporting, users, and audit. It does not execute production inspection and must not be a runtime dependency of an edge device.</p>
-<p>The Vue 3 application uses the central contracts in <a href="../15-rest-api-and-events/">REST API and Events</a>, schemas in <a href="../14-data-model-and-database/">Data Model and Database</a>, and evaluation semantics in <a href="../19-training-and-evaluation/">Training and Evaluation</a>.</p>
+<p>中央管理仪表板提供整个车队的历史记录、审查、配置、模型生命周期可见性、报告、用户和审计。它不执行生产检查，并且不能是边缘设备的运行时依赖项。</p>
+<p>Vue 3 应用程序使用 <a href="../15-rest-api-and-events/">REST API and Events</a> 中的中心契约、<a href="../14-data-model-and-database/">Data Model and Database</a> 中的架构以及 <a href="../19-training-and-evaluation/">Training and Evaluation</a> 中的求值语义。</p>
 <h2 id="172-roles-and-permissions">17.2 角色和权限<a class="headerlink" href="#172-roles-and-permissions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Capability</th>
-<th style="text-align: right;">Viewer</th>
-<th style="text-align: right;">Reviewer</th>
-<th style="text-align: right;">Config manager</th>
-<th style="text-align: right;">Fleet admin</th>
-<th style="text-align: right;">Org admin/auditor</th>
+<th>能力</th>
+<th style="text-align: right;">观众</th>
+<th style="text-align: right;">审稿人</th>
+<th style="text-align: right;">配置管理器</th>
+<th style="text-align: right;">车队管理员</th>
+<th style="text-align: right;">组织管理员/审核员</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Dashboard/history/media</td>
-<td style="text-align: right;">Yes</td>
-<td style="text-align: right;">Yes</td>
-<td style="text-align: right;">Yes</td>
-<td style="text-align: right;">Yes</td>
-<td style="text-align: right;">Yes</td>
+<td>仪表板/历史/媒体</td>
+<td style="text-align: right;">是的</td>
+<td style="text-align: right;">是的</td>
+<td style="text-align: right;">是的</td>
+<td style="text-align: right;">是的</td>
+<td style="text-align: right;">是的</td>
 </tr>
 <tr>
-<td>Submit review correction</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">Yes</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">Configurable</td>
+<td>提交审核更正</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">是的</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">可配置</td>
 </tr>
 <tr>
-<td>Draft/publish products and rules</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">Yes</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">Configurable</td>
+<td>起草/发布产品和规则</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">是的</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">可配置</td>
 </tr>
 <tr>
-<td>Register/publish model versions</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">Yes</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">Configurable</td>
+<td>注册/发布模型版本</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">是的</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">可配置</td>
 </tr>
 <tr>
-<td>Enroll/assign/disable devices</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">Yes</td>
-<td style="text-align: right;">Configurable</td>
+<td>注册/分配/禁用设备</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">是的</td>
+<td style="text-align: right;">可配置</td>
 </tr>
 <tr>
-<td>Manage users and roles</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">No</td>
-<td style="text-align: right;">Yes</td>
+<td>管理用户和角色</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">没有</td>
+<td style="text-align: right;">是的</td>
 </tr>
 <tr>
-<td>View audit logs/export sensitive data</td>
-<td style="text-align: right;">Explicit permission</td>
-<td style="text-align: right;">Explicit permission</td>
-<td style="text-align: right;">Explicit permission</td>
-<td style="text-align: right;">Explicit permission</td>
-<td style="text-align: right;">Yes</td>
+<td>查看审核日志/导出敏感数据</td>
+<td style="text-align: right;">明确许可</td>
+<td style="text-align: right;">明确许可</td>
+<td style="text-align: right;">明确许可</td>
+<td style="text-align: right;">明确许可</td>
+<td style="text-align: right;">是的</td>
 </tr>
 </tbody>
 </table>
-<p>The server enforces every permission and organization scope. Route guards improve usability but are not a security boundary. Sensitive exports and publication actions require recent authentication if the identity provider supports it.</p>
+<p>服务器强制执行每个权限和组织范围。路由防护提高了可用性，但不是安全边界。如果身份提供者支持，敏感导出和发布操作需要最近的身份验证。</p>
 <h2 id="173-navigation-and-pages">17.3 导航和页面<a class="headerlink" href="#173-navigation-and-pages" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Route</th>
-<th>Page</th>
-<th>Core functions</th>
+<th>路线</th>
+<th>页</th>
+<th>核心功能</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>/overview</code></td>
-<td>Fleet overview</td>
-<td>KPIs, business-result/latency trends, active alerts, device state, upload delay</td>
+<td>机队概览</td>
+<td>KPI、业务结果/延迟趋势、活动警报、设备状态、上传延迟</td>
 </tr>
 <tr>
-<td><code>/devices</code> and <code>/devices/:id</code></td>
-<td>Fleet management</td>
-<td>Site/line filtering, last seen, versions, assignment, event history</td>
+<td><code>/devices</code> 和 <code>/devices/:id</code></td>
+<td>车队管理</td>
+<td>站点/线路过滤、上次查看、版本、分配、事件历史记录</td>
 </tr>
 <tr>
-<td><code>/inspections</code> and <code>/inspections/:id</code></td>
-<td>Inspection history</td>
-<td>Cross-device search, evidence/media, version traceability, review status</td>
+<td><code>/inspections</code> 和 <code>/inspections/:id</code></td>
+<td>检查历史</td>
+<td>跨设备搜索、证据/媒体、版本溯源、审核状态</td>
 </tr>
 <tr>
 <td><code>/reviews</code></td>
-<td>NG review work queue</td>
-<td>Claim/open, compare evidence, append disposition/component corrections, submit reason</td>
+<td>NG审核工作队列</td>
+<td>索赔/公开、比较证据、附加处置/组件更正、提交原因</td>
 </tr>
 <tr>
 <td><code>/products</code></td>
-<td>Product management</td>
-<td>Stable products, immutable versions, barcode mappings, components</td>
+<td>产品管理</td>
+<td>稳定的产品、不可变的版本、条形码映射、组件</td>
 </tr>
 <tr>
 <td><code>/rules</code></td>
-<td>Rule management</td>
-<td>Draft, validate, compare, publish, assignment impact</td>
+<td>规则管理</td>
+<td>起草、验证、比较、发布、分配影响</td>
 </tr>
 <tr>
 <td><code>/models</code></td>
-<td>Model registry</td>
-<td>Manifest/artifacts, evaluation summary, lifecycle, compatibility</td>
+<td>模型注册</td>
+<td>清单/工件、评估摘要、生命周期、兼容性</td>
 </tr>
 <tr>
 <td><code>/reports</code></td>
-<td>Reports and exports</td>
-<td>Saved filters, asynchronous jobs, expiring downloads</td>
+<td>报告和出口</td>
+<td>已保存的过滤器、异步作业、过期下载</td>
 </tr>
 <tr>
 <td><code>/users</code></td>
-<td>Users and roles</td>
-<td>Organization assignments and least-privilege roles</td>
+<td>用户和角色</td>
+<td>组织分配和最低权限角色</td>
 </tr>
 <tr>
 <td><code>/audit</code></td>
-<td>Audit trail</td>
-<td>Actor/action/resource/time search and before/after detail</td>
+<td>审计追踪</td>
+<td>演员/动作/资源/时间搜索以及之前/之后的详细信息</td>
 </tr>
 </tbody>
 </table>
-<p>Site and line filters are persistent in the URL so views can be shared and revisited. The selected time zone is explicit; stored data remains UTC. The UI never silently changes metric filters between pages.</p>
+<p>站点和线路过滤器保留在 URL 中，因此可以共享和重新访问视图。所选择的时区是明确的；存储的数据仍为 UTC。 UI 绝不会默默地更改页面之间的指标过滤器。</p>
 <h2 id="174-fleet-overview">17.4 机队概览<a class="headerlink" href="#174-fleet-overview" title="Permanent link">&para;</a></h2>
-<p>The overview begins with data freshness and filter context, then presents:</p>
+<p>概述从数据新鲜度和过滤上下文开始，然后介绍：</p>
 <ul>
-<li>Total inspections and OK/NG/uncertain counts for the selected period.</li>
-<li>NG recall only when reviewed ground truth is sufficient; otherwise label it unavailable or preliminary.</li>
-<li>Outcome rate, barcode-read failure, product-detection failure, ROI failure, and manual correction rate.</li>
-<li>Average and P95 inspection latency, inspection throughput, upload delay, and oldest pending upload.</li>
-<li>Missing-component distribution by component and product.</li>
-<li>Model/rule-version comparison with sample counts and confidence intervals where applicable.</li>
-<li>Device state table showing ready, inspecting, paused, faulted, offline, last seen, disk state, active versions, and backlog.</li>
+<li>所选期间的总检查和合格/不合格/不确定计数。</li>
+<li>仅当审查的基本事实足够时才进行 NG 召回；否则将其标记为不可用或初步的。</li>
+<li>结果率、条码读取失败率、产品检测失败率、ROI 失败率和手动纠正率。</li>
+<li>平均和 P95 检查延迟、检查吞吐量、上传延迟和最早的待上传。</li>
+<li>按组件和产品划分的缺失组件分布。</li>
+<li>模型/规则版本与样本计数和置信区间（如果适用）的比较。</li>
+<li>设备状态表显示就绪、检查、暂停、故障、脱机、上次查看、磁盘状态、活动版本和积压。</li>
 </ul>
-<p>Charts must show numerator, denominator, sample count, time bucket, and active filters in tooltips or adjacent detail. “Accuracy” must not be the sole headline metric. Empty or delayed data is not plotted as zero.</p>
+<p>图表必须在工具提示或相邻细节中显示分子、分母、样本计数、时间段和活动过滤器。 “准确性”不能成为唯一的标题指标。空数据或延迟数据不会绘制为零。</p>
 <h2 id="175-device-management">17.5 设备管理<a class="headerlink" href="#175-device-management" title="Permanent link">&para;</a></h2>
-<p>The device list supports organization-authorized site, line, operational state, model/rule version, and last-seen filters. Device detail includes identity, enrollment/certificate status, desired versus reported configuration, health timeline, upload backlog, recent inspections, and events.</p>
-<p>Configuration assignment is a versioned desired-state operation:</p>
+<p>设备列表支持组织授权的站点、线路、运行状态、型号/规则版本和上次查看的过滤器。设备详细信息包括身份、注册/证书状态、所需配置与报告配置、运行状况时间表、上传积压、最近检查和事件。</p>
+<p>配置分配是一个版本化的期望状态操作：</p>
 <ol>
 <li>选择兼容的已发布产品/规则/模型包。</li>
 <li>显示类、运行时和产品版本兼容性验证。</li>
@@ -3278,7 +3278,7 @@
 <p>该队列优先考虑未解决的 NG/不确定案例，并可能支持产品/原因抽样。这并不意味着只有 AI 标记的 NG 案例才能建立假阴性表现；需要抽样合格审核和故意有缺陷的验收数据。</p>
 <p>审核流程：</p>
 <ol>
-<li>打开稳定的检查修订版并显示原始结果，无需修改。</li>
+<li>打开稳定的检验修订版并显示原始结果，无需修改。</li>
 <li>检查关键帧、ROI、带注释的图像、可选剪辑、组件证据和质量原因。
 3、选择人性化和元件修正；切勿重写机器字段。
 4.需要受控原因代码；允许有限制的评论。</li>
@@ -3303,43 +3303,43 @@
 <p>出版需要经过验证的工件和批准的评估记录。用户界面清楚地区分了离线检测器指标和产品级系统验收。它不得允许直接替换已发布版本下的工件。模型二进制上传使用分阶段对象存储、进度反馈、校验和验证和服务器端授权。</p>
 <p>自动化训练、超参数搜索和部署升级管道属于稍后的范围。初始模型注册和批准可以是受控的手动过程。</p>
 <h2 id="1710-reports-and-exports">17.10 报告和导出<a class="headerlink" href="#1710-reports-and-exports" title="Permanent link">&para;</a></h2>
-<p>Interactive dashboard queries remain bounded. Larger CSV/JSON reports run as asynchronous jobs because aggregation and file creation may exceed an HTTP request lifetime. A report captures filter snapshot, columns, requester, creation/expiry, row count, status, and failure code. Downloads use expiring URLs and are audited.</p>
-<p>Spreadsheet exports protect against formula injection by escaping cells beginning with spreadsheet control characters. Exports respect organization scope, permissions, retention, and barcode masking policy. Do not include raw media in tabular exports; use separately authorized evidence packages if required.</p>
+<p>交互式仪表板查询仍然受到限制。较大的 CSV/JSON 报告作为异步作业运行，因为聚合和文件创建可能会超出 HTTP 请求的生命周期。报告捕获过滤器快照、列、请求者、创建/到期、行计数、状态和失败代码。下载使用过期 URL 并进行审核。</p>
+<p>电子表格导出通过转义以电子表格控制字符开头的单元格来防止公式注入。导出尊重组织范围、权限、保留和条形码屏蔽策略。不要在表格导出中包含原始媒体；如果需要，使用单独授权的证据包。</p>
 <h2 id="1711-users-and-audit">17.11 用户和审计<a class="headerlink" href="#1711-users-and-audit" title="Permanent link">&para;</a></h2>
-<p>User management displays identity-provider status and organization roles. Role replacement requires optimistic concurrency and prevents removal of the final organization administrator. Device credentials are managed separately from human users.</p>
-<p>Audit search supports actor, action, resource, request ID, and bounded time. Before/after JSON is rendered as a safe structured diff with secret fields redacted. Audit records cannot be edited or deleted through the dashboard.</p>
+<p>用户管理显示身份提供者状态和组织角色。角色替换需要乐观并发并防止最终组织管理员被删除。设备凭证与人类用户分开管理。</p>
+<p>审核搜索支持参与者、操作、资源、请求 ID 和有限时间。 JSON 被渲染为带有秘密字段的安全结构化差异之前/之后。审计记录无法通过仪表板编辑或删除。</p>
 <h2 id="1712-frontend-architecture">17.12 前端架构<a class="headerlink" href="#1712-frontend-architecture" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>admin-web</code> owns routes, page composition, authorization directives, and central-specific stores.</li>
-<li>Generated API clients and domain schemas are shared; the detection viewer and basic status/UI primitives may be shared with edge.</li>
-<li>Pinia stores session, permissions, organization context, and small UI preferences. Query results use a request/query layer with cancellation and stale handling rather than a global mirrored database.</li>
-<li>ECharts adapters standardize empty values, sample counts, accessible descriptions, units, and timezone labels.</li>
-<li>Central WebSocket invalidates active device, inspection, review, and report queries. REST refresh is authoritative.</li>
-<li>Long filter values are serialized predictably in the URL; sensitive tokens and comments are never placed there.</li>
+<li><code>admin-web</code> 拥有路由、页面组合、授权指令和特定于中心的存储。</li>
+<li>生成的API客户端和域模式是共享的；检测查看器和基本状态/UI原语可以与边缘共享。</li>
+<li>Pinia 存储会话、权限、组织上下文和小型 UI 首选项。查询结果使用具有取消和过时处理功能的请求/查询层，而不是全局镜像数据库。</li>
+<li>ECharts 适配器标准化空值、样本计数、可访问的描述、单位和时区标签。</li>
+<li>中央 WebSocket 使活动设备、检查、审查和报告查询无效。 REST刷新是权威的。</li>
+<li>长过滤器值在 URL 中可预测地序列化；敏感标记和评论永远不会放在那里。</li>
 </ul>
 <h2 id="1713-performance-resilience-and-security">17.13 性能、弹性和安全性<a class="headerlink" href="#1713-performance-resilience-and-security" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Lazy-load route bundles, media viewer, and chart modules. Use server aggregation rather than downloading raw inspections to calculate charts.</li>
-<li>Cancel obsolete requests when filters change. Limit comparison series to avoid unreadable charts and expensive queries.</li>
-<li>Display data freshness and partial-result warnings. On WebSocket loss, polling may continue at a bounded interval.</li>
-<li>Apply CSP, CSRF protection for cookie sessions, output escaping, dependency pinning, and no third-party runtime CDN requirement.</li>
-<li>Prevent cross-tenant cache keys by including organization and authorization context. Clear query caches on organization/session change.</li>
-<li>Record security-sensitive actions and exports with request IDs. Never expose object-storage credentials or internal stack traces.</li>
+<li>延迟加载路由包、媒体查看器和图表模块。使用服务器聚合而不是下载原始检查来计算图表。</li>
+<li>当过滤器更改时取消过时的请求。限制比较系列以避免不可读的图表和昂贵的查询。</li>
+<li>显示数据新鲜度和部分结果警告。当 WebSocket 丢失时，轮询可能会以有限的时间间隔继续。</li>
+<li>对 cookie 会话应用 CSP、CSRF 保护、输出转义、依赖固定，并且无第三方运行时 CDN 要求。</li>
+<li>通过包含组织和授权上下文来防止跨租户缓存密钥。清除组织/会话更改的查询缓存。</li>
+<li>记录安全敏感操作并使用请求 ID 导出。切勿公开对象存储凭据或内部堆栈跟踪。</li>
 </ul>
 <h2 id="1714-testing-and-acceptance">17.14 测试与验收<a class="headerlink" href="#1714-testing-and-acceptance" title="Permanent link">&para;</a></h2>
-<p>Vitest covers permission matrices, metric formatting, timezone conversion, filters, diff rendering, and review validation. Component tests cover chart empty/partial states, large tables, media expiration, and conflicts. Playwright covers login/session expiry, organization isolation, inspection search/detail, concurrent review, product/rule publication validation, model registration, device assignment, report completion, role changes, and audit search.</p>
-<p>API contract tests verify the generated client against OpenAPI. Security tests attempt direct route/API access across roles and organizations. Performance tests use realistic cardinalities and verify bounded dashboard query latency; exact thresholds must be agreed after infrastructure sizing.</p>
-<h2 id="1715-mvp-and-later-scope">17.15 MVP and Later Scope<a class="headerlink" href="#1715-mvp-and-later-scope" title="Permanent link">&para;</a></h2>
-<p>One-month MVP: device overview/detail, inspection history/detail, basic NG review, product/rule listing and controlled version creation, simple model registry, basic summary charts, and audit capture. Reports, comprehensive user administration, staged rollouts, saved dashboard views, alert acknowledgements, and advanced model comparison can follow. The central dashboard is absent from the static train-and-inspect MVP.</p>
-<h2 id="1716-open-questions-and-validation-required">17.16 未决问题和需要验证<a class="headerlink" href="#1716-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<p>Vitest 涵盖权限矩阵、指标格式、时区转换、过滤器、差异渲染和审核验证。组件测试涵盖图表空/部分状态、大表、媒体过期和冲突。 Playwright 涵盖登录/会话到期、组织隔离、检查搜索/详细信息、并发审查、产品/规则发布验证、模型注册、设备分配、报告完成、角色更改和审核搜索。</p>
+<p>API 合约测试根据 OpenAPI 验证生成的客户端。安全测试尝试跨角色和组织进行直接路由/API 访问。性能测试使用实际基数并验证有界仪表板查询延迟；确定基础设施规模后，必须商定确切的阈值。</p>
+<h2 id="1715-mvp-and-later-scope">17.15 MVP 及后续范围<a class="headerlink" href="#1715-mvp-and-later-scope" title="Permanent link">&para;</a></h2>
+<p>一个月 MVP：设备概述/详细信息、检查历史记录/详细信息、基本 NG 审查、产品/规则列表和受控版本创建、简单模型注册、基本摘要图表和审核捕获。接下来是报告、全面的用户管理、分阶段部署、保存的仪表板视图、警报确认和高级模型比较。静态训练和检查 MVP 中没有中央仪表板。</p>
+<h2 id="1716-open-questions-and-validation-required">17.16 未解决的问题和需要验证<a class="headerlink" href="#1716-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>确认组织/站点/线路层次结构、租户模型和跨组织支持角色。</li>
-<li>选择 OIDC 提供商、MFA/升级要求、会话持续时间和角色审批流程。</li>
-<li>就仪表板指标定义、时区、刷新频率和可接受的查询延迟达成一致。</li>
-<li>确认手动审核原因分类、OK 审核的抽样政策以及审核者分配/声明规则。</li>
-<li>确认报告格式、屏蔽、最大范围、保留和批准要求。</li>
-<li>定义模型发布审批者和设备分配之前所需的证据。</li>
-<li>确认配置推出是否需要维护时段或在 MVP 中立即进行设备轮询。</li>
+<li>Confirm organization/site/line hierarchy, tenant model, and cross-organization support roles.</li>
+<li>Select OIDC provider, MFA/step-up requirements, session duration, and role approval process.</li>
+<li>Agree dashboard metric definitions, time zones, refresh frequency, and acceptable query latency.</li>
+<li>Confirm manual-review reason taxonomy, sampling policy for OK audits, and reviewer assignment/claim rules.</li>
+<li>Confirm report formats, masking, maximum ranges, retention, and approval requirements.</li>
+<li>Define model publication approvers and evidence required before device assignment.</li>
+<li>Confirm whether configuration rollout needs maintenance windows or immediate device polling in the MVP.</li>
 </ul>
 
 

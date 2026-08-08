@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/runbooks/04-upload-backlog/">
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/design/decisions/ADR-012-edge-api-m1-viewer-auth/">
       
       
-        <link rel="prev" href="../03-low-disk-space/">
-      
-      
-        <link rel="next" href="../05-database-recovery/">
       
       
         
@@ -26,19 +22,19 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>上传积压 - AssemblyVision</title>
+        <title>ADR-012: Edge API M1 Viewer Authentication and Read-Only Boundary - AssemblyVision</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -57,7 +53,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,8 +78,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#runbook-04-upload-backlog" class="md-skip">
-          跳转至
+        <a href="#adr-012-edge-api-m1-viewer-authentication-and-read-only-boundary" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -97,8 +93,8 @@
   
 
 <header class="md-header md-header--shadow" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -118,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              上传积压
+              ADR-012: Edge API M1 Viewer Authentication and Read-Only Boundary
             
           </span>
         </div>
@@ -158,7 +154,7 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
@@ -192,16 +188,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -214,7 +210,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -226,7 +222,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -260,9 +256,9 @@
 
 
 
-<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+    <a href="../../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -272,7 +268,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -292,14 +288,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    首页
+    Home
   
 
     
@@ -319,14 +315,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../source-brief/" class="md-nav__link">
+      <a href="../../../source-brief/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    原始需求
+    Source Brief
   
 
     
@@ -371,7 +367,7 @@
   <span class="md-ellipsis">
     
   
-    架构设计
+    Architecture Design
   
 
     
@@ -387,7 +383,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    架构设计
+    Architecture Design
   
 
           </label>
@@ -400,14 +396,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/" class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    设计索引
+    Design Index
   
 
     
@@ -428,14 +424,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+      <a href="../../00-cover-and-status/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    封面与状态
+    Cover and Status
   
 
     
@@ -456,14 +452,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/01-introduction/" class="md-nav__link">
+      <a href="../../01-introduction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    简介
+    Introduction
   
 
     
@@ -484,14 +480,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/02-requirements/" class="md-nav__link">
+      <a href="../../02-requirements/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    需求
+    Requirements
   
 
     
@@ -512,14 +508,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+      <a href="../../03-architecture-overview/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    架构概览
+    Architecture Overview
   
 
     
@@ -540,14 +536,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+      <a href="../../04-edge-client-architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    边缘端架构
+    Edge Client Architecture
   
 
     
@@ -568,14 +564,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+      <a href="../../05-central-server-architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    中心端架构
+    Central Server Architecture
   
 
     
@@ -596,14 +592,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+      <a href="../../06-ai-detection-pipeline/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    AI 检测流水线
+    AI Detection Pipeline
   
 
     
@@ -624,14 +620,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+      <a href="../../07-camera-and-image-acquisition/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    相机与图像采集
+    Camera and Image Acquisition
   
 
     
@@ -652,14 +648,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+      <a href="../../08-product-detection-and-roi/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    产品检测与 ROI
+    Product Detection and ROI
   
 
     
@@ -680,14 +676,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/09-component-detection/" class="md-nav__link">
+      <a href="../../09-component-detection/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    组件检测
+    Component Detection
   
 
     
@@ -708,14 +704,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+      <a href="../../10-temporal-aggregation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    时序聚合
+    Temporal Aggregation
   
 
     
@@ -736,14 +732,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/11-rule-engine/" class="md-nav__link">
+      <a href="../../11-rule-engine/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    规则引擎
+    Rule Engine
   
 
     
@@ -764,14 +760,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+      <a href="../../12-local-storage-and-retention/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    本地存储与保留
+    Local Storage and Retention
   
 
     
@@ -792,14 +788,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+      <a href="../../13-upload-and-synchronization/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    上传与同步
+    Upload and Synchronization
   
 
     
@@ -820,14 +816,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+      <a href="../../14-data-model-and-database/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    数据模型与数据库
+    Data Model and Database
   
 
     
@@ -848,14 +844,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+      <a href="../../15-rest-api-and-events/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    REST API 与事件
+    REST API and Events
   
 
     
@@ -876,14 +872,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+      <a href="../../16-edge-dashboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    边缘端看板
+    Edge Dashboard
   
 
     
@@ -904,14 +900,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+      <a href="../../17-central-admin-dashboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    中心管理看板
+    Central Admin Dashboard
   
 
     
@@ -932,14 +928,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+      <a href="../../18-monorepo-and-code-organization/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Monorepo 与代码组织
+    Monorepo and Code Organization
   
 
     
@@ -960,14 +956,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+      <a href="../../19-training-and-evaluation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    训练与评估
+    Training and Evaluation
   
 
     
@@ -988,14 +984,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+      <a href="../../20-deployment-and-operations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    部署与运维
+    Deployment and Operations
   
 
     
@@ -1016,14 +1012,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+      <a href="../../21-security-and-source-distribution/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    安全与源码分发
+    Security and Source Distribution
   
 
     
@@ -1044,14 +1040,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+      <a href="../../22-testing-and-quality-assurance/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    测试与质量保证
+    Testing and Quality Assurance
   
 
     
@@ -1072,14 +1068,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+      <a href="../../23-observability-and-support/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    可观测性与支持
+    Observability and Support
   
 
     
@@ -1100,14 +1096,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+      <a href="../../24-human-in-the-loop/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    人在回路
+    Human in the Loop
   
 
     
@@ -1128,14 +1124,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/25-roadmap/" class="md-nav__link">
+      <a href="../../25-roadmap/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    路线图
+    Roadmap
   
 
     
@@ -1156,14 +1152,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+      <a href="../../26-customer-acceptance/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    客户验收
+    Customer Acceptance
   
 
     
@@ -1184,14 +1180,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+      <a href="../../27-risks-and-mitigations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    风险与缓解
+    Risks and Mitigations
   
 
     
@@ -1212,14 +1208,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/appendices/" class="md-nav__link">
+      <a href="../../appendices/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    附录
+    Appendices
   
 
     
@@ -1262,7 +1258,7 @@
   <span class="md-ellipsis">
     
   
-    架构决策
+    Architecture Decisions
   
 
     
@@ -1278,7 +1274,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    架构决策
+    Architecture Decisions
   
 
           </label>
@@ -1291,14 +1287,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR 索引
+    ADR Index
   
 
     
@@ -1319,14 +1315,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+      <a href="../ADR-001-edge-first-inspection/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-001：边缘优先检测
+    ADR-001: Edge-First Inspection
   
 
     
@@ -1347,14 +1343,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
+      <a href="../ADR-002-python-backend/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-002：Python 后端
+    ADR-002: Python Backend
   
 
     
@@ -1375,14 +1371,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+      <a href="../ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-003：Vue 3 与 TypeScript 前端
+    ADR-003: Vue 3 and TypeScript Frontend
   
 
     
@@ -1403,14 +1399,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+      <a href="../ADR-004-two-stage-detection/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-004：两阶段检测
+    ADR-004: Two-Stage Detection
   
 
     
@@ -1431,14 +1427,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+      <a href="../ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-005：本地优先存储与延迟上传
+    ADR-005: Local-First Storage and Delayed Upload
   
 
     
@@ -1459,14 +1455,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+      <a href="../ADR-006-rest-plus-websocket/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-006：REST 与 WebSocket
+    ADR-006: REST Plus WebSocket
   
 
     
@@ -1487,14 +1483,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
+      <a href="../ADR-007-monorepo/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-007：Monorepo
+    ADR-007: Monorepo
   
 
     
@@ -1515,14 +1511,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
+      <a href="../ADR-008-docker-deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-008：Docker 部署
+    ADR-008: Docker Deployment
   
 
     
@@ -1543,14 +1539,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+      <a href="../ADR-009-static-image-first-mvp/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-009：静态图像优先 MVP
+    ADR-009: Static-Image-First MVP
   
 
     
@@ -1571,14 +1567,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+      <a href="../ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-010：按组件时序聚合
+    ADR-010: Per-Component Temporal Aggregation
   
 
     
@@ -1599,14 +1595,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+      <a href="../ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-011：标记为训练和检查 MVP
+    ADR-011: Labeled Train-and-Inspect MVP
   
 
     
@@ -1667,7 +1663,7 @@
   <span class="md-ellipsis">
     
   
-    工程合同
+    Engineering Contracts
   
 
     
@@ -1683,7 +1679,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    工程合同
+    Engineering Contracts
   
 
           </label>
@@ -1696,14 +1692,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/" class="md-nav__link">
+      <a href="../../../contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    合同索引
+    Contract Index
   
 
     
@@ -1724,14 +1720,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/01-architecture-boundaries/" class="md-nav__link">
+      <a href="../../../contracts/01-architecture-boundaries/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    架构边界
+    Architecture Boundaries
   
 
     
@@ -1752,14 +1748,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
+      <a href="../../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    代码与接口合同
+    Code and Interface Contracts
   
 
     
@@ -1780,14 +1776,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
+      <a href="../../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    AI、规则引擎与故障安全合同
+    AI, Rule Engine, and Fail-Safe Contracts
   
 
     
@@ -1808,14 +1804,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
+      <a href="../../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    边缘端、存储与上传合同
+    Edge, Storage, and Upload Contracts
   
 
     
@@ -1836,14 +1832,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
+      <a href="../../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    数据、API 与版本合同
+    Data, API, and Versioning Contracts
   
 
     
@@ -1864,14 +1860,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
+      <a href="../../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    测试、质量与 CI 合同
+    Testing, Quality, and CI Contracts
   
 
     
@@ -1892,14 +1888,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
+      <a href="../../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    部署、可观测性与运维
+    Deployment, Observability, and Operations
   
 
     
@@ -1920,14 +1916,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
+      <a href="../../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    安全、权限与审计
+    Security, Permissions, and Audit
   
 
     
@@ -1948,14 +1944,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
+      <a href="../../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    工业现场与变更控制
+    Industrial Site and Change Control
   
 
     
@@ -1976,14 +1972,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
+      <a href="../../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    模型、规则、发布与验收
+    Model, Rule, Release, and Acceptance
   
 
     
@@ -2004,14 +2000,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
+      <a href="../../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    最低强制合同
+    Minimum Mandatory Contracts
   
 
     
@@ -2036,8 +2032,6 @@
       
   
   
-    
-  
   
   
     
@@ -2050,11 +2044,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
@@ -2064,7 +2060,7 @@
   <span class="md-ellipsis">
     
   
-    运维手册
+    Operational Runbooks
   
 
     
@@ -2075,12 +2071,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
-    运维手册
+    Operational Runbooks
   
 
           </label>
@@ -2093,14 +2089,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../../runbooks/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    运行手册索引
+    Runbook Index
   
 
     
@@ -2121,14 +2117,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../01-camera-disconnection/" class="md-nav__link">
+      <a href="../../../runbooks/01-camera-disconnection/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    相机断开
+    Camera Disconnection
   
 
     
@@ -2149,14 +2145,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../02-model-loading-failure/" class="md-nav__link">
+      <a href="../../../runbooks/02-model-loading-failure/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    模型加载失败
+    Model-Loading Failure
   
 
     
@@ -2177,161 +2173,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../03-low-disk-space/" class="md-nav__link">
+      <a href="../../../runbooks/03-low-disk-space/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    磁盘空间不足
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    上传积压
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    上传积压
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#trigger" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        扳机
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#immediate-safety-action" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        立即采取安全行动
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#recovery" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        恢复
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exit-criteria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        退出标准
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../05-database-recovery/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    数据库恢复
+    Low Disk Space
   
 
     
@@ -2352,14 +2201,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../06-repeated-container-restart/" class="md-nav__link">
+      <a href="../../../runbooks/04-upload-backlog/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    容器反复重启
+    Upload Backlog
   
 
     
@@ -2380,14 +2229,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../07-network-recovery-synchronization/" class="md-nav__link">
+      <a href="../../../runbooks/05-database-recovery/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    网络恢复同步
+    Database Recovery
   
 
     
@@ -2408,14 +2257,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../08-model-rollback/" class="md-nav__link">
+      <a href="../../../runbooks/06-repeated-container-restart/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    模型回滚
+    Repeated Container Restart
   
 
     
@@ -2436,14 +2285,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../09-rule-rollback/" class="md-nav__link">
+      <a href="../../../runbooks/07-network-recovery-synchronization/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    规则回滚
+    Network Recovery Synchronization
   
 
     
@@ -2464,14 +2313,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../10-model-improvement/" class="md-nav__link">
+      <a href="../../../runbooks/08-model-rollback/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    模型改进
+    Model Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/09-rule-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
   
 
     
@@ -2524,7 +2429,7 @@
   <span class="md-ellipsis">
     
   
-    调研
+    Research
   
 
     
@@ -2540,7 +2445,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    调研
+    Research
   
 
           </label>
@@ -2553,14 +2458,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+      <a href="../../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    工业检测成功率
+    Industrial Inspection Success Rates
   
 
     
@@ -2581,14 +2486,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+      <a href="../../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    YOLO 能力与成功率
+    YOLO Capabilities and Success Rates
   
 
     
@@ -2609,14 +2514,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+      <a href="../../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    成像流程与训练成本
+    Imaging Workflow and Training Cost
   
 
     
@@ -2669,7 +2574,7 @@
   <span class="md-ellipsis">
     
   
-    贡献者文档
+    Contributor Documentation
   
 
     
@@ -2685,7 +2590,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    贡献者文档
+    Contributor Documentation
   
 
           </label>
@@ -2698,14 +2603,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/" class="md-nav__link">
+      <a href="../../../contributing/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    贡献指南
+    Contributing
   
 
     
@@ -2726,14 +2631,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ai/context/" class="md-nav__link">
+      <a href="../../../ai/context/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    AI 上下文快照
+    AI Context Snapshot
   
 
     
@@ -2767,7 +2672,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -2776,15 +2681,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#trigger" class="md-nav__link">
+  <a href="#1-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        扳机
+        1. Status
       
     </span>
   </a>
@@ -2792,10 +2697,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#immediate-safety-action" class="md-nav__link">
+  <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        立即采取安全行动
+        2. Context
       
     </span>
   </a>
@@ -2803,10 +2708,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recovery" class="md-nav__link">
+  <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        恢复
+        3. Decision
       
     </span>
   </a>
@@ -2814,10 +2719,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exit-criteria" class="md-nav__link">
+  <a href="#4-consequences" class="md-nav__link">
     <span class="md-ellipsis">
       
-        退出标准
+        4. Consequences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Consequences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-positive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Positive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-negative-and-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Negative and Trade-offs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-open-questions-and-validation-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Open Questions and Validation Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Links
       
     </span>
   </a>
@@ -2844,22 +2799,87 @@
   
 
 
-<h1 id="runbook-04-upload-backlog">运行手册 04：上传积压工作<a class="headerlink" href="#runbook-04-upload-backlog" title="Permanent link">&para;</a></h1>
-<h2 id="trigger">扳机<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
-<p>队列计数/字节、最早的挂起期限、重试率或永久故障超过批准的阈值。</p>
-<h2 id="immediate-safety-action">立即采取安全行动<a class="headerlink" href="#immediate-safety-action" title="Permanent link">&para;</a></h2>
+<h1 id="adr-012-edge-api-m1-viewer-authentication-and-read-only-boundary">ADR-012: Edge API M1 Viewer Authentication and Read-Only Boundary<a class="headerlink" href="#adr-012-edge-api-m1-viewer-authentication-and-read-only-boundary" title="Permanent link">&para;</a></h1>
+<h2 id="1-status">1. Status<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
+<p>Accepted</p>
+<h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
+<p>The read-only M1 edge API (<code>assemblyvision serve</code>, <code>/api/v1</code>) serves inspection
+history, media, configuration, and logs to the locally served dashboard.
+Design 15.2.1 requires that mutating routes need <code>operator</code> or <code>edge_admin</code>
+roles and explicitly states that localhost binding is not authentication.
+Contract 08 requires backend enforcement and forbids treating hidden UI buttons
+as an authorization boundary.</p>
+<p>A full offline edge-session implementation (credential issuance, validation,
+expiry, refresh, role model, CSRF protection) is a production milestone and is
+not required for the M1 read-only integration demonstrator. However, shipping an
+unauthenticated API with a wildcard CORS policy violates the accepted contracts
+and lets any reachable client read inspection data and any website issue
+cross-origin requests.</p>
+<h2 id="3-decision">3. Decision<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
+<p>For the M1 read-only edge API:</p>
 <ol>
-<li>确认当地检查已准备就绪，保护容量充足。</li>
-<li>不要删除排队的证据或增加工作线程的并发性，以免导致推理不足。</li>
-<li>对故障进行分类：连接、身份验证、服务器容量、模式、校验和或内容冲突。</li>
+<li><strong>No mutating routes are exposed.</strong> Pause/resume, camera reconnect, and
+   upload retry endpoints are removed and return <code>404</code>. UI controls for these
+   commands are removed or disabled. An inspection coordinator and operator
+   commands are a later milestone and will require the documented operator/admin
+   role model before activation.</li>
+<li><strong>Viewer authentication starts with a shared-secret bearer token</strong> configured via
+   <code>AV_EDGE_API_TOKEN</code> (or the <code>serve --api-token</code> argument). When configured,
+   every route except the deliberately minimal <code>GET /api/v1/health/live</code>
+   requires <code>Authorization: Bearer &lt;token&gt;</code> or a short-lived HttpOnly,
+   same-origin viewer-session cookie and returns <code>401 UNAUTHENTICATED</code>
+   otherwise. <code>POST /api/v1/auth/session</code> exchanges a valid bearer token for
+   that cookie; the served dashboard provides <code>/login</code> for this one-time entry,
+   so neither API JSON requests nor media <code>&lt;img&gt;</code> requests need the token in
+   browser-accessible storage. When no token is configured the service runs in
+   an explicit M1 development mode; this must never be presented as production
+   authentication.</li>
+<li><strong>CORS never uses <code>*</code>.</strong> Cross-origin requests are allowed only for anchored
+   loopback development origins (<code>localhost</code> / <code>127.0.0.1</code> on any port) so the
+   Vite dev server works; the served dashboard is same-origin and needs no CORS.
+   Loopback binding, CORS, and origin allowlists are not authentication.</li>
+<li><strong>The session mechanism is documented here</strong>; a full role-based edge session
+   (viewer/operator/edge-admin, expiry, CSRF protection, audit attribution) is
+   the production requirement recorded in the roadmap.</li>
 </ol>
-<h2 id="recovery">恢复<a class="headerlink" href="#recovery" title="Permanent link">&para;</a></h2>
-<p>1.修复依赖或凭证错误；保留原始幂等性密钥和有效负载哈希。
-2. 在有界并发、退避、抖动和带宽限制的情况下恢复。
-3. 隔离永久内容冲突；不要覆盖不可变的记录。
-4. 在标记任务<code>SUCCEEDED</code>之前核对中央收据。</p>
-<h2 id="exit-criteria">退出标准<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
-<p>积压工作不会重复，最旧的年龄返回低于阈值，并且永久故障有所有者。</p>
+<h2 id="4-consequences">4. Consequences<a class="headerlink" href="#4-consequences" title="Permanent link">&para;</a></h2>
+<h3 id="41-positive">4.1 Positive<a class="headerlink" href="#41-positive" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The read-only M1 API satisfies contract 08 backend enforcement and design
+  15.2.1's "do not treat localhost as authentication" requirement within its
+  scope.</li>
+<li>Removing M1 mutation endpoints eliminates unauthenticated control surface and
+  the false <code>paused_by = "operator"</code> attribution.</li>
+<li>Wildcard CORS is gone, so a browser on the management network cannot read
+  inspection data cross-origin.</li>
+<li>The token mechanism is small, deterministic, and directly testable.</li>
+</ul>
+<h3 id="42-negative-and-trade-offs">4.2 Negative and Trade-offs<a class="headerlink" href="#42-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Without a configured token the M1 API remains open to network clients that can
+  reach the service; this is a documented development-mode boundary, not
+  production authentication.</li>
+<li>A shared token is coarse: it provides viewer access but no per-actor
+  attribution or operator/admin separation. This is intentionally deferred to
+  the production edge-session milestone.</li>
+<li>The served dashboard requires one interactive bearer-token exchange when a
+  token is configured. The resulting session expires with the edge process or
+  after its bounded lifetime; no secret ships in frontend assets.</li>
+</ul>
+<h2 id="5-open-questions-and-validation-required">5. Open Questions and Validation Required<a class="headerlink" href="#5-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Select the offline edge-session mechanism (local operator login vs. provisioned
+  device credential), expiry, and emergency-pause authorization for production.</li>
+<li>Confirm whether inspection history beyond the current M1 scope requires the
+  central viewer role model at the edge.</li>
+</ul>
+<h2 id="6-links">6. Links<a class="headerlink" href="#6-links" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../ADR-006-rest-plus-websocket/">ADR-006: REST Plus WebSocket</a></li>
+<li><a href="../../15-rest-api-and-events/">REST API and Events</a></li>
+<li><a href="../../16-edge-dashboard/">Edge Dashboard</a></li>
+<li><a href="../../../contracts/08-security-permissions-and-audit/">Security, Permissions, and Audit</a></li>
+</ul>
 
 
 
@@ -2885,7 +2905,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -2917,10 +2937,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

@@ -2376,7 +2376,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -2895,85 +2895,85 @@
 
 <h1 id="pr-003-follow-up-review">PR-003 后续审查<a class="headerlink" href="#pr-003-follow-up-review" title="Permanent link">&para;</a></h1>
 <h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
-<p>This document records the actionable P1 and P2 findings remaining after the
-P0 fixes committed as <code>677c094</code>, <code>c23d831</code>, and <code>1618efb</code>.</p>
+<p>本文件记录了可操作的 P1 和 P2 发现后剩余的
+P0 修复已提交为 <code>677c094</code>、<code>c23d831</code> 和 <code>1618efb</code>。</p>
 <h2 id="p1-findings">P1 调查结果<a class="headerlink" href="#p1-findings" title="Permanent link">&para;</a></h2>
 <h3 id="model-manifest-immutability-is-incomplete">模型明显的不变性不完整<a class="headerlink" href="#model-manifest-immutability-is-incomplete" title="Permanent link">&para;</a></h3>
-<p><code>training/src/assemblyvision_training/artifact.py</code> permits an existing manifest
-to be overwritten when the semantic version and first artifact checksum match.
-The replacement can still change task, class order, input size, artifact URI,
-provenance, or other decision-critical metadata while retaining the same model
-version identity.</p>
-<p>Require canonical immutable manifest content to match before accepting an
-idempotent publication. Return the existing manifest without rewriting it when
-it matches; otherwise reject publication and require a new version. Add tests
-that retain the same weights while changing class order, task, and input size.</p>
-<p>Relevant references: <code>docs/contracts/08-security-permissions-and-audit.md</code>,
-<code>docs/contracts/10-model-rule-release-and-acceptance.md</code>, and
-<code>docs/design/19-training-and-evaluation.md</code>.</p>
+<p><code>training/src/assemblyvision_training/artifact.py</code> 允许现有清单
+当语义版本和第一个工件校验和匹配时被覆盖。
+替换仍然可以更改任务、类顺序、输入大小、工件 URI、
+出处或其他决策关键元数据，同时保留相同的模型
+版本标识。</p>
+<p>在接受之前要求规范的不可变清单内容匹配
+幂等发布。返回现有清单而不重写它
+它匹配；否则拒绝发布并要求新版本。添加测试
+在改变班级顺序、任务和输入大小的同时保留相同的权重。</p>
+<p>相关参考：<code>docs/contracts/08-security-permissions-and-audit.md</code>、
+<code>docs/contracts/10-model-rule-release-and-acceptance.md</code>，以及
+<code>docs/design/19-training-and-evaluation.md</code>。</p>
 <h3 id="runtime-inference-does-not-apply-declared-model-settings">运行时推理不应用声明的模型设置<a class="headerlink" href="#runtime-inference-does-not-apply-declared-model-settings" title="Permanent link">&para;</a></h3>
-<p><code>apps/edge-service/src/assemblyvision_edge/detection/product_detector.py</code> and
-<code>component_detector.py</code> call Ultralytics without the manifest input size or
-configured IoU and confidence settings. Runtime therefore depends on library
-defaults rather than the declared release configuration. In particular, default
-NMS can suppress overlapping products or components before exact-count rules
-run.</p>
-<p>Pass validated <code>imgsz</code>, <code>iou</code>, confidence, and device parameters explicitly.
-Persist the effective values as inference metadata and add adapter tests that
-assert the exact model invocation arguments.</p>
-<p>Relevant references: <code>docs/contracts/03-ai-rule-and-safety-contracts.md</code> and
-<code>docs/design/08-product-detection-and-roi.md</code>.</p>
+<p><code>apps/edge-service/src/assemblyvision_edge/detection/product_detector.py</code> 和
+<code>component_detector.py</code> 在没有清单输入大小的情况下调用 Ultralytics 或
+配置 IoU 和置信度设置。因此，运行时取决于库
+默认值而不是声明的发布配置。特别是，默认
+NMS 可以在精确计数规则之前抑制重叠的产品或组件
+跑。</p>
+<p>显式传递经过验证的 <code>imgsz</code>、<code>iou</code>、置信度和设备参数。
+将有效值保留为推理元数据并添加适配器测试
+断言确切的模型调用参数。</p>
+<p>相关参考：<code>docs/contracts/03-ai-rule-and-safety-contracts.md</code>和
+<code>docs/design/08-product-detection-and-roi.md</code>。</p>
 <h3 id="component-configuration-rule-and-manifest-sets-are-not-cross-validated">组件配置、规则和清单集未进行交叉验证<a class="headerlink" href="#component-configuration-rule-and-manifest-sets-are-not-cross-validated" title="Permanent link">&para;</a></h3>
-<p><code>apps/edge-service/src/assemblyvision_edge/cli.py</code> validates configured
-components against the manifest, but does not validate every rule-required
-component against runtime settings. A class present in the rule and manifest
-but absent from <code>config.components</code> reaches
-<code>ComponentDetector.detect()</code> and raises <code>KeyError</code> while accessing its
-threshold.</p>
-<p>Validate compatible component sets at startup and prevent inspection readiness
-for any mismatch. Add tests for each mismatch direction among the rule,
-component configuration, and manifest.</p>
-<p>Relevant references: <code>docs/contracts/03-ai-rule-and-safety-contracts.md</code> and
-<code>docs/contracts/05-data-api-and-versioning-contracts.md</code>.</p>
+<p><code>apps/edge-service/src/assemblyvision_edge/cli.py</code> 验证配置
+组件对照清单，但不验证每条所需的规则
+针对运行时设置的组件。规则和清单中存在的类
+但缺席 <code>config.components</code> 到达
+<code>ComponentDetector.detect()</code> 并在访问其时引发 <code>KeyError</code>
+阈值。</p>
+<p>在启动时验证兼容的组件集并防止检查准备就绪
+对于任何不匹配。为规则中的每个不匹配方向添加测试，
+组件配置和清单。</p>
+<p>相关参考：<code>docs/contracts/03-ai-rule-and-safety-contracts.md</code>和
+<code>docs/contracts/05-data-api-and-versioning-contracts.md</code>。</p>
 <h3 id="pipeline-does-not-validate-detection-provenance">Pipeline 不验证检测来源<a class="headerlink" href="#pipeline-does-not-validate-detection-provenance" title="Permanent link">&para;</a></h3>
-<p><code>apps/edge-service/src/assemblyvision_edge/pipeline.py</code> does not verify that
-product and component detections belong to the current frame, the loaded model,
-or the expected coordinate space before evidence is aggregated. The current
-test suite accepts random, unrelated frame IDs in successful pipeline tests.</p>
-<p>Validate frame IDs, model version IDs, image dimensions, and ROI/full-frame
-coordinate metadata at the pipeline boundary. Any mismatch must invalidate the
-inspection as <code>NG</code> and must not be converted into current-frame evidence.</p>
-<p>Relevant references: <code>docs/contracts/03-ai-rule-and-safety-contracts.md</code> and
-<code>docs/design/09-component-detection.md</code>.</p>
+<p><code>apps/edge-service/src/assemblyvision_edge/pipeline.py</code> 不验证
+产品和组件检测属于当前框架、加载的模型、
+或证据聚合之前的预期坐标空间。目前的
+测试套件在成功的管道测试中接受随机、不相关的帧 ID。</p>
+<p>验证帧 ID、模型版本 ID、图像尺寸和 ROI/全帧
+协调管道边界处的元数据。任何不匹配都必须使
+检查为<code>NG</code>，并且不得转换为当前框架证据。</p>
+<p>相关参考：<code>docs/contracts/03-ai-rule-and-safety-contracts.md</code>和
+<code>docs/design/09-component-detection.md</code>。</p>
 <h3 id="roboflow-adapter-silently-discards-invalid-source-annotations">Roboflow 适配器默默地丢弃无效的源注释<a class="headerlink" href="#roboflow-adapter-silently-discards-invalid-source-annotations" title="Permanent link">&para;</a></h3>
-<p><code>scripts/adapt-roboflow-dataset.py</code> skips some invalid class IDs and allows
-negative IDs to index from the end of the class-name list. It does not validate
-field count, finite coordinates, positive box dimensions, or image bounds. A
-dropped test annotation can be converted into fabricated missing-component
-ground truth.</p>
-<p>Parse every source label line once and require exactly five finite fields, a
-non-negative in-range class ID, and an in-frame positive-area box. Reject the
-entire adaptation before writing output when any source annotation is invalid.</p>
-<p>Relevant references: <code>docs/design/19-training-and-evaluation.md</code> and
-<code>docs/design/22-testing-and-quality-assurance.md</code>.</p>
+<p><code>scripts/adapt-roboflow-dataset.py</code> 跳过一些无效的类 ID 并允许
+从类名列表末尾开始索引的负 ID。它不验证
+字段计数、有限坐标、正框尺寸或图像边界。一个
+删除的测试注释可以转换为制造的缺失组件
+基本事实。</p>
+<p>解析每个源标签行一次并需要正好五个有限域，一个
+非负范围内类 ID 和帧内正区域框。拒绝
+当任何源注释无效时，在写入输出之前进行整个适应。</p>
+<p>相关参考：<code>docs/design/19-training-and-evaluation.md</code>和
+<code>docs/design/22-testing-and-quality-assurance.md</code>。</p>
 <h3 id="missing-labels-are-still-accepted-as-implicit-negatives">缺失的标签仍然被视为隐含的否定<a class="headerlink" href="#missing-labels-are-still-accepted-as-implicit-negatives" title="Permanent link">&para;</a></h3>
-<p><code>training/src/assemblyvision_training/dataset.py</code> only warns when an image has
-no matching label file. Training can therefore treat an accidentally unpaired
-product image as a background negative.</p>
-<p>Require image/label basename pairing by default. Intentionally negative images
-must have explicit empty label files. If legacy data needs missing labels,
-provide a deliberate opt-in mode and record it in the dataset manifest.</p>
-<p>Relevant references: <code>docs/design/19-training-and-evaluation.md</code> and
-<code>docs/design/25-roadmap.md</code>.</p>
+<p><code>training/src/assemblyvision_training/dataset.py</code> 仅在图像出现以下情况时发出警告
+没有匹配的标签文件。因此，训练可以治疗意外未配对的情况
+产品图片作为底片。</p>
+<p>默认情况下需要图像/标签基本名称配对。故意负面图像
+必须有明确的空标签文件。如果遗留数据需要缺失标签，
+提供有意的选择加入模式并将其记录在数据集清单中。</p>
+<p>相关参考：<code>docs/design/19-training-and-evaluation.md</code>和
+<code>docs/design/25-roadmap.md</code>。</p>
 <h3 id="product-detector-training-drops-explicit-background-negatives">产品检测器培训消除了明确的背景底片<a class="headerlink" href="#product-detector-training-drops-explicit-background-negatives" title="Permanent link">&para;</a></h3>
-<p><code>scripts/adapt-roboflow-dataset.py</code> excludes every image without a product box
-from <code>dataset_product</code>, including explicitly empty-label conveyor/background
-images. This removes useful product-detector negatives.</p>
-<p>Keep explicit empty-label images in the product dataset with empty product
-label files. Reject images that contain component labels but lack the required
-independent product box instead of conflating them with backgrounds.</p>
-<p>Relevant references: <code>docs/design/19-training-and-evaluation.md</code> and
-<code>docs/design/22-testing-and-quality-assurance.md</code>.</p>
+<p><code>scripts/adapt-roboflow-dataset.py</code> 排除所有没有产品包装盒的图像
+来自 <code>dataset_product</code>，包括明确的空标签传送带/背景
+图像。这消除了有用的产品检测器底片。</p>
+<p>在具有空产品的产品数据集中保留显式的空标签图像
+标签文件。拒绝包含组件标签但缺少所需的图像
+独立的产品盒，而不是将它们与背景混为一谈。</p>
+<p>相关参考：<code>docs/design/19-training-and-evaluation.md</code>和
+<code>docs/design/22-testing-and-quality-assurance.md</code>。</p>
 <h3 id="expected-label-verification-still-accepts-unexpected-filename-labeled-files">预期标签验证仍然接受意外的文件名标签文件<a class="headerlink" href="#expected-label-verification-still-accepts-unexpected-filename-labeled-files" title="Permanent link">&para;</a></h3>
 <p><code>apps/edge-service/src/assemblyvision_edge/cli.py</code> 调用 <code>run_verify()</code>
 即使提供了 <code>--expected</code>，文件名后备也会启用。额外的过时文件

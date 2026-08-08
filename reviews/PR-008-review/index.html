@@ -1,0 +1,3810 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/reviews/PR-008-review/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>PR-008 Review: FastAPI Local API, SQLite Index, Runtime Hardening, and 100% Test Coverage - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pr-008-review-fastapi-local-api-sqlite-index-runtime-hardening-and-100-test-coverage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PR-008 Review: FastAPI Local API, SQLite Index, Runtime Hardening, and 100% Test Coverage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001: Edge-First Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002: Python Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003: Vue 3 and TypeScript Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004: Two-Stage Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005: Local-First Storage and Delayed Upload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006: REST Plus WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007: Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008: Docker Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009: Static-Image-First MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010: Per-Component Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011: Labeled Train-and-Inspect MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engineering Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Engineering Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contract Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/01-architecture-boundaries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Boundaries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code and Interface Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI, Rule Engine, and Fail-Safe Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge, Storage, and Upload Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data, API, and Versioning Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing, Quality, and CI Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment, Observability, and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security, Permissions, and Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Site and Change Control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model, Rule, Release, and Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minimum Mandatory Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operational Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operational Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/01-camera-disconnection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera Disconnection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/02-model-loading-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model-Loading Failure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/03-low-disk-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Low Disk Space
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/04-upload-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/05-database-recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/06-repeated-container-restart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repeated Container Restart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/07-network-recovery-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network Recovery Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/08-model-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/09-rule-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributor Documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributor Documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Context Snapshot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merge Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resolution-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resolution Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-performed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation Performed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solution-validation-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solution Validation Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#global-acceptance-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Acceptance Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#immediate-blocking-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Immediate Blocking Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Immediate Blocking Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#f1-media-records-published-under-the-staging-path-that-is-later-renamed-away" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F1. Media records published under the staging path that is later renamed away
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f2-media-content-endpoint-allows-directory-traversal-and-absolute-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F2. Media content endpoint allows directory traversal and absolute paths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f3-unauthenticated-local-api-with-wildcard-cors-exposes-privileged-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F3. Unauthenticated local API with wildcard CORS exposes privileged operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f4-pause-changes-presentation-state-but-does-not-stop-inspection-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F4. Pause changes presentation state but does not stop inspection work
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f5-the-documented-serve-quickstart-serves-a-mock-backed-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F5. The documented serve quickstart serves a mock-backed dashboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-blocking-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Blocking Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Additional Blocking Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F6. Real mode mixes simulated inspection results with real device controls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f7-non-square-manifest-inference-size-passed-to-ultralytics-in-wrong-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F7. Non-square manifest inference size passed to Ultralytics in wrong order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f8-rule-component-configuration-and-manifest-sets-are-not-cross-validated-at-startup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F8. Rule, component configuration, and manifest sets are not cross-validated at startup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f9-fastapiopenapi-and-typescript-contracts-are-not-synchronized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F9. FastAPI/OpenAPI and TypeScript contracts are not synchronized
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f10-sqlite-defaults-and-immutable-inspection-semantics-do-not-meet-the-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F10. SQLite defaults and immutable inspection semantics do not meet the contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f11-rule-evaluation-exceptions-bypass-the-fail-safe-persisted-decision-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F11. Rule evaluation exceptions bypass the fail-safe persisted decision path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f12-component-provenance-does-not-validate-the-roifull-frame-transform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F12. Component provenance does not validate the ROI/full-frame transform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f13-statistics-silently-ignores-documented-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F13. Statistics silently ignores documented filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f14-derived-image-endpoint-mislabels-or-fabricates-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F14. Derived image endpoint mislabels or fabricates evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conditional-production-persistence-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional Production-Persistence Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conditional Production-Persistence Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c1-completed-inspections-are-not-committed-to-the-database-as-one-durable-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C1. Completed inspections are not committed to the database as one durable unit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c2-schema-cannot-enforce-synchronization-identity-or-recover-upload-leases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C2. Schema cannot enforce synchronization identity or recover upload leases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c3-device_sequence-is-not-durable-and-product-configuration-version-is-not-bound" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C3. device_sequence is not durable and product-configuration version is not bound
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c4-startup-reconciliation-does-not-perform-the-required-integrity-or-recovery-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C4. Startup reconciliation does not perform the required integrity or recovery work
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-blocking-p2-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Blocking P2 Findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#declared-out-of-scope-tracked-as-next-milestones-not-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Declared Out of Scope (tracked as next milestones, not blockers)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="pr-008-review-fastapi-local-api-sqlite-index-runtime-hardening-and-100-test-coverage">PR-008 Review: FastAPI Local API, SQLite Index, Runtime Hardening, and 100% Test Coverage<a class="headerlink" href="#pr-008-review-fastapi-local-api-sqlite-index-runtime-hardening-and-100-test-coverage" title="Permanent link">&para;</a></h1>
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>Code review of <code>dev</code> -&gt; <code>main</code> PR #8 (<code>feat(edge): FastAPI local API, SQLite
+index, runtime hardening, and 100% test coverage</code>). The PR wires the edge
+dashboard to a real backend (<code>assemblyvision serve</code>, <code>/api/v1</code>), adds a SQLite
+index with Alembic migration and idempotent CLI-output reconciliation, applies
+PR-003 runtime hardening, and raises Python coverage to 100%.</p>
+<p>This document records the findings, proposed solutions, and acceptance criteria
+for the items that must be fixed before merge and for the non-blocking follow-up
+work.</p>
+<h2 id="merge-decision">Merge Decision<a class="headerlink" href="#merge-decision" title="Permanent link">&para;</a></h2>
+<p><strong>Do not merge until F1-F14 below are resolved.</strong>
+GitHub CI, CodeQL, and the local quality gates all pass, but several critical
+defects and contract violations are not covered by the current test suite.</p>
+<p>C1-C4 are conditional production-persistence requirements, not blockers for
+the explicitly bounded read-only M1 index. They become blockers if this PR is
+described or used as the authoritative production persistence/upload subsystem.</p>
+<h2 id="resolution-status">Resolution Status<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
+<p>All findings in this review have been fixed and validated on <code>dev</code>:</p>
+<ul>
+<li><strong>F1-F14</strong> (blocking) resolved. Each commit carried its regression tests; the
+  full suite passes and edge Python coverage is 100%.</li>
+<li><strong>C1-C4</strong> (conditional production-persistence) addressed for M1: SQLite is
+  documented as a rebuildable read projection with a rebuild-equivalence test,
+  migration-head verification, duplicate-child rejection, and quarantine of
+  crash-left staging bundles.</li>
+<li><strong>P2</strong> items addressed: unknown <code>/api</code> paths return a problem 404, request
+  IDs propagate, media streaming is bounded with a valid 416 problem,
+  <code>verify --expected</code> disables filename fallback and rejects duplicate
+  identities, inference metadata is typed with per-stage traceability, rule
+  identities cannot be reactivated with different content, and the quickstart/
+  context docs match the implemented M1 boundary.</li>
+<li>Remaining roadmap scope (upload queue scheduler, WebSocket channel, camera/
+  barcode adapters, temporal aggregation, Docker packaging, authoritative
+  SQLite persistence/outbox) is recorded as the next milestone and does not
+  block this PR.</li>
+</ul>
+<h2 id="validation-performed">Validation Performed<a class="headerlink" href="#validation-performed" title="Permanent link">&para;</a></h2>
+<p>Executed on <code>dev</code> without modifying tracked files:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>make check
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git diff --check origin/main...HEAD
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>gh pr status / gh pr view
+</code></pre></div>
+<p>Results:</p>
+<ul>
+<li>Ruff: pass</li>
+<li>Ruff format: pass</li>
+<li>MyPy: pass</li>
+<li>Pytest: <code>307 passed</code></li>
+<li>TypeScript build / lint / test: pass</li>
+<li>Playwright e2e: <code>11 passed</code></li>
+<li>GitHub CI + CodeQL checks: all green</li>
+</ul>
+<p>The passing gates confirm the existing tests are stable but do not cover the
+end-to-end, safety, and security scenarios below.</p>
+<h2 id="solution-validation-summary">Solution Validation Summary<a class="headerlink" href="#solution-validation-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Findings</th>
+<th>Validation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1-F2</td>
+<td>Feasible as written</td>
+<td>Fix at both persistence/import and serve boundaries; F1 must preserve pre-rename bundle atomicity.</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>Feasible after one security decision</td>
+<td>The accepted contracts require backend authorization, but the exact offline edge-session mechanism remains an open design choice. Do not replace authentication with loopback binding or CORS.</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>Feasible with two valid scopes</td>
+<td>Recommended for M1: remove/disable unsupported controls. Production alternative: add an inspection coordinator; do not put pause state in detector classes.</td>
+</tr>
+<tr>
+<td>F5-F8</td>
+<td>Feasible as written</td>
+<td>Explicit API mode, no mixed mock/real state, Ultralytics <code>[height, width]</code>, and subset compatibility checks are bounded changes.</td>
+</tr>
+<tr>
+<td>F9</td>
+<td>Feasible but cross-workspace</td>
+<td>This implements the already accepted OpenAPI-generation strategy and must update Python models, generated artifacts, TypeScript wrappers, and CI together.</td>
+</tr>
+<tr>
+<td>F10</td>
+<td>Feasible as written</td>
+<td>Separate persistent database configuration from per-connection PRAGMAs and hash only immutable inspection content.</td>
+</tr>
+<tr>
+<td>F11-F14</td>
+<td>Feasible and required before merge</td>
+<td>These close fail-safe, evidence-provenance, statistics, and evidence-presentation defects in behavior claimed by this PR.</td>
+</tr>
+<tr>
+<td>C1-C4</td>
+<td>Feasible but conditional</td>
+<td>Required when SQLite/upload becomes authoritative production persistence; not blockers for a clearly labelled rebuildable M1 read index.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="global-acceptance-rules">Global Acceptance Rules<a class="headerlink" href="#global-acceptance-rules" title="Permanent link">&para;</a></h2>
+<p>Every blocking finding is accepted only when:</p>
+<ul>
+<li>A regression test fails on the pre-fix implementation and passes with the
+  fix; line coverage alone is not evidence of behavioral coverage.</li>
+<li>Tests exercise the public boundary involved (HTTP, persisted bundle/database,
+  generated client, or inspection coordinator), not only a mocked private
+  helper.</li>
+<li>Negative and fail-safe paths are asserted explicitly, including the returned
+  problem code or NG reason code where applicable.</li>
+<li><code>make check</code> and <code>git diff --check origin/main...HEAD</code> pass after all fixes.</li>
+<li>Quickstart/context claims are updated to match the implemented M1/production
+  boundary; no unavailable feature is described as operational.</li>
+</ul>
+<hr />
+<h2 id="immediate-blocking-findings">Immediate Blocking Findings<a class="headerlink" href="#immediate-blocking-findings" title="Permanent link">&para;</a></h2>
+<h3 id="f1-media-records-published-under-the-staging-path-that-is-later-renamed-away">F1. Media records published under the staging path that is later renamed away<a class="headerlink" href="#f1-media-records-published-under-the-staging-path-that-is-later-renamed-away" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> <code>OutputWriter.save</code> writes media into a random <code>.staging-...</code>
+directory and then renames that directory to the inspection ID, but the
+persisted <code>relative_path</code> is derived from the staging directory name and is
+never updated after the rename. Every media record produced by the hardened
+writer therefore points at a path that no longer exists.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:114</code> (staging dir)
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:130</code> (rename)
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:151</code> (<code>relative = f"{inspection_dir.name}/{name}"</code>)</p>
+<p><strong>Impact:</strong> After <code>assemblyvision inspect</code>, the final file exists at
+<code>&lt;output&gt;/&lt;inspection_id&gt;/key_frame.jpg</code> while the record references
+<code>&lt;output&gt;/.staging-.../key_frame.jpg</code>. Reconciliation imports the invalid path
+and <code>GET /api/v1/media/{id}/content</code> returns 404 for every generated image.
+Reproduced locally: the persisted path did not exist while the final file did.</p>
+<p><strong>Test gap:</strong> <code>apps/edge-service/tests/test_output_writer.py:60-78</code> and
+<code>apps/edge-service/tests/test_output_writer_extended.py</code> assert the physical
+file and checksum but never resolve <code>output_root / media.relative_path</code>.</p>
+<p><strong>Proposed solution:</strong> Build the final <code>relative_path</code> from the stable
+inspection ID while files are still written under the staging directory. Pass
+the final relative directory name separately to <code>_save_image</code>; do not rewrite
+the record after publication because that would require rewriting
+<code>inspection.json</code> after the atomic directory rename. Add a round-trip test that
+saves media, reconciles, and serves the content through the repository and media
+endpoint.</p>
+<p><strong>Acceptance criteria:</strong>
+- <code>media.relative_path</code> resolves to an existing file under <code>output_root</code> for
+  every kind of media produced by <code>writer.save</code>.
+- A test verifies <code>output_root / media["relative_path"]</code> exists after save and
+  after <code>reconcile_output_root</code>.
+- An API test verifies <code>GET /api/v1/media/{id}/content</code> returns the bytes for a
+  freshly produced inspection.</p>
+<h3 id="f2-media-content-endpoint-allows-directory-traversal-and-absolute-paths">F2. Media content endpoint allows directory traversal and absolute paths<a class="headerlink" href="#f2-media-content-endpoint-allows-directory-traversal-and-absolute-paths" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> <code>relative_path</code> is imported from <code>inspection.json</code> without
+validation and served by joining <code>settings.output_root / media.relative_path</code>
+without resolving and checking containment. An <code>inspection.json</code> containing
+<code>../secret.txt</code> or an absolute path is accepted during reconciliation and its
+content is served outside the media root. The caller-controlled MIME type can
+also cause active browser content to be served.</p>
+<p><strong>Location:</strong>
+- <code>packages/python/domain/src/assemblyvision_domain/models.py:136-145</code>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/reconcile.py:30-40</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/media.py:49-60</code></p>
+<p><strong>Violation:</strong> <code>docs/design/12-local-storage-and-retention.md:32</code> (paths are
+generated by trusted code and cannot contain caller-supplied traversal
+segments), <code>docs/design/14-data-model-and-database.md:429,511-515</code> (paths must
+be relative to the configured media root), <code>docs/contracts/05-data-api-and-versioning-contracts.md:75-82</code> (API must not expose filesystem data).</p>
+<p><strong>Proposed solution:</strong>
+- Reject absolute and traversal paths at import time (reconciliation and any
+  future ingestion path).
+- Resolve every served path and require
+  <code>candidate.is_relative_to(output_root.resolve())</code> before reading.
+- Do not trust the persisted MIME type; use a serve-time allowlist.</p>
+<p><strong>Acceptance criteria:</strong>
+- Reconciliation skips (and logs) any media record whose path is absolute or
+  escapes <code>output_root</code>; the inspection record is not partially imported.
+- <code>GET /api/v1/media/{id}/content</code> returns 404 for any non-contained path.
+- Tests with crafted reconciled metadata prove <code>../</code>, absolute paths, and
+  symlink escapes cannot be read.
+- Response <code>Content-Type</code> is derived from a media-kind/extension allowlist, or a
+  validated persisted value; arbitrary persisted MIME values are rejected.</p>
+<h3 id="f3-unauthenticated-local-api-with-wildcard-cors-exposes-privileged-operations">F3. Unauthenticated local API with wildcard CORS exposes privileged operations<a class="headerlink" href="#f3-unauthenticated-local-api-with-wildcard-cors-exposes-privileged-operations" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> No route has an authentication or authorization dependency, and the
+app enables <code>allow_origins=["*"]</code> with all methods and headers. Any process or
+browser able to reach the host can pause/resume inspection, reconnect the
+camera, retry uploads, and read history, configuration, logs, and media. The
+wildcard CORS lets arbitrary websites issue cross-origin requests to the local
+API. <code>paused_by</code> is therefore hardcoded to <code>"operator"</code>, creating false
+attribution.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/app.py:81-90</code> (CORS)
+- <code>apps/edge-service/src/assemblyvision_edge/api/app.py:95-107</code> (no auth deps)
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/inspection.py:48-81</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/camera.py:23-29</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/state.py:60-64</code></p>
+<p><strong>Violation:</strong> <code>docs/design/15-rest-api-and-events.md:13-18</code> (mutating routes
+require <code>operator</code>/<code>edge_admin</code>; read-only health is deliberately limited; do
+not treat localhost as authentication), <code>docs/design/16-edge-dashboard.md:137-139</code>,
+<code>docs/contracts/08-security-permissions-and-audit.md:11-16</code>.</p>
+<p><strong>Proposed solution:</strong>
+- Adopt and document an offline-capable edge session/principal design defining
+  credential issuance, validation, expiry, CSRF protection, and viewer/operator/
+  edge-admin authorization. Enforce it on every route except <code>/health/live</code>.
+- For read-only M1, remove unsupported mutation routes and their UI controls
+  rather than exposing unauthenticated placeholders. If mutations remain, they
+  require the documented operator/admin role and actor attribution.
+- Disable CORS by default (same-origin static deployment) and configure an
+  explicit development-origin allowlist (or an anchored localhost regex) instead
+  of <code>*</code>.
+- Record the acting principal (real user or session) in <code>paused_by</code> and audit
+  mutations.</p>
+<p><strong>Acceptance criteria:</strong>
+- The selected edge-session contract is recorded in the relevant design/ADR;
+  loopback binding and CORS are not treated as authentication.
+- Every read route except the deliberately minimal <code>/health/live</code> returns
+  401/403 without the defined viewer credential.
+- Unsupported M1 mutations return 404/405 and have no corresponding UI control;
+  any retained mutation returns 401/403 without its required role.
+- A browser-origin test proves that an unapproved origin cannot read or mutate
+  the API (preflight/actual request rejected).
+- For retained mutations, actor fields reflect the authenticated principal and
+  direct authorization tests cover every exposed command.</p>
+<h3 id="f4-pause-changes-presentation-state-but-does-not-stop-inspection-work">F4. Pause changes presentation state but does not stop inspection work<a class="headerlink" href="#f4-pause-changes-presentation-state-but-does-not-stop-inspection-work" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> <code>EdgeRuntime.pause</code> only sets booleans and metadata. Nothing in the
+pipeline or any inspection entry point reads <code>runtime.paused</code>, so inspection
+work can continue while the UI shows a prominent "No new product windows will be
+opened" banner.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/state.py:60-70</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/inspection.py:48-80</code>
+- <code>apps/edge-web/src/pages/LiveInspection.vue:125-136</code></p>
+<p><strong>Violation:</strong> <code>docs/design/16-edge-dashboard.md:112-116</code> (pause stops opening
+new product windows; the API owns the active-window behavior).</p>
+<p><strong>Proposed solution:</strong> Route pause/resume through an inspection coordinator that
+owns admission of new product windows; detector/pipeline classes should not own
+operational pause state. The coordinator must finish or abort an active window
+according to an explicit policy, and resume must evaluate a typed readiness
+snapshot. For this read-only M1, the smaller valid alternative is to remove or
+disable the mutation endpoints and hide the controls until such a coordinator
+exists.</p>
+<p><strong>Acceptance criteria:</strong>
+- For the M1 removal option, API tests assert pause/resume return 404/405 and UI
+  tests assert that no control or effectiveness claim is rendered.
+- For the coordinator option, integration tests prove paused admission
+  rejection and the configured active-window finish/abort policy, including
+  conservative NG persistence for an aborted window when applicable.
+- For the coordinator option, resume returns <code>409 PRECONDITION_FAILED</code> unless
+  camera, model, rule, database, and disk preconditions pass, and the UI does not
+  optimistically render <code>READY</code> before confirmation.</p>
+<h3 id="f5-the-documented-serve-quickstart-serves-a-mock-backed-dashboard">F5. The documented <code>serve</code> quickstart serves a mock-backed dashboard<a class="headerlink" href="#f5-the-documented-serve-quickstart-serves-a-mock-backed-dashboard" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> <code>VITE_API_BASE_URL</code> is embedded at build time. The quickstart runs
+<code>pnpm --filter edge-web build</code> without setting it, so the bundle selects
+<code>MockApiClient</code> and the dashboard served by FastAPI shows seeded mock data
+instead of the reconciled real inspections.</p>
+<p><strong>Location:</strong>
+- <code>QUICKSTART.md:152-162</code>
+- <code>apps/edge-web/src/services/client.ts:14-18</code></p>
+<p><strong>Contradicts:</strong> <code>QUICKSTART.md:147-150</code> and <code>docs/ai/context.md:276-297</code>.</p>
+<p><strong>Proposed solution:</strong> Introduce an explicit build/runtime data mode such as
+<code>VITE_API_MODE=mock|http</code>. In HTTP mode, an omitted base URL means same-origin
+<code>/api/v1</code>; in mock mode the deterministic demo remains available. Build the
+served production bundle in HTTP mode. Add a browser-to-FastAPI integration test
+that proves real data renders when the built bundle is served by
+<code>assemblyvision serve</code>.</p>
+<p><strong>Acceptance criteria:</strong>
+- Following the quickstart end to end shows real inspections in history,
+  detail, media, and statistics, and shows backend-derived configuration/logs.
+- A separate HTTP integration fixture with a barcode value proves traceability
+  rendering; the default static-MVP quickstart is not required to fabricate an
+  SN that its CLI does not produce.
+- A test asserts the served bundle talks to the same-origin API.
+- The mock remains available only when an explicit mock mode is selected; an
+  absent URL alone does not silently select mock in a production build.</p>
+<hr />
+<h2 id="additional-blocking-findings">Additional Blocking Findings<a class="headerlink" href="#additional-blocking-findings" title="Permanent link">&para;</a></h2>
+<h3 id="f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls">F6. Real mode mixes simulated inspection results with real device controls<a class="headerlink" href="#f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> The current inspection, confirm, next, and manual actions always
+run against a private <code>MockApiClient</code>, while pause/resume, status, logs,
+history, and runtime state use the configured real client. The mock inspection
+ID is then used to request real media; on failure the UI silently substitutes a
+synthetic camera frame.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-web/src/services/inspectionService.ts:27-51</code>
+- <code>apps/edge-web/src/pages/LiveInspection.vue:46-56</code></p>
+<p><strong>Violation:</strong> <code>docs/design/16-edge-dashboard.md:63-73,128-130</code> (the
+deterministic final decision is authoritative; simulated/stale data must not
+look current), <code>docs/contracts/03-ai-rule-and-safety-contracts.md</code>.</p>
+<p><strong>Proposed solution:</strong> In real mode, hide or disable the mock workflow and never
+render simulated decisions alongside real device state; surface missing evidence
+as an explicit unavailable state instead of synthetic imagery.</p>
+<p><strong>Acceptance criteria:</strong>
+- In real mode no mock inspection is shown as a current result.
+- Missing media renders an unavailable/purged state, not a fabricated frame.
+- A test covers the faulted-device scenario (synthetic data must not appear with
+  real pause/status controls).</p>
+<h3 id="f7-non-square-manifest-inference-size-passed-to-ultralytics-in-wrong-order">F7. Non-square manifest inference size passed to Ultralytics in wrong order<a class="headerlink" href="#f7-non-square-manifest-inference-size-passed-to-ultralytics-in-wrong-order" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> The detectors pass <code>imgsz=(input_width, input_height)</code> but
+Ultralytics interprets a two-element <code>imgsz</code> as <code>[height, width]</code>. For a
+manifest declaring 1280x736 the runtime infers at 1280x736 swapped, so
+preprocessing no longer matches the released model configuration.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/detection/product_detector.py:84-90</code>
+- <code>apps/edge-service/src/assemblyvision_edge/detection/component_detector.py:84-90</code></p>
+<p><strong>Test gap:</strong> <code>apps/edge-service/tests/test_detectors.py</code> asserts the order
+using square fixtures, which cannot expose the defect.</p>
+<p><strong>Proposed solution:</strong> Pass <code>(input_height, input_width)</code> to Ultralytics and add
+a non-square manifest adapter test asserting the exact model invocation
+arguments. Keep manifest dimensions named as width/height; serialize <code>imgsz</code>
+explicitly as <code>[height, width]</code> to avoid ambiguity.</p>
+<p><strong>Acceptance criteria:</strong>
+- Adapter tests with non-square manifests assert the correct <code>[height, width]</code>
+  order.
+- <code>effective_settings</code> and persisted <code>inference_metadata</code> reflect the same order.</p>
+<h3 id="f8-rule-component-configuration-and-manifest-sets-are-not-cross-validated-at-startup">F8. Rule, component configuration, and manifest sets are not cross-validated at startup<a class="headerlink" href="#f8-rule-component-configuration-and-manifest-sets-are-not-cross-validated-at-startup" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> Detector construction validates only <code>config.components ⊆
+manifest.class_names</code>. If the rule requires a component that is present in the
+manifest but missing from <code>config.components</code>, the pipeline is reported as
+built and the detector later raises <code>KeyError</code> on every inspection.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/state.py:210-230</code>
+- <code>apps/edge-service/src/assemblyvision_edge/detection/component_detector.py:101-104</code></p>
+<p><strong>Status:</strong> Unresolved PR-003 P1 (<code>docs/reviews/PR-003-review.md:43-57</code>).</p>
+<p><strong>Proposed solution:</strong> Validate the required subset relationships at startup:
+<code>rule.required_components</code> must be a subset of <code>config.components</code>, and every
+configured component must exist in the component manifest. Extra manifest
+classes are allowed. Extra configured components may be allowed but are not
+decision evidence unless required by the active rule. Also validate the rule's
+declared compatible component-model version. Any invalid relationship prevents
+<code>inspection_ready</code>.</p>
+<p><strong>Acceptance criteria:</strong>
+- A missing rule-required component in <code>config.components</code> makes the pipeline
+  fail to load; readiness returns <code>inspection_ready=false</code> and a stable
+  <code>CONFIG_INVALID</code> reason category without exposing internal paths.
+- CLI <code>inspect</code>/<code>verify</code> exit with configuration status 2 on the same mismatch
+  and identify the missing component or incompatible version.
+- Tests cover a rule component absent from config, a configured component absent
+  from the manifest, an incompatible component-model version, and allowed extra
+  manifest classes.</p>
+<h3 id="f9-fastapiopenapi-and-typescript-contracts-are-not-synchronized">F9. FastAPI/OpenAPI and TypeScript contracts are not synchronized<a class="headerlink" href="#f9-fastapiopenapi-and-typescript-contracts-are-not-synchronized" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> Most routes return <code>dict[str, object]</code> without typed response
+models, so generated OpenAPI describes arbitrary objects
+(<code>additionalProperties: true</code>). TypeScript types remain handwritten. Concrete
+drift already exists: Python <code>AggregatedComponentEvidence</code> includes
+<code>box_area_ratios</code> and <code>box_centers</code>, while
+<code>packages/typescript/api-client/src/edge/types.ts:139-148</code> omits them.
+<code>HttpApiClient</code> blindly casts JSON to <code>T</code>, so tests cannot detect incompatible
+payloads.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/inspections.py:17-57</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/device.py:14-19</code>
+- <code>packages/typescript/api-client/src/edge/types.ts:1-6</code></p>
+<p><strong>Violation:</strong> ADR-006, <code>docs/contracts/02-code-and-interface-contracts.md:64-75</code>,
+<code>docs/design/14-data-model-and-database.md:401-418,545-555</code>.</p>
+<p><strong>Proposed solution:</strong> Declare strict Pydantic request/response models and typed
+route return annotations (using <code>response_model</code> where FastAPI cannot infer the
+contract), commit deterministic OpenAPI, generate the TypeScript types/client
+into the documented generated directory, and make CI fail on generated-file or
+OpenAPI drift. Keep request models <code>extra="forbid"</code>.</p>
+<p><strong>Acceptance criteria:</strong>
+- OpenAPI describes named <code>Page[T]</code>, <code>InspectionRecord</code>, <code>DeviceStatus</code>,
+  <code>Problem</code>, etc., not arbitrary objects.
+- A CI drift check fails when OpenAPI changes without updating generated TS.
+- Unknown request-body fields are rejected whenever a body-bearing endpoint is
+  present; this criterion is not applied to removed M1 mutation endpoints.
+- Contract integration tests call a live TestClient endpoint and validate the
+  returned JSON at the frontend boundary with generated schemas/runtime
+  validation; TypeScript type-checking alone is not treated as JSON validation.</p>
+<h3 id="f10-sqlite-defaults-and-immutable-inspection-semantics-do-not-meet-the-contract">F10. SQLite defaults and immutable inspection semantics do not meet the contract<a class="headerlink" href="#f10-sqlite-defaults-and-immutable-inspection-semantics-do-not-meet-the-contract" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> The repository does not enable WAL or foreign keys, so <code>ON DELETE
+CASCADE</code> is inert. <code>upsert_inspection</code> can overwrite <code>device_id</code>,
+<code>completed_at</code>, and <code>decision</code> and deletes/replaces all evidence and media, while
+the denormalized filter columns are not updated, leaving list filters
+inconsistent with detail.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/repository.py:122-131</code> (engine, no PRAGMAs)
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/repository.py:136-217</code></p>
+<p><strong>Violation:</strong> <code>docs/design/14-data-model-and-database.md:420-430</code>,
+<code>docs/design/12-local-storage-and-retention.md:47</code>,
+<code>docs/contracts/05-data-api-and-versioning-contracts.md:3-18</code>.</p>
+<p><strong>Proposed solution:</strong> Set persistent database options such as WAL during
+database initialization/migration, and configure connection-scoped PRAGMAs
+(<code>foreign_keys</code>, <code>busy_timeout</code>, and the approved synchronous level) through
+SQLAlchemy connection events. For the M1 read projection, make reconciliation
+insert-only: identical existing content is a no-op, while different content for
+the same inspection ID is an integrity conflict and is never applied. Move
+mutable synchronization-state APIs to the authoritative persistence milestone.</p>
+<p><strong>Acceptance criteria:</strong>
+- A reopened file-backed database reports <code>journal_mode=wal</code>; every checked-out
+  connection reports <code>foreign_keys=1</code> and the configured <code>busy_timeout</code>.
+- Re-importing an identical inspection is a no-op; conflicting content for the
+  same inspection ID fails without partial mutation.
+- No replay rewrites evidence/media, and list/filter projections remain
+  consistent with detail.</p>
+<h3 id="f11-rule-evaluation-exceptions-bypass-the-fail-safe-persisted-decision-path">F11. Rule evaluation exceptions bypass the fail-safe persisted decision path<a class="headerlink" href="#f11-rule-evaluation-exceptions-bypass-the-fail-safe-persisted-decision-path" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> <code>RuleEngine.evaluate</code> can raise <code>RuleEvaluationError</code>, but the
+pipeline does not convert it into a conservative terminal record. The CLI
+reports an operational error and no auditable NG result is persisted.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/rules/rule_engine.py:179-180</code>
+- <code>apps/edge-service/src/assemblyvision_edge/pipeline.py:212-231</code></p>
+<p><strong>Proposed solution:</strong> Catch <code>RuleEvaluationError</code> at the application/pipeline
+boundary, create the canonical terminal internal NG decision, map the business
+result to NG, add
+<code>RULE_EVALUATION_ERROR</code>, and persist the available evidence. Do not catch broad
+programming exceptions inside the rule engine itself.</p>
+<p><strong>Acceptance criteria:</strong>
+- An injected <code>RuleEvaluationError</code> produces a persisted inspection with
+  <code>business_result=NG</code> and <code>RULE_EVALUATION_ERROR</code>.
+- The result cannot contain <code>internal_decision=OK</code>, and available model/rule/
+  media provenance remains present.
+- Persistence failure still returns a non-zero operational error and never
+  reports an uncommitted NG/OK result as durable.</p>
+<h3 id="f12-component-provenance-does-not-validate-the-roifull-frame-transform">F12. Component provenance does not validate the ROI/full-frame transform<a class="headerlink" href="#f12-component-provenance-does-not-validate-the-roifull-frame-transform" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> Provenance validation checks frame/model IDs and image dimensions
+but accepts mutually inconsistent <code>roi_bbox</code> and <code>full_frame_bbox</code> coordinates.
+Contradictory evidence can therefore pass validation and contribute to OK.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/pipeline.py:80-100</code></p>
+<p><strong>Proposed solution:</strong> Map each ROI box to full-frame space (or vice versa) with
+the recorded transform and compare it to the detector-provided counterpart
+using a documented numeric tolerance that accounts only for floating-point
+rounding (the current translation transform should use a small absolute
+tolerance, not a broad pixel allowance). Reject non-invertible transforms and
+inconsistent boxes as <code>INFERENCE_ERROR</code>.</p>
+<p><strong>Acceptance criteria:</strong>
+- For M1, only the supported invertible translation transform is accepted;
+  exact and floating-point-equivalent translated coordinate pairs pass.
+- Pairs inconsistent with the recorded transform, unsupported/non-invertible
+  transforms, and wrong-frame pairs fail closed to business NG with
+  <code>INFERENCE_ERROR</code> and contribute no presence evidence.
+- If general affine transforms are introduced later, valid non-unit scaling gets
+  positive tests and only inconsistent mappings are rejected.</p>
+<h3 id="f13-statistics-silently-ignores-documented-filters">F13. Statistics silently ignores documented filters<a class="headerlink" href="#f13-statistics-silently-ignores-documented-filters" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> The client sends <code>from</code>, but the FastAPI route exposes <code>from_</code>
+without an alias; <code>line</code> is accepted and ignored. Operators can receive totals
+for the wrong time range or line.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/derived.py:44-60</code>
+- <code>packages/typescript/api-client/src/edge/HttpApiClient.ts:185-191</code></p>
+<p><strong>Proposed solution:</strong> Add <code>Query(alias="from")</code>, validate UTC timestamps, and
+either implement line filtering against a persisted indexed line identity or
+explicitly detect <code>line</code> and return <code>400 UNSUPPORTED_FILTER</code> until line identity
+exists. Merely removing the declared parameter is insufficient because FastAPI
+otherwise ignores unknown query parameters.</p>
+<p><strong>Acceptance criteria:</strong>
+- End-to-end tests prove <code>from</code> and <code>to</code> change the returned population.
+- Supplying <code>line</code> either filters correctly or returns a documented 400; it is
+  never silently ignored.</p>
+<h3 id="f14-derived-image-endpoint-mislabels-or-fabricates-evidence">F14. Derived image endpoint mislabels or fabricates evidence<a class="headerlink" href="#f14-derived-image-endpoint-mislabels-or-fabricates-evidence" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> The endpoint maps <code>ANNOTATED_FRAME</code> to <code>detection</code> and prefers
+<code>PRODUCT_ROI</code> for <code>annotated</code>; when media is absent the UI substitutes synthetic
+imagery without an unavailable marker.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/derived.py:63-81</code>
+- <code>apps/edge-web/src/pages/ImageViewer.vue:33-42</code>
+- <code>apps/edge-web/src/pages/LiveInspection.vue:46-56</code></p>
+<p><strong>Proposed solution:</strong> Define typed image slots whose names match canonical
+media kinds, map each kind once, and represent unavailable/purged media
+explicitly. Synthetic demo images must be possible only in explicit mock mode.</p>
+<p><strong>Acceptance criteria:</strong>
+- KEY_FRAME, PRODUCT_ROI, and ANNOTATED_FRAME appear under correctly labelled
+  slots in API and UI tests.
+- Missing or purged evidence shows an explicit unavailable/purged state and no
+  synthetic image in HTTP mode.</p>
+<hr />
+<h2 id="conditional-production-persistence-findings">Conditional Production-Persistence Findings<a class="headerlink" href="#conditional-production-persistence-findings" title="Permanent link">&para;</a></h2>
+<p>C1-C4 are valid requirements for the authoritative production persistence and
+upload subsystem. They do not block a read-only M1 index if the API, quickstart,
+and context documents clearly label SQLite as a rebuildable projection of CLI
+bundles and do not claim transactional outbox/recovery readiness.</p>
+<h3 id="c1-completed-inspections-are-not-committed-to-the-database-as-one-durable-unit">C1. Completed inspections are not committed to the database as one durable unit<a class="headerlink" href="#c1-completed-inspections-are-not-committed-to-the-database-as-one-durable-unit" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> <code>assemblyvision inspect</code> publishes media/JSON and reports <code>OK</code>
+immediately; SQLite is populated only when the API later starts and scans, and
+reconciliation creates no upload tasks. A crash before startup leaves a completed
+result outside the operational database and queue, and <code>/api/v1/uploads</code> remains
+empty for normal inspections.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/pipeline.py:235-278</code>
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:96-135</code>
+- <code>apps/edge-service/src/assemblyvision_edge/cli.py:150-164</code>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/reconcile.py:30-42</code></p>
+<p><strong>Violation:</strong> <code>docs/design/12-local-storage-and-retention.md:34-45</code>,
+<code>docs/design/13-upload-and-synchronization.md:13-19</code>,
+<code>docs/contracts/04-edge-storage-upload-contracts.md:30-43</code>, ADR-005.</p>
+<p><strong>Proposed solution:</strong> Keep the current CLI JSON bundle as the authoritative
+static-MVP result and explicitly treat SQLite as a rebuildable read projection.
+When authoritative SQLite persistence/upload enters scope, replace startup-only
+reconciliation with an application service that, after durable media
+publication and before completion is published, atomically inserts the
+inspection, evidence, media metadata, and required upload outbox tasks in one
+transaction.</p>
+<p><strong>Acceptance criteria for M1:</strong>
+- Documentation identifies SQLite as a rebuildable read index, not the
+  authoritative completion/outbox store.
+- Deleting and rebuilding the index from valid CLI bundles yields equivalent
+  read results without changing the bundles.</p>
+<p><strong>Acceptance criteria before production persistence activation:</strong>
+- A completed inspection always has a matching database row and required upload
+  task before <code>OK</code>/completion is published to operational consumers.
+- Crash tests at each atomic-persistence step recover deterministically (no
+  completed inspection without its required upload task).</p>
+<h3 id="c2-schema-cannot-enforce-synchronization-identity-or-recover-upload-leases">C2. Schema cannot enforce synchronization identity or recover upload leases<a class="headerlink" href="#c2-schema-cannot-enforce-synchronization-identity-or-recover-upload-leases" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> The schema permits duplicate <code>(device_id, device_sequence)</code>,
+duplicate <code>(device_id, idempotency_key)</code>, duplicate media paths, and duplicate
+component codes per inspection. <code>upload_tasks</code> and <code>UploadTask</code> have no lease
+owner/expiry, so stale <code>IN_PROGRESS</code> work cannot be recovered after a crash.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/schema.py:25-55,88-127</code>
+- <code>apps/edge-service/migrations/versions/0001_initial.py:20-56,77-111</code>
+- <code>packages/python/domain/src/assemblyvision_domain/models.py:148-167</code></p>
+<p><strong>Violation:</strong> <code>docs/design/14-data-model-and-database.md:420-445</code>,
+<code>docs/contracts/04-edge-storage-upload-contracts.md:45-66,90-99</code>.</p>
+<p><strong>Proposed solution:</strong> In the rebuildable M1 index, reject duplicate canonical
+child identities during reconciliation and test that rejection. Before SQLite
+becomes authoritative, add the documented database uniqueness constraints. If
+revision <code>0001</code> has not been deployed outside disposable development data it may
+be corrected directly; otherwise add a forward Alembic revision. Add upload
+idempotency constraints and lease fields when the scheduler is implemented.</p>
+<p><strong>Acceptance criteria for the M1 projection:</strong>
+- Reconciliation rejects duplicate component identities and conflicting media
+  paths without partially importing the inspection.</p>
+<p><strong>Acceptance criteria before persisted synchronization activation:</strong>
+- <code>UNIQUE(relative_path)</code> and
+  <code>UNIQUE(inspection_id, component_code)</code> are enforced by the database.
+- <code>UNIQUE(device_id, device_sequence)</code> is enforced after durable sequence
+  allocation is implemented.</p>
+<p><strong>Acceptance criteria before upload scheduler activation:</strong>
+- <code>UNIQUE(device_id, idempotency_key)</code> and lease owner/expiry fields are
+  enforced.
+- Stale <code>IN_PROGRESS</code> tasks are detectable and moved to a retryable state after
+  lease expiry.</p>
+<h3 id="c3-device_sequence-is-not-durable-and-product-configuration-version-is-not-bound">C3. <code>device_sequence</code> is not durable and product-configuration version is not bound<a class="headerlink" href="#c3-device_sequence-is-not-durable-and-product-configuration-version-is-not-bound" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> <code>device_sequence</code> restarts at 1 after every process restart while an
+omitted device ID is regenerated, producing duplicate sequence numbers that the
+schema permits. The pipeline creates <code>ProductResolution</code> without
+<code>product_version_id</code>, and the schema has no required product-configuration
+version column, so central synchronization cannot deduplicate or replay an
+inspection against its exact configuration.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/pipeline.py:127-129,235-265</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/state.py:40-45,230-240</code>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/schema.py:28-55</code></p>
+<p><strong>Violation:</strong> <code>docs/design/14-data-model-and-database.md:13-20,206-229,424-430</code>,
+<code>docs/contracts/05-data-api-and-versioning-contracts.md:20-29,103-113</code>.</p>
+<p><strong>Proposed solution:</strong> For the static CLI MVP, document that its sequence is not
+a synchronization identity. Before persisted/synchronized operation, require a
+stable configured device identity, persist and transactionally allocate
+per-device sequence numbers, and store the product-configuration version on
+every inspection.</p>
+<p><strong>Acceptance criteria before persisted/synchronized operation:</strong>
+- Sequence numbers are unique per device across restarts.
+- Every persisted inspection records its product-configuration version.
+- Duplicate device sequences are rejected by the database.</p>
+<h3 id="c4-startup-reconciliation-does-not-perform-the-required-integrity-or-recovery-work">C4. Startup reconciliation does not perform the required integrity or recovery work<a class="headerlink" href="#c4-startup-reconciliation-does-not-perform-the-required-integrity-or-recovery-work" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> Existing database rows are skipped, and their media existence, size,
+checksum, and lifecycle are never checked. Stale <code>IN_PROGRESS</code> tasks,
+interrupted inspections, orphan/staging files, and database integrity are not
+recovered. Missing <code>AVAILABLE</code> media remains advertised until a request happens
+to fail.</p>
+<p><strong>Location:</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/app.py:55-70</code>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/reconcile.py:20-42</code></p>
+<p><strong>Violation:</strong> <code>docs/design/12-local-storage-and-retention.md:108-112</code>,
+<code>docs/design/14-data-model-and-database.md:539-543</code>,
+<code>docs/contracts/04-edge-storage-upload-contracts.md:90-99</code>.</p>
+<p><strong>Proposed solution:</strong> For M1, validate migration success and rebuildability of
+the read index, and do not claim full recovery. Before authoritative persistence
+activation, implement explicit startup recovery phases (DB integrity,
+interrupted inspections, staging/orphan files, referenced-media existence/size,
+bounded checksum verification, expired upload leases) and enter a
+storage-not-ready mode on unrecoverable corruption.</p>
+<p><strong>Acceptance criteria before authoritative persistence activation:</strong>
+- Startup detects and reports missing or corrupt referenced media.
+- Stale <code>IN_PROGRESS</code> tasks are recovered to a retryable state.
+- Unrecoverable database corruption sets the service to storage-not-ready and
+  never initializes a fresh database over corrupted evidence.</p>
+<hr />
+<h2 id="non-blocking-p2-findings">Non-Blocking P2 Findings<a class="headerlink" href="#non-blocking-p2-findings" title="Permanent link">&para;</a></h2>
+<p>The following items are not merge blockers but should be tracked for the next
+milestone:</p>
+<ul>
+<li>
+<p><strong>Unknown <code>/api/v1</code> routes return <code>index.html</code> with 200.</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/app.py:130-143</code> applies the SPA
+  fallback beneath <code>/api</code>; the test at <code>test_api_extended.py:111-116</code> codifies
+  it. Return the standard API 404 problem there.
+  <em>Solution:</em> Never apply SPA fallback under <code>/api</code>.</p>
+</li>
+<li>
+<p><strong>History cursors/filters do not implement the documented contract.</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/inspections.py:17-38</code>.
+  Cursors are not bound to the normalized filter set, invalid cursors become 500,
+  invalid decisions/timestamps are accepted as strings, and out-of-range limits
+  silently reset.
+  <em>Solution:</em> Validate typed enums/date-times/ranges at the boundary, bind the
+  filter fingerprint in the opaque cursor, map failures to <code>400 INVALID_FILTER</code>.</p>
+</li>
+<li>
+<p><strong>Upload retry ignores eligibility, idempotency, reason, and state metadata.</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>;
+  <code>repository.retry_upload</code> accepts any state, ignores <code>Idempotency-Key</code> and the
+  reason, and does not update <code>updated_at</code>/<code>next_attempt_at</code>.
+  <em>Solution:</em> Because the scheduler is out of M1 scope, remove/disable the
+  mutation endpoint and UI action for now. When activated, persist key/reason,
+  allow only eligible states, return <code>409 TASK_ACTIVE</code>, and update transition
+  timestamps.</p>
+</li>
+<li>
+<p><strong>Media "streaming" loads the whole file and emits an invalid empty 416.</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/media.py:58-81</code>.
+  <em>Solution:</em> Stream bounded chunks and raise a problem response with
+  <code>Content-Range</code> retained.</p>
+</li>
+<li>
+<p><strong>Documented filters are omitted rather than rejected/implemented</strong> for media
+  kind, upload state/kind, and log level/component/time/cursor.
+  <em>Solution:</em> Implement typed, indexed filters or stop claiming design 15.3
+  conformance.</p>
+</li>
+<li>
+<p><strong>Unhandled 500 responses do not carry/propagate a request ID.</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/app.py:41-49,121-127</code>.
+  <em>Solution:</em> Generate/validate one request ID per request and include it in
+  every problem and response header.</p>
+</li>
+<li>
+<p><strong>Inference provenance remains untyped and incomplete.</strong>
+  <code>packages/python/domain/src/assemblyvision_domain/models.py:263</code>,
+  <code>pipeline.py:280-289</code>: <code>inference_metadata</code> is <code>dict[str, object]</code> and records
+  settings only, not model name/version, per-inference timestamp, or stage
+  latency. Required before claiming complete inference traceability
+  (<code>docs/contracts/03-ai-rule-and-safety-contracts.md:30-43</code>).</p>
+</li>
+<li>
+<p><strong>Unresolved PR-003 verify gaps:</strong> <code>verify --expected</code> still enables filename
+  fallback (<code>cli.py:173-180</code>), and verification collapses identity to basename
+  (<code>verify.py:191-212</code>). See <code>docs/reviews/PR-003-review.md:114-137</code>.</p>
+</li>
+<li>
+<p><strong>Rule version hashing does not enforce semantic immutability across releases.</strong>
+  Same <code>rule_id</code>/<code>rule_version</code> with different content is accepted
+  (<code>rules/rule_engine.py:85-93</code>). Needs an installed-rule registry or collision
+  rejection.</p>
+</li>
+<li>
+<p><strong>Crash-left staging bundles are ignored and never reconciled.</strong>
+  <code>output/writer.py:114-134</code>; in-process failures clean staging, but process
+  termination bypasses the handler. Startup should quarantine/validate stale
+  <code>.staging-*</code> directories.</p>
+</li>
+<li>
+<p><strong>Documentation overstates and contradicts the implementation:</strong>
+  <code>QUICKSTART.md:202-216</code> and <code>docs/ai/context.md:256-264,289-297,316-334</code>.
+  Correction is required alongside the functional blockers (e.g. "switching to
+  FastAPI requires no UI changes" is inaccurate; pause/resume described as
+  implemented while it does not govern pipeline execution).</p>
+</li>
+</ul>
+<hr />
+<h2 id="declared-out-of-scope-tracked-as-next-milestones-not-blockers">Declared Out of Scope (tracked as next milestones, not blockers)<a class="headerlink" href="#declared-out-of-scope-tracked-as-next-milestones-not-blockers" title="Permanent link">&para;</a></h2>
+<p>The following are explicitly listed in the PR description and <code>docs/ai/context.md</code>
+as future work and were not treated as merge blockers:</p>
+<ul>
+<li>WebSocket runtime channel</li>
+<li>Upload queue scheduler with retry backoff and idempotency</li>
+<li>Camera and barcode hardware adapters</li>
+<li>Temporal aggregation</li>
+<li>Docker packaging</li>
+<li>PR-003 dataset staging and model-manifest full-content immutability</li>
+<li>Real-data baseline with X-AnyLabeling annotation and <code>adapt-xanylabeling.py</code></li>
+</ul>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/contracts/01-architecture-boundaries.md</code></li>
+<li><code>docs/contracts/02-code-and-interface-contracts.md</code></li>
+<li><code>docs/contracts/03-ai-rule-and-safety-contracts.md</code></li>
+<li><code>docs/contracts/04-edge-storage-upload-contracts.md</code></li>
+<li><code>docs/contracts/05-data-api-and-versioning-contracts.md</code></li>
+<li><code>docs/contracts/08-security-permissions-and-audit.md</code></li>
+<li><code>docs/design/12-local-storage-and-retention.md</code></li>
+<li><code>docs/design/14-data-model-and-database.md</code></li>
+<li><code>docs/design/15-rest-api-and-events.md</code></li>
+<li><code>docs/design/16-edge-dashboard.md</code></li>
+<li><code>docs/design/decisions/ADR-006-rest-plus-websocket.md</code></li>
+<li><code>docs/reviews/PR-003-review.md</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

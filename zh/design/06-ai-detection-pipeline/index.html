@@ -659,7 +659,7 @@
   <a href="#61-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 Purpose
+        6.1 目的
       
     </span>
   </a>
@@ -703,7 +703,7 @@
   <a href="#65-real-time-processing-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.5 Real-Time Processing Flow
+        6.5 实时处理流程
       
     </span>
   </a>
@@ -714,7 +714,7 @@
   <a href="#66-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.6 Configuration
+        6.6 配置
       
     </span>
   </a>
@@ -747,7 +747,7 @@
   <a href="#69-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.9 Verification
+        6.9 验证
       
     </span>
   </a>
@@ -2537,7 +2537,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -2850,7 +2850,7 @@
   <a href="#61-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 Purpose
+        6.1 目的
       
     </span>
   </a>
@@ -2894,7 +2894,7 @@
   <a href="#65-real-time-processing-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.5 Real-Time Processing Flow
+        6.5 实时处理流程
       
     </span>
   </a>
@@ -2905,7 +2905,7 @@
   <a href="#66-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.6 Configuration
+        6.6 配置
       
     </span>
   </a>
@@ -2938,7 +2938,7 @@
   <a href="#69-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.9 Verification
+        6.9 验证
       
     </span>
   </a>
@@ -2977,7 +2977,7 @@
 
 
 <h1 id="6-ai-detection-pipeline">6. AI检测流程<a class="headerlink" href="#6-ai-detection-pipeline" title="Permanent link">&para;</a></h1>
-<h2 id="61-purpose">6.1 Purpose<a class="headerlink" href="#61-purpose" title="Permanent link">&para;</a></h2>
+<h2 id="61-purpose">6.1 目的<a class="headerlink" href="#61-purpose" title="Permanent link">&para;</a></h2>
 <p>本文档定义了从获取的图像到持久的产品级决策的端到端检查流程。详细的子系统行为在 <a href="../07-camera-and-image-acquisition/">camera and image acquisition</a>、<a href="../08-product-detection-and-roi/">product detection and ROI</a>、<a href="../09-component-detection/">component detection</a>、<a href="../10-temporal-aggregation/">temporal aggregation</a> 和 <a href="../11-rule-engine/">rule engine</a> 中指定。</p>
 <p>安全不变量是：</p>
 <blockquote>
@@ -3041,18 +3041,18 @@ alt 恰好一件有效产品
             ROI--&gt;&gt;CLI:产品投资回报率和转型
             CLI-&gt;&gt;Component:检测所需的类
             Component--&gt;&gt;CLI:框架证据
-            CLI-&gt;&gt;Rules:Evaluate single-frame evidence
+            CLI-&gt;&gt;Rules:评估单帧证据
             Rules--&gt;&gt;CLI:OK 或 NG 并说明原因
-else Product unverifiable
-            CLI-&gt;&gt;Rules:Evaluate pipeline failure
+else 产品无法验证
+            CLI-&gt;&gt;Rules:评估管道故障
             Rules--&gt;&gt;CLI:有理由不合格
         end
-        CLI-&gt;&gt;Storage:Atomically save JSON and media
+        CLI-&gt;&gt;Storage:原子保存 JSON 和媒体
         Storage--&gt;&gt;CLI:持续存在或存储错误
     end
     CLI--&gt;&gt;Operator:批次汇总和退出状态</code></pre>
 <p>单帧 MVP 证据不被视为时间证据。每个必需的组件必须独立地通过其配置的单帧阈值。</p>
-<h2 id="65-real-time-processing-flow">6.5 Real-Time Processing Flow<a class="headerlink" href="#65-real-time-processing-flow" title="Permanent link">&para;</a></h2>
+<h2 id="65-real-time-processing-flow">6.5 实时处理流程<a class="headerlink" href="#65-real-time-processing-flow" title="Permanent link">&para;</a></h2>
 <p>实时管道对每个物理产品执行以下步骤：</p>
 <ol>
 <li>从权威触发器或经过验证的输入事件打开产品窗口。</li>
@@ -3067,7 +3067,7 @@ else Product unverifiable
 <li>独立于检查执行的排队上传。</li>
 </ol>
 <p>仅当批处理保持在产品窗口延迟预算内并保留帧与检查的相关性时，才可以对推理进行批处理。</p>
-<h2 id="66-configuration">6.6 Configuration<a class="headerlink" href="#66-configuration" title="Permanent link">&para;</a></h2>
+<h2 id="66-configuration">6.6 配置<a class="headerlink" href="#66-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">pipeline</span><span class="p">:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">max_inflight_inspections</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">frame_queue_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12</span>
@@ -3127,7 +3127,7 @@ else Product unverifiable
 <p>异常在子系统边界处转换为显式原因代码。原始异常和堆栈跟踪属于结构化日志，而检查记录包含稳定的业务原因代码。</p>
 <h2 id="68-observability">6.8 可观测性<a class="headerlink" href="#68-observability" title="Permanent link">&para;</a></h2>
 <p>记录阶段延迟、有效/拒绝帧计数、产品检测成功、ROI 失败、条形码读取成功、每个组件的置信度分布、按原因的决策计数、队列深度、推理设备和活动版本。日志包括<code>inspection_id</code>、<code>frame_id</code>、<code>device_id</code>；它们不得包含凭据或无限制的图像数据。</p>
-<h2 id="69-verification">6.9 Verification<a class="headerlink" href="#69-verification" title="Permanent link">&para;</a></h2>
+<h2 id="69-verification">6.9 验证<a class="headerlink" href="#69-verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>单元测试阶段契约、阈值边界、坐标变换和原因代码映射。</li>
 <li>运行黄金图像测试，并将预期检测和决策固定到模型清单上。</li>

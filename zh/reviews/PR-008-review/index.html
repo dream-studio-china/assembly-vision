@@ -1,0 +1,3808 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/reviews/PR-008-review/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>PR-008 评论：FastAPI 本地 API、SQLite 索引、运行时强化和 100% 测试覆盖率 - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pr-008-review-fastapi-local-api-sqlite-index-runtime-hardening-and-100-test-coverage" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PR-008 评论：FastAPI 本地 API、SQLite 索引、运行时强化和 100% 测试覆盖率
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    原始需求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构设计
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构设计
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设计索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    封面与状态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    简介
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    需求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心端架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 检测流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    相机与图像采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    产品检测与 ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    组件检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规则引擎
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    本地存储与保留
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    上传与同步
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型与数据库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API 与事件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中心管理看板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo 与代码组织
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    训练与评估
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署与运维
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全与源码分发
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试与质量保证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    可观测性与支持
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    人在回路
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    客户验收
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    风险与缓解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构决策
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_31">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构决策
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001：边缘优先检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002：Python 后端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003：Vue 3 与 TypeScript 前端
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004：两阶段检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005：本地优先存储与延迟上传
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006：REST 与 WebSocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007：Monorepo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008：Docker 部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-009：静态图像优先 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-010：按组件时序聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-011：标记为训练和检查 MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工程合同
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    工程合同
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    合同索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/01-architecture-boundaries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构边界
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    代码与接口合同
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI、规则引擎与故障安全合同
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    边缘端、存储与上传合同
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据、API 与版本合同
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试、质量与 CI 合同
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署、可观测性与运维
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全、权限与审计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工业现场与变更控制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模型、规则、发布与验收
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    最低强制合同
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    运维手册
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    运维手册
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    运行手册索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/01-camera-disconnection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    相机断开
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/02-model-loading-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模型加载失败
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/03-low-disk-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    磁盘空间不足
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/04-upload-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    上传积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/05-database-recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据库恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/06-repeated-container-restart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    容器反复重启
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/07-network-recovery-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络恢复同步
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/08-model-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模型回滚
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/09-rule-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规则回滚
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模型改进
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调研
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    调研
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工业检测成功率
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO 能力与成功率
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    成像流程与训练成本
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    贡献者文档
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    贡献者文档
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    贡献指南
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 上下文快照
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        范围
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        合并决策
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resolution-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        解决状态
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-performed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        已执行验证
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solution-validation-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        解决方案验证摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#global-acceptance-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        全球接受规则
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#immediate-blocking-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        立即封锁结果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="立即封锁结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#f1-media-records-published-under-the-staging-path-that-is-later-renamed-away" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F1。在暂存路径下发布的媒体记录，后来更名为“离开”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f2-media-content-endpoint-allows-directory-traversal-and-absolute-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F2。媒体内容端点允许目录遍历和绝对路径
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f3-unauthenticated-local-api-with-wildcard-cors-exposes-privileged-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F3。未经身份验证的带有通配符 CORS 的本地 API 会暴露特权操作
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f4-pause-changes-presentation-state-but-does-not-stop-inspection-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F4。暂停会改变演示状态，但不会停止检查工作
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f5-the-documented-quickstart-serves-a-mock-backed-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F5。记录的 serve 快速入门提供模拟支持的仪表板
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-blocking-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        额外的阻塞发现
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="额外的阻塞发现">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F6。实模式将模拟检测结果与真实设备控制相结合
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f7-non-square-manifest-inference-size-passed-to-ultralytics-in-wrong-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F7。非方形明显推断大小以错误的顺序传递给 Ultralytics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f8-rule-component-configuration-and-manifest-sets-are-not-cross-validated-at-startup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F8。规则、组件配置和清单集在启动时不会进行交叉验证
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f9-fastapiopenapi-and-typescript-contracts-are-not-synchronized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F9。 FastAPI/OpenAPI 和 TypeScript 合约不同步
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f10-sqlite-defaults-and-immutable-inspection-semantics-do-not-meet-the-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F10。 SQLite 默认值和不可变检查语义不符合约定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f11-rule-evaluation-exceptions-bypass-the-fail-safe-persisted-decision-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F11。规则评估异常绕过故障安全持久决策路径
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f12-component-provenance-does-not-validate-the-roifull-frame-transform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F12。组件来源无法验证 ROI/全帧变换
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f13-statistics-silently-ignores-documented-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F13。统计数据默默地忽略记录的过滤器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f14-derived-image-endpoint-mislabels-or-fabricates-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F14。派生图像端点贴错标签或伪造证据
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conditional-production-persistence-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        条件生产-持久性发现
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="条件生产-持久性发现">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c1-completed-inspections-are-not-committed-to-the-database-as-one-durable-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C1。已完成的检查不会作为一个持久单元提交到数据库
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c2-schema-cannot-enforce-synchronization-identity-or-recover-upload-leases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C2。架构无法强制同步身份或恢复上传租约
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c3-is-not-durable-and-product-configuration-version-is-not-bound" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C3。 device_sequence不持久且产品配置版本未绑定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c4-startup-reconciliation-does-not-perform-the-required-integrity-or-recovery-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C4。启动协调不执行所需的完整性或恢复工作
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-blocking-p2-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        非阻塞 P2 结果
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#declared-out-of-scope-tracked-as-next-milestones-not-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        宣布超出范围（跟踪为下一个里程碑，而不是阻碍因素）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参考
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="pr-008-review-fastapi-local-api-sqlite-index-runtime-hardening-and-100-test-coverage">PR-008 评论：FastAPI 本地 API、SQLite 索引、运行时强化和 100% 测试覆盖率<a class="headerlink" href="#pr-008-review-fastapi-local-api-sqlite-index-runtime-hardening-and-100-test-coverage" title="Permanent link">&para;</a></h1>
+<h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p><code>dev</code> -&gt; <code>main</code> PR #8 (<code>feat(edge): FastAPI local API, SQLite
+index, runtime hardening, and 100% test coverage</code>) 的代码审查。 PR 连线边缘
+仪表板到真实后端（<code>assemblyvision serve</code>、<code>/api/v1</code>），添加 SQLite
+具有 Alembic 迁移和幂等 CLI 输出协调的索引，适用
+PR-003 运行时强化，并将 Python 覆盖率提高到 100%。</p>
+<p>本文件记录了调查结果、建议的解决方案和验收标准
+对于合并之前必须修复的项目以及非阻塞后续操作
+工作。</p>
+<h2 id="merge-decision">合并决策<a class="headerlink" href="#merge-decision" title="Permanent link">&para;</a></h2>
+<p><strong>在下面的 F1-F14 解决之前不要合并。</strong>
+GitHub CI、CodeQL 和本地质量门都通过了，但有几个关键的
+当前测试套件不涵盖缺陷和合同违规行为。</p>
+<p>C1-C4 是有条件的生产持久性要求，而不是阻碍
+显式限制的只读 M1 索引。如果此 PR 被阻止，他们就会成为阻碍者
+被描述或用作权威的生产持久/上传子系统。</p>
+<h2 id="resolution-status">解决状态<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
+<p>本次审查中的所有发现均已在 <code>dev</code> 上得到修复和验证：</p>
+<ul>
+<li><strong>F1-F14</strong>（阻塞）已解决。每个提交都进行了回归测试；的
+  全套通行证和边缘 Python 覆盖率为 100%。</li>
+<li><strong>C1-C4</strong>（条件生产持久性）针对 M1：SQLite 是
+  记录为具有重建等效测试的可重建读取投影，
+  迁移头验证、重复子项拒绝和隔离
+  崩溃左侧暂存包。</li>
+<li><strong>P2</strong> 项目已解决：未知 <code>/api</code> 路径返回问题 404，请求
+  ID 传播，媒体流受到有效的 416 问题的限制，
+  <code>verify --expected</code> 禁用文件名回退并拒绝重复
+  身份、推理元数据按每个阶段的可追溯性、规则进行分类
+  身份无法使用不同的内容重新激活，并且快速入门/
+  上下文文档与实现的 M1 边界相匹配。</li>
+<li>剩余路线图范围（上传队列调度程序、WebSocket 通道、摄像头/
+  条形码适配器、时间聚合、Docker 打包、权威
+  SQLite 持久化/发件箱）被记录为下一个里程碑，并且不
+  阻止此 PR。</li>
+</ul>
+<h2 id="validation-performed">已执行验证<a class="headerlink" href="#validation-performed" title="Permanent link">&para;</a></h2>
+<p>在 <code>dev</code> 上执行而不修改跟踪文件：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>make check
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git diff --check origin/main...HEAD
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>gh pr status / gh pr view
+</code></pre></div>
+<p>结果：</p>
+<p>拉夫：通过
+皱褶格式：通过
+- MyPy：通过
+- Pytest：<code>307 passed</code>
+- TypeScript 构建/lint/测试：通过
+- 剧作家 e2e：<code>11 passed</code>
+- GitHub CI + CodeQL 检查：全绿色</p>
+<p>通过门确认现有测试是稳定的，但不涵盖
+下面的端到端、安全和保障场景。</p>
+<h2 id="solution-validation-summary">解决方案验证摘要<a class="headerlink" href="#solution-validation-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>调查结果</th>
+<th>验证</th>
+<th>笔记</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1-F2</td>
+<td>如所写的那样可行</td>
+<td>修复持久性/导入和服务边界； F1 必须保留预重命名包原子性。</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>一项安全决策后可行</td>
+<td>接受的合约需要后端授权，但确切的离线边缘会话机制仍然是一个开放的设计选择。不要用环回绑定或 CORS 替换身份验证。</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>有两个有效范围可行</td>
+<td>建议用于 M1：删除/禁用不支持的控件。生产替代方案：添加一名检验协调员；不要将暂停状态放入检测器类中。</td>
+</tr>
+<tr>
+<td>F5-F8</td>
+<td>如所写的那样可行</td>
+<td>显式 API 模式、无混合模拟/真实状态、Ultralytics <code>[height, width]</code> 和子集兼容性检查是有界更改。</td>
+</tr>
+<tr>
+<td>F9</td>
+<td>可行但跨工作空间</td>
+<td>这实现了已经接受的 OpenAPI 生成策略，并且必须一起更新 Python 模型、生成的工件、TypeScript 包装器和 CI。</td>
+</tr>
+<tr>
+<td>F10</td>
+<td>如所写的那样可行</td>
+<td>将持久数据库配置与每个连接的 PRAGMA 分开，并仅散列不可变的检查内容。</td>
+</tr>
+<tr>
+<td>F11-F14</td>
+<td>合并前可行且必需的</td>
+<td>本 PR 声称的行为中存在这些接近的故障安全、证据来源、统计数据和证据呈现缺陷。</td>
+</tr>
+<tr>
+<td>C1-C4</td>
+<td>可行但有条件</td>
+<td>当SQLite/upload成为权威生产持久化时需要；不是明确标记的可重建 M1 读取索引的障碍。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="global-acceptance-rules">全球接受规则<a class="headerlink" href="#global-acceptance-rules" title="Permanent link">&para;</a></h2>
+<p>仅当出现以下情况时，才会接受每个阻塞结果：</p>
+<ul>
+<li>回归测试在前缀实现上失败并通过
+  修复；仅线路覆盖并不能证明行为覆盖。</li>
+<li>测试涉及公共边界（HTTP、持久包/数据库、
+  生成的客户，或检查协调员），而不仅仅是一个被嘲笑的私人
+  帮手。</li>
+<li>显式断言负路径和故障安全路径，包括返回的路径
+  问题代码或 NG 原因代码（如果适用）。</li>
+<li><code>make check</code> 和 <code>git diff --check origin/main...HEAD</code> 在所有修复后通过。</li>
+<li>快速入门/上下文声明已更新，以匹配实施的 M1/生产
+  边界；没有不可用的功能被描述为可操作的。</li>
+</ul>
+<hr />
+<h2 id="immediate-blocking-findings">立即封锁结果<a class="headerlink" href="#immediate-blocking-findings" title="Permanent link">&para;</a></h2>
+<h3 id="f1-media-records-published-under-the-staging-path-that-is-later-renamed-away">F1。在暂存路径下发布的媒体记录，后来更名为“离开”<a class="headerlink" href="#f1-media-records-published-under-the-staging-path-that-is-later-renamed-away" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> <code>OutputWriter.save</code> 将媒体写入随机 <code>.staging-...</code>
+目录，然后将该目录重命名为检查 ID，但是
+persisted <code>relative_path</code> 源自暂存目录名称，并且是
+重命名后就再也没有更新过。每一条媒体记录均由硬核制作
+因此，作者指出了一条不再存在的路径。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:114</code>（暂存目录）
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:130</code>（重命名）
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:151</code> (<code>relative = f"{inspection_dir.name}/{name}"</code>)</p>
+<p><strong>影响：</strong> <code>assemblyvision inspect</code>之后，最终文件存在于
+<code>&lt;output&gt;/&lt;inspection_id&gt;/key_frame.jpg</code>同时记录引用
+<code>&lt;output&gt;/.staging-.../key_frame.jpg</code>。协调导入无效路径
+<code>GET /api/v1/media/{id}/content</code> 为每个生成的图像返回 404。
+本地重现：持久路径不存在，而最终文件存在。</p>
+<p><strong>测试间隙：</strong> <code>apps/edge-service/tests/test_output_writer.py:60-78</code> 和
+<code>apps/edge-service/tests/test_output_writer_extended.py</code>断言物理
+文件和校验和，但从未解析 <code>output_root / media.relative_path</code>。</p>
+<p><strong>建议的解决方案：</strong> 从稳定版构建最终的 <code>relative_path</code>
+文件仍写入暂存目录下时检查 ID。通行证
+最终相对目录名单独到<code>_save_image</code>；不要重写
+出版后的记录，因为这需要重写
+原子目录重命名后的<code>inspection.json</code>。添加一个往返测试
+通过存储库和媒体保存媒体、协调和提供内容
+端点。</p>
+<p><strong>验收标准：</strong>
+- <code>media.relative_path</code> 解析为 <code>output_root</code> 下的现有文件
+  <code>writer.save</code>制作的各种媒体。
+- 测试验证保存后是否存在 <code>output_root / media["relative_path"]</code>
+  <code>reconcile_output_root</code> 之后。
+- API 测试验证 <code>GET /api/v1/media/{id}/content</code> 返回 a 的字节
+  新鲜生产的检验。</p>
+<h3 id="f2-media-content-endpoint-allows-directory-traversal-and-absolute-paths">F2。媒体内容端点允许目录遍历和绝对路径<a class="headerlink" href="#f2-media-content-endpoint-allows-directory-traversal-and-absolute-paths" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> <code>relative_path</code> 是从 <code>inspection.json</code> 导入的，没有
+验证并通过加入 <code>settings.output_root / media.relative_path</code> 提供服务
+无需解决和检查遏制。一个 <code>inspection.json</code> 包含
+<code>../secret.txt</code> 或在协调过程中接受绝对路径及其
+内容在媒体根之外提供。调用者控制的 MIME 类型可以
+还会导致提供活动的浏览器内容。</p>
+<p><strong>地点：</strong>
+- <code>packages/python/domain/src/assemblyvision_domain/models.py:136-145</code>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/reconcile.py:30-40</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/media.py:49-60</code></p>
+<p><strong>违规：</strong> <code>docs/design/12-local-storage-and-retention.md:32</code> （路径是
+由可信代码生成，不能包含调用者提供的遍历
+段），<code>docs/design/14-data-model-and-database.md:429,511-515</code>（路径必须
+相对于配置的媒体根），<code>docs/contracts/05-data-api-and-versioning-contracts.md:75-82</code>（API 不得公开文件系统数据）。</p>
+<p><strong>建议的解决方案：</strong>
+- 在导入时拒绝绝对路径和遍历路径（协调和任何
+  未来的摄取路径）。
+- 解析每个服务路径并要求
+  <code>candidate.is_relative_to(output_root.resolve())</code> 阅读之前。
+- 不要信任持久化的 MIME 类型；使用服务时间白名单。</p>
+<p><strong>验收标准：</strong>
+- 协调会跳过（并记录）任何路径为绝对路径或
+  转义<code>output_root</code>；检验记录未部分导入。
+- <code>GET /api/v1/media/{id}/content</code> 对于任何非包含路径返回 404。
+- 使用精心设计的协调元数据进行测试，证明 <code>../</code>、绝对路径和
+  无法读取符号链接转义。
+- 响应<code>Content-Type</code>源自媒体种类/扩展允许列表，或者
+  经验证的持续价值；任意保留的 MIME 值都会被拒绝。</p>
+<h3 id="f3-unauthenticated-local-api-with-wildcard-cors-exposes-privileged-operations">F3。未经身份验证的带有通配符 CORS 的本地 API 会暴露特权操作<a class="headerlink" href="#f3-unauthenticated-local-api-with-wildcard-cors-exposes-privileged-operations" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 没有路由具有身份验证或授权依赖性，并且
+应用程序对所有方法和标头启用 <code>allow_origins=["*"]</code>。任何过程或
+能够到达主机的浏览器可以暂停/恢复检查、重新连接
+摄像头、重试上传以及读取历史记录、配置、日志和媒体。的
+通配符 CORS 可以让任意网站向本地发出跨域请求
+API。因此 <code>paused_by</code> 被硬编码为 <code>"operator"</code>，创建 false
+归因。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/app.py:81-90</code> (CORS)
+- <code>apps/edge-service/src/assemblyvision_edge/api/app.py:95-107</code>（无授权部门）
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/inspection.py:48-81</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/camera.py:23-29</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/state.py:60-64</code></p>
+<p><strong>违规：</strong> <code>docs/design/15-rest-api-and-events.md:13-18</code> （改变路由
+需要 <code>operator</code>/<code>edge_admin</code>；只读健康状况被故意限制；做
+不将 localhost 视为身份验证），<code>docs/design/16-edge-dashboard.md:137-139</code>，
+<code>docs/contracts/08-security-permissions-and-audit.md:11-16</code>。</p>
+<p><strong>建议的解决方案：</strong>
+- 采用并记录具有离线功能的边缘会话/主要设计定义
+  凭证颁发、验证、过期、CSRF 保护和查看者/操作者/
+  边缘管理员授权。在除 <code>/health/live</code> 之外的所有路由上强制执行。
+- 对于只读 M1，删除不支持的突变路线及其 UI 控件
+  而不是暴露未经身份验证的占位符。如果突变仍然存在，它们
+  需要记录的操作员/管理员角色和参与者属性。
+- 默认禁用CORS（同源静态部署）并配置
+  明确的开发来源允许列表（或锚定的本地主机正则表达式）
+  <code>*</code>。
+- 在<code>paused_by</code>中记录代理主体（真实用户或会话）并进行审计
+  突变。</p>
+<p><strong>验收标准：</strong>
+- 所选的边缘会话合同记录在相关设计/ADR 中；
+  环回绑定和 CORS 不被视为身份验证。
+- 除了故意最小的 <code>/health/live</code> 返回之外的每个读取路由
+  401/403 没有定义的查看者凭据。
+- 不支持的M1突变返回404/405并且没有相应的UI控件；
+  任何保留的突变都会返回 401/403，而没有其所需的作用。
+- 浏览器源测试证明未经批准的源无法读取或变异
+  API（预检/实际请求被拒绝）。
+- 对于保留的突变，参与者字段反映了经过身份验证的主体和
+  直接授权测试涵盖每个公开的命令。</p>
+<h3 id="f4-pause-changes-presentation-state-but-does-not-stop-inspection-work">F4。暂停会改变演示状态，但不会停止检查工作<a class="headerlink" href="#f4-pause-changes-presentation-state-but-does-not-stop-inspection-work" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> <code>EdgeRuntime.pause</code> 只设置布尔值和元数据。里面什么也没有
+管道或任何检查入口点读取<code>runtime.paused</code>，因此检查
+当用户界面显示突出的“不会有新产品窗口”时，工作可以继续进行
+打开”的横幅。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/state.py:60-70</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/inspection.py:48-80</code>
+- <code>apps/edge-web/src/pages/LiveInspection.vue:125-136</code></p>
+<p><strong>违规：</strong> <code>docs/design/16-edge-dashboard.md:112-116</code>（暂停停止打开
+新产品橱窗； API 拥有活动窗口行为）。</p>
+<p><strong>建议的解决方案：</strong> 通过检查协调员路由暂停/恢复，该协调员
+拥有新产品窗口的准入权；检测器/管道类不应拥有
+操作暂停状态。协调器必须完成或中止活动窗口
+根据明确的政策，简历必须评估类型准备情况
+快照。对于这个只读 M1，较小的有效替代方案是删除或
+禁用突变端点并隐藏控件，直到出现这样的协调器
+存在。</p>
+<p><strong>验收标准：</strong>
+- 对于 M1 删除选项，API 测试断言暂停/恢复返回 404/405 和 UI
+  测试断言没有提出任何控制或有效性声明。
+- 对于协调员选项，集成测试证明暂停准入
+  拒绝和配置的活动窗口完成/中止策略，包括
+  如果适用，对中止的窗口采取保守的 NG 持久性。
+- 对于协调器选项，resume 返回 <code>409 PRECONDITION_FAILED</code> 除非
+  相机、模型、规则、数据库和磁盘先决条件通过，但 UI 未通过
+  在确认之前乐观地渲染<code>READY</code>。</p>
+<h3 id="f5-the-documented-quickstart-serves-a-mock-backed-dashboard">F5。记录的 <code>serve</code> 快速入门提供模拟支持的仪表板<a class="headerlink" href="#f5-the-documented-quickstart-serves-a-mock-backed-dashboard" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> <code>VITE_API_BASE_URL</code> 在构建时嵌入。快速启动运行
+<code>pnpm --filter edge-web build</code> 没有设置它，所以捆绑包选择
+<code>MockApiClient</code> 和 FastAPI 提供的仪表板显示种子模拟数据
+而不是协调的实际检查。</p>
+<p><strong>地点：</strong>
+- <code>QUICKSTART.md:152-162</code>
+- <code>apps/edge-web/src/services/client.ts:14-18</code></p>
+<p><strong>矛盾：</strong> <code>QUICKSTART.md:147-150</code> 和 <code>docs/ai/context.md:276-297</code>。</p>
+<p><strong>建议的解决方案：</strong> 引入显式构建/运行时数据模式，例如
+<code>VITE_API_MODE=mock|http</code>。 HTTP模式下，省略base URL表示同源
+<code>/api/v1</code>；在模拟模式下，确定性演示仍然可用。构建
+以 HTTP 模式提供生产包。添加浏览器到 FastAPI 集成测试
+这证明当构建的捆绑包由以下人员提供服务时，会呈现真实的数据
+<code>assemblyvision serve</code>。</p>
+<p><strong>验收标准：</strong>
+- 遵循快速入门端到端显示历史上的真实检查，
+  详细信息、媒体和统计信息，并显示后端派生的配置/日志。
+- 带有条形码值的单独 HTTP 集成装置证明了可追溯性
+  渲染；不需要默认的静态 MVP 快速入门来制作
+  其 CLI 不产生的 SN。
+- 测试断言所提供的捆绑包与同源 API 进行对话。
+- 仅当选择显式模拟模式时，模拟才保持可用；一个
+  仅缺少 URL 不会在生产构建中默默地选择模拟。</p>
+<hr />
+<h2 id="additional-blocking-findings">额外的阻塞发现<a class="headerlink" href="#additional-blocking-findings" title="Permanent link">&para;</a></h2>
+<h3 id="f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls">F6。实模式将模拟检测结果与真实设备控制相结合<a class="headerlink" href="#f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong>当前检查、确认、下一步、手动操作总是
+针对私有 <code>MockApiClient</code> 运行，同时暂停/恢复、状态、日志、
+历史记录和运行时状态使用配置的真实客户端。模拟检查
+然后使用ID来请求真实媒体；失败时，UI 会默默地替换
+合成相机框架。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-web/src/services/inspectionService.ts:27-51</code>
+- <code>apps/edge-web/src/pages/LiveInspection.vue:46-56</code></p>
+<p><strong>违规：</strong> <code>docs/design/16-edge-dashboard.md:63-73,128-130</code>（
+确定性的最终决定具有权威性；模拟/陈旧数据不得
+查看当前），<code>docs/contracts/03-ai-rule-and-safety-contracts.md</code>。</p>
+<p><strong>建议的解决方案：</strong> 在实模式下，隐藏或禁用模拟工作流程，并且永远不要
+与真实设备状态一起呈现模拟决策；表面缺失的证据
+作为明确的不可用状态而不是合成图像。</p>
+<p><strong>验收标准：</strong>
+- 在实模式下，不会将模拟检查显示为当前结果。
+- 丢失的介质会呈现不可用/已清除的状态，而不是制造的框架。
+- 测试涵盖故障设备场景（合成数据不得与
+  真正的暂停/状态控制）。</p>
+<h3 id="f7-non-square-manifest-inference-size-passed-to-ultralytics-in-wrong-order">F7。非方形明显推断大小以错误的顺序传递给 Ultralytics<a class="headerlink" href="#f7-non-square-manifest-inference-size-passed-to-ultralytics-in-wrong-order" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 检测器通过 <code>imgsz=(input_width, input_height)</code> 但
+Ultralytics 将二元素 <code>imgsz</code> 解释为 <code>[height, width]</code>。对于一个
+清单声明 1280x736 运行时推断 1280x736 已交换，因此
+预处理不再与已发布的模型配置匹配。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/detection/product_detector.py:84-90</code>
+- <code>apps/edge-service/src/assemblyvision_edge/detection/component_detector.py:84-90</code></p>
+<p><strong>测试间隙：</strong> <code>apps/edge-service/tests/test_detectors.py</code> 断言订单
+使用方形夹具，不能暴露缺陷。</p>
+<p><strong>建议的解决方案：</strong> 将 <code>(input_height, input_width)</code> 传递给 Ultralytics 并添加
+断言确切模型调用的非方形清单适配器测试
+论据。保留命名为宽度/高度的清单尺寸；序列化<code>imgsz</code>
+明确为 <code>[height, width]</code> 以避免歧义。</p>
+<p><strong>验收标准：</strong>
+- 使用非方形清单的适配器测试断言正确的 <code>[height, width]</code>
+  订单。
+- <code>effective_settings</code> 和持久的 <code>inference_metadata</code> 反映相同的顺序。</p>
+<h3 id="f8-rule-component-configuration-and-manifest-sets-are-not-cross-validated-at-startup">F8。规则、组件配置和清单集在启动时不会进行交叉验证<a class="headerlink" href="#f8-rule-component-configuration-and-manifest-sets-are-not-cross-validated-at-startup" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 检测器构造仅验证 <code>config.components ⊆
+manifest.class_names</code>。如果规则需要存在于
+清单但在 <code>config.components</code> 中缺失，管道报告为
+建成后，检测器随后在每次检查时都会引发 <code>KeyError</code>。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/state.py:210-230</code>
+- <code>apps/edge-service/src/assemblyvision_edge/detection/component_detector.py:101-104</code></p>
+<p><strong>状态：</strong> 未解决 PR-003 P1 (<code>docs/reviews/PR-003-review.md:43-57</code>)。</p>
+<p><strong>建议的解决方案：</strong> 在启动时验证所需的子集关系：
+<code>rule.required_components</code> 必须是 <code>config.components</code> 的子集，并且每个
+配置的组件必须存在于组件清单中。额外清单
+允许上课。可能允许额外配置的组件，但不允许
+除非活动规则要求，否则决定证据。还验证规则的
+声明兼容的组件模型版本。任何无效的关系都会阻止
+<code>inspection_ready</code>。</p>
+<p><strong>验收标准：</strong>
+- <code>config.components</code> 中缺少规则所需的组件使得管道
+  加载失败；准备状态返回<code>inspection_ready=false</code>并且稳定
+  <code>CONFIG_INVALID</code> 原因类别而不暴露内部路径。
+- CLI <code>inspect</code>/<code>verify</code> 在相同的不匹配情况下退出并显示配置状态 2
+  并确定缺少的组件或不兼容的版本。
+- 测试涵盖配置中缺少的规则组件、缺少配置的组件
+  从清单来看，组件模型版本不兼容，并且允许额外的
+  明显的类。</p>
+<h3 id="f9-fastapiopenapi-and-typescript-contracts-are-not-synchronized">F9。 FastAPI/OpenAPI 和 TypeScript 合约不同步<a class="headerlink" href="#f9-fastapiopenapi-and-typescript-contracts-are-not-synchronized" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 大多数路由返回 <code>dict[str, object]</code> 而没有键入响应
+模型，因此生成的 OpenAPI 描述任意对象
+(<code>additionalProperties: true</code>)。 TypeScript 类型仍然是手写的。混凝土
+漂移已经存在：Python <code>AggregatedComponentEvidence</code> 包括
+<code>box_area_ratios</code> 和 <code>box_centers</code>，同时
+<code>packages/typescript/api-client/src/edge/types.ts:139-148</code> 省略它们。
+<code>HttpApiClient</code> 盲目地将 JSON 转换为 <code>T</code>，因此测试无法检测到不兼容
+有效负载。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/inspections.py:17-57</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/device.py:14-19</code>
+- <code>packages/typescript/api-client/src/edge/types.ts:1-6</code></p>
+<p><strong>违规：</strong> ADR-006、<code>docs/contracts/02-code-and-interface-contracts.md:64-75</code>、
+<code>docs/design/14-data-model-and-database.md:401-418,545-555</code>。</p>
+<p><strong>建议的解决方案：</strong> 声明严格的 Pydantic 请求/响应模型并键入
+路由返回注释（使用 <code>response_model</code>，其中 FastAPI 无法推断
+合约），提交确定性 OpenAPI，生成 TypeScript 类型/客户端
+进入记录的生成目录，并使 CI 在生成文件上失败或
+OpenAPI 漂移。保留请求模型<code>extra="forbid"</code>。</p>
+<p><strong>验收标准：</strong>
+- OpenAPI描述名为<code>Page[T]</code>、<code>InspectionRecord</code>、<code>DeviceStatus</code>、
+  <code>Problem</code>等，不是任意对象。
+- 当 OpenAPI 发生更改而未更新生成的 TS 时，CI 漂移检查会失败。
+- 每当承载主体的端点被拒绝时，未知的请求主体字段都会被拒绝
+  存在；此标准不适用于已删除的 M1 突变端点。
+- 合同集成测试调用实时 TestClient 端点并验证
+  在前端边界返回 JSON 并生成架构/运行时
+  验证；单独的 TypeScript 类型检查不被视为 JSON 验证。</p>
+<h3 id="f10-sqlite-defaults-and-immutable-inspection-semantics-do-not-meet-the-contract">F10。 SQLite 默认值和不可变检查语义不符合约定<a class="headerlink" href="#f10-sqlite-defaults-and-immutable-inspection-semantics-do-not-meet-the-contract" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 存储库未启用 WAL 或外键，因此 <code>ON DELETE
+CASCADE</code> 是惰性的。 <code>upsert_inspection</code>可以覆盖<code>device_id</code>，
+<code>completed_at</code> 和 <code>decision</code> 并删除/替换所有证据和媒体，同时
+非规范化过滤器列未更新，留下列表过滤器
+与细节不符。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/repository.py:122-131</code>（引擎，无 PRAGMA）
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/repository.py:136-217</code></p>
+<p><strong>违规：</strong> <code>docs/design/14-data-model-and-database.md:420-430</code>，
+<code>docs/design/12-local-storage-and-retention.md:47</code>,
+<code>docs/contracts/05-data-api-and-versioning-contracts.md:3-18</code>。</p>
+<p><strong>建议的解决方案：</strong> 在期间设置持久数据库选项，例如 WAL
+数据库初始化/迁移，并配置连接范围的 PRAGMA
+（<code>foreign_keys</code>、<code>busy_timeout</code>和批准的同步级别）通过
+SQLAlchemy 连接事件。对于 M1 读取投影，进行调节
+仅插入：相同的现有内容是无操作的，而不同的内容
+相同的检查 ID 会造成完整性冲突，因此永远不会应用。移动
+可变同步状态 API 实现权威持久性里程碑。</p>
+<p><strong>验收标准：</strong>
+- 重新打开的文件支持数据库报告<code>journal_mode=wal</code>；每次退房
+  连接报告<code>foreign_keys=1</code>和配置的<code>busy_timeout</code>。
+- 重新导入相同的检查是无效的；冲突的内容
+  相同的检查ID在没有部分突变的情况下失败。
+- 没有重播重写证据/媒体，并且列表/过滤器投影仍然存在
+  与细节一致。</p>
+<h3 id="f11-rule-evaluation-exceptions-bypass-the-fail-safe-persisted-decision-path">F11。规则评估异常绕过故障安全持久决策路径<a class="headerlink" href="#f11-rule-evaluation-exceptions-bypass-the-fail-safe-persisted-decision-path" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> <code>RuleEngine.evaluate</code> 可以引发 <code>RuleEvaluationError</code>，但是
+pipeline 不会将其转换为保守的终端记录。命令行界面
+报告操作错误，并且不保留可审核的 NG 结果。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/rules/rule_engine.py:179-180</code>
+- <code>apps/edge-service/src/assemblyvision_edge/pipeline.py:212-231</code></p>
+<p><strong>建议的解决方案：</strong> 在应用程序/管道中捕获 <code>RuleEvaluationError</code>
+边界，创建规范的终端内部NG决策，映射业务
+结果为 NG，添加
+<code>RULE_EVALUATION_ERROR</code>，并保留可用的证据。不抓宽泛
+规则引擎本身内部的编程异常。</p>
+<p><strong>验收标准：</strong>
+- 注入的 <code>RuleEvaluationError</code> 会产生持续的检查
+  <code>business_result=NG</code>和<code>RULE_EVALUATION_ERROR</code>。
+- 结果不能包含<code>internal_decision=OK</code>，以及可用的模型/规则/
+  媒体来源仍然存在。
+- 持久化失败仍然返回非零操作错误并且永远不会
+  将未提交的 NG/OK 结果报告为持久的。</p>
+<h3 id="f12-component-provenance-does-not-validate-the-roifull-frame-transform">F12。组件来源无法验证 ROI/全帧变换<a class="headerlink" href="#f12-component-provenance-does-not-validate-the-roifull-frame-transform" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 来源验证检查框架/模型 ID 和图像尺寸
+但接受相互不一致的 <code>roi_bbox</code> 和 <code>full_frame_bbox</code> 坐标。
+因此，矛盾的证据可以通过验证并有助于确定。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/pipeline.py:80-100</code></p>
+<p><strong>建议的解决方案：</strong> 将每个 ROI 框映射到全帧空间（反之亦然）
+记录的变换并将其与检测器提供的对应项进行比较
+使用仅考虑浮点的记录数字容差
+舍入（当前平移变换应使用较小的绝对值
+容差，而不是广泛的像素容差）。拒绝不可逆变换和
+<code>INFERENCE_ERROR</code> 中的框不一致。</p>
+<p><strong>验收标准：</strong>
+- 对于M1，仅接受支持的可逆平移变换；
+  精确的和浮点等效的转换坐标对通过。
+- 与记录的变换不一致的对，不支持/不可逆
+  转换，并且错误的帧对无法对业务 NG 关闭
+  <code>INFERENCE_ERROR</code> 并且不提供存在证据。
+- 如果稍后引入一般仿射变换，则有效的非单位缩放得到
+  积极的测试和只有不一致的映射才会被拒绝。</p>
+<h3 id="f13-statistics-silently-ignores-documented-filters">F13。统计数据默默地忽略记录的过滤器<a class="headerlink" href="#f13-statistics-silently-ignores-documented-filters" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 客户端发送 <code>from</code>，但 FastAPI 路由公开 <code>from_</code>
+没有别名； <code>line</code> 被接受并被忽略。操作员可以收到总计
+错误的时间范围或线路。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/derived.py:44-60</code>
+- <code>packages/typescript/api-client/src/edge/HttpApiClient.ts:185-191</code></p>
+<p><strong>建议的解决方案：</strong> 添加 <code>Query(alias="from")</code>，验证 UTC 时间戳，以及
+要么针对持久索引行标识实施行过滤，要么
+显式检测 <code>line</code> 并返回 <code>400 UNSUPPORTED_FILTER</code> 直到行标识
+存在。仅仅删除声明的参数是不够的，因为 FastAPI
+否则忽略未知的查询参数。</p>
+<p><strong>验收标准：</strong>
+- 端到端测试证明<code>from</code>和<code>to</code>改变了返回的群体。
+- 提供 <code>line</code> 要么正确过滤，要么返回记录的 400；是的
+  从来没有默默无视过。</p>
+<h3 id="f14-derived-image-endpoint-mislabels-or-fabricates-evidence">F14。派生图像端点贴错标签或伪造证据<a class="headerlink" href="#f14-derived-image-endpoint-mislabels-or-fabricates-evidence" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 端点将 <code>ANNOTATED_FRAME</code> 映射到 <code>detection</code> 并且更喜欢
+<code>PRODUCT_ROI</code> 代表 <code>annotated</code>；当媒体不存在时，UI 将替代合成媒体
+没有不可用标记的图像。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/routers/derived.py:63-81</code>
+- <code>apps/edge-web/src/pages/ImageViewer.vue:33-42</code>
+- <code>apps/edge-web/src/pages/LiveInspection.vue:46-56</code></p>
+<p><strong>建议的解决方案：</strong> 定义名称与规范匹配的类型化图像槽
+媒体类型，每种类型映射一次，并表示不可用/已清除的媒体
+明确地。合成演示图像必须仅在显式模拟模式下才可能。</p>
+<p><strong>验收标准：</strong>
+- KEY_FRAME、PRODUCT_ROI 和 ANNOTATED_FRAME 显示在正确标记的下方
+  API 和 UI 测试中的槽位。
+- 丢失或清除的证据显示明确的不可用/清除状态并且没有
+  HTTP 模式下的合成图像。</p>
+<hr />
+<h2 id="conditional-production-persistence-findings">条件生产-持久性发现<a class="headerlink" href="#conditional-production-persistence-findings" title="Permanent link">&para;</a></h2>
+<p>C1-C4是权威生产持久性的有效要求
+上传子系统。如果 API、快速入门、
+上下文文档明确地将 SQLite 标记为 CLI 的可重建投影
+捆绑，并且不声明事务发件箱/恢复准备就绪。</p>
+<h3 id="c1-completed-inspections-are-not-committed-to-the-database-as-one-durable-unit">C1。已完成的检查不会作为一个持久单元提交到数据库<a class="headerlink" href="#c1-completed-inspections-are-not-committed-to-the-database-as-one-durable-unit" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> <code>assemblyvision inspect</code> 发布媒体/JSON 并报告 <code>OK</code>
+立即；仅当 API 稍后启动和扫描时才会填充 SQLite，并且
+协调不会创建上传任务。启动前崩溃留下已完成的
+结果在操作数据库和队列之外，并且 <code>/api/v1/uploads</code> 仍然存在
+空用于正常检查。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/pipeline.py:235-278</code>
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:96-135</code>
+- <code>apps/edge-service/src/assemblyvision_edge/cli.py:150-164</code>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/reconcile.py:30-42</code></p>
+<p><strong>违规：</strong> <code>docs/design/12-local-storage-and-retention.md:34-45</code>，
+<code>docs/design/13-upload-and-synchronization.md:13-19</code>，
+<code>docs/contracts/04-edge-storage-upload-contracts.md:30-43</code>，ADR-005。</p>
+<p><strong>建议的解决方案：</strong> 保持当前 CLI JSON 包作为权威
+static-MVP 结果并显式地将 SQLite 视为可重建的读取投影。
+当权威的 SQLite 持久化/上传进入范围时，替换仅启动
+与应用程序服务协调，在持久介质之后
+发布并在发布完成之前，自动插入
+检查、证据、媒体元数据和所需的上传发件箱任务合二为一
+交易。</p>
+<p><strong>M1 的验收标准：</strong>
+- 文档将 SQLite 标识为可重建的读索引，而不是
+  权威的完成/发件箱商店。
+- 从有效的 CLI 包中删除并重建索引会产生等效的结果
+  无需更改捆绑包即可读取结果。</p>
+<p><strong>生产持久性激活前的验收标准：</strong>
+- 完成的检查始终具有匹配的数据库行和所需的上传
+  <code>OK</code>/completion 之前的任务发布给操作消费者。
+- 每个原子持久性步骤的崩溃测试都确定性地恢复（没有
+  已完成检查，但没有其所需的上传任务）。</p>
+<h3 id="c2-schema-cannot-enforce-synchronization-identity-or-recover-upload-leases">C2。架构无法强制同步身份或恢复上传租约<a class="headerlink" href="#c2-schema-cannot-enforce-synchronization-identity-or-recover-upload-leases" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 架构允许重复的 <code>(device_id, device_sequence)</code>，
+重复的 <code>(device_id, idempotency_key)</code>、重复的媒体路径和重复
+每次检查的部件代码。 <code>upload_tasks</code> 和 <code>UploadTask</code> 没有租约
+所有者/过期，因此过时的 <code>IN_PROGRESS</code> 工作在崩溃后无法恢复。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/schema.py:25-55,88-127</code>
+- <code>apps/edge-service/migrations/versions/0001_initial.py:20-56,77-111</code>
+- <code>packages/python/domain/src/assemblyvision_domain/models.py:148-167</code></p>
+<p><strong>违规：</strong> <code>docs/design/14-data-model-and-database.md:420-445</code>，
+<code>docs/contracts/04-edge-storage-upload-contracts.md:45-66,90-99</code>。</p>
+<p><strong>建议的解决方案：</strong> 在可重建的M1索引中，拒绝重复的规范
+儿童在和解过程中认同并测试拒绝。在 SQLite 之前
+变得权威，添加记录的数据库唯一性约束。如果
+修订版 <code>0001</code> 尚未部署在一次性开发数据之外
+直接纠正；否则添加向前的 Alembic 修订版。添加上传
+实现调度程序时的幂等性约束和租约字段。</p>
+<p><strong>M1 投影的验收标准：</strong>
+- 协调拒绝重复的组件身份和冲突的媒体
+  无需部分导入检查的路径。</p>
+<p><strong>持久同步激活之前的接受标准：</strong>
+- <code>UNIQUE(relative_path)</code> 和
+  <code>UNIQUE(inspection_id, component_code)</code> 由数据库强制执行。
+- <code>UNIQUE(device_id, device_sequence)</code> 在持久序列之后强制执行
+  分配已实施。</p>
+<p><strong>上传调度程序激活之前的接受标准：</strong>
+- <code>UNIQUE(device_id, idempotency_key)</code> 和租赁所有者/到期字段是
+  强制执行。
+- 过时的<code>IN_PROGRESS</code>任务是可检测到的，并在之后转移到可重试状态
+  租约到期。</p>
+<h3 id="c3-is-not-durable-and-product-configuration-version-is-not-bound">C3。 <code>device_sequence</code>不持久且产品配置版本未绑定<a class="headerlink" href="#c3-is-not-durable-and-product-configuration-version-is-not-bound" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> <code>device_sequence</code> 在每次进程重新启动后都会在 1 处重新启动，而
+省略的设备 ID 会重新生成，从而产生重复的序列号
+架构允许。管道创建 <code>ProductResolution</code> 没有
+<code>product_version_id</code>，并且架构没有必需的产品配置
+版本列，因此集中同步无法删除重复或重播
+检查其精确配置。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/pipeline.py:127-129,235-265</code>
+- <code>apps/edge-service/src/assemblyvision_edge/api/state.py:40-45,230-240</code>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/schema.py:28-55</code></p>
+<p><strong>违规：</strong> <code>docs/design/14-data-model-and-database.md:13-20,206-229,424-430</code>，
+<code>docs/contracts/05-data-api-and-versioning-contracts.md:20-29,103-113</code>。</p>
+<p><strong>建议的解决方案：</strong> 对于静态 CLI MVP，记录其顺序不是
+同步身份。在持久/同步操作之前，需要一个
+稳定配置的设备身份、持久化和事务性分配
+每个设备的序列号，并将产品配置版本存储在
+每次检查。</p>
+<p><strong>持久/同步操作之前的验收标准：</strong>
+- 每个设备在重新启动后序列号都是唯一的。
+- 每次持续检查都会记录其产品配置版本。
+- 数据库拒绝重复的设备序列。</p>
+<h3 id="c4-startup-reconciliation-does-not-perform-the-required-integrity-or-recovery-work">C4。启动协调不执行所需的完整性或恢复工作<a class="headerlink" href="#c4-startup-reconciliation-does-not-perform-the-required-integrity-or-recovery-work" title="Permanent link">&para;</a></h3>
+<p><strong>问题：</strong> 现有数据库行被跳过，以及它们的介质存在、大小、
+校验和和生命周期从不检查。过时的 <code>IN_PROGRESS</code> 任务，
+中断的检查、孤立/暂存文件和数据库完整性都不是
+恢复了。缺少的 <code>AVAILABLE</code> 媒体将保持广告状态，直到发出请求为止
+失败。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/api/app.py:55-70</code>
+- <code>apps/edge-service/src/assemblyvision_edge/persistence/reconcile.py:20-42</code></p>
+<p><strong>违规：</strong> <code>docs/design/12-local-storage-and-retention.md:108-112</code>，
+<code>docs/design/14-data-model-and-database.md:539-543</code>,
+<code>docs/contracts/04-edge-storage-upload-contracts.md:90-99</code>。</p>
+<p><strong>建议的解决方案：</strong> 对于 M1，验证迁移成功和可重建性
+读取索引，并且不声称完全恢复。在权威坚持之前
+激活，实施显式启动恢复阶段（数据库完整性，
+中断检查、暂存/孤立文件、引用媒体存在/大小、
+有界校验和验证、过期上传租约）并输入
+无法恢复的损坏时的存储未就绪模式。</p>
+<p><strong>权威持久性激活之前的接受标准：</strong>
+- 启动检测并报告引用的媒体丢失或损坏。
+- 过时的<code>IN_PROGRESS</code>任务恢复到可重试状态。
+- 不可恢复的数据库损坏将服务设置为存储未就绪，并且
+  永远不会在损坏的证据上初始化新的数据库。</p>
+<hr />
+<h2 id="non-blocking-p2-findings">非阻塞 P2 结果<a class="headerlink" href="#non-blocking-p2-findings" title="Permanent link">&para;</a></h2>
+<p>以下项目不是合并阻止程序，但应在下一个项目中进行跟踪
+里程碑：</p>
+<ul>
+<li>
+<p><strong>未知 <code>/api/v1</code> 路由返回 <code>index.html</code> 并带有 200。</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/app.py:130-143</code> 应用 SPA
+  回退到 <code>/api</code> 之下； <code>test_api_extended.py:111-116</code> 处的测试编码
+  它。返回标准 API 404 问题。
+  <em>解决方案：</em> 切勿在 <code>/api</code> 下应用 SPA 后备。</p>
+</li>
+<li>
+<p><strong>历史游标/过滤器不实现记录的合同。</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/inspections.py:17-38</code>。
+  游标未绑定到归一化过滤器集，无效游标变为500，
+  无效的决策/时间戳被接受为字符串，并且超出范围限制
+  默默重置。
+  <em>解决方案：</em> 验证边界处的类型化枚举/日期时间/范围，绑定
+  过滤不透明光标中的指纹，将失败映射到 <code>400 INVALID_FILTER</code>。</p>
+</li>
+<li>
+<p><strong>上传重试会忽略资格、幂等性、原因和状态元数据。</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>;
+  <code>repository.retry_upload</code> 接受任何状态，忽略 <code>Idempotency-Key</code> 和
+  原因，并且不更新 <code>updated_at</code>/<code>next_attempt_at</code>。
+  <em>解决方案：</em> 因为调度程序超出了 M1 范围，所以删除/禁用
+  目前突变端点和 UI 操作。激活后，保留密钥/原因，
+  仅允许符合条件的状态，返回 <code>409 TASK_ACTIVE</code>，并更新转换
+  时间戳。</p>
+</li>
+<li>
+<p><strong>媒体“流式传输”加载整个文件并发出无效的空 416。</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/media.py:58-81</code>。
+  <em>解决方案：</em> 流式传输有界块并提出问题响应
+  <code>Content-Range</code> 保留。</p>
+</li>
+<li>
+<p><strong>记录的过滤器被省略而不是拒绝/实施</strong>媒体
+  种类、上传状态/种类和日志级别/组件/时间/光标。
+  <em>解决方案：</em> 实施类型化、索引过滤器或停止声明设计 15.3
+  一致性。</p>
+</li>
+<li>
+<p><strong>未处理的 500 响应不携带/传播请求 ID。</strong>
+  <code>apps/edge-service/src/assemblyvision_edge/api/app.py:41-49,121-127</code>。
+  <em>解决方案：</em>为每个请求生成/验证一个请求 ID 并将其包含在
+  每个问题和响应标题。</p>
+</li>
+<li>
+<p><strong>推理来源仍然是未类型化且不完整的。</strong>
+  <code>packages/python/domain/src/assemblyvision_domain/models.py:263</code>，
+  <code>pipeline.py:280-289</code>：<code>inference_metadata</code>是<code>dict[str, object]</code>并且记录
+  仅设置，而不是模型名称/版本、每次推理时间戳或阶段
+  延迟。在声明完整的推理可追溯性之前需要
+  (<code>docs/contracts/03-ai-rule-and-safety-contracts.md:30-43</code>)。</p>
+</li>
+<li>
+<p><strong>未解决的 PR-003 验证差距：</strong> <code>verify --expected</code> 仍然启用文件名
+  回退（<code>cli.py:173-180</code>），验证将身份折叠为基本名称
+  （<code>verify.py:191-212</code>）。请参阅<code>docs/reviews/PR-003-review.md:114-137</code>。</p>
+</li>
+<li>
+<p><strong>规则版本哈希不会强制跨版本的语义不变性。</strong>
+  接受不同内容的相同 <code>rule_id</code>/<code>rule_version</code>
+  （<code>rules/rule_engine.py:85-93</code>）。需要安装规则注册表或冲突
+  拒绝。</p>
+</li>
+<li>
+<p><strong>崩溃遗留的暂存包将被忽略并且永远不会被协调。</strong>
+  <code>output/writer.py:114-134</code>；进程内失败干净的暂存，但进程
+  终止绕过处理程序。初创公司应该隔离/验证过时的
+  <code>.staging-*</code> 目录。</p>
+</li>
+<li>
+<p><strong>文档夸大了并与实施相矛盾：</strong>
+  <code>QUICKSTART.md:202-216</code> 和 <code>docs/ai/context.md:256-264,289-297,316-334</code>。
+  需要与功能性阻断剂一起进行纠正（例如“切换到
+  FastAPI 不需要 UI 更改”是不准确的；暂停/恢复描述为
+  实施时它不管理管道执行）。</p>
+</li>
+</ul>
+<hr />
+<h2 id="declared-out-of-scope-tracked-as-next-milestones-not-blockers">宣布超出范围（跟踪为下一个里程碑，而不是阻碍因素）<a class="headerlink" href="#declared-out-of-scope-tracked-as-next-milestones-not-blockers" title="Permanent link">&para;</a></h2>
+<p>PR 描述和 <code>docs/ai/context.md</code> 中明确列出了以下内容
+作为未来的工作，并且不被视为合并阻止程序：</p>
+<ul>
+<li>WebSocket运行时通道</li>
+<li>具有重试退避和幂等性的上传队列调度程序</li>
+<li>相机和条形码硬件适配器</li>
+<li>时间聚合</li>
+<li>Docker 包装</li>
+<li>PR-003 数据集暂存和模型清单的完整内容不变性</li>
+<li>带有 X-AnyLabeling 注释和 <code>adapt-xanylabeling.py</code> 的真实数据基线</li>
+</ul>
+<h2 id="references">参考<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/contracts/01-architecture-boundaries.md</code></li>
+<li><code>docs/contracts/02-code-and-interface-contracts.md</code></li>
+<li><code>docs/contracts/03-ai-rule-and-safety-contracts.md</code></li>
+<li><code>docs/contracts/04-edge-storage-upload-contracts.md</code></li>
+<li><code>docs/contracts/05-data-api-and-versioning-contracts.md</code></li>
+<li><code>docs/contracts/08-security-permissions-and-audit.md</code></li>
+<li><code>docs/design/12-local-storage-and-retention.md</code></li>
+<li><code>docs/design/14-data-model-and-database.md</code></li>
+<li><code>docs/design/15-rest-api-and-events.md</code></li>
+<li><code>docs/design/16-edge-dashboard.md</code></li>
+<li><code>docs/design/decisions/ADR-006-rest-plus-websocket.md</code></li>
+<li><code>docs/reviews/PR-003-review.md</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1216,7 +1216,7 @@
   <a href="#1813-ci-and-build-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.13 CI 和构建流程
+        18.13 CI and Build Flow
       
     </span>
   </a>
@@ -1227,7 +1227,7 @@
   <a href="#1814-ownership-and-change-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.14 Ownership and Change Rules
+        18.14 所有权和变更规则
       
     </span>
   </a>
@@ -2681,7 +2681,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -3215,7 +3215,7 @@
   <a href="#1813-ci-and-build-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.13 CI 和构建流程
+        18.13 CI and Build Flow
       
     </span>
   </a>
@@ -3226,7 +3226,7 @@
   <a href="#1814-ownership-and-change-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.14 Ownership and Change Rules
+        18.14 所有权和变更规则
       
     </span>
   </a>
@@ -3272,7 +3272,7 @@
 <ol>
 <li><code>apps/</code>包含独立可运行/可部署的进程和Web应用程序。</li>
 <li><code>packages/</code> 包含由至少两个应用程序或需要独立测试的内聚域重用的代码。</li>
-<li>将产品检测、ROI、组件检测、时间聚合和规则放在 <code>vision-core</code> 中。一旦第二个具体消费者需要<code>domain</code>和<code>vision-core</code>，就提取它们；标记为“训练和检查”的 MVP 就是该触发器，因为训练重用了域模式和 ROI/预处理。</li>
+<li>将产品检测、ROI、组件检测、时间聚合和规则放在 <code>vision-core</code> 中。一旦第二个具体消费者需要<code>domain</code>和<code>vision-core</code>，就提取它们；标记的训练和检查 MVP 就是那个触发器，因为训练重用了域模式和 ROI/预处理。</li>
 <li>运行时应用程序代码永远不会从 <code>training/</code> 导入。</li>
 <li>边缘代码不得导入中央持久性或需要中央连接。</li>
 <li>前端使用生成的 API 合约和小型共享视觉原语；特定于页面的商店和组件保留在其应用程序中。</li>
@@ -3451,12 +3451,12 @@
     EV --&gt; UI[TS用户界面]
     AW[管理网] --&gt; AC
     AW --&gt; UI
-    AC -. 产生于 .-&gt; EO[边缘开放API]
-    AC -. 产生于 .-&gt; CO[中央开放API]
+    AC -. 产生自 .-&gt; EO[边缘开放API]
+    AC -. 产生自 .-&gt; CO[中央开放API]
 
-    ES[edge-service] --&gt; VD[Python域]
+    ES[边缘服务] --&gt; VD[Python域]
     ES --&gt; VC[愿景核心]
-    ES --&gt; PC[platform-common]
+    ES --&gt; PC[平台通用]
     VC --&gt; VD
     VC --&gt; PC
 
@@ -3526,7 +3526,7 @@
 </tbody>
 </table>
 <p>测试不会从生产数据目录导入装置。 ML 评估数据集在外部进行版本控制，并与快速 CI 分开调用。</p>
-<h2 id="1813-ci-and-build-flow">18.13 CI 和构建流程<a class="headerlink" href="#1813-ci-and-build-flow" title="Permanent link">&para;</a></h2>
+<h2 id="1813-ci-and-build-flow">18.13 CI and Build Flow<a class="headerlink" href="#1813-ci-and-build-flow" title="Permanent link">&para;</a></h2>
 <ol>
 <li>验证可用工具的格式、Ruff、MyPy、ESLint、TypeScript 和 Markdown 链接/图表。</li>
 <li>运行更改包单元测试，然后运行合同测试和集成测试。</li>
@@ -3537,7 +3537,7 @@
 <li>仅发布经过审查、标记的修订版的不可变图像/工件；在清单中记录源修订。</li>
 </ol>
 <p>培训作业并不是 CI 运行的每个应用程序的一部分。他们的代码测试在 CI 中运行；完整的培训/评估在受控的机器学习环境中运行，并发布签名/验证的报告和模型工件。</p>
-<h2 id="1814-ownership-and-change-rules">18.14 Ownership and Change Rules<a class="headerlink" href="#1814-ownership-and-change-rules" title="Permanent link">&para;</a></h2>
+<h2 id="1814-ownership-and-change-rules">18.14 所有权和变更规则<a class="headerlink" href="#1814-ownership-and-change-rules" title="Permanent link">&para;</a></h2>
 <p>使用代码所有者进行愿景/规则、边缘运行时、中央/安全、前端共享包、迁移和培训/评估。 Pydantic 合约变更需要 API/客户端漂移检查。已发布的事件更改需要兼容性审查。数据库更改需要迁移和回滚/前恢复注释。共享 UI 添加需要两个具体的消费者；否则他们仍然是本地人。</p>
 <h2 id="1815-open-questions-and-validation-required">18.15 未解决的问题和需要验证<a class="headerlink" href="#1815-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3545,8 +3545,8 @@
 <li>确认 CI 提供程序、容器注册表、工件/模型注册表和 SBOM/签名要求。</li>
 <li>确认相机 SDK 许可或本机库是否需要单独构建的适配器包/图像。</li>
 <li>决定在每个消费者构建期间是否提交或生成生成的 OpenAPI 客户端。</li>
-<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人是合理的。</li>
-<li>确认支持的边缘操作系统、CPU/GPU架构以及离线依赖安装过程。</li>
+<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人合理。</li>
+<li>确认支持的边缘操作系统、CPU/GPU架构和离线依赖安装过程。</li>
 </ul>
 
 

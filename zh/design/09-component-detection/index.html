@@ -787,7 +787,7 @@
   <a href="#95-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9.5 Configuration
+        9.5 配置
       
     </span>
   </a>
@@ -798,7 +798,7 @@
   <a href="#96-evidence-semantics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9.6 Evidence Semantics
+        9.6 证据语义
       
     </span>
   </a>
@@ -2537,7 +2537,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -2894,7 +2894,7 @@
   <a href="#95-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9.5 Configuration
+        9.5 配置
       
     </span>
   </a>
@@ -2905,7 +2905,7 @@
   <a href="#96-evidence-semantics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9.6 Evidence Semantics
+        9.6 证据语义
       
     </span>
   </a>
@@ -3007,7 +3007,7 @@
 <h2 id="94-product-specific-spatial-constraints">9.4 产品特定的空间约束<a class="headerlink" href="#94-product-specific-spatial-constraints" title="Permanent link">&para;</a></h2>
 <p>规则可以定义预期的标准化区域、最小框面积、最大框面积或每个组件的允许计数。这些约束减少了错误匹配，但必须容忍测量的生产位置和装配变化。坐标在生成的产品 ROI 内标准化，而不是在全帧内标准化。</p>
 <p>当重复的框引用一个物理组件时，模型 NMS 首先处理重叠。稍后评估业务数量限制。如果规则只需要一份手册，并且有信心检测到两份手册，则证据是矛盾的，并且在没有明确规则的情况下无法产生<code>OK</code>。</p>
-<h2 id="95-configuration">9.5 Configuration<a class="headerlink" href="#95-configuration" title="Permanent link">&para;</a></h2>
+<h2 id="95-configuration">9.5 配置<a class="headerlink" href="#95-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">component_detection</span><span class="p">:</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">model_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">component-yolo-1.0.0</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">iou_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.50</span>
@@ -3026,7 +3026,7 @@
 <a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="nt">expected_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </code></pre></div>
 <p>每个组件的设置均使用规则/产品配置进行版本控制。产品窗口固定配置和型号版本。阈值更改需要审核记录和回归评估。</p>
-<h2 id="96-evidence-semantics">9.6 Evidence Semantics<a class="headerlink" href="#96-evidence-semantics" title="Permanent link">&para;</a></h2>
+<h2 id="96-evidence-semantics">9.6 证据语义<a class="headerlink" href="#96-evidence-semantics" title="Permanent link">&para;</a></h2>
 <ul>
 <li>合格检测仅针对其映射组件而言是肯定的框架证据。</li>
 <li>没有检测到是指缺乏积极的证据，本身并不能证明该组件缺失。</li>
@@ -3042,21 +3042,21 @@
 <p>保持模型实例正常运行并将并发绑定到测量的 GPU/CPU 容量。背压必须是明确的。仅在测量每个组件的 NG 召回率后才优化输入大小、运行时间或帧采样；禁止默默地丢弃帧以满足吞吐量。采样必须保留最低有效帧要求和产品窗口标识。</p>
 <h2 id="99-verification">9.9 验证<a class="headerlink" href="#99-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Unit-test class mapping, threshold boundaries, spatial constraints, counts, and coordinate conversion.</li>
-<li>Contract-test model manifests and incompatible package rejection.</li>
-<li>Evaluate precision and recall per component, product type, position, batch, and model version.</li>
-<li>Include intentionally missing components, difficult present components, empty ROIs, reflections, and occlusions.</li>
-<li>Split datasets by physical product, capture session, batch, or date, not adjacent video frames.</li>
-<li>Fault-inject timeout, OOM, malformed tensor, and worker restart; none may yield <code>OK</code> from incomplete evidence.</li>
-<li>Benchmark average/P95 inference latency and sustained throughput on deployment hardware.</li>
+<li>单元测试类映射、阈值边界、空间约束、计数和坐标转换。</li>
+<li>合同测试模型清单和不兼容的包拒绝。</li>
+<li>评估每个组件、产品类型、位置、批次和型号版本的精确度和召回率。</li>
+<li>包括故意缺失的组件、困难的当前组件、空的 ROI、反射和遮挡。</li>
+<li>按物理产品、捕获会话、批次或日期（而不是相邻视频帧）拆分数据集。</li>
+<li>错误注入超时、OOM、张量格式错误和工作进程重启；没有人可以从不完整的证据中得出<code>OK</code>。</li>
+<li>部署硬件上的基准平均/P95 推理延迟和持续吞吐量。</li>
 </ul>
 <h2 id="910-open-questions-and-validation-required">9.10 未解决的问题和需要验证<a class="headerlink" href="#910-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Define the exact component taxonomy, required counts, and product-type mappings.</li>
-<li>Determine which components need spatial constraints or additional OpenCV checks.</li>
-<li>Select model input size and runtime after edge-hardware benchmarking.</li>
-<li>Establish per-component observation, medium, and high-confidence thresholds from held-out production data.</li>
-<li>Collect sufficient real missing-component examples and confirm labeling guidance.</li>
+<li>定义准确的组件分类、所需数量和产品类型映射。</li>
+<li>确定哪些组件需要空间约束或额外的 OpenCV 检查。</li>
+<li>在边缘硬件基准测试后选择模型输入大小和运行时间。</li>
+<li>根据保留的生产数据建立每个组件的观察、中等和高置信度阈值。</li>
+<li>收集足够的真实缺失组件示例并确认标签指南。</li>
 </ul>
 
 

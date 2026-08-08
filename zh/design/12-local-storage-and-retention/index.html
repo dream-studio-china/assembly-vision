@@ -926,7 +926,7 @@
   <a href="#1210-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        12.10 Open Questions and Validation Required
+        12.10 开放问题和需要验证
       
     </span>
   </a>
@@ -2537,7 +2537,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -2949,7 +2949,7 @@
   <a href="#1210-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        12.10 Open Questions and Validation Required
+        12.10 开放问题和需要验证
       
     </span>
   </a>
@@ -2978,7 +2978,7 @@
 
 <h1 id="12-local-storage-and-retention">12. 本地存储和保留<a class="headerlink" href="#12-local-storage-and-retention" title="Permanent link">&para;</a></h1>
 <h2 id="121-purpose">12.1 目的<a class="headerlink" href="#121-purpose" title="Permanent link">&para;</a></h2>
-<p>边缘客户端持久存储检查、证据元数据、媒体引用、配置版本和持久上传队列。存储支持在网络或中央服务器中断期间进行持续检查。上传行为在<a href="../13-upload-and-synchronization/">upload and synchronization</a>中定义。</p>
+<p>边缘客户端持久存储检查、证据元数据、媒体引用、配置版本和持久上传队列。存储支持网络或中央服务器中断期间的持续检查。上传行为在<a href="../13-upload-and-synchronization/">upload and synchronization</a>中定义。</p>
 <h2 id="122-scope">12.2 范围<a class="headerlink" href="#122-scope" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3085,7 +3085,7 @@
     RetentionEligible --&gt; Deleting:保留和配额策略选择项目
     Deleting --&gt; Deleted:文件已删除并更新了元数据
     Deleting --&gt; RetentionEligible:删除失败
-    Quarantined --&gt; Deleted:Operator-approved cleanup
+    Quarantined --&gt; Deleted:经操作员批准的清理
     Deleted --&gt; [*]</code></pre>
 <h2 id="127-retention-and-disk-pressure">12.7 保持力和圆盘压力<a class="headerlink" href="#127-retention-and-disk-pressure" title="Permanent link">&para;</a></h2>
 <p>清理在进程间租约下异步运行。它仅选择已提交的工件，其最低保留期限已过且其所需上传具有经过验证的收据。取消链接之前数据库引用被锁定/标记为<code>DELETING</code>；成功删除会更新元数据。失败的删除是可重试且可观察的。</p>
@@ -3116,7 +3116,7 @@
 <li>使用介质/参考协调测试备份和恢复。</li>
 <li>浸泡测试并发检查、上传、保留和仪表板读取。</li>
 </ul>
-<h2 id="1210-open-questions-and-validation-required">12.10 Open Questions and Validation Required<a class="headerlink" href="#1210-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="1210-open-questions-and-validation-required">12.10 开放问题和需要验证<a class="headerlink" href="#1210-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>就每种媒体类型、日志和元数据的确切保留期和配额达成一致。</li>
 <li>测量每日检查量、帧大小、剪辑大小和中断持续时间来调整磁盘大小。</li>

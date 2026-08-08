@@ -815,7 +815,7 @@
   <a href="#105-temporal-aggregation-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.5 Temporal Aggregation Sequence
+        10.5 时间聚合序列
       
     </span>
   </a>
@@ -848,7 +848,7 @@
   <a href="#108-window-integrity-and-failure-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.8 Window Integrity and Failure Handling
+        10.8 窗口完整性和故障处理
       
     </span>
   </a>
@@ -881,7 +881,7 @@
   <a href="#1011-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.11 Open Questions and Validation Required
+        10.11 未解决的问题和需要验证
       
     </span>
   </a>
@@ -2548,7 +2548,7 @@
   <span class="md-ellipsis">
     
   
-    Model Improvement
+    模型改进
   
 
     
@@ -2905,7 +2905,7 @@
   <a href="#105-temporal-aggregation-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.5 Temporal Aggregation Sequence
+        10.5 时间聚合序列
       
     </span>
   </a>
@@ -2938,7 +2938,7 @@
   <a href="#108-window-integrity-and-failure-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.8 Window Integrity and Failure Handling
+        10.8 窗口完整性和故障处理
       
     </span>
   </a>
@@ -2971,7 +2971,7 @@
   <a href="#1011-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.11 Open Questions and Validation Required
+        10.11 未解决的问题和需要验证
       
     </span>
   </a>
@@ -3046,7 +3046,7 @@
 </tbody>
 </table>
 <p>即使外部业务接口仅公开 <code>OK</code> 和 <code>NG</code>，<code>UNCERTAIN</code> 和 <code>UNVERIFIABLE</code> 也会以诊断方式保留。</p>
-<h2 id="105-temporal-aggregation-sequence">10.5 Temporal Aggregation Sequence<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
+<h2 id="105-temporal-aggregation-sequence">10.5 时间聚合序列<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Window as 产品展示
     participant Quality as 框架质量门
@@ -3056,7 +3056,7 @@
     Window-&gt;&gt;Aggregate:打开检查所需的组件
 loop 每个相关帧
         Window-&gt;&gt;Quality:验证框架
-alt Frame valid
+alt 帧有效
             Quality-&gt;&gt;Detector:产品投资回报率
             Detector--&gt;&gt;Aggregate:按组件键控的观察结果
             Aggregate-&gt;&gt;Aggregate:对每个组件进行重复数据删除和更新
@@ -3066,7 +3066,7 @@ else 帧无效
     end
     Window-&gt;&gt;Aggregate:关闭窗口
 loop 每个必需的组件
-        Aggregate-&gt;&gt;Aggregate:解决当前、缺失、不确定或无法验证的问题
+        Aggregate-&gt;&gt;Aggregate:解决现有、缺失、不确定或无法验证的问题
     end
     Aggregate--&gt;&gt;Rules:不可变组件证据集
     Rules--&gt;&gt;Window:仅当所有必需的组件都存在时才可以</code></pre>
@@ -3106,7 +3106,7 @@ loop 每个必需的组件
 <a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </code></pre></div>
 <p>策略按型号和产品类型进行版本控制和验证。配置的阈值必须遵守<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>。</p>
-<h2 id="108-window-integrity-and-failure-handling">10.8 Window Integrity and Failure Handling<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
+<h2 id="108-window-integrity-and-failure-handling">10.8 窗口完整性和故障处理<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
 <li>触发超时将窗口视为不完整而关闭；未解析的组件变为 <code>UNVERIFIABLE</code>。</li>
 <li>重复的帧 ID 将被忽略并进行计数。</li>
@@ -3127,7 +3127,7 @@ loop 每个必需的组件
 <li>重放记录的生产窗口并确定性地比较每个组件的结果。</li>
 <li>使用产品级 NG 召回和每个组件召回来验证策略，而不仅仅是帧级准确性。</li>
 </ul>
-<h2 id="1011-open-questions-and-validation-required">10.11 Open Questions and Validation Required<a class="headerlink" href="#1011-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="1011-open-questions-and-validation-required">10.11 未解决的问题和需要验证<a class="headerlink" href="#1011-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>选择权威的产品窗口机制并证明框架与产品的隔离。</li>
 <li>测量典型和最坏情况下的有效帧计数和帧间时序。</li>
