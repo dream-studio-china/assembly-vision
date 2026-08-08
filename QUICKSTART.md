@@ -204,7 +204,7 @@ pnpm --filter edge-web dev        # http://localhost:5173
 | `/images/:id` | Inspection images — original, detection result, annotations |
 | `/statistics` | Production statistics — totals, PASS/NG, pass rate, date/line filters |
 | `/device` | Device status — camera, vision engine, inspection service |
-| `/uploads` | Upload queue with manual retry |
+| `/uploads` | Upload queue — read-only in M1 (manual retry is not exposed) |
 | `/health` | Disk/queue charts (ECharts) and device status |
 | `/inspections` | Full record history (internal records) |
 | `/configuration`, `/logs` | Read-only placeholders |

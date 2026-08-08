@@ -330,12 +330,12 @@ dashboard views can display real CLI inspection results:
   dataset staging, and component preparation reusing production selection
   contracts. Rule content binding, bundle-atomic output, inference parameter
   pinning, and detection provenance validation are now fixed (section 8.3).
-- The PR #8 review is recorded in `docs/reviews/PR-008-review.md`: it is not
-  yet mergeable. Blockers include media records published under the renamed
-  staging path, media traversal/absolute-path serving, unauthenticated
-  wildcard-CORS API, pause that does not stop inspection work, and a quickstart
-  that serves the mock dashboard; each finding lists a proposed solution and
-  acceptance criteria.
+- The PR #8 review is recorded in `docs/reviews/PR-008-review.md`: all blocking
+  findings (F1-F14) and the M1 conditional items (C1-C4) are resolved and
+  validated on `dev`; the remaining roadmap scope (upload queue scheduler,
+  WebSocket channel, camera/barcode adapters, temporal aggregation, Docker
+  packaging, authoritative SQLite persistence/outbox) is tracked as the next
+  milestone and does not block the PR.
 - Real customer data is still required for the one-month baseline: annotate with
   X-AnyLabeling (product + component boxes), then run `av-train` ->
   `assemblyvision inspect` -> `assemblyvision verify`. A utility script
