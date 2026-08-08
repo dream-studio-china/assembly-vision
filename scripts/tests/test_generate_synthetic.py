@@ -42,11 +42,6 @@ def test_generated_data_yaml_uses_portable_relative_paths(tmp_path: Path) -> Non
             assert ".staging-" not in str(data[key])
 
 
-def _rotated_aabb_identity() -> tuple[float, float, float, float]:
-    # rotation 0 keeps the rectangle unchanged
-    return generator._rotated_aabb(10.0, 20.0, 30.0, 40.0, 20.0, 30.0, 0.0)
-
-
 def test_rotated_aabb_is_axis_aligned_and_contains_rotated_corners() -> None:
     x1, y1, x2, y2 = 10.0, 20.0, 30.0, 40.0
     cx, cy = 20.0, 30.0

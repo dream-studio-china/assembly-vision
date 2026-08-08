@@ -120,6 +120,13 @@ takes precedence.
 
 Reason codes are stable machine-readable identifiers. A record may contain several codes; `primary_reason_code` selects the principal explanation. Message text is localized/presentational and must not replace the code. New codes require schema documentation, tests, severity/default mapping, and backward-compatible central display.
 
+The canonical machine-readable code set implemented by the rule engine and
+pipeline lives in `packages/python/domain/src/assemblyvision_domain/reason_codes.py`
+and is enumerated in [Rule Engine §11.5](11-rule-engine.md#115-reason-codes).
+The table below is the fault-state taxonomy that maps those codes to their
+default internal state and operational response; it is descriptive, while the
+Python module is the enforceable source of truth (AUDIT-001).
+
 | Code | Meaning | Default internal state | Typical action |
 |---|---|---|---|
 | `OK_ALL_REQUIRED_PRESENT` | All required components meet the pinned rule using valid evidence. | `OK` | Record and apply normal OK upload policy |

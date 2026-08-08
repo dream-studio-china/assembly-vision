@@ -4,6 +4,16 @@
 
 This document defines the canonical AssemblyVision domain models and the separate edge and central persistence schemas. The edge database is an operational store optimized for uninterrupted inspection and upload recovery. The central PostgreSQL database is the system of record for fleet configuration, synchronized inspection history, review, and audit.
 
+> **M1 implementation boundary.** In the M1 read-only milestone (ADR-012) the
+> edge SQLite database is a **rebuildable read projection** of the CLI
+> `inspection.json` bundles, not the authoritative operational store described
+> below. It can be deleted and rebuilt from the same bundles, it is not the
+> completion/outbox store, and its schema does not yet carry the unique
+> constraints, product-configuration column, or upload leases required by the
+> production design. The authoritative store is built together with the upload
+> scheduler; until then this design describes the target, not the current
+> implementation (AUDIT-001).
+
 Related documents: [REST API and Events](15-rest-api-and-events.md), [Edge Dashboard](16-edge-dashboard.md), [Central Admin Dashboard](17-central-admin-dashboard.md), and [Training and Evaluation](19-training-and-evaluation.md).
 
 ## 14.2 Data Conventions

@@ -20,7 +20,7 @@ rules, edge-first decisions, delayed sync to a central server.
 ```bash
 git clone https://github.com/dream-studio-china/assembly-vision.git
 cd assembly-vision
-git checkout dev            # `main` = released MVP; `dev` = in-progress work
+git checkout dev            # `dev` is the development branch, kept in sync with `main`
 uv sync                     # Python workspace
 pnpm install                # TypeScript workspace (frontend)
 ```

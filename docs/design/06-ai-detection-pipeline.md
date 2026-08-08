@@ -108,6 +108,11 @@ quality:
   max_mean_brightness: 225.0
 ```
 
+The `pipeline.*` keys above describe the production windowed pipeline and are
+deferred: the M1 static single-frame CLI accepts only `product_detection`,
+`component_detection`, `components`, and `roi` sections and rejects unknown
+keys (AUDIT-001).
+
 Configuration is schema-validated at startup. Invalid configuration prevents inspection readiness. Active model, rule, and product configuration versions are pinned when a product window opens and cannot change within that window.
 
 ## 6.7 Failure Handling

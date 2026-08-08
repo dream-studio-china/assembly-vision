@@ -8,7 +8,8 @@ accepted accuracy improvement.
 
 ## Preconditions
 
-- A checked-out `feat/mvp` workspace with `uv sync` completed (ultralytics installed).
+- A checked-out `main` (or `dev`) workspace with `uv sync` completed
+  (ultralytics installed).
 - A labeled dataset (X-AnyLabeling export or a Roboflow export adapted with
   `scripts/adapt-roboflow-dataset.py`) using a leakage-safe train/val split.
 - The model artifacts to be replaced, plus their manifests and checksums, are

@@ -53,8 +53,11 @@ held-out verification data.
 
    This validates every label line, enforces the two-stage rules (independent
    product box required; component-only images rejected; background negatives
-   kept as explicit empty labels), and produces `dataset_product`,
-   `dataset_components`, `test-expected.json`, and `manifest.json`. Roboflow
+   kept as explicit empty labels), and requires image/label pairing: a missing
+   label file for any image in any split is a hard error, image stems must be
+   unique per split, and Roboflow's `valid` split is normalized to `val`. It
+   produces `dataset_product`, `dataset_components`, `test-expected.json`,
+   and `manifest.json` with dataset-relative `data.yaml` paths. Roboflow
    exports use `scripts/adapt-roboflow-dataset.py` instead. A populated output
    directory is rejected to avoid stale data.
 9. **Verify leakage-safe splits.** The adapter already rejects byte-identical
