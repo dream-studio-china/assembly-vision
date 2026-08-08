@@ -32,18 +32,29 @@ def _content_type(media: MediaMetadata) -> str:
     return _MIME_BY_KIND.get(media.kind, "application/octet-stream")
 
 
-def _resolve_media_path(output_root: Path, relative_path: str) -> Path | None:
+def _resolve_media_path(output_root: Path, inspection_id: str, relative_path: str) -> Path | None:
     """Resolve a media path and return it only when it stays inside the root.
 
-    Absolute paths and symlink escapes resolve outside ``output_root`` and are
-    rejected here, so callers never read filesystem content outside the root.
+    A media file must be a child of its inspection bundle. Absolute paths,
+    cross-inspection paths, root files, and symlink escapes are rejected here,
+    so callers never read unrelated filesystem content.
     """
     root = output_root.resolve()
+    relative = Path(relative_path)
+    inspection_dir = Path(inspection_id)
+    if (
+        relative.is_absolute()
+        or ".." in relative.parts
+        or len(relative.parts) < 2
+        or relative.parts[0] != inspection_dir.name
+    ):
+        return None
     try:
-        candidate = (root / relative_path).resolve()
+        bundle_root = (root / inspection_dir).resolve()
+        candidate = (root / relative).resolve()
     except OSError:
         return None
-    if not candidate.is_relative_to(root):
+    if not bundle_root.is_relative_to(root) or not candidate.is_relative_to(bundle_root):
         return None
     return candidate
 
@@ -95,8 +106,8 @@ def media_content(
     found = repository.get_media(media_id)
     if found is None:
         raise ApiProblem(status_code=404, code="MEDIA_NOT_FOUND", detail=f"no media {media_id}")
-    media, _inspection_id = found
-    path = _resolve_media_path(settings.output_root, media.relative_path)
+    media, inspection_id = found
+    path = _resolve_media_path(settings.output_root, str(inspection_id), media.relative_path)
     if path is None or not path.is_file():
         if media.lifecycle.value == "PURGED":
             raise ApiProblem(status_code=410, code="MEDIA_PURGED", detail="media has been purged")

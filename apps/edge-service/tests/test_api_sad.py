@@ -214,7 +214,7 @@ def test_derived_images_partial_media_leaves_missing_slots_empty(tmp_path: Path)
             media_id=key_id,
             kind="KEY_FRAME",
             lifecycle=MediaLifecycle.AVAILABLE,
-            relative_path="key.jpg",
+            relative_path=f"{record.inspection_id}/key.jpg",
             mime_type="image/jpeg",
             size_bytes=1,
             checksum_sha256="0" * 64,
@@ -244,7 +244,7 @@ def test_derived_images_maps_kinds(tmp_path: Path) -> None:
             media_id=key_id,
             kind="KEY_FRAME",
             lifecycle=MediaLifecycle.AVAILABLE,
-            relative_path="key.jpg",
+            relative_path=f"{record.inspection_id}/key.jpg",
             mime_type="image/jpeg",
             size_bytes=1,
             checksum_sha256="0" * 64,
@@ -253,7 +253,7 @@ def test_derived_images_maps_kinds(tmp_path: Path) -> None:
             media_id=annotated_id,
             kind="ANNOTATED_FRAME",
             lifecycle=MediaLifecycle.AVAILABLE,
-            relative_path="ann.jpg",
+            relative_path=f"{record.inspection_id}/ann.jpg",
             mime_type="image/jpeg",
             size_bytes=1,
             checksum_sha256="0" * 64,
@@ -262,7 +262,7 @@ def test_derived_images_maps_kinds(tmp_path: Path) -> None:
             media_id=roi_id,
             kind="PRODUCT_ROI",
             lifecycle=MediaLifecycle.AVAILABLE,
-            relative_path="roi.jpg",
+            relative_path=f"{record.inspection_id}/roi.jpg",
             mime_type="image/jpeg",
             size_bytes=1,
             checksum_sha256="0" * 64,
@@ -379,6 +379,49 @@ def test_media_content_rejects_traversal_and_absolute(tmp_path: Path) -> None:
             assert response.json()["code"] == "MEDIA_NOT_FOUND"
 
 
+def test_media_content_rejects_files_outside_its_inspection_bundle(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.repository import EdgeRepository
+
+    root = tmp_path / "out"
+    root.mkdir()
+    db = root / "edge.sqlite3"
+    record = _crafted_record("edge.sqlite3", "image/jpeg")
+    repo = EdgeRepository.open(db)
+    repo.upsert_inspection(record)
+    repo.close()
+
+    settings = ServerSettings(output_root=root, db_path=db)
+    app = create_app(settings, reconcile=False)
+    with TestClient(app) as client:
+        response = client.get(f"/api/v1/media/{record.media[0].media_id}/content")
+        assert response.status_code == 404
+        assert response.json()["code"] == "MEDIA_NOT_FOUND"
+
+
+def test_media_content_rejects_inspection_directory_symlink_escape(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.repository import EdgeRepository
+
+    root = tmp_path / "out"
+    root.mkdir()
+    record = _crafted_record("unused.jpg", "image/jpeg")
+    record.media[0].relative_path = f"{record.inspection_id}/key.jpg"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    outside.joinpath("key.jpg").write_bytes(b"SECRET")
+    root.joinpath(str(record.inspection_id)).symlink_to(outside, target_is_directory=True)
+    db = tmp_path / "edge.sqlite3"
+    repo = EdgeRepository.open(db)
+    repo.upsert_inspection(record)
+    repo.close()
+
+    settings = ServerSettings(output_root=root, db_path=db)
+    app = create_app(settings, reconcile=False)
+    with TestClient(app) as client:
+        response = client.get(f"/api/v1/media/{record.media[0].media_id}/content")
+        assert response.status_code == 404
+        assert response.json()["code"] == "MEDIA_NOT_FOUND"
+
+
 def test_iter_chunks_stops_on_empty_read(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from assemblyvision_edge.api.routers import media as media_mod
 
@@ -422,7 +465,7 @@ def test_resolve_media_path_handles_oserror(
         return real_resolve(self, strict)
 
     monkeypatch.setattr(Path, "resolve", boom)
-    assert media_mod._resolve_media_path(root, "key.jpg") is None
+    assert media_mod._resolve_media_path(root, "inspection-id", "inspection-id/key.jpg") is None
 
 
 def test_media_content_uses_mime_allowlist_not_persisted_mime(tmp_path: Path) -> None:
@@ -430,8 +473,11 @@ def test_media_content_uses_mime_allowlist_not_persisted_mime(tmp_path: Path) ->
 
     root = tmp_path / "out"
     root.mkdir()
-    record = _crafted_record("key.jpg", "text/html")
-    (root / "key.jpg").write_bytes(b"fake-jpeg-0000")
+    record = _crafted_record("unused.jpg", "text/html")
+    record.media[0].relative_path = f"{record.inspection_id}/key.jpg"
+    media_dir = root / str(record.inspection_id)
+    media_dir.mkdir()
+    media_dir.joinpath("key.jpg").write_bytes(b"fake-jpeg-0000")
     db = tmp_path / "edge.sqlite3"
     repo = EdgeRepository.open(db)
     repo.upsert_inspection(record)

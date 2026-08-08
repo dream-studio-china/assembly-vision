@@ -17,11 +17,13 @@ from assemblyvision_edge.persistence.repository import EdgeRepository, Repositor
 log = logging.getLogger("assemblyvision.reconcile")
 
 
-def media_path_is_safe(output_root: Path, relative_path: str) -> bool:
+def media_path_is_safe(output_root: Path, inspection_id: str, relative_path: str) -> bool:
     """Return False for empty, absolute, or traversal-escaping media paths.
 
-    The resolved path must stay inside the media root so that reconciliation
-    never imports a record whose content could later be served outside it.
+    The resolved path must stay inside the record's final inspection directory,
+    not merely inside the shared output root. This prevents a crafted bundle
+    from exposing the SQLite index, configuration, or another inspection's
+    media through the media endpoint.
     """
     if not relative_path:
         return False
@@ -29,8 +31,14 @@ def media_path_is_safe(output_root: Path, relative_path: str) -> bool:
     if path.is_absolute() or ".." in path.parts:
         return False
     root = output_root.resolve()
+    inspection_dir = Path(inspection_id)
+    if path.parent == Path(".") or path.parts[0] != inspection_dir.name:
+        return False
     try:
-        return (root / path).resolve().is_relative_to(root)
+        bundle_root = (root / inspection_dir).resolve()
+        return bundle_root.is_relative_to(root) and (root / path).resolve().is_relative_to(
+            bundle_root
+        )
     except OSError:
         return False
 
@@ -84,9 +92,9 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
         unsafe = [
             item.relative_path
             for item in record.media
-            if not media_path_is_safe(output_root, item.relative_path)
+            if not media_path_is_safe(output_root, str(record.inspection_id), item.relative_path)
         ]
-        if unsafe:
+        if path.parent.name != str(record.inspection_id) or unsafe:
             log.warning(
                 "skipping inspection %s with unsafe media paths: %s", record.inspection_id, unsafe
             )

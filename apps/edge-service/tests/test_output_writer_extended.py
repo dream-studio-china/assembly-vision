@@ -340,15 +340,15 @@ def test_media_path_is_safe_rejects_escapes(tmp_path: Path) -> None:
 
     root = tmp_path / "out"
     root.mkdir()
-    assert media_path_is_safe(root, "inspection-1/key_frame.jpg")
-    assert not media_path_is_safe(root, "../secret.txt")
-    assert not media_path_is_safe(root, "/etc/hostname")
-    assert not media_path_is_safe(root, "")
-    assert not media_path_is_safe(root, "inspection-1/../../secret.txt")
+    assert media_path_is_safe(root, "inspection-1", "inspection-1/key_frame.jpg")
+    assert not media_path_is_safe(root, "inspection-1", "../secret.txt")
+    assert not media_path_is_safe(root, "inspection-1", "/etc/hostname")
+    assert not media_path_is_safe(root, "inspection-1", "")
+    assert not media_path_is_safe(root, "inspection-1", "inspection-1/../../secret.txt")
     outside = tmp_path / "outside"
     outside.mkdir()
     (root / "link").symlink_to(outside, target_is_directory=True)
-    assert not media_path_is_safe(root, "link/secret.txt")
+    assert not media_path_is_safe(root, "inspection-1", "link/secret.txt")
 
 
 def test_media_path_is_safe_oserror_is_unsafe(
@@ -366,4 +366,4 @@ def test_media_path_is_safe_oserror_is_unsafe(
         return real_resolve(self, strict)
 
     monkeypatch.setattr(Path, "resolve", boom)
-    assert not media_path_is_safe(root, "key.jpg")
+    assert not media_path_is_safe(root, "inspection-1", "inspection-1/key.jpg")

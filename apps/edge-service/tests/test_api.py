@@ -149,6 +149,47 @@ def test_reconcile_seeded_root(tmp_path: Path) -> None:
         repo.close()
 
 
+def test_reconcile_skips_media_outside_its_inspection_bundle(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.reconcile import reconcile_output_root
+
+    root = tmp_path / "out"
+    root.mkdir()
+    record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-0001")
+    record.media[0].relative_path = "edge.sqlite3"
+    directory = root / str(record.inspection_id)
+    directory.mkdir()
+    directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+
+    repo = EdgeRepository.open(root / "edge.sqlite3")
+    try:
+        assert reconcile_output_root(repo, root) == 0
+        assert repo.get_inspection(str(record.inspection_id)) is None
+    finally:
+        repo.close()
+
+
+def test_reconcile_skips_duplicate_media_ids_without_aborting(tmp_path: Path) -> None:
+    from assemblyvision_edge.persistence.reconcile import reconcile_output_root
+
+    root = tmp_path / "out"
+    root.mkdir()
+    record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-0001")
+    duplicate = record.media[0].model_copy(
+        update={"relative_path": f"{record.inspection_id}/copy.jpg"}
+    )
+    record.media.append(duplicate)
+    directory = root / str(record.inspection_id)
+    directory.mkdir()
+    directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        assert reconcile_output_root(repo, root) == 0
+        assert repo.get_inspection(str(record.inspection_id)) is None
+    finally:
+        repo.close()
+
+
 @pytest.fixture
 def client(seeded_root: Path, tmp_path: Path) -> Iterator[TestClient]:
     settings = ServerSettings(output_root=seeded_root, db_path=tmp_path / "edge.sqlite3")

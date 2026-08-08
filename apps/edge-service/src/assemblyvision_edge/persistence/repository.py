@@ -21,8 +21,9 @@ from assemblyvision_domain.models import (
     MediaMetadata,
     UploadTask,
 )
-from sqlalchemy import create_engine, event, func, select, text
+from sqlalchemy import bindparam, create_engine, event, func, select, text
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 
 from assemblyvision_edge.persistence.schema import (
     component_evidence,
@@ -183,143 +184,161 @@ class EdgeRepository:
         paths = [item.relative_path for item in record.media]
         if len(paths) != len(set(paths)):
             raise RepositoryError(f"inspection {record.inspection_id} has duplicate media paths")
+        media_ids = [str(item.media_id) for item in record.media]
+        if len(media_ids) != len(set(media_ids)):
+            raise RepositoryError(f"inspection {record.inspection_id} has duplicate media IDs")
         content_hash = _content_hash(record)
         payload = record.model_dump(mode="json")
         decision = payload["decision"]
         barcode = payload["barcode_result"].get("value")
         product = payload["product_resolution"].get("product_code")
-        with self._engine.begin() as conn:
-            existing = conn.execute(
-                text("SELECT content_sha256 FROM inspections WHERE inspection_id = :id"),
-                {"id": str(record.inspection_id)},
-            ).scalar_one_or_none()
-            if existing is not None:
-                if existing != content_hash:
+        try:
+            with self._engine.begin() as conn:
+                existing = conn.execute(
+                    text("SELECT content_sha256 FROM inspections WHERE inspection_id = :id"),
+                    {"id": str(record.inspection_id)},
+                ).scalar_one_or_none()
+                if existing is not None:
+                    if existing != content_hash:
+                        raise RepositoryError(
+                            f"inspection {record.inspection_id} content conflict; "
+                            "immutable evidence cannot be overwritten"
+                        )
+                    return "unchanged"
+                conflicting_media_id = conn.execute(
+                    text(
+                        f"SELECT media_id FROM {media.name} WHERE media_id IN :media_ids"
+                    ).bindparams(bindparam("media_ids", expanding=True)),
+                    {"media_ids": media_ids},
+                ).scalar_one_or_none()
+                if conflicting_media_id is not None:
                     raise RepositoryError(
-                        f"inspection {record.inspection_id} content conflict; "
-                        "immutable evidence cannot be overwritten"
+                        f"inspection {record.inspection_id} reuses media ID {conflicting_media_id}"
                     )
-                return "unchanged"
-            conn.execute(
-                text(
-                    f"""
-                    INSERT INTO {inspections.name} (
-                        inspection_id, device_id, device_sequence, lifecycle_status,
-                        started_at, completed_at, barcode_result, product_resolution,
-                        product_detection, roi_result, frame_quality_summary,
-                        application_version, product_model_version_id,
-                        product_model_checksum_sha256, component_model_version_id,
-                        component_model_checksum_sha256, rule_version_id,
-                        aggregation_policy_version, decision, synchronization_status,
-                        processing_ms, inference_metadata, content_sha256,
-                        business_result, internal_decision, barcode_value, product_code
-                    ) VALUES (
-                        :inspection_id, :device_id, :device_sequence, :lifecycle_status,
-                        :started_at, :completed_at, :barcode_result, :product_resolution,
-                        :product_detection, :roi_result, :frame_quality_summary,
-                        :application_version, :product_model_version_id,
-                        :product_model_checksum_sha256, :component_model_version_id,
-                        :component_model_checksum_sha256, :rule_version_id,
-                        :aggregation_policy_version, :decision, :synchronization_status,
-                        :processing_ms, :inference_metadata, :content_sha256,
-                        :business_result, :internal_decision, :barcode_value, :product_code
-                    )
-                    """
-                ),
-                {
-                    "inspection_id": str(record.inspection_id),
-                    "device_id": str(record.device_id),
-                    "device_sequence": record.device_sequence,
-                    "lifecycle_status": record.lifecycle_status.value,
-                    "started_at": record.started_at.isoformat(),
-                    "completed_at": record.completed_at.isoformat(),
-                    "barcode_result": json.dumps(payload["barcode_result"]),
-                    "product_resolution": json.dumps(payload["product_resolution"]),
-                    "product_detection": json.dumps(payload["product_detection"])
-                    if payload["product_detection"]
-                    else None,
-                    "roi_result": json.dumps(payload["roi_result"])
-                    if payload["roi_result"]
-                    else None,
-                    "frame_quality_summary": json.dumps(payload["frame_quality_summary"]),
-                    "application_version": record.application_version,
-                    "product_model_version_id": str(record.product_model_version_id),
-                    "product_model_checksum_sha256": record.product_model_checksum_sha256,
-                    "component_model_version_id": str(record.component_model_version_id),
-                    "component_model_checksum_sha256": record.component_model_checksum_sha256,
-                    "rule_version_id": str(record.rule_version_id),
-                    "aggregation_policy_version": record.aggregation_policy_version,
-                    "decision": json.dumps(decision),
-                    "synchronization_status": record.synchronization_status,
-                    "processing_ms": record.processing_ms,
-                    "inference_metadata": json.dumps(record.inference_metadata)
-                    if record.inference_metadata
-                    else None,
-                    "content_sha256": content_hash,
-                    "business_result": record.decision.business_result.value,
-                    "internal_decision": record.decision.internal_decision.value,
-                    "barcode_value": barcode,
-                    "product_code": product,
-                },
-            )
-            for evidence in record.evidence:
                 conn.execute(
                     text(
                         f"""
-                        INSERT INTO {component_evidence.name} (
-                            inspection_id, component_code, state, best_confidence,
-                            usable_frame_count, detection_count, adjacent_detection_run,
-                            supporting_frame_ids, policy_reason_codes, box_area_ratios,
-                            box_centers
+                        INSERT INTO {inspections.name} (
+                            inspection_id, device_id, device_sequence, lifecycle_status,
+                            started_at, completed_at, barcode_result, product_resolution,
+                            product_detection, roi_result, frame_quality_summary,
+                            application_version, product_model_version_id,
+                            product_model_checksum_sha256, component_model_version_id,
+                            component_model_checksum_sha256, rule_version_id,
+                            aggregation_policy_version, decision, synchronization_status,
+                            processing_ms, inference_metadata, content_sha256,
+                            business_result, internal_decision, barcode_value, product_code
                         ) VALUES (
-                            :inspection_id, :component_code, :state, :best_confidence,
-                            :usable_frame_count, :detection_count, :adjacent_detection_run,
-                            :supporting_frame_ids, :policy_reason_codes, :box_area_ratios,
-                            :box_centers
+                            :inspection_id, :device_id, :device_sequence, :lifecycle_status,
+                            :started_at, :completed_at, :barcode_result, :product_resolution,
+                            :product_detection, :roi_result, :frame_quality_summary,
+                            :application_version, :product_model_version_id,
+                            :product_model_checksum_sha256, :component_model_version_id,
+                            :component_model_checksum_sha256, :rule_version_id,
+                            :aggregation_policy_version, :decision, :synchronization_status,
+                            :processing_ms, :inference_metadata, :content_sha256,
+                            :business_result, :internal_decision, :barcode_value, :product_code
                         )
                         """
                     ),
                     {
                         "inspection_id": str(record.inspection_id),
-                        "component_code": evidence.component_code,
-                        "state": evidence.state,
-                        "best_confidence": evidence.best_confidence,
-                        "usable_frame_count": evidence.usable_frame_count,
-                        "detection_count": evidence.detection_count,
-                        "adjacent_detection_run": evidence.adjacent_detection_run,
-                        "supporting_frame_ids": json.dumps(
-                            [str(i) for i in evidence.supporting_frame_ids]
+                        "device_id": str(record.device_id),
+                        "device_sequence": record.device_sequence,
+                        "lifecycle_status": record.lifecycle_status.value,
+                        "started_at": record.started_at.isoformat(),
+                        "completed_at": record.completed_at.isoformat(),
+                        "barcode_result": json.dumps(payload["barcode_result"]),
+                        "product_resolution": json.dumps(payload["product_resolution"]),
+                        "product_detection": json.dumps(payload["product_detection"])
+                        if payload["product_detection"]
+                        else None,
+                        "roi_result": json.dumps(payload["roi_result"])
+                        if payload["roi_result"]
+                        else None,
+                        "frame_quality_summary": json.dumps(payload["frame_quality_summary"]),
+                        "application_version": record.application_version,
+                        "product_model_version_id": str(record.product_model_version_id),
+                        "product_model_checksum_sha256": record.product_model_checksum_sha256,
+                        "component_model_version_id": str(record.component_model_version_id),
+                        "component_model_checksum_sha256": record.component_model_checksum_sha256,
+                        "rule_version_id": str(record.rule_version_id),
+                        "aggregation_policy_version": record.aggregation_policy_version,
+                        "decision": json.dumps(decision),
+                        "synchronization_status": record.synchronization_status,
+                        "processing_ms": record.processing_ms,
+                        "inference_metadata": json.dumps(record.inference_metadata)
+                        if record.inference_metadata
+                        else None,
+                        "content_sha256": content_hash,
+                        "business_result": record.decision.business_result.value,
+                        "internal_decision": record.decision.internal_decision.value,
+                        "barcode_value": barcode,
+                        "product_code": product,
+                    },
+                )
+                for evidence in record.evidence:
+                    conn.execute(
+                        text(
+                            f"""
+                            INSERT INTO {component_evidence.name} (
+                                inspection_id, component_code, state, best_confidence,
+                                usable_frame_count, detection_count, adjacent_detection_run,
+                                supporting_frame_ids, policy_reason_codes, box_area_ratios,
+                                box_centers
+                            ) VALUES (
+                                :inspection_id, :component_code, :state, :best_confidence,
+                                :usable_frame_count, :detection_count, :adjacent_detection_run,
+                                :supporting_frame_ids, :policy_reason_codes, :box_area_ratios,
+                                :box_centers
+                            )
+                            """
                         ),
-                        "policy_reason_codes": json.dumps(evidence.policy_reason_codes),
-                        "box_area_ratios": json.dumps(evidence.box_area_ratios),
-                        "box_centers": json.dumps([[x, y] for x, y in evidence.box_centers]),
-                    },
-                )
-            for item in record.media:
-                conn.execute(
-                    text(
-                        f"""
-                        INSERT INTO {media.name} (
-                            media_id, inspection_id, kind, lifecycle, relative_path,
-                            mime_type, size_bytes, checksum_sha256
-                        ) VALUES (
-                            :media_id, :inspection_id, :kind, :lifecycle, :relative_path,
-                            :mime_type, :size_bytes, :checksum_sha256
-                        )
-                        """
-                    ),
-                    {
-                        "media_id": str(item.media_id),
-                        "inspection_id": str(record.inspection_id),
-                        "kind": item.kind,
-                        "lifecycle": item.lifecycle.value,
-                        "relative_path": item.relative_path,
-                        "mime_type": item.mime_type,
-                        "size_bytes": item.size_bytes,
-                        "checksum_sha256": item.checksum_sha256,
-                    },
-                )
-            return "inserted"
+                        {
+                            "inspection_id": str(record.inspection_id),
+                            "component_code": evidence.component_code,
+                            "state": evidence.state,
+                            "best_confidence": evidence.best_confidence,
+                            "usable_frame_count": evidence.usable_frame_count,
+                            "detection_count": evidence.detection_count,
+                            "adjacent_detection_run": evidence.adjacent_detection_run,
+                            "supporting_frame_ids": json.dumps(
+                                [str(i) for i in evidence.supporting_frame_ids]
+                            ),
+                            "policy_reason_codes": json.dumps(evidence.policy_reason_codes),
+                            "box_area_ratios": json.dumps(evidence.box_area_ratios),
+                            "box_centers": json.dumps([[x, y] for x, y in evidence.box_centers]),
+                        },
+                    )
+                for item in record.media:
+                    conn.execute(
+                        text(
+                            f"""
+                            INSERT INTO {media.name} (
+                                media_id, inspection_id, kind, lifecycle, relative_path,
+                                mime_type, size_bytes, checksum_sha256
+                            ) VALUES (
+                                :media_id, :inspection_id, :kind, :lifecycle, :relative_path,
+                                :mime_type, :size_bytes, :checksum_sha256
+                            )
+                            """
+                        ),
+                        {
+                            "media_id": str(item.media_id),
+                            "inspection_id": str(record.inspection_id),
+                            "kind": item.kind,
+                            "lifecycle": item.lifecycle.value,
+                            "relative_path": item.relative_path,
+                            "mime_type": item.mime_type,
+                            "size_bytes": item.size_bytes,
+                            "checksum_sha256": item.checksum_sha256,
+                        },
+                    )
+                return "inserted"
+        except IntegrityError as exc:
+            raise RepositoryError(
+                f"inspection {record.inspection_id} violates immutable projection constraints"
+            ) from exc
 
     def get_inspection(self, inspection_id: str) -> InspectionRecord | None:
         with self._engine.connect() as conn:
