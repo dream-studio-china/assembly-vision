@@ -108,6 +108,7 @@ packages/
     ui/                   # shared UI primitives (detection viewer, status)
 config/examples/          # pipeline, rule, and manifest examples
 models/manifests/         # model metadata (weights outside Git)
+scripts/                  # dataset adapters (Roboflow / X-AnyLabeling), e2e demo
 docs/                     # architecture, contracts, ADRs, runbooks
 ```
 
@@ -120,9 +121,10 @@ docs/                     # architecture, contracts, ADRs, runbooks
 | [Architecture overview](docs/design/03-architecture-overview.md) | System context, deployment, data flow |
 | [Edge client](docs/design/04-edge-client-architecture.md) | Offline runtime and ingestion |
 | [Requirements](docs/design/02-requirements.md) | Functional and quality requirements |
+| [Single-product data acquisition](docs/design/19-training-and-evaluation.md#1917-single-product-data-acquisition-and-annotation-checklist) | What to collect and how to annotate the real-data baseline |
 | [Decisions (ADRs)](docs/design/decisions/README.md) | Why major architecture choices were made |
 | [Contracts](docs/contracts/README.md) | Mandatory implementation constraints |
-| [Runbooks](docs/runbooks/README.md) | Operational recovery procedures |
+| [Runbooks](docs/runbooks/README.md) | Operational recovery procedures (incl. data collection and annotation) |
 | [Security policy](SECURITY.md) | Vulnerability reporting and security position |
 
 ## Safety
