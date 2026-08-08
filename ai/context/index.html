@@ -3389,11 +3389,14 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   queue scheduler, WebSocket channel, camera/barcode adapters, temporal
   aggregation, Docker packaging, and authoritative SQLite persistence/outbox.
   None block PR #8; the PR-008 review findings (F1-F14, C1-C4) are resolved.</li>
-<li>Real customer data is still required for the one-month baseline: annotate with
-  X-AnyLabeling (product + component boxes), then run <code>av-train</code> -&gt;
-  <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>. A utility script
-  (<code>adapt-xanylabeling.py</code>) is needed to split the X-AnyLabeling export into
-  <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>.</li>
+<li>Real customer data is still required for the one-month baseline: collect and
+  annotate with X-AnyLabeling per
+  <code>docs/design/19-training-and-evaluation.md</code> §19.17 and
+  <code>docs/runbooks/11-data-collection-and-annotation.md</code>, convert the export with
+  <code>scripts/adapt-xanylabeling.py</code> (written; supports classes.txt/data.yaml,
+  images-first and split-first layouts) into
+  <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>, then run
+  <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>.</li>
 <li>Camera/hardware integration, barcode decoding, product-window management,
   temporal aggregation, authoritative SQLite persistence (the current index is
   a rebuildable read projection), the upload queue scheduler, and Docker

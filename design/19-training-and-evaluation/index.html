@@ -1290,6 +1290,67 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1917-single-product-data-acquisition-and-annotation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17 Single-Product Data Acquisition and Annotation Checklist
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.17 Single-Product Data Acquisition and Annotation Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#19171-why-a-single-fixed-product-is-easier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.1 Why a Single Fixed Product Is Easier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19172-collection-quantities-planning-ranges-not-acceptance-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.2 Collection Quantities (Planning Ranges, Not Acceptance Thresholds)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19173-hard-annotation-rules-enforced-by-the-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.3 Hard Annotation Rules (Enforced by the Adapters)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19174-leakage-safe-splits-and-handover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.4 Leakage-Safe Splits and Handover
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3278,6 +3339,67 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1917-single-product-data-acquisition-and-annotation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17 Single-Product Data Acquisition and Annotation Checklist
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.17 Single-Product Data Acquisition and Annotation Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#19171-why-a-single-fixed-product-is-easier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.1 Why a Single Fixed Product Is Easier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19172-collection-quantities-planning-ranges-not-acceptance-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.2 Collection Quantities (Planning Ranges, Not Acceptance Thresholds)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19173-hard-annotation-rules-enforced-by-the-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.3 Hard Annotation Rules (Enforced by the Adapters)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19174-leakage-safe-splits-and-handover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.4 Leakage-Safe Splits and Handover
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3493,6 +3615,132 @@
 <li>Confirm representative edge CPU/GPU, required throughput, conveyor timing, and latency budget.</li>
 <li>Define allowed camera-position/angle/exposure tolerances and the process that declares a domain change.</li>
 <li>Confirm production OK-audit sampling needed to estimate false negatives and model drift.</li>
+</ul>
+<h2 id="1917-single-product-data-acquisition-and-annotation-checklist">19.17 Single-Product Data Acquisition and Annotation Checklist<a class="headerlink" href="#1917-single-product-data-acquisition-and-annotation-checklist" title="Permanent link">&para;</a></h2>
+<p>This section is the authoritative data-quality spec for the common case: <strong>one
+product on one fixed camera/lighting/position station</strong>. It converts the
+planning ranges in 19.2 into a concrete acquisition plan, states the hard
+annotation rules that the dataset adapters enforce, and defines the handover
+that feeds the training pipeline. For the operational step-by-step procedure
+see <a href="../../runbooks/11-data-collection-and-annotation/">Runbook 11</a>; the
+external checklists in <a href="../../research/03-imaging-workflow-and-training-cost/">Imaging Workflow and Training Cost</a>
+remain supporting material.</p>
+<h3 id="19171-why-a-single-fixed-product-is-easier">19.17.1 Why a Single Fixed Product Is Easier<a class="headerlink" href="#19171-why-a-single-fixed-product-is-easier" title="Permanent link">&para;</a></h3>
+<p>A fixed product under a fixed camera collapses intra-class variance: the
+product-detector task becomes near-constant ("board present / absent / partial /
+multiple"), and the component detector only needs to distinguish "this part is
+here" from "this pad is empty" on the same board. Public multi-board datasets
+(such as generic PCB component sets) spread one class across dozens of visually
+different products, which is why a small multi-board model generalizes poorly
+whereas a small single-product model can be effective. The bottleneck is never
+the OK side; it is the <strong>missing-component (NG) side</strong>: physically missing
+parts are rare on the line, hard to construct, and every failure mode the model
+has never seen is a false-negative risk.</p>
+<h3 id="19172-collection-quantities-planning-ranges-not-acceptance-thresholds">19.17.2 Collection Quantities (Planning Ranges, Not Acceptance Thresholds)<a class="headerlink" href="#19172-collection-quantities-planning-ranges-not-acceptance-thresholds" title="Permanent link">&para;</a></h3>
+<p>Product detector (stage 1, full frame):</p>
+<table>
+<thead>
+<tr>
+<th>Content</th>
+<th>Suggested count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OK products across batches/dates and position variation</td>
+<td>100-300</td>
+</tr>
+<tr>
+<td>Empty conveyor / background (product absent) - explicit empty labels</td>
+<td>30-60</td>
+</tr>
+<tr>
+<td>Partial entry / exit frames</td>
+<td>20-40</td>
+</tr>
+<tr>
+<td>Multiple products in one frame (anomaly)</td>
+<td>10-20</td>
+</tr>
+<tr>
+<td>Blur, reflection, occlusion, exposure variation</td>
+<td>10-20 each</td>
+</tr>
+</tbody>
+</table>
+<p>Component detector (stage 2, ROI):</p>
+<table>
+<thead>
+<tr>
+<th>Content</th>
+<th>Suggested count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Labeled instances per required component class</td>
+<td>300-500 per class</td>
+</tr>
+<tr>
+<td>Physically missing part per missing scenario</td>
+<td>≥ 100 per missing location</td>
+</tr>
+<tr>
+<td>Missing multiple components (combinations)</td>
+<td>20-50 per combination</td>
+</tr>
+<tr>
+<td>Negative ROI crops (empty pads, no component)</td>
+<td>same order as missing samples</td>
+</tr>
+</tbody>
+</table>
+<p>Barcode (separate from YOLO): readable, damaged/occluded, and unreadable cases
+for product-type resolution and fail-safe paths.</p>
+<p>A <strong>minimal closed loop</strong> (get the pipeline running and measure trends) can
+start at 40-60 OK images plus 10-20 samples per missing location, then scale to
+the table above; expand where <code>verify</code> exposes missed NG.</p>
+<h3 id="19173-hard-annotation-rules-enforced-by-the-adapters">19.17.3 Hard Annotation Rules (Enforced by the Adapters)<a class="headerlink" href="#19173-hard-annotation-rules-enforced-by-the-adapters" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Two datasets, two-stage semantics.</strong> <code>dataset_product</code> carries one class
+  <code>product</code> = an independently annotated full-board box. <code>dataset_components</code>
+  carries the required component classes in fixed order (the <code>data.yaml</code> order
+  is the class-ID mapping). Missing components are expressed by the <strong>absence
+  of the component's box</strong>; never train a generic <code>missing_*</code> class.</li>
+<li><strong>Product box is mandatory even when components are missing.</strong> Stage one must
+  localize the complete product for a defective board too. An image with
+  component boxes but no product box is a data error and is rejected; the
+  product box can never be derived from the union of present component boxes.</li>
+<li><strong>Explicit empty labels.</strong> Every background/negative image must have an
+  explicit empty label file; image/label pairing is required (missing label
+  files fail validation unless the recorded <code>--allow-missing-labels</code> legacy
+  opt-in is used).</li>
+<li><strong>Physical NG only.</strong> Do not synthesize all NG by digitally erasing
+  components; shadows, packaging deformation, and revealed backgrounds differ
+  (19.4).</li>
+<li><strong>Fixed capture conditions.</strong> Collect with the production camera, optics,
+  mounting, lighting, conveyor background, capture software, and encoding. A
+  significant angle change is a domain change requiring revalidation (19.4).</li>
+<li><strong>Second review.</strong> A reviewer examines every NG sample, all ambiguous labels,
+  and a sample of ordinary labels (19.5); disputes are adjudicated against a
+  locked ontology.</li>
+</ul>
+<h3 id="19174-leakage-safe-splits-and-handover">19.17.4 Leakage-Safe Splits and Handover<a class="headerlink" href="#19174-leakage-safe-splits-and-handover" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Split by <strong>physical product instance / capture session</strong>, never by random
+  frames; target 70/15/15 by grouped instances (19.6). The held-out <code>test</code>
+  split is used once for verification and never for tuning.</li>
+<li>Annotate with <strong>X-AnyLabeling</strong> and export the YOLO layout (train/val/test +
+  <code>classes.txt</code> or <code>data.yaml</code>), then run
+  <code>scripts/adapt-xanylabeling.py &lt;export&gt; &lt;out&gt; --product-class product --required '&lt;comma,separated&gt;'</code>.
+  The adapter validates every label line, enforces 19.17.3, keeps explicit
+  background negatives, builds <code>dataset_product</code> + <code>dataset_components</code> +
+  <code>test-expected.json</code> + <code>manifest.json</code>, and rejects stale/populated output
+  directories atomically. Roboflow exports use
+  <code>scripts/adapt-roboflow-dataset.py</code>.</li>
+<li>Freeze dataset checksums and the annotation/ontology version with the model
+  manifest (19.8, contract 10); the verification set must never be copied into
+  training or validation.</li>
 </ul>
 
 

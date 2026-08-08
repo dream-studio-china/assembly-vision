@@ -3043,8 +3043,8 @@
   pnpm 工作区包括 Vue 3 + TypeScript 操作员仪表板
   (<code>apps/edge-web</code>)，一个 Electron kiosk shell (<code>apps/edge-desktop</code>)，一个类型化的
   <code>api-client</code> 合约层和共享 UI 原语。 M1后端层
-  (FastAPI + SQLite 本地索引 + <code>assemblyvision serve</code>) 在 <code>dev</code> 上完成
-  （参见第 8.3 节）所有 PR-008 审查结果均得到解决；公关 #8
+  （FastAPI + SQLite 本地索引 + <code>assemblyvision serve</code>）在 <code>dev</code> 上完成
+  （参见第 8.3 节）所有 PR-008 审查结果均得到解决；公关＃8
   (dev -&gt; main) 已打开。只读仪表板视图显示真实的 CLI 结果
   通过 HTTP 客户端，而操作员工作流操作仍保留在
   模拟客户端。</li>
@@ -3053,8 +3053,8 @@
 <ul>
 <li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。静态的
   MVP 和边缘仪表板合并到 <code>main</code> （PR #3、#6）。 <code>dev</code> 携带
-  作为开放 PR #8 完成了 M1 后端里程碑以及所有审核结果
-  已解决；下一个里程碑是真实数据基线和剩余数据
+  作为开放 PR #8 完成了 M1 后端里程碑，并包含所有审核结果
+  已解决；下一个里程碑是实际数据基线和剩余的
   PR-003 项目。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
@@ -3389,11 +3389,14 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   队列调度程序、WebSocket 通道、相机/条形码适配器、时间
   聚合、Docker 打包和权威的 SQLite 持久化/发件箱。
   没有阻止 PR #8； PR-008 审查结果（F1-F14、C1-C4）已得到解决。</li>
-<li>一个月的基线仍然需要真实的客户数据：注释为
-  X-AnyLabeling（产品+组件盒），然后运行 <code>av-train</code> -&gt;
-  <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。实用程序脚本
-  (<code>adapt-xanylabeling.py</code>) 需要将 X-AnyLabeling 导出拆分为
-  <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>。</li>
+<li>一个月的基线仍然需要真实的客户数据：收集和
+  使用 X-AnyLabeling 进行注释
+  <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
+  <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
+  <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
+  图像优先和分割优先布局）到
+  <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
+  <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>
 <li>相机/硬件集成、条形码解码、产品窗口管理、
   时间聚合，权威的SQLite持久化（当前索引为
   可重建的读取投影）、上传队列调度程序和 Docker
@@ -3402,7 +3405,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。</li>
-<li><code>.obsidian/</code> 根据选择保持不被跟踪；在更改该决定之前通知用户。</li>
+<li><code>.obsidian/</code> 仍然选择不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
 
 

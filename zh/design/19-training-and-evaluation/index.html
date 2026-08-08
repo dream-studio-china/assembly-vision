@@ -1290,6 +1290,67 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1917-single-product-data-acquisition-and-annotation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17 单产品数据采集和注释清单
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.17 单产品数据采集和注释清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#19171-why-a-single-fixed-product-is-easier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.1 为什么单一固定产品更容易
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19172-collection-quantities-planning-ranges-not-acceptance-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.2 收集数量（计划范围，而非接受阈值）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19173-hard-annotation-rules-enforced-by-the-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.3 硬注释规则（由适配器强制执行）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19174-leakage-safe-splits-and-handover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.4 防漏电分裂和切换
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3278,6 +3339,67 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1917-single-product-data-acquisition-and-annotation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17 单产品数据采集和注释清单
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.17 单产品数据采集和注释清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#19171-why-a-single-fixed-product-is-easier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.1 为什么单一固定产品更容易
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19172-collection-quantities-planning-ranges-not-acceptance-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.2 收集数量（计划范围，而非接受阈值）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19173-hard-annotation-rules-enforced-by-the-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.3 硬注释规则（由适配器强制执行）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19174-leakage-safe-splits-and-handover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.17.4 防漏电分裂和切换
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3305,7 +3427,7 @@
 <h3 id="1911-static-train-and-inspect-mvp">19.1.1 静态训练和检查 MVP<a class="headerlink" href="#1911-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
 <p>MVP 在相机集成之前实现了开发人员控制的训练到检查循环。 X-AnyLabeling 是选定的注释工具，并导出标准 YOLO 文本标签。产品和组件盒以全框坐标进行注释。训练 CLI 验证导出的数据集，从全帧图像训练产品检测器，然后使用产品 ROI 变换来裁剪组件训练图像，并在组件训练之前将组件框重新映射到 ROI 坐标。</p>
 <p>运行时检查 CLI 仅使用生成的不可变权重工件和清单。训练代码位于单独的 <code>training/</code> 工作区中，永远不会由运行时导入，并且被排除在运行时发行版之外。配置的文件名约定为保留验证提供了预期的 <code>OK</code> 或 <code>NG</code> 标签；它不能替代检测器训练期间的边界框标签。</p>
-<p>第一个 MVP 在开发人员具有 16 GB 内存的 Apple Silicon Mac 上运行小型模型并测量图像尺寸。它记录再现性元数据并报告保留的静态设置结果，但不声明生产精度、生产吞吐量或生产验收。具有 SHA-256 清单的普通模型工件对于此 MVP 来说已经足够了；模型加密和仅限 <code>.pyc</code> 的分发打包被推迟。</p>
+<p>第一个 MVP 在开发人员具有 16 GB 内存的 Apple Silicon Mac 上运行小型模型并测量图像大小。它记录再现性元数据并报告保留的静态设置结果，但不声明生产精度、生产吞吐量或生产验收。具有 SHA-256 清单的普通模型工件对于此 MVP 来说已经足够了；模型加密和仅限 <code>.pyc</code> 的分发打包被推迟。</p>
 <p>最小 YOLO 数据集布局为：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>dataset/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── images/{train,val}/
@@ -3325,7 +3447,7 @@
 <p>每个源图像/帧都与一个清单相关联，其中包含：</p>
 <ul>
 <li>数据集/源记录 ID 和不可变文件校验和。</li>
-<li>站点、线路、摄像机和捕获设置标识符（如果允许）。</li>
+<li>站点、线路、摄像机和捕捉设置标识符（如果允许）。</li>
 <li>捕获会话 ID、生产日期、产品批次和物理产品实例 ID。</li>
 <li>视频/检查窗口 ID、帧索引和时间戳。</li>
 <li>在允许的情况下，受保护元数据中的产品代码/类型和条形码。</li>
@@ -3361,7 +3483,7 @@
 <h2 id="196-leakage-safe-data-splits">19.6 防泄漏数据分割<a class="headerlink" href="#196-leakage-safe-data-splits" title="Permanent link">&para;</a></h2>
 <h3 id="1961-split-unit">19.6.1 分割单元<a class="headerlink" href="#1961-split-unit" title="Permanent link">&para;</a></h3>
 <p>最小拆分组是整个检查/视频窗口中的物理产品实例。首选结合捕获会话、产品批次、生产日期和设置修订的更高级别组。从一个源组派生的所有相邻帧、裁剪、增强、重新编码和注释都保留在一个分割中。</p>
-<p>切勿随机分割单个视频帧。训练和验证中几乎相同的帧会产生误导性的指标，并根据重复的证据调整时间聚合。</p>
+<p>切勿随机分割单个视频帧。训练和验证过程中几乎相同的帧会产生误导性的指标，并根据重复的证据调整时间聚合。</p>
 <h3 id="1962-recommended-sets">19.6.2 推荐设置<a class="headerlink" href="#1962-recommended-sets" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3420,7 +3542,7 @@
 <h2 id="199-detector-level-metrics">19.9 检测器级指标<a class="headerlink" href="#199-detector-level-metrics" title="Permanent link">&para;</a></h2>
 <p>对于产品和组件检测器报告：</p>
 <ul>
-<li>记录的 IoU 阈值的精确率-召回率曲线和平均精度，包括 mAP50 和 mAP50-95（如果适用）。</li>
+<li>记录的 IoU 阈值的精度-召回率曲线和平均精度，包括 mAP50 和 mAP50-95（如果适用）。</li>
 <li>每类精度、召回率、AP、支持度和置信度分布。</li>
 <li>在操作置信度/IoU 标准下产品检测成功。</li>
 <li>空/背景帧的错误检测。</li>
@@ -3482,7 +3604,7 @@
 <li>根据需要完成现场/客户验收。</li>
 <li>确定推出和回滚版本。</li>
 </ol>
-<p>mAP 更好但产品级 NG 召回率更差的挑战者不会仅在 mAP 上得到推广。</p>
+<p>mAP 较好但产品级 NG 召回率较差的挑战者不会仅在 mAP 上得到推广。</p>
 <h2 id="1916-open-questions-and-validation-required">19.16 未决问题和需要验证<a class="headerlink" href="#1916-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>确认支持的产品/组件、预期缺陷发生率以及每个场景实际创建的 NG 产品的可行数量。</li>
@@ -3493,6 +3615,132 @@
 <li>确认代表性边缘 CPU/GPU、所需吞吐量、传送带时序和延迟预算。</li>
 <li>定义允许的相机位置/角度/曝光容差以及声明域更改的过程。</li>
 <li>确认生产正常审核抽样所需，以估计误报和模型漂移。</li>
+</ul>
+<h2 id="1917-single-product-data-acquisition-and-annotation-checklist">19.17 单产品数据采集和注释清单<a class="headerlink" href="#1917-single-product-data-acquisition-and-annotation-checklist" title="Permanent link">&para;</a></h2>
+<p>本节是常见情况的权威数据质量规范：<strong>一个
+产品位于一台固定摄像机/照明/定位站</strong>。它转换了
+将 19.2 中的规划范围纳入具体的采购计划，指出了硬性规定
+数据集适配器强制执行的注释规则，并定义切换
+为培训渠道提供支持。对于操作步骤
+参见<a href="../../runbooks/11-data-collection-and-annotation/">Runbook 11</a>；的
+<a href="../../research/03-imaging-workflow-and-training-cost/">Imaging Workflow and Training Cost</a> 中的外部清单
+保留支持材料。</p>
+<h3 id="19171-why-a-single-fixed-product-is-easier">19.17.1 为什么单一固定产品更容易<a class="headerlink" href="#19171-why-a-single-fixed-product-is-easier" title="Permanent link">&para;</a></h3>
+<p>固定相机下的固定产品会瓦解类内方差：
+产品检测器任务变得几乎恒定（“板存在/不存在/部分/
+多个”），而分量检测器只需要区分“这部分是
+此处”来自同一板上的“此垫是空的”。公共多板数据集
+（例如通用 PCB 组件集）将一类分散到数十个视觉上
+不同的产品，这就是为什么小型多板模型通用性较差的原因
+而小型单一产品模型可能是有效的。瓶颈从来都不是
+好的一面；它是<strong>缺失组件 (NG) 面</strong>：物理缺失
+生产线上的零件很少，难以构建，并且每种故障模式都需要模型
+从未见过有假阴性的风险。</p>
+<h3 id="19172-collection-quantities-planning-ranges-not-acceptance-thresholds">19.17.2 收集数量（计划范围，而非接受阈值）<a class="headerlink" href="#19172-collection-quantities-planning-ranges-not-acceptance-thresholds" title="Permanent link">&para;</a></h3>
+<p>产品检测器（第 1 阶段，全画幅）：</p>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>建议计数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>跨批次/日期和位置变化的 OK 产品</td>
+<td>100-300</td>
+</tr>
+<tr>
+<td>空传送带/背景（产品缺失）- 明确的空标签</td>
+<td>30-60</td>
+</tr>
+<tr>
+<td>部分进入/退出框架</td>
+<td>20-40</td>
+</tr>
+<tr>
+<td>一框内有多个产品（异常）</td>
+<td>10-20</td>
+</tr>
+<tr>
+<td>模糊、反射、遮挡、曝光变化</td>
+<td>每个 10-20 个</td>
+</tr>
+</tbody>
+</table>
+<p>组件检测器（第 2 阶段，ROI）：</p>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>建议计数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>每个所需组件类的标记实例</td>
+<td>每班300-500</td>
+</tr>
+<tr>
+<td>每个缺失场景的物理缺失部分</td>
+<td>每个缺失位置 ≥ 100</td>
+</tr>
+<tr>
+<td>缺少多个组件（组合）</td>
+<td>每个组合 20-50</td>
+</tr>
+<tr>
+<td>负投资回报率作物（空焊盘，无组件）</td>
+<td>与缺失样品的顺序相同</td>
+</tr>
+</tbody>
+</table>
+<p>条形码（与 YOLO 分开）：可读、损坏/遮挡和不可读的情况
+用于产品类型解析和故障安全路径。</p>
+<p><strong>最小闭环</strong>（让管道运行并测量趋势）可以
+从 40-60 个 OK 图像开始，每个缺失位置加上 10-20 个样本，然后扩展到
+上表；展开 <code>verify</code> 暴露遗漏 NG 的位置。</p>
+<h3 id="19173-hard-annotation-rules-enforced-by-the-adapters">19.17.3 硬注释规则（由适配器强制执行）<a class="headerlink" href="#19173-hard-annotation-rules-enforced-by-the-adapters" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>两个数据集，两阶段语义。</strong> <code>dataset_product</code> 承载一个类
+  <code>product</code> = 独立注释的全板框。 <code>dataset_components</code>
+  以固定顺序携带所需的组件类（<code>data.yaml</code>顺序
+  是类 ID 映射）。缺少的组件由 ** 不存在表示
+  组件盒的**；永远不要训练通用的 <code>missing_*</code> 类。</li>
+<li><strong>即使组件丢失，产品盒也是强制性的。</strong> 第一阶段必须
+  对于有缺陷的电路板也可以本地化完整的产品。图像与
+  组件盒但无产品盒为数据错误，被拒收；的
+  产品盒永远不能从现有组件盒的组合中派生出来。</li>
+<li><strong>显式空标签。</strong> 每个背景/底片图像必须有一个
+  显式空标签文件；需要图像/标签配对（缺少标签
+  除非记录了 <code>--allow-missing-labels</code> 遗留文件，否则文件将无法验证
+  使用选择加入）。</li>
+<li><strong>仅限物理 NG。</strong> 不要通过数字擦除来合成所有 NG
+  组件；阴影、包装变形和显示的背景不同
+  （19.4）。</li>
+<li><strong>固定捕获条件。</strong> 使用生产相机、光学器件收集，
+  安装、照明、传送带背景、捕获软件和编码。一个
+  显着的角度变化是需要重新验证的域变化（19.4）。</li>
+<li><strong>第二次审查。</strong> 审查员检查每个 NG 样本、所有不明确的标签、
+  和普通标签样本（19.5）；争议的裁决是针对
+  锁定本体。</li>
+</ul>
+<h3 id="19174-leakage-safe-splits-and-handover">19.17.4 防漏电分裂和切换<a class="headerlink" href="#19174-leakage-safe-splits-and-handover" title="Permanent link">&para;</a></h3>
+<ul>
+<li>按<strong>物理产品实例/捕获会话</strong>分割，绝不是随机分割
+  框架；目标为 2015 年 70 月 15 日，按分组实例 (19.6)。保留的 <code>test</code>
+  split 仅用于验证而不用于调整。</li>
+<li>使用 <strong>X-AnyLabeling</strong> 进行注释并导出 YOLO 布局（train/val/test +
+  <code>classes.txt</code> 或 <code>data.yaml</code>)，然后运行
+  <code>scripts/adapt-xanylabeling.py &lt;export&gt; &lt;out&gt; --product-class product --required '&lt;comma,separated&gt;'</code>。
+  适配器验证每个标签行，强制执行 19.17.3，保持显式
+  背景底片，构建 <code>dataset_product</code> + <code>dataset_components</code> +
+  <code>test-expected.json</code> + <code>manifest.json</code>，并拒绝陈旧/填充的输出
+  原子目录。 Roboflow 导出使用
+  <code>scripts/adapt-roboflow-dataset.py</code>。</li>
+<li>使用模型冻结数据集校验和以及注释/本体版本
+  舱单（19.8，合同10）；验证集绝不能复制到
+  培训或验证。</li>
 </ul>
 
 

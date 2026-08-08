@@ -3122,7 +3122,7 @@
 
 <h1 id="26-customer-acceptance">26. 客户验收<a class="headerlink" href="#26-customer-acceptance" title="Permanent link">&para;</a></h1>
 <h2 id="261-purpose-and-acceptance-principle">26.1 目的和接受原则<a class="headerlink" href="#261-purpose-and-acceptance-principle" title="Permanent link">&para;</a></h2>
-<p>客户认可度确定了对已定义的产品组合、生产线、相机设置、软件/模型/规则发布和操作程序的适用性。主要检查指标是真实的 NG 召回率。验收使用未用于模型训练的客户生产数据，并且不要求通用或未经验证的数字保证。</p>
+<p>客户认可度确定了对已定义的产品组合、生产线、相机设置、软件/模型/规则发布和操作程序的适用性。主要检查指标是真实的 NG 召回率。验收使用未用于模型训练的客户生产数据，并且不要求通用或未经验证的数值保证。</p>
 <h2 id="262-scope-definition">26.2 范围定义<a class="headerlink" href="#262-scope-definition" title="Permanent link">&para;</a></h2>
 <h3 id="2621-mvp-acceptance">26.2.1 MVP 接受<a class="headerlink" href="#2621-mvp-acceptance" title="Permanent link">&para;</a></h3>
 <p>当静态训练和检查 MVP 可重复地从锁定的标记静态图像集进行训练、针对单独保留的静态图像集执行检查、报告验证结果并发出可追踪证据时，它被接受为工程原型。不接受自主生产处置。</p>
@@ -3133,7 +3133,7 @@
 <h3 id="2624-out-of-scope-unless-added">26.2.4 超出范围，除非添加<a class="headerlink" href="#2624-out-of-scope-unless-added" title="Permanent link">&para;</a></h3>
 <p>未经验证的产品类型、摄像机角度/位置、照明方式、微小组件、PLC/MES 行为以及测试范围之外的吞吐量不会被默认接受。</p>
 <h2 id="263-acceptance-baseline-and-target-agreement">26.3 验收基线和目标协议<a class="headerlink" href="#263-acceptance-baseline-and-target-agreement" title="Permanent link">&para;</a></h2>
-<p>供应商和客户首先锁定候选应用、型号、规则、产品配置、相机配置和硬件。然后，他们对代表性的、以前未使用的客户数据执行基线。根据测量的样本数、类别分布、置信区间、操作结果和审核能力，双方在验收协议中记录目标值和决策规则。</p>
+<p>供应商和客户首先锁定候选应用、型号、规则、产品配置、相机配置和硬件。然后，他们对具有代表性的、以前未使用的客户数据执行基线。根据测量的样本数、类别分布、置信区间、操作结果和审核能力，双方在验收协议中记录目标值和决策规则。</p>
 <p>协议必须定义：</p>
 <ul>
 <li>主要NG召回目标和<code>UNCERTAIN</code>的处理（如果采用）。</li>
@@ -3148,7 +3148,7 @@
 <h2 id="264-dataset-independence-and-governance">26.4 数据集独立性和治理<a class="headerlink" href="#264-dataset-independence-and-governance" title="Permanent link">&para;</a></h2>
 <p>验收项目不用于在验收运行之前进行训练、调整阈值、选择检查点或选择规则。它们按物理产品、生产批次、捕获会话/日期和场景进行分组，因此相邻的视频帧不会在开发和验收过程中泄漏。</p>
 <p>验收清单记录稳定的项目/产品标识符、产品类型、预期组件状态、条形码基本事实、场景、捕获条件、源组、裁决状态和校验和。访问受到限制。如果验收数据后来被批准用于训练，它将留下锁定的验收集，并且下一个验收声明需要一个新的独立集。</p>
-<p>真实情况由授权的客户产品专家建立。模棱两可的案件被裁定或报告为无定论；他们并不是默默地被算在有利阶层的。</p>
+<p>真实情况由授权的客户产品专家建立。模棱两可的案件被裁定或报告为无定论；他们并没有被默默地算在有利的阶层中。</p>
 <h2 id="265-required-test-matrix">26.5 所需的测试矩阵<a class="headerlink" href="#265-required-test-matrix" title="Permanent link">&para;</a></h2>
 <p>每种适用的产品类型均在混合操作流程中单独进行测试。</p>
 <table>
@@ -3208,7 +3208,7 @@
 <tr>
 <td>离线操作</td>
 <td>证明中央独立性</td>
-<td>当地检查、证据和持久的队列继续</td>
+<td>当地检查、证据和持久队列继续</td>
 </tr>
 <tr>
 <td>网络恢复</td>
@@ -3243,7 +3243,7 @@
 </ul>
 <p>证据是不可变的或受校验和保护，并通过检查标识符链接。</p>
 <h2 id="267-metrics-and-reporting">26.7 指标和报告<a class="headerlink" href="#267-metrics-and-reporting" title="Permanent link">&para;</a></h2>
-<p>首先报告 NG 召回率和假阴性率，然后报告假阳性率、每个组件召回率、每个产品召回率、产品检测成功率、ROI 生成成功率、条码读取成功率、平均/P95 延迟、吞吐量、上传延迟、审核率和纠正率。包括分子、分母、排除/不确定计数、有意义的置信区间以及按发布版本进行细分。</p>
+<p>首先报告 NG 召回率和假阴性率，然后报告假阳性率、每个组件召回率、每个产品召回率、产品检测成功率、ROI 生成成功率、条码读取成功率、平均/P95 延迟、吞吐量、上传延迟、审核率和纠正率。包括分子、分母、排除/不确定计数、有意义的置信区间以及按发布版本进行的细分。</p>
 <p>整体准确性本身并不能作为验收指标。结果必须将自然发生的 NG 产品与分阶段或合成场景区分开来，并揭示任何覆盖范围差距。</p>
 <h2 id="268-execution-procedure">26.8 执行流程<a class="headerlink" href="#268-execution-procedure" title="Permanent link">&para;</a></h2>
 <ol>
