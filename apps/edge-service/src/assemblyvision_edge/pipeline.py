@@ -126,10 +126,10 @@ def _validate_component_provenance(
         expected = apply_transform(Box.from_bbox(obs.roi_bbox), inverse)
         actual = obs.full_frame_bbox
         if not (
-            math.isclose(expected.x_min, actual.x_min, abs_tol=_COORD_TOLERANCE)
-            and math.isclose(expected.y_min, actual.y_min, abs_tol=_COORD_TOLERANCE)
-            and math.isclose(expected.x_max, actual.x_max, abs_tol=_COORD_TOLERANCE)
-            and math.isclose(expected.y_max, actual.y_max, abs_tol=_COORD_TOLERANCE)
+            math.isclose(expected.x_min, actual.x_min, rel_tol=0.0, abs_tol=_COORD_TOLERANCE)
+            and math.isclose(expected.y_min, actual.y_min, rel_tol=0.0, abs_tol=_COORD_TOLERANCE)
+            and math.isclose(expected.x_max, actual.x_max, rel_tol=0.0, abs_tol=_COORD_TOLERANCE)
+            and math.isclose(expected.y_max, actual.y_max, rel_tol=0.0, abs_tol=_COORD_TOLERANCE)
         ):
             return False
     return True

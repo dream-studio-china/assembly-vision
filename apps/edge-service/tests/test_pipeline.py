@@ -598,6 +598,48 @@ def test_provenance_rejects_non_translation_transform() -> None:
     )
 
 
+def test_provenance_uses_absolute_tolerance_only_at_large_coordinates() -> None:
+    from assemblyvision_edge.pipeline import _validate_component_provenance
+
+    # The tolerance must be purely absolute (F12): at coordinates near 1e9 the
+    # old default rel_tol=1e-9 would accept a ~1px discrepancy, so a 0.5 offset
+    # must fail closed instead of passing. model_construct skips the
+    # in-image bound checks so the tolerance path itself is exercised.
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    frame_id = uuid4()
+    roi = Image.new("RGB", (680, 512))
+    frame = Image.new("RGB", (800, 600))
+    base = 1_000_000_000.0
+    obs = ComponentDetection.model_construct(
+        frame_id=frame_id,
+        component_code="component_a",
+        confidence=0.9,
+        roi_bbox=BoundingBox.model_construct(
+            x_min=base,
+            y_min=base,
+            x_max=base + 90.0,
+            y_max=base + 90.0,
+            image_width=roi.width,
+            image_height=roi.height,
+        ),
+        full_frame_bbox=BoundingBox.model_construct(
+            x_min=base + 60.5,
+            y_min=base + 44.5,
+            x_max=base + 150.5,
+            y_max=base + 134.5,
+            image_width=frame.width,
+            image_height=frame.height,
+        ),
+        model_version_id=manifest.model_version_id,
+    )
+    assert (
+        _validate_component_provenance(
+            [obs], frame_id, manifest, roi, frame, (1.0, 0.0, -60.0, 0.0, 1.0, -44.0)
+        )
+        is False
+    )
+
+
 def test_component_stale_frame_is_ng(tmp_path: Path) -> None:
     record = _run_with_component_detector(tmp_path, StaleFrameComponentDetector())
     assert record.decision.business_result is BusinessResult.NG
