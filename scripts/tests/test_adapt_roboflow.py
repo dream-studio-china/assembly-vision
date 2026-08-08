@@ -227,3 +227,21 @@ def test_adapter_normalizes_valid_split_to_val(tmp_path: Path) -> None:
     adapt(src, out, required=["chip", "capacitor"], product_class="product")
     assert (out / "dataset_product" / "images" / "val").is_dir()
     assert not (out / "dataset_product" / "images" / "valid").exists()
+
+
+def _assert_portable_data_yaml(data_yaml: Path) -> None:
+    data = yaml.safe_load(data_yaml.read_text(encoding="utf-8"))
+    assert data["train"] == "images/train"
+    assert data["val"] == "images/val"
+    for key in ("train", "val"):
+        resolved = (data_yaml.parent / data[key]).resolve()
+        assert resolved.is_dir(), f"{key} path {data[key]} does not exist under the output root"
+        assert list(resolved.iterdir()), f"{key} directory {resolved} is empty"
+
+
+def test_adapter_publishes_portable_data_yaml_paths(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val", "test"])
+    out = tmp_path / "out"
+    adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    _assert_portable_data_yaml(out / "dataset_product" / "data.yaml")
+    _assert_portable_data_yaml(out / "dataset_components" / "data.yaml")

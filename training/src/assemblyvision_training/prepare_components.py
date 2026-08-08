@@ -181,8 +181,8 @@ def _prepare_component_dataset_into(
     out_data = {
         "nc": len(component_class_names),
         "names": component_class_names,
-        "train": str((output_dir / "images" / "train").resolve()),
-        "val": str((output_dir / "images" / "val").resolve()),
+        "train": "images/train",
+        "val": "images/val",
     }
     (output_dir / "data.yaml").write_text(
         yaml.dump(out_data, default_flow_style=False), encoding="utf-8"

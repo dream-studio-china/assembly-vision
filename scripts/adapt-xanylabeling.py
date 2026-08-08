@@ -331,22 +331,20 @@ def _adapt_into(
                 f"{len(overlap)} duplicate checksums"
             )
 
-    def _data(names_out: list[str], images_root_out: Path) -> dict[str, Any]:
+    def _data(names_out: list[str]) -> dict[str, Any]:
         return {
             "nc": len(names_out),
             "names": names_out,
-            "train": str((images_root_out / "train").resolve()),
-            "val": str((images_root_out / "val").resolve()),
+            "train": "images/train",
+            "val": "images/val",
         }
 
     (out / "dataset_product" / "data.yaml").write_text(
-        yaml.dump(_data(["product"], out / "dataset_product" / "images"), default_flow_style=False),
+        yaml.dump(_data(["product"]), default_flow_style=False),
         encoding="utf-8",
     )
     (out / "dataset_components" / "data.yaml").write_text(
-        yaml.dump(
-            _data(comp_order, out / "dataset_components" / "images"), default_flow_style=False
-        ),
+        yaml.dump(_data(comp_order), default_flow_style=False),
         encoding="utf-8",
     )
     if expected:

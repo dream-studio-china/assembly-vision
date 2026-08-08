@@ -173,6 +173,11 @@ def test_prepare_keeps_negative_roi_crops(tmp_path: Path, monkeypatch: pytest.Mo
     assert json.loads((out / "exclusions.json").read_text(encoding="utf-8")) == {}
     prepared_data = yaml.safe_load((out / "data.yaml").read_text(encoding="utf-8"))
     assert prepared_data["names"] == ["chip"]
+    assert prepared_data["train"] == "images/train"
+    assert prepared_data["val"] == "images/val"
+    assert (out / prepared_data["train"]).is_dir()
+    assert (out / prepared_data["val"]).is_dir()
+    assert (out / "images" / "train" / "img000.png").is_file()
 
 
 def test_prepare_rejects_populated_output_dir(

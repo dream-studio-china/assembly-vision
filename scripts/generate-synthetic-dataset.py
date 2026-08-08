@@ -127,14 +127,14 @@ def _product_label(lbl_path: Path) -> None:
     lbl_path.write_text(f"0 {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}\n", encoding="utf-8")
 
 
-def _write_data_yaml(path: Path, names: list[str], img_root: Path) -> None:
+def _write_data_yaml(path: Path, names: list[str]) -> None:
     if yaml is None:
         raise RuntimeError("PyYAML is required (uv sync)")
     data = {
         "nc": len(names),
         "names": names,
-        "train": str((img_root / "train").resolve()),
-        "val": str((img_root / "val").resolve()),
+        "train": "images/train",
+        "val": "images/val",
     }
     path.write_text(yaml.dump(data, default_flow_style=False), encoding="utf-8")
 
@@ -189,13 +189,10 @@ def generate(out: Path, n_train: int, n_val: int) -> None:
             )
             idx += 1
 
-    _write_data_yaml(
-        out / "dataset_product" / "data.yaml", ["product"], out / "dataset_product" / "images"
-    )
+    _write_data_yaml(out / "dataset_product" / "data.yaml", ["product"])
     _write_data_yaml(
         out / "dataset_components" / "data.yaml",
         component_names,
-        out / "dataset_components" / "images",
     )
 
     test = out / "test"
