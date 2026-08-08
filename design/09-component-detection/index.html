@@ -3243,7 +3243,7 @@ pipeline configuration shown above (AUDIT-001).</p>
 </ul>
 <h2 id="97-failure-handling">9.7 Failure Handling<a class="headerlink" href="#97-failure-handling" title="Permanent link">&para;</a></h2>
 <p>Inference timeout, out-of-memory, malformed output, model process crash, transform failure, or version mismatch invalidates the affected frame. If required evidence cannot be established, the final result is <code>NG</code>. The implementation must never carry detections forward from another frame, ROI, product, or model invocation.</p>
-<p>After a recoverable accelerator failure, the worker may reload or use a validated CPU runtime if configured. The fallback runtime must use the same manifest and be separately performance-tested; switching runtime is recorded. Server connectivity has no effect on local inference.</p>
+<p>After a recoverable accelerator failure, the worker may reload or use a validated CPU runtime if configured. The fallback runtime must use the same manifest and be separately performance-tested; switching runtime is recorded. Server connectivity has no effect on local inference. Accelerator/GPU failure is fault-injected per the resilience matrix (22.8): a recoverable failure may fall back, and a non-recoverable failure must fault and block inspection, never producing <code>OK</code> from incomplete evidence.</p>
 <h2 id="98-performance-and-concurrency">9.8 Performance and Concurrency<a class="headerlink" href="#98-performance-and-concurrency" title="Permanent link">&para;</a></h2>
 <p>Keep model instances warm and bound concurrency to measured GPU/CPU capacity. Backpressure must be explicit. Optimize input size, runtime, or frame sampling only after measuring per-component NG recall; silently dropping frames to meet throughput is prohibited. Sampling must preserve the minimum valid-frame requirement and product-window identity.</p>
 <h2 id="99-verification">9.9 Verification<a class="headerlink" href="#99-verification" title="Permanent link">&para;</a></h2>
@@ -3254,6 +3254,7 @@ pipeline configuration shown above (AUDIT-001).</p>
 <li>Include intentionally missing components, difficult present components, empty ROIs, reflections, and occlusions.</li>
 <li>Split datasets by physical product, capture session, batch, or date, not adjacent video frames.</li>
 <li>Fault-inject timeout, OOM, malformed tensor, and worker restart; none may yield <code>OK</code> from incomplete evidence.</li>
+<li>Fault-inject accelerator/GPU failure; verify reload or the validated CPU fallback uses the same manifest, records the runtime switch, and never yields <code>OK</code> from incomplete evidence.</li>
 <li>Benchmark average/P95 inference latency and sustained throughput on deployment hardware.</li>
 </ul>
 <h2 id="910-open-questions-and-validation-required">9.10 Open Questions and Validation Required<a class="headerlink" href="#910-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>

@@ -3015,6 +3015,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#84-audit-001-closure-and-review-fixes-pr-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 AUDIT-001 Closure and Review Fixes (PR #12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3189,6 +3200,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#84-audit-001-closure-and-review-fixes-pr-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 AUDIT-001 Closure and Review Fixes (PR #12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3221,7 +3243,7 @@
 
 <h1 id="assemblyvision-full-project-context">AssemblyVision - Full Project Context<a class="headerlink" href="#assemblyvision-full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Context snapshot. Last updated: 2026-08-08</p>
+<p>Context snapshot. Last updated: 2026-08-09</p>
 <p>Read this file first in a new session to reconstruct the project state quickly.</p>
 </blockquote>
 <hr />
@@ -3250,14 +3272,17 @@ and verifies that all required assembly components are present.</p>
   tooling: the X-AnyLabeling dataset adapter, the single-product
   data-acquisition guidance (design §19.17, runbook 11), and README/QUICKSTART
   updates. Read-only dashboard views display real CLI results through the HTTP
-  client, while the operator workflow actions remain on the mock client.</li>
+  client, while the operator workflow actions remain on the mock client.
+  PR #12 (dev -&gt; main) closed the AUDIT-001 findings with acceptance tests
+  (merged 2026-08-09); see section 8.4.</li>
 </ul>
 <h2 id="2-repository-state">2. Repository State<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>. All merged
-  to <code>main</code> (PRs #3, #6, #8, #9, #10, #11); no open PRs. <code>dev</code> is in sync with
-  <code>main</code>; the next milestone is the AUDIT-001 Phase 1 fixes and collecting
-  real customer data.</li>
+<li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>. PRs #3, #6,
+  #8, #9, #10, #11, #12 are merged to <code>main</code>; PR #12 merged the completed
+  AUDIT-001 closure on 2026-08-09. The next milestones are the upload
+  scheduler + authoritative persistence (AUDIT-001 4.4) and collecting real
+  customer data.</li>
 <li><code>.obsidian/</code>, <code>.idea/</code>, and <code>.vscode/</code> are ignored local editor state.</li>
 <li>Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts <code>docs-zh/</code>, <code>site/</code>, <code>mkdocs-en.yml</code>, <code>mkdocs-zh.yml</code> are gitignored.</li>
@@ -3442,7 +3467,7 @@ and verifies that all required assembly components are present.</p>
   HIGH data-integrity/doc findings (adapter missing-label fabrication, stale
   staging paths in published data.yaml, av-train relative-path
   runs/detect-nesting, stale PR state) and three reproduced concurrency and
-  robustness defects were recorded for the next milestone.</li>
+  robustness defects were recorded; all are now closed (PR #12, section 8.4).</li>
 <li>Model improvement is a developer-side loop (docs/runbooks/10-model-improvement.md):
   collect/correct data -&gt; retrain -&gt; verify no regression -&gt; bump pipeline config and the rule's
   <code>compatible_component_model_versions</code> together (<code>av-train --rule</code> prints the suggested bump).</li>
@@ -3572,14 +3597,48 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   tolerance at the boundary.</li>
 <li><strong>Packaging</strong>: <code>py.typed</code> markers added to <code>domain</code> and <code>vision-core</code> so MyPy
   strict passes repo-wide.</li>
-<li><strong>Test hardening</strong>: edge Python statement coverage is ~99.5% (pytest-cov;
-  uncovered lines are viewer-session/no-token branches, derived-image and
-  statistics fallbacks, the verify empty-work branch, and the unreachable
-  IntegrityError handler); the full suite is <code>405 passed</code>, TypeScript tests are
-  <code>30 passed</code> (api-client), <code>13 passed</code> (ui), <code>17 passed</code> (edge-web), <code>3 passed</code>
-  (desktop), and Playwright e2e is <code>12 passed</code> including a token-authenticated
-  served dashboard that asserts real reconciled data and purged-media
-  rendering.</li>
+<li><strong>Test hardening</strong>: the shared gate (ruff, format, mypy, pytest) passes with
+  <code>472 passed</code> (2026-08-09); TypeScript is <code>34 passed</code> (api-client), <code>13 passed</code>
+  (ui), <code>25 passed</code> (edge-web), <code>3 passed</code> (desktop), plus 12 Playwright e2e
+  including a token-authenticated served dashboard that asserts real reconciled
+  data and purged-media rendering. <code>uv run mkdocs build --strict</code> passes.</li>
+</ul>
+<h2 id="84-audit-001-closure-and-review-fixes-pr-12">8.4 AUDIT-001 Closure and Review Fixes (PR #12)<a class="headerlink" href="#84-audit-001-closure-and-review-fixes-pr-12" title="Permanent link">&para;</a></h2>
+<p>The read-only system audit (<code>docs/reviews/AUDIT-001-system-audit.md</code>) was
+verified and its findings closed with acceptance tests, merged via PR #12
+(dev -&gt; main, 16 commits; CI green):</p>
+<ul>
+<li><strong>H1-H3</strong>: dataset adapters enforce image/label pairing (explicit empty
+  labels, stem collisions, Roboflow <code>valid</code> -&gt; <code>val</code>), publish
+  dataset-relative <code>data.yaml</code> paths, and <code>av-train</code> resolves an absolute
+  Ultralytics project dir and asserts <code>best.pt</code> exists.</li>
+<li><strong>M1-M3</strong>: reconciliation skips NUL-byte media paths; rule-identity
+  registration resolves concurrent races without leaking <code>IntegrityError</code>;
+  first-open SQLite migration is serialized across threads and processes.</li>
+<li><strong>Rule/manifest fail-safe</strong>: the rule engine rejects non-finite geometry and
+  incomplete PRESENT evidence; manifest validation enforces runtime, artifact
+  bundle containment, and class maps (<code>ConfigError</code>, never a leak).</li>
+<li><strong>API hardening</strong>: non-loopback bind requires a token (or explicit dev
+  override); log messages scrub absolute paths; failed-attempt throttling with
+  <code>Retry-After</code>; bounded sessions; cursors bound to filter fingerprints
+  (<code>400 INVALID_CURSOR</code>); PURGED media always <code>410</code>; non-ASCII bearer <code>401</code>;
+  <code>/api</code> reserved before the SPA fallback; CSP/nosniff/referrer headers.</li>
+<li><strong>Frontend hardening</strong>: production builds fail unless <code>VITE_API_MODE=http</code>;
+  media blob URLs reject foreign origins; HTTP mode drops the unsupported line
+  filter; WebSocket gaps are signalled; nested records are validated; the
+  unrouted duplicate live view was removed.</li>
+<li><strong>Tooling/docs</strong>: synthetic generator rotation geometry and scenario
+  coverage corrected; training-run reproducibility metadata recorded beside
+  manifests; design 14 M1 boundary, reason codes, adapters, runbooks, and
+  QUICKSTART aligned.</li>
+<li><strong>PR review follow-up (<code>c634ca5</code>)</strong>: preserved the documented sibling
+  <code>models/manifests</code> + <code>models/weights</code> layout under bundle-root containment,
+  requires independent product boxes in held-out test samples, re-verifies
+  migrations on every database open, and adds <code>Retry-After</code> to auth
+  throttling.</li>
+<li><strong>Deferred</strong>: 4.4 authoritative persistence schema (product-configuration
+  version, lease fields, concurrent equal-content upserts) is gated on the
+  upload-scheduler milestone.</li>
 </ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3588,16 +3647,16 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   backoff, idempotency) and the <strong>WebSocket runtime channel</strong> are the next
   backend gaps. Read-only dashboard views already route through the HTTP
   client (<code>VITE_API_MODE=http</code>).</li>
-<li>AUDIT-001 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) Phase 1 fixes pending:
-  adapter missing-label enforcement, <code>valid</code> alias, and stem-collision
-  detection (H1); relative <code>data.yaml</code> paths after the atomic rename in both
-  adapters and <code>prepare_components</code> (H2); absolute <code>project_dir</code> in <code>av-train</code>
-  (H3); reconcile and rule-registry error handling (M1/M2/M3); rule-engine
-  non-finite/evidence-completeness guards; manifest runtime/URI/class-map
-  checks. Phase 2: documentation alignment (design 14 M1 boundary, appendices
-  reason codes, coverage/test-count claims). Phase 3: decide the
-  multi-edge-per-host "shared" model before the upload scheduler, WebSocket,
-  camera/barcode, and temporal aggregation work.</li>
+<li>AUDIT-001 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) is <strong>closed</strong>: all
+  findings fixed and committed on <code>dev</code> (section 8.4), merged to <code>main</code> via
+  PR #12 on 2026-08-09. The only deferred item is 4.4 authoritative
+  persistence, gated on the upload-scheduler milestone. Phase 3 still needs a
+  decision on the multi-edge-per-host "shared" model before the upload
+  scheduler, WebSocket, camera/barcode, and temporal aggregation work.</li>
+<li>Resilience documentation (2026-08-09, new docs PR): design 22 adds
+  Accelerator/GPU failure and Repeated network disconnect to the resilience
+  fault matrix, design 09 and contracts 06 are aligned, and README gained a
+  Testing and Resilience section.</li>
 <li>PR-003 follow-up items are all resolved (see <code>docs/reviews/PR-003-review.md</code>):
   model-manifest publication now compares full decision-critical content
   (task, class order, input size, artifact, provenance), the Roboflow adapter

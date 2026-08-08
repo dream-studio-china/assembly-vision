@@ -3239,7 +3239,7 @@ else 永久验证或内容冲突
 <p>重试连接失败、超时、HTTP <code>408</code>、<code>429</code> 和 <code>5xx</code>，在配置的范围内遵守 <code>Retry-After</code>。不要无限期地自动重试身份验证/授权失败、架构不兼容、校验和冲突或无效内容。使用具有完全抖动的指数退避：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>delay = random(0, min(max_delay, base_delay * 2 ** min(attempt, exponent_cap)))
 </code></pre></div>
-<p>工作线程并发和带宽是有限的，因此上传不会导致推理不足或填满内存。工作线程崩溃后，租约会恢复任务。断路器可减少中断期间的重复流量，但会定期探测恢复情况。</p>
+<p>工作线程并发和带宽是有限的，因此上传不会导致推理不足或填满内存。租约在工作线程崩溃后恢复任务。断路器可减少中断期间的重复流量，但会定期探测恢复情况。</p>
 <h2 id="136-offline-operation-sequence">13.6 离线操作顺序<a class="headerlink" href="#136-offline-operation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Camera

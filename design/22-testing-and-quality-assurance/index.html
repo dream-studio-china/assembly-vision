@@ -3313,7 +3313,7 @@
 <tr>
 <td>Resilience</td>
 <td>Recovery and safe degradation</td>
-<td>network outage, power loss, disk full, corruption, restart</td>
+<td>network outage, repeated network flap, power loss, disk full, accelerator/inference failure, corruption, restart</td>
 </tr>
 <tr>
 <td>Acceptance</td>
@@ -3450,6 +3450,11 @@
 <td>Local decisions continue; queue persists</td>
 </tr>
 <tr>
+<td>Repeated network disconnect</td>
+<td>Oscillate connectivity (up/down cycles, partial packet loss) against the central endpoint</td>
+<td>Local decisions continue without a central round trip; the queue persists; backoff with jitter and the circuit breaker bound repeated traffic; no data loss or duplicate uploads; the backlog drains once connectivity returns</td>
+</tr>
+<tr>
 <td>Central outage</td>
 <td>Return timeout/5xx</td>
 <td>Backoff with jitter; no decision blockage</td>
@@ -3468,6 +3473,11 @@
 <td>Disk full</td>
 <td>Fill test volume or enforce quota</td>
 <td>Alert, safe cleanup, pause before traceability is lost</td>
+</tr>
+<tr>
+<td>Accelerator/GPU failure</td>
+<td>Kill or stall the inference subprocess; force a CUDA/accelerator error</td>
+<td>No fabricated <code>OK</code>; a recoverable failure reloads or switches to a validated CPU runtime using the same manifest and records the switch; a non-recoverable failure faults and blocks inspection (design 09.7)</td>
 </tr>
 <tr>
 <td>Database failure</td>
@@ -3494,7 +3504,7 @@
 <p>Fault tests run only in isolated environments with disposable data. Power-loss testing includes interruptions before/after database commit, media rename, queue creation, upload transfer, and receipt persistence.</p>
 <h2 id="229-performance-and-stability">22.9 Performance and Stability<a class="headerlink" href="#229-performance-and-stability" title="Permanent link">&para;</a></h2>
 <p>Performance testing uses production-resolution images and the candidate edge hardware. Measure stage timings for capture, barcode, product detection, ROI, component detection, aggregation, rules, persistence, and UI/event delivery. Report warm-up separately and monitor CPU, GPU, memory, temperature, disk I/O, and queue growth.</p>
-<p>Long-running tests include normal product flow, bursts, idle periods, camera reconnects, central outages, and retention cleanup. Passing means no unbounded memory/file-descriptor/queue growth, no data loss, and stable latency within customer-agreed limits. Duration and workload are agreed from actual operating patterns; this document does not invent them.</p>
+<p>Long-running tests include normal product flow, bursts, idle periods, camera reconnects, central outages, repeated network disconnects, accelerator/inference failures, and retention cleanup. Passing means no unbounded memory/file-descriptor/queue growth, no data loss, and stable latency within customer-agreed limits. Duration and workload are agreed from actual operating patterns; this document does not invent them.</p>
 <h2 id="2210-test-data-and-ground-truth-governance">22.10 Test Data and Ground Truth Governance<a class="headerlink" href="#2210-test-data-and-ground-truth-governance" title="Permanent link">&para;</a></h2>
 <p>Fixtures contain no uncontrolled customer data. Each evaluation item has an immutable identifier, source group, product type, expected component state, barcode ground truth where applicable, annotation/review provenance, and permitted use. Corrections create a new annotation version. Training, validation, test, and customer acceptance manifests are checksum-controlled.</p>
 <p>Real NG examples are intentionally collected for every required missing-component condition. Synthetic removal or staging may supplement but must be reported separately from naturally occurring defects. Dataset quantities in the training strategy are starting points, not guarantees.</p>

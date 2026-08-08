@@ -3015,6 +3015,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#84-audit-001-closure-and-review-fixes-pr-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 AUDIT-001 关闭和审查修复（PR #12）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3189,6 +3200,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#84-audit-001-closure-and-review-fixes-pr-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 AUDIT-001 关闭和审查修复（PR #12）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3221,7 +3243,7 @@
 
 <h1 id="assemblyvision---full-project-context">AssemblyVision - 完整的项目背景<a class="headerlink" href="#assemblyvision---full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>上下文快照。最后更新: 2026-08-08</p>
+<p>上下文快照。最后更新: 2026-08-09</p>
 <p>首先在新会话中读取此文件以快速重建项目状态。</p>
 </blockquote>
 <hr />
@@ -3250,14 +3272,17 @@
   工具：X-AnyLabeling 数据集适配器、单一产品
   数据采集指南（设计§19.17，运行手册 11）和自述文件/快速入门
   更新。只读仪表板视图通过 HTTP 显示真实的 CLI 结果
-  客户端，而操作员工作流操作保留在模拟客户端上。</li>
+  客户端，而操作员工作流操作保留在模拟客户端上。
+  PR #12（开发 -&gt; 主要）通过验收测试结束了 AUDIT-001 的调查结果
+  （2026年8月9日合并）；参见第 8.4 节。</li>
 </ul>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
-<li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。全部合并
-  到 <code>main</code> （PR #3、#6、#8、#9、#10、#11）；没有公开的 PR。 <code>dev</code> 与同步
-  <code>main</code>；下一个里程碑是 AUDIT-001 第一阶段修复和收集
-  真实的客户数据。</li>
+<li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。 PR #3、#6、
+  #8、#9、#10、#11、#12 合并到<code>main</code>； PR #12 合并了已完成的
+  AUDIT-001 于 2026 年 8 月 9 日关闭。下一个里程碑是上传
+  调度程序+权威持久化（AUDIT-001 4.4）并收集真实数据
+  客户数据。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
   吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
@@ -3357,7 +3382,7 @@
    训练和检查 MVP 和 ADR-012 边缘 API M1 查看器身份验证。</li>
 <li><a href="../../design/appendices/">docs/design/appendices.md</a> 保存规范术语、决策一致性检查表、
   全局开放问题 (OQ-001 ... OQ-025)、原因代码术语表和可追溯性约定。</li>
-<li><code>docs/research/</code>：行业成功率、YOLO 能力、成像/工作流程/培训成本。</li>
+<li><code>docs/research/</code>：行业成功率、YOLO能力、成像/工作流程/培训成本。</li>
 <li><a href="../../contracts/">docs/contracts/</a>：11个可执行架构、安全、API、质量、
   运营、安全、变更控制和验收合同。</li>
 <li><a href="../../runbooks/">docs/runbooks/</a>：所有合同要求的可执行恢复程序
@@ -3377,7 +3402,7 @@
 <li>所有内容均已翻译，包括<code>research/</code>和美人鱼图标签。美人鱼语法是
   保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
   被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
-<li>翻译后的标题保留其原始英文标题作为显式 <code>{#slug}</code> 属性，以便
+<li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
   跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
 <li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
   <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
@@ -3401,9 +3426,9 @@
   附录）来自<a href="../../source-brief/">docs/source-brief.md</a>（以前的<code>docs/doc-task.md</code>）。</li>
 <li>通过互联网研究创建<code>docs/research/</code>（3份报告）。</li>
 <li>构建了具有自动翻译功能的双语MkDocs，改编自<code>crud-skeleton</code>项目。</li>
-<li>向<code>translate-docs.py</code>添加了美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
+<li>添加了美人鱼翻译到<code>translate-docs.py</code>（仅标签/边缘文本，保留语法）。</li>
 <li><code>UNCERTAIN</code>决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
-<li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（单独的
+<li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（一个单独的
   边缘工作者/API 分割被推迟，直到测量证明其合理为止）。</li>
 <li>检查分别固定产品检测器和组件检测器模型版本。</li>
 <li>一个月的范围是有界受控集成演示，而不是完整的生产
@@ -3417,8 +3442,8 @@
   包被提取；仅供开发人员使用的 <code>training/</code> 工作区和 <code>av-train</code>
   添加了（产品/准备组件/组件）；探测器存根被替换为真实的
   Ultralytics YOLO 适配器可加载清单引用的权重并将 ROI 框映射回完整值
-  框架； <code>assemblyvision verify</code>报告NG召回/漏报/误报；和
-  <code>scripts/e2e-demo.sh</code> 在漏报上使用硬门运行整个流程。</li>
+  框架； <code>assemblyvision verify</code> 报告 NG 召回/漏报/误报；和
+  <code>scripts/e2e-demo.sh</code> 使用针对误报的硬门运行整个流程。</li>
 <li>数据集：<code>scripts/generate-synthetic-dataset.py</code>构建一个带标签的程序集数据集（确切地说
   框、缺少组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
   将 Roboflow YOLOv8 导出转换为两阶段布局，删除通用 <code>missing*</code> 类，
@@ -3431,7 +3456,7 @@
   <code>docs/design/19-training-and-evaluation.md</code> §19.17（单一产品数量，
   硬注释规则）和 <code>docs/runbooks/11-data-collection-and-annotation.md</code>
   （操作流程）。本地试驾下载了CC0 smdComponents
-  设置和 <code>data/test-training/</code> 下的 CC BY 4.0 PCB 检测集
+  集和 <code>data/test-training/</code> 下的 CC BY 4.0 PCB 检测集
   （gitignored）并训练了板级缺失部分检测器（val mAP50 ~0.94；
   60 张图像保留 NG 召回率 0.848，多缺失板上的所有缺失） - a
   演示，而不是准确性声明。</li>
@@ -3442,7 +3467,7 @@
   高数据完整性/文档结果（适配器缺失标签制造、陈旧
   发布的 data.yaml 中的暂存路径，av-train 相对路径
   运行/检测嵌套、过时的 PR 状态）和三个再现的并发性和
-  为下一个里程碑记录稳健性缺陷。</li>
+  记录稳健性缺陷；现已全部关闭（PR #12，第 8.4 节）。</li>
 <li>模型改进是开发人员端循环（docs/runbooks/10-model-improvement.md）：
   收集/更正数据 -&gt; 重新训练 -&gt; 验证没有回归 -&gt; 碰撞管道配置和规则
   <code>compatible_component_model_versions</code> 在一起（<code>av-train --rule</code> 打印建议的凹凸）。</li>
@@ -3516,7 +3541,7 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
 <p><code>dev</code> 上的 FastAPI + SQLite 后端层提供真实的只读仪表板视图
 CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 阻塞结果 (F1-F14) 和 M1 条件项 (C1-C4)
-<code>docs/reviews/PR-008-review.md</code> 于 <code>dev</code> 得到解决和验证。</p>
+<code>docs/reviews/PR-008-review.md</code> 已于 <code>dev</code> 得到解决和验证。</p>
 <ul>
 <li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
   将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
@@ -3572,15 +3597,49 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   边界处的公差。</li>
 <li><strong>包装</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
   strict 在整个仓库范围内传递。</li>
-<li><strong>测试强化</strong>：边缘Python语句覆盖率约为99.5%（pytest-cov；
-  未覆盖的行是查看者会话/无令牌分支、派生图像和
-  统计回退、验证空工作分支和无法访问
-  完整性错误处理程序）；全套是 <code>405 passed</code>，TypeScript 测试是
-  <code>30 passed</code>（api 客户端）、<code>13 passed</code>（ui）、<code>17 passed</code>（边缘网络）、<code>3 passed</code>
-  （桌面），Playwright e2e 是 <code>12 passed</code>，包括经过令牌验证的</li>
+<li><strong>测试强化</strong>：共享门（ruff、format、mypy、pytest）通过
+  <code>472 passed</code> (2026-08-09); TypeScript 是 <code>34 passed</code> （api 客户端）、<code>13 passed</code>
+  (ui)、<code>25 passed</code>（边缘网络）、<code>3 passed</code>（桌面）以及 12 个 Playwright e2e
+  包括一个经过令牌验证的服务仪表板，断言真实一致
+  数据和清除媒体渲染。 <code>uv run mkdocs build --strict</code> 通过。</li>
 </ul>
-<p>提供真实协调数据和清除媒体的仪表板
-  渲染。</p>
+<h2 id="84-audit-001-closure-and-review-fixes-pr-12">8.4 AUDIT-001 关闭和审查修复（PR #12）<a class="headerlink" href="#84-audit-001-closure-and-review-fixes-pr-12" title="Permanent link">&para;</a></h2>
+<p>只读系统审核 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 是
+经过验证，其结果通过验收测试结束，并通过 PR #12 合并
+（dev -&gt; main，16 次提交；CI 绿色）：</p>
+<ul>
+<li><strong>H1-H3</strong>：数据集适配器强制图像/标签配对（显式空
+  标签、词干碰撞、Roboflow <code>valid</code> -&gt; <code>val</code>)、发布
+  数据集相对 <code>data.yaml</code> 路径，<code>av-train</code> 解析绝对路径
+  Ultralytics 项目目录并断言 <code>best.pt</code> 存在。</li>
+<li><strong>M1-M3</strong>：协调跳过 NUL 字节媒体路径；规则身份
+  注册可以解决并发比赛而不泄漏<code>IntegrityError</code>；
+  首次打开的 SQLite 迁移是跨线程和进程序列化的。</li>
+<li><strong>规则/清单故障安全</strong>：规则引擎拒绝非有限几何并且
+  现有证据不完整；清单验证强制执行运行时、工件
+  包包含和类映射（<code>ConfigError</code>，绝不泄漏）。</li>
+<li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
+  覆盖）；日志消息清理绝对路径；失败尝试节流
+  <code>Retry-After</code>；有界会话；光标绑定过滤指纹
+  (<code>400 INVALID_CURSOR</code>);始终清除介质 <code>410</code>；非 ASCII 承载 <code>401</code>；
+  <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
+<li><strong>前端强化</strong>：生产构建失败，除非<code>VITE_API_MODE=http</code>；
+  媒体 blob URL 拒绝外国来源； HTTP 模式删除不支持的行
+  过滤器； WebSocket 间隙已发出信号；嵌套记录经过验证；的
+  未路由的重复实时视图已被删除。</li>
+<li><strong>工具/文档</strong>：合成发电机旋转几何形状和场景
+  覆盖范围已修正；训练运行的再现性元数据记录在旁边
+  体现；设计 14 M1 边界、原因代码、适配器、运行手册和
+  快速启动对齐。</li>
+<li><strong>PR 审查后续 (<code>c634ca5</code>)</strong>：保留记录的同级
+  包根包含下的 <code>models/manifests</code> + <code>models/weights</code> 布局，
+  要求保留测试样品中的独立产品盒，重新验证
+  在每个打开的数据库上进行迁移，并将 <code>Retry-After</code> 添加到 auth
+  节流。</li>
+<li><strong>推迟</strong>：4.4 权威持久化模式（产品配置
+  版本、租约字段、并发等内容更新插入）在
+  上传调度程序里程碑。</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>FastAPI + SQLite 后端层（<code>assemblyvision serve</code>，第 8.3 节）是
@@ -3588,16 +3647,16 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   退避、幂等性）和 <strong>WebSocket 运行时通道</strong> 是下一个
   后端差距。只读仪表板视图已通过 HTTP 路由
   客户端（<code>VITE_API_MODE=http</code>）。</li>
-<li>AUDIT-001 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 第 1 阶段修复待决：
-  适配器缺失标签强制、<code>valid</code> 别名和词干冲突
-  检测（H1）；原子重命名后的相对 <code>data.yaml</code> 路径
-  适配器和 <code>prepare_components</code> (H2)； <code>av-train</code> 中的绝对 <code>project_dir</code>
-  （H3）；协调和规则注册错误处理（M1/M2/M3）；规则引擎
-  非有限/证据完整性守卫；清单运行时/URI/类映射
-  检查。第 2 阶段：文档对齐（设计 14 M1 边界，附录
-  原因代码、覆盖范围/测试计数声明）。第三阶段：决定
-  上传调度程序之前的多边缘每主机“共享”模型，WebSocket，
-  相机/条形码和时间聚合工作。</li>
+<li>AUDIT-001 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) <strong>已关闭</strong>：全部
+  已在 <code>dev</code>（第 8.4 节）上确定并提交的调查结果，通过以下方式合并到 <code>main</code>
+  公关#12，2026 年 8 月 9 日。唯一推迟的项目是4.4权威版
+  持久性，以上传调度程序里程碑为门控。第三阶段仍需
+  上传前决定每主机多边“共享”模型
+  调度程序、WebSocket、相机/条形码和时间聚合工作。</li>
+<li>弹性文档（2026-08-09，新文档 PR）：设计 22 添加
+  加速器/GPU 故障和反复网络断开对恢复能力的影响
+  故障矩阵、设计 09 和合同 06 对齐，README 获得了
+  测试和弹性部分。</li>
 <li>PR-003后续事项全部解决（参见<code>docs/reviews/PR-003-review.md</code>）：
   模型清单出版物现在比较完整的决策关键内容
   （任务、类顺序、输入大小、工件、出处），Roboflow 适配器
@@ -3639,7 +3698,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。</li>
-<li><code>.obsidian/</code> 根据选择保持不被跟踪；在更改该决定之前通知用户。</li>
+<li><code>.obsidian/</code> 仍然选择不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
 
 

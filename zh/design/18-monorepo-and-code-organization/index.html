@@ -3473,7 +3473,7 @@
 <ol>
 <li><code>apps/</code>包含独立可运行/可部署的进程和Web应用程序。</li>
 <li><code>packages/</code> 包含由至少两个应用程序或需要独立测试的内聚域重用的代码。</li>
-<li>将产品检测、ROI、组件检测、时间聚合和规则放在 <code>vision-core</code> 中。一旦第二个具体消费者需要<code>domain</code>和<code>vision-core</code>，就提取它们；标记的训练和检查 MVP 就是那个触发器，因为训练重用了域模式和 ROI/预处理。</li>
+<li>将产品检测、ROI、组件检测、时间聚合和规则放在 <code>vision-core</code> 中。一旦第二个具体消费者需要<code>domain</code>和<code>vision-core</code>，就提取它们；标记为“训练和检查”的 MVP 就是该触发器，因为训练重用了域模式和 ROI/预处理。</li>
 <li>运行时应用程序代码永远不会从 <code>training/</code> 导入。</li>
 <li>边缘代码不得导入中央持久性或需要中央连接。</li>
 <li>前端使用生成的 API 合约和小型共享视觉原语；特定于页面的商店和组件保留在其应用程序中。</li>
@@ -3652,8 +3652,8 @@
     EV --&gt; UI[TS用户界面]
     AW[管理网] --&gt; AC
     AW --&gt; UI
-    AC -. 产生自 .-&gt; EO[边缘开放API]
-    AC -. 产生自 .-&gt; CO[中央开放API]
+    AC -. 产生于 .-&gt; EO[边缘开放API]
+    AC -. 产生于 .-&gt; CO[中央开放API]
 
     ES[边缘服务] --&gt; VD[Python域]
     ES --&gt; VC[愿景核心]
@@ -3746,8 +3746,8 @@
 <li>确认 CI 提供程序、容器注册表、工件/模型注册表和 SBOM/签名要求。</li>
 <li>确认相机 SDK 许可或本机库是否需要单独构建的适配器包/图像。</li>
 <li>决定在每个消费者构建期间是否提交或生成生成的 OpenAPI 客户端。</li>
-<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人合理。</li>
-<li>确认支持的边缘操作系统、CPU/GPU架构和离线依赖安装过程。</li>
+<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人是合理的。</li>
+<li>确认支持的边缘操作系统、CPU/GPU架构以及离线依赖安装过程。</li>
 </ul>
 
 

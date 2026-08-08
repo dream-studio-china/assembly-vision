@@ -2775,12 +2775,12 @@
   <a href="#additional-blocking-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        额外的阻塞发现
+        其他阻塞发现
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="额外的阻塞发现">
+    <nav class="md-nav" aria-label="其他阻塞发现">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3427,12 +3427,12 @@
   <a href="#additional-blocking-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        额外的阻塞发现
+        其他阻塞发现
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="额外的阻塞发现">
+    <nav class="md-nav" aria-label="其他阻塞发现">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3658,7 +3658,7 @@
 <p><strong>更正 (AUDIT-001)。</strong> PR 中的“100% 测试覆盖率”声明
 描述没有被复制。测量边缘 Python 语句覆盖率
 合并结果约为 99.5% (pytest-cov)；未覆盖的线条
-是查看者会话/无令牌分支、派生图像和统计信息
+是查看者会话/无令牌分支、派生图像和统计数据
 后备、验证空工作分支和无法访问的 IntegrityError
 处理程序。将覆盖率数字视为过时的测量工件，而不是
 保证，并在提出索赔时记录准确的命令/输出。</p>
@@ -3940,7 +3940,7 @@ API。因此 <code>paused_by</code> 被硬编码为 <code>"operator"</code>，�
 - 仅当选择显式模拟模式时，模拟才保持可用；一个
   仅缺少 URL 不会在生产构建中默默地选择模拟。</p>
 <hr />
-<h2 id="additional-blocking-findings">额外的阻塞发现<a class="headerlink" href="#additional-blocking-findings" title="Permanent link">&para;</a></h2>
+<h2 id="additional-blocking-findings">其他阻塞发现<a class="headerlink" href="#additional-blocking-findings" title="Permanent link">&para;</a></h2>
 <h3 id="f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls">F6。实模式将模拟检测结果与真实设备控制相结合<a class="headerlink" href="#f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls" title="Permanent link">&para;</a></h3>
 <p><strong>问题：</strong>当前检查、确认、下一步、手动操作总是
 针对私有 <code>MockApiClient</code> 运行，同时暂停/恢复、状态、日志、
@@ -4265,7 +4265,7 @@ static-MVP 结果并显式地将 SQLite 视为可重建的读取投影。
 </li>
 <li>
 <p><strong>上传重试会忽略资格、幂等性、原因和状态元数据。</strong>
-  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>;
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>；
   <code>repository.retry_upload</code> 接受任何状态，忽略 <code>Idempotency-Key</code> 和
   原因，并且不更新 <code>updated_at</code>/<code>next_attempt_at</code>。
   <em>解决方案：</em> 因为调度程序超出了 M1 范围，所以删除/禁用
