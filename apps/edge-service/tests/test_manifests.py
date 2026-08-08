@@ -170,3 +170,60 @@ def test_verify_model_class_map_sequence_and_mismatch() -> None:
     verify_model_class_map(["component_a", "component_b", "manual"], manifest)
     with pytest.raises(ConfigError, match="class map"):
         verify_model_class_map(["component_b", "component_a", "manual"], manifest)
+
+
+def test_load_manifest_rejects_unsupported_runtime(tmp_path: Path) -> None:
+    weights, sha = _weights(tmp_path)
+    manifest = _manifest(weights, sha, weights.stat().st_size).model_copy(
+        update={"runtime": "tensorrt"}
+    )
+    path = tmp_path / "manifest.json"
+    path.write_text(manifest.model_dump_json(indent=2), encoding="utf-8")
+    with pytest.raises(ConfigError, match="unsupported model runtime"):
+        load_model_manifest(path)
+
+
+def test_load_manifest_accepts_ultralytics_runtime(tmp_path: Path) -> None:
+    weights, sha = _weights(tmp_path)
+    manifest = _manifest(weights, sha, weights.stat().st_size)
+    path = tmp_path / "manifest.json"
+    path.write_text(manifest.model_dump_json(indent=2), encoding="utf-8")
+    assert load_model_manifest(path).runtime == "ultralytics"
+
+
+@pytest.mark.parametrize(
+    "uri",
+    [
+        "../weights.pt",
+        "sub/../../weights.pt",
+        "file:///etc/passwd",
+        "http://example.com/weights.pt",
+        "C:/weights.pt",
+    ],
+)
+def test_verify_manifest_artifact_rejects_unsafe_uri(tmp_path: Path, uri: str) -> None:
+    weights, sha = _weights(tmp_path)
+    manifest = _manifest(weights, sha, weights.stat().st_size)
+    manifest.artifacts[0].uri = uri
+    with pytest.raises(ConfigError):
+        verify_manifest_artifact(manifest, tmp_path / "manifest.json")
+
+
+def test_verify_manifest_artifact_rejects_symlink_escape(tmp_path: Path) -> None:
+    weights, sha = _weights(tmp_path)
+    manifest = _manifest(weights, sha, weights.stat().st_size)
+    manifest_dir = tmp_path / "manifests"
+    manifest_dir.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "weights.pt").write_bytes(b"outside")
+    (manifest_dir / "link").symlink_to(outside, target_is_directory=True)
+    manifest.artifacts[0].uri = "link/weights.pt"
+    with pytest.raises(ConfigError, match="escapes the manifest directory"):
+        verify_manifest_artifact(manifest, manifest_dir / "manifest.json")
+
+
+def test_verify_model_class_map_rejects_non_contiguous_keys() -> None:
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    with pytest.raises(ConfigError, match="not contiguous"):
+        verify_model_class_map({1: "component_a", 2: "component_b", 3: "manual"}, manifest)

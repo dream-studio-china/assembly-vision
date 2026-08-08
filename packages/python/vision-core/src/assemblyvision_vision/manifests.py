@@ -23,9 +23,15 @@ def load_model_manifest(path: Path) -> ModelManifest:
     except (OSError, json.JSONDecodeError) as exc:
         raise ConfigError(f"cannot load model manifest: {path}: {exc}") from exc
     try:
-        return ModelManifest.model_validate(raw)
+        manifest = ModelManifest.model_validate(raw)
     except Exception as exc:
         raise ConfigError(f"invalid model manifest {path}: {exc}") from exc
+    if manifest.runtime != "ultralytics":
+        raise ConfigError(
+            f"unsupported model runtime {manifest.runtime!r} in {path}: "
+            "only 'ultralytics' is supported"
+        )
+    return manifest
 
 
 def model_version_label(task: str, semantic_version: str) -> str:
@@ -47,14 +53,28 @@ def verify_manifest_artifact(manifest: ModelManifest, manifest_path: Path) -> Pa
     """Resolve and verify the primary artifact (size and SHA-256) of a manifest.
 
     Fails on any mismatch so a tampered, stale, or wrongly paired artifact
-    can never reach inference.
+    can never reach inference. The artifact URI must be relative to the
+    manifest directory: absolute paths, parent traversal, URI schemes, and
+    paths that resolve outside the manifest directory (including via
+    symlinks) are rejected.
     """
     if not manifest.artifacts:
         raise ConfigError(f"model manifest {manifest_path} has no artifacts")
     artifact = manifest.artifacts[0]
-    if artifact.uri.startswith(("/", "\\")):
-        raise ConfigError(f"model artifact uri must be relative to the manifest: {artifact.uri!r}")
-    path = manifest_path.parent / artifact.uri
+    uri = artifact.uri
+    if uri.startswith(("/", "\\")):
+        raise ConfigError(f"model artifact uri must be relative to the manifest: {uri!r}")
+    if "://" in uri:
+        raise ConfigError(f"model artifact uri must not use a scheme: {uri!r}")
+    parts = Path(uri).parts
+    if ".." in parts:
+        raise ConfigError(f"model artifact uri must not contain parent traversal: {uri!r}")
+    if any(len(part) == 2 and part.endswith(":") for part in parts):
+        raise ConfigError(f"model artifact uri must not contain a drive segment: {uri!r}")
+    manifest_dir = manifest_path.parent.resolve()
+    path = (manifest_dir / uri).resolve()
+    if not path.is_relative_to(manifest_dir):
+        raise ConfigError(f"model artifact uri escapes the manifest directory: {uri!r}")
     if not path.is_file():
         raise ConfigError(f"model weights not found: {path}")
     try:
@@ -83,7 +103,12 @@ def verify_model_class_map(
     manifest so results are interpreted with the correct class names.
     """
     if isinstance(names, Mapping):
-        ordered = [str(names[i]) for i in range(len(names))]
+        try:
+            ordered = [str(names[i]) for i in range(len(names))]
+        except (KeyError, IndexError) as exc:
+            raise ConfigError(
+                f"model class map is not contiguous: expected keys 0..{len(names) - 1}: {exc}"
+            ) from exc
     else:
         ordered = [str(n) for n in names]
     if ordered != manifest.class_names:
