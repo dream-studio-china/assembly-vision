@@ -539,16 +539,40 @@ export interface components {
             /** Reason Codes */
             reason_codes?: string[];
         };
-        /** InspectionImages */
+        /**
+         * InspectionImages
+         * @description Image slot URLs plus per-slot lifecycle state (F14).
+         *
+         *     A PURGED slot carries no content URL so the UI renders an explicit purged
+         *     state instead of a broken image; UNAVAILABLE covers missing or failed media.
+         */
         InspectionImages: {
             /** Annotated */
             annotated: string;
+            /**
+             * Annotated Status
+             * @default UNAVAILABLE
+             * @enum {string}
+             */
+            annotated_status: "AVAILABLE" | "PURGED" | "UNAVAILABLE";
             /** Detection */
             detection: string;
+            /**
+             * Detection Status
+             * @default UNAVAILABLE
+             * @enum {string}
+             */
+            detection_status: "AVAILABLE" | "PURGED" | "UNAVAILABLE";
             /** Inspection Id */
             inspection_id: string;
             /** Original */
             original: string;
+            /**
+             * Original Status
+             * @default UNAVAILABLE
+             * @enum {string}
+             */
+            original_status: "AVAILABLE" | "PURGED" | "UNAVAILABLE";
         };
         /**
          * InspectionLifecycle

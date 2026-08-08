@@ -8,6 +8,8 @@ shared domain package and are reused directly.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -159,7 +161,16 @@ class StatisticsSummary(BaseModel):
 
 
 class InspectionImages(BaseModel):
+    """Image slot URLs plus per-slot lifecycle state (F14).
+
+    A PURGED slot carries no content URL so the UI renders an explicit purged
+    state instead of a broken image; UNAVAILABLE covers missing or failed media.
+    """
+
     inspection_id: str
     original: str
     detection: str
     annotated: str
+    original_status: Literal["AVAILABLE", "PURGED", "UNAVAILABLE"] = "UNAVAILABLE"
+    detection_status: Literal["AVAILABLE", "PURGED", "UNAVAILABLE"] = "UNAVAILABLE"
+    annotated_status: Literal["AVAILABLE", "PURGED", "UNAVAILABLE"] = "UNAVAILABLE"

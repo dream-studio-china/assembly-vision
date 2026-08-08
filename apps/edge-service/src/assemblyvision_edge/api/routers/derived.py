@@ -7,8 +7,10 @@ client.
 
 from __future__ import annotations
 
-from typing import Annotated
+from datetime import UTC, datetime
+from typing import Annotated, Literal
 
+from assemblyvision_domain.models import MediaMetadata
 from fastapi import APIRouter, Depends, Query, Request
 
 from assemblyvision_edge.api.deps import get_repository
@@ -51,8 +53,8 @@ def traceability(
 
 @router.get("/statistics", response_model=StatisticsSummary)
 def statistics(
-    from_: Annotated[str | None, Query(alias="from")] = None,
-    to: str | None = None,
+    from_: Annotated[datetime | None, Query(alias="from")] = None,
+    to: Annotated[datetime | None, Query()] = None,
     line: str | None = None,
     repository: EdgeRepository = Depends(get_repository),
 ) -> StatisticsSummary:
@@ -62,7 +64,27 @@ def statistics(
             code="UNSUPPORTED_FILTER",
             detail="line filtering is not supported until line identity exists",
         )
-    counts = repository.statistics(from_iso=from_, to_iso=to)
+    if from_ is not None and from_.tzinfo is None:
+        raise ApiProblem(
+            status_code=400,
+            code="INVALID_FILTER",
+            detail="'from' must be a timezone-aware UTC timestamp",
+        )
+    if to is not None and to.tzinfo is None:
+        raise ApiProblem(
+            status_code=400,
+            code="INVALID_FILTER",
+            detail="'to' must be a timezone-aware UTC timestamp",
+        )
+    from_iso = from_.astimezone(UTC).isoformat() if from_ is not None else None
+    to_iso = to.astimezone(UTC).isoformat() if to is not None else None
+    if from_iso is not None and to_iso is not None and from_iso > to_iso:
+        raise ApiProblem(
+            status_code=400,
+            code="INVALID_RANGE",
+            detail="'from' must not be after 'to'",
+        )
+    counts = repository.statistics(from_iso=from_iso, to_iso=to_iso)
     total = counts["total"]
     ng = counts["ng"]
     pass_count = total - ng
@@ -74,6 +96,24 @@ def statistics(
     )
 
 
+def _image_slot(
+    media_by_kind: dict[str, MediaMetadata], kind: str, base_url: str
+) -> tuple[str, Literal["AVAILABLE", "PURGED", "UNAVAILABLE"]]:
+    """Return (content URL, slot status) for one image kind (F14).
+
+    Purged media never produces a content URL: the endpoint would otherwise
+    hand the UI a link that returns 410 and renders as a broken image.
+    """
+    item = media_by_kind.get(kind)
+    if item is None:
+        return "", "UNAVAILABLE"
+    if item.lifecycle.value == "AVAILABLE":
+        return f"{base_url}{item.media_id}/content", "AVAILABLE"
+    if item.lifecycle.value == "PURGED":
+        return "", "PURGED"
+    return "", "UNAVAILABLE"
+
+
 @router.get("/inspections/{inspection_id}/images", response_model=InspectionImages)
 def inspection_images(
     inspection_id: str,
@@ -81,16 +121,17 @@ def inspection_images(
     repository: EdgeRepository = Depends(get_repository),
 ) -> InspectionImages:
     media = repository.list_inspection_media(inspection_id)
-    if not media:
-        return InspectionImages(
-            inspection_id=inspection_id, original="", detection="", annotated=""
-        )
-    by_kind: dict[str, str] = {
-        m.kind: f"{request.base_url}api/v1/media/{m.media_id}/content" for m in media
-    }
+    by_kind: dict[str, MediaMetadata] = {m.kind: m for m in media}
+    base = f"{request.base_url}api/v1/media/"
+    original, original_status = _image_slot(by_kind, "KEY_FRAME", base)
+    detection, detection_status = _image_slot(by_kind, "PRODUCT_ROI", base)
+    annotated, annotated_status = _image_slot(by_kind, "ANNOTATED_FRAME", base)
     return InspectionImages(
         inspection_id=inspection_id,
-        original=by_kind.get("KEY_FRAME", ""),
-        detection=by_kind.get("PRODUCT_ROI", ""),
-        annotated=by_kind.get("ANNOTATED_FRAME", ""),
+        original=original,
+        detection=detection,
+        annotated=annotated,
+        original_status=original_status,
+        detection_status=detection_status,
+        annotated_status=annotated_status,
     )

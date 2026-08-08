@@ -684,13 +684,34 @@
         "type": "object"
       },
       "InspectionImages": {
+        "description": "Image slot URLs plus per-slot lifecycle state (F14).\n\nA PURGED slot carries no content URL so the UI renders an explicit purged\nstate instead of a broken image; UNAVAILABLE covers missing or failed media.",
         "properties": {
           "annotated": {
             "title": "Annotated",
             "type": "string"
           },
+          "annotated_status": {
+            "default": "UNAVAILABLE",
+            "enum": [
+              "AVAILABLE",
+              "PURGED",
+              "UNAVAILABLE"
+            ],
+            "title": "Annotated Status",
+            "type": "string"
+          },
           "detection": {
             "title": "Detection",
+            "type": "string"
+          },
+          "detection_status": {
+            "default": "UNAVAILABLE",
+            "enum": [
+              "AVAILABLE",
+              "PURGED",
+              "UNAVAILABLE"
+            ],
+            "title": "Detection Status",
             "type": "string"
           },
           "inspection_id": {
@@ -699,6 +720,16 @@
           },
           "original": {
             "title": "Original",
+            "type": "string"
+          },
+          "original_status": {
+            "default": "UNAVAILABLE",
+            "enum": [
+              "AVAILABLE",
+              "PURGED",
+              "UNAVAILABLE"
+            ],
+            "title": "Original Status",
             "type": "string"
           }
         },
@@ -2459,6 +2490,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "date-time",
                   "type": "string"
                 },
                 {
@@ -2475,6 +2507,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "date-time",
                   "type": "string"
                 },
                 {

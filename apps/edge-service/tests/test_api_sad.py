@@ -490,3 +490,43 @@ def test_media_content_uses_mime_allowlist_not_persisted_mime(tmp_path: Path) ->
         response = c.get(f"/api/v1/media/{media_id}/content")
         assert response.status_code == 200
         assert response.headers["content-type"].startswith("image/jpeg")
+
+
+def test_derived_images_expose_purged_state_without_url(tmp_path: Path) -> None:
+    root = tmp_path / "out"
+    root.mkdir()
+    record = _pipeline_record()
+    record.media = [
+        MediaMetadata(
+            media_id=uuid4(),
+            kind="KEY_FRAME",
+            lifecycle=MediaLifecycle.PURGED,
+            relative_path=f"{record.inspection_id}/purged.jpg",
+            mime_type="image/jpeg",
+            size_bytes=0,
+            checksum_sha256="0" * 64,
+        ),
+        MediaMetadata(
+            media_id=uuid4(),
+            kind="PRODUCT_ROI",
+            lifecycle=MediaLifecycle.AVAILABLE,
+            relative_path=f"{record.inspection_id}/roi.jpg",
+            mime_type="image/jpeg",
+            size_bytes=1,
+            checksum_sha256="0" * 64,
+        ),
+    ]
+    directory = root / str(record.inspection_id)
+    directory.mkdir()
+    directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+    settings = ServerSettings(output_root=root, db_path=tmp_path / "edge.sqlite3")
+    app = create_app(settings)
+    with TestClient(app) as c:
+        body = c.get(f"/api/v1/inspections/{record.inspection_id}/images").json()
+        # Purged slots carry no content URL and report an explicit state (F14).
+        assert body["original"] == ""
+        assert body["original_status"] == "PURGED"
+        assert f"/media/{record.media[1].media_id}/content" in body["detection"]
+        assert body["detection_status"] == "AVAILABLE"
+        assert body["annotated"] == ""
+        assert body["annotated_status"] == "UNAVAILABLE"

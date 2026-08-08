@@ -304,6 +304,38 @@ def test_statistics_filters_from_to_and_rejects_line(tmp_path: Path) -> None:
         assert unsupported.json()["code"] == "UNSUPPORTED_FILTER"
 
 
+def test_statistics_rejects_invalid_and_non_utc_time_filters(tmp_path: Path) -> None:
+    root = tmp_path / "out"
+    root.mkdir()
+    base = datetime(2026, 1, 1, tzinfo=UTC)
+    for idx in range(4):
+        record = _record(
+            base + timedelta(hours=idx), business=BusinessResult.OK, barcode=f"SN-{idx}"
+        )
+        directory = root / str(record.inspection_id)
+        directory.mkdir()
+        directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+
+    settings = ServerSettings(output_root=root, db_path=tmp_path / "edge.sqlite3")
+    app = create_app(settings)
+    with TestClient(app) as c:
+        naive = c.get("/api/v1/statistics", params={"from": "2026-01-01T02:00:00"})
+        assert naive.status_code == 400
+        assert naive.json()["code"] == "INVALID_FILTER"
+        malformed = c.get("/api/v1/statistics", params={"from": "not-a-timestamp"})
+        assert malformed.status_code == 422
+        assert malformed.json()["code"] == "VALIDATION_FAILED"
+        inverted = c.get(
+            "/api/v1/statistics",
+            params={"from": "2026-01-01T03:00:00+00:00", "to": "2026-01-01T01:00:00+00:00"},
+        )
+        assert inverted.status_code == 400
+        assert inverted.json()["code"] == "INVALID_RANGE"
+        offset = c.get("/api/v1/statistics", params={"from": "2026-01-01T03:00:00+02:00"}).json()
+        # 03:00+02:00 normalizes to 01:00 UTC, so hours 1-3 are included.
+        assert offset["total_inspections"] == 3
+
+
 def test_traceability_and_configuration(client: TestClient) -> None:
     trace = client.get("/api/v1/traceability/SN-0001")
     assert trace.status_code == 200
