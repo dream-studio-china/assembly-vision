@@ -1950,6 +1950,73 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "VideoFrameInspectResult": {
+        "description": "One analyzed frame's decision summary (web dev test harness, ADR-014).",
+        "properties": {
+          "business_result": {
+            "title": "Business Result",
+            "type": "string"
+          },
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "internal_decision": {
+            "title": "Internal Decision",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "index",
+          "business_result",
+          "internal_decision"
+        ],
+        "title": "VideoFrameInspectResult",
+        "type": "object"
+      },
+      "VideoInspectResult": {
+        "description": "Per-frame summary for an uploaded test video (ADR-014).",
+        "properties": {
+          "analyzed_frames": {
+            "title": "Analyzed Frames",
+            "type": "integer"
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/components/schemas/VideoFrameInspectResult"
+            },
+            "title": "Frames",
+            "type": "array"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "ng_count": {
+            "title": "Ng Count",
+            "type": "integer"
+          },
+          "ok_count": {
+            "title": "Ok Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "instance_id",
+          "analyzed_frames",
+          "ok_count",
+          "ng_count"
+        ],
+        "title": "VideoInspectResult",
+        "type": "object"
       }
     }
   },
@@ -2083,6 +2150,127 @@
         "summary": "Effective Configuration",
         "tags": [
           "configuration"
+        ]
+      }
+    },
+    "/api/v1/dev/inspect-frame": {
+      "post": {
+        "description": "Inspect one uploaded image; writes an evidence bundle unless persist=false.",
+        "operationId": "dev_inspect_frame_api_v1_dev_inspect_frame_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "instance_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Instance Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "persist",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Persist",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Dev Inspect Frame",
+        "tags": [
+          "dev"
+        ]
+      }
+    },
+    "/api/v1/dev/inspect-video": {
+      "post": {
+        "description": "Analyze an uploaded video frame by frame; returns a summary only.\n\nThe video is streamed to a temporary file (never held fully in memory),\ndecoded with the shared :class:`VideoFrameSource`, and at most\n``_MAX_VIDEO_FRAMES`` sampled frames are inspected without persisting\nevidence (ADR-014).",
+        "operationId": "dev_inspect_video_api_v1_dev_inspect_video_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "instance_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Instance Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "step",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Step",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoInspectResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Dev Inspect Video",
+        "tags": [
+          "dev"
         ]
       }
     },

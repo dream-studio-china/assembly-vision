@@ -74,6 +74,25 @@ class InspectionRuntimeState(BaseModel):
     paused_at: str | None = None
 
 
+class VideoFrameInspectResult(BaseModel):
+    """One analyzed frame's decision summary (web dev test harness, ADR-014)."""
+
+    index: int
+    business_result: str
+    internal_decision: str
+    reason_codes: list[str] = Field(default_factory=list)
+
+
+class VideoInspectResult(BaseModel):
+    """Per-frame summary for an uploaded test video (ADR-014)."""
+
+    instance_id: str
+    analyzed_frames: int
+    ok_count: int
+    ng_count: int
+    frames: list[VideoFrameInspectResult] = Field(default_factory=list)
+
+
 class InspectionSummary(BaseModel):
     inspection_id: str
     completed_at: str

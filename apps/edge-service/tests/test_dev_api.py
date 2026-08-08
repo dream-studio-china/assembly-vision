@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
 from assemblyvision_domain.models import (
     BarcodeResult,
     BusinessResult,
@@ -27,11 +28,13 @@ from PIL import Image
 
 
 class FakePipeline:
-    def __init__(self) -> None:
+    def __init__(self, alternate: bool = False) -> None:
         self.calls: list[tuple[CapturedFrame, object | None]] = []
+        self.alternate = alternate
 
     def inspect_frame(self, frame: CapturedFrame, writer: object | None = None) -> InspectionRecord:
         self.calls.append((frame, writer))
+        result = "NG" if (self.alternate and frame.sequence % 2 == 0) else "OK"
         return InspectionRecord(
             inspection_id=uuid4(),
             device_id=uuid4(),
@@ -58,11 +61,11 @@ class FakePipeline:
             evidence=[],
             media=[],
             decision=InspectionDecision(
-                internal_decision=InternalDecision.OK,
-                business_result=BusinessResult.OK,
+                internal_decision=InternalDecision(result),
+                business_result=BusinessResult(result),
                 missing_components=[],
                 low_confidence_components=[],
-                reason_codes=[],
+                reason_codes=["TEST_REASON"] if result == "NG" else [],
                 decided_at=datetime.now(UTC),
             ),
             synchronization_status="LOCAL_ONLY",
@@ -76,7 +79,7 @@ class StubInstance:
 
 
 class StubRuntime:
-    def __init__(self, tmp_path: Path, *, instances: bool = False) -> None:
+    def __init__(self, tmp_path: Path, *, instances: bool = False, alternate: bool = False) -> None:
         self._settings = ServerSettings(
             output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3"
         )
@@ -84,11 +87,11 @@ class StubRuntime:
         self.instances: dict[str, StubInstance] = {}
         if instances:
             self.instances = {
-                "line-1": StubInstance(FakePipeline()),
+                "line-1": StubInstance(FakePipeline(alternate=alternate)),
                 "line-2": StubInstance(None),
             }
         else:
-            self.pipeline = FakePipeline()
+            self.pipeline = FakePipeline(alternate=alternate)
 
 
 def _jpeg_bytes() -> bytes:
@@ -97,10 +100,10 @@ def _jpeg_bytes() -> bytes:
     return buffer.getvalue()
 
 
-def _app(runtime: StubRuntime, *, enabled: bool = True) -> TestClient:
+def _app(runtime: StubRuntime, *, enabled: bool = True, root: Path | None = None) -> TestClient:
     settings = ServerSettings(
-        output_root=Path("/tmp/out"),
-        db_path=Path("/tmp/edge.sqlite3"),
+        output_root=(root or Path("/nonexistent")) / "out",
+        db_path=(root or Path("/nonexistent")) / "edge.sqlite3",
         enable_web_test=enabled,
     )
     app = FastAPI()
@@ -183,3 +186,73 @@ def test_dev_frame_empty_body_400(tmp_path: Path) -> None:
     response = client.post("/dev/inspect-frame", content=b"")
     assert response.status_code == 400
     assert response.json()["code"] == "EMPTY_BODY"
+
+
+def _make_video(tmp_path: Path, count: int = 4) -> bytes:
+    import cv2
+
+    path = tmp_path / "sample.avi"
+    fourcc = ord("M") | (ord("J") << 8) | (ord("P") << 16) | (ord("G") << 24)
+    writer = cv2.VideoWriter(str(path), fourcc, 10.0, (64, 48))
+    import numpy as np
+
+    for i in range(count):
+        frame = np.zeros((48, 64, 3), np.uint8)
+        frame[:, :, 0] = (i * 40) % 256
+        writer.write(frame)
+    writer.release()
+    return path.read_bytes()
+
+
+def test_dev_video_returns_per_frame_summary(tmp_path: Path) -> None:
+    runtime = StubRuntime(tmp_path, alternate=True)
+    client = _app(runtime)
+    response = client.post("/dev/inspect-video", content=_make_video(tmp_path, count=4))
+    assert response.status_code == 200
+    body = response.json()
+    assert body["instance_id"] == "default"
+    assert body["analyzed_frames"] == 4
+    assert body["ok_count"] == 2
+    assert body["ng_count"] == 2
+    assert [frame["index"] for frame in body["frames"]] == [1, 2, 3, 4]
+    # NG frames carry their reason codes.
+    assert body["frames"][1]["reason_codes"] == ["TEST_REASON"]
+
+
+def test_dev_video_step_sampling(tmp_path: Path) -> None:
+    runtime = StubRuntime(tmp_path, alternate=True)
+    client = _app(runtime)
+    response = client.post(
+        "/dev/inspect-video", params={"step": "2"}, content=_make_video(tmp_path, count=4)
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["analyzed_frames"] == 2
+    assert [frame["index"] for frame in body["frames"]] == [1, 3]
+
+
+def test_dev_video_caps_analyzed_frames(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from assemblyvision_edge.api.routers import dev
+
+    monkeypatch.setattr(dev, "_MAX_VIDEO_FRAMES", 2)
+    client = _app(StubRuntime(tmp_path))
+    response = client.post("/dev/inspect-video", content=_make_video(tmp_path, count=4))
+    assert response.status_code == 200
+    assert response.json()["analyzed_frames"] == 2
+
+
+def test_dev_video_invalid_body_400(tmp_path: Path) -> None:
+    client = _app(StubRuntime(tmp_path))
+    response = client.post("/dev/inspect-video", content=b"not a video")
+    assert response.status_code == 400
+    assert response.json()["code"] == "INVALID_VIDEO"
+
+
+def test_dev_video_too_large_413(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from assemblyvision_edge.api.routers import dev
+
+    monkeypatch.setattr(dev, "_MAX_VIDEO_BYTES", 10)
+    client = _app(StubRuntime(tmp_path))
+    response = client.post("/dev/inspect-video", content=b"x" * 20)
+    assert response.status_code == 413
+    assert response.json()["code"] == "PAYLOAD_TOO_LARGE"
