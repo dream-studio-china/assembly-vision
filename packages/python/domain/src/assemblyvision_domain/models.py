@@ -212,7 +212,7 @@ class AggregatedComponentEvidence(APIModel):
     """
 
     component_code: str
-    state: Literal["PRESENT", "MISSING", "UNCERTAIN"]
+    state: Literal["PRESENT", "MISSING", "UNCERTAIN", "UNVERIFIABLE"]
     best_confidence: Confidence | None = None
     usable_frame_count: NonNegativeInt
     detection_count: NonNegativeInt

@@ -67,7 +67,7 @@ def make_context(
 
 def make_evidence(
     component_code: str,
-    state: Literal["PRESENT", "MISSING", "UNCERTAIN"],
+    state: Literal["PRESENT", "MISSING", "UNCERTAIN", "UNVERIFIABLE"],
     detection_count: int = 1,
     box_area_ratios: list[float] | None = None,
     box_centers: list[tuple[float, float]] | None = None,

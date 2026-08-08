@@ -27,6 +27,7 @@ from pydantic import Field, model_validator
 _COMPONENT_REASON_PREFIX = {
     "MISSING": rc.COMPONENT_MISSING,
     "UNCERTAIN": rc.COMPONENT_UNCERTAIN,
+    "UNVERIFIABLE": rc.COMPONENT_UNVERIFIABLE,
     "PRESENT": rc.COMPONENT_UNVERIFIABLE,
 }
 
@@ -160,7 +161,7 @@ class RuleEngine:
                 if evidence.state != "PRESENT":
                     prefix = _COMPONENT_REASON_PREFIX[evidence.state]
                     reasons.append(rc.component_reason(prefix, key))
-                    if evidence.state == "MISSING":
+                    if evidence.state in ("MISSING", "UNVERIFIABLE"):
                         missing.append(key)
                     else:
                         low_confidence.append(key)

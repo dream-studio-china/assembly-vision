@@ -213,7 +213,7 @@ function validateInspectionRecord(body: unknown): void {
     const path = `$.evidence[${index}]`;
     const entry = expectRecord(item, path);
     hasString(entry, "component_code", path);
-    hasOneOf(entry, "state", ["PRESENT", "MISSING", "UNCERTAIN"], path);
+    hasOneOf(entry, "state", ["PRESENT", "MISSING", "UNCERTAIN", "UNVERIFIABLE"], path);
   });
   const media = hasArray(record, "media", "$");
   media.forEach((item, index) => validateMediaMetadata(item, `$.media[${index}]`));

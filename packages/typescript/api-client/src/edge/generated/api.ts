@@ -390,7 +390,7 @@ export interface components {
              * State
              * @enum {string}
              */
-            state: "PRESENT" | "MISSING" | "UNCERTAIN";
+            state: "PRESENT" | "MISSING" | "UNCERTAIN" | "UNVERIFIABLE";
             /** Supporting Frame Ids */
             supporting_frame_ids?: string[];
             /** Usable Frame Count */

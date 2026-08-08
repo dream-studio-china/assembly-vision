@@ -64,6 +64,21 @@ def test_unverifiable_component_produces_ng() -> None:
     assert "component_b" in decision.missing_components
 
 
+def test_explicit_unverifiable_state_produces_ng() -> None:
+    rule = make_rule()
+    context = make_context(
+        components={
+            "component_a": make_evidence("component_a", "PRESENT"),
+            "component_b": make_evidence("component_b", "UNVERIFIABLE"),
+        }
+    )
+    decision = ENGINE.evaluate(context, rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "COMPONENT_UNVERIFIABLE:component_b" in decision.reason_codes
+    assert "component_b" in decision.missing_components
+    assert "component_b" not in decision.low_confidence_components
+
+
 def test_count_invalid_produces_ng() -> None:
     rule = make_rule(
         required_components={
