@@ -159,4 +159,18 @@ describe("HttpApiClient runtime response validation (F9)", () => {
     });
     await expect(client.getInspectionImages("00000000-0000-4000-8000-0000000000aa")).resolves.toBeDefined();
   });
+
+  it("rejects inspection images missing a slot status", async () => {
+    const client = clientFor({
+      inspection_id: "00000000-0000-4000-8000-0000000000aa",
+      original: "",
+      detection: "",
+      annotated: "",
+      original_status: "PURGED",
+      detection_status: "UNAVAILABLE",
+    });
+    await expect(client.getInspectionImages("00000000-0000-4000-8000-0000000000aa")).rejects.toMatchObject({
+      code: "INVALID_RESPONSE",
+    });
+  });
 });

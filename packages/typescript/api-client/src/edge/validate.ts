@@ -50,6 +50,12 @@ function hasBoolean(record: Record_, key: string, path: string): boolean {
   return value;
 }
 
+function hasOneOf(record: Record_, key: string, values: readonly string[], path: string): string {
+  const value = hasString(record, key, path);
+  if (!values.includes(value)) fail(`${path}.${key}`, values.join("|"), value);
+  return value;
+}
+
 function hasArray(record: Record_, key: string, path: string): unknown[] {
   const value = record[key];
   if (!Array.isArray(value)) fail(`${path}.${key}`, "array", value);
@@ -115,9 +121,11 @@ function validateRuntimeState(body: unknown): void {
 
 function validateInspectionSummary(body: unknown): void {
   const record = expectRecord(body);
-  for (const key of ["inspection_id", "completed_at", "business_result", "internal_decision", "upload_state"]) {
+  for (const key of ["inspection_id", "completed_at", "upload_state"]) {
     hasString(record, key, "$");
   }
+  hasOneOf(record, "business_result", ["OK", "NG"], "$");
+  hasOneOf(record, "internal_decision", ["OK", "NG", "UNCERTAIN"], "$");
   hasNumber(record, "latency_ms", "$");
   hasArray(record, "reason_summary", "$");
   hasRecord(record, "model_rule_versions", "$");
@@ -125,9 +133,11 @@ function validateInspectionSummary(body: unknown): void {
 
 function validateMediaMetadata(body: unknown): void {
   const record = expectRecord(body);
-  for (const key of ["media_id", "kind", "lifecycle", "relative_path", "mime_type", "checksum_sha256"]) {
+  for (const key of ["media_id", "relative_path", "mime_type", "checksum_sha256"]) {
     hasString(record, key, "$");
   }
+  hasOneOf(record, "kind", ["KEY_FRAME", "ANNOTATED_FRAME", "PRODUCT_ROI", "NG_CLIP", "ROLLING_VIDEO"], "$");
+  hasOneOf(record, "lifecycle", ["PENDING", "AVAILABLE", "FAILED", "PURGED"], "$");
   hasNumber(record, "size_bytes", "$");
 }
 
@@ -194,8 +204,16 @@ function validateInspectionRecord(body: unknown): void {
 
 function validateInspectionImages(body: unknown): void {
   const record = expectRecord(body);
-  for (const key of ["inspection_id", "original", "detection", "annotated"]) {
+  for (const key of [
+    "inspection_id",
+    "original",
+    "detection",
+    "annotated",
+  ]) {
     hasString(record, key, "$");
+  }
+  for (const key of ["original_status", "detection_status", "annotated_status"]) {
+    hasOneOf(record, key, ["AVAILABLE", "PURGED", "UNAVAILABLE"], "$");
   }
 }
 
