@@ -409,3 +409,61 @@ def test_rule_identity_registry_is_durable_across_reopen(tmp_path: Path) -> None
             second.register_rule_identity("model-a-presence", 1, "b" * 64)
     finally:
         second.close()
+
+
+def test_register_rule_identity_race_same_content(tmp_path: Path) -> None:
+    import threading
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    barrier = threading.Barrier(8)
+    errors: list[BaseException] = []
+
+    def worker() -> None:
+        barrier.wait()
+        try:
+            repo.register_rule_identity("race-rule", 1, "a" * 64)
+        except BaseException as exc:  # noqa: BLE001
+            errors.append(exc)
+
+    threads = [threading.Thread(target=worker) for _ in range(8)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    try:
+        assert errors == []
+        # The identity is registered once and remains consistent.
+        repo.register_rule_identity("race-rule", 1, "a" * 64)
+        with pytest.raises(RepositoryError, match="different content"):
+            repo.register_rule_identity("race-rule", 1, "b" * 64)
+    finally:
+        repo.close()
+
+
+def test_register_rule_identity_race_different_content(tmp_path: Path) -> None:
+    import threading
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    repo.register_rule_identity("race-rule", 1, "a" * 64)
+    barrier = threading.Barrier(4)
+    errors: list[BaseException] = []
+
+    def worker() -> None:
+        barrier.wait()
+        try:
+            repo.register_rule_identity("race-rule", 1, "b" * 64)
+        except BaseException as exc:  # noqa: BLE001
+            errors.append(exc)
+
+    threads = [threading.Thread(target=worker) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    try:
+        assert len(errors) == 4
+        assert all(isinstance(error, RepositoryError) for error in errors)
+        # The original content is preserved.
+        repo.register_rule_identity("race-rule", 1, "a" * 64)
+    finally:
+        repo.close()

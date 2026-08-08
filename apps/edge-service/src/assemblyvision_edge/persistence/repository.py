@@ -684,35 +684,58 @@ class EdgeRepository:
         The in-process registry in ``config`` only protects one interpreter
         lifetime; this SQLite registry makes rule identity immutable across
         service restarts (PR-008 P2, design 14.5 rule_installations semantics).
+        Concurrent registrations of the same identity are resolved by
+        re-reading the stored hash: equal content succeeds, differing content
+        fails with :class:`RepositoryError` instead of leaking a raw
+        SQLAlchemy ``IntegrityError``.
         """
-        with self._engine.begin() as conn:
-            existing = conn.execute(
-                text(
-                    f"SELECT content_sha256 FROM {rule_identities.name} "
-                    "WHERE rule_id = :rule_id AND rule_version = :rule_version"
-                ),
-                {"rule_id": rule_id, "rule_version": rule_version},
-            ).scalar_one_or_none()
-            if existing is not None:
-                if existing != content_hash:
-                    raise RepositoryError(
-                        f"rule identity {rule_id} v{rule_version} was previously registered "
-                        "with different content; published rules are immutable"
-                    )
+        try:
+            with self._engine.begin() as conn:
+                existing = conn.execute(
+                    text(
+                        f"SELECT content_sha256 FROM {rule_identities.name} "
+                        "WHERE rule_id = :rule_id AND rule_version = :rule_version"
+                    ),
+                    {"rule_id": rule_id, "rule_version": rule_version},
+                ).scalar_one_or_none()
+                if existing is not None:
+                    if existing != content_hash:
+                        raise RepositoryError(
+                            f"rule identity {rule_id} v{rule_version} was previously registered "
+                            "with different content; published rules are immutable"
+                        )
+                    return
+                conn.execute(
+                    text(
+                        f"INSERT INTO {rule_identities.name} "
+                        "(rule_id, rule_version, content_sha256, registered_at) "
+                        "VALUES (:rule_id, :rule_version, :content_sha256, :registered_at)"
+                    ),
+                    {
+                        "rule_id": rule_id,
+                        "rule_version": rule_version,
+                        "content_sha256": content_hash,
+                        "registered_at": datetime.now(UTC).isoformat(),
+                    },
+                )
+        except IntegrityError as exc:
+            # Unique-race: another writer registered this identity between our
+            # SELECT and INSERT. The failed transaction is rolled back; re-read
+            # the stored hash in a fresh transaction.
+            with self._engine.begin() as conn:
+                stored = conn.execute(
+                    text(
+                        f"SELECT content_sha256 FROM {rule_identities.name} "
+                        "WHERE rule_id = :rule_id AND rule_version = :rule_version"
+                    ),
+                    {"rule_id": rule_id, "rule_version": rule_version},
+                ).scalar_one_or_none()
+            if stored == content_hash:
                 return
-            conn.execute(
-                text(
-                    f"INSERT INTO {rule_identities.name} "
-                    "(rule_id, rule_version, content_sha256, registered_at) "
-                    "VALUES (:rule_id, :rule_version, :content_sha256, :registered_at)"
-                ),
-                {
-                    "rule_id": rule_id,
-                    "rule_version": rule_version,
-                    "content_sha256": content_hash,
-                    "registered_at": datetime.now(UTC).isoformat(),
-                },
-            )
+            raise RepositoryError(
+                f"rule identity {rule_id} v{rule_version} was previously registered "
+                "with different content; published rules are immutable"
+            ) from exc
 
     def latest_business_result(self) -> str | None:
         with self._engine.connect() as conn:
