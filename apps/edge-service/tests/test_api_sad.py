@@ -530,3 +530,12 @@ def test_derived_images_expose_purged_state_without_url(tmp_path: Path) -> None:
         assert body["detection_status"] == "AVAILABLE"
         assert body["annotated"] == ""
         assert body["annotated_status"] == "UNAVAILABLE"
+
+
+def test_derived_images_404_for_unknown_inspection(tmp_path: Path) -> None:
+    settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
+    app = create_app(settings)
+    with TestClient(app) as c:
+        response = c.get("/api/v1/inspections/missing/images")
+        assert response.status_code == 404
+        assert response.json()["code"] == "INSPECTION_NOT_FOUND"

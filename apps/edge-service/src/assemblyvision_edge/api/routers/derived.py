@@ -120,6 +120,12 @@ def inspection_images(
     request: Request,
     repository: EdgeRepository = Depends(get_repository),
 ) -> InspectionImages:
+    if repository.get_inspection(inspection_id) is None:
+        raise ApiProblem(
+            status_code=404,
+            code="INSPECTION_NOT_FOUND",
+            detail=f"no inspection {inspection_id}",
+        )
     media = repository.list_inspection_media(inspection_id)
     by_kind: dict[str, MediaMetadata] = {m.kind: m for m in media}
     base = f"{request.base_url}api/v1/media/"
