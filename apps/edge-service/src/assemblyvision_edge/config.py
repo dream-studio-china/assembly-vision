@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
@@ -271,6 +273,31 @@ def load_rule_definition(path: Path) -> RuleDefinition:
     except (OSError, yaml.YAMLError) as exc:
         raise ConfigError(f"cannot load rule definition: {path}: {exc}") from exc
     try:
-        return RuleDefinition.model_validate(raw)
+        rule = RuleDefinition.model_validate(raw)
     except Exception as exc:
         raise ConfigError(f"invalid rule definition {path}: {exc}") from exc
+    _register_rule_identity(rule)
+    return rule
+
+
+# Process-local installed-rule registry (P2): a rule identity is immutable
+# once loaded, so the same (rule_id, rule_version) cannot be reactivated with
+# different content in one process.
+_RULE_IDENTITY_REGISTRY: dict[tuple[str, int], str] = {}
+
+
+def _rule_content_hash(rule: RuleDefinition) -> str:
+    payload = json.dumps(rule.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _register_rule_identity(rule: RuleDefinition) -> None:
+    key = (rule.rule_id, rule.rule_version)
+    digest = _rule_content_hash(rule)
+    existing = _RULE_IDENTITY_REGISTRY.get(key)
+    if existing is not None and existing != digest:
+        raise ConfigError(
+            f"rule identity {rule.rule_id} v{rule.rule_version} was already loaded "
+            "with different content; rules are immutable once loaded"
+        )
+    _RULE_IDENTITY_REGISTRY[key] = digest

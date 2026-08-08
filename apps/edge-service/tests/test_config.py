@@ -217,6 +217,49 @@ def test_compatible_rule_config_manifest_sets_are_accepted() -> None:
     assert "manual" in config.components
 
 
+def test_rule_identity_collision_with_different_content_rejected(tmp_path: Path) -> None:
+    first = tmp_path / "a.yaml"
+    first.write_text(
+        "schema_version: 1\n"
+        "rule_id: model-a-presence\n"
+        "rule_version: 5\n"
+        "product_type: model_a\n"
+        "compatible_component_model_versions: [component-yolo-1.0.0]\n"
+        "barcode_required: false\n"
+        "required_components:\n"
+        "  component_a:\n"
+        "    expected_count: 1\n"
+        "mandatory_gates:\n"
+        "  product_detected: true\n",
+        encoding="utf-8",
+    )
+    second = tmp_path / "b.yaml"
+    second.write_text(
+        "schema_version: 1\n"
+        "rule_id: model-a-presence\n"
+        "rule_version: 5\n"
+        "product_type: model_a\n"
+        "compatible_component_model_versions: [component-yolo-1.0.0]\n"
+        "barcode_required: false\n"
+        "required_components:\n"
+        "  component_a:\n"
+        "    expected_count: 2\n"
+        "mandatory_gates:\n"
+        "  product_detected: true\n",
+        encoding="utf-8",
+    )
+    load_rule_definition(first)
+    with pytest.raises(ConfigError, match="different content"):
+        load_rule_definition(second)
+
+
+def test_rule_identity_same_content_is_idempotent(tmp_path: Path) -> None:
+    path = tmp_path / "a.yaml"
+    path.write_text(EXAMPLE_RULE.read_text(encoding="utf-8"), encoding="utf-8")
+    load_rule_definition(path)
+    load_rule_definition(path)
+
+
 def test_config_rejects_empty_components(tmp_path: Path) -> None:
     path = tmp_path / "pipeline.yaml"
     path.write_text(
