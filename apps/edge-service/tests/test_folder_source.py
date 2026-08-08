@@ -39,3 +39,16 @@ def test_read_missing_file_raises(tmp_path: Path) -> None:
 def test_missing_folder_raises(tmp_path: Path) -> None:
     with pytest.raises(ImageReadError):
         FolderSource(tmp_path / "does-not-exist")
+
+
+def test_folder_property(tmp_path: Path) -> None:
+    source = FolderSource(tmp_path)
+    assert source.folder == tmp_path
+
+
+def test_read_corrupt_file_raises(tmp_path: Path) -> None:
+    path = tmp_path / "broken.png"
+    path.write_bytes(b"not a real image")
+    source = FolderSource(tmp_path)
+    with pytest.raises(ImageReadError, match="cannot decode"):
+        source.read(path)

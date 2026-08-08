@@ -26,6 +26,7 @@ class ComponentDetector:
         settings: DetectionSettings,
         components: dict[str, ComponentDetectionSettings],
         model: Any,
+        device: str | None = None,
     ) -> None:
         if manifest.task != "COMPONENT_DETECTION":
             raise ConfigError(f"manifest task {manifest.task!r} is not COMPONENT_DETECTION")
@@ -38,6 +39,7 @@ class ComponentDetector:
         self._settings = settings
         self._components = components
         self._model = model
+        self._device = device
 
     @classmethod
     def from_manifest(
@@ -46,13 +48,28 @@ class ComponentDetector:
         settings: DetectionSettings,
         components: dict[str, ComponentDetectionSettings],
         manifest_path: Any,
+        device: str | None = None,
     ) -> ComponentDetector:
         from ultralytics import YOLO  # type: ignore[attr-defined]
 
         weights = verify_manifest_artifact(manifest, manifest_path)
         model = YOLO(str(weights))
         verify_model_class_map(model.names, manifest)
-        return cls(manifest, settings, components, model)
+        return cls(manifest, settings, components, model, device)
+
+    @property
+    def effective_settings(self) -> dict[str, object]:
+        """Effective inference parameters persisted as inference metadata.
+
+        Ultralytics interprets a two-element ``imgsz`` as ``[height, width]``,
+        so the manifest width/height are serialized in that order.
+        """
+        return {
+            "imgsz": [self._manifest.input_height, self._manifest.input_width],
+            "conf": self._settings.confidence_threshold,
+            "iou": self._settings.iou_threshold,
+            "device": self._device,
+        }
 
     def detect(
         self,
@@ -68,7 +85,14 @@ class ComponentDetector:
         mapped back to full-frame for evidence and annotation.
         """
         try:
-            results: Any = self._model(roi, verbose=False)
+            results: Any = self._model(
+                roi,
+                imgsz=(self._manifest.input_height, self._manifest.input_width),
+                conf=self._settings.confidence_threshold,
+                iou=self._settings.iou_threshold,
+                device=self._device,
+                verbose=False,
+            )
             if not results:
                 return []
 

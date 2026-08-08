@@ -10,7 +10,7 @@ const status = ref<DeviceStatus | null>(null);
 const uploads = ref<UploadTask[]>([]);
 const error = ref<string | null>(null);
 
-const diskOption = computed<echarts.EChartsOption>(() => {
+  const diskOption = computed<echarts.EChartsOption>(() => {
   const free = status.value?.disk_free_bytes ?? 0;
   const total = Math.max(free, 50 * 1024 ** 3);
   return {
@@ -24,6 +24,7 @@ const diskOption = computed<echarts.EChartsOption>(() => {
         max: total,
         progress: { show: true, width: 12 },
         axisLine: { lineStyle: { width: 12 } },
+        axisLabel: { formatter: (value: number) => formatBytes(value) },
         data: [{ value: total - free, name: "Used" }],
         detail: { formatter: () => formatBytes(free) + " free", fontSize: 12 },
       },

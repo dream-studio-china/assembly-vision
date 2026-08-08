@@ -4,7 +4,6 @@
 import { DetectionViewer, StatusBadge, toDecisionStatus, formatIsoTime, formatLatency, reasonCodeLabel } from "@assemblyvision/ui";
 import type { ViewerBox } from "@assemblyvision/ui";
 import type { InspectionRecord, InspectionSummary } from "@assemblyvision/api-client";
-import { ElMessage, ElMessageBox } from "element-plus";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useAlertsStore } from "../stores/alerts";
 import { useRuntimeStore } from "../stores/runtime";
@@ -73,26 +72,6 @@ async function loadRecent(): Promise<void> {
   }
 }
 
-async function confirmPause(): Promise<void> {
-  const reason = await ElMessageBox.prompt("Why are you pausing inspection?", "Pause inspection", {
-    confirmButtonText: "Pause",
-    inputPlaceholder: "Required reason",
-    inputValidator: (value: string) => (value.trim() ? true : "A reason is required"),
-  });
-  await runtime.pause(reason.value);
-  if (runtime.error) ElMessage.error(runtime.error);
-}
-
-async function confirmResume(): Promise<void> {
-  const reason = await ElMessageBox.prompt("Resume inspection?", "Resume inspection", {
-    confirmButtonText: "Resume",
-    inputPlaceholder: "Required reason",
-    inputValidator: (value: string) => (value.trim() ? true : "A reason is required"),
-  });
-  await runtime.resume(reason.value);
-  if (runtime.error) ElMessage.error(runtime.error);
-}
-
 onMounted(() => {
   void loadRecent();
   pollTimer = setInterval(() => {
@@ -151,25 +130,6 @@ onBeforeUnmount(() => {
           </dl>
         </template>
         <el-empty v-else description="No results yet" :image-size="60" />
-
-        <div class="live__controls">
-          <el-button
-            v-if="!runtime.runtime?.paused"
-            type="warning"
-            :loading="runtime.loading"
-            @click="confirmPause"
-          >
-            Pause
-          </el-button>
-          <el-button
-            v-else
-            type="success"
-            :loading="runtime.loading"
-            @click="confirmResume"
-          >
-            Resume
-          </el-button>
-        </div>
       </aside>
     </div>
 
@@ -265,9 +225,6 @@ onBeforeUnmount(() => {
   padding: 1px 6px;
   margin-right: 4px;
   font-size: 12px;
-}
-.live__controls {
-  margin-top: 16px;
 }
 .live__strips {
   display: flex;

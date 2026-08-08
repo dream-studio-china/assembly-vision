@@ -142,6 +142,43 @@ uv run pytest apps/edge-service/tests               # runtime tests
 uv run pytest training/tests                        # training tests
 ```
 
+### 4.6 Run the local API and dashboard (`serve`)
+
+`assemblyvision serve` exposes the inspection pipeline and the local index over
+`/api/v1` and serves the built dashboard. It opens a SQLite index, imports any
+existing CLI inspection output, and (when configuration is supplied) loads the
+same verified pipeline as `inspect`.
+
+```bash
+# Build the dashboard once (production mode talks to the same-origin API), then
+# serve everything on one port:
+pnpm --filter edge-web build
+uv run assemblyvision serve \
+  --output out/ \
+  --db out/edge.sqlite3 \
+  --config config/examples/pipeline.yaml \
+  --rule config/examples/product-rule.yaml \
+  --static apps/edge-web/dist \
+  --host 127.0.0.1 --port 8000
+```
+
+Endpoints follow design 15.3: `GET /api/v1/health/live`, `GET
+/api/v1/inspections`, `GET /api/v1/inspections/{id}`, `GET
+/api/v1/inspections/{id}/media`, `GET /api/v1/media/{id}/content` (Range
+supported), `GET /api/v1/device/status`, `GET /api/v1/inspection/state`,
+`GET /api/v1/uploads`, `GET
+/api/v1/configuration/effective`, `GET /api/v1/logs`, and the derived
+`/api/v1/traceability/{sn}` and `/api/v1/statistics`.
+
+The M1 API is **read-only** (ADR-012): mutation controls such as
+`POST /api/v1/inspection/{pause,resume}`, camera reconnect, and upload retry
+are not exposed. When `AV_EDGE_API_TOKEN` (or `--api-token`) is configured,
+every route except `GET /api/v1/health/live` requires
+`Authorization: Bearer <token>` or an authenticated same-origin viewer session.
+Open `/login` in the served dashboard and enter the configured token once; it is
+exchanged for an HttpOnly, same-origin session cookie and is never bundled or
+stored by the dashboard.
+
 ---
 
 ## 5. App: Edge dashboard (`apps/edge-web`)
@@ -167,29 +204,44 @@ pnpm --filter edge-web dev        # http://localhost:5173
 | `/images/:id` | Inspection images — original, detection result, annotations |
 | `/statistics` | Production statistics — totals, PASS/NG, pass rate, date/line filters |
 | `/device` | Device status — camera, vision engine, inspection service |
-| `/uploads` | Upload queue with manual retry |
+| `/uploads` | Upload queue — read-only in M1 (manual retry is not exposed) |
 | `/health` | Disk/queue charts (ECharts) and device status |
 | `/inspections` | Full record history (internal records) |
 | `/configuration`, `/logs` | Read-only placeholders |
 
-All operator data flows through the mock service layer by default and switches
-to FastAPI via `VITE_API_BASE_URL` with no UI changes.
+The dashboard selects the mock or HTTP client explicitly via `VITE_API_MODE`
+(see 5.3). The operator workflow (current/confirm/continue/manual) always runs
+on the mock client; in real mode the operator dashboard hides it because it is
+a demonstration queue, not a design 15.3 endpoint.
 
 ### 5.3 Mock vs real backend
 
-Set `VITE_API_BASE_URL` to use the HTTP client (targets `/api/v1`) instead of
-the mock. The UI does not change:
+Data mode is explicit (F5, ADR-012):
+
+- `VITE_API_MODE=mock` (the dev default via `.env.development`) runs the
+  deterministic in-memory mock client.
+- `VITE_API_MODE=http` (the production default via `.env.production`) talks to
+  the FastAPI backend. An omitted `VITE_API_BASE_URL` means **same-origin**
+  `/api/v1`, so the bundle served by `assemblyvision serve` reads its own API.
 
 ```bash
-VITE_API_BASE_URL=http://edge-host:8000 pnpm --filter edge-web dev
+# Dev against a remote edge host:
+VITE_API_MODE=http VITE_API_BASE_URL=http://edge-host:8000 pnpm --filter edge-web dev
 ```
+
+The operator workflow actions (current inspection, confirm, next, manual) always
+run on the deterministic mock client because they model a demonstration queue
+rather than a design 15.3 contract endpoint.
 
 ### 5.4 Build and preview
 
 ```bash
-pnpm --filter edge-web build      # bundle to apps/edge-web/dist
+pnpm --filter edge-web build      # bundle to apps/edge-web/dist (http mode)
 pnpm --filter edge-web preview    # preview the build (default http://localhost:4173)
 ```
+
+A production build selects the HTTP client by default, so the served dashboard
+reads real data from the same-origin API with no extra flags.
 
 ### 5.5 Tests
 

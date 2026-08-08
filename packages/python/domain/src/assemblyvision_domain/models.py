@@ -145,6 +145,28 @@ class MediaMetadata(APIModel):
     checksum_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
+class UploadTask(APIModel):
+    """Persistent upload work item (design 04 section 7, ADR-005)."""
+
+    upload_task_id: UUID
+    device_id: UUID
+    inspection_id: UUID | None = None
+    kind: Literal["INSPECTION", "MEDIA", "DEVICE_EVENT"]
+    object_id: UUID
+    payload_hash: str
+    status: Literal[
+        "PENDING", "IN_PROGRESS", "RETRY_WAIT", "SUCCEEDED", "PERMANENT_FAILURE", "CANCELLED"
+    ]
+    idempotency_key: str
+    checksum_sha256: str | None = None
+    attempt_count: NonNegativeInt = 0
+    next_attempt_at: datetime | None = None
+    last_error_code: str | None = None
+    created_at: datetime
+    updated_at: datetime
+    completed_at: datetime | None = None
+
+
 class ProductDetection(APIModel):
     """Stage-one product detection on the full frame."""
 
@@ -212,6 +234,33 @@ class InspectionDecision(APIModel):
     decided_at: datetime
 
 
+class InferenceSettings(APIModel):
+    """Effective inference parameters used by one detector invocation."""
+
+    imgsz: list[int]
+    conf: float
+    iou: float
+    device: str | None = None
+
+
+class InferenceStageMetadata(APIModel):
+    """Per-stage inference traceability for one inspection (contract 03)."""
+
+    model_name: str
+    model_version: str
+    input_size: list[int]
+    latency_ms: float
+    timestamp: datetime
+    settings: InferenceSettings
+
+
+class InferenceMetadata(APIModel):
+    """Typed inference traceability for both detection stages (P2)."""
+
+    product_detection: InferenceStageMetadata | None = None
+    component_detection: InferenceStageMetadata | None = None
+
+
 class InspectionRecord(APIModel):
     """Persisted product-level inspection result."""
 
@@ -238,6 +287,7 @@ class InspectionRecord(APIModel):
     decision: InspectionDecision
     synchronization_status: Literal["LOCAL_ONLY", "QUEUED", "PARTIAL", "SYNCED", "FAILED"]
     processing_ms: NonNegativeInt
+    inference_metadata: InferenceMetadata | None = None
 
 
 class Artifact(APIModel):

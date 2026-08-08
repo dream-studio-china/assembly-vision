@@ -111,3 +111,62 @@ def test_validate_model_version_declaration_binds_manifest() -> None:
         validate_model_version_declaration(
             "component-yolo-9.9.9", manifest, "component_detection.model_version"
         )
+
+
+def test_load_manifest_rejects_invalid_json(tmp_path: Path) -> None:
+    path = tmp_path / "bad.json"
+    path.write_text("{not json", encoding="utf-8")
+    with pytest.raises(ConfigError, match="cannot load model manifest"):
+        load_model_manifest(path)
+
+
+def test_load_manifest_rejects_missing_file(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError, match="cannot load model manifest"):
+        load_model_manifest(tmp_path / "missing.json")
+
+
+def test_model_version_label_rejects_unknown_task() -> None:
+    with pytest.raises(ConfigError, match="cannot derive"):
+        model_version_label("SEGMENTATION", "1.0.0")
+
+
+def test_verify_manifest_artifact_rejects_missing_weights(tmp_path: Path) -> None:
+    weights, sha = _weights(tmp_path)
+    manifest = _manifest(weights, sha, weights.stat().st_size)
+    manifest.artifacts[0].uri = "missing.pt"
+    with pytest.raises(ConfigError, match="model weights not found"):
+        verify_manifest_artifact(manifest, tmp_path / "manifest.json")
+
+
+def test_verify_manifest_artifact_rejects_no_artifacts(tmp_path: Path) -> None:
+    weights, sha = _weights(tmp_path)
+    manifest = _manifest(weights, sha, weights.stat().st_size)
+    manifest.artifacts = []
+    with pytest.raises(ConfigError, match="no artifacts"):
+        verify_manifest_artifact(manifest, tmp_path / "manifest.json")
+
+
+def test_load_manifest_rejects_invalid_content(tmp_path: Path) -> None:
+    path = tmp_path / "empty.json"
+    path.write_text("{}", encoding="utf-8")
+    with pytest.raises(ConfigError, match="invalid model manifest"):
+        load_model_manifest(path)
+
+
+def test_verify_manifest_artifact_surfaces_stat_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    weights, sha = _weights(tmp_path)
+    manifest = _manifest(weights, sha, weights.stat().st_size)
+
+    monkeypatch.setattr(Path, "is_file", lambda self: True)
+    monkeypatch.setattr(Path, "stat", lambda self: (_ for _ in ()).throw(OSError("stat failed")))
+    with pytest.raises(ConfigError, match="cannot stat model weights"):
+        verify_manifest_artifact(manifest, tmp_path / "manifest.json")
+
+
+def test_verify_model_class_map_sequence_and_mismatch() -> None:
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    verify_model_class_map(["component_a", "component_b", "manual"], manifest)
+    with pytest.raises(ConfigError, match="class map"):
+        verify_model_class_map(["component_b", "component_a", "manual"], manifest)

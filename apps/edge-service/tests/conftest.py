@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Literal
 from uuid import UUID, uuid4
@@ -9,6 +10,17 @@ from uuid import UUID, uuid4
 import pytest
 from assemblyvision_domain.models import AggregatedComponentEvidence
 from assemblyvision_edge.rules.rule_engine import ComponentRequirement, RuleContext, RuleDefinition
+
+
+@pytest.fixture(autouse=True)
+def _reset_rule_identity_registry() -> Iterator[None]:
+    """Isolate the process-local rule-identity registry between tests."""
+    from assemblyvision_edge import config as edge_config
+
+    edge_config._RULE_IDENTITY_REGISTRY.clear()  # noqa: SLF001
+    yield
+    edge_config._RULE_IDENTITY_REGISTRY.clear()  # noqa: SLF001
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXAMPLE_PIPELINE = REPO_ROOT / "config/examples/pipeline.yaml"

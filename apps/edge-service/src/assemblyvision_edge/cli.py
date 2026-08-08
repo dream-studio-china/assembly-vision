@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -19,6 +20,7 @@ from assemblyvision_edge.config import (
     load_pipeline_config,
     load_rule_definition,
     validate_model_version_declaration,
+    validate_rule_component_compatibility,
 )
 from assemblyvision_edge.detection import ComponentDetector, ProductDetector
 from assemblyvision_edge.output.writer import OutputWriter
@@ -73,6 +75,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stable device UUID; a random UUID is generated when omitted",
     )
     verify.add_argument("-q", "--quiet", action="store_true", help="Suppress INFO logs")
+
+    serve = sub.add_parser("serve", help="Run the local edge API and dashboard")
+    serve.add_argument("--output", required=True, type=Path, help="Inspection output root")
+    serve.add_argument("--db", type=Path, default=None, help="SQLite database path")
+    serve.add_argument("--config", type=Path, default=None, help="Pipeline configuration file")
+    serve.add_argument("--rule", type=Path, default=None, help="Product rule definition file")
+    serve.add_argument("--static", type=Path, default=None, help="Built frontend directory")
+    serve.add_argument("--host", default="127.0.0.1", help="Bind host")
+    serve.add_argument("--port", type=int, default=8000, help="Bind port")
+    serve.add_argument("--device-id", type=str, default=None, help="Stable device UUID")
+    serve.add_argument(
+        "--api-token",
+        type=str,
+        default=None,
+        help="Bearer token required by every read route except /health/live "
+        "(falls back to AV_EDGE_API_TOKEN)",
+    )
     return parser
 
 
@@ -83,7 +102,10 @@ def main(argv: list[str] | None = None) -> int:
         return _run_inspect(args)
     if args.command == "verify":
         return _run_verify(args)
-    parser.error(f"unknown command: {args.command}")
+    if args.command == "serve":
+        return _run_serve(args)
+    # Unreachable: argparse only accepts the three subcommands above.
+    return 1  # pragma: no cover
 
 
 def _build_pipeline(args: argparse.Namespace) -> InspectionPipeline:
@@ -99,6 +121,7 @@ def _build_pipeline(args: argparse.Namespace) -> InspectionPipeline:
         component_manifest,
         "component_detection.model_version",
     )
+    validate_rule_component_compatibility(rule, config, component_manifest)
     product_detector = ProductDetector.from_manifest(
         product_manifest, config.product_detection, config.product_manifest
     )
@@ -164,12 +187,48 @@ def _run_verify(args: argparse.Namespace) -> int:
         return 2
 
     writer = OutputWriter(args.output)
-    report = run_verify(pipeline, _collect_sources(args.paths), expected, writer)
+    report = run_verify(
+        pipeline,
+        _collect_sources(args.paths),
+        expected,
+        writer,
+        filename_fallback=args.expected is None,
+    )
     print(format_per_image(report))
     print()
     print(format_report(report))
     if report.false_negative > 0 or report.has_gaps:
         return 1
+    return 0
+
+
+def _run_serve(args: argparse.Namespace) -> int:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    try:
+        import uvicorn
+
+        from assemblyvision_edge.api.app import create_app
+        from assemblyvision_edge.api.settings import ServerSettings
+
+        db_path = args.db or (args.output / "edge.sqlite3")
+        api_token = args.api_token or os.environ.get("AV_EDGE_API_TOKEN")
+        settings = ServerSettings(
+            output_root=args.output,
+            db_path=db_path,
+            config_path=args.config,
+            rule_path=args.rule,
+            device_id=args.device_id,
+            static_dir=args.static,
+            api_token=api_token,
+        )
+        app = create_app(settings)
+        uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+    except (ConfigError, ValueError) as exc:
+        log.error("configuration error: %s", exc)
+        return 2
     return 0
 
 
@@ -185,5 +244,5 @@ def _collect_sources(paths: list[str]) -> list[tuple[FolderSource, Path]]:
     return work
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

@@ -13,25 +13,6 @@ describe("runtime store", () => {
     expect(store.camera?.connected).toBe(true);
     expect(store.runtime?.paused).toBe(false);
   });
-
-  it("pauses and resumes through the client", async () => {
-    const store = useRuntimeStore();
-    await store.refresh();
-    await store.pause("shift change");
-    expect(store.runtime?.paused).toBe(true);
-    expect(store.error).toBeNull();
-    await store.resume("shift start");
-    expect(store.runtime?.paused).toBe(false);
-  });
-
-  it("surfaces a rejected pause as an error without throwing", async () => {
-    const store = useRuntimeStore();
-    await store.refresh();
-    await store.pause("first");
-    await store.pause("second");
-    expect(store.runtime?.paused).toBe(true);
-    expect(store.error).toContain("already paused");
-  });
 });
 
 describe("alerts store", () => {

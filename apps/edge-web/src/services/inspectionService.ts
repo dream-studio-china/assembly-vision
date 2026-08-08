@@ -3,6 +3,12 @@
 // Pages and stores depend only on this module, never on the concrete client.
 // Swapping the mock for the future FastAPI backend is a `getApiClient()`
 // concern (VITE_API_BASE_URL), with no UI changes.
+//
+// The operator workflow actions (current inspection / confirm / next / manual)
+// are a demonstration queue without a design 15.3 contract endpoint, so they
+// always run against the deterministic mock client. Read-only views route
+// through `getApiClient()` and therefore show real data when the edge backend
+// is configured.
 
 import type {
   CurrentInspection,
@@ -15,23 +21,26 @@ import type {
   StatisticsSummary,
   TraceabilityView,
 } from "@assemblyvision/api-client";
+import { MockApiClient } from "@assemblyvision/api-client";
 import { getApiClient } from "./client";
+
+const operatorWorkflow = new MockApiClient();
 
 export const inspectionService = {
   getCurrent(): Promise<CurrentInspection> {
-    return getApiClient().getCurrentInspection();
+    return operatorWorkflow.getCurrentInspection();
   },
 
   confirmResult(): Promise<CurrentInspection> {
-    return getApiClient().confirmInspectionResult();
+    return operatorWorkflow.confirmInspectionResult();
   },
 
   continueNext(): Promise<CurrentInspection> {
-    return getApiClient().continueNextInspection();
+    return operatorWorkflow.continueNextInspection();
   },
 
   triggerManual(): Promise<CurrentInspection> {
-    return getApiClient().triggerManualInspection();
+    return operatorWorkflow.triggerManualInspection();
   },
 
   listHistory(filter?: InspectionFilter): Promise<Page<InspectionSummary>> {

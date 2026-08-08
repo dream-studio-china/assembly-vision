@@ -14,9 +14,12 @@ select = ["E", "F", "I", "UP", "B", "SIM", "S", "C4"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101"]
+"**/tests/**" = ["S101", "S608"]
 "tests/**" = ["S101"]
 "scripts/generate-synthetic-dataset.py" = ["S311"]
+"apps/edge-service/src/assemblyvision_edge/api/routers/**" = ["B008"]
+"apps/edge-service/src/assemblyvision_edge/persistence/**" = ["S608"]
+"apps/edge-service/migrations/**" = ["UP007", "UP035", "I001", "S101"]
 
 [tool.mypy]
 python_version = "3.12"

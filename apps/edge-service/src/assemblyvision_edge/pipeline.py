@@ -9,6 +9,7 @@ fail-safe: any detection, ROI, or read failure produces NG, never OK.
 from __future__ import annotations
 
 import logging
+import math
 import time
 from datetime import UTC, datetime
 from itertools import count
@@ -20,6 +21,7 @@ from assemblyvision_domain.errors import (
     DetectionError,
     ImageReadError,
     ROIGenerationError,
+    RuleEvaluationError,
 )
 from assemblyvision_domain.models import (
     AggregatedComponentEvidence,
@@ -27,6 +29,9 @@ from assemblyvision_domain.models import (
     BusinessResult,
     ComponentDetection,
     FrameQualitySummary,
+    InferenceMetadata,
+    InferenceSettings,
+    InferenceStageMetadata,
     InspectionDecision,
     InspectionLifecycle,
     InspectionRecord,
@@ -38,6 +43,7 @@ from assemblyvision_domain.models import (
     ROIResult,
 )
 from assemblyvision_vision.manifests import manifest_model_version
+from assemblyvision_vision.roi.geometry import Box, apply_transform, inverse_transform
 from assemblyvision_vision.roi.roi_engine import ROIEngine
 from assemblyvision_vision.sources.folder_source import FolderSource
 from PIL import Image
@@ -60,6 +66,73 @@ def _artifact_checksum(manifest: ModelManifest) -> str:
     if not manifest.artifacts:
         return "0" * 64
     return manifest.artifacts[0].sha256
+
+
+def _validate_product_provenance(
+    detection: ProductDetection,
+    frame_id: UUID,
+    manifest: ModelManifest,
+    frame: Image.Image,
+) -> bool:
+    """Reject detections that do not belong to the current frame/model (P1)."""
+    if detection.frame_id != frame_id:
+        return False
+    if detection.model_version_id != manifest.model_version_id:
+        return False
+    box = detection.bbox
+    return box.image_width == frame.width and box.image_height == frame.height
+
+
+_COORD_TOLERANCE = 1e-6
+
+
+def _is_translation_transform(transform: tuple[float, float, float, float, float, float]) -> bool:
+    """Accept only the invertible translation transform used by the M1 ROI engine."""
+    a, b, _c, d, e, _f = transform
+    return a == 1.0 and b == 0.0 and d == 0.0 and e == 1.0
+
+
+def _validate_component_provenance(
+    observations: list[ComponentDetection],
+    frame_id: UUID,
+    manifest: ModelManifest,
+    roi: Image.Image,
+    frame: Image.Image,
+    transform: tuple[float, float, float, float, float, float],
+) -> bool:
+    """Reject component observations with stale frame/model or inconsistent geometry.
+
+    Each ROI box is mapped to full-frame space with the recorded transform and
+    compared to the detector-provided full-frame box within a floating-point
+    tolerance, so internally contradictory evidence can never contribute to OK.
+    Only the supported invertible translation transform is accepted for M1
+    (F12).
+    """
+    if not _is_translation_transform(transform):
+        return False
+    inverse = inverse_transform(transform)
+    for obs in observations:
+        if obs.frame_id != frame_id:
+            return False
+        if obs.model_version_id != manifest.model_version_id:
+            return False
+        if obs.roi_bbox.image_width != roi.width or obs.roi_bbox.image_height != roi.height:
+            return False
+        if (
+            obs.full_frame_bbox.image_width != frame.width
+            or obs.full_frame_bbox.image_height != frame.height
+        ):
+            return False
+        expected = apply_transform(Box.from_bbox(obs.roi_bbox), inverse)
+        actual = obs.full_frame_bbox
+        if not (
+            math.isclose(expected.x_min, actual.x_min, rel_tol=0.0, abs_tol=_COORD_TOLERANCE)
+            and math.isclose(expected.y_min, actual.y_min, rel_tol=0.0, abs_tol=_COORD_TOLERANCE)
+            and math.isclose(expected.x_max, actual.x_max, rel_tol=0.0, abs_tol=_COORD_TOLERANCE)
+            and math.isclose(expected.y_max, actual.y_max, rel_tol=0.0, abs_tol=_COORD_TOLERANCE)
+        ):
+            return False
+    return True
 
 
 class InspectionPipeline:
@@ -116,16 +189,25 @@ class InspectionPipeline:
             "component_inference_valid": False,
             "minimum_valid_frames_met": True,
         }
+        product_latency_ms: float | None = None
+        component_latency_ms: float | None = None
 
         if frame is not None:
+            product_started = time.monotonic()
             try:
                 outcome = self._product_detector.detect(frame, frame_id)
             except DetectionError as exc:
                 extra_reasons.append(exc.reason_code)
                 log.warning("product detection failed: %s", exc)
             else:
+                product_latency_ms = (time.monotonic() - product_started) * 1000
                 if outcome.selected is None:
                     extra_reasons.append(outcome.reason_code or rc.NO_PRODUCT)
+                elif not _validate_product_provenance(
+                    outcome.selected, frame_id, self._product_manifest, frame
+                ):
+                    extra_reasons.append(rc.INFERENCE_ERROR)
+                    log.warning("product detection provenance mismatch for frame %s", frame_id)
                 else:
                     product_detection = outcome.selected
                     gates["product_detected"] = True
@@ -140,6 +222,7 @@ class InspectionPipeline:
                         roi_image = generated.roi_image
                         roi_result = generated.result
                         gates["roi_valid"] = True
+                        component_started = time.monotonic()
                         try:
                             observations = self._component_detector.detect(
                                 generated.roi_image,
@@ -148,7 +231,22 @@ class InspectionPipeline:
                                 generated.result.transform_full_to_roi,
                                 (frame.width, frame.height),
                             )
-                            gates["component_inference_valid"] = True
+                            component_latency_ms = (time.monotonic() - component_started) * 1000
+                            if not _validate_component_provenance(
+                                observations,
+                                frame_id,
+                                self._component_manifest,
+                                generated.roi_image,
+                                frame,
+                                generated.result.transform_full_to_roi,
+                            ):
+                                observations = []
+                                extra_reasons.append(rc.INFERENCE_ERROR)
+                                log.warning(
+                                    "component detection provenance mismatch for frame %s", frame_id
+                                )
+                            else:
+                                gates["component_inference_valid"] = True
                         except DetectionError as exc:
                             extra_reasons.append(exc.reason_code)
                             log.warning("component detection failed: %s", exc)
@@ -160,18 +258,38 @@ class InspectionPipeline:
             gates=gates,
             components=evidence_map,
         )
-        decided = self._rule_engine.evaluate(context, self._rule)
-        final_reasons = sorted(set(decided.reason_codes) | set(extra_reasons))
-        internal = InternalDecision.NG if final_reasons else InternalDecision.OK
+        decided = None
+        try:
+            decided = self._rule_engine.evaluate(context, self._rule)
+        except RuleEvaluationError as exc:
+            extra_reasons.append(rc.RULE_EVALUATION_ERROR)
+            log.error("rule evaluation failed for inspection %s: %s", inspection_id, exc)
+
+        if decided is None:
+            missing = sorted(set(self._rule.required_components))
+            low: list[str] = []
+            final_reasons = sorted(set(extra_reasons))
+            internal = InternalDecision.NG
+        else:
+            missing = decided.missing_components
+            low = decided.low_confidence_components
+            final_reasons = sorted(set(decided.reason_codes) | set(extra_reasons))
+            internal = InternalDecision.NG if final_reasons else InternalDecision.OK
         decision = InspectionDecision(
             internal_decision=internal,
             business_result=BusinessResult.NG
             if internal is not InternalDecision.OK
             else BusinessResult.OK,
-            missing_components=decided.missing_components,
-            low_confidence_components=decided.low_confidence_components,
+            missing_components=missing,
+            low_confidence_components=low,
             reason_codes=final_reasons,
             decided_at=datetime.now(UTC),
+        )
+
+        inference_metadata = self._collect_inference_metadata(
+            product_latency_ms if frame is not None else None,
+            component_latency_ms if gates["roi_valid"] else None,
+            started_at,
         )
 
         record = InspectionRecord(
@@ -206,16 +324,56 @@ class InspectionPipeline:
             decision=decision,
             synchronization_status="LOCAL_ONLY",
             processing_ms=int((time.monotonic() - started) * 1000),
+            inference_metadata=inference_metadata,
         )
 
         annotated = None
         if frame is not None:
+            product_box = product_detection.bbox if product_detection is not None else None
             annotated = annotate_full_frame(
                 frame,
-                product_detection.bbox if product_detection is not None else None,
+                product_box,
                 [(obs.component_code, obs.full_frame_bbox) for obs in observations],
             )
         return writer.save(record, full_frame=frame, roi_image=roi_image, annotated=annotated)
+
+    def _collect_inference_metadata(
+        self,
+        product_latency_ms: float | None,
+        component_latency_ms: float | None,
+        inspected_at: datetime,
+    ) -> InferenceMetadata | None:
+        """Snapshot typed per-stage inference traceability (contract 03, P2).
+
+        Records the model name/version, input size, latency, timestamp, and
+        effective parameters for each detection stage that ran.
+        """
+        stages: dict[str, object] = {}
+        if product_latency_ms is not None:
+            product = getattr(self._product_detector, "effective_settings", None)
+            if product is not None:
+                stages["product_detection"] = InferenceStageMetadata(
+                    model_name=str(self._product_manifest.model_id),
+                    model_version=manifest_model_version(self._product_manifest),
+                    input_size=list(product["imgsz"]),
+                    latency_ms=product_latency_ms,
+                    timestamp=inspected_at,
+                    settings=InferenceSettings(**dict(product)),
+                )
+        if component_latency_ms is not None:
+            component = getattr(self._component_detector, "effective_settings", None)
+            if component is not None:
+                stages["component_detection"] = InferenceStageMetadata(
+                    model_name=str(self._component_manifest.model_id),
+                    model_version=manifest_model_version(self._component_manifest),
+                    input_size=list(component["imgsz"]),
+                    latency_ms=component_latency_ms,
+                    timestamp=inspected_at,
+                    settings=InferenceSettings(**dict(component)),
+                )
+        if not stages:
+            return None
+        return InferenceMetadata.model_validate(stages)
 
     def _build_evidence(
         self,

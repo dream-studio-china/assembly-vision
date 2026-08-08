@@ -1,6 +1,6 @@
 # AssemblyVision - Full Project Context
 
-> Context snapshot. Last updated: 2026-08-06
+> Context snapshot. Last updated: 2026-08-07
 >
 > Read this file first in a new session to reconstruct the project state quickly.
 
@@ -18,16 +18,24 @@ and verifies that all required assembly components are present.
 - **Architecture**: edge-client + central-server. All production-critical image processing and
   final decisions execute on the edge industrial computer; the central server is never required
   for real-time inspection.
-- **Current repository state**: the labeled static train-and-inspect MVP (ADR-011) is
-  implemented and validated on `feat/mvp`. The uv workspace ships shared `domain` and
-  `vision-core` packages, a developer-only `av-train` training CLI, real two-stage
-  Ultralytics YOLO inspection (`assemblyvision inspect`), and held-out verification
-  (`assemblyvision verify`) reporting NG recall, false negatives, and false positives.
+- **Current repository state**: the static train-and-inspect MVP (ADR-011) is
+  merged to `main` (PR #3) along with the edge dashboard frontend (PR #6). The
+  Python uv workspace ships shared `domain` and `vision-core` packages, a
+  developer-only `av-train` training CLI, real two-stage Ultralytics YOLO
+  inspection (`assemblyvision inspect`) and held-out verification. The frontend
+  pnpm workspace includes the Vue 3 + TypeScript operator dashboard
+  (`apps/edge-web`), an Electron kiosk shell (`apps/edge-desktop`), a typed
+  `api-client` contract layer, and shared UI primitives. A first backend layer
+  (FastAPI + SQLite local index + `assemblyvision serve`) is implemented on
+  `dev` (see section 8.3): read-only dashboard views can now display real CLI
+  results through the HTTP client, while the operator workflow actions remain
+  on the mock client.
 
 ## 2. Repository State
 
-- Remote: `https://github.com/dream-studio-china/assembly-vision`; current MVP work is on branch `feat/mvp`.
-- `dev` includes engineering contracts, cross-references, expanded contributor rules, and editor ignores on top of `origin/main`.
+- Remote: `https://github.com/dream-studio-china/assembly-vision`. The static
+  MVP and edge dashboard are merged to `main` (PR #3, #6). `dev` tracks the
+  next milestone (FastAPI backend, real-data baseline, PR-003 P1/P2 items).
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -53,14 +61,23 @@ assembly-vision/
 │   └── tests/                       # tests for the Roboflow adapter
 ├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
 ├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
-├── packages/python/
-│   ├── domain/                       # canonical models, errors, reason codes
-│   └── vision-core/                  # ROI engine, image sources, manifest loading
+├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
+├── apps/edge-desktop/                # Electron kiosk/desktop shell
+├── packages/
+│   ├── python/
+│   │   ├── domain/                   # canonical models, errors, reason codes
+│   │   └── vision-core/              # ROI engine, image sources, manifest loading
+│   └── typescript/
+│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
+│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
 ├── training/                         # developer-only av-train CLI (product/prepare-components/component)
 ├── config/examples/                  # Example pipeline, rule, and manifest configuration
 ├── models/manifests/                 # Checked model metadata; weights remain outside Git
 ├── tests/fixtures/                   # Small non-sensitive test fixtures
-├── pyproject.toml                    # Root uv workspace configuration
+├── pyproject.toml                    # Root uv workspace configuration (Python)
+├── package.json                      # Root pnpm workspace (TypeScript)
+├── pnpm-workspace.yaml               # pnpm workspace definition
+├── pnpm-lock.yaml                    # locked frontend dependencies
 └── docs/
     ├── index.md            # MkDocs home page
     ├── README.md           # Documentation index
@@ -68,13 +85,13 @@ assembly-vision/
     ├── contributing.md     # Contributor-facing repository rules and precedence
     ├── overrides/main.html # Theme override placeholder
     ├── ai/context.md       # THIS file
-    ├── reviews/            # Code-review follow-up findings (PR-003-review.md)
+    ├── reviews/            # Code-review follow-up findings (PR-003-review.md, PR-008-review.md)
     ├── contracts/          # 11 mandatory engineering contracts + index
     ├── runbooks/           # 10 operational recovery runbooks + index
     ├── design/             # 28 design documents + appendices + decisions/
     │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
     │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-    │   └── decisions/      # ADR-001 ... ADR-011 + README
+    │   └── decisions/      # ADR-001 ... ADR-012 + README
     └── research/           # 3 external-research reports
         ├── 01-industrial-inspection-success-rates.md
         ├── 02-yolo-capabilities-and-success-rates.md
@@ -115,8 +132,8 @@ assembly-vision/
 - `docs/design/decisions/`: ADR-001 edge-first inspection, ADR-002 Python backend, ADR-003 Vue 3
   + TypeScript frontend, ADR-004 two-stage detection, ADR-005 local-first storage & delayed
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
-   static-image-first MVP, ADR-010 per-component temporal aggregation, and ADR-011 labeled
-   train-and-inspect MVP.
+   static-image-first MVP, ADR-010 per-component temporal aggregation, ADR-011 labeled
+   train-and-inspect MVP, and ADR-012 edge API M1 viewer auth.
 - [docs/design/appendices.md](../design/appendices.md) holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
@@ -223,16 +240,112 @@ fixed; remaining P1/P2 items tracked in `docs/reviews/PR-003-review.md`):
   `pytest` now cover the whole repository (edge, packages, training, scripts
   tests) via the Makefile and a new `.github/workflows/ci.yml`.
 
+## 8.2 Edge Dashboard and Operator Prototype (PR #6)
+
+The frontend was built as a decoupled Vue 3 + TypeScript layer sharing a
+pnpm workspace with the existing Python uv workspace, then merged to `main`:
+
+- **Contract layer** (`@assemblyvision/api-client`): hand-synchronized TS types
+  from the domain Pydantic models, an `ApiClient` interface, `MockApiClient`
+  (deterministic in-memory data with an operator workflow state machine and mock
+  SVG images), `HttpApiClient` (targeting future `/api/v1` endpoints), and a
+  reconnecting WebSocket service.
+- **Shared UI** (`@assemblyvision/ui`): `DetectionViewer` (contain-scaled
+  preview with source-coordinate overlays, frame-ID reconciliation, stale-frame
+  marker), color-independent `StatusBadge`, and display formatters.
+- **Operator dashboard** (`apps/edge-web`): production inspection dashboard
+  (Waiting/Processing/PASS/NG status, SN metadata, product image with overlay
+  boxes, rule checks, confirm/continue/manual actions), live camera/detection
+  view with runtime logs and inspection details, history (SN search + result
+  filter), traceability per SN with reinspection attempts, statistics (ECharts
+  with date/line filters), image management (original/detection/annotated),
+  device status, and upload queue. All data flows through an API service layer
+  that selects the mock or HTTP client explicitly via `VITE_API_MODE`; the
+  operator workflow actions are mock-only and hidden in real mode.
+- **Electron desktop** (`apps/edge-desktop`): hardened defaults (context
+  isolation, sandbox, no node integration), kiosk mode, and production builds
+  are loaded from the built edge-web output.
+- **Tests and CI**: 39 Vitest unit tests across api-client/ui/edge-web/desktop,
+  11 Playwright e2e, a `web` CI job (build/lint/test/e2e), and `make check`
+  now runs both Python and TypeScript gates.
+- **Documentation**: QUICKSTART restructured per-app with extensible numbered
+  sections; README updated with new features, project structure, and roadmap.
+
+## 8.3 Edge Backend Layer (M1)
+
+A first FastAPI + SQLite backend layer is implemented on `dev` so read-only
+dashboard views can display real CLI inspection results:
+
+- **`assemblyvision serve`**: starts the local API on `/api/v1` (design 15.3),
+  serves the built dashboard as static assets with SPA fallback, opens a SQLite
+  index, and reconciles existing CLI `inspection.json` output idempotently on
+  startup. Configuration/rule/manifest loading reuses the same verified
+  pipeline build as `inspect`.
+- **Persistence**: SQLAlchemy Core schema + Alembic initial migration
+  (`apps/edge-service/migrations/`); tables for inspections, component
+  evidence, media, upload tasks, device events, and active packages with
+  contract-05 indexes. Denormalized filter columns (barcode, product, result)
+  drive history queries. The SQLite index is a **rebuildable read projection** of
+  the CLI `inspection.json` bundles (C1, ADR-012): it can be deleted and rebuilt
+  from the same bundles without changing them, and it is not the authoritative
+  completion/outbox store. The static-MVP `device_sequence` is per-process and is
+  not a synchronization identity (C3).
+- **Endpoints**: health/device/camera, inspection state, inspections list
+  (cursor pagination + filters) and detail, inspection media, media content with
+  Range support, uploads (empty in M1), effective configuration, logs (in-memory
+  ring buffer), and derived traceability/statistics/images. The M1 API is
+  read-only (ADR-012): pause/resume, camera reconnect, and upload retry are not
+  exposed, and every route except `/health/live` requires the configured
+  `AV_EDGE_API_TOKEN` bearer token or the HttpOnly same-origin viewer session
+  established at dashboard `/login` when a token is set.
+- **Frontend split**: read-only views route through the HTTP client when
+  `VITE_API_MODE=http`; operator workflow actions (current/confirm/next/
+  manual) stay on the deterministic mock because they are a demonstration
+  queue, not a design 15.3 endpoint.
+- **PR-003 hardening folded in**: rule version identity is now bound to
+  canonical rule content; the output writer publishes inspection bundles
+  atomically (staging + fsync + rename, rejects republish); detectors pass
+  manifest `imgsz`/`iou`/`conf` explicitly and persist effective values in
+  `InspectionRecord.inference_metadata`; the pipeline validates detection
+  provenance (frame/model/coordinate space) at the boundary.
+- **Packaging**: `py.typed` markers added to `domain` and `vision-core` so MyPy
+  strict passes repo-wide.
+- **Test hardening**: test coverage for the edge Python packages is at 100%
+  (pytest-cov). The expansion surfaced three defects that were fixed:
+  `upsert_inspection` now replaces child evidence/media rows instead of
+  failing on the media unique constraint; `load_pipeline_config` wraps
+  `ROIGenerationError` (e.g. `normalize_perspective: true`) as `ConfigError`
+  instead of leaking a raw error; and `OutputWriter.save` cleans up its
+  staging directory when a child write fails.
+
 ## 9. Open Items / Next Steps
 
-- The static train-and-inspect MVP is complete and validated on synthetic data (NG recall 1.0,
-  zero false negatives on the held-out set). The next milestone is the one-month target
-  (roadmap 25.5): camera/barcode integration, product windows, local persistence, temporal
-  aggregation, edge dashboard, upload queue, and one central ingestion/history/review path.
-- Real customer data is still required: annotate with X-AnyLabeling (product + component boxes),
-  then run `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`. Public Roboflow
-  datasets (e.g., BoardEye-Missing-Component) can validate the framework but not a specific line.
-- Model improvement workflow is documented (runbook 10) with `av-train --rule` version hints.
+- The FastAPI + SQLite backend layer (`assemblyvision serve`, section 8.3) now
+  serves read-only dashboard views from the local index; the **upload queue
+  scheduler** (real `upload_tasks` rows, retry backoff, idempotency) and the
+  **WebSocket runtime channel** are the next backend gaps. The dashboard read
+  views switch to real data via `VITE_API_MODE=http`.
+- A number of PR-003 P1/P2 backend hardening items are still open (see
+  `docs/reviews/PR-003-review.md`): model manifest full-content immutability,
+  dataset staging, and component preparation reusing production selection
+  contracts. Rule content binding, bundle-atomic output, inference parameter
+  pinning, and detection provenance validation are now fixed (section 8.3).
+- The PR #8 review is recorded in `docs/reviews/PR-008-review.md`: all blocking
+  findings (F1-F14) and the M1 conditional items (C1-C4) are resolved and
+  validated on `dev`; the remaining roadmap scope (upload queue scheduler,
+  WebSocket channel, camera/barcode adapters, temporal aggregation, Docker
+  packaging, authoritative SQLite persistence/outbox) is tracked as the next
+  milestone and does not block the PR.
+- Real customer data is still required for the one-month baseline: annotate with
+  X-AnyLabeling (product + component boxes), then run `av-train` ->
+  `assemblyvision inspect` -> `assemblyvision verify`. A utility script
+  (`adapt-xanylabeling.py`) is needed to split the X-AnyLabeling export into
+  `dataset_product`/`dataset_components` + `test-expected.json`.
+- Camera/hardware integration, barcode decoding, product-window management,
+  temporal aggregation, authoritative SQLite persistence (the current index is
+  a rebuildable read projection), the upload queue scheduler, and Docker
+  deployment remain as the roadmap 25.5 one-month scope; they are blocked on
+  hardware and customer-site decisions.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.

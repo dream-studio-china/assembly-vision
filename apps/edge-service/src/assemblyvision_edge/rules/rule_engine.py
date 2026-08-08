@@ -7,6 +7,7 @@ the database, and FastAPI (docs/design/11-rule-engine.md and contract 01).
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from typing import Annotated, Literal
 from uuid import UUID, uuid5
@@ -82,10 +83,14 @@ class RuleContext(APIModel):
 
 
 def rule_version_id(rule: RuleDefinition) -> UUID:
-    """Deterministic UUID for a rule version, stable across runs."""
-    return uuid5(
-        UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8"), f"{rule.rule_id}:{rule.rule_version}"
-    )
+    """Deterministic UUID bound to canonical rule content.
+
+    The identity hashes the full canonical rule document so any change to
+    component requirements, gates, spatial constraints, or model compatibility
+    yields a new version identity (PR-003 P2: rule-version content binding).
+    """
+    canonical = json.dumps(rule.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+    return uuid5(UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8"), canonical)
 
 
 def _spatial_violation(

@@ -2,10 +2,12 @@ import { expect, test } from "@playwright/test";
 
 test("app shell renders navigation and the operator dashboard", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText("AssemblyVision Edge")).toBeVisible();
+  await expect(page.getByText("AssemblyVision", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Operator" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Live" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Statistics" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Config" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Logs" })).toBeVisible();
   await expect(page.getByText("Current status")).toBeVisible();
 });
 

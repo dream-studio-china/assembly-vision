@@ -190,6 +190,10 @@ def run_verify(
     seen: set[str] = set()
     for source, path in work:
         name = path.name
+        if name in seen:
+            failed += 1
+            log.error("verify rejected duplicate work identity %s", name)
+            continue
         exp = expected.get(name)
         if exp is None and filename_fallback:
             exp = filename_expected(name)

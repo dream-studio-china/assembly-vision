@@ -99,10 +99,12 @@ class _FakePipeline:
         failures: set[str],
         incomplete: set[str] | None = None,
         failure_reasons: set[str] | None = None,
+        empty_evidence: set[str] | None = None,
     ) -> None:
         self._failures = failures
         self._incomplete = incomplete or set()
         self._failure_reasons = failure_reasons or set()
+        self._empty_evidence = empty_evidence or set()
 
     def inspect_image(self, source: object, path: Path, writer: object) -> object:
         if path.name in self._failures:
@@ -111,6 +113,8 @@ class _FakePipeline:
             return _FakeRecord(BusinessResult.NG, evidence_state="UNCERTAIN")
         if path.name in self._failure_reasons:
             return _FakeRecord(BusinessResult.NG, reason_codes=[rc.INFERENCE_ERROR])
+        if path.name in self._empty_evidence:
+            return _FakeRecord(BusinessResult.NG, evidence=[])
         return _FakeRecord(BusinessResult.OK)
 
 
@@ -120,12 +124,15 @@ class _FakeRecord:
         business_result: BusinessResult,
         evidence_state: str = "PRESENT",
         reason_codes: list[str] | None = None,
+        evidence: list[object] | None = None,
     ) -> None:
         self.decision = SimpleNamespace(
             business_result=business_result,
             reason_codes=reason_codes or [],
         )
-        self.evidence = [SimpleNamespace(state=evidence_state)]
+        self.evidence = (
+            evidence if evidence is not None else [SimpleNamespace(state=evidence_state)]
+        )
 
 
 def _work(tmp_path: Path, names: list[str]) -> list[tuple[object, Path]]:
@@ -174,7 +181,7 @@ def test_run_verify_complete_input_is_not_a_gap(tmp_path: Path) -> None:
     assert report.has_gaps is False
 
 
-@pytest.mark.parametrize("failure_kind", ["incomplete", "reason"])
+@pytest.mark.parametrize("failure_kind", ["incomplete", "reason", "empty"])
 def test_run_verify_does_not_score_system_failure_as_expected_ng(
     tmp_path: Path, failure_kind: str
 ) -> None:
@@ -182,6 +189,8 @@ def test_run_verify_does_not_score_system_failure_as_expected_ng(
         {"incomplete": {"ng.png"}}
         if failure_kind == "incomplete"
         else {"failure_reasons": {"ng.png"}}
+        if failure_kind == "reason"
+        else {"empty_evidence": {"ng.png"}}
     )
     report = run_verify(
         _FakePipeline(failures=set(), **kwargs),  # type: ignore[arg-type]
@@ -193,4 +202,98 @@ def test_run_verify_does_not_score_system_failure_as_expected_ng(
     assert report.rows == []
     assert report.failed == 1
     assert report.true_positive_ng == 0
+    assert report.has_gaps is True
+
+
+def test_load_expected_rejects_non_object_file(tmp_path: Path) -> None:
+    path = tmp_path / "list.json"
+    path.write_text("[1, 2, 3]", encoding="utf-8")
+    with pytest.raises(ValueError, match="must contain an object"):
+        load_expected(path)
+
+
+def test_rates_zero_when_no_expected() -> None:
+    report = VerificationReport(rows=[_row(True, True)])
+    assert report.fn_rate == 0.0
+    report_ng = VerificationReport(rows=[_row(False, False)])
+    assert report_ng.fp_rate == 0.0
+
+
+def test_format_per_image_and_report_with_false_negative() -> None:
+    from assemblyvision_domain.models import BusinessResult
+    from assemblyvision_edge.verify import format_per_image
+
+    ng_row = VerifyRow(
+        image="bad.png",
+        expected_ok=False,
+        predicted_ok=True,
+        record=_FakeRecord(BusinessResult.OK),  # type: ignore[arg-type]
+    )
+    ok_row = VerifyRow(image="good.png", expected_ok=True, predicted_ok=True)
+    report = VerificationReport(rows=[ng_row, ok_row])
+    lines = format_per_image(report).splitlines()
+    assert "MISMATCH" in lines[0]
+    report_text = format_report(report)
+    assert "DANGER: NG predicted as OK (false negatives):" in report_text
+    assert "- bad.png" in report_text
+
+
+def test_format_report_includes_fn_reason_codes() -> None:
+    from assemblyvision_domain.models import BusinessResult
+    from assemblyvision_edge.verify import format_report
+
+    record = _FakeRecord(BusinessResult.NG, reason_codes=["COMPONENT_MISSING:component_a"])
+    row = VerifyRow(image="ng.png", expected_ok=False, predicted_ok=False, record=record)  # type: ignore[arg-type]
+    report = VerificationReport(rows=[row])
+    text = format_report(report)
+    assert "NG recall" in text
+    assert "false positives" in text
+
+
+def test_format_report_notes_incomplete_coverage() -> None:
+    report = VerificationReport(rows=[], unlabeled=2)
+    text = format_report(report)
+    assert "did not cover the full expected set" in text
+
+
+def test_run_verify_with_filename_fallback_disabled(tmp_path: Path) -> None:
+    report = run_verify(
+        _FakePipeline(failures=set()),  # type: ignore[arg-type]
+        _work(tmp_path, ["ng_ok.png"]),  # type: ignore[arg-type]
+        expected={"ng_ok.png": ExpectedResult(True)},
+        writer=object(),  # type: ignore[arg-type]
+        filename_fallback=False,
+    )
+    assert len(report.rows) == 1
+
+
+def test_run_verify_filename_fallback_disabled_rejects_stale_input(tmp_path: Path) -> None:
+    report = run_verify(
+        _FakePipeline(failures=set()),  # type: ignore[arg-type]
+        _work(tmp_path, ["ng_old.png"]),  # type: ignore[arg-type]
+        expected={"a.png": ExpectedResult(True)},
+        writer=object(),  # type: ignore[arg-type]
+        filename_fallback=False,
+    )
+    assert report.rows == []
+    assert report.unlabeled == 1
+    assert report.has_gaps is True
+
+
+def test_run_verify_rejects_duplicate_basenames(tmp_path: Path) -> None:
+    line_a = tmp_path / "line-a"
+    line_b = tmp_path / "line-b"
+    line_a.mkdir()
+    line_b.mkdir()
+    (line_a / "sample.png").touch()
+    (line_b / "sample.png").touch()
+    work: list[tuple[object, Path]] = [(None, line_a / "sample.png"), (None, line_b / "sample.png")]
+    report = run_verify(
+        _FakePipeline(failures=set()),  # type: ignore[arg-type]
+        work,  # type: ignore[arg-type]
+        expected={"sample.png": ExpectedResult(True)},
+        writer=object(),  # type: ignore[arg-type]
+    )
+    assert len(report.rows) == 1
+    assert report.failed == 1
     assert report.has_gaps is True

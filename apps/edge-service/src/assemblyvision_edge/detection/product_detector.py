@@ -35,7 +35,13 @@ class ProductDetectionOutcome:
 class ProductDetector:
     """Detects the product in a full frame and selects one unambiguous product."""
 
-    def __init__(self, manifest: ModelManifest, settings: DetectionSettings, model: Any) -> None:
+    def __init__(
+        self,
+        manifest: ModelManifest,
+        settings: DetectionSettings,
+        model: Any,
+        device: str | None = None,
+    ) -> None:
         if manifest.task != "PRODUCT_DETECTION":
             raise ConfigError(f"manifest task {manifest.task!r} is not PRODUCT_DETECTION")
         missing_classes = {PRODUCT_CLASS} - set(manifest.class_names)
@@ -46,6 +52,7 @@ class ProductDetector:
         self._manifest = manifest
         self._settings = settings
         self._model = model
+        self._device = device
 
     @classmethod
     def from_manifest(
@@ -53,17 +60,39 @@ class ProductDetector:
         manifest: ModelManifest,
         settings: DetectionSettings,
         manifest_path: Any,
+        device: str | None = None,
     ) -> ProductDetector:
         from ultralytics import YOLO  # type: ignore[attr-defined]
 
         weights = verify_manifest_artifact(manifest, manifest_path)
         model = YOLO(str(weights))
         verify_model_class_map(model.names, manifest)
-        return cls(manifest, settings, model)
+        return cls(manifest, settings, model, device)
+
+    @property
+    def effective_settings(self) -> dict[str, object]:
+        """Effective inference parameters persisted as inference metadata.
+
+        Ultralytics interprets a two-element ``imgsz`` as ``[height, width]``,
+        so the manifest width/height are serialized in that order.
+        """
+        return {
+            "imgsz": [self._manifest.input_height, self._manifest.input_width],
+            "conf": self._settings.confidence_threshold,
+            "iou": self._settings.iou_threshold,
+            "device": self._device,
+        }
 
     def detect(self, frame: Image.Image, frame_id: UUID) -> ProductDetectionOutcome:
         try:
-            results: Any = self._model(frame, verbose=False)
+            results: Any = self._model(
+                frame,
+                imgsz=(self._manifest.input_height, self._manifest.input_width),
+                conf=self._settings.confidence_threshold,
+                iou=self._settings.iou_threshold,
+                device=self._device,
+                verbose=False,
+            )
             if not results:
                 return ProductDetectionOutcome(reason_code=rc.NO_PRODUCT)
 

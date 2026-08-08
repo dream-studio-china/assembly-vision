@@ -363,3 +363,97 @@ def test_empty_rule_cannot_produce_ok_in_engine() -> None:
     decision = ENGINE.evaluate(make_context(components={}), rule)
     assert decision.business_result is BusinessResult.NG
     assert "CONFIG_INVALID" in decision.reason_codes
+
+
+def test_component_requirement_rejects_min_above_max() -> None:
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError, match="min_box_area_ratio cannot exceed"):
+        ComponentRequirement.model_validate(
+            {"expected_count": 1, "min_box_area_ratio": 0.8, "max_box_area_ratio": 0.5}
+        )
+
+
+def test_component_requirement_rejects_invalid_zone() -> None:
+    from pydantic import ValidationError
+
+    for zone in ((1.5, 0, 2, 1), (0.1, 0.9, 0.2, 0.8), (-1, 0, 1, 1)):
+        with pytest.raises(ValidationError, match="allowed_zone"):
+            ComponentRequirement.model_validate({"expected_count": 1, "allowed_zone": zone})
+
+
+def test_spatial_violation_when_evidence_missing_geometry() -> None:
+    # A declared spatial constraint with no per-detection geometry fails closed.
+    rule = make_rule(
+        required_components={
+            "component_a": {
+                "expected_count": 1,
+                "min_box_area_ratio": 0.1,
+            }
+        }
+    )
+    evidence = make_evidence(
+        "component_a", "PRESENT", detection_count=1, box_area_ratios=[], box_centers=[]
+    )
+    decision = ENGINE.evaluate(make_context(components={"component_a": evidence}), rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "COMPONENT_SPATIAL_INVALID:component_a" in decision.reason_codes
+
+
+def test_spatial_violation_when_outside_zone() -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {
+                "expected_count": 1,
+                "allowed_zone": (0.0, 0.0, 0.5, 0.5),
+            }
+        }
+    )
+    evidence = make_evidence(
+        "component_a", "PRESENT", detection_count=1, box_area_ratios=[0.2], box_centers=[(0.9, 0.9)]
+    )
+    decision = ENGINE.evaluate(make_context(components={"component_a": evidence}), rule)
+    assert decision.business_result is BusinessResult.NG
+    assert "COMPONENT_SPATIAL_INVALID:component_a" in decision.reason_codes
+
+
+def test_spatial_constraint_satisfied() -> None:
+    rule = make_rule(
+        required_components={
+            "component_a": {
+                "expected_count": 1,
+                "min_box_area_ratio": 0.1,
+                "max_box_area_ratio": 0.5,
+                "allowed_zone": (0.0, 0.0, 1.0, 1.0),
+            }
+        }
+    )
+    evidence = make_evidence(
+        "component_a", "PRESENT", detection_count=1, box_area_ratios=[0.3], box_centers=[(0.5, 0.5)]
+    )
+    decision = ENGINE.evaluate(make_context(components={"component_a": evidence}), rule)
+    assert decision.business_result is BusinessResult.OK
+
+
+def test_engine_wraps_evaluation_failure() -> None:
+    from assemblyvision_domain.errors import RuleEvaluationError
+
+    class _RaisingRequirement:
+        @property
+        def expected_count(self) -> int:
+            raise RuntimeError("boom")
+
+    rule = RuleDefinition.model_construct(
+        schema_version=1,
+        rule_id="bad",
+        rule_version=1,
+        product_type="model_a",
+        compatible_component_model_versions=["component-yolo-1.0.0"],
+        required_components={"component_a": _RaisingRequirement()},
+        mandatory_gates={},
+    )
+    with pytest.raises(RuleEvaluationError):
+        ENGINE.evaluate(
+            make_context(components={"component_a": make_evidence("component_a", "PRESENT")}),
+            rule,
+        )

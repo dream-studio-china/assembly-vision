@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import yaml
-from assemblyvision_domain.errors import ConfigError
+from assemblyvision_domain.errors import ConfigError, ROIGenerationError
 from assemblyvision_domain.models import ModelManifest
 from assemblyvision_vision.manifests import manifest_model_version
 from assemblyvision_vision.roi.roi_engine import ROIConfig
@@ -27,6 +30,35 @@ def validate_model_version_declaration(declared: str, manifest: ModelManifest, n
     if declared != expected:
         raise ConfigError(
             f"{name} {declared!r} does not match loaded manifest version {expected!r}"
+        )
+
+
+def validate_rule_component_compatibility(
+    rule: RuleDefinition,
+    config: PipelineConfig,
+    component_manifest: ModelManifest,
+) -> None:
+    """Fail closed when rule/configuration/manifest component sets disagree.
+
+    A rule-required component missing from the configuration would later raise
+    ``KeyError`` inside the component detector on every inspection, and a
+    component-model version outside the rule's compatible set must never be
+    evaluated as valid. Extra manifest classes and extra configured components
+    are allowed; they are not decision evidence unless the active rule requires
+    them (F8).
+    """
+    required = set(rule.required_components)
+    configured = set(config.components)
+    missing = sorted(required - configured)
+    if missing:
+        raise ConfigError(
+            "rule requires components missing from configuration: " + ", ".join(missing)
+        )
+    model_version = manifest_model_version(component_manifest)
+    if model_version not in rule.compatible_component_model_versions:
+        raise ConfigError(
+            f"component model version {model_version!r} is not in rule compatible "
+            f"versions {sorted(rule.compatible_component_model_versions)}"
         )
 
 
@@ -214,8 +246,8 @@ def load_pipeline_config(path: Path) -> PipelineConfig:
                 roi_raw.get("normalize_perspective"), "roi.normalize_perspective", False
             ),
         )
-    except ConfigError:
-        raise
+    except ROIGenerationError as exc:
+        raise ConfigError(f"roi configuration is invalid: {exc}") from exc
     except (TypeError, ValueError) as exc:
         raise ConfigError(f"roi configuration is invalid: {exc}") from exc
     return PipelineConfig(
@@ -235,13 +267,54 @@ def _require_str(raw: Any, name: str) -> str:
     return raw
 
 
-def load_rule_definition(path: Path) -> RuleDefinition:
-    """Load and validate a product rule definition YAML file."""
+# A rule identity is immutable once installed. The registry callback receives
+# (rule_id, rule_version, content_hash) and may persist the identity durably
+# (e.g. into the edge SQLite registry) so a restarted process rejects reusing
+# the identity with different content.
+RuleIdentityRegistry = Callable[[str, int, str], None]
+
+
+def load_rule_definition(
+    path: Path, registry: RuleIdentityRegistry | None = None
+) -> RuleDefinition:
+    """Load and validate a product rule definition YAML file.
+
+    ``registry`` is invoked after the in-process identity check so durable
+    install registries can reject content changes across processes.
+    """
     try:
         raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as exc:
         raise ConfigError(f"cannot load rule definition: {path}: {exc}") from exc
     try:
-        return RuleDefinition.model_validate(raw)
+        rule = RuleDefinition.model_validate(raw)
     except Exception as exc:
         raise ConfigError(f"invalid rule definition {path}: {exc}") from exc
+    _register_rule_identity(rule)
+    if registry is not None:
+        registry(rule.rule_id, rule.rule_version, rule_content_hash(rule))
+    return rule
+
+
+# Process-local installed-rule registry (P2): a rule identity is immutable
+# once loaded, so the same (rule_id, rule_version) cannot be reactivated with
+# different content in one process. The edge service additionally persists this
+# in the SQLite ``rule_identities`` table for restart safety.
+_RULE_IDENTITY_REGISTRY: dict[tuple[str, int], str] = {}
+
+
+def rule_content_hash(rule: RuleDefinition) -> str:
+    payload = json.dumps(rule.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _register_rule_identity(rule: RuleDefinition) -> None:
+    key = (rule.rule_id, rule.rule_version)
+    digest = rule_content_hash(rule)
+    existing = _RULE_IDENTITY_REGISTRY.get(key)
+    if existing is not None and existing != digest:
+        raise ConfigError(
+            f"rule identity {rule.rule_id} v{rule.rule_version} was already loaded "
+            "with different content; rules are immutable once loaded"
+        )
+    _RULE_IDENTITY_REGISTRY[key] = digest

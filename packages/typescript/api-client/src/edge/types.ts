@@ -145,6 +145,8 @@ export type AggregatedComponentEvidence = {
   adjacent_detection_run: number;
   supporting_frame_ids: UUID[];
   policy_reason_codes: string[];
+  box_area_ratios: number[];
+  box_centers: number[][];
 };
 
 export type InspectionDecision = {
@@ -180,6 +182,7 @@ export type InspectionRecord = {
   decision: InspectionDecision;
   synchronization_status: SynchronizationStatus;
   processing_ms: number;
+  inference_metadata?: Record<string, unknown> | null;
 };
 
 export type InspectionSummary = {
@@ -368,11 +371,16 @@ export type TraceabilityView = {
 };
 
 /** Image references for one inspection (original, detection result, annotations). */
+export type ImageSlotStatus = "AVAILABLE" | "PURGED" | "UNAVAILABLE";
+
 export type InspectionImages = {
   inspection_id: UUID;
   original: string;
   detection: string;
   annotated: string;
+  original_status: ImageSlotStatus;
+  detection_status: ImageSlotStatus;
+  annotated_status: ImageSlotStatus;
 };
 
 export type StatisticsFilter = {

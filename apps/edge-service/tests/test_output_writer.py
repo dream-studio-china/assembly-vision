@@ -8,6 +8,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
+import pytest
+from assemblyvision_domain.errors import OutputError
 from assemblyvision_domain.models import (
     BarcodeResult,
     BusinessResult,
@@ -74,6 +76,36 @@ def test_writer_persists_inspection_json_and_media(tmp_path: Path) -> None:
     assert media["size_bytes"] > 0
     raw = (inspection_dir / "key_frame.jpg").read_bytes()
     assert media["checksum_sha256"] == hashlib.sha256(raw).hexdigest()
+    relative = Path(media["relative_path"])
+    assert relative.is_relative_to(str(saved.inspection_id))
+    resolved = (tmp_path / "out" / relative).resolve()
+    assert resolved.is_file()
+    assert resolved.read_bytes() == raw
+
+
+def test_writer_media_relative_path_resolves_after_reconcile(
+    tmp_path: Path,
+) -> None:
+    from assemblyvision_edge.persistence.reconcile import reconcile_output_root
+    from assemblyvision_edge.persistence.repository import EdgeRepository
+
+    root = tmp_path / "out"
+    writer = OutputWriter(root)
+    record = _make_record(uuid4())
+    frame = Image.new("RGB", (32, 32), (20, 20, 20))
+    saved = writer.save(record, full_frame=frame, roi_image=None, annotated=None)
+
+    repo = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        assert reconcile_output_root(repo, root) == 1
+        fetched = repo.get_inspection_full(str(saved.inspection_id))
+        assert fetched is not None
+        for item in fetched.media:
+            resolved = (root / item.relative_path).resolve()
+            assert resolved.is_file()
+            assert resolved.is_relative_to(root.resolve())
+    finally:
+        repo.close()
 
 
 def test_writer_no_media_writes_json_only(tmp_path: Path) -> None:
@@ -95,3 +127,29 @@ def test_writer_leaves_no_temp_files(tmp_path: Path) -> None:
         if p.name.endswith(".tmp")
     ]
     assert leftover == []
+
+
+def test_writer_rejects_republishing_same_inspection(tmp_path: Path) -> None:
+    writer = OutputWriter(tmp_path / "out")
+    record = _make_record(uuid4())
+    writer.save(record, full_frame=None, roi_image=None, annotated=None)
+
+    with pytest.raises(OutputError):
+        writer.save(record, full_frame=None, roi_image=None, annotated=None)
+
+
+def test_writer_publishes_bundle_atomically_without_partial_output(tmp_path: Path) -> None:
+    writer = OutputWriter(tmp_path / "out")
+    record = _make_record(uuid4())
+    saved = writer.save(
+        record,
+        full_frame=Image.new("RGB", (32, 32), (10, 10, 10)),
+        roi_image=None,
+        annotated=None,
+    )
+
+    inspection_dir = tmp_path / "out" / str(saved.inspection_id)
+    assert (inspection_dir / "inspection.json").is_file()
+    assert (inspection_dir / "key_frame.jpg").is_file()
+    staging = [p for p in (tmp_path / "out").iterdir() if p.name.startswith(".staging-")]
+    assert staging == []

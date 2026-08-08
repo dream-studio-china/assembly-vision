@@ -4,17 +4,29 @@
 // (docs/design/16-edge-dashboard.md 16.4).
 
 import type { InspectionImages, LogEvent } from "@assemblyvision/api-client";
-import { DetectionViewer, StatusBadge, formatIsoTime, formatLatency } from "@assemblyvision/ui";
+import { DetectionViewer, StatusBadge, formatBytes, formatIsoTime, formatLatency } from "@assemblyvision/ui";
 import type { ViewerBox } from "@assemblyvision/ui";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { mockCameraFrame } from "../mock/images";
 import { useInspectionStore } from "../stores/inspection";
+import { useRuntimeStore } from "../stores/runtime";
+import { isMockMode } from "../services/client";
 import { inspectionService } from "../services/inspectionService";
 
 const store = useInspectionStore();
+const runtime = useRuntimeStore();
 const images = ref<InspectionImages | null>(null);
 const logs = ref<LogEvent[]>([]);
 let timer: ReturnType<typeof setInterval> | null = null;
+
+// In real mode there is no live operator window (M1, ADR-012), so simulated
+// frames and the mock current inspection must never be shown alongside live
+// device state (F6). Media that is absent or unreachable renders as an explicit
+// unavailable state instead of a fabricated frame.
+const isMock = isMockMode();
+const cameraFrame = computed(() => (isMock ? mockCameraFrame(800, 600) : null));
+const detectionUrl = computed(() => images.value?.detection || cameraFrame.value || null);
+const annotatedUrl = computed(() => images.value?.annotated || cameraFrame.value || null);
 
 const badgeStatus = computed(() => {
   const s = store.current?.status ?? "WAITING";
@@ -22,8 +34,6 @@ const badgeStatus = computed(() => {
   if (s === "NG") return "NG";
   return "UNCERTAIN";
 });
-
-const cameraFrame = computed(() => mockCameraFrame(800, 600));
 
 const currentFrameId = computed(() => (store.current?.inspection_id ?? "frame") as string);
 
@@ -62,7 +72,8 @@ async function loadLogs(): Promise<void> {
 }
 
 async function refresh(): Promise<void> {
-  await store.loadCurrent();
+  if (isMock) await store.loadCurrent();
+  await runtime.refresh();
   await Promise.all([loadImages(), loadLogs()]);
 }
 
@@ -79,7 +90,10 @@ onBeforeUnmount(() => {
 <template>
   <div class="live-inspection">
     <div class="live-inspection__head">
-      <h2>Live inspection</h2>
+      <div>
+        <p class="live-inspection__eyebrow">LOCAL INSPECTION</p>
+        <h2>Live inspection</h2>
+      </div>
       <StatusBadge :status="badgeStatus" />
       <span class="live-inspection__sn">{{ store.current?.sn ?? "waiting" }}</span>
       <span class="live-inspection__inspection-id">{{ store.current?.inspection_id }}</span>
@@ -92,11 +106,37 @@ onBeforeUnmount(() => {
       />
     </div>
 
+    <div class="live-inspection__strips" aria-label="Inspection readiness and connectivity">
+      <section class="status-strip">
+        <h3>Inspection readiness</h3>
+        <div class="status-strip__items">
+          <span class="status-chip" :class="runtime.status?.inspection_ready ? 'status-chip--ready' : 'status-chip--critical'">Engine {{ runtime.status?.inspection_ready ? "ready" : "not ready" }}</span>
+          <span class="status-chip" :class="runtime.status?.camera_connected ? 'status-chip--ready' : 'status-chip--critical'">Camera {{ runtime.status?.camera_connected ? "connected" : "offline" }}</span>
+          <span class="status-chip" :class="runtime.status?.model_loaded ? 'status-chip--ready' : 'status-chip--critical'">Model {{ runtime.status?.model_loaded ? "loaded" : "unavailable" }}</span>
+          <span class="status-chip" :class="(runtime.status?.disk_free_bytes ?? 0) >= 5 * 1024 ** 3 ? 'status-chip--ready' : 'status-chip--warning'">Disk {{ runtime.status ? formatBytes(runtime.status.disk_free_bytes) + " free" : "unknown" }}</span>
+        </div>
+      </section>
+      <section class="status-strip">
+        <h3>Connectivity</h3>
+        <div class="status-strip__items">
+          <span class="status-chip status-chip--ready">Local API available</span>
+          <span class="status-chip" :class="runtime.status?.central_connected ? 'status-chip--ready' : 'status-chip--warning'">Central {{ runtime.status?.central_connected ? "connected" : "offline" }}</span>
+          <span class="status-chip status-chip--neutral">Uploads pending {{ runtime.status?.upload_pending_count ?? "-" }}</span>
+        </div>
+      </section>
+    </div>
+
     <div class="live-inspection__grid">
       <section class="panel">
         <h3>Camera image</h3>
         <div class="live-inspection__frame">
-          <img :src="cameraFrame" alt="camera preview" />
+          <img v-if="cameraFrame" :src="cameraFrame" alt="camera preview" />
+          <el-empty
+            v-else
+            description="No camera feed in read-only mode"
+            :image-size="72"
+            class="live-inspection__unavailable"
+          />
         </div>
       </section>
 
@@ -104,11 +144,18 @@ onBeforeUnmount(() => {
         <h3>Detection result</h3>
         <div class="live-inspection__viewer">
           <DetectionViewer
-            :image-url="images?.detection ?? cameraFrame"
+            v-if="detectionUrl"
+            :image-url="detectionUrl"
             :image-width="800"
             :image-height="600"
             :boxes="detectionBoxes"
             :current-frame-id="currentFrameId"
+          />
+          <el-empty
+            v-else
+            description="No detection image available"
+            :image-size="72"
+            class="live-inspection__unavailable"
           />
         </div>
       </section>
@@ -117,11 +164,18 @@ onBeforeUnmount(() => {
         <h3>Detection regions</h3>
         <div class="live-inspection__viewer">
           <DetectionViewer
-            :image-url="images?.annotated ?? cameraFrame"
+            v-if="annotatedUrl"
+            :image-url="annotatedUrl"
             :image-width="800"
             :image-height="600"
             :boxes="detectionBoxes"
             :current-frame-id="currentFrameId"
+          />
+          <el-empty
+            v-else
+            description="No annotated image available"
+            :image-size="72"
+            class="live-inspection__unavailable"
           />
         </div>
       </section>
@@ -190,7 +244,10 @@ onBeforeUnmount(() => {
 }
 .live-inspection__head h2 {
   margin: 0;
+  color: #17202a;
+  font-size: 24px;
 }
+.live-inspection__eyebrow { margin: 0 0 3px; color: #176b87; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; }
 .live-inspection__sn {
   color: #6b7280;
   font-size: 14px;
@@ -199,6 +256,15 @@ onBeforeUnmount(() => {
   color: #9aa2ae;
   font-size: 12px;
 }
+.live-inspection__strips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.status-strip { border: 1px solid #cbd7dc; border-left: 4px solid #176b87; border-radius: 6px; background: #fff; padding: 11px 12px; }
+.status-strip h3 { margin: 0 0 8px; color: #46555c; font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase; }
+.status-strip__items { display: flex; flex-wrap: wrap; gap: 7px; }
+.status-chip { border-radius: 3px; padding: 4px 7px; font-size: 12px; font-weight: 650; }
+.status-chip--ready { background: #e5f3ed; color: #17633c; }
+.status-chip--critical { background: #fde7e4; color: #a72d24; }
+.status-chip--warning { background: #fff1d8; color: #825600; }
+.status-chip--neutral { background: #e9eef0; color: #405159; }
 .live-inspection__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -223,10 +289,18 @@ onBeforeUnmount(() => {
   border: 1px solid #e0e0e0;
   border-radius: 6px;
 }
+.live-inspection__unavailable {
+  height: 100%;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .panel {
-  border: 1px solid #e0e0e0;
+  border: 1px solid #cbd7dc;
   border-radius: 6px;
-  padding: 12px;
+  padding: 14px;
+  background: #fff;
 }
 .panel h3 {
   margin: 0 0 10px;
@@ -268,5 +342,14 @@ onBeforeUnmount(() => {
 .rule--pending {
   background: #eceff1;
   color: #546e7a;
+}
+@media (max-width: 1180px) {
+  .live-inspection__grid { grid-template-columns: repeat(2, 1fr); }
+  .live-inspection__grid > :last-child { grid-column: span 2; }
+}
+@media (max-width: 760px) {
+  .live-inspection__strips, .live-inspection__grid, .live-inspection__info { grid-template-columns: 1fr; }
+  .live-inspection__grid > :last-child { grid-column: auto; }
+  .live-inspection__viewer { height: 42vh; min-height: 220px; }
 }
 </style>
