@@ -22,9 +22,35 @@ import type {
   TraceabilityView,
 } from "@assemblyvision/api-client";
 import { MockApiClient } from "@assemblyvision/api-client";
-import { getApiClient } from "./client";
+import { getApiClient, isCrossOriginHttp, loadMediaBlobUrl } from "./client";
 
 const operatorWorkflow = new MockApiClient();
+
+/**
+ * Resolve image URLs to blob URLs for the cross-origin dev flow.
+ *
+ * A token-protected edge host cannot serve media to a cross-origin `<img>` tag
+ * (the request carries no cookie or Authorization header), so the content is
+ * fetched through the in-memory token and rendered from an object URL. Any
+ * slot that fails to load keeps its original URL and the `<img>` error handler
+ * marks it unavailable.
+ */
+async function resolveCrossOriginImages(images: InspectionImages): Promise<InspectionImages> {
+  const resolve = async (url: string): Promise<string> => {
+    if (!url) return url;
+    try {
+      return await loadMediaBlobUrl(url);
+    } catch {
+      return url;
+    }
+  };
+  return {
+    ...images,
+    original: await resolve(images.original),
+    detection: await resolve(images.detection),
+    annotated: await resolve(images.annotated),
+  };
+}
 
 export const inspectionService = {
   getCurrent(): Promise<CurrentInspection> {
@@ -47,8 +73,9 @@ export const inspectionService = {
     return getApiClient().listInspections(filter);
   },
 
-  getImages(inspectionId: string): Promise<InspectionImages> {
-    return getApiClient().getInspectionImages(inspectionId);
+  async getImages(inspectionId: string): Promise<InspectionImages> {
+    const images = await getApiClient().getInspectionImages(inspectionId);
+    return isCrossOriginHttp() ? resolveCrossOriginImages(images) : images;
   },
 
   getTraceability(sn: string): Promise<TraceabilityView> {

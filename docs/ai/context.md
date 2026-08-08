@@ -337,11 +337,13 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   tolerance at the boundary.
 - **Packaging**: `py.typed` markers added to `domain` and `vision-core` so MyPy
   strict passes repo-wide.
-- **Test hardening**: edge Python coverage is at 100% (pytest-cov); the full
-  suite is `373 passed`, TypeScript tests are `28 passed` (api-client) and
-  `12 passed` (edge-web), and Playwright e2e is `12 passed` including a
-  token-authenticated served dashboard that asserts real reconciled data and
-  purged-media rendering.
+- **Test hardening**: edge Python coverage is at 99.6% (pytest-cov; the only
+  uncovered branches are the unreachable IntegrityError handler in the
+  repository and two derived-image slot fallbacks); the full suite is
+  `378 passed`, TypeScript tests are `30 passed` (api-client) and `17 passed`
+  (edge-web), and Playwright e2e is `12 passed` including a token-authenticated
+  served dashboard that asserts real reconciled data and purged-media
+  rendering.
 
 ## 9. Open Items / Next Steps
 
@@ -361,11 +363,17 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   rule content binding with a durable registry, bundle-atomic output, inference
   parameter pinning, detection provenance validation, and startup
   cross-validation.
-- Two remaining medium gaps on the M1 layer: token-protected Vite development
-  across origins is not supported (CORS allows GET only and the viewer session
-  cookie is same-origin; use the same-origin `assemblyvision serve` flow), and
-  the CLI `inspect`/`verify` rule-identity registry is process-local while
-  `serve` persists it in SQLite.
+- The two remaining M1 medium gaps are resolved:
+  - **Token-protected Vite development across origins** now works. Loopback
+    dev origins may use `GET`/`POST`/`OPTIONS` with `Authorization` and
+    `Content-Type` headers, and the dashboard keeps the viewer token in memory
+    (never persisted) when it runs cross-origin, attaching it to API and media
+    requests; same-origin deployments keep the HttpOnly-cookie flow.
+  - **CLI rule-identity registry is durable**: `assemblyvision inspect`/`verify`
+    now register the loaded rule identity in the same SQLite `rule_identities`
+    registry that `serve` uses (`<output>/edge.sqlite3`), so a published
+    `(rule_id, rule_version)` stays immutable across CLI invocations and
+    service restarts.
 - Roadmap scope remaining after the M1 layer (section 8.3, PR #8): upload
   queue scheduler, WebSocket channel, camera/barcode adapters, temporal
   aggregation, Docker packaging, and authoritative SQLite persistence/outbox.

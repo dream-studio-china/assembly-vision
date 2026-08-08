@@ -229,6 +229,12 @@ Data mode is explicit (F5, ADR-012):
 VITE_API_MODE=http VITE_API_BASE_URL=http://edge-host:8000 pnpm --filter edge-web dev
 ```
 
+When the edge host is token-protected, sign in on `/login` as usual. The
+viewer session cookie is same-origin, so a cross-origin dev client keeps the
+entered token **in memory only** (never persisted) and attaches it to API and
+media requests; same-origin deployments (the `assemblyvision serve` flow) keep
+the HttpOnly-cookie exchange and never see the token.
+
 The operator workflow actions (current inspection, confirm, next, manual) always
 run on the deterministic mock client because they model a demonstration queue
 rather than a design 15.3 contract endpoint.

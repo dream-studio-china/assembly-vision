@@ -55,20 +55,34 @@ async function parseProblem(body: unknown): Promise<Problem | null> {
 export class HttpApiClient implements ApiClient {
   readonly #baseUrl: string;
   readonly #fetchImpl: typeof fetch;
+  readonly #getToken: () => string | undefined;
 
-  constructor(baseUrl: string, fetchImpl: typeof fetch = globalThis.fetch) {
+  constructor(
+    baseUrl: string,
+    fetchImpl: typeof fetch = globalThis.fetch,
+    getToken: () => string | undefined = () => undefined,
+  ) {
     this.#baseUrl = baseUrl.replace(/\/+$/, "");
     this.#fetchImpl = fetchImpl.bind(globalThis);
+    this.#getToken = getToken;
   }
 
   async #request<T>(path: string, init?: RequestInit, validator?: Validator): Promise<T> {
     const url = `${this.#baseUrl}/api/v1${path}`;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...(init?.headers as Record<string, string> | undefined),
+    };
+    // Cross-origin development cannot hold the same-origin viewer session
+    // cookie, so an in-memory bearer token is attached to every request.
+    const token = this.#getToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
     let response: Response;
     try {
       response = await this.#fetchImpl(url, {
         ...init,
         credentials: "same-origin",
-        headers: { "Content-Type": "application/json", ...init?.headers },
+        headers,
       });
     } catch (error) {
       throw new ApiError(0, "NETWORK_ERROR", `request failed: ${String(error)}`);

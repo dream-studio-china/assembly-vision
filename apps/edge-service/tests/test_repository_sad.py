@@ -337,6 +337,40 @@ def test_upsert_rejects_duplicate_media_paths(repo: EdgeRepository) -> None:
         repo.upsert_inspection(record)
 
 
+def test_upsert_rejects_media_id_reused_across_inspections(repo: EdgeRepository) -> None:
+    from assemblyvision_domain.models import MediaLifecycle, MediaMetadata
+
+    shared_media_id = uuid4()
+    first = _record(datetime(2026, 1, 1, tzinfo=UTC), business=BusinessResult.OK, barcode="SN-A")
+    first.media = [
+        MediaMetadata(
+            media_id=shared_media_id,
+            kind="KEY_FRAME",
+            lifecycle=MediaLifecycle.AVAILABLE,
+            relative_path=f"{first.inspection_id}/key_frame.jpg",
+            mime_type="image/jpeg",
+            size_bytes=1,
+            checksum_sha256="0" * 64,
+        )
+    ]
+    repo.upsert_inspection(first)
+
+    second = _record(datetime(2026, 1, 1, tzinfo=UTC), business=BusinessResult.NG, barcode="SN-B")
+    second.media = [
+        MediaMetadata(
+            media_id=shared_media_id,
+            kind="KEY_FRAME",
+            lifecycle=MediaLifecycle.AVAILABLE,
+            relative_path=f"{second.inspection_id}/key_frame.jpg",
+            mime_type="image/jpeg",
+            size_bytes=1,
+            checksum_sha256="0" * 64,
+        )
+    ]
+    with pytest.raises(RepositoryError, match="reuses media ID"):
+        repo.upsert_inspection(second)
+
+
 def test_verify_revision_rejects_missing_head(tmp_path: Path) -> None:
     from assemblyvision_edge.persistence.migrate import _verify_revision
 

@@ -115,6 +115,42 @@ def test_cors_allows_loopback_dev_origin(token_settings: ServerSettings) -> None
         assert preflight.headers["access-control-allow-origin"] == "http://localhost:5173"
 
 
+def test_cors_allows_token_protected_dev_preflight(token_settings: ServerSettings) -> None:
+    """Cross-origin Vite dev against a token-protected host must pass preflight.
+
+    The viewer-session exchange is a POST carrying only the Authorization
+    header, and every client request also sends ``Content-Type: application/json``,
+    so both headers and the POST method must be allowed for loopback origins
+    (gap 1).
+    """
+    app = create_app(token_settings)
+    with TestClient(app) as client:
+        for method in ("GET", "POST"):
+            preflight = client.options(
+                "/api/v1/auth/session",
+                headers={
+                    "Origin": "http://127.0.0.1:5173",
+                    "Access-Control-Request-Method": method,
+                    "Access-Control-Request-Headers": "Authorization, Content-Type",
+                },
+            )
+            assert preflight.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"
+            assert method in preflight.headers["access-control-allow-methods"]
+            allowed_headers = preflight.headers["access-control-allow-headers"].lower()
+            assert "content-type" in allowed_headers
+            assert "authorization" in allowed_headers
+
+        session = client.post(
+            "/api/v1/auth/session",
+            headers={
+                "Origin": "http://127.0.0.1:5173",
+                "Authorization": "Bearer test-edge-token",
+            },
+        )
+        assert session.status_code == 204
+        assert session.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"
+
+
 def test_cors_disabled_when_loopback_off(tmp_path: Path) -> None:
     settings = ServerSettings(
         output_root=tmp_path / "out",
