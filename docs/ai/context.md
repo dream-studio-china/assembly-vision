@@ -260,8 +260,8 @@ pnpm workspace with the existing Python uv workspace, then merged to `main`:
   filter), traceability per SN with reinspection attempts, statistics (ECharts
   with date/line filters), image management (original/detection/annotated),
   device status, and upload queue. All data flows through an API service layer
-  that selects the mock or HTTP client based on `VITE_API_BASE_URL`; switching
-  to FastAPI requires no UI changes.
+  that selects the mock or HTTP client explicitly via `VITE_API_MODE`; the
+  operator workflow actions are mock-only and hidden in real mode.
 - **Electron desktop** (`apps/edge-desktop`): hardened defaults (context
   isolation, sandbox, no node integration), kiosk mode, and production builds
   are loaded from the built edge-web output.
@@ -341,9 +341,10 @@ dashboard views can display real CLI inspection results:
   (`adapt-xanylabeling.py`) is needed to split the X-AnyLabeling export into
   `dataset_product`/`dataset_components` + `test-expected.json`.
 - Camera/hardware integration, barcode decoding, product-window management,
-  temporal aggregation, SQLite persistence, upload queue, and Docker deployment
-  remain as the roadmap 25.5 one-month scope; they are blocked on hardware and
-  customer-site decisions.
+  temporal aggregation, authoritative SQLite persistence (the current index is
+  a rebuildable read projection), the upload queue scheduler, and Docker
+  deployment remain as the roadmap 25.5 one-month scope; they are blocked on
+  hardware and customer-site decisions.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.

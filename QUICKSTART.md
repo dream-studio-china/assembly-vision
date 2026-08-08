@@ -206,8 +206,10 @@ pnpm --filter edge-web dev        # http://localhost:5173
 | `/inspections` | Full record history (internal records) |
 | `/configuration`, `/logs` | Read-only placeholders |
 
-All operator data flows through the mock service layer by default and switches
-to FastAPI via `VITE_API_BASE_URL` with no UI changes.
+The dashboard selects the mock or HTTP client explicitly via `VITE_API_MODE`
+(see 5.3). The operator workflow (current/confirm/continue/manual) always runs
+on the mock client; in real mode the operator dashboard hides it because it is
+a demonstration queue, not a design 15.3 endpoint.
 
 ### 5.3 Mock vs real backend
 
