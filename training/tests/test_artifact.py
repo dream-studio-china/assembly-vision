@@ -85,7 +85,7 @@ def test_write_manifest_refuses_different_artifact(tmp_path: Path) -> None:
         output_path=manifest_path,
     )
     weights.write_bytes(b"model-v2")
-    with pytest.raises(ConfigError, match="different artifact"):
+    with pytest.raises(ConfigError, match="refusing to overwrite existing manifest"):
         write_manifest(
             task="PRODUCT_DETECTION",
             semantic_version="1.0.0",
@@ -94,3 +94,98 @@ def test_write_manifest_refuses_different_artifact(tmp_path: Path) -> None:
             imgsz=640,
             output_path=manifest_path,
         )
+
+
+def test_write_manifest_refuses_changed_class_order(tmp_path: Path) -> None:
+    weights = tmp_path / "model.pt"
+    weights.write_bytes(b"model")
+    manifest_path = tmp_path / "manifest.json"
+    write_manifest(
+        task="PRODUCT_DETECTION",
+        semantic_version="1.0.0",
+        class_names=["product"],
+        weights_path=weights,
+        imgsz=640,
+        output_path=manifest_path,
+    )
+    with pytest.raises(ConfigError, match="decision-critical content differs"):
+        write_manifest(
+            task="PRODUCT_DETECTION",
+            semantic_version="1.0.0",
+            class_names=["other", "product"],
+            weights_path=weights,
+            imgsz=640,
+            output_path=manifest_path,
+        )
+
+
+def test_write_manifest_refuses_changed_task(tmp_path: Path) -> None:
+    weights = tmp_path / "model.pt"
+    weights.write_bytes(b"model")
+    manifest_path = tmp_path / "manifest.json"
+    write_manifest(
+        task="PRODUCT_DETECTION",
+        semantic_version="1.0.0",
+        class_names=["product"],
+        weights_path=weights,
+        imgsz=640,
+        output_path=manifest_path,
+    )
+    with pytest.raises(ConfigError, match="decision-critical content differs"):
+        write_manifest(
+            task="COMPONENT_DETECTION",
+            semantic_version="1.0.0",
+            class_names=["product"],
+            weights_path=weights,
+            imgsz=640,
+            output_path=manifest_path,
+        )
+
+
+def test_write_manifest_refuses_changed_input_size(tmp_path: Path) -> None:
+    weights = tmp_path / "model.pt"
+    weights.write_bytes(b"model")
+    manifest_path = tmp_path / "manifest.json"
+    write_manifest(
+        task="PRODUCT_DETECTION",
+        semantic_version="1.0.0",
+        class_names=["product"],
+        weights_path=weights,
+        imgsz=640,
+        output_path=manifest_path,
+    )
+    with pytest.raises(ConfigError, match="decision-critical content differs"):
+        write_manifest(
+            task="PRODUCT_DETECTION",
+            semantic_version="1.0.0",
+            class_names=["product"],
+            weights_path=weights,
+            imgsz=1280,
+            output_path=manifest_path,
+        )
+
+
+def test_write_manifest_identical_republication_is_idempotent(tmp_path: Path) -> None:
+    weights = tmp_path / "model.pt"
+    weights.write_bytes(b"model")
+    manifest_path = tmp_path / "manifest.json"
+    first = write_manifest(
+        task="PRODUCT_DETECTION",
+        semantic_version="1.0.0",
+        class_names=["product"],
+        weights_path=weights,
+        imgsz=640,
+        output_path=manifest_path,
+    )
+    before = manifest_path.read_text(encoding="utf-8")
+    second = write_manifest(
+        task="PRODUCT_DETECTION",
+        semantic_version="1.0.0",
+        class_names=["product"],
+        weights_path=weights,
+        imgsz=640,
+        output_path=manifest_path,
+    )
+    # The existing manifest is returned without being rewritten.
+    assert second.model_version_id == first.model_version_id
+    assert manifest_path.read_text(encoding="utf-8") == before

@@ -103,12 +103,70 @@ def test_adapter_skips_product_images_without_product_box(tmp_path: Path) -> Non
     src = _make_export(tmp_path, ["train", "val"])
     # chip annotation only, no product box
     _labels(src, "train", "img_train_0").write_text("1 0.5 0.5 0.2 0.2\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="no 'product' product box"):
+        adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")
+
+
+def test_adapter_rejects_negative_class_id(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val"])
+    _labels(src, "train", "img_train_0").write_text("-1 0.5 0.5 0.2 0.2\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="class id -1 out of range"):
+        adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")
+
+
+def test_adapter_rejects_wrong_field_count(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val"])
+    _labels(src, "train", "img_train_0").write_text("0 0.5 0.5 0.2\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="expected 5 fields"):
+        adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")
+
+
+def test_adapter_rejects_non_finite_coordinates(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val"])
+    _labels(src, "train", "img_train_0").write_text("0 0.5 0.5 nan 0.2\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="coordinates must be finite"):
+        adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")
+
+
+def test_adapter_rejects_box_outside_image(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val"])
+    _labels(src, "train", "img_train_0").write_text("0 0.02 0.5 0.1 0.3\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="outside the image bounds"):
+        adapt(src, tmp_path / "out", required=["chip", "capacitor"], product_class="product")
+
+
+def test_adapter_keeps_background_negatives_in_product_dataset(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val"])
+    _labels(src, "train", "img_train_0").write_text("", encoding="utf-8")
     out = tmp_path / "out"
     adapt(src, out, required=["chip", "capacitor"], product_class="product")
 
-    assert not (out / "dataset_product" / "images" / "train" / "img_train_0.png").exists()
-    # the image still feeds the component dataset
-    assert (out / "dataset_components" / "images" / "train" / "img_train_0.png").is_file()
+    # An explicit empty-label image is a background negative, kept in the
+    # product dataset with an empty product label file.
+    assert (out / "dataset_product" / "images" / "train" / "img_train_0.png").is_file()
+    assert (out / "dataset_product" / "labels" / "train" / "img_train_0.txt").read_text(
+        encoding="utf-8"
+    ) == ""
+
+
+def test_adapter_rejects_populated_output(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val"])
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "stale.txt").write_text("old", encoding="utf-8")
+    with pytest.raises(ValueError, match="not empty"):
+        adapt(src, out, required=["chip", "capacitor"], product_class="product")
+
+
+def test_adapter_writes_file_manifest(tmp_path: Path) -> None:
+    src = _make_export(tmp_path, ["train", "val"])
+    out = tmp_path / "out"
+    adapt(src, out, required=["chip", "capacitor"], product_class="product")
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["product_class"] == "product"
+    assert "train/img_train_0.png" in manifest["files"]["product"]
+    assert "train/img_train_0.png" in manifest["files"]["components"]
+    assert manifest["product_background_negatives"]["train"] >= 1
 
 
 def test_adapter_detects_held_out_overlap_with_validation(tmp_path: Path) -> None:

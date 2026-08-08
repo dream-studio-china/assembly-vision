@@ -297,3 +297,45 @@ def test_run_verify_rejects_duplicate_basenames(tmp_path: Path) -> None:
     assert len(report.rows) == 1
     assert report.failed == 1
     assert report.has_gaps is True
+
+
+def test_run_verify_uses_source_relative_identity(tmp_path: Path) -> None:
+    from assemblyvision_vision.sources.folder_source import FolderSource
+
+    line_a = tmp_path / "line-a"
+    line_b = tmp_path / "line-b"
+    line_a.mkdir()
+    line_b.mkdir()
+    (line_a / "sample.png").touch()
+    (line_b / "sample.png").touch()
+    # Same-named images from different folders are distinct samples: they get
+    # source-relative identities instead of sharing one basename label.
+    work = [
+        (FolderSource(line_a), line_a / "sample.png"),
+        (FolderSource(line_b), line_b / "sample.png"),
+    ]
+    report = run_verify(
+        _FakePipeline(failures=set()),  # type: ignore[arg-type]
+        work,
+        expected={},
+        writer=object(),  # type: ignore[arg-type]
+        filename_fallback=False,
+    )
+    assert report.rows == []
+    assert report.unlabeled == 2
+    assert report.failed == 0
+    assert report.has_gaps is True
+
+
+def test_work_identity_falls_back_to_basename_outside_source_root(tmp_path: Path) -> None:
+    from assemblyvision_edge.verify import _work_identity
+    from assemblyvision_vision.sources.folder_source import FolderSource
+
+    line_a = tmp_path / "line-a"
+    line_a.mkdir()
+    outside = tmp_path / "elsewhere" / "sample.png"
+    outside.parent.mkdir()
+    outside.touch()
+
+    assert _work_identity(FolderSource(line_a), outside) == "sample.png"
+    assert _work_identity(None, outside) == "sample.png"

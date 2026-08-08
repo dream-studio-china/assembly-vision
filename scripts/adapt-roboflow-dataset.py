@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -44,10 +45,47 @@ def _load_names(data_yaml: Path) -> list[str]:
     return [str(n) for n in raw["names"]]
 
 
-def _box_coords(line: str, img_w: int, img_h: int) -> tuple[float, float, float, float]:
-    parts = line.split()
-    cx, cy, w, h = (float(v) for v in parts[1:5])
-    return (cx - w / 2) * img_w, (cy - h / 2) * img_h, (cx + w / 2) * img_w, (cy + h / 2) * img_h
+def _parse_label_file(
+    path: Path, names: list[str], img_w: int, img_h: int
+) -> list[tuple[str, tuple[float, float, float, float]]]:
+    """Parse one YOLO label file strictly (PR-003 P1).
+
+    Every line must have exactly five finite fields, a class id in range, and a
+    positive-area box inside the image. Any invalid source annotation rejects
+    the whole adaptation instead of being silently dropped (a dropped
+    annotation could otherwise become fabricated missing-component ground
+    truth).
+    """
+    parsed: list[tuple[str, tuple[float, float, float, float]]] = []
+    for lineno, line in enumerate(path.read_text(encoding="utf-8").strip().splitlines(), 1):
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split()
+        if len(parts) != 5:
+            raise ValueError(f"{path.name} line {lineno}: expected 5 fields, got {len(parts)}")
+        try:
+            cls_id = int(parts[0])
+            cx, cy, w, h = (float(v) for v in parts[1:5])
+        except ValueError as exc:
+            raise ValueError(f"{path.name} line {lineno}: invalid numeric value: {exc}") from exc
+        if not all(math.isfinite(v) for v in (cx, cy, w, h)):
+            raise ValueError(f"{path.name} line {lineno}: coordinates must be finite")
+        if not (0 <= cls_id < len(names)):
+            raise ValueError(
+                f"{path.name} line {lineno}: class id {cls_id} out of range [0, {len(names) - 1}]"
+            )
+        if w <= 0.0 or h <= 0.0:
+            raise ValueError(f"{path.name} line {lineno}: width and height must be positive")
+        x1 = (cx - w / 2) * img_w
+        y1 = (cy - h / 2) * img_h
+        x2 = (cx + w / 2) * img_w
+        y2 = (cy + h / 2) * img_h
+        eps = 1e-4
+        if not (-eps <= x1 <= x2 <= img_w + eps and -eps <= y1 <= y2 <= img_h + eps):
+            raise ValueError(f"{path.name} line {lineno}: box extends outside the image bounds")
+        parsed.append((names[cls_id], (x1, y1, x2, y2)))
+    return parsed
 
 
 def _norm(
@@ -78,6 +116,7 @@ def _check_disjoint(
 def adapt(src: Path, out: Path, required: list[str] | None, product_class: str = "product") -> None:
     if yaml is None:
         raise RuntimeError("PyYAML is required (uv sync)")
+    _reject_non_empty(out)
     names = _load_names(src / "data.yaml")
     if product_class not in names:
         raise ValueError(
@@ -106,8 +145,9 @@ def adapt(src: Path, out: Path, required: list[str] | None, product_class: str =
     test_img_dir = out / "test"
     test_img_dir.mkdir(parents=True)
     expected: dict[str, dict[str, Any]] = {}
-    product_skipped: dict[str, int] = {"train": 0, "val": 0}
     checksums: dict[str, dict[str, set[str]]] = {}
+    files: dict[str, list[str]] = {"product": [], "components": [], "test": []}
+    background_negatives: dict[str, int] = {"train": 0, "val": 0}
     from PIL import Image
 
     for split in splits:
@@ -121,32 +161,17 @@ def adapt(src: Path, out: Path, required: list[str] | None, product_class: str =
             with Image.open(img_path) as handle:
                 img_w, img_h = handle.size
 
+            parsed = _parse_label_file(lbl_path, names, img_w, img_h) if lbl_path.is_file() else []
             coords: dict[str, list[tuple[float, float, float, float]]] = {n: [] for n in keep}
-            if lbl_path.is_file():
-                for line in lbl_path.read_text(encoding="utf-8").strip().splitlines():
-                    if not line.strip():
-                        continue
-                    cls_id = int(line.split()[0])
-                    if cls_id >= len(names):
-                        continue
-                    name = names[cls_id]
-                    if name in keep:
-                        coords[name].append(_box_coords(line, img_w, img_h))
-
-            product_coords = []
-            if lbl_path.is_file():
-                for line in lbl_path.read_text(encoding="utf-8").strip().splitlines():
-                    if not line.strip():
-                        continue
-                    cls_id = int(line.split()[0])
-                    if cls_id >= len(names):
-                        continue
-                    if names[cls_id] == product_class:
-                        product_coords.append(_box_coords(line, img_w, img_h))
+            for name, box in parsed:
+                if name in keep:
+                    coords[name].append(box)
+            product_coords = [box for name, box in parsed if name == product_class]
 
             if is_test:
                 data = img_path.read_bytes()
                 (test_img_dir / img_path.name).write_bytes(data)
+                files["test"].append(img_path.name)
                 present = {n for n in comp_order if coords.get(n)}
                 expected[img_path.name] = {
                     "ok": present == set(comp_order),
@@ -168,18 +193,33 @@ def adapt(src: Path, out: Path, required: list[str] | None, product_class: str =
                 "\n".join(lines) + ("\n" if lines else ""), encoding="utf-8"
             )
             (out / "dataset_components" / "images" / split / img_path.name).write_bytes(data)
+            files["components"].append(f"{split}/{img_path.name}")
             checksums.setdefault("components", {}).setdefault(split, set()).add(_sha256_bytes(data))
 
-            # Product dataset: only images with an independent full-product box.
-            if not product_coords:
-                product_skipped[split] += 1
-                continue
-            best = _largest_product_box(product_coords)
-            n = _norm(best, img_w, img_h)
-            (out / "dataset_product" / "labels" / split / f"{img_path.stem}.txt").write_text(
-                f"0 {n[0]:.6f} {n[1]:.6f} {n[2]:.6f} {n[3]:.6f}\n", encoding="utf-8"
-            )
+            # Product dataset: keep images with an independent full-product box,
+            # plus explicit background negatives (empty annotations) with an
+            # empty product label file. An image that has component labels but
+            # no independent product box is a data error: conflating it with a
+            # background would teach the product detector the wrong semantics
+            # (PR-003 P1).
+            if product_coords:
+                best = _largest_product_box(product_coords)
+                n = _norm(best, img_w, img_h)
+                (out / "dataset_product" / "labels" / split / f"{img_path.stem}.txt").write_text(
+                    f"0 {n[0]:.6f} {n[1]:.6f} {n[2]:.6f} {n[3]:.6f}\n", encoding="utf-8"
+                )
+            elif parsed:
+                raise ValueError(
+                    f"{img_path.name} has component annotations but no {product_class!r} "
+                    "product box; every product image must be annotated independently"
+                )
+            else:
+                (out / "dataset_product" / "labels" / split / f"{img_path.stem}.txt").write_text(
+                    "", encoding="utf-8"
+                )
+                background_negatives[split] += 1
             (out / "dataset_product" / "images" / split / img_path.name).write_bytes(data)
+            files["product"].append(f"{split}/{img_path.name}")
             checksums.setdefault("product", {}).setdefault(split, set()).add(_sha256_bytes(data))
 
     for dataset in ("components", "product"):
@@ -216,6 +256,22 @@ def adapt(src: Path, out: Path, required: list[str] | None, product_class: str =
     )
     if expected:
         (out / "test-expected.json").write_text(json.dumps(expected, indent=2), encoding="utf-8")
+    (out / "manifest.json").write_text(
+        json.dumps(
+            {
+                "source": str(src),
+                "product_class": product_class,
+                "required_components": comp_order,
+                "dropped_classes": sorted(drop),
+                "files": files,
+                "product_background_negatives": background_negatives,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     print(f"adapted -> {out}")
     print(
@@ -225,11 +281,19 @@ def adapt(src: Path, out: Path, required: list[str] | None, product_class: str =
         f"  components: train={len(list((out / 'dataset_components/images/train').glob('*')))} val={len(list((out / 'dataset_components/images/val').glob('*')))}"
     )
     print(
-        f"  product boxes skipped (no product annotation): train={product_skipped['train']} val={product_skipped['val']}"
+        f"  product background negatives kept: train={background_negatives['train']} val={background_negatives['val']}"
     )
     print(f"  dropped generic missing classes: {sorted(drop)}")
     print(f"  product class: {product_class!r}; component order: {comp_order}")
     print(f"  held-out test images: {len(expected)} (expected labels in test-expected.json)")
+
+
+def _reject_non_empty(directory: Path) -> None:
+    """Refuse to write into a populated destination (PR-003 P2)."""
+    if directory.exists() and any(directory.iterdir()):
+        raise ValueError(
+            f"output directory {directory} is not empty; refusing to mix a new dataset with stale files"
+        )
 
 
 def _largest_product_box(

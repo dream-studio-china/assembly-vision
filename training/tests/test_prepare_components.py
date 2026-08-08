@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -63,25 +64,64 @@ class _Tensor:
     def tolist(self) -> list[float]:
         return list(self._vals)
 
+    def item(self) -> float:
+        return self._vals[0]
+
 
 class _Boxes:
-    def __init__(self, box: list[float]) -> None:
-        self.xyxy = [_Tensor(box)]
+    def __init__(self, boxes: list[list[float]], cls: list[int], conf: list[float]) -> None:
+        self.xyxy = [_Tensor(b) for b in boxes]
+        self.cls = [_Tensor([float(c)]) for c in cls]
+        self.conf = [_Tensor([c]) for c in conf]
 
     def __len__(self) -> int:
-        return 1
+        return len(self.xyxy)
 
 
 class _Result:
-    def __init__(self, box: list[float]) -> None:
-        self.boxes = _Boxes(box)
+    def __init__(
+        self,
+        boxes: list[list[float]],
+        cls: list[int] | None = None,
+        conf: list[float] | None = None,
+    ) -> None:
+        self.boxes = _Boxes(boxes, cls or [0] * len(boxes), conf or [0.9] * len(boxes))
 
 
 class _FakeModel:
+    names = {0: "product"}
+
+    def __init__(self, result: _Result | None = None) -> None:
+        self._result = result or _Result([[40.0, 30.0, 160.0, 120.0]])
+
     def __call__(
-        self, frame: Image.Image, verbose: bool = False, conf: float = 0.1
+        self,
+        frame: Image.Image,
+        *,
+        imgsz: tuple[int, int] | None = None,
+        conf: float = 0.5,
+        iou: float = 0.5,
+        device: str | None = None,
+        verbose: bool = False,
     ) -> list[_Result]:
-        return [_Result([40.0, 30.0, 160.0, 120.0])]
+        return [self._result]
+
+
+def _make_product_manifest(tmp_path: Path, weights_bytes: bytes) -> Path:
+    from assemblyvision_training.artifact import write_manifest
+
+    weights = tmp_path / "product.pt"
+    weights.write_bytes(weights_bytes)
+    manifest_path = tmp_path / "product-manifest.json"
+    write_manifest(
+        task="PRODUCT_DETECTION",
+        semantic_version="1.0.0",
+        class_names=["product"],
+        weights_path=weights,
+        imgsz=640,
+        output_path=manifest_path,
+    )
+    return manifest_path
 
 
 def _make_source_dataset(tmp_path: Path) -> Path:
@@ -104,14 +144,14 @@ def _make_source_dataset(tmp_path: Path) -> Path:
     return d
 
 
-def test_prepare_keeps_negative_roi_crops(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def _prepare(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, model: _FakeModel) -> Path:
     import ultralytics
 
-    monkeypatch.setattr(ultralytics, "YOLO", lambda *args, **kwargs: _FakeModel())
+    monkeypatch.setattr(ultralytics, "YOLO", lambda *args, **kwargs: model)
     out = tmp_path / "out"
     prepare_component_dataset(
         dataset_dir=_make_source_dataset(tmp_path),
-        product_weights=tmp_path / "product.pt",
+        product_manifest=_make_product_manifest(tmp_path, b"product-weights"),
         roi_config=ROIConfig(
             margin_x_ratio=0.05,
             margin_y_ratio=0.05,
@@ -120,5 +160,63 @@ def test_prepare_keeps_negative_roi_crops(tmp_path: Path, monkeypatch: pytest.Mo
         ),
         output_dir=out,
     )
+    return out
+
+
+def test_prepare_keeps_negative_roi_crops(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    out = _prepare(tmp_path, monkeypatch, _FakeModel())
     assert (out / "images" / "train" / "img000.png").is_file()
     assert (out / "labels" / "train" / "img000.txt").read_text(encoding="utf-8") == ""
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["files"]["train"] == ["img000.png"]
+    assert manifest["exclusions"] == {}
+
+
+def test_prepare_rejects_populated_output_dir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import ultralytics
+    from assemblyvision_domain.errors import ConfigError
+
+    monkeypatch.setattr(ultralytics, "YOLO", lambda *args, **kwargs: _FakeModel())
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "stale.txt").write_text("old", encoding="utf-8")
+    with pytest.raises(ConfigError, match="not empty"):
+        prepare_component_dataset(
+            dataset_dir=_make_source_dataset(tmp_path),
+            product_manifest=_make_product_manifest(tmp_path, b"product-weights"),
+            roi_config=ROIConfig(
+                margin_x_ratio=0.05,
+                margin_y_ratio=0.05,
+                min_area_pixels=1000,
+                min_expanded_area_retained=0.80,
+            ),
+            output_dir=out,
+        )
+
+
+def test_prepare_records_multiple_products_as_exclusion(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    model = _FakeModel(
+        _Result(
+            [[40.0, 30.0, 160.0, 120.0], [10.0, 10.0, 40.0, 40.0]],
+            cls=[0, 0],
+            conf=[0.9, 0.8],
+        )
+    )
+    out = _prepare(tmp_path, monkeypatch, model)
+    assert not (out / "images" / "train" / "img000.png").exists()
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["exclusions"]["img000.png"]["reason"] == "NO_PRODUCT_OR_AMBIGUOUS"
+
+
+def test_prepare_records_no_product_as_exclusion(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    model = _FakeModel(_Result([[40.0, 30.0, 160.0, 120.0]], cls=[1]))
+    out = _prepare(tmp_path, monkeypatch, model)
+    assert not (out / "images" / "train" / "img000.png").exists()
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["exclusions"]["img000.png"]["reason"] == "NO_PRODUCT_OR_AMBIGUOUS"

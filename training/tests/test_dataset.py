@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from assemblyvision_domain.errors import ConfigError
-from assemblyvision_training.dataset import validate_dataset
+from assemblyvision_training.dataset import record_missing_labels_optin, validate_dataset
 
 
 def test_valid_dataset_passes(yolo_dataset_dir: Path) -> None:
@@ -42,15 +42,38 @@ def test_rejects_no_train_images(tmp_path: Path) -> None:
         validate_dataset(d)
 
 
-def test_warns_on_unpaired_images(yolo_dataset_dir: Path) -> None:
+def test_rejects_unpaired_images_by_default(yolo_dataset_dir: Path) -> None:
     from PIL import Image
 
     (yolo_dataset_dir / "images" / "train" / "unlabeled.png").touch()
     Image.new("RGB", (64, 64), (100, 100, 100)).save(
         yolo_dataset_dir / "images" / "train" / "unlabeled.png"
     )
-    info = validate_dataset(yolo_dataset_dir)
-    assert any("no label" in w for w in info.warnings)
+    with pytest.raises(ConfigError, match="no label file"):
+        validate_dataset(yolo_dataset_dir)
+
+
+def test_unpaired_images_require_explicit_opt_in(yolo_dataset_dir: Path) -> None:
+    from PIL import Image
+
+    Image.new("RGB", (64, 64), (100, 100, 100)).save(
+        yolo_dataset_dir / "images" / "train" / "unlabeled.png"
+    )
+    info = validate_dataset(yolo_dataset_dir, allow_missing_labels=True)
+    assert info.missing_labels_allowed is True
+    assert any("no label file" in w for w in info.warnings)
+
+
+def test_record_missing_labels_optin_is_idempotent(tmp_path: Path) -> None:
+    data_yaml = tmp_path / "data.yaml"
+    data_yaml.write_text("nc: 1\nnames: ['product']\n", encoding="utf-8")
+    record_missing_labels_optin(data_yaml)
+    record_missing_labels_optin(data_yaml)
+    import yaml
+
+    raw = yaml.safe_load(data_yaml.read_text(encoding="utf-8"))
+    assert raw["allow_missing_labels"] is True
+    assert raw["names"] == ["product"]
 
 
 def test_rejects_out_of_range_class(yolo_dataset_dir: Path) -> None:

@@ -97,7 +97,7 @@ uv run av-train product <dataset_product> --semver 0.1.0 --epochs 120 --no-augme
   --out-manifest models/manifests/product-manifest.json
 
 uv run av-train prepare-components <dataset_components> \
-  --product-weights models/weights/product-yolo-0.1.0.pt \
+  --product-manifest models/manifests/product-manifest.json \
   --min-area 10000 --min-retention 0.80 --out-dir <roi-dataset>
 
 uv run av-train component <roi-dataset> --semver 0.1.0 --epochs 150 --no-augment \

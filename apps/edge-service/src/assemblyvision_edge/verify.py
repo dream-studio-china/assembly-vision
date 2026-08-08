@@ -177,6 +177,22 @@ def _is_evaluable(record: InspectionRecord) -> bool:
     return all(evidence.state != "UNCERTAIN" for evidence in record.evidence)
 
 
+def _work_identity(source: FolderSource | None, path: Path) -> str:
+    """Stable sample identity for verification (PR-003 P1).
+
+    Uses the path relative to the input source root so same-named images from
+    different folders are distinct samples instead of sharing one label.
+    Single files supplied directly (no source folder) fall back to the
+    basename.
+    """
+    if source is None:
+        return path.name
+    try:
+        return str(path.relative_to(source.folder))
+    except ValueError:
+        return path.name
+
+
 def run_verify(
     pipeline: InspectionPipeline,
     work: list[tuple[FolderSource, Path]],
@@ -189,18 +205,18 @@ def run_verify(
     failed = 0
     seen: set[str] = set()
     for source, path in work:
-        name = path.name
-        if name in seen:
+        identity = _work_identity(source, path)
+        if identity in seen:
             failed += 1
-            log.error("verify rejected duplicate work identity %s", name)
+            log.error("verify rejected duplicate work identity %s", identity)
             continue
-        exp = expected.get(name)
+        exp = expected.get(identity)
         if exp is None and filename_fallback:
-            exp = filename_expected(name)
+            exp = filename_expected(identity)
         if exp is None:
             unlabeled += 1
             continue
-        seen.add(name)
+        seen.add(identity)
         try:
             record = pipeline.inspect_image(source, path, writer)
         except AssemblyVisionError as exc:
@@ -212,7 +228,7 @@ def run_verify(
             log.error("verify cannot score incomplete inspection evidence for %s", path)
             continue
         predicted_ok = record.decision.business_result is BusinessResult.OK
-        rows.append(VerifyRow(str(path), exp.ok, predicted_ok, record))
+        rows.append(VerifyRow(identity, exp.ok, predicted_ok, record))
     unmatched_expected = len(set(expected) - seen)
     return VerificationReport(
         rows=rows,
