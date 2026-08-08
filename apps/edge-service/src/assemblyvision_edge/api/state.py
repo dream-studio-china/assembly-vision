@@ -19,8 +19,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4, uuid5
 
-from assemblyvision_domain.errors import ConfigError
-from assemblyvision_vision.sources.frame_source import FrameStreamError
+from assemblyvision_domain.errors import AssemblyVisionError, ConfigError
 
 from assemblyvision_edge.api.settings import ServerSettings
 from assemblyvision_edge.camera_manager import CameraSourceManager
@@ -150,6 +149,7 @@ class EdgeRuntime:
         registry = repository.register_rule_identity if repository is not None else None
         instances: dict[str, InstanceRuntime] = {}
         sources: dict[str, Any] = {}
+        unavailable: dict[str, str] = {}
         for instance in edge_config.instances:
             pipeline: Any = None
             pipeline_error: str | None = None
@@ -169,22 +169,34 @@ class EdgeRuntime:
                 sources[instance.instance_id] = build_frame_source(
                     instance.camera.as_frame_source_config()
                 )
-            except FrameStreamError as exc:
+            except AssemblyVisionError as exc:
                 log.warning("instance %s camera source failed: %s", instance.instance_id, exc)
+                unavailable[instance.instance_id] = str(exc)
         self.instances = instances
         self.pipeline_error = None
         self.pipeline_error_code = None
         self.camera_manager = CameraSourceManager(sources)
+        for instance_id, message in unavailable.items():
+            self.camera_manager.register_unavailable(instance_id, "CAMERA_UNAVAILABLE", message)
+        enabled = [
+            instance_id
+            for instance_id, runtime in instances.items()
+            if runtime.inspection_enabled
+            and runtime.pipeline is not None
+            and instance_id in sources
+        ]
+        for instance_id in enabled:
+            self.camera_manager.subscribe_inspection(instance_id)
         self.camera_manager.start()
-        for instance_id, runtime in instances.items():
-            if runtime.inspection_enabled and runtime.pipeline is not None:
-                runtime.thread = threading.Thread(
-                    target=self._inspection_loop,
-                    args=(instance_id,),
-                    name=f"inspect-{instance_id}",
-                    daemon=True,
-                )
-                runtime.thread.start()
+        for instance_id in enabled:
+            runtime = instances[instance_id]
+            runtime.thread = threading.Thread(
+                target=self._inspection_loop,
+                args=(instance_id,),
+                name=f"inspect-{instance_id}",
+                daemon=True,
+            )
+            runtime.thread.start()
 
     def shutdown(self) -> None:
         """Stop camera capture and inspection threads (ADR-013 lifecycle)."""
@@ -193,25 +205,38 @@ class EdgeRuntime:
             self.camera_manager.stop()
 
     def _inspection_loop(self, instance_id: str) -> None:
-        """Run the single-frame inspection loop for one enabled instance."""
+        """Consume the per-instance inspection queue (one inspection per frame).
+
+        Each queued frame is inspected exactly once; frames captured while
+        paused are drained and never processed as evidence (PR-014 F1/F2).
+        """
         from assemblyvision_edge.output.writer import OutputWriter
 
         runtime = self.instances.get(instance_id)
         if runtime is None or runtime.pipeline is None or self.camera_manager is None:
             return
         writer = OutputWriter(self._settings.output_root)
-        last_sequence = 0
+        was_paused = self.paused
         while not self._stop.is_set():
-            frame = self.camera_manager.latest_frame(instance_id)
-            if frame is not None and frame.sequence > last_sequence:
-                last_sequence = frame.sequence
-                try:
-                    record = runtime.pipeline.inspect_frame(frame, writer)
-                    runtime.last_result = record.decision.business_result
-                except Exception:  # noqa: BLE001 - loop must survive frame errors
-                    log.exception("inspection failed for instance %s", instance_id)
-            else:
-                time.sleep(0.01)
+            if self.paused:
+                if not was_paused:
+                    log.warning("inspection paused for instance %s", instance_id)
+                self.camera_manager.drain_inspection(instance_id)
+                was_paused = True
+                time.sleep(0.05)
+                continue
+            if was_paused:
+                # Resuming: drop stale frames captured during the pause window.
+                self.camera_manager.drain_inspection(instance_id)
+                was_paused = False
+            frame = self.camera_manager.next_frame(instance_id, timeout=0.1)
+            if frame is None:
+                continue
+            try:
+                record = runtime.pipeline.inspect_frame(frame, writer)
+                runtime.last_result = record.decision.business_result
+            except Exception:  # noqa: BLE001 - loop must survive frame errors
+                log.exception("inspection failed for instance %s", instance_id)
 
     def pause(self, reason: str, by: str = "operator") -> None:
         self.paused = True
@@ -279,12 +304,24 @@ class EdgeRuntime:
             for instance_id, runtime in self.instances.items()
             if runtime.inspection_enabled and runtime.pipeline is not None
         ]
-        inspection_ready = bool(ready_pipelines) and bool(connected)
-        operational = "READY" if inspection_ready else "DEGRADED"
+        if self.paused:
+            operational = "PAUSED"
+            inspection_ready = False
+        else:
+            inspection_ready = bool(ready_pipelines) and bool(connected)
+            operational = "READY" if inspection_ready else "DEGRADED"
         disk_free = self._disk_free_bytes()
         alerts: list[str] = []
         if not inspection_ready:
             alerts.append("NOT_READY")
+        degraded = any(
+            manager is not None
+            and (state := manager.state(instance_id)) is not None
+            and state.degraded
+            for instance_id in self.instances
+        )
+        if degraded:
+            alerts.append("FRAME_OVERFLOW")
         if disk_free < _LOW_DISK_WARNING_BYTES:
             alerts.append("DISK_LOW")
         first_ready = next((iid for iid in ready_pipelines if iid in connected), None)
@@ -322,12 +359,29 @@ class EdgeRuntime:
         return str(manifest.model_version_id)
 
     def inspection_state(self, last_result: str | None) -> dict[str, Any]:
+        if self.instances:
+            instance_last = next(
+                (
+                    r.last_result
+                    for r in reversed(self.instances.values())
+                    if r.last_result is not None
+                ),
+                None,
+            )
+            effective_last = instance_last if instance_last is not None else last_result
+        else:
+            effective_last = last_result
+        # In multi-instance mode the single pipeline is always None; the runtime
+        # is faulted only when no configured instance has a usable pipeline.
+        faulted = self.pipeline is None and not any(
+            r.pipeline is not None for r in self.instances.values()
+        )
         return {
             "window_active": False,
             "paused": self.paused,
-            "faulted": self.pipeline is None,
+            "faulted": faulted,
             "current_inspection_id": None,
-            "last_result": last_result,
+            "last_result": effective_last,
             "paused_reason": self.paused_reason,
             "paused_by": self.paused_by,
             "paused_at": self.paused_at,
