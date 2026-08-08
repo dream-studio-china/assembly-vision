@@ -1,6 +1,6 @@
 # AssemblyVision - Full Project Context
 
-> Context snapshot. Last updated: 2026-08-07
+> Context snapshot. Last updated: 2026-08-08
 >
 > Read this file first in a new session to reconstruct the project state quickly.
 
@@ -25,17 +25,20 @@ and verifies that all required assembly components are present.
   inspection (`assemblyvision inspect`) and held-out verification. The frontend
   pnpm workspace includes the Vue 3 + TypeScript operator dashboard
   (`apps/edge-web`), an Electron kiosk shell (`apps/edge-desktop`), a typed
-  `api-client` contract layer, and shared UI primitives. A first backend layer
-  (FastAPI + SQLite local index + `assemblyvision serve`) is implemented on
-  `dev` (see section 8.3): read-only dashboard views can now display real CLI
-  results through the HTTP client, while the operator workflow actions remain
-  on the mock client.
+  `api-client` contract layer, and shared UI primitives. The M1 backend layer
+  (FastAPI + SQLite local index + `assemblyvision serve`) is complete on `dev`
+  (see section 8.3) with all PR-008 review findings resolved; PR #8
+  (dev -> main) is open. Read-only dashboard views display real CLI results
+  through the HTTP client, while the operator workflow actions remain on the
+  mock client.
 
 ## 2. Repository State
 
 - Remote: `https://github.com/dream-studio-china/assembly-vision`. The static
-  MVP and edge dashboard are merged to `main` (PR #3, #6). `dev` tracks the
-  next milestone (FastAPI backend, real-data baseline, PR-003 P1/P2 items).
+  MVP and edge dashboard are merged to `main` (PR #3, #6). `dev` carries the
+  completed M1 backend milestone as open PR #8 with all review findings
+  resolved; the next milestone is the real-data baseline and the remaining
+  PR-003 items.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -175,7 +178,7 @@ assembly-vision/
 
 ## 8. Latest Session Decisions
 
-- Generated the full architecture document set under `docs/design/` (28 docs + 11 ADRs +
+- Generated the full architecture document set under `docs/design/` (28 docs + 12 ADRs +
   appendices) from [docs/source-brief.md](../source-brief.md) (formerly `docs/doc-task.md`).
 - Created `docs/research/` (3 reports) via internet research.
 - Built the bilingual MkDocs with automatic translation, adapted from the `crud-skeleton` project.
@@ -248,8 +251,9 @@ pnpm workspace with the existing Python uv workspace, then merged to `main`:
 - **Contract layer** (`@assemblyvision/api-client`): hand-synchronized TS types
   from the domain Pydantic models, an `ApiClient` interface, `MockApiClient`
   (deterministic in-memory data with an operator workflow state machine and mock
-  SVG images), `HttpApiClient` (targeting future `/api/v1` endpoints), and a
-  reconnecting WebSocket service.
+  SVG images), `HttpApiClient` (talks to the real `/api/v1` endpoints with
+  runtime response validation at the fetch boundary), and a reconnecting
+  WebSocket service.
 - **Shared UI** (`@assemblyvision/ui`): `DetectionViewer` (contain-scaled
   preview with source-coordinate overlays, frame-ID reconciliation, stale-frame
   marker), color-independent `StatusBadge`, and display formatters.
@@ -265,58 +269,79 @@ pnpm workspace with the existing Python uv workspace, then merged to `main`:
 - **Electron desktop** (`apps/edge-desktop`): hardened defaults (context
   isolation, sandbox, no node integration), kiosk mode, and production builds
   are loaded from the built edge-web output.
-- **Tests and CI**: 39 Vitest unit tests across api-client/ui/edge-web/desktop,
-  11 Playwright e2e, a `web` CI job (build/lint/test/e2e), and `make check`
-  now runs both Python and TypeScript gates.
+- **Tests and CI**: 56 Vitest unit tests across api-client/ui/edge-web/desktop
+  (28 + 13 + 12 + 3), 12 Playwright e2e, a `web` CI job
+  (build/lint/test/e2e), and `make check` now runs both Python and TypeScript
+  gates.
 - **Documentation**: QUICKSTART restructured per-app with extensible numbered
   sections; README updated with new features, project structure, and roadmap.
 
-## 8.3 Edge Backend Layer (M1)
+## 8.3 Edge Backend Layer (M1, PR #8)
 
-A first FastAPI + SQLite backend layer is implemented on `dev` so read-only
-dashboard views can display real CLI inspection results:
+The FastAPI + SQLite backend layer on `dev` gives read-only dashboard views real
+CLI inspection results. PR #8 (dev -> main) carries this milestone; the
+blocking findings (F1-F14) and M1 conditional items (C1-C4) in
+`docs/reviews/PR-008-review.md` are resolved and validated on `dev`.
 
 - **`assemblyvision serve`**: starts the local API on `/api/v1` (design 15.3),
   serves the built dashboard as static assets with SPA fallback, opens a SQLite
   index, and reconciles existing CLI `inspection.json` output idempotently on
   startup. Configuration/rule/manifest loading reuses the same verified
   pipeline build as `inspect`.
-- **Persistence**: SQLAlchemy Core schema + Alembic initial migration
+- **Persistence**: SQLAlchemy Core schema + Alembic migrations 0001/0002
   (`apps/edge-service/migrations/`); tables for inspections, component
-  evidence, media, upload tasks, device events, and active packages with
-  contract-05 indexes. Denormalized filter columns (barcode, product, result)
-  drive history queries. The SQLite index is a **rebuildable read projection** of
-  the CLI `inspection.json` bundles (C1, ADR-012): it can be deleted and rebuilt
-  from the same bundles without changing them, and it is not the authoritative
-  completion/outbox store. The static-MVP `device_sequence` is per-process and is
-  not a synchronization identity (C3).
+  evidence, media, upload tasks, device events, active packages, and a durable
+  `rule_identities` registry with contract-05 indexes. Denormalized filter
+  columns (barcode, product, result) drive history queries. The SQLite index is
+  a **rebuildable read projection** of the CLI `inspection.json` bundles (C1,
+  ADR-012): it can be deleted and rebuilt from the same bundles without changing
+  them, and it is not the authoritative completion/outbox store. The static-MVP
+  `device_sequence` is per-process and is not a synchronization identity (C3).
+  The `rule_identities` table makes rule identity immutable across restarts: a
+  `(rule_id, rule_version)` reused with different content fails pipeline load
+  with `CONFIG_INVALID`.
 - **Endpoints**: health/device/camera, inspection state, inspections list
-  (cursor pagination + filters) and detail, inspection media, media content with
-  Range support, uploads (empty in M1), effective configuration, logs (in-memory
-  ring buffer), and derived traceability/statistics/images. The M1 API is
-  read-only (ADR-012): pause/resume, camera reconnect, and upload retry are not
-  exposed, and every route except `/health/live` requires the configured
-  `AV_EDGE_API_TOKEN` bearer token or the HttpOnly same-origin viewer session
-  established at dashboard `/login` when a token is set.
+  (cursor pagination + filters) and detail, inspection media, media content
+  with Range support, uploads (empty in M1), effective configuration, logs
+  (in-memory ring buffer), and derived traceability/statistics/images.
+  Statistics `from`/`to` filters are validated as timezone-aware UTC timestamps;
+  the derived images endpoint reports per-slot AVAILABLE/PURGED/UNAVAILABLE
+  status and returns 404 for unknown inspections. The M1 API is read-only
+  (ADR-012): pause/resume, camera reconnect, and upload retry are not exposed.
+- **Viewer authentication** (ADR-012): every route except `/health/live`
+  requires the configured `AV_EDGE_API_TOKEN` bearer token or a short-lived
+  HttpOnly, SameSite=strict, same-origin viewer session. `POST
+  /api/v1/auth/session` exchanges a valid bearer token for the session cookie;
+  the dashboard `/login` page provides the one-time entry so neither API JSON
+  requests nor media `<img>` requests need the token in browser storage.
+- **Media isolation (F2)**: media content is resolved only inside its
+  inspection bundle directory; traversal, absolute, cross-bundle, and symlink
+  escape paths are rejected at import and serve time, and duplicate media IDs
+  are rejected so malformed bundles are skipped without aborting startup.
+- **Contract boundary (F9)**: typed Pydantic response schemas with a committed
+  OpenAPI document (`apps/edge-service/openapi/edge-openapi.json`) and CI drift
+  checks, generated TypeScript types
+  (`packages/typescript/api-client/src/edge/generated/api.ts`), plus runtime
+  response validation in `HttpApiClient` (`validate.ts`) that rejects drifted
+  or malformed payloads instead of blindly casting.
 - **Frontend split**: read-only views route through the HTTP client when
   `VITE_API_MODE=http`; operator workflow actions (current/confirm/next/
   manual) stay on the deterministic mock because they are a demonstration
   queue, not a design 15.3 endpoint.
-- **PR-003 hardening folded in**: rule version identity is now bound to
-  canonical rule content; the output writer publishes inspection bundles
-  atomically (staging + fsync + rename, rejects republish); detectors pass
-  manifest `imgsz`/`iou`/`conf` explicitly and persist effective values in
+- **PR-003 hardening folded in**: rule version identity is bound to canonical
+  rule content and registered durably; the output writer publishes inspection
+  bundles atomically (staging + fsync + rename, rejects republish); detectors
+  pass manifest `imgsz`/`iou`/`conf` explicitly and persist effective values in
   `InspectionRecord.inference_metadata`; the pipeline validates detection
-  provenance (frame/model/coordinate space) at the boundary.
+  provenance (frame/model/coordinate space) with an absolute-only coordinate
+  tolerance at the boundary.
 - **Packaging**: `py.typed` markers added to `domain` and `vision-core` so MyPy
   strict passes repo-wide.
-- **Test hardening**: test coverage for the edge Python packages is at 100%
-  (pytest-cov). The expansion surfaced three defects that were fixed:
-  `upsert_inspection` now replaces child evidence/media rows instead of
-  failing on the media unique constraint; `load_pipeline_config` wraps
-  `ROIGenerationError` (e.g. `normalize_perspective: true`) as `ConfigError`
-  instead of leaking a raw error; and `OutputWriter.save` cleans up its
-  staging directory when a child write fails.
+- **Test hardening**: edge Python coverage is at 100% (pytest-cov); the full
+  suite is `373 passed`, TypeScript tests are `28 passed` (api-client) and
+  `12 passed` (edge-web), and Playwright e2e is `12 passed` including a
+  token-authenticated served dashboard that asserts real reconciled data and
+  purged-media rendering.
 
 ## 9. Open Items / Next Steps
 
@@ -325,17 +350,26 @@ dashboard views can display real CLI inspection results:
   scheduler** (real `upload_tasks` rows, retry backoff, idempotency) and the
   **WebSocket runtime channel** are the next backend gaps. The dashboard read
   views switch to real data via `VITE_API_MODE=http`.
-- A number of PR-003 P1/P2 backend hardening items are still open (see
-  `docs/reviews/PR-003-review.md`): model manifest full-content immutability,
-  dataset staging, and component preparation reusing production selection
-  contracts. Rule content binding, bundle-atomic output, inference parameter
-  pinning, and detection provenance validation are now fixed (section 8.3).
-- The PR #8 review is recorded in `docs/reviews/PR-008-review.md`: all blocking
-  findings (F1-F14) and the M1 conditional items (C1-C4) are resolved and
-  validated on `dev`; the remaining roadmap scope (upload queue scheduler,
-  WebSocket channel, camera/barcode adapters, temporal aggregation, Docker
-  packaging, authoritative SQLite persistence/outbox) is tracked as the next
-  milestone and does not block the PR.
+- PR-003 follow-up items still open (see `docs/reviews/PR-003-review.md`):
+  model-manifest full-content immutability (publication checks only the first
+  artifact checksum), strict Roboflow source-label validation (negative class
+  IDs, unvalidated field count/bounds), missing-label policy (currently
+  warn-only implicit negatives), explicit background negatives for the product
+  dataset, manifest-relative verification identity (still basename-based),
+  stale-output-safe dataset adaptation/component preparation, and component
+  preparation reusing the production selection policy. Runtime items are fixed:
+  rule content binding with a durable registry, bundle-atomic output, inference
+  parameter pinning, detection provenance validation, and startup
+  cross-validation.
+- Two remaining medium gaps on the M1 layer: token-protected Vite development
+  across origins is not supported (CORS allows GET only and the viewer session
+  cookie is same-origin; use the same-origin `assemblyvision serve` flow), and
+  the CLI `inspect`/`verify` rule-identity registry is process-local while
+  `serve` persists it in SQLite.
+- Roadmap scope remaining after the M1 layer (section 8.3, PR #8): upload
+  queue scheduler, WebSocket channel, camera/barcode adapters, temporal
+  aggregation, Docker packaging, and authoritative SQLite persistence/outbox.
+  None block PR #8; the PR-008 review findings (F1-F14, C1-C4) are resolved.
 - Real customer data is still required for the one-month baseline: annotate with
   X-AnyLabeling (product + component boxes), then run `av-train` ->
   `assemblyvision inspect` -> `assemblyvision verify`. A utility script
