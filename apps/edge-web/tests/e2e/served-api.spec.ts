@@ -112,6 +112,8 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
       join(root, "edge.sqlite3"),
       "--static",
       dist,
+      "--api-token",
+      "test-edge-token",
       "--host",
       "127.0.0.1",
       "--port",
@@ -121,6 +123,9 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
   );
   try {
     await waitForHealth(port);
+    await page.goto(`http://127.0.0.1:${port}/login`);
+    await page.getByLabel("Viewer token").fill("test-edge-token");
+    await page.getByRole("button", { name: "Sign in" }).click();
     await page.goto(`http://127.0.0.1:${port}/history`);
     await expect(page.getByText("SN-E2E-REAL")).toBeVisible();
     await page.goto(`http://127.0.0.1:${port}/statistics`);

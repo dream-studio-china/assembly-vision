@@ -2,6 +2,7 @@
 import { formatBytes } from "@assemblyvision/ui";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRuntimeStore } from "./stores/runtime";
+import { isHttpMode } from "./services/client";
 
 const runtime = useRuntimeStore();
 const localTime = ref(new Date());
@@ -38,6 +39,7 @@ onBeforeUnmount(() => {
         <router-link to="/health">Health</router-link>
         <router-link to="/configuration">Config</router-link>
         <router-link to="/logs">Logs</router-link>
+        <router-link v-if="isHttpMode()" to="/login">Sign in</router-link>
       </nav>
       <div class="app-shell__telemetry" aria-label="Device telemetry">
         <span

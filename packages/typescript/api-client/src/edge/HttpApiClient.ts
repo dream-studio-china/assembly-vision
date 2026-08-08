@@ -65,6 +65,7 @@ export class HttpApiClient implements ApiClient {
     try {
       response = await this.#fetchImpl(url, {
         ...init,
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json", ...init?.headers },
       });
     } catch (error) {

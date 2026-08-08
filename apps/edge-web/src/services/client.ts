@@ -22,11 +22,29 @@ export function isMockMode(): boolean {
   return mode === "mock";
 }
 
+export function isHttpMode(): boolean {
+  return mode === "http";
+}
+
+export function getApiBaseUrl(): string {
+  return (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+}
+
+export async function createViewerSession(token: string): Promise<void> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/session`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: "same-origin",
+  });
+  if (!response.ok) {
+    throw new Error("The edge viewer token was not accepted.");
+  }
+}
+
 export function getApiClient(): ApiClient {
   if (client !== null) return client;
   if (mode === "http") {
-    const baseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
-    client = new HttpApiClient(baseUrl);
+    client = new HttpApiClient(getApiBaseUrl());
   } else {
     client = new MockApiClient();
   }

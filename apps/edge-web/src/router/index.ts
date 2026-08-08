@@ -20,5 +20,6 @@ export const router = createRouter({
     { path: "/health", name: "health", component: () => import("../pages/HealthView.vue") },
     { path: "/configuration", name: "configuration", component: () => import("../pages/ConfigurationView.vue") },
     { path: "/logs", name: "logs", component: () => import("../pages/LogsView.vue") },
+    { path: "/login", name: "login", component: () => import("../pages/LoginView.vue") },
   ],
 });
