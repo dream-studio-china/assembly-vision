@@ -357,3 +357,21 @@ def test_verify_revision_surfaces_sqlite_error(
     monkeypatch.setattr("assemblyvision_edge.persistence.migrate.sqlite3.connect", broken_connect)
     with pytest.raises(RuntimeError, match="cannot read edge database migration state"):
         migrate._verify_revision(str(tmp_path / "edge.sqlite3"), "0001")
+
+
+def test_rule_identity_registry_is_durable_across_reopen(tmp_path: Path) -> None:
+    db = tmp_path / "edge.sqlite3"
+    first = EdgeRepository.open(db)
+    try:
+        first.register_rule_identity("model-a-presence", 1, "a" * 64)
+    finally:
+        first.close()
+
+    # A fresh process (reopened database) accepts the same identity/content.
+    second = EdgeRepository.open(db)
+    try:
+        second.register_rule_identity("model-a-presence", 1, "a" * 64)
+        with pytest.raises(RepositoryError, match="different content"):
+            second.register_rule_identity("model-a-presence", 1, "b" * 64)
+    finally:
+        second.close()

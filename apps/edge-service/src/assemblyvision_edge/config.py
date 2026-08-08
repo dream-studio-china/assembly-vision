@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -266,8 +267,21 @@ def _require_str(raw: Any, name: str) -> str:
     return raw
 
 
-def load_rule_definition(path: Path) -> RuleDefinition:
-    """Load and validate a product rule definition YAML file."""
+# A rule identity is immutable once installed. The registry callback receives
+# (rule_id, rule_version, content_hash) and may persist the identity durably
+# (e.g. into the edge SQLite registry) so a restarted process rejects reusing
+# the identity with different content.
+RuleIdentityRegistry = Callable[[str, int, str], None]
+
+
+def load_rule_definition(
+    path: Path, registry: RuleIdentityRegistry | None = None
+) -> RuleDefinition:
+    """Load and validate a product rule definition YAML file.
+
+    ``registry`` is invoked after the in-process identity check so durable
+    install registries can reject content changes across processes.
+    """
     try:
         raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as exc:
@@ -277,23 +291,26 @@ def load_rule_definition(path: Path) -> RuleDefinition:
     except Exception as exc:
         raise ConfigError(f"invalid rule definition {path}: {exc}") from exc
     _register_rule_identity(rule)
+    if registry is not None:
+        registry(rule.rule_id, rule.rule_version, rule_content_hash(rule))
     return rule
 
 
 # Process-local installed-rule registry (P2): a rule identity is immutable
 # once loaded, so the same (rule_id, rule_version) cannot be reactivated with
-# different content in one process.
+# different content in one process. The edge service additionally persists this
+# in the SQLite ``rule_identities`` table for restart safety.
 _RULE_IDENTITY_REGISTRY: dict[tuple[str, int], str] = {}
 
 
-def _rule_content_hash(rule: RuleDefinition) -> str:
+def rule_content_hash(rule: RuleDefinition) -> str:
     payload = json.dumps(rule.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def _register_rule_identity(rule: RuleDefinition) -> None:
     key = (rule.rule_id, rule.rule_version)
-    digest = _rule_content_hash(rule)
+    digest = rule_content_hash(rule)
     existing = _RULE_IDENTITY_REGISTRY.get(key)
     if existing is not None and existing != digest:
         raise ConfigError(

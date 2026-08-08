@@ -11,6 +11,7 @@ import base64
 import hashlib
 import json
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -29,6 +30,7 @@ from assemblyvision_edge.persistence.schema import (
     component_evidence,
     inspections,
     media,
+    rule_identities,
     upload_tasks,
 )
 
@@ -675,6 +677,42 @@ class EdgeRepository:
                 .where(upload_tasks.c.status.in_(["PENDING", "IN_PROGRESS", "RETRY_WAIT"]))
             ).scalar()
         return int(result or 0)
+
+    def register_rule_identity(self, rule_id: str, rule_version: int, content_hash: str) -> None:
+        """Record a rule identity durably and reject conflicting content.
+
+        The in-process registry in ``config`` only protects one interpreter
+        lifetime; this SQLite registry makes rule identity immutable across
+        service restarts (PR-008 P2, design 14.5 rule_installations semantics).
+        """
+        with self._engine.begin() as conn:
+            existing = conn.execute(
+                text(
+                    f"SELECT content_sha256 FROM {rule_identities.name} "
+                    "WHERE rule_id = :rule_id AND rule_version = :rule_version"
+                ),
+                {"rule_id": rule_id, "rule_version": rule_version},
+            ).scalar_one_or_none()
+            if existing is not None:
+                if existing != content_hash:
+                    raise RepositoryError(
+                        f"rule identity {rule_id} v{rule_version} was previously registered "
+                        "with different content; published rules are immutable"
+                    )
+                return
+            conn.execute(
+                text(
+                    f"INSERT INTO {rule_identities.name} "
+                    "(rule_id, rule_version, content_sha256, registered_at) "
+                    "VALUES (:rule_id, :rule_version, :content_sha256, :registered_at)"
+                ),
+                {
+                    "rule_id": rule_id,
+                    "rule_version": rule_version,
+                    "content_sha256": content_hash,
+                    "registered_at": datetime.now(UTC).isoformat(),
+                },
+            )
 
     def latest_business_result(self) -> str | None:
         with self._engine.connect() as conn:

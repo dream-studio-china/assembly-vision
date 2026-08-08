@@ -153,3 +153,13 @@ active_packages = Table(
     Column("rule_version_id", String(36), nullable=True),
     Column("installed_at", Text, nullable=False),
 )
+
+rule_identities = Table(
+    "rule_identities",
+    metadata,
+    Column("rule_id", String(128), primary_key=True),
+    Column("rule_version", Integer, primary_key=True),
+    Column("content_sha256", String(64), nullable=False),
+    Column("registered_at", Text, nullable=False),
+    comment="Durable installed-rule registry: a rule identity is immutable once registered",
+)

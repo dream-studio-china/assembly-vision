@@ -260,6 +260,26 @@ def test_rule_identity_same_content_is_idempotent(tmp_path: Path) -> None:
     load_rule_definition(path)
 
 
+def test_load_rule_definition_invokes_external_registry(tmp_path: Path) -> None:
+    from assemblyvision_edge.config import rule_content_hash
+
+    path = tmp_path / "a.yaml"
+    path.write_text(EXAMPLE_RULE.read_text(encoding="utf-8"), encoding="utf-8")
+    calls: list[tuple[str, int, str]] = []
+
+    def registry(rule_id: str, rule_version: int, content_hash: str) -> None:
+        calls.append((rule_id, rule_version, content_hash))
+
+    rule = load_rule_definition(path, registry=registry)
+    assert calls == [(rule.rule_id, rule.rule_version, rule_content_hash(rule))]
+
+    def rejecting_registry(_rule_id: str, _rule_version: int, _content_hash: str) -> None:
+        raise ConfigError("already installed with different content")
+
+    with pytest.raises(ConfigError, match="different content"):
+        load_rule_definition(path, registry=rejecting_registry)
+
+
 def test_config_rejects_empty_components(tmp_path: Path) -> None:
     path = tmp_path / "pipeline.yaml"
     path.write_text(

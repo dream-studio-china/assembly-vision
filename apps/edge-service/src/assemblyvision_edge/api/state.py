@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -17,6 +18,7 @@ from uuid import UUID, uuid4
 from assemblyvision_domain.errors import ConfigError
 
 from assemblyvision_edge.api.settings import ServerSettings
+from assemblyvision_edge.persistence.repository import EdgeRepository, RepositoryError
 
 log = logging.getLogger("assemblyvision.runtime")
 
@@ -44,18 +46,24 @@ class EdgeRuntime:
             return UUID(configured)
         return uuid4()
 
-    def load_pipeline(self) -> None:
-        """Build the inspection pipeline from configuration; failures are non-fatal."""
+    def load_pipeline(self, repository: EdgeRepository | None = None) -> None:
+        """Build the inspection pipeline from configuration; failures are non-fatal.
+
+        When a repository is available the loaded rule identity is registered
+        durably, so a restarted service rejects reusing a rule identity with
+        different content (PR-008 P2).
+        """
         if self._settings.config_path is None or self._settings.rule_path is None:
             self.pipeline_error = "pipeline configuration or rule path is not configured"
             self.pipeline_error_code = None
             log.warning("%s", self.pipeline_error)
             return
         try:
-            self.pipeline = _build_pipeline(self._settings)
+            rule_registry = repository.register_rule_identity if repository is not None else None
+            self.pipeline = _build_pipeline(self._settings, rule_registry=rule_registry)
             self.pipeline_error = None
             self.pipeline_error_code = None
-        except (ConfigError, ValueError) as exc:
+        except (ConfigError, ValueError, RepositoryError) as exc:
             self.pipeline_error = str(exc)
             self.pipeline_error_code = "CONFIG_INVALID"
             self.pipeline = None
@@ -199,13 +207,16 @@ class EdgeRuntime:
         return digest.hexdigest()
 
 
-def _build_pipeline(settings: ServerSettings) -> Any:
+def _build_pipeline(
+    settings: ServerSettings, rule_registry: Callable[[str, int, str], None] | None = None
+) -> Any:
     """Build the inspection pipeline exactly as the CLI does (shared logic)."""
     from assemblyvision_domain.models import ModelManifest
     from assemblyvision_vision.manifests import load_model_manifest
     from assemblyvision_vision.roi.roi_engine import ROIEngine
 
     from assemblyvision_edge.config import (
+        RuleIdentityRegistry,
         load_pipeline_config,
         load_rule_definition,
         validate_rule_component_compatibility,
@@ -217,7 +228,8 @@ def _build_pipeline(settings: ServerSettings) -> Any:
     if settings.config_path is None or settings.rule_path is None:
         raise ConfigError("pipeline configuration and rule path are required")
     config = load_pipeline_config(settings.config_path)
-    rule = load_rule_definition(settings.rule_path)
+    registry: RuleIdentityRegistry | None = rule_registry
+    rule = load_rule_definition(settings.rule_path, registry=registry)
     product_manifest: ModelManifest = load_model_manifest(config.product_manifest)
     component_manifest: ModelManifest = load_model_manifest(config.component_manifest)
     from assemblyvision_edge.config import validate_model_version_declaration

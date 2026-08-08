@@ -100,7 +100,7 @@ def test_load_pipeline_failure_is_non_fatal(
 ) -> None:
     monkeypatch.setattr(
         "assemblyvision_edge.api.state._build_pipeline",
-        lambda settings: (_ for _ in ()).throw(ConfigError("boom")),
+        lambda settings, rule_registry=None: (_ for _ in ()).throw(ConfigError("boom")),
     )
     settings = _settings(
         tmp_path, config_path=tmp_path / "pipeline.yaml", rule_path=tmp_path / "rule.yaml"
@@ -117,7 +117,7 @@ def test_load_pipeline_value_error_maps_to_config_invalid(
 ) -> None:
     monkeypatch.setattr(
         "assemblyvision_edge.api.state._build_pipeline",
-        lambda settings: (_ for _ in ()).throw(ValueError("bad uuid")),
+        lambda settings, rule_registry=None: (_ for _ in ()).throw(ValueError("bad uuid")),
     )
     settings = _settings(
         tmp_path, config_path=tmp_path / "pipeline.yaml", rule_path=tmp_path / "rule.yaml"
@@ -126,6 +126,60 @@ def test_load_pipeline_value_error_maps_to_config_invalid(
     runtime.load_pipeline()
     assert runtime.pipeline is None
     assert runtime.pipeline_error_code == "CONFIG_INVALID"
+
+
+def test_load_pipeline_passes_durable_rule_registry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from assemblyvision_edge.persistence.repository import EdgeRepository
+
+    captured: list[object] = []
+
+    def fake_build(settings: object, rule_registry: object | None = None) -> object:
+        captured.append(rule_registry)
+        return _fake_pipeline()
+
+    monkeypatch.setattr("assemblyvision_edge.api.state._build_pipeline", fake_build)
+    settings = _settings(
+        tmp_path, config_path=tmp_path / "pipeline.yaml", rule_path=tmp_path / "rule.yaml"
+    )
+    runtime = EdgeRuntime(settings)
+    repository = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        runtime.load_pipeline(repository)
+    finally:
+        repository.close()
+    assert captured and captured[0] is not None
+
+    captured.clear()
+    runtime2 = EdgeRuntime(settings)
+    runtime2.load_pipeline()
+    assert captured == [None]
+
+
+def test_load_pipeline_maps_durable_rule_conflict_to_config_invalid(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from assemblyvision_edge.persistence.repository import EdgeRepository, RepositoryError
+
+    def conflicting_build(settings: object, rule_registry: object | None = None) -> object:
+        raise RepositoryError(
+            "rule identity model-a-presence v3 was previously registered with different content"
+        )
+
+    monkeypatch.setattr("assemblyvision_edge.api.state._build_pipeline", conflicting_build)
+    settings = _settings(
+        tmp_path, config_path=tmp_path / "pipeline.yaml", rule_path=tmp_path / "rule.yaml"
+    )
+    runtime = EdgeRuntime(settings)
+    repository = EdgeRepository.open(tmp_path / "edge.sqlite3")
+    try:
+        runtime.load_pipeline(repository)
+    finally:
+        repository.close()
+    assert runtime.pipeline is None
+    assert runtime.pipeline_error_code == "CONFIG_INVALID"
+    assert "different content" in (runtime.pipeline_error or "")
 
 
 def test_device_status_exposes_stable_config_invalid_reason(tmp_path: Path) -> None:
@@ -140,7 +194,8 @@ def test_device_status_exposes_stable_config_invalid_reason(tmp_path: Path) -> N
 
 def test_load_pipeline_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        "assemblyvision_edge.api.state._build_pipeline", lambda settings: _fake_pipeline()
+        "assemblyvision_edge.api.state._build_pipeline",
+        lambda settings, rule_registry=None: _fake_pipeline(),
     )
     settings = _settings(
         tmp_path, config_path=tmp_path / "pipeline.yaml", rule_path=tmp_path / "rule.yaml"
@@ -318,7 +373,10 @@ def test_build_pipeline_constructs_pipeline(
     pipeline = object()
 
     monkeypatch.setattr("assemblyvision_edge.config.load_pipeline_config", lambda path: config)
-    monkeypatch.setattr("assemblyvision_edge.config.load_rule_definition", lambda path: rule)
+    monkeypatch.setattr(
+        "assemblyvision_edge.config.load_rule_definition",
+        lambda path, registry=None: rule,
+    )
     monkeypatch.setattr(
         "assemblyvision_vision.manifests.load_model_manifest",
         lambda path: product_manifest if "product" in str(path) else component_manifest,
