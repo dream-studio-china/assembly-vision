@@ -210,6 +210,9 @@ def test_media_content_and_range(client: TestClient) -> None:
     assert ranged.headers["content-range"].startswith("bytes 0-3/")
     invalid = client.get(f"/api/v1/media/{media_id}/content", headers={"Range": "bytes=99999-"})
     assert invalid.status_code == 416
+    assert invalid.json()["code"] == "INVALID_RANGE"
+    assert invalid.headers["content-range"].startswith("bytes */")
+    assert invalid.headers["content-type"].startswith("application/problem+json")
 
 
 def test_m1_removed_controls_return_404(client: TestClient) -> None:

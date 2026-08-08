@@ -11,8 +11,9 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from uuid import uuid4
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
@@ -130,8 +131,12 @@ def _install_exception_handler(app: FastAPI) -> None:
     @app.exception_handler(Exception)
     async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
         log.exception("unhandled error for %s %s", request.method, request.url.path)
+        request_id = request.headers.get("X-Request-ID") or str(uuid4())
         return JSONResponse(
-            status_code=500, content=_PROBLEM, media_type="application/problem+json"
+            status_code=500,
+            content={**_PROBLEM, "request_id": request_id},
+            media_type="application/problem+json",
+            headers={"X-Request-ID": request_id},
         )
 
 
@@ -143,8 +148,10 @@ def _install_static_routes(app: FastAPI, static_dir: Path | None) -> None:
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa(full_path: str) -> FileResponse:
+        # API routes never fall back to the SPA; unknown API paths must produce
+        # a normal API 404 instead of returning the dashboard HTML (P2).
         if full_path.startswith("api/"):
-            return FileResponse(index)
+            raise HTTPException(status_code=404, detail="Not Found")
         candidate = (root / full_path).resolve()
         if candidate.is_file() and candidate.is_relative_to(root):
             return FileResponse(candidate)

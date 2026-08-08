@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from pathlib import Path
 
 from assemblyvision_domain.models import MediaMetadata
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 
 from assemblyvision_edge.api.deps import get_repository, get_settings
 from assemblyvision_edge.api.problems import ApiProblem
@@ -14,6 +15,8 @@ from assemblyvision_edge.api.settings import ServerSettings
 from assemblyvision_edge.persistence.repository import EdgeRepository
 
 router = APIRouter(prefix="/media", tags=["media"])
+
+_CHUNK_SIZE = 64 * 1024
 
 _MIME_BY_KIND: dict[str, str] = {
     "KEY_FRAME": "image/jpeg",
@@ -43,6 +46,19 @@ def _resolve_media_path(output_root: Path, relative_path: str) -> Path | None:
     if not candidate.is_relative_to(root):
         return None
     return candidate
+
+
+def _iter_chunks(path: Path, start: int, end: int) -> Iterator[bytes]:
+    """Stream a bounded byte range without loading the whole file (P2)."""
+    with path.open("rb") as handle:
+        handle.seek(start)
+        remaining = end - start + 1
+        while remaining > 0:
+            chunk = handle.read(min(_CHUNK_SIZE, remaining))
+            if not chunk:
+                break
+            remaining -= len(chunk)
+            yield chunk
 
 
 def _parse_range(header: str, size: int) -> tuple[int, int] | None:
@@ -87,27 +103,28 @@ def media_content(
         raise ApiProblem(status_code=404, code="MEDIA_NOT_FOUND", detail=f"no media {media_id}")
     size = path.stat().st_size
     range_header = request.headers.get("Range")
-    body = path.read_bytes()
     if range_header:
         bounds = _parse_range(range_header, size)
         if bounds is None:
-            return Response(
+            raise ApiProblem(
                 status_code=416,
+                code="INVALID_RANGE",
+                detail=f"invalid byte range {range_header!r}",
                 headers={"Content-Range": f"bytes */{size}"},
-                media_type="application/problem+json",
             )
         start, end = bounds
-        body = body[start : end + 1]
-        return Response(
-            content=body,
+        return StreamingResponse(
+            _iter_chunks(path, start, end),
             status_code=206,
             media_type=_content_type(media),
             headers={
                 "Content-Range": f"bytes {start}-{end}/{size}",
                 "Accept-Ranges": "bytes",
-                "Content-Length": str(len(body)),
+                "Content-Length": str(end - start + 1),
             },
         )
-    return Response(
-        content=body, media_type=_content_type(media), headers={"Accept-Ranges": "bytes"}
+    return StreamingResponse(
+        _iter_chunks(path, 0, size - 1),
+        media_type=_content_type(media),
+        headers={"Accept-Ranges": "bytes", "Content-Length": str(size)},
     )

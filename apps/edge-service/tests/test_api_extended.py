@@ -54,12 +54,13 @@ def test_m1_removed_mutations_return_404_with_pipeline(tmp_path: Path) -> None:
             assert response.status_code == 404, endpoint
 
 
-def test_spa_returns_index_for_unknown_api_path(tmp_path: Path) -> None:
+def test_unknown_api_path_returns_problem_404(tmp_path: Path) -> None:
     app = _app(tmp_path, static=True)
     with TestClient(app) as c:
         response = c.get("/api/v1/no-such-route")
-        assert response.status_code == 200
-        assert response.text == "<html>index</html>"
+        assert response.status_code == 404
+        assert response.headers["content-type"].startswith("application/problem+json")
+        assert response.json()["code"] == "HTTP_404"
 
 
 def test_http_problem_handler_with_header(tmp_path: Path) -> None:
@@ -97,6 +98,21 @@ def test_request_id_preserved_from_header(tmp_path: Path) -> None:
         response = c.get("/api/v1/inspections/nope", headers={"X-Request-ID": "rid-123"})
         assert response.status_code == 404
         assert response.json()["request_id"] == "rid-123"
+        assert response.headers["x-request-id"] == "rid-123"
+
+
+def test_unhandled_error_propagates_request_id(tmp_path: Path) -> None:
+    app = _app(tmp_path)
+
+    @app.get("/api/v1/_boom2", include_in_schema=False)
+    def boom() -> None:
+        raise RuntimeError("kaboom")
+
+    with TestClient(app, raise_server_exceptions=False) as c:
+        response = c.get("/api/v1/_boom2", headers={"X-Request-ID": "rid-abc"})
+        assert response.status_code == 500
+        assert response.json()["request_id"] == "rid-abc"
+        assert response.headers["x-request-id"] == "rid-abc"
 
 
 def test_main_module_entrypoint(tmp_path: Path) -> None:

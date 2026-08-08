@@ -379,6 +379,35 @@ def test_media_content_rejects_traversal_and_absolute(tmp_path: Path) -> None:
             assert response.json()["code"] == "MEDIA_NOT_FOUND"
 
 
+def test_iter_chunks_stops_on_empty_read(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from assemblyvision_edge.api.routers import media as media_mod
+
+    path = tmp_path / "f.bin"
+    path.write_bytes(b"x" * 10)
+
+    class FakeHandle:
+        def __init__(self) -> None:
+            self.pos = 0
+
+        def seek(self, pos: int) -> None:
+            self.pos = pos
+
+        def read(self, n: int) -> bytes:
+            if self.pos == 0:
+                self.pos = n
+                return b"x" * 3
+            return b""
+
+        def __enter__(self) -> FakeHandle:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+    monkeypatch.setattr(Path, "open", lambda *a, **k: FakeHandle())
+    assert b"".join(media_mod._iter_chunks(path, 0, 9)) == b"xxx"
+
+
 def test_resolve_media_path_handles_oserror(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
