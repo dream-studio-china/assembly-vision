@@ -19,7 +19,12 @@ _NAMESPACE = UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8")
 
 
 def _write_edge_config(
-    tmp_path: Path, images: Path, *, enabled: bool = True, device_id: str | None = None
+    tmp_path: Path,
+    images: Path,
+    *,
+    enabled: bool = True,
+    device_id: str | None = None,
+    temporal: dict[str, object] | None = None,
 ) -> Path:
     instance: dict[str, object] = {
         "instance_id": "line-1",
@@ -44,6 +49,8 @@ def _write_edge_config(
     }
     if device_id is not None:
         instance["device_id"] = device_id
+    if temporal is not None:
+        instance["temporal"] = temporal
     path = tmp_path / "edge.yaml"
     path.write_text(
         yaml.safe_dump({"application_version": "0.1.0", "instances": [instance]}),
@@ -101,6 +108,7 @@ def test_instance_device_id_defaults_to_uuid5() -> None:
         device_id=None,
         camera=object(),  # type: ignore[arg-type]
         inspection=object(),  # type: ignore[arg-type]
+        temporal=None,
         pipeline=object(),  # type: ignore[arg-type]
         rule=Path("rule.yaml"),
     )
@@ -111,6 +119,7 @@ def test_instance_device_id_defaults_to_uuid5() -> None:
         device_id="12345678-1234-5678-1234-567812345678",
         camera=object(),  # type: ignore[arg-type]
         inspection=object(),  # type: ignore[arg-type]
+        temporal=None,
         pipeline=object(),  # type: ignore[arg-type]
         rule=Path("rule.yaml"),
     )
@@ -308,5 +317,64 @@ def test_pause_stops_inspection_and_status_reports_paused(
                 break
             time.sleep(0.05)
         assert len(inspected) > settled
+    finally:
+        runtime.shutdown()
+
+
+def test_temporal_loop_emits_windowed_records(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from types import SimpleNamespace
+    from uuid import uuid4
+
+    from assemblyvision_edge.api import state as state_module
+    from assemblyvision_edge.temporal.window_manager import FrameObservation
+
+    finalized: list[int] = []
+
+    class TemporalPipeline:
+        def frame_observations(self, frame: CapturedFrame) -> FrameObservation:
+            return FrameObservation(
+                frame_id=uuid4(),
+                sequence=frame.sequence,
+                captured_at=frame.wall_clock_utc,
+                quality_usable=True,
+                product_detected=True,
+                roi_valid=True,
+                inference_valid=True,
+                product_detection=None,
+                roi_result=None,
+                observations=[],
+                image=frame.image,
+            )
+
+        def inspect_window(self, window: object, writer: object) -> object:
+            finalized.append(len(window.frames))  # type: ignore[attr-defined]
+            return SimpleNamespace(decision=SimpleNamespace(business_result="OK"))
+
+    monkeypatch.setattr(
+        state_module,
+        "_build_instance_pipeline",
+        lambda instance, rule_registry=None: TemporalPipeline(),
+    )
+    settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
+    runtime = EdgeRuntime(settings)
+    config_path = _write_edge_config(
+        tmp_path,
+        _make_images(tmp_path),
+        temporal={"minimum_valid_frames": 1, "maximum_window_ms": 200},
+    )
+    runtime.load_instances(config_path)
+    try:
+        assert runtime.instances["line-1"].temporal is not None
+        deadline = time.monotonic() + 10.0
+        while time.monotonic() < deadline:
+            if finalized:
+                break
+            time.sleep(0.05)
+        assert finalized, "temporal loop never finalized a window"
+        # Each finalized window groups a bounded set of frames into one record.
+        assert all(1 <= count <= 40 for count in finalized)
+        assert runtime.instances["line-1"].last_result == "OK"
     finally:
         runtime.shutdown()

@@ -19,6 +19,10 @@ from assemblyvision_vision.roi.roi_engine import ROIConfig
 from assemblyvision_vision.sources.factory import FrameSourceConfig
 
 from assemblyvision_edge.rules.rule_engine import RuleDefinition
+from assemblyvision_edge.temporal.aggregator import (
+    ComponentTemporalPolicy,
+    TemporalAggregationConfig,
+)
 
 
 def validate_model_version_declaration(declared: str, manifest: ModelManifest, name: str) -> None:
@@ -360,7 +364,7 @@ class CameraSourceConfig:
 
 @dataclass(frozen=True)
 class InspectionRunConfig:
-    """Whether the instance runs the single-frame inspection loop."""
+    """Whether the instance runs the inspection loop."""
 
     enabled: bool = False
 
@@ -373,6 +377,7 @@ class InstanceConfig:
     device_id: str | None
     camera: CameraSourceConfig
     inspection: InspectionRunConfig
+    temporal: TemporalAggregationConfig | None
     pipeline: PipelineConfig
     rule: Path
 
@@ -418,6 +423,7 @@ def load_edge_config(path: Path) -> EdgeConfig:
                 "device_id",
                 "camera",
                 "inspection",
+                "temporal",
                 "rule",
                 "models",
                 "product_detection",
@@ -454,13 +460,17 @@ def load_edge_config(path: Path) -> EdgeConfig:
             "component_detection": instance.get("component_detection"),
             "roi": instance.get("roi"),
         }
+        pipeline_config = _parse_pipeline_doc(pipeline_doc, base)
+        temporal = _parse_temporal(instance.get("temporal"), f"{name}.temporal")
+        _validate_temporal_against_pipeline(temporal, pipeline_config, f"{name}.temporal")
         instances.append(
             InstanceConfig(
                 instance_id=instance_id,
                 device_id=device_id,
                 camera=camera,
                 inspection=inspection,
-                pipeline=_parse_pipeline_doc(pipeline_doc, base),
+                temporal=temporal,
+                pipeline=pipeline_config,
                 rule=rule,
             )
         )
@@ -545,6 +555,93 @@ def _parse_camera_source(raw: dict[str, Any], base: Path, name: str) -> CameraSo
         reconnect_initial_delay_ms=reconnect_initial,
         reconnect_maximum_delay_ms=reconnect_maximum,
     )
+
+
+def _parse_temporal(raw: Any, name: str) -> TemporalAggregationConfig | None:
+    """Parse and validate one instance ``temporal:`` block (design 10.7)."""
+    if raw is None:
+        return None
+    doc = _require_mapping(raw, name)
+    _reject_unknown(
+        doc,
+        {"minimum_valid_frames", "maximum_window_ms", "reject_duplicate_frame_ids", "components"},
+        name,
+    )
+    minimum_valid_frames = _as_positive_int(
+        doc.get("minimum_valid_frames"), f"{name}.minimum_valid_frames", 1
+    )
+    maximum_window_ms = _as_positive_int(
+        doc.get("maximum_window_ms"), f"{name}.maximum_window_ms", 2500
+    )
+    reject_duplicate = _as_bool(
+        doc.get("reject_duplicate_frame_ids"), f"{name}.reject_duplicate_frame_ids", True
+    )
+    components: dict[str, ComponentTemporalPolicy] = {}
+    comps_raw = doc.get("components")
+    if comps_raw is not None:
+        comps = _require_mapping(comps_raw, f"{name}.components")
+        for code, policy_raw in comps.items():
+            if not isinstance(code, str) or not code:
+                raise ConfigError(f"{name}.components keys must be non-empty strings")
+            pname = f"{name}.components.{code}"
+            pmap = _require_mapping(policy_raw, pname)
+            _reject_unknown(
+                pmap,
+                {
+                    "high_confidence",
+                    "medium_confidence",
+                    "medium_hits",
+                    "require_adjacent_hits",
+                    "max_frame_gap",
+                },
+                pname,
+            )
+            high = _as_threshold(pmap.get("high_confidence"), f"{pname}.high_confidence", 0.9)
+            medium = _as_threshold(pmap.get("medium_confidence"), f"{pname}.medium_confidence", 0.7)
+            if medium > high:
+                raise ConfigError(
+                    f"{pname}: medium_confidence ({medium}) must be <= high_confidence ({high})"
+                )
+            hits = _as_positive_int(pmap.get("medium_hits"), f"{pname}.medium_hits", 2)
+            require_adjacent = _as_bool(
+                pmap.get("require_adjacent_hits"), f"{pname}.require_adjacent_hits", True
+            )
+            gap = _as_non_negative_int(pmap.get("max_frame_gap"), f"{pname}.max_frame_gap", 1)
+            components[code] = ComponentTemporalPolicy(
+                high_confidence=high,
+                medium_confidence=medium,
+                medium_hits=hits,
+                require_adjacent_hits=require_adjacent,
+                max_frame_gap=gap,
+            )
+    return TemporalAggregationConfig(
+        minimum_valid_frames=minimum_valid_frames,
+        maximum_window_ms=maximum_window_ms,
+        reject_duplicate_frame_ids=reject_duplicate,
+        components=components,
+    )
+
+
+def _validate_temporal_against_pipeline(
+    temporal: TemporalAggregationConfig | None, pipeline: PipelineConfig, name: str
+) -> None:
+    """Enforce observation_threshold <= medium_confidence < high_confidence (design 10.7)."""
+    if temporal is None:
+        return
+    for code, policy in temporal.components.items():
+        observation = pipeline.components.get(code)
+        if observation is not None and observation.observation_threshold > policy.medium_confidence:
+            raise ConfigError(
+                f"{name}.components.{code}: medium_confidence ({policy.medium_confidence}) must be "
+                f">= observation_threshold ({observation.observation_threshold})"
+            )
+
+
+def _as_non_negative_int(raw: Any, name: str, default: int) -> int:
+    value = raw if raw is not None else default
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise ConfigError(f"{name} must be a non-negative integer")
+    return value
 
 
 def _require_optional_str(raw: Any, name: str) -> str | None:

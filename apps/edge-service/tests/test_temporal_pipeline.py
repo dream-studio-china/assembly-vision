@@ -1,0 +1,273 @@
+"""End-to-end product-window temporal aggregation through the pipeline.
+
+Builds a real InspectionPipeline with scripted detectors and verifies that a
+window of frames resolves to exactly one per-component-temporal inspection
+record (design 10, ADR-010), including fail-safe NG, interrupted, and
+insufficient-evidence paths.
+"""
+
+from __future__ import annotations
+
+import time
+from datetime import UTC, datetime
+from pathlib import Path
+from uuid import UUID, uuid4
+
+from assemblyvision_domain import reason_codes as rc
+from assemblyvision_domain.models import (
+    BoundingBox,
+    ComponentDetection,
+    FrameQuality,
+    ProductDetection,
+)
+from assemblyvision_edge.config import load_pipeline_config, load_rule_definition
+from assemblyvision_edge.output.writer import OutputWriter
+from assemblyvision_edge.pipeline import InspectionPipeline
+from assemblyvision_edge.rules.rule_engine import RuleEngine
+from assemblyvision_edge.temporal.aggregator import (
+    ComponentTemporalPolicy,
+    TemporalAggregationConfig,
+)
+from assemblyvision_edge.temporal.window_manager import ProductWindow, ProductWindowManager
+from assemblyvision_vision.manifests import load_model_manifest
+from assemblyvision_vision.roi.geometry import Box, apply_transform, inverse_transform
+from assemblyvision_vision.roi.roi_engine import ROIEngine
+from assemblyvision_vision.sources.frame_source import CapturedFrame
+from PIL import Image
+
+from tests.conftest import COMPONENT_MANIFEST, EXAMPLE_PIPELINE, EXAMPLE_RULE, PRODUCT_MANIFEST
+
+_REQUIRED = ("component_a", "component_b", "manual")
+
+
+class ProductDetector:
+    def detect(self, frame: Image.Image, frame_id: UUID) -> object:
+        return _Outcome(selected=_product_detection(frame_id, frame.width, frame.height))
+
+
+class ScriptedComponentDetector:
+    """Returns one observation list per call, bound to the frame/ROI geometry.
+
+    Once the script is exhausted the last list is reused so a window-trigger
+    frame can be fed after the intended frames without failing.
+    """
+
+    def __init__(self, per_frame: list[list[tuple[str, float]]], model_version_id: UUID) -> None:
+        self._calls = iter(per_frame)
+        self._last: list[tuple[str, float]] = []
+        self._model_version_id = model_version_id
+
+    def detect(
+        self,
+        roi: Image.Image,
+        frame_id: UUID,
+        required: tuple[str, ...],
+        transform: tuple[float, float, float, float, float, float],
+        frame_size: tuple[int, int],
+    ) -> list[ComponentDetection]:
+        codes = next(self._calls, self._last)
+        if codes is not self._last:
+            self._last = codes
+        frame_width, frame_height = frame_size
+        inverse = inverse_transform(transform)
+        result: list[ComponentDetection] = []
+        for index, (code, confidence) in enumerate(codes):
+            roi_bbox = BoundingBox(
+                x_min=10.0 + index * 10,
+                y_min=10.0,
+                x_max=50.0 + index * 10,
+                y_max=40.0,
+                image_width=roi.width,
+                image_height=roi.height,
+            )
+            full = apply_transform(Box.from_bbox(roi_bbox), inverse).to_bbox(
+                frame_width, frame_height
+            )
+            result.append(
+                ComponentDetection(
+                    frame_id=frame_id,
+                    component_code=code,
+                    confidence=confidence,
+                    roi_bbox=roi_bbox,
+                    full_frame_bbox=full,
+                    model_version_id=self._model_version_id,
+                )
+            )
+        return result
+
+
+class _Outcome:
+    def __init__(
+        self, selected: ProductDetection | None = None, reason_code: str | None = None
+    ) -> None:
+        self.selected = selected
+        self.reason_code = reason_code
+
+
+def _product_detection(frame_id: UUID, width: int, height: int) -> ProductDetection:
+    return ProductDetection(
+        frame_id=frame_id,
+        product_class="product",
+        confidence=0.95,
+        bbox=BoundingBox(
+            x_min=100.0,
+            y_min=80.0,
+            x_max=700.0,
+            y_max=520.0,
+            image_width=width,
+            image_height=height,
+        ),
+        model_version_id=load_model_manifest(PRODUCT_MANIFEST).model_version_id,
+        quality=FrameQuality(
+            usable=True,
+            blur_score=0.0,
+            brightness_mean=128.0,
+            saturation_fraction=0.5,
+        ),
+    )
+
+
+def _temporal_config(
+    minimum_valid_frames: int = 1, maximum_window_ms: int = 1000
+) -> TemporalAggregationConfig:
+    policy = ComponentTemporalPolicy(
+        high_confidence=0.9, medium_confidence=0.7, medium_hits=2, max_frame_gap=1
+    )
+    return TemporalAggregationConfig(
+        minimum_valid_frames=minimum_valid_frames,
+        maximum_window_ms=maximum_window_ms,
+        reject_duplicate_frame_ids=True,
+        components=dict.fromkeys(_REQUIRED, policy),
+    )
+
+
+def _build_pipeline(
+    per_frame: list[list[tuple[str, float]]], temporal_config: TemporalAggregationConfig
+) -> InspectionPipeline:
+    config = load_pipeline_config(EXAMPLE_PIPELINE)
+    rule = load_rule_definition(EXAMPLE_RULE)
+    component_manifest = load_model_manifest(COMPONENT_MANIFEST)
+    return InspectionPipeline(
+        product_detector=ProductDetector(),  # type: ignore[arg-type]
+        component_detector=ScriptedComponentDetector(
+            per_frame, component_manifest.model_version_id
+        ),  # type: ignore[arg-type]
+        roi_engine=ROIEngine(config.roi),
+        rule_engine=RuleEngine(),
+        rule=rule,
+        product_manifest=load_model_manifest(PRODUCT_MANIFEST),
+        component_manifest=component_manifest,
+        config=config,
+        device_id=uuid4(),
+        temporal_config=temporal_config,
+    )
+
+
+def _frame(sequence: int) -> CapturedFrame:
+    return CapturedFrame(
+        monotonic_ts_ns=time.monotonic_ns(),
+        wall_clock_utc=datetime.now(UTC),
+        sequence=sequence,
+        pixel_format="RGB",
+        status="OK",
+        image=Image.new("RGB", (800, 600), "gray"),
+    )
+
+
+def _run_window(
+    pipeline: InspectionPipeline,
+    temporal_config: TemporalAggregationConfig,
+    frame_count: int,
+    start: float = 1000.0,
+) -> tuple[ProductWindow, ProductWindowManager]:
+    manager = ProductWindowManager(temporal_config, pipeline._device_id)
+    for sequence in range(1, frame_count + 1):
+        observation = pipeline.frame_observations(_frame(sequence))
+        manager.feed(observation, start + (sequence - 1) * 0.1)
+    # Trigger a normal GAP close with a frame arriving after the window; the
+    # returned window carries the intended frames and the trigger frame opens a
+    # fresh (ignored) window.
+    trigger = pipeline.frame_observations(_frame(frame_count + 1))
+    closed = manager.feed(trigger, start + frame_count * 0.1 + 1.1)
+    assert closed is not None
+    return closed, manager
+
+
+_ALL_HIGH = [
+    [("component_a", 0.95), ("component_b", 0.95), ("manual", 0.95)],
+    [("component_a", 0.95), ("component_b", 0.95), ("manual", 0.95)],
+    [("component_a", 0.95), ("component_b", 0.95), ("manual", 0.95)],
+]
+
+
+class TestTemporalRecord:
+    def test_window_produces_single_ok_record(self) -> None:
+        pipeline = _build_pipeline(_ALL_HIGH, _temporal_config())
+        closed, _manager = _run_window(pipeline, _temporal_config(), 3)
+        record = pipeline.inspect_window(closed)
+        assert record.aggregation_policy_version == "per-component-temporal-v1"
+        assert record.decision.business_result == "OK"
+        assert record.decision.internal_decision == "OK"
+        assert all(e.state == "PRESENT" for e in record.evidence)
+        assert record.frame_quality_summary.usable_frame_count == 3
+        assert record.evidence[0].supporting_frame_ids
+
+    def test_missing_component_is_ng(self) -> None:
+        frames = [
+            [("component_a", 0.95), ("component_b", 0.95)],
+            [("component_a", 0.95), ("component_b", 0.95)],
+            [("component_a", 0.95), ("component_b", 0.95)],
+        ]
+        pipeline = _build_pipeline(frames, _temporal_config())
+        closed, _ = _run_window(pipeline, _temporal_config(), 3)
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "NG"
+        assert "manual" in record.decision.missing_components
+        manual = next(e for e in record.evidence if e.component_code == "manual")
+        assert manual.state == "MISSING"
+
+    def test_medium_hits_establish_presence(self) -> None:
+        frames = [
+            [("component_a", 0.75), ("component_b", 0.75), ("manual", 0.75)],
+            [("component_a", 0.72), ("component_b", 0.72), ("manual", 0.72)],
+        ]
+        pipeline = _build_pipeline(frames, _temporal_config())
+        closed, _ = _run_window(pipeline, _temporal_config(), 2)
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "OK"
+        assert all(e.state == "PRESENT" for e in record.evidence)
+
+    def test_insufficient_valid_frames_is_ng(self) -> None:
+        pipeline = _build_pipeline(_ALL_HIGH, _temporal_config(minimum_valid_frames=3))
+        closed, _ = _run_window(pipeline, _temporal_config(minimum_valid_frames=3), 1)
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "NG"
+        assert all(e.state == "UNVERIFIABLE" for e in record.evidence)
+        assert all(rc.INSUFFICIENT_VALID_FRAMES in e.policy_reason_codes for e in record.evidence)
+        assert any("COMPONENT_UNVERIFIABLE" in reason for reason in record.decision.reason_codes)
+
+    def test_interrupted_window_is_ng(self) -> None:
+        pipeline = _build_pipeline(_ALL_HIGH, _temporal_config())
+        manager = ProductWindowManager(_temporal_config(), pipeline._device_id)
+        for sequence in range(1, 3):
+            observation = pipeline.frame_observations(_frame(sequence))
+            manager.feed(observation, 1000.0 + (sequence - 1) * 0.1)
+        closed = manager.force_close()
+        assert closed is not None and closed.interrupted
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "NG"
+        assert rc.INSPECTION_INTERRUPTED in record.decision.reason_codes
+        assert all(e.state == "UNVERIFIABLE" for e in record.evidence)
+
+
+class TestTemporalPersistence:
+    def test_window_persists_representative_bundle(self, tmp_path: Path) -> None:
+        pipeline = _build_pipeline(_ALL_HIGH, _temporal_config())
+        closed, _ = _run_window(pipeline, _temporal_config(), 3)
+        writer = OutputWriter(tmp_path)
+        record = pipeline.inspect_window(closed, writer)
+        bundle = tmp_path / str(record.inspection_id)
+        assert (bundle / "inspection.json").exists()
+        assert (bundle / "key_frame.jpg").exists()
+        payload = (bundle / "inspection.json").read_text(encoding="utf-8")
+        assert '"aggregation_policy_version": "per-component-temporal-v1"' in payload

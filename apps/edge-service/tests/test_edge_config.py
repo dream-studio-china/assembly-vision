@@ -171,6 +171,100 @@ def test_camera_source_config_maps_to_frame_source_config(tmp_path: Path) -> Non
     assert frame_config.reconnect_initial_delay_ms == 250
 
 
+def test_load_edge_config_parses_temporal_policy(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                temporal={
+                    "minimum_valid_frames": 3,
+                    "maximum_window_ms": 2500,
+                    "reject_duplicate_frame_ids": True,
+                    "components": {
+                        "component_a": {
+                            "high_confidence": 0.9,
+                            "medium_confidence": 0.7,
+                            "medium_hits": 2,
+                            "require_adjacent_hits": True,
+                            "max_frame_gap": 1,
+                        }
+                    },
+                },
+            )
+        ],
+    )
+    config = load_edge_config(path)
+    temporal = config.instances[0].temporal
+    assert temporal is not None
+    assert temporal.minimum_valid_frames == 3
+    assert temporal.maximum_window_ms == 2500
+    assert temporal.reject_duplicate_frame_ids is True
+    policy = temporal.policy_for("component_a")
+    assert policy is not None
+    assert policy.high_confidence == 0.9
+    assert policy.medium_confidence == 0.7
+
+
+def test_load_edge_config_temporal_defaults_when_absent(tmp_path: Path) -> None:
+    path = _write_edge_config(tmp_path, [_instance_yaml("line-1")])
+    config = load_edge_config(path)
+    assert config.instances[0].temporal is None
+
+
+def test_load_edge_config_rejects_medium_above_high(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                temporal={
+                    "components": {
+                        "component_a": {"high_confidence": 0.7, "medium_confidence": 0.9}
+                    }
+                },
+            )
+        ],
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
+
+
+def test_load_edge_config_rejects_medium_below_observation_threshold(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                temporal={
+                    "components": {
+                        "component_a": {"high_confidence": 0.9, "medium_confidence": 0.4}
+                    }
+                },
+            )
+        ],
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
+
+
+def test_load_edge_config_rejects_unknown_temporal_keys(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [_instance_yaml("line-1", temporal={"minimum_valid_frames": 1, "nope": 1})],
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
+
+
+def test_load_edge_config_rejects_invalid_temporal_values(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path, [_instance_yaml("line-1", temporal={"minimum_valid_frames": 0})]
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
+
+
 def test_legacy_flat_config_still_loads(tmp_path: Path) -> None:
     path = tmp_path / "pipeline.yaml"
     instance = _instance_yaml()
