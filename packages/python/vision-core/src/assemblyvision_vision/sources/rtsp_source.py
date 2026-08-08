@@ -13,7 +13,9 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import count
 from threading import Event
-from typing import Any
+from typing import Any, cast
+
+from PIL import Image
 
 from assemblyvision_vision.sources._av import get_av
 from assemblyvision_vision.sources._opencv import get_cv2, to_pil_rgb
@@ -116,30 +118,56 @@ class RTSPFrameSource:
         except FrameStreamError:
             pass
         else:
-            container = av.open(self._url, timeout=5, options={"rtsp_transport": "tcp"})
+            try:
+                container = av.open(self._url, timeout=5, options={"rtsp_transport": "tcp"})
+            except FrameStreamError:
+                raise
+            except Exception as exc:
+                raise FrameStreamError(f"cannot open rtsp stream {self._url}: {exc}") from exc
             if not container.streams.video:
                 container.close()
                 raise FrameStreamError(f"rtsp url has no video stream: {self._url}")
             return "av", container
         # OpenCV fallback (an RTSP url is a valid capture source).
         cv2 = get_cv2()
-        capture = cv2.VideoCapture(self._url)
-        if not capture.isOpened():
-            capture.release()
-            raise FrameStreamError(f"cannot open rtsp url: {self._url}")
+        try:
+            capture = cv2.VideoCapture(self._url)
+            if not capture.isOpened():
+                capture.release()
+                raise FrameStreamError(f"cannot open rtsp url: {self._url}")
+        except FrameStreamError:
+            raise
+        except Exception as exc:
+            raise FrameStreamError(f"cannot open rtsp url: {self._url}: {exc}") from exc
         return "cv2", capture
 
     def _av_read(self, container: Any, stop: Event) -> Iterator[CapturedFrame]:
         stream = container.streams.video[0]
-        for av_frame in container.decode(stream):
-            if stop.is_set():
-                return
-            yield self._frame(av_frame.to_image())
-            pace(stop, self._fps)
+        try:
+            for av_frame in container.decode(stream):
+                if stop.is_set():
+                    return
+                yield self._frame(self._av_to_image(av_frame))
+                pace(stop, self._fps)
+        except FrameStreamError:
+            raise
+        except Exception as exc:
+            raise FrameStreamError(f"cannot decode rtsp stream {self._url}: {exc}") from exc
+
+    def _av_to_image(self, av_frame: Any) -> Image.Image:
+        try:
+            return cast(Image.Image, av_frame.to_image())
+        except FrameStreamError:
+            raise
+        except Exception as exc:
+            raise FrameStreamError(f"cannot convert rtsp frame from {self._url}: {exc}") from exc
 
     def _cv2_read(self, capture: Any, stop: Event) -> Iterator[CapturedFrame]:
         while not stop.is_set():
-            ok, bgr = capture.read()
+            try:
+                ok, bgr = capture.read()
+            except Exception as exc:
+                raise FrameStreamError(f"cannot read rtsp frame from {self._url}: {exc}") from exc
             if not ok or bgr is None:
                 return
             yield self._frame(to_pil_rgb(bgr))
@@ -157,8 +185,11 @@ class RTSPFrameSource:
 
     @staticmethod
     def _av_dimensions(container: Any) -> tuple[int, int]:
-        video = container.streams.video[0]
-        return int(video.width or 0), int(video.height or 0)
+        try:
+            video = container.streams.video[0]
+            return int(video.width or 0), int(video.height or 0)
+        except Exception as exc:
+            raise FrameStreamError(f"cannot read rtsp stream dimensions: {exc}") from exc
 
     @staticmethod
     def _cv2_dimensions(capture: Any) -> tuple[int, int]:

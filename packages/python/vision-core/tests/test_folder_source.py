@@ -94,8 +94,6 @@ def test_folder_corrupt_file_raises_frame_stream_error(tmp_path: Path) -> None:
         next(iterator)
 
 
-def test_folder_missing_directory_raises() -> None:
-    from assemblyvision_domain.errors import ImageReadError
-
-    with pytest.raises(ImageReadError):
+def test_folder_missing_directory_raises_frame_stream_error() -> None:
+    with pytest.raises(FrameStreamError, match="does not exist"):
         FolderSource(Path("/nonexistent/images"))

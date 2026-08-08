@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from assemblyvision_domain.errors import ImageReadError
 from assemblyvision_vision.sources.folder_source import FolderSource
+from assemblyvision_vision.sources.frame_source import FrameStreamError
 from PIL import Image
 
 
@@ -37,7 +38,7 @@ def test_read_missing_file_raises(tmp_path: Path) -> None:
 
 
 def test_missing_folder_raises(tmp_path: Path) -> None:
-    with pytest.raises(ImageReadError):
+    with pytest.raises(FrameStreamError, match="does not exist"):
         FolderSource(tmp_path / "does-not-exist")
 
 

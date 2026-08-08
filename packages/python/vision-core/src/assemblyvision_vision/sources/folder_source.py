@@ -34,7 +34,7 @@ class FolderSource:
 
     def __init__(self, folder: Path, *, loop: bool = False, fps: float | None = None) -> None:
         if not folder.is_dir():
-            raise ImageReadError(f"input folder does not exist: {folder}")
+            raise FrameStreamError(f"input folder does not exist: {folder}")
         self._folder = folder
         self._loop = loop
         self._fps = fps

@@ -38,6 +38,14 @@ class HttpImageReconnectPolicy:
     maximum_delay_ms: int = 10000
 
 
+class HttpImageFetchError(FrameStreamError):
+    """Raised for retryable HTTP/network transport failures during fetch.
+
+    Distinguished from decode/content failures, which raise a plain
+    :class:`FrameStreamError` and are never retried (PR-014 F4).
+    """
+
+
 class HttpImageSource:
     """Yields frames by polling a remote image URL."""
 
@@ -81,8 +89,8 @@ class HttpImageSource:
         while not stop.is_set():
             try:
                 image = self._fetch()
-            except FrameStreamError:
-                # Transient network failure: back off and retry, camera like.
+            except HttpImageFetchError:
+                # Transient transport failure: back off and retry, camera like.
                 self._sleep_backoff(stop, delay_ms)
                 delay_ms = min(delay_ms * 2, self._reconnect.maximum_delay_ms)
                 continue
@@ -98,7 +106,7 @@ class HttpImageSource:
             response = httpx.get(self._url, timeout=self._timeout, follow_redirects=True)
             response.raise_for_status()
         except httpx.HTTPError as exc:
-            raise FrameStreamError(f"cannot fetch image url {self._url}: {exc}") from exc
+            raise HttpImageFetchError(f"cannot fetch image url {self._url}: {exc}") from exc
         try:
             with Image.open(io.BytesIO(response.content)) as handle:
                 return handle.convert("RGB")

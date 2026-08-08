@@ -124,3 +124,48 @@ def test_http_image_undecodable_body_raises(
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_http_image_corrupt_body_faults_source_not_skipped() -> None:
+    """A corrupt response faults the stream instead of being skipped (F4).
+
+    The server returns valid bytes, then corrupt bytes, then valid bytes. The
+    corrupt acquisition must raise :class:`FrameStreamError` and must NOT emit
+    the later valid frame as if no failure happened.
+    """
+
+    class _CorruptThenGoodHandler(http.server.BaseHTTPRequestHandler):
+        request_count = 0
+
+        def do_GET(self) -> None:  # noqa: N802
+            request_count = type(self).request_count
+            type(self).request_count += 1
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.end_headers()
+            if request_count == 1:
+                self.wfile.write(b"not an image")
+            else:
+                self.wfile.write(_PNG_BYTES)
+
+        def log_message(self, *args: object) -> None:
+            return
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _CorruptThenGoodHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    url = f"http://127.0.0.1:{server.server_address[1]}/frame.png"
+    try:
+        source = HttpImageSource(
+            url, reconnect=HttpImageReconnectPolicy(initial_delay_ms=1, maximum_delay_ms=2)
+        )
+        stop = Event()
+        iterator = source.frames(stop)
+        first = next(iterator)
+        assert first.sequence == 1
+        with pytest.raises(FrameStreamError, match="cannot decode image from url"):
+            next(iterator)
+        stop.set()
+    finally:
+        server.shutdown()
+        server.server_close()

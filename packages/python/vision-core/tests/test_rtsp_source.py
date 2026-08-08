@@ -158,3 +158,83 @@ def test_rtsp_falls_back_to_opencv(
     stop.set()
     with pytest.raises(StopIteration):
         next(iterator)
+
+
+def test_rtsp_av_open_failure_raises_frame_stream_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class BoomAV:
+        def open(self, *args: object, **kwargs: object) -> object:
+            raise RuntimeError("ffmpeg could not open")
+
+    monkeypatch.setattr(_av, "_av", BoomAV())
+    source = RTSPFrameSource("rtsp://host/stream")
+    with pytest.raises(FrameStreamError, match="cannot open rtsp"):
+        source.open()
+
+
+def test_rtsp_av_decode_failure_raises_frame_stream_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class ExplodingContainer:
+        streams = SimpleNamespace(video=[FakeStream()])
+
+        def __init__(self, *args: object, **kwargs: object) -> None:
+            self.closed = False
+
+        def decode(self, stream: object) -> Iterator[object]:
+            yield SimpleNamespace(to_image=_image)
+            raise RuntimeError("broken stream")
+
+        def close(self) -> None:
+            self.closed = True
+
+    class BoomDecodeAV:
+        def open(self, *args: object, **kwargs: object) -> ExplodingContainer:
+            return ExplodingContainer()
+
+    monkeypatch.setattr(_av, "_av", BoomDecodeAV())
+    source = RTSPFrameSource(
+        "rtsp://host/stream", reconnect=RTSPReconnectPolicy(initial_delay_ms=1, maximum_delay_ms=2)
+    )
+    stop = Event()
+    iterator = source.frames(stop)
+    first = next(iterator)
+    assert first.sequence == 1
+    with pytest.raises(FrameStreamError, match="cannot decode rtsp stream"):
+        next(iterator)
+    stop.set()
+
+
+def test_rtsp_av_to_image_failure_raises_frame_stream_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class BadFrame:
+        def to_image(self) -> object:
+            raise RuntimeError("invalid frame data")
+
+    class BadFrameContainer:
+        streams = SimpleNamespace(video=[FakeStream()])
+
+        def __init__(self, *args: object, **kwargs: object) -> None:
+            self.closed = False
+
+        def decode(self, stream: object) -> Iterator[object]:
+            yield BadFrame()
+
+        def close(self) -> None:
+            self.closed = True
+
+    class BoomConvertAV:
+        def open(self, *args: object, **kwargs: object) -> BadFrameContainer:
+            return BadFrameContainer()
+
+    monkeypatch.setattr(_av, "_av", BoomConvertAV())
+    source = RTSPFrameSource(
+        "rtsp://host/stream", reconnect=RTSPReconnectPolicy(initial_delay_ms=1, maximum_delay_ms=2)
+    )
+    stop = Event()
+    iterator = source.frames(stop)
+    with pytest.raises(FrameStreamError, match="cannot convert rtsp frame"):
+        next(iterator)
+    stop.set()
