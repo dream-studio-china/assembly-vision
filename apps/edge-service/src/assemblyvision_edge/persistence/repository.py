@@ -69,6 +69,19 @@ class Page[T]:
     next_cursor: str | None
 
 
+@dataclass(frozen=True)
+class ClaimedUploadTask:
+    """One leased upload task plus the fencing token for its terminal updates.
+
+    The token is generated per claim and persisted in ``lease_owner``; every
+    terminal or retry transition must present the same token so a worker whose
+    lease was reclaimed can never overwrite the new holder (PR-017 F3).
+    """
+
+    task: UploadTask
+    lease_owner: str
+
+
 def _filter_fingerprint(filters: dict[str, object]) -> str:
     """Canonical SHA-256 of the active filter set.
 
@@ -872,13 +885,16 @@ class EdgeRepository:
             )
         return inserted
 
-    def claim_upload_tasks(self, limit: int, lease_seconds: int, now_iso: str) -> list[UploadTask]:
+    def claim_upload_tasks(
+        self, limit: int, lease_seconds: int, now_iso: str
+    ) -> list[ClaimedUploadTask]:
         """Lease up to ``limit`` due upload tasks to this worker.
 
-        Runs in an immediate transaction so one writer claims each task.
-        Tasks whose lease already expired return to ``PENDING`` first, then due
-        ``PENDING``/``RETRY_WAIT`` tasks are claimed and marked ``IN_PROGRESS``
-        with a lease (design 13.3/13.5 worker-crash recovery).
+        Runs in an immediate transaction so one writer claims each task. Tasks
+        whose lease already expired return to ``PENDING`` first (clearing the
+        old owner), then due ``PENDING``/``RETRY_WAIT`` tasks are claimed and
+        marked ``IN_PROGRESS`` with a fresh per-task fencing token and lease
+        (design 13.3/13.5 worker-crash recovery, PR-017 F3).
         """
         lease_expires = (
             datetime.fromisoformat(now_iso) + timedelta(seconds=lease_seconds)
@@ -888,7 +904,8 @@ class EdgeRepository:
                 text(
                     f"""
                     UPDATE {upload_tasks.name}
-                    SET status = 'PENDING', lease_expires_at = NULL, updated_at = :now
+                    SET status = 'PENDING', lease_expires_at = NULL,
+                        lease_owner = NULL, updated_at = :now
                     WHERE status = 'IN_PROGRESS' AND lease_expires_at IS NOT NULL
                       AND lease_expires_at < :now
                     """
@@ -912,16 +929,27 @@ class EdgeRepository:
                 .all()
             )
             task_ids = [str(row["upload_task_id"]) for row in rows]
+            claimed: list[ClaimedUploadTask] = []
             if task_ids:
+                owners = {task_id: str(uuid4()) for task_id in task_ids}
                 conn.execute(
                     text(
                         f"""
                         UPDATE {upload_tasks.name}
-                        SET status = 'IN_PROGRESS', lease_expires_at = :lease, updated_at = :now
-                        WHERE upload_task_id IN :task_ids
+                        SET status = 'IN_PROGRESS', lease_expires_at = :lease,
+                            lease_owner = :owner, updated_at = :now
+                        WHERE upload_task_id = :task_id
                         """
-                    ).bindparams(bindparam("task_ids", expanding=True)),
-                    {"lease": lease_expires, "now": now_iso, "task_ids": task_ids},
+                    ),
+                    [
+                        {
+                            "lease": lease_expires,
+                            "owner": owners[task_id],
+                            "now": now_iso,
+                            "task_id": task_id,
+                        }
+                        for task_id in task_ids
+                    ],
                 )
                 rows = (
                     conn.execute(
@@ -933,10 +961,21 @@ class EdgeRepository:
                     .mappings()
                     .all()
                 )
-        return [self._upload_task(row) for row in rows]
+                claimed = [
+                    ClaimedUploadTask(
+                        task=self._upload_task(row), lease_owner=owners[str(row["upload_task_id"])]
+                    )
+                    for row in rows
+                ]
+        return claimed
 
-    def mark_upload_succeeded(self, upload_task_id: str, now_iso: str) -> None:
-        """Mark one task succeeded; a successful inspection also syncs its projection."""
+    def mark_upload_succeeded(self, upload_task_id: str, lease_owner: str, now_iso: str) -> int:
+        """Mark one task succeeded when the caller still holds its lease.
+
+        Returns the number of updated rows: zero means the lease was reclaimed
+        (stale worker) and nothing is mutated. A successful inspection also
+        recomputes its projection synchronization state.
+        """
         with self._engine.begin() as conn:
             row = (
                 conn.execute(
@@ -950,18 +989,21 @@ class EdgeRepository:
                 .first()
             )
             if row is None:
-                return
-            conn.execute(
+                return 0
+            result = conn.execute(
                 text(
                     f"""
                     UPDATE {upload_tasks.name}
                     SET status = 'SUCCEEDED', completed_at = :now, updated_at = :now,
-                        lease_expires_at = NULL, last_error_code = NULL
-                    WHERE upload_task_id = :id
+                        lease_expires_at = NULL, lease_owner = NULL, last_error_code = NULL
+                    WHERE upload_task_id = :id AND status = 'IN_PROGRESS'
+                      AND lease_owner = :owner
                     """
                 ),
-                {"now": now_iso, "id": upload_task_id},
+                {"now": now_iso, "owner": lease_owner, "id": upload_task_id},
             )
+            if result.rowcount == 0:
+                return 0
             if row["kind"] == "INSPECTION" and row["inspection_id"] is not None:
                 conn.execute(
                     text(
@@ -970,47 +1012,83 @@ class EdgeRepository:
                     ),
                     {"id": row["inspection_id"]},
                 )
+        return 1
 
     def mark_upload_retry(
-        self, upload_task_id: str, error_code: str, next_attempt_at_iso: str, now_iso: str
-    ) -> None:
-        """Schedule a retry with the computed next-attempt time."""
+        self,
+        upload_task_id: str,
+        lease_owner: str,
+        error_code: str,
+        next_attempt_at_iso: str,
+        now_iso: str,
+    ) -> int:
+        """Schedule a retry when the caller still holds the lease; 0 = lost lease."""
         with self._engine.begin() as conn:
-            conn.execute(
+            result = conn.execute(
                 text(
                     f"""
                     UPDATE {upload_tasks.name}
                     SET status = 'RETRY_WAIT', attempt_count = attempt_count + 1,
                         next_attempt_at = :next, last_error_code = :error,
-                        lease_expires_at = NULL, updated_at = :now
-                    WHERE upload_task_id = :id
+                        lease_expires_at = NULL, lease_owner = NULL, updated_at = :now
+                    WHERE upload_task_id = :id AND status = 'IN_PROGRESS'
+                      AND lease_owner = :owner
                     """
                 ),
                 {
                     "next": next_attempt_at_iso,
                     "error": error_code,
+                    "owner": lease_owner,
                     "now": now_iso,
                     "id": upload_task_id,
                 },
             )
+        return int(result.rowcount or 0)
 
     def mark_upload_permanent_failure(
-        self, upload_task_id: str, error_code: str, now_iso: str
-    ) -> None:
-        """Mark one task permanently failed; the local evidence is preserved."""
+        self, upload_task_id: str, lease_owner: str, error_code: str, now_iso: str
+    ) -> int:
+        """Mark one task permanently failed when the caller still holds the lease.
+
+        Local evidence is preserved; returns 0 when the lease was reclaimed.
+        """
         with self._engine.begin() as conn:
-            conn.execute(
+            row = (
+                conn.execute(
+                    text(
+                        f"SELECT inspection_id FROM {upload_tasks.name} WHERE upload_task_id = :id"
+                    ),
+                    {"id": upload_task_id},
+                )
+                .mappings()
+                .first()
+            )
+            if row is None:
+                return 0
+            result = conn.execute(
                 text(
                     f"""
                     UPDATE {upload_tasks.name}
                     SET status = 'PERMANENT_FAILURE', attempt_count = attempt_count + 1,
                         completed_at = :now, last_error_code = :error,
-                        lease_expires_at = NULL, updated_at = :now
-                    WHERE upload_task_id = :id
+                        lease_expires_at = NULL, lease_owner = NULL, updated_at = :now
+                    WHERE upload_task_id = :id AND status = 'IN_PROGRESS'
+                      AND lease_owner = :owner
                     """
                 ),
-                {"now": now_iso, "error": error_code, "id": upload_task_id},
+                {"now": now_iso, "error": error_code, "owner": lease_owner, "id": upload_task_id},
             )
+            if result.rowcount == 0:
+                return 0
+            if row["inspection_id"] is not None:
+                conn.execute(
+                    text(
+                        f"UPDATE {inspections.name} SET synchronization_status = 'FAILED' "
+                        "WHERE inspection_id = :id"
+                    ),
+                    {"id": row["inspection_id"]},
+                )
+        return 1
 
     def get_upload_task(self, upload_task_id: str) -> UploadTask | None:
         with self._engine.connect() as conn:

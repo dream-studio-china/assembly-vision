@@ -124,6 +124,12 @@ upload_tasks = Table(
     Column("attempt_count", Integer, nullable=False),
     Column("next_attempt_at", Text, nullable=True),
     Column("lease_expires_at", Text, nullable=True),
+    Column(
+        "lease_owner",
+        String(36),
+        nullable=True,
+        comment="Unique per-claim token fencing terminal updates to the lease holder (PR-017 F3)",
+    ),
     Column("last_error_code", String(64), nullable=True),
     Column("created_at", Text, nullable=False),
     Column("updated_at", Text, nullable=False),

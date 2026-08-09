@@ -23,7 +23,7 @@ from typing import Any, Literal, Protocol
 
 from assemblyvision_domain.models import UploadTask
 
-from assemblyvision_edge.persistence.repository import EdgeRepository
+from assemblyvision_edge.persistence.repository import ClaimedUploadTask, EdgeRepository
 
 log = logging.getLogger("assemblyvision.upload")
 
@@ -209,38 +209,41 @@ class UploadScheduler:
     def run_once(self) -> int:
         """Process one batch; returns the number of tasks handled."""
         now = datetime.now(UTC)
-        tasks = self._repository.claim_upload_tasks(
+        claimed = self._repository.claim_upload_tasks(
             self._batch_size, self._lease_seconds, now.isoformat()
         )
-        for task in tasks:
+        for item in claimed:
             try:
-                self._process(task, now)
+                self._process(item, now)
             except Exception:  # noqa: BLE001 - never lose the task over a bug
-                log.exception("upload task %s failed unexpectedly", task.upload_task_id)
+                log.exception("upload task %s failed unexpectedly", item.task.upload_task_id)
                 self._repository.mark_upload_retry(
-                    str(task.upload_task_id),
+                    str(item.task.upload_task_id),
+                    item.lease_owner,
                     "SCHEDULER_ERROR",
                     (now + timedelta(seconds=self._base_retry_seconds)).isoformat(),
                     datetime.now(UTC).isoformat(),
                 )
-        return len(tasks)
+        return len(claimed)
 
-    def _process(self, task: UploadTask, now: datetime) -> None:
+    def _process(self, claimed: ClaimedUploadTask, now: datetime) -> None:
+        task = claimed.task
+        lease_owner = claimed.lease_owner
         try:
             payload = self._load_payload(task)
         except _PermanentPayloadError as exc:
             self._repository.mark_upload_permanent_failure(
-                str(task.upload_task_id), exc.code, datetime.now(UTC).isoformat()
+                str(task.upload_task_id), lease_owner, exc.code, datetime.now(UTC).isoformat()
             )
             return
         result = self._sink.upload(task, payload)
         now_iso = datetime.now(UTC).isoformat()
         if result.status == "SUCCEEDED":
-            self._repository.mark_upload_succeeded(str(task.upload_task_id), now_iso)
+            self._repository.mark_upload_succeeded(str(task.upload_task_id), lease_owner, now_iso)
             return
         if result.status == "PERMANENT":
             self._repository.mark_upload_permanent_failure(
-                str(task.upload_task_id), result.error_code or "PERMANENT", now_iso
+                str(task.upload_task_id), lease_owner, result.error_code or "PERMANENT", now_iso
             )
             return
         backoff = _full_jitter_backoff(
@@ -253,6 +256,7 @@ class UploadScheduler:
         next_attempt = now + timedelta(seconds=max(backoff, retry_after))
         self._repository.mark_upload_retry(
             str(task.upload_task_id),
+            lease_owner,
             result.error_code or "RETRYABLE",
             next_attempt.isoformat(),
             now_iso,

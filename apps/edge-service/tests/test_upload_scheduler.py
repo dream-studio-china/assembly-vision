@@ -214,11 +214,13 @@ class TestSuccessfulUpload:
 
     def test_claim_marks_in_progress_with_lease(self, repo: EdgeRepository, tmp_path: Path) -> None:
         _seed(repo, tmp_path)
-        tasks = repo.claim_upload_tasks(
+        claimed = repo.claim_upload_tasks(
             10, lease_seconds=120, now_iso=datetime.now(UTC).isoformat()
         )
-        assert len(tasks) == 2
-        assert all(task.status == "IN_PROGRESS" for task in tasks)
+        assert len(claimed) == 2
+        assert all(item.task.status == "IN_PROGRESS" for item in claimed)
+        # F3: every claim carries a distinct fencing token.
+        assert len({item.lease_owner for item in claimed}) == 2
 
 
 class TestRetryBehavior:
@@ -340,13 +342,50 @@ class TestRestartRecovery:
         _seed(repo, tmp_path)
         now = datetime.now(UTC)
         tasks = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=now.isoformat())
-        assert all(t.status == "IN_PROGRESS" for t in tasks)
+        assert all(t.task.status == "IN_PROGRESS" for t in tasks)
         # Simulate a crashed worker: the lease expires, then a new scheduler
         # instance must reclaim the tasks.
         later = (now + timedelta(seconds=300)).isoformat()
         reclaimed = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=later)
         assert len(reclaimed) == 2
-        assert all(t.status == "IN_PROGRESS" for t in reclaimed)
+        assert all(t.task.status == "IN_PROGRESS" for t in reclaimed)
+
+    def test_late_worker_cannot_overwrite_reclaimed_task(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """F3: the fencing token blocks a stale worker's terminal update."""
+        _seed(repo, tmp_path)
+        now = datetime.now(UTC)
+        first = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=now.isoformat())
+        assert len(first) == 2
+        # The first worker stalls past its lease; a second worker reclaims.
+        later = (now + timedelta(seconds=300)).isoformat()
+        second = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=later)
+        assert len(second) == 2
+        for stale in first:
+            stale_owner = stale.lease_owner
+            task_id = str(stale.task.upload_task_id)
+            # The stale worker's updates are rejected: zero rows changed.
+            assert repo.mark_upload_succeeded(task_id, stale_owner, now.isoformat()) == 0
+            assert (
+                repo.mark_upload_retry(task_id, stale_owner, "HTTP_503", later, now.isoformat())
+                == 0
+            )
+            assert (
+                repo.mark_upload_permanent_failure(
+                    task_id, stale_owner, "HTTP_409", now.isoformat()
+                )
+                == 0
+            )
+        # The current owner still owns the tasks and can complete them.
+        for current in second:
+            assert (
+                repo.mark_upload_succeeded(
+                    str(current.task.upload_task_id), current.lease_owner, later
+                )
+                == 1
+            )
+        assert all(t.status == "SUCCEEDED" for t in repo.list_uploads(limit=100).items)
 
     def test_restart_reclaims_and_drains(self, repo: EdgeRepository, tmp_path: Path) -> None:
         _seed(repo, tmp_path)
