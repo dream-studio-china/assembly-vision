@@ -41,11 +41,21 @@ _REQUIRED = ("component_a", "component_b", "manual")
 
 
 class ProductDetector:
-    def __init__(self, qualities: list[FrameQuality] | None = None) -> None:
+    def __init__(
+        self,
+        qualities: list[FrameQuality] | None = None,
+        reason_codes: list[str | None] | None = None,
+    ) -> None:
         self._qualities = iter(qualities or [])
         self._last: FrameQuality | None = None
+        self._reason_codes = iter(reason_codes or [])
+        self._last_reason: str | None = None
 
     def detect(self, frame: Image.Image, frame_id: UUID) -> object:
+        reason_code = next(self._reason_codes, self._last_reason)
+        self._last_reason = reason_code
+        if reason_code is not None:
+            return _Outcome(reason_code=reason_code)
         quality = next(self._qualities, self._last)
         self._last = quality
         return _Outcome(
@@ -174,12 +184,13 @@ def _build_pipeline(
     temporal_config: TemporalAggregationConfig,
     qualities: list[FrameQuality] | None = None,
     rule: object | None = None,
+    product_reason_codes: list[str | None] | None = None,
 ) -> InspectionPipeline:
     config = load_pipeline_config(EXAMPLE_PIPELINE)
     loaded_rule = load_rule_definition(EXAMPLE_RULE) if rule is None else rule
     component_manifest = load_model_manifest(COMPONENT_MANIFEST)
     return InspectionPipeline(
-        product_detector=ProductDetector(qualities),  # type: ignore[arg-type]
+        product_detector=ProductDetector(qualities, product_reason_codes),  # type: ignore[arg-type]
         component_detector=ScriptedComponentDetector(
             per_frame, component_manifest.model_version_id
         ),  # type: ignore[arg-type]
@@ -422,6 +433,26 @@ class TestProductIsolation:
         record = pipeline.inspect_window(closed)
         assert record.decision.business_result == "NG"
         assert rc.PRODUCT_IDENTITY_MISSING in record.decision.reason_codes
+
+    def test_detector_confirmed_multi_product_aborts_sufficient_window(self) -> None:
+        pipeline = _build_pipeline(
+            _ALL_HIGH,
+            _identity_config(),
+            product_reason_codes=[None, None, rc.MULTIPLE_PRODUCTS],
+        )
+        manager = ProductWindowManager(_identity_config(), pipeline._device_id)
+        base = 1000.0
+        for sequence in (1, 2):
+            observation = pipeline.frame_observations(_frame(sequence, product_identity="prod-a"))
+            assert manager.feed(observation, base + sequence * 0.1) is None
+
+        observation = pipeline.frame_observations(_frame(3, product_identity="prod-a"))
+        closed = manager.feed(observation, base + 0.3)
+        assert closed is not None
+        assert closed.close_reason == "MULTI_PRODUCT"
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "NG"
+        assert rc.MULTIPLE_PRODUCTS in record.decision.reason_codes
 
 
 def _count_rule() -> object:

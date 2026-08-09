@@ -142,6 +142,20 @@ class TestWindowLifecycle:
         assert active is not None
         assert [f.sequence for f in active.frames] == [1]
         assert active.stale_frame_ids == 1
+        assert manager.stale_frame_count == 1
+
+    def test_stale_frame_after_expiry_cannot_open_new_window(self) -> None:
+        manager = ProductWindowManager(_config(maximum_window_ms=1000), uuid4())
+        now = 1000.0
+        manager.feed(_observation(1), now)
+        assert manager.expire(now + 1.1) is not None
+        assert manager.active_window is None
+
+        # This queued frame predates the finalized window and must never open a
+        # new inspection that could become an unjustified later decision.
+        assert manager.feed(_observation(2), now + 0.5) is None
+        assert manager.active_window is None
+        assert manager.stale_frame_count == 1
 
 
 class TestDuplicateAndIdentity:

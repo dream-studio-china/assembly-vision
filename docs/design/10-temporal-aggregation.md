@@ -124,14 +124,17 @@ Window grouping, quality, and policy behavior enforced by the review fixes
   acquisition monotonic timestamp (`CapturedFrame.monotonic_ts_ns`), never the
   post-inference processing time, so queue backlog or slow inference cannot
   shift product boundaries. Out-of-order timestamps are dropped and counted as
-  stale (10.8).
+  stale (10.8). After idle expiry, the manager retains the capture-time
+  boundary so a queued pre-expiry frame cannot reopen a finalized product
+  window.
 - **Idle expiry**: the runtime finalizes an active window as `GAP` once its
   idle duration elapses, so a final product at the end of a stream is decided
   normally instead of waiting for a later frame or shutdown (10.8).
 - **Window strategy**: `window_strategy: identity` requires a validated
   per-frame product identity (tracker, trigger, or barcode correlation) and
   seals each window to one product. A missing identity, a mid-window identity
-  transition, or a confirmed multi-product frame closes the window as an
+  transition, or a confirmed multi-product frame (including a
+  `ProductDetector` `MULTIPLE_PRODUCTS` outcome) closes the window as an
   integrity violation (`PRODUCT_IDENTITY_MISSING`,
   `PRODUCT_IDENTITY_TRANSITION`, `MULTIPLE_PRODUCTS`) that can never release
   `OK`. `window_strategy: time` remains an explicit development fallback; it

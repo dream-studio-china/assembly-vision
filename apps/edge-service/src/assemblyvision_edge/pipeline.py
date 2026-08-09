@@ -279,7 +279,11 @@ class InspectionPipeline:
             image=frame.image,
             roi_image=outcome.roi_image,
             product_identity=frame.product_identity,
-            multi_product=frame.multi_product,
+            # ProductDetector reports this as a failed selection with no
+            # ProductDetection, so preserve the detector's explicit ambiguity
+            # signal for ProductWindowManager instead of treating it as a
+            # diagnostic-only rejected frame (PR-015 F1).
+            multi_product=frame.multi_product or rc.MULTIPLE_PRODUCTS in outcome.reasons,
         )
 
     def inspect_window(

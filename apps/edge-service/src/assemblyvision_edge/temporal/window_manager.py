@@ -124,6 +124,9 @@ class ProductWindowManager:
         self._window_id_factory = window_id_factory
         self._wall_clock = wall_clock
         self._active: ProductWindow | None = None
+        self._latest_capture_monotonic: float | None = None
+        self._closed_capture_cutoff: float | None = None
+        self._stale_frame_count = 0
 
     @property
     def config(self) -> TemporalAggregationConfig:
@@ -133,6 +136,11 @@ class ProductWindowManager:
     def active_window(self) -> ProductWindow | None:
         return self._active
 
+    @property
+    def stale_frame_count(self) -> int:
+        """Number of stale frames dropped across completed and active windows."""
+        return self._stale_frame_count
+
     def feed(self, observation: FrameObservation, now_monotonic: float) -> ProductWindow | None:
         """Add one frame; returns the window closed by this frame, if any.
 
@@ -140,6 +148,24 @@ class ProductWindowManager:
         clock (seconds); using post-inference processing time would let queue
         backlog or slow inference shift product boundaries.
         """
+        stale_cutoff = (
+            max(
+                value
+                for value in (self._latest_capture_monotonic, self._closed_capture_cutoff)
+                if value is not None
+            )
+            if self._latest_capture_monotonic is not None or self._closed_capture_cutoff is not None
+            else None
+        )
+        if stale_cutoff is not None and now_monotonic < stale_cutoff:
+            # Keep the watermark after a window closes too. Otherwise a queued
+            # pre-expiry frame could arrive late, open a new window, and form a
+            # decision after the product was already finalized (PR-015 F3).
+            self._stale_frame_count += 1
+            if self._active is not None:
+                self._active.stale_frame_ids += 1
+            return None
+        self._latest_capture_monotonic = now_monotonic
         if observation.multi_product:
             # A confirmed multi-product frame makes any active window
             # ambiguous and aborts it (design 10.8, PR-015 F1).
@@ -182,11 +208,6 @@ class ProductWindowManager:
         if active is None:
             self._open(observation, now_monotonic, observation.product_identity)
             return None
-        if now_monotonic < active.last_frame_at_monotonic:
-            # Out-of-order capture timestamp: stale frames are dropped and
-            # counted, never appended (design 10.8).
-            active.stale_frame_ids += 1
-            return None
         if self._config.reject_duplicate_frame_ids and any(
             frame.frame_id == observation.frame_id for frame in active.frames
         ):
@@ -219,6 +240,7 @@ class ProductWindowManager:
             return None
         gap_ms = self._config.maximum_window_ms
         if now_monotonic - active.last_frame_at_monotonic >= gap_ms / 1000.0:
+            self._closed_capture_cutoff = active.last_frame_at_monotonic + gap_ms / 1000.0
             return self._close("GAP")
         return None
 

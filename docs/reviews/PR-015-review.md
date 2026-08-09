@@ -41,15 +41,19 @@ that failed before the fix and pass after:
   an explicit development fallback. Integration tests prove complementary
   components from two identities inside one interval never produce `OK`, a
   same-identity complete window still produces exactly one `OK`, and a missing
-  identity mid-window aborts as `NG`.
+  identity mid-window aborts as `NG`. A detector-confirmed
+  `MULTIPLE_PRODUCTS` outcome is propagated to this integrity path rather than
+  retained as a diagnostic-only frame reason.
 - **F2** - `ProductWindowManager.expire()` finalizes an idle window as `GAP`;
   the inspection loop calls it on every empty capture poll. A final product
   with no further frames is decided normally, and shutdown after normal expiry
   adds no second record.
 - **F3** - the runtime feeds windows with `CapturedFrame.monotonic_ts_ns`
   (acquisition time) instead of post-inference `time.monotonic()`; stale
-  out-of-order timestamps are dropped and counted. Fast vs. delayed inference
-  therefore cannot change window membership.
+  out-of-order timestamps are dropped and counted. Idle expiry retains a
+  capture-time cutoff, preventing a queued pre-expiry frame from reopening a
+  finalized product window. Fast vs. delayed inference therefore cannot change
+  window membership.
 - **F4** - `frame_observations()` derives `quality_usable` from the
   product-detection quality gate and preserves its reason codes; unusable
   frames contribute no detections, no valid opportunities, and no count
