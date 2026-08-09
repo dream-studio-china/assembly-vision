@@ -140,6 +140,7 @@ Window grouping, quality, and policy behavior enforced by the review fixes
   `OK`. `window_strategy: time` remains an explicit development fallback; it
   does not prove that adjacent products cannot overlap, so production temporal
   inspection must use `identity` or another validated correlation mechanism.
+  Configuration rejects `inspection.enabled: true` with the time strategy.
 - **Frame quality**: a frame whose product-detection quality gate reports
   unusable contributes no detections and no valid opportunity; its quality
   reasons are preserved as frame diagnostics.
