@@ -321,6 +321,69 @@ def test_pause_stops_inspection_and_status_reports_paused(
         runtime.shutdown()
 
 
+def test_temporal_loop_expires_idle_window(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A final product with no further frames is finalized by idle expiry.
+
+    The folder source is non-looping and holds exactly two images, so after
+    both frames the inspection loop only sees empty polls. The idle window must
+    be closed as a normal record by ``expire()`` rather than left open until
+    shutdown discards it as interrupted (PR-015 F2).
+    """
+    from types import SimpleNamespace
+    from uuid import uuid4
+
+    from assemblyvision_edge.api import state as state_module
+    from assemblyvision_edge.temporal.window_manager import FrameObservation
+
+    finalized: list[int] = []
+
+    class TemporalPipeline:
+        def frame_observations(self, frame: CapturedFrame) -> FrameObservation:
+            return FrameObservation(
+                frame_id=uuid4(),
+                sequence=frame.sequence,
+                captured_at=frame.wall_clock_utc,
+                quality_usable=True,
+                product_detected=True,
+                roi_valid=True,
+                inference_valid=True,
+                product_detection=None,
+                roi_result=None,
+                observations=[],
+                image=frame.image,
+            )
+
+        def inspect_window(self, window: object, writer: object) -> object:
+            finalized.append(len(window.frames))  # type: ignore[attr-defined]
+            return SimpleNamespace(decision=SimpleNamespace(business_result="OK"))
+
+    monkeypatch.setattr(
+        state_module,
+        "_build_instance_pipeline",
+        lambda instance, rule_registry=None: TemporalPipeline(),
+    )
+    settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
+    runtime = EdgeRuntime(settings)
+    images = _make_images(tmp_path)
+    instance = _instance_yaml("line-1", {"source": "folder", "path": str(images), "fps": 20.0})
+    instance["temporal"] = {"minimum_valid_frames": 1, "maximum_window_ms": 1000}
+    config_path = _write_multi_edge_config(tmp_path, [instance])
+    runtime.load_instances(config_path)
+    try:
+        deadline = time.monotonic() + 10.0
+        while time.monotonic() < deadline:
+            # Both frames arrive, then the idle window must expire on its own.
+            if finalized:
+                break
+            time.sleep(0.05)
+        assert finalized == [2], "idle window was not finalized with both frames"
+        runtime.shutdown()
+        # Normal expiry leaves no active window, so shutdown adds no record.
+        assert len(finalized) == 1
+    finally:
+        runtime.shutdown()
+
+
 def test_temporal_loop_emits_windowed_records(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

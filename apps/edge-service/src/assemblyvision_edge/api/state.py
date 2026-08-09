@@ -245,11 +245,24 @@ class EdgeRuntime:
                 was_paused = False
             frame = self.camera_manager.next_frame(instance_id, timeout=0.1)
             if frame is None:
+                # No new frame: finalize an idle window by its capture-time gap
+                # so a product at the end of a stream is decided normally
+                # (PR-015 F2), then keep polling.
+                if window_manager is not None:
+                    try:
+                        expired = window_manager.expire(time.monotonic())
+                        if expired is not None:
+                            record = runtime.pipeline.inspect_window(expired, writer)
+                            runtime.last_result = record.decision.business_result
+                    except Exception:  # noqa: BLE001 - idle expiry must not kill the loop
+                        log.exception("idle window expiry failed for instance %s", instance_id)
                 continue
             try:
                 if window_manager is not None:
                     observation = runtime.pipeline.frame_observations(frame)
-                    closed = window_manager.feed(observation, time.monotonic())
+                    # Group on the frame's acquisition time, not the time at
+                    # which inference finished (PR-015 F3).
+                    closed = window_manager.feed(observation, frame.monotonic_ts_ns / 1e9)
                     if closed is not None:
                         record = runtime.pipeline.inspect_window(closed, writer)
                         runtime.last_result = record.decision.business_result

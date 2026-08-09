@@ -1,10 +1,13 @@
 """Product window grouping for temporal aggregation (design 10, ADR-010).
 
 A ``ProductWindowManager`` groups captured frames into one physical product
-window. Frames arriving after a window is closed are recorded as dropped and
-never mutate its decision; duplicate frame IDs are ignored and counted; a
-forced close on shutdown discards the partial window as interrupted NG rather
-than reconstructing evidence from un-journaled memory (design 10.8).
+window. Membership and duration are compared on the frame capture monotonic
+clock, not on post-inference processing time, so queued or delayed frames keep
+their acquisition-time boundaries. Frames arriving after a window is closed
+are recorded as dropped and never mutate its decision; duplicate frame IDs and
+stale out-of-order timestamps are ignored and counted; a forced close on
+shutdown discards the partial window as interrupted NG rather than
+reconstructing evidence from un-journaled memory (design 10.8).
 """
 
 from __future__ import annotations
@@ -81,6 +84,7 @@ class ProductWindow:
     last_frame_at_monotonic: float
     frames: list[FrameObservation] = field(default_factory=list)
     duplicate_frame_ids: int = 0
+    stale_frame_ids: int = 0
     close_reason: CloseReason = "GAP"
     interrupted: bool = False
 
@@ -115,10 +119,20 @@ class ProductWindowManager:
         return self._active
 
     def feed(self, observation: FrameObservation, now_monotonic: float) -> ProductWindow | None:
-        """Add one frame; returns the window closed by this frame, if any."""
+        """Add one frame; returns the window closed by this frame, if any.
+
+        ``now_monotonic`` must be the frame's capture time on the monotonic
+        clock (seconds); using post-inference processing time would let queue
+        backlog or slow inference shift product boundaries.
+        """
         active = self._active
         if active is None:
             self._open(observation, now_monotonic)
+            return None
+        if now_monotonic < active.last_frame_at_monotonic:
+            # Out-of-order capture timestamp: stale frames are dropped and
+            # counted, never appended (design 10.8).
+            active.stale_frame_ids += 1
             return None
         if self._config.reject_duplicate_frame_ids and any(
             frame.frame_id == observation.frame_id for frame in active.frames
@@ -136,6 +150,23 @@ class ProductWindowManager:
             return closed
         active.frames.append(observation)
         active.last_frame_at_monotonic = now_monotonic
+        return None
+
+    def expire(self, now_monotonic: float) -> ProductWindow | None:
+        """Close the active window as ``GAP`` once its idle duration elapses.
+
+        The runtime calls this on an empty capture poll so a final product at
+        the end of a stream is finalized normally instead of waiting for a
+        later trigger frame or for process shutdown (design 10.8). ``now`` is
+        the runtime monotonic clock, which shares CLOCK_MONOTONIC with the
+        capture timestamps stored on the window.
+        """
+        active = self._active
+        if active is None:
+            return None
+        gap_ms = self._config.maximum_window_ms
+        if now_monotonic - active.last_frame_at_monotonic >= gap_ms / 1000.0:
+            return self._close("GAP")
         return None
 
     def force_close(self) -> ProductWindow | None:

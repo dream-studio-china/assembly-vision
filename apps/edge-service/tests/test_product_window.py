@@ -104,6 +104,32 @@ class TestWindowLifecycle:
         manager = ProductWindowManager(_config(maximum_window_ms=1000), uuid4())
         assert manager.force_close() is None
 
+    def test_expire_closes_idle_window_as_gap(self) -> None:
+        manager = ProductWindowManager(_config(maximum_window_ms=1000), uuid4())
+        now = 1000.0
+        manager.feed(_observation(1), now)
+        manager.feed(_observation(2), now + 0.1)
+        assert manager.expire(now + 0.9) is None
+        closed = manager.expire(now + 1.1)
+        assert closed is not None
+        assert closed.close_reason == "GAP"
+        assert [f.sequence for f in closed.frames] == [1, 2]
+        assert manager.active_window is None
+
+    def test_expire_without_active_window_returns_none(self) -> None:
+        manager = ProductWindowManager(_config(maximum_window_ms=1000), uuid4())
+        assert manager.expire(5000.0) is None
+
+    def test_stale_out_of_order_frame_dropped_and_counted(self) -> None:
+        manager = ProductWindowManager(_config(maximum_window_ms=1000), uuid4())
+        now = 1000.0
+        manager.feed(_observation(1), now)
+        assert manager.feed(_observation(2), now - 0.5) is None
+        active = manager.active_window
+        assert active is not None
+        assert [f.sequence for f in active.frames] == [1]
+        assert active.stale_frame_ids == 1
+
 
 class TestDuplicateAndIdentity:
     def test_duplicate_frame_id_ignored_and_counted(self) -> None:
