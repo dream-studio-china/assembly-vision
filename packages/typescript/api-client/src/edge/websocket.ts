@@ -7,12 +7,35 @@
 
 export type WSStatus = "disconnected" | "connecting" | "connected";
 
+/**
+ * One version-1 runtime event envelope (design 15.6, PR-023 F04).
+ * Field names mirror the server payload exactly; the event payload is `data`.
+ */
 export type WSEventEnvelope = {
+  event_id: string;
   type: string;
-  sequence: number;
+  schema_version: number;
+  occurred_at: string;
   source_id: string;
-  payload: unknown;
+  sequence: number;
+  correlation_id: string | null;
+  data: unknown;
 };
+
+function isEventEnvelope(value: unknown): value is WSEventEnvelope {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.event_id === "string" &&
+    typeof v.type === "string" &&
+    typeof v.schema_version === "number" &&
+    typeof v.occurred_at === "string" &&
+    typeof v.source_id === "string" &&
+    typeof v.sequence === "number" &&
+    (typeof v.correlation_id === "string" || v.correlation_id === null) &&
+    "data" in v
+  );
+}
 
 /**
  * Resolves the WebSocket subprotocols for one (re)connect attempt. Providers
@@ -123,12 +146,16 @@ export class ReconnectingWebSocket implements WebSocketService {
       this.status = "connected";
     };
     socket.onmessage = (message: MessageEvent<string>) => {
-      let envelope: WSEventEnvelope;
+      let parsed: unknown;
       try {
-        envelope = JSON.parse(message.data) as WSEventEnvelope;
+        parsed = JSON.parse(message.data);
       } catch {
         return;
       }
+      // Malformed envelopes are dropped before sequence handling so they can
+      // never corrupt the per-source baseline (PR-023 F04).
+      if (!isEventEnvelope(parsed)) return;
+      const envelope = parsed;
       const previous = this.#lastSequence.get(envelope.source_id) ?? -1;
       if (previous >= 0 && envelope.sequence > previous + 1) {
         // Missing events after an established baseline: signal the gap so
