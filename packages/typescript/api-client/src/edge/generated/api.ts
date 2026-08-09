@@ -513,18 +513,38 @@ export interface components {
         BusinessResult: "OK" | "NG";
         /** CameraState */
         CameraState: {
+            /** Camera Model */
+            camera_model?: string | null;
+            /** Camera Serial */
+            camera_serial?: string | null;
             /** Connected */
             connected: boolean;
             /** Error Code */
             error_code?: string | null;
+            /** Exposure Us */
+            exposure_us?: number | null;
+            /** Firmware Version */
+            firmware_version?: string | null;
             /** Fps */
             fps?: number | null;
+            /** Gain Db */
+            gain_db?: number | null;
+            /** Gentl Producer */
+            gentl_producer?: string | null;
             /** Last Frame At */
             last_frame_at?: string | null;
+            /** Packet Size */
+            packet_size?: number | null;
+            /** Pixel Format */
+            pixel_format?: string | null;
             /** Source Height */
             source_height: number;
             /** Source Width */
             source_width: number;
+            /** Transport Parent */
+            transport_parent?: string | null;
+            /** Trigger Mode */
+            trigger_mode?: string | null;
         };
         /** ComponentDetectionSnapshot */
         ComponentDetectionSnapshot: {
