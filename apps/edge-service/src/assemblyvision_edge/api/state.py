@@ -57,6 +57,7 @@ class InstanceRuntime:
     temporal: Any = None
     last_result: str | None = None
     thread: threading.Thread | None = None
+    correlator: Any = None
 
 
 def _instance_device_id(instance: InstanceConfig) -> UUID:
@@ -64,6 +65,19 @@ def _instance_device_id(instance: InstanceConfig) -> UUID:
     if instance.device_id is not None:
         return UUID(instance.device_id)
     return uuid5(_INSTANCE_NAMESPACE, instance.instance_id)
+
+
+def _build_identity_correlator(trigger: Any) -> Any:
+    """Build the per-instance trigger/identity correlator (E4b).
+
+    Returns None when the instance has no trigger source. Only the explicit
+    mock source is available until hardware trigger/barcode sources land (E6).
+    """
+    if trigger is None:
+        return None
+    from assemblyvision_edge.trigger.source import IdentityCorrelator, MockTriggerSource
+
+    return IdentityCorrelator(MockTriggerSource(trigger.products))
 
 
 class EdgeRuntime:
@@ -196,6 +210,7 @@ class EdgeRuntime:
                 pipeline_error=pipeline_error,
                 inspection_enabled=instance.inspection.enabled,
                 temporal=instance.temporal,
+                correlator=_build_identity_correlator(instance.trigger),
             )
             try:
                 sources[instance.instance_id] = build_frame_source(
@@ -324,6 +339,10 @@ class EdgeRuntime:
                         self._note_storage_write_fault(exc)
                         log.exception("idle window expiry failed for instance %s", instance_id)
                 continue
+            if runtime.correlator is not None:
+                # Stamp the frame with the current validated product identity
+                # from the trigger source before any window grouping (E4b).
+                frame = runtime.correlator.annotate(frame)
             try:
                 if window_manager is not None:
                     observation = runtime.pipeline.frame_observations(frame)

@@ -23,6 +23,7 @@ from assemblyvision_edge.temporal.aggregator import (
     ComponentTemporalPolicy,
     TemporalAggregationConfig,
 )
+from assemblyvision_edge.trigger.source import MockProductSpec
 
 
 def validate_model_version_declaration(declared: str, manifest: ModelManifest, name: str) -> None:
@@ -370,6 +371,19 @@ class InspectionRunConfig:
 
 
 @dataclass(frozen=True)
+class TriggerSourceConfig:
+    """Product-identity trigger source for an instance (E4b).
+
+    Only the deterministic ``mock`` source is available until hardware
+    triggers/barcode decoding land (E6); mock is explicitly development/
+    test-only and never masquerades as production hardware.
+    """
+
+    source: Literal["mock"] = "mock"
+    products: tuple[MockProductSpec, ...] = ()
+
+
+@dataclass(frozen=True)
 class InstanceConfig:
     """One independent inspection instance (camera + own pipeline/rule)."""
 
@@ -380,6 +394,7 @@ class InstanceConfig:
     temporal: TemporalAggregationConfig | None
     pipeline: PipelineConfig
     rule: Path
+    trigger: TriggerSourceConfig | None = None
 
 
 @dataclass(frozen=True)
@@ -429,6 +444,7 @@ def load_edge_config(path: Path) -> EdgeConfig:
                 "product_detection",
                 "component_detection",
                 "roi",
+                "trigger",
             },
             name,
         )
@@ -464,6 +480,7 @@ def load_edge_config(path: Path) -> EdgeConfig:
         temporal = _parse_temporal(instance.get("temporal"), f"{name}.temporal")
         _validate_temporal_against_pipeline(temporal, pipeline_config, f"{name}.temporal")
         _validate_temporal_inspection_strategy(inspection, temporal, name)
+        trigger = _parse_trigger_source(instance.get("trigger"), f"{name}.trigger")
         instances.append(
             InstanceConfig(
                 instance_id=instance_id,
@@ -473,9 +490,48 @@ def load_edge_config(path: Path) -> EdgeConfig:
                 temporal=temporal,
                 pipeline=pipeline_config,
                 rule=rule,
+                trigger=trigger,
             )
         )
     return EdgeConfig(application_version=application_version, instances=tuple(instances))
+
+
+def _parse_trigger_source(raw: Any, name: str) -> TriggerSourceConfig | None:
+    """Parse an instance trigger/identity source (E4b).
+
+    Only the deterministic ``mock`` source is supported until hardware
+    trigger/barcode sources land (E6); anything else is a configuration error
+    so a mock can never be mistaken for production hardware.
+    """
+    if raw is None:
+        return None
+    mapping = _require_mapping(raw, name)
+    _reject_unknown(mapping, {"source", "products"}, name)
+    source = mapping.get("source", "mock")
+    if source != "mock":
+        raise ConfigError(
+            f"{name}.source {source!r} is not supported; only 'mock' is available (E4b)"
+        )
+    products_raw = mapping.get("products")
+    if not isinstance(products_raw, list) or not products_raw:
+        raise ConfigError(f"{name}.products must be a non-empty list")
+    products: list[MockProductSpec] = []
+    for index, product_raw in enumerate(products_raw):
+        product_name = f"{name}.products[{index}]"
+        product = _require_mapping(product_raw, product_name)
+        _reject_unknown(product, {"identity", "barcode", "frames"}, product_name)
+        frames = product.get("frames", 5)
+        if isinstance(frames, bool) or not isinstance(frames, int) or frames < 1:
+            raise ConfigError(f"{product_name}.frames must be a positive integer")
+        barcode = _require_optional_str(product.get("barcode"), f"{product_name}.barcode")
+        products.append(
+            MockProductSpec(
+                identity=_require_str(product.get("identity"), f"{product_name}.identity"),
+                frames=frames,
+                barcode=barcode,
+            )
+        )
+    return TriggerSourceConfig(source="mock", products=tuple(products))
 
 
 def _parse_camera_source(raw: dict[str, Any], base: Path, name: str) -> CameraSourceConfig:
