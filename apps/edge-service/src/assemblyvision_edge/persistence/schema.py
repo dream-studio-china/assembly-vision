@@ -121,6 +121,12 @@ upload_tasks = Table(
     Column("status", String(32), nullable=False),
     Column("idempotency_key", String(256), nullable=False),
     Column("checksum_sha256", String(64), nullable=True),
+    Column(
+        "size_bytes",
+        Integer,
+        nullable=True,
+        comment="Task payload size in bytes for queue metrics (design 13.9, E1)",
+    ),
     Column("attempt_count", Integer, nullable=False),
     Column("next_attempt_at", Text, nullable=True),
     Column("lease_expires_at", Text, nullable=True),

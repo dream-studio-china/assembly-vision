@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from assemblyvision_edge.api.deps import get_repository, get_runtime, require_viewer
 from assemblyvision_edge.api.problems import ApiProblem
@@ -21,6 +21,7 @@ def health_live() -> HealthLive:
 
 @router.get("/ready", response_model=DeviceStatus)
 def health_ready(
+    request: Request,
     runtime: EdgeRuntime = Depends(get_runtime),
     repository: EdgeRepository = Depends(get_repository),
     _: None = Depends(require_viewer),
@@ -31,4 +32,11 @@ def health_ready(
             code="NOT_READY",
             detail="inspection engine is not ready",
         )
-    return DeviceStatus.model_validate(runtime.device_status(repository.count_pending_uploads()))
+    queue = repository.upload_queue_metrics()
+    scheduler = request.app.state.upload_scheduler
+    health = scheduler.health() if scheduler is not None else None
+    return DeviceStatus.model_validate(
+        runtime.device_status(
+            repository.count_pending_uploads(), queue, health, scheduler is not None
+        )
+    )

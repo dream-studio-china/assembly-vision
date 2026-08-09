@@ -82,6 +82,21 @@ class ClaimedUploadTask:
     lease_owner: str
 
 
+@dataclass(frozen=True)
+class UploadQueueMetrics:
+    """Persistent upload queue observability (design 13.9, E1).
+
+    ``pending_bytes`` covers tasks that are not yet terminal (PENDING,
+    RETRY_WAIT, IN_PROGRESS); ``oldest_pending_at`` is the creation time of the
+    oldest waiting task, so operators can see a stalled queue without reading
+    media files.
+    """
+
+    by_state: dict[str, int]
+    pending_bytes: int
+    oldest_pending_at: str | None
+
+
 def _filter_fingerprint(filters: dict[str, object]) -> str:
     """Canonical SHA-256 of the active filter set.
 
@@ -179,6 +194,16 @@ def _content_hash(record: InspectionRecord) -> str:
     payload.pop("synchronization_status", None)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _canonical_record_json(record: InspectionRecord) -> str:
+    """Canonical JSON of the full projection, matching the upload payload.
+
+    The scheduler serializes the persisted record the same way when building
+    the inspection payload, so the recorded task size matches the bytes that
+    will be uploaded (E1).
+    """
+    return json.dumps(record.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
 
 
 def _has_verified_receipt(row: Any) -> bool:
@@ -797,6 +822,37 @@ class EdgeRepository:
             ).scalar()
         return int(result or 0)
 
+    def upload_queue_metrics(self) -> UploadQueueMetrics:
+        """Aggregate upload task counts, bytes, and oldest pending task (E1)."""
+        with self._engine.connect() as conn:
+            rows = (
+                conn.execute(
+                    text(
+                        f"SELECT status, COUNT(*) AS n, SUM(size_bytes) AS bytes "
+                        f"FROM {upload_tasks.name} GROUP BY status"
+                    )
+                )
+                .mappings()
+                .all()
+            )
+            oldest = conn.execute(
+                text(
+                    f"SELECT MIN(created_at) FROM {upload_tasks.name} "
+                    "WHERE status IN ('PENDING', 'RETRY_WAIT', 'IN_PROGRESS')"
+                )
+            ).scalar()
+        by_state = {row["status"]: int(row["n"]) for row in rows}
+        pending_bytes = sum(
+            int(row["bytes"] or 0)
+            for row in rows
+            if row["status"] in ("PENDING", "RETRY_WAIT", "IN_PROGRESS")
+        )
+        return UploadQueueMetrics(
+            by_state=by_state,
+            pending_bytes=pending_bytes,
+            oldest_pending_at=oldest,
+        )
+
     def enqueue_inspection_uploads(self, record: InspectionRecord) -> int:
         """Insert one inspection task plus one media task per artifact.
 
@@ -833,6 +889,7 @@ class EdgeRepository:
             "payload_hash": _content_hash(record),
             "idempotency_key": f"inspection:{record.device_id}:{record.inspection_id}",
             "checksum_sha256": _content_hash(record),
+            "size_bytes": len(_canonical_record_json(record).encode("utf-8")),
         }
         media_tasks = [
             {
@@ -841,6 +898,7 @@ class EdgeRepository:
                 "payload_hash": item.checksum_sha256,
                 "idempotency_key": f"media:{record.device_id}:{item.media_id}",
                 "checksum_sha256": item.checksum_sha256,
+                "size_bytes": item.size_bytes,
             }
             for item in record.media
         ]
@@ -867,12 +925,12 @@ class EdgeRepository:
                     INSERT INTO {upload_tasks.name} (
                         upload_task_id, device_id, inspection_id, kind, object_id,
                         payload_hash, status, idempotency_key, checksum_sha256,
-                        attempt_count, next_attempt_at, last_error_code,
+                        size_bytes, attempt_count, next_attempt_at, last_error_code,
                         created_at, updated_at, completed_at
                     ) VALUES (
                         :upload_task_id, :device_id, :inspection_id, :kind, :object_id,
                         :payload_hash, 'PENDING', :idempotency_key, :checksum_sha256,
-                        0, NULL, NULL, :created_at, :created_at, NULL
+                        :size_bytes, 0, NULL, NULL, :created_at, :created_at, NULL
                     )
                     """
                 ),
@@ -885,6 +943,7 @@ class EdgeRepository:
                     "payload_hash": task["payload_hash"],
                     "idempotency_key": task["idempotency_key"],
                     "checksum_sha256": task["checksum_sha256"],
+                    "size_bytes": task["size_bytes"],
                     "created_at": now,
                 },
             )

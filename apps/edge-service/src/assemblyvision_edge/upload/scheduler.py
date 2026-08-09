@@ -240,6 +240,25 @@ def _full_jitter_backoff(
     return jitter * upper
 
 
+@dataclass(frozen=True)
+class SchedulerHealth:
+    """Process-local worker health counters (design 13.9, E1).
+
+    Counters reset on scheduler start; queue truth lives in the repository.
+    """
+
+    attempts: int
+    successes: int
+    failures: int
+    last_attempt_at: str | None = None
+    last_success_at: str | None = None
+    last_error_code: str | None = None
+
+    @property
+    def failure_rate(self) -> float:
+        return (self.failures / self.attempts) if self.attempts else 0.0
+
+
 class UploadScheduler:
     """Background worker that drains the upload outbox (design 13.4)."""
 
@@ -270,6 +289,41 @@ class UploadScheduler:
         self._now = now or (lambda: datetime.now(UTC))
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
+        # Process-local health counters for device status (E1).
+        self._health_lock = threading.Lock()
+        self._attempts = 0
+        self._successes = 0
+        self._failures = 0
+        self._last_attempt_at: str | None = None
+        self._last_success_at: str | None = None
+        self._last_error_code: str | None = None
+
+    def health(self) -> SchedulerHealth:
+        with self._health_lock:
+            return SchedulerHealth(
+                attempts=self._attempts,
+                successes=self._successes,
+                failures=self._failures,
+                last_attempt_at=self._last_attempt_at,
+                last_success_at=self._last_success_at,
+                last_error_code=self._last_error_code,
+            )
+
+    def _record_attempt(self, when: str) -> None:
+        with self._health_lock:
+            self._attempts += 1
+            self._last_attempt_at = when
+
+    def _record_success(self, when: str) -> None:
+        with self._health_lock:
+            self._successes += 1
+            self._last_success_at = when
+            self._last_error_code = None
+
+    def _record_failure(self, when: str, code: str) -> None:
+        with self._health_lock:
+            self._failures += 1
+            self._last_error_code = code
 
     def start(self) -> None:
         if self._thread is not None and self._thread.is_alive():
@@ -302,6 +356,7 @@ class UploadScheduler:
             except Exception:  # noqa: BLE001 - never lose the task over a bug
                 log.exception("upload task %s failed unexpectedly", item.task.upload_task_id)
                 failure_time = self._now()
+                self._record_failure(failure_time.isoformat(), "SCHEDULER_ERROR")
                 self._repository.mark_upload_retry(
                     str(item.task.upload_task_id),
                     item.lease_owner,
@@ -314,9 +369,12 @@ class UploadScheduler:
     def _process(self, claimed: ClaimedUploadTask) -> None:
         task = claimed.task
         lease_owner = claimed.lease_owner
+        attempt_time = self._now().isoformat()
+        self._record_attempt(attempt_time)
         try:
             payload = self._load_payload(task)
         except _PermanentPayloadError as exc:
+            self._record_failure(self._now().isoformat(), exc.code)
             self._repository.mark_upload_permanent_failure(
                 str(task.upload_task_id), lease_owner, exc.code, self._now().isoformat()
             )
@@ -331,10 +389,12 @@ class UploadScheduler:
                 # A sink claiming success without a verified receipt is an
                 # integrity violation; never mark the task successful
                 # (PR-017 F5).
+                self._record_failure(now_iso, "RECEIPT_MISSING")
                 self._repository.mark_upload_permanent_failure(
                     str(task.upload_task_id), lease_owner, "RECEIPT_MISSING", now_iso
                 )
                 return
+            self._record_success(now_iso)
             self._repository.mark_upload_succeeded(
                 str(task.upload_task_id),
                 lease_owner,
@@ -344,10 +404,12 @@ class UploadScheduler:
             )
             return
         if result.status == "PERMANENT":
+            self._record_failure(now_iso, result.error_code or "PERMANENT")
             self._repository.mark_upload_permanent_failure(
                 str(task.upload_task_id), lease_owner, result.error_code or "PERMANENT", now_iso
             )
             return
+        self._record_failure(now_iso, result.error_code or "RETRYABLE")
         backoff = _full_jitter_backoff(
             task.attempt_count,
             base_seconds=self._base_retry_seconds,

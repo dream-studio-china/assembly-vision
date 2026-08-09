@@ -523,10 +523,11 @@ are resolved with regression tests:
 
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6). The
   remaining Edge production-candidate work is tracked as E1-E6:
-  - **E1 observability**: fix the Alembic `fileConfig` side effect that
-    disables `assemblyvision.*` loggers after migration (so `/api/v1/logs`
-    captures application records), then add scheduler health, queue
-    bytes/oldest age, failure rate, last successful contact, and alerts.
+  - **E1 observability**: the Alembic `fileConfig` side effect that disabled
+    `assemblyvision.*` loggers after migration is fixed so `/api/v1/logs`
+    captures application records, and device status now exposes upload queue
+    bytes, oldest pending age, attempt/success/failure counters, failure rate,
+    last contact, and `UPLOAD_BLOCKED`/`UPLOAD_FAILING` alerts.
   - **E2 retention and disk safety**: cleanup worker with inter-process lease,
     deletion only after verified receipts + retention, disk-pressure
     warning/critical/stop policy, startup integrity scan.

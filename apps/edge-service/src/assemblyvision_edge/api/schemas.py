@@ -49,6 +49,17 @@ class DeviceStatus(BaseModel):
     central_connected: bool
     disk_free_bytes: int
     upload_pending_count: int
+    # Upload queue observability (design 13.9, E1): persistent queue facts come
+    # from the repository, attempt/success/failure liveness from the worker.
+    upload_pending_bytes: int = 0
+    upload_oldest_pending_at: str | None = None
+    upload_attempts: int = 0
+    upload_successes: int = 0
+    upload_failures: int = 0
+    upload_failure_rate: float = 0.0
+    upload_last_attempt_at: str | None = None
+    upload_last_success_at: str | None = None
+    upload_last_error_code: str | None = None
     current_product_model_version_id: str | None = None
     current_component_model_version_id: str | None = None
     current_rule_version_id: str | None = None
