@@ -3482,7 +3482,7 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <p><code>null</code> 曝光和增益意味着需要进行现场校准，而不是自动默认。应用的相机设置和序列号会在启动和更改时记录。</p>
 <h2 id="78-recovery-and-failure-handling">7.8 恢复和故障处理<a class="headerlink" href="#78-recovery-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
-<li>断开连接时，停止接受新检查，将任何活动窗口关闭为 <code>NG</code> 和 <code>CAMERA_DISCONNECTED</code>，并使用有界指数退避重新连接。</li>
+<li>断开连接时，停止接受新的检查，将任何活动窗口关闭为 <code>NG</code> 和 <code>CAMERA_DISCONNECTED</code>，并使用有界指数退避重新连接。</li>
 <li>在序列间隙或缓冲区溢出时，增加指标并将受影响的窗口标记为降级；证据不足产生<code>NG</code>。</li>
 <li>对于陈旧或重复的帧，拒绝这些帧并报告相机运行状况恶化。</li>
 <li>在时钟调整时，继续使用单调时钟计算持续时间并记录挂钟的不连续性。</li>
@@ -3494,7 +3494,7 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <ul>
 <li>根据记录和模拟的 SDK 行为对每个供应商适配器进行合同测试。</li>
 <li>测试断开、重新连接、丢帧、重复序列号、损坏的缓冲区和延迟帧。</li>
-<li>在每个窗口阶段验证触发去抖、相邻产品、超时和重新启动。</li>
+<li>验证触发去抖、相邻产品、超时以及每个窗口阶段的重新启动。</li>
 <li>使用正常、模糊、黑暗、明亮、反射和空的生产场景校准质量阈值。</li>
 <li>浸泡测试捕获时间比正常生产班次长，同时监控内存和缓冲区增长。</li>
 <li>验证文件源排序和输出 ID 是否可重复。</li>

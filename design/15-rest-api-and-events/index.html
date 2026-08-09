@@ -3666,6 +3666,24 @@
 <td>A</td>
 </tr>
 <tr>
+<td><code>POST /api/v1/ws/runtime/ticket</code></td>
+<td>Issue a short-lived, single-use ticket so a cross-origin browser socket can authenticate without placing a credential in the URL.</td>
+<td>None / <code>WsTicket</code></td>
+<td><code>401 UNAUTHENTICATED</code>, <code>429 RATE_LIMITED</code></td>
+<td>Each call issues a new ticket</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/ws/runtime/stats</code></td>
+<td>Runtime event channel counters: active connections, published events by type, slow-consumer disconnects, delivery failures.</td>
+<td>None / <code>RuntimeEventStats</code></td>
+<td><code>401 UNAUTHENTICATED</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
 <td><code>GET /api/v1/inspection/state</code></td>
 <td>Current window and pause/fault state.</td>
 <td>None / <code>InspectionRuntimeState</code></td>
@@ -4313,7 +4331,7 @@ contract is mandatory:</p>
 </tr>
 </tbody>
 </table>
-<p>WebSocket authentication uses the existing secure session cookie or a short-lived, single-purpose ticket obtained over REST. Tokens must not appear in URL query logs.</p>
+<p>WebSocket authentication uses the existing secure session cookie or a short-lived, single-purpose ticket obtained over REST. Tokens must not appear in URL query logs. Browser WebSocket cannot set an <code>Authorization</code> header, so a cross-origin dashboard exchanges its viewer credential for a one-time ticket at <code>POST /api/v1/ws/runtime/ticket</code> and sends it as the negotiated <code>Sec-WebSocket-Protocol</code> value; the ticket is consumed atomically during acceptance, expires within seconds, and is never logged.</p>
 <h2 id="156-event-envelope-and-evolution">15.6 Event Envelope and Evolution<a class="headerlink" href="#156-event-envelope-and-evolution" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;event_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span>

@@ -3232,7 +3232,7 @@
 返回<code>OK</code>。它也无法完成空闲窗口，而是使用处理时间
 比采集时间，接受不可用的帧作为证据，并允许
 未配置或资格不足的证据无法满足规则。这些是
-产品决定安全缺陷，而非化妆品后续工作。</p>
+产品决定安全缺陷，而非美容后续工作。</p>
 <h2 id="resolution-status">解决状态<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
 <p>本次审查 (F1-F7) 中的所有发现均已在
 <code>feat/temporal-aggregation</code> 通过集中提交，每个提交都进行回归测试
@@ -3333,7 +3333,7 @@
 <code>component_a</code> 和仅提供 <code>component_b</code> 的第二种产品以及
 <code>manual</code>可以形成一个全<code>PRESENT</code>窗口并被评估为<code>OK</code>。</p>
 <p>这违反了设计 10 中的物理产品证据隔离不变量
-第 10.2 和 10.3 节，混合窗口排除要求
+第 10.2 和 10.3 节，第 10.2 节和第 10.3 节中的混合窗口排除要求
 10.8、ADR-010 第 3 节和合同 06 第 5 节要求的混合产品
 测试。</p>
 <p><strong>分辨率：</strong></p>
@@ -3353,9 +3353,9 @@
 <p><strong>验收标准：</strong></p>
 <ul>
 <li>集成测试从两个方面进行互补的所需组件检测
-  一个持续时间/间隙间隔内的不同产品标识并进行验证
+  一个持续时间/间隙间隔内的不同产品标识并验证
   这两种产品都不产生<code>OK</code>。</li>
-<li>身份转换、边界信号缺失和已确认的多产品
+<li>身份转换、边界信号缺失和多产品确认
   将每个结果框入具有稳定原因的中止或未经验证的 <code>NG</code> 记录中
   代码。</li>
 <li>具有所有必需组件证据的相同身份窗口仍然可以产生
@@ -3399,7 +3399,7 @@
 <li><code>packages/python/vision-core/src/assemblyvision_vision/sources/frame_source.py:33-38</code></li>
 </ul>
 <p>运行时在 <code>frame_observations()</code> 完成后提供 <code>time.monotonic()</code>。
-推理延迟、队列积压或调度程序延迟可能会因此而分裂
+推理延迟、队列积压或调度程序延迟可能会因此分裂
 连续捕获的帧或合并单独捕获的产品。每个
 <code>CapturedFrame</code> 已包含其获取单调时间戳
 <code>monotonic_ts_ns</code>，但窗口管理器不使用它。</p>

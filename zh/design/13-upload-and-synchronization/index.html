@@ -3450,7 +3450,7 @@ else 永久验证或内容冲突
 <p>重试连接失败、超时、HTTP <code>408</code>、<code>429</code> 和 <code>5xx</code>，在配置的范围内遵守 <code>Retry-After</code>。不要无限期地自动重试身份验证/授权失败、架构不兼容、校验和冲突或无效内容。使用具有完全抖动的指数退避：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>delay = random(0, min(max_delay, base_delay * 2 ** min(attempt, exponent_cap)))
 </code></pre></div>
-<p>工作线程并发和带宽是有限的，因此上传不会导致推理不足或填满内存。租约在工作线程崩溃后恢复任务。断路器可减少中断期间的重复流量，但会定期探测恢复情况。</p>
+<p>工作线程并发和带宽是有限的，因此上传不会导致推理不足或填满内存。工作线程崩溃后，租约会恢复任务。断路器可减少中断期间的重复流量，但会定期探测恢复情况。</p>
 <h2 id="136-offline-operation-sequence">13.6 离线操作顺序<a class="headerlink" href="#136-offline-operation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Camera
@@ -3544,7 +3544,7 @@ loop 到期排队任务
 <p>按状态显示队列计数和字节数、最早的挂起时间、尝试率、成功/失败率、上传延迟、吞吐量、电路状态和上次成功联系。手动重试仅重置符合条件的任务并保留尝试历史记录。</p>
 <h2 id="1310-verification">13.10 验证<a class="headerlink" href="#1310-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>在每个服务器提交边界超时后集成测试幂等重播。</li>
+<li>在每个服务器提交边界超时后集成测试幂等重放。</li>
 <li>测试重复的任务交付、无序检查、重复的介质以及冲突的校验和。</li>
 <li>故障注入 DNS 失败、连接重置、响应缓慢、<code>429</code>、<code>5xx</code>、<code>401</code>、<code>409</code> 和工作线程终止。</li>
 <li>运行长时间的离线测试，继续检查，重新启动边缘，恢复网络，并验证完全耗尽而没有重复。</li>
@@ -3572,7 +3572,7 @@ loop 到期排队任务
   （设计12.4步骤3+4）。启动协调应用相同的操作
   每个有效的包，修复搁浅的 <code>LOCAL_ONLY</code> 记录而不是
   跳过它们。</li>
-<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code> 在一个任务中声明到期任务
+<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code>在一个任务中声明到期任务
   即时交易； <code>MEDIA</code> 任务只有在检查后才到期
   任务保存经过验证的成功收据，因此元数据始终先于媒体。
   每个声明都带有一个每个任务的防护令牌（<code>lease_owner</code>），并且陈旧

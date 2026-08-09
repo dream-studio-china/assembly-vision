@@ -3215,6 +3215,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#89-runtime-and-live-event-channel-e4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.9 运行时和实时事件通道 (E4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3444,6 +3455,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#89-runtime-and-live-event-channel-e4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.9 运行时和实时事件通道 (E4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3652,7 +3674,7 @@
 <li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
   跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
 <li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
-  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
+  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民意调查（应该是轮询）。发布前进行审查。</li>
 <li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
 </ul>
 <h2 id="7-conventions-agentsmd">7.约定（AGENTS.md）<a class="headerlink" href="#7-conventions-agentsmd" title="Permanent link">&para;</a></h2>
@@ -3907,7 +3929,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
   <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
   保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界每个实例检查队列
+  实例使用显式的有界的每个实例检查队列
   溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
   <code>EdgeRuntime.load_instances</code>开始独立的单帧检查
   当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
@@ -3954,14 +3976,14 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   具有二进制主体和问题响应的规范业务/内部枚举
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
-<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code>，因此严格的 mypy 门会通过
+<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code> 因此严格的 mypy 门会通过
   回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
   （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
 <h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
 <p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
 ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
 项目。审查驱动的强化过程记录在
-<code>docs/reviews/PR-017-review.md</code>；结果 F1-F8 加上决议后通过
+<code>docs/reviews/PR-017-review.md</code>;结果 F1-F8 加上决议后通过
 通过回归测试解决：</p>
 <ul>
 <li><strong>原子投影和发件箱</strong>：<code>persist_inspection_and_enqueue_uploads</code>
@@ -4057,7 +4079,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   <code>UPLOAD_CIRCUIT_OPEN</code> 警报；持久队列永远不会改变。</li>
 <li><strong>受控手动重试 (E3c)</strong>：<code>POST /api/v1/uploads/{id}/retry</code>
   仅重置 <code>RETRY_WAIT</code>/<code>PERMANENT_FAILURE</code> 任务
-  <code>attempt_count + 1</code>； 404 未知，409 不合格，无突变。</li>
+  <code>attempt_count + 1</code>; 404 未知，409 不合格，无突变。</li>
 <li><strong>长时间停电排水 (E3d)</strong>：离线检查、重新启动和恢复的天数
   使用媒体之前的有序元数据恢复无重复的排空队列
   上传和每次检查<code>SYNCED</code>。</li>
@@ -4067,26 +4089,61 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   保留占位符 - 中央端点未实现和分块
   仅在边缘到中心合约冻结后才开始传输。</li>
 </ul>
+<h2 id="89-runtime-and-live-event-channel-e4">8.9 运行时和实时事件通道 (E4)<a class="headerlink" href="#89-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h2>
+<p>于<code>feat/e4-runtime</code>实现（投递任务
+<code>docs/tasks/E4-runtime.md</code>):</p>
+<ul>
+<li><strong>WebSocket 运行时通道 (E4a)</strong>：内存中 <code>RuntimeEventBus</code> 分配
+  单调的每个源序列号并保持每个连接有界
+  缓冲区可以断开缓慢的消费者而不是阻塞发布者。
+  <code>WS /api/v1/ws/runtime</code> 使用相同的查看者承载/会话进行身份验证
+  模型作为 REST 和流设计 15.6 信封（<code>inspection.started</code>，
+  <code>inspection.completed</code>、<code>device.status_changed</code>、<code>upload.changed</code>）。活动
+  来自真实的转换：检查循环（在每个新窗口上启动
+  或每帧检查，在投影/发件箱提交后完成），
+  暂停/恢复，以及上传调度程序工作人员。跨源浏览器套接字
+  无法设置 <code>Authorization</code> 标头，因此仪表板交换其查看器
+  通过 REST 获得短期、一次性票据的凭证
+  (<code>POST /api/v1/ws/runtime/ticket</code>) 并将其作为协商的内容发送
+  <code>Sec-WebSocket-Protocol</code> 值，切勿出现在 URL 中 (PR-023 F01)。仪表板
+  实时视图消耗提要并在重新连接或序列时重新获取 REST
+  差距，民意调查减少到缓慢回落。发布永远不会阻塞
+  检查、持久化或工作人员：跨线程交付执行
+  拥有事件循环的有界缓冲区决策，因此缓慢的消费者
+  断开连接而不是提高 <code>QueueFull</code> (PR-023 F02)，并且通道
+  计数器通过经过身份验证的暴露
+  <code>GET /api/v1/ws/runtime/stats</code> 端点 (PR-023 F05)。</li>
+<li><strong>触发/条形码/身份接缝 (E4b)</strong>：一个 <code>TriggerSource</code> 协议加上一个
+  确定性<code>MockTriggerSource</code>（带有条形码的帧排序身份
+  相关元数据和有效性跨度）提供 <code>IdentityCorrelator</code>
+  标记捕获的帧，因此身份密封的产品窗口边界
+  (PR-015 F1) 按实物产品分组；非循环流之后的帧
+  不保留身份并关闭窗口。模拟源被限制在后面
+  显式实例 <code>trigger:</code> 配置（仅开发/测试）并且可以
+  永远不要伪装成生产硬件。</li>
+<li><strong>共享模型权重 (E4c)</strong>：进程范围的 <code>ModelRegistry</code> 由
+  不可变工件 SHA-256 加上推理设备允许实例引用
+  相同的清单共享一个加载的句柄；持有者将推理序列化
+  每个工件锁定，因为 ultralytics 预测器保持可变状态，而
+  不同的工件/设备保持独立，并且不共享可变状态
+  （ADR-013 第 3 阶段）。</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）； <strong>E1
   可观察性</strong>（PR #18/#19），<strong>E2 保留和磁盘安全性</strong>（PR #20，
-  PR-020 审查已解决），以及 <strong>E3 上传弹性</strong>（第 8.8 节）
-  已实施。剩余的 Edge 生产候选工作被跟踪为
-  E4-E6：</li>
-<li><strong>E4 运行时</strong>：WebSocket 通道、与硬件无关的触发器/条形码/
-    具有模拟硬件验证、多实例资源的身份接缝
-    分享。</li>
+  PR-020 审核已解决），<strong>E3 上传弹性</strong>（PR #22，第 8.8 节），
+  和 <strong>E4 运行时</strong>（第 8.9 节）已实现。剩余边数
+  生产候选工作被跟踪为 E5-E6：</li>
 <li><strong>E5 部署和安全</strong>：Docker 打包、秘密/TLS 配置、
     备份/恢复、操作手册。</li>
 <li><strong>E6 验收</strong>：弹性矩阵、浸泡、保留模型验证、
     包含硬件先决条件的边缘验收报告。</li>
-<li><strong>WebSocket 运行时通道</strong> 仍然是主要的后端差距（取代了
-  轮询预览）。</li>
+<li>实现了 <strong>WebSocket 运行时通道</strong>（第 8.9 节）；民意调查
+  预览仍然是像素馈送的权宜之计，并且不是正确性所必需的。</li>
 <li>AUDIT-001 <strong>已关闭</strong>，包括延迟的 4.4 权威持久性
-  项目（现在由 PR #17 交付）。第 3 阶段每主机多边缘“共享”模型
-  权重共享仍然是一个开放的优化（ADR-013 每个实例管道
-  加载自己的模型）。</li>
+  项目（现在由 PR #17 交付）。实现共享模型权重（E4c）；
+  每个实例管道使用一个注册表。</li>
 <li>基线仍然需要真实的客户数据：收集和注释
   与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
@@ -4096,10 +4153,11 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>
 <li>相机采集 (ADR-013/014) 被合并 (PR #14)，包括时间
-  聚合（PR #15/#16）。其余与硬件相关的项目：供应商 SDK
-  相机适配器、条形码解码和硬件触发产品窗口
-  边界来取代仅时间回退（这是一种开发模式，
-  不是生产产品边界）。</li>
+  聚合（PR #15/#16）和触发/身份接缝（E4b）。剩余
+  硬件相关项目：供应商 SDK 相机适配器、真实条形码解码、
+  和物理光电眼/PLC 触发器来替换模拟触发源
+  仅时间后备（这是一种开发模式，而不是生产模式）
+  产品边界）。</li>
 <li>中央服务器（摄取 API、PostgreSQL 模型、对象存储、
   幂等收据，人工审核）<strong>未实现</strong>；只有
   存在边缘侧请求/接收合同。中央工作在E1-E6之后开始
@@ -4107,7 +4165,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。</li>
-<li><code>.obsidian/</code> 仍然选择不被跟踪；在更改该决定之前通知用户。</li>
+<li><code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
 
 

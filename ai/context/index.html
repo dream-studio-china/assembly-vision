@@ -3215,6 +3215,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#89-runtime-and-live-event-channel-e4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.9 Runtime and Live Event Channel (E4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3437,6 +3448,17 @@
     <span class="md-ellipsis">
       
         8.8 Upload Resilience (E3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#89-runtime-and-live-event-channel-e4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.9 Runtime and Live Event Channel (E4)
       
     </span>
   </a>
@@ -4067,26 +4089,61 @@ desktop 3), and 12 Playwright e2e.</p>
   reserved placeholder — the central endpoint is not implemented and chunked
   transfer starts only after the Edge-to-central contract freezes.</li>
 </ul>
+<h2 id="89-runtime-and-live-event-channel-e4">8.9 Runtime and Live Event Channel (E4)<a class="headerlink" href="#89-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h2>
+<p>Implemented on <code>feat/e4-runtime</code> (delivery task
+<code>docs/tasks/E4-runtime.md</code>):</p>
+<ul>
+<li><strong>WebSocket runtime channel (E4a)</strong>: an in-memory <code>RuntimeEventBus</code> assigns
+  monotonic per-source sequence numbers and keeps bounded per-connection
+  buffers that disconnect slow consumers instead of blocking publishers.
+  <code>WS /api/v1/ws/runtime</code> authenticates with the same viewer bearer/session
+  model as REST and streams design 15.6 envelopes (<code>inspection.started</code>,
+  <code>inspection.completed</code>, <code>device.status_changed</code>, <code>upload.changed</code>). Events
+  come from real transitions: the inspection loop (started on each new window
+  or per-frame inspection, completed after the projection/outbox commit),
+  pause/resume, and the upload scheduler worker. Cross-origin browser sockets
+  cannot set an <code>Authorization</code> header, so the dashboard exchanges its viewer
+  credential for a short-lived, single-use ticket over REST
+  (<code>POST /api/v1/ws/runtime/ticket</code>) and sends it as the negotiated
+  <code>Sec-WebSocket-Protocol</code> value, never in the URL (PR-023 F01). The dashboard
+  live view consumes the feed and refetches REST on reconnect or sequence
+  gaps, with the poll reduced to a slow fallback. Publishing never blocks
+  inspection, persistence, or the worker: cross-thread deliveries perform the
+  bounded-buffer decision on the owning event loop, so a slow consumer is
+  disconnected rather than raising <code>QueueFull</code> (PR-023 F02), and the channel
+  counters are exposed through the authenticated
+  <code>GET /api/v1/ws/runtime/stats</code> endpoint (PR-023 F05).</li>
+<li><strong>Trigger/barcode/identity seam (E4b)</strong>: a <code>TriggerSource</code> protocol plus a
+  deterministic <code>MockTriggerSource</code> (frame-ordered identities with barcode
+  correlation metadata and validity spans) feed an <code>IdentityCorrelator</code> that
+  stamps captured frames, so the identity-sealed product-window boundary
+  (PR-015 F1) groups by physical product; frames after a non-looping stream
+  keep no identity and fail the window closed. The mock source is gated behind
+  explicit instance <code>trigger:</code> configuration (development/test-only) and can
+  never masquerade as production hardware.</li>
+<li><strong>Shared model weights (E4c)</strong>: a process-wide <code>ModelRegistry</code> keyed by the
+  immutable artifact SHA-256 plus inference device lets instances referencing
+  the same manifest share one loaded handle; holders serialize inference on a
+  per-artifact lock because ultralytics predictors keep mutable state, while
+  distinct artifacts/devices stay separate and no mutable state is shared
+  (ADR-013 Phase 3).</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The <strong>upload queue scheduler</strong> gap is closed (PR #17, section 8.6); <strong>E1
   observability</strong> (PRs #18/#19), <strong>E2 retention and disk safety</strong> (PR #20,
-  PR-020 review resolved), and <strong>E3 upload resilience</strong> (section 8.8) are
-  implemented. The remaining Edge production-candidate work is tracked as
-  E4-E6:</li>
-<li><strong>E4 runtime</strong>: WebSocket channel, hardware-agnostic trigger/barcode/
-    identity seams with mock hardware validation, multi-instance resource
-    sharing.</li>
+  PR-020 review resolved), <strong>E3 upload resilience</strong> (PR #22, section 8.8),
+  and <strong>E4 runtime</strong> (section 8.9) are implemented. The remaining Edge
+  production-candidate work is tracked as E5-E6:</li>
 <li><strong>E5 deployment and security</strong>: Docker packaging, secret/TLS provisioning,
     backup/restore, runbooks.</li>
 <li><strong>E6 acceptance</strong>: resilience matrix, soak, held-out model validation,
     Edge acceptance report with hardware prerequisites.</li>
-<li>The <strong>WebSocket runtime channel</strong> remains the main backend gap (replaces the
-  polling preview).</li>
+<li>The <strong>WebSocket runtime channel</strong> is implemented (section 8.9); the polling
+  preview remains as a pixel-feed stopgap and is not required for correctness.</li>
 <li>AUDIT-001 is <strong>closed</strong> including the deferred 4.4 authoritative persistence
-  item (now delivered by PR #17). Phase 3 multi-edge-per-host "shared" model
-  weight sharing remains an open optimization (ADR-013 per-instance pipelines
-  load their own models).</li>
+  item (now delivered by PR #17). Shared model weights are implemented (E4c);
+  per-instance pipelines use one registry.</li>
 <li>Real customer data is still required for the baseline: collect and annotate
   with X-AnyLabeling per
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 and
@@ -4096,10 +4153,11 @@ desktop 3), and 12 Playwright e2e.</p>
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>, then run
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>.</li>
 <li>Camera acquisition (ADR-013/014) is merged (PR #14) including temporal
-  aggregation (PR #15/#16). Remaining hardware-dependent items: vendor SDK
-  camera adapters, barcode decoding, and hardware-trigger product-window
-  boundaries to replace the time-only fallback (which is a development mode,
-  not a production product boundary).</li>
+  aggregation (PR #15/#16) and the trigger/identity seam (E4b). Remaining
+  hardware-dependent items: vendor SDK camera adapters, real barcode decoding,
+  and physical photo-eye/PLC triggers to replace the mock trigger source and
+  the time-only fallback (which is a development mode, not a production
+  product boundary).</li>
 <li>The central server (ingestion API, PostgreSQL model, object storage,
   idempotent receipts, manual review) is <strong>not implemented</strong>; only the
   edge-side request/receipt contract exists. Central work starts after E1-E6

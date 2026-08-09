@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/reviews/AUDIT-001-system-audit/">
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/reviews/PR-023-review/">
       
       
-        <link rel="prev" href="../../runbooks/11-data-collection-and-annotation/">
-      
-      
-        <link rel="next" href="../PR-003-review/">
       
       
         
@@ -31,7 +27,7 @@
     
     
       
-        <title>系统审核 (AUDIT-001) - AssemblyVision</title>
+        <title>PR-023 评论：运行时和现场事件频道 (E4) - AssemblyVision</title>
       
     
     
@@ -82,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#audit-001-system-and-documentation-consistency-audit" class="md-skip">
+        <a href="#pr-023-review-runtime-and-live-event-channel-e4" class="md-skip">
           跳转至
         </a>
       
@@ -118,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              系统审核 (AUDIT-001)
+              PR-023 评论：运行时和现场事件频道 (E4)
             
           </span>
         </div>
@@ -2606,8 +2602,6 @@
       
   
   
-    
-  
   
   
     
@@ -2620,11 +2614,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
@@ -2645,7 +2641,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2660,37 +2656,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    系统审核 (AUDIT-001)
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../AUDIT-001-system-audit/" class="md-nav__link">
         
   
   
@@ -2706,247 +2675,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        范围
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#method" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        方法
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#resolution-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        解决状态
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#overall-verdict" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        总体判断
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-high-findings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 高发现
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 高发现">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#h1-missing-label-files-fabricate-ground-truth" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        H1。丢失的标签文件伪造了真实情况
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#h2-published-references-the-removed-staging-directory" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        H2。发布的 data.yaml 引用已删除的暂存目录
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#h3-relative-can-select-the-wrong-ultralytics-run-path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        H3。相对--out-weights可以选择错误的Ultralytics运行路径
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#h4-states-pr-11-is-open" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        H4。 context.md 表示 PR #11 已开放
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-med-findings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. 医学研究结果
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. 医学研究结果">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#41-reproduced-robustness-and-concurrency-defects" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.1 再现健壮性和并发性缺陷
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#42-rule-engine-fail-safe-gaps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.2 规则引擎故障安全差距
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#43-manifest-validation-gaps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.3 明显的验证差距
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#44-persistence-and-contract-boundary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.4 持久化和契约边界
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#45-api-and-frontend-hardening" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.5 API和前端强化
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-stress-test-record" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. 压测记录
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-documentation-and-tooling-consistency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 文档和工具的一致性
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-closure-order" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. 关闭令
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-resolution-log-2026-08-09" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 解决日志 (2026-08-09)
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3304,10 +3032,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#scope" class="md-nav__link">
+  <a href="#1-review-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        范围
+        1. 审查决定
       
     </span>
   </a>
@@ -3315,10 +3043,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#method" class="md-nav__link">
+  <a href="#2-scope-and-evidence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        方法
+        2. 范围和证据
       
     </span>
   </a>
@@ -3326,44 +3054,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resolution-status" class="md-nav__link">
+  <a href="#3-required-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        解决状态
+        3. 所需调查结果
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#overall-verdict" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        总体判断
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-high-findings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 高发现
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 高发现">
+    <nav class="md-nav" aria-label="3. 所需调查结果">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#h1-missing-label-files-fabricate-ground-truth" class="md-nav__link">
+  <a href="#pr23-f01---p1-cross-origin-authenticated-websocket-uses-the-wrong-path-and-cannot-carry-the-viewer-credential" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H1。丢失的标签文件伪造了真实情况
+        PR23-F01 - P1：跨域认证的WebSocket使用错误路径，无法携带查看者凭证
       
     </span>
   </a>
@@ -3371,10 +3077,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#h2-published-references-the-removed-staging-directory" class="md-nav__link">
+  <a href="#pr23-f02---p1-cross-thread-queue-delivery-can-drop-events-with-instead-of-disconnecting-the-slow-consumer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H2。发布的 data.yaml 引用已删除的暂存目录
+        PR23-F02 - P1：跨线程队列传递可以使用 QueueFull 删除事件，而不是断开慢速消费者的连接
       
     </span>
   </a>
@@ -3382,21 +3088,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#h3-relative-can-select-the-wrong-ultralytics-run-path" class="md-nav__link">
+  <a href="#pr23-f03---p1-default-per-frame-inspection-never-publishes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H3。相对--out-weights可以选择错误的Ultralytics运行路径
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#h4-states-pr-11-is-open" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        H4。 context.md 表示 PR #11 已开放
+        PR23-F03 - P1：默认每帧检查从未发布 inspection.started
       
     </span>
   </a>
@@ -3409,22 +3104,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-med-findings" class="md-nav__link">
+  <a href="#31-resolution-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 医学研究结果
+        3.1 解析状态
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. 医学研究结果">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-non-blocking-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 非阻塞改进
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 非阻塞改进">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#41-reproduced-robustness-and-concurrency-defects" class="md-nav__link">
+  <a href="#pr23-f04---p2-shared-typescript-event-contract-still-uses-rather-than-the-servers-envelope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1 再现健壮性和并发性缺陷
+        PR23-F04 - P2：共享 TypeScript 事件契约仍然使用 payload 而不是服务器的 data 信封
       
     </span>
   </a>
@@ -3432,43 +3138,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#42-rule-engine-fail-safe-gaps" class="md-nav__link">
+  <a href="#pr23-f05---p2-required-websocket-connection-and-event-counts-are-not-observable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2 规则引擎故障安全差距
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#43-manifest-validation-gaps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.3 明显的验证差距
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#44-persistence-and-contract-boundary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.4 持久化和契约边界
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#45-api-and-frontend-hardening" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.5 API和前端强化
+        PR23-F05 - P2：无法观察到所需的 WebSocket 连接和事件计数
       
     </span>
   </a>
@@ -3481,10 +3154,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-stress-test-record" class="md-nav__link">
+  <a href="#5-positive-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 压测记录
+        5. 积极的发现
       
     </span>
   </a>
@@ -3492,10 +3165,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-documentation-and-tooling-consistency" class="md-nav__link">
+  <a href="#6-resolution-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. 文档和工具的一致性
+        6. 解决方案清单
       
     </span>
   </a>
@@ -3503,10 +3176,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-closure-order" class="md-nav__link">
+  <a href="#7-final-merge-gate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. 关闭令
+        7. 最终合并门
       
     </span>
   </a>
@@ -3514,10 +3187,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-resolution-log-2026-08-09" class="md-nav__link">
+  <a href="#8-follow-up-re-review" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. 解决日志 (2026-08-09)
+        8. 后续复审
       
     </span>
   </a>
@@ -3544,493 +3217,405 @@
   
 
 
-<h1 id="audit-001-system-and-documentation-consistency-audit">AUDIT-001：系统和文档一致性审核<a class="headerlink" href="#audit-001-system-and-documentation-consistency-audit" title="Permanent link">&para;</a></h1>
-<h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision 存储库的只读审核（边缘运行时、持久性、
-API、前端、培训、脚本和文档），于 2026 年 8 月 8 日执行。
-此验证更新是针对当前工作树执行的
-2026年8月9日。此更新没有更改生产代码。</p>
-<h2 id="method">方法<a class="headerlink" href="#method" title="Permanent link">&para;</a></h2>
-<ul>
-<li>审查了管理安全、存储、数据/API、安全性和模型发布
-  合同；设计11、14和19；以及 ADR-011 和 ADR-012。</li>
-<li>检查每个引用的当前实施及其相关测试。</li>
-<li>仅当当前代码演示了所述情况时才保留结果
-  行为或当前文档明显冲突的地方。被击中的物品
-  不是一个开放的发现；其原始证据是陈旧的、虚假的或基于
-  不受支持的要求。</li>
-</ul>
-<h2 id="resolution-status">解决状态<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
-<p>所有 HIGH 结果和复制的 MED 结果、规则引擎和清单
-缺陷、API/前端强化项目以及文档对齐
-截至 2026 年 8 月 9 日，项目已<strong>关闭</strong>。每次关闭都记录在
-<a href="#8-resolution-log-2026-08-09">Section 8</a> 提交和验证
-满足其验收标准。唯一剩下的工作是
-权威持久化模式（4.4），明确推迟到
-上传调度程序已构建； M1边界文件现在将其命名为未来
-工作。</p>
-<p>每个行为改变的共享关闭门是：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv run ruff check .
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv run ruff format --check .
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv run mypy .
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv run pytest
+<h1 id="pr-023-review-runtime-and-live-event-channel-e4">PR-023 评论：运行时和现场事件频道 (E4)<a class="headerlink" href="#pr-023-review-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h1>
+<h2 id="1-review-decision">1. 审查决定<a class="headerlink" href="#1-review-decision" title="Permanent link">&para;</a></h2>
+<p><strong>状态：已解决</strong></p>
+<p>PR #23 具有预期的 E4 结构：瞬态服务器端运行时事件，
+显式模拟触发接缝，以及校验和/设备键控共享模型
+注册表。实施正确地保持检查持久性领先
+<code>inspection.completed</code> 发布并序列化共享的推理
+超解预测器。</p>
+<p>初步审查发现了三个阻止运行时通道的 P1 问题
+在支持的配置中正常工作并满足其
+有界缓冲合约，加上两个 P2 间隙。所有调查结果现已修复并
+回归测试涵盖（参见第 3.1 节）。</p>
+<h2 id="2-scope-and-evidence">2. 范围和证据<a class="headerlink" href="#2-scope-and-evidence" title="Permanent link">&para;</a></h2>
+<p>已审核的 PR：<a href="https://github.com/dream-studio-china/assembly-vision/pull/23">#23</a>
+（<code>feat/e4-runtime</code> 进入 <code>main</code>）。</p>
+<p>审查的提交：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>503a0e2 docs: add E4 runtime delivery task
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>63b2e9a feat(edge): WebSocket runtime channel and event sources (E4a)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>0aa74ad feat(edge): hardware-agnostic trigger/identity seam with mock source (E4b)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>59a83c3 feat(edge): shared read-only model weight cache across instances (E4c)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>ced8f9b style(edge): apply ruff multi-context with formatting in runtime event tests
 </code></pre></div>
-<p>仅文档更改也必须通过 <code>uv run mkdocs build --strict</code> 时
-文档环境已安装。调查结果仅在以下情况下结束：
-CI 中的具体验收标准和适用的共享门通行证。</p>
-<h2 id="overall-verdict">总体判断<a class="headerlink" href="#overall-verdict" title="Permanent link">&para;</a></h2>
-<p>本次审查中没有任何证据与先前的结论相矛盾，即当前的
-对于普通无效管道状态，单帧管道无法关闭。的
-最高的具体风险是数据集标签伪造、无法发布
-训练数据集，以及记录的训练命令，可以选择错误的
-Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
-留下来。 M1 SQLite 数据库是可重建的读投影，而不是
-合同要求的权威检验/发箱店；未来的调度程序和
-权威持久性工作不得将其当前模式视为令人满意的
-那个生产合同。</p>
-<hr />
-<h2 id="3-high-findings">3. 高发现<a class="headerlink" href="#3-high-findings" title="Permanent link">&para;</a></h2>
-<h3 id="h1-missing-label-files-fabricate-ground-truth">H1。丢失的标签文件伪造了真实情况<a class="headerlink" href="#h1-missing-label-files-fabricate-ground-truth" title="Permanent link">&para;</a></h3>
+<p>主要要求：</p>
 <ul>
-<li><strong>状态：</strong> 关闭 (3ce3147)。</li>
-<li><strong>证据：</strong> 当 <code>&lt;image-stem&gt;.txt</code> 不存在时，两个适配器都使用 <code>[]</code>
-  （<code>adapt-roboflow-dataset.py:191</code>、<code>adapt-xanylabeling.py:231</code>）。结果是
-  解释为明确的阴性或预期的缺失成分测试
-  样品。这与设计 19.17.3 相矛盾，设计 19.17.3 需要显式的空标签
-  文件和图像/标签配对。</li>
-<li><strong>所需的更改：</strong> 拒绝每个受支持的拆分中每个丢失的标签文件。
-  不要添加适配器选择加入，除非其语义、出处和下游
-  设计并记录验证行为；最小的安全修复是
-  拒绝。在输出之前还拒绝分割内重复的图像主干
-  写入，并将 Roboflow 的 <code>valid</code> 拆分标准化为 <code>val</code>（如果支持）。</li>
-<li><strong>接受：</strong> 为两个适配器添加参数化测试，证明
-  缺少训练、验证或测试标签会引发 <code>ValueError</code>，不留下任何输出
-  或暂存目录，并且不写入<code>test-expected.json</code>。添加测试
-  显式空标签（接受）、同干碰撞（拒绝）和
-  记录的 <code>valid</code> 布局（仅在规范化为 <code>val</code> 时接受）。</li>
+<li><a href="../../tasks/E4-runtime/">E4 runtime task</a>，特别是第 3、5、6 节，
+  和 7.</li>
+<li><a href="../../design/15-rest-api-and-events/">REST API and Events</a>，部分
+  15.5-15.7。</li>
+<li><a href="../../design/16-edge-dashboard/">Edge Dashboard</a>，第 16.2、16.10 节，
+  和16.13。</li>
+<li><a href="../../design/decisions/ADR-006-rest-plus-websocket/">ADR-006: REST Plus WebSocket</a>。</li>
+<li><a href="../../design/decisions/ADR-013-camera-frame-sources-and-multi-instance/">ADR-013: Camera Frame Sources and Multi-Instance Edge</a>。</li>
+<li><a href="../../contracts/01-architecture-boundaries/">Contract 01: Architecture Boundaries</a>。</li>
+<li><a href="../../contracts/05-data-api-and-versioning-contracts/">Contract 05: Data, API, and Versioning</a>。</li>
 </ul>
-<h3 id="h2-published-references-the-removed-staging-directory">H2。发布的 <code>data.yaml</code> 引用已删除的暂存目录<a class="headerlink" href="#h2-published-references-the-removed-staging-directory" title="Permanent link">&para;</a></h3>
+<p>PR 报告这些本地检查已通过：Ruff、MyPy、Pytest (<code>840 passed,
+9 warnings</code>)、pnpm build/lint/test、MkDocs strict 和 12 个 Playwright 测试。
+这些检查不涵盖跨域身份验证的 WebSocket 路径，即
+跨线程全队列竞赛，或下面的每帧开始事件转换。</p>
+<h2 id="3-required-findings">3. 所需调查结果<a class="headerlink" href="#3-required-findings" title="Permanent link">&para;</a></h2>
+<h3 id="pr23-f01---p1-cross-origin-authenticated-websocket-uses-the-wrong-path-and-cannot-carry-the-viewer-credential">PR23-F01 - P1：跨域认证的WebSocket使用错误路径，无法携带查看者凭证<a class="headerlink" href="#pr23-f01---p1-cross-origin-authenticated-websocket-uses-the-wrong-path-and-cannot-carry-the-viewer-credential" title="Permanent link">&para;</a></h3>
+<p><strong>参考文献</strong></p>
 <ul>
-<li><strong>状态：</strong> 关闭 (7af307b)。</li>
-<li><strong>证据：</strong> 两个适配器和 <code>prepare_components.py:181-189</code> 序列化
-  从其暂存输出派生的绝对路径，然后自动重命名
-  暂存目录。因此，发布的 YAML 指向不存在的
-  目录。</li>
-<li><strong>需要更改：</strong> 编写相对于数据集 YAML 的可移植路径（对于
-  例如 <code>images/train</code> 和 <code>images/val</code>)，或仅写入最终绝对路径
-  出版后。在适配器、准备、
-  和合成发电机。</li>
-<li><strong>验收：</strong> 对于每个适配器和组件准备，创建一个数据集，
-  发布它，解析它的<code>data.yaml</code>，根据以下内容解析<code>train</code>和<code>val</code>
-  选择约定，并断言最终输出下两个目录都存在
-  root 并包含预期的图像。断言序列化值不包含
-  <code>.staging-</code>。</li>
+<li><code>apps/edge-web/src/pages/LiveInspection.vue:95-115</code></li>
+<li><code>apps/edge-web/src/services/client.ts:20-24, 54-67</code></li>
+<li><code>apps/edge-web/tests/client.test.ts:69-103</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/routers/ws.py:25-57</code></li>
+<li><code>docs/design/15-rest-api-and-events.md:157-160</code></li>
 </ul>
-<h3 id="h3-relative-can-select-the-wrong-ultralytics-run-path">H3。相对<code>--out-weights</code>可以选择错误的Ultralytics运行路径<a class="headerlink" href="#h3-relative-can-select-the-wrong-ultralytics-run-path" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> 关闭 (fcfcf7c)。</li>
-<li><strong>证据：</strong> <code>cli.py:226,313</code> 通过了潜在的亲属
-  <code>weights_path.parent / ".train-runs"</code>； <code>train.py:71-77</code> 然后假设
-  固定返回路径。这与记录的相对路径命令不同
-  并且可能与 Ultralytics 对相关项目的处理发生冲突。</li>
-<li><strong>需要更改：</strong> 在调用 Ultralytics 之前解析项目目录。
-  从解析的项目目录中导出返回的权重路径，验证
-  它存在并且是 <code>place_weights</code> 之前的常规文件，并提出明确的
-  否则训练错误。</li>
-<li><strong>接受：</strong> 使用相对路径对产品和组件 CLI 路径进行单元测试
-  <code>--out-weights</code>，使用 <code>train_detector</code>/YOLO 进行模拟，并断言该项目是
-  绝对并且选择了预期的 <code>best.pt</code>。添加回归测试
-  丢失返回的神器。运行一个记录的相对路径烟雾命令
-  仅当其受控训练装置可用时才进行 CI。</li>
-</ul>
-<h3 id="h4-states-pr-11-is-open">H4。 <code>context.md</code> 表示 PR #11 已开放<a class="headerlink" href="#h4-states-pr-11-is-open" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> ~~无效/过时的审计证据~~。</li>
-<li><strong>原因：</strong> <code>docs/ai/context.md:24,31,40</code> 现在声明 PR #11 已合并，
-  没有开放的 PR，并且 <code>dev</code> 与 <code>main</code> 同步。没有变化
-  此项目需要。</li>
-</ul>
-<hr />
-<h2 id="4-med-findings">4. 医学研究结果<a class="headerlink" href="#4-med-findings" title="Permanent link">&para;</a></h2>
-<h3 id="41-reproduced-robustness-and-concurrency-defects">4.1 再现健壮性和并发性缺陷<a class="headerlink" href="#41-reproduced-robustness-and-concurrency-defects" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>身份证</th>
-<th>现状和证据</th>
-<th>需要改变</th>
-<th>严格验收</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>M1</td>
-<td>已关闭（7d987e7）。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
-<td>将路径构建/解析期间引发的 <code>ValueError</code> 视为格式错误的媒体并跳过该记录。隔离单个包中的错误。</td>
-<td>包含 NUL 字节媒体路径的协调测试会导入有效的同级包，跳过格式错误的包，返回正确的导入计数，并发出警告而不引发警告。</td>
-</tr>
-<tr>
-<td>M2</td>
-<td>已关闭 (5f70071)。 <code>register_rule_identity</code> 是选择然后插入，没有 <code>IntegrityError</code> 翻译或重试 (<code>repository.py:688-715</code>)。</td>
-<td>在 unique-race 中，重新读取新事务中存储的哈希值：相等时成功返回，不同时引发 <code>RepositoryError</code>。翻译意外的数据库错误。</td>
-<td>基于屏障的多线程测试同时注册相同的身份/散列，没有原始的 <code>IntegrityError</code>；并发的不同哈希确定性地引发 <code>RepositoryError</code> 并保持原始哈希不变。</td>
-</tr>
-<tr>
-<td>M3</td>
-<td>已关闭 (84e5fd5)。 <code>EdgeRepository.open()</code> 始终为同一新路径（<code>repository.py:155-167</code>、<code>migrate.py:17-29</code>）调用进程不安全的 Alembic 运行器。</td>
-<td>使用进程间锁序列化首次打开迁移，或者在创建引擎之前显式拒绝并发首次打开。在 M1 边界文档中定义行为。</td>
-<td>打开同一个新数据库的多进程测试无需 Alembic <code>KeyError</code> 即可完成，完全保留头部修订版本，启用所需的 SQLite 编译指示，并且两个存储库都可以执行读/写投影操作。</td>
-</tr>
-</tbody>
-</table>
-<h3 id="42-rule-engine-fail-safe-gaps">4.2 规则引擎故障安全差距<a class="headerlink" href="#42-rule-engine-fail-safe-gaps" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> 关闭 (653a850)。</li>
-<li><strong>证据：</strong> <code>_spatial_violation</code>不拒绝非有限比率或
-  中心（<code>rule_engine.py:110-123</code>）；与 <code>NaN</code> 的比较是错误的。另外，
-  <code>PRESENT</code> 证据在没有可用框架、置信度或
-  支撑框架（<code>147-168</code>）。这违反了合同03.5的禁令
-  <code>OK</code>来自不完整的结果数据/没有可用的框架和设计11.2的证据
-  要求。</li>
-<li><strong>需要更改：</strong> 明确拒绝非有限几何。礼物之前
-  组件可以满足一个要求，需要<code>usable_frame_count &gt;= 1</code>，a
-  有限<code>best_confidence</code>，非空支撑框架列表，并且一致
-  检测/支持帧计数。决定并记录是否每个
-  当没有声明空间约束时，检测需要几何形状。</li>
-<li><strong>接受：</strong> 表驱动测试注入 <code>NaN</code>、<code>inf</code>、零可用帧、
-  缺乏/非有限置信度，并将支持 ID 清空为其他有效的 ID
-  证据。每个案例都会返回带有稳定原因码的业务<code>NG</code>；没有测试
-  可以从不完整的证据中获得<code>OK</code>。现有有效证据仍须
-  返回<code>OK</code>。</li>
-</ul>
-<h3 id="43-manifest-validation-gaps">4.3 明显的验证差距<a class="headerlink" href="#43-manifest-validation-gaps" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> 关闭 (16448b5)。</li>
-<li><strong>证据：</strong> <code>runtime</code>在探测器构造之前不受约束；
-  <code>verify_manifest_artifact</code> 仅拒绝前导斜杠/反斜杠并允许
-  遍历或类似 URI 的工件路径； <code>verify_model_class_map</code> 假设
-  连续的映射键并且可能泄漏<code>KeyError</code>。</li>
-<li><strong>需要更改：</strong> 清单中需要 <code>runtime == "ultralytics"</code>
-  加载边界、拒绝非文件 URI 方案、解析工件并
-  需要包含在模型束根以下（这允许
-  记录了 <code>models/manifests</code> 和同级 <code>models/weights</code> 布局），以及
-  将格式错误/不连续的类映射转换为 <code>ConfigError</code>。</li>
-<li><strong>接受：</strong> 测试拒绝 <code>runtime="other"</code>，逃离模型的路径
-  路径解析器、符号链接接受的包、编码或方案 URI 形式
-  escape，以及与 <code>ConfigError</code> 不连续的 <code>{1: "component"}</code> 映射。一个
-  有效的相对工件，包括记录的同级权重，以及
-  连续映射继续加载并进行校验和验证。</li>
-</ul>
-<h3 id="44-persistence-and-contract-boundary">4.4 持久化和契约边界<a class="headerlink" href="#44-persistence-and-contract-boundary" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> 部分。 M1 边界已记录 (5488804)；的
-  权威模式、产品配置版本和并发
-  等内容更新插入行为仍然是上传的未来工作
-  调度程序。并不是说 M1 已经实现了生产发件箱。</li>
-<li><strong>证据：</strong> 当前的投影模式缺乏唯一性约束，
-  产品配置列，并上传设计14指定的租约和
-  合同 04/05。 <code>pipeline.py:303-305</code> 创建一个 <code>ProductResolution</code> 没有
-  <code>product_version_id</code>。 <code>upsert_inspection</code> 仍然是先检查后插入，尽管
-  其外部 <code>IntegrityError</code> 翻译可防止原始 SQLAlchemy 泄漏。</li>
-<li><strong>需要更改：</strong> 首先更新设计 14 以区分 M1 可重建
-  来自未来权威商店的投影。在任何上传调度程序之前
-  或多写入器部署，为权威添加 Alembic 迁移
-  模式，保留一个非空的受控产品配置版本，并制作
-  等内容并发检查更新插入幂等返回<code>unchanged</code>。</li>
-<li><strong>接受：</strong> 边界文件指出了投影的非权威性
-  限制。权威商店测试验证所有合同 04/05 约束，
-  租赁字段、产品版本追溯、并发等内容
-  更新插入返回<code>unchanged</code>；不同的内容必须在没有突变的情况下失败。</li>
-</ul>
-<h3 id="45-api-and-frontend-hardening">4.5 API和前端强化<a class="headerlink" href="#45-api-and-frontend-hardening" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>寻找</th>
-<th>状态</th>
-<th>所需变更和接受</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>无token非环回服务</td>
-<td>已关闭（056e712）。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
-<td>没有令牌的非环回绑定启动失败，或者需要记录高严重性警告的显式开发覆盖。测试环回/dev、非环回/拒绝和非环回/显式覆盖路径。</td>
-</tr>
-<tr>
-<td>经过身份验证的日志端点公开异常消息/路径</td>
-<td>已关闭（056e712）。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
-<td>从查看器记录中排除回溯/绝对路径或将端点限制为更高的特权角色。测试引发的异常是否不会在 <code>/logs</code> 中产生回溯或绝对路径。</td>
-</tr>
-<tr>
-<td>会话交换缺乏限制，会话存储没有扫描/上限</td>
-<td>已关闭（056e712）。</td>
-<td>添加有界的每个源失败尝试限制和有界会话存储以及到期清除；文件 M1 限制。测试重复失败、冷却后成功交换、过期清理和容量行为。</td>
-</tr>
-<tr>
-<td>光标错误和过滤器绑定</td>
-<td>已关闭（056e712）。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
-<td>将格式错误的光标映射到 <code>400 INVALID_CURSOR</code>；将游标绑定到规范过滤器哈希。测试必须拒绝没有 500 的格式错误/不匹配的游标，并为匹配的过滤器保留稳定的分页。</td>
-</tr>
-<tr>
-<td>如果文件仍然存在，则可以对已清除的媒体进行流式传输</td>
-<td>已关闭（056e712）。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
-<td>首先检查 <code>PURGED</code> 并始终返回 <code>410 MEDIA_PURGED</code>。使用幸存的文件添加测试。</td>
-</tr>
-<tr>
-<td>非 ASCII 承载标头可以从 <code>compare_digest</code></td>
-<td>引发已关闭（056e712）。</td>
-<td>将比较类型/编码失败视为无效凭证并返回 <code>401</code>。添加具有非 ASCII 授权输入的 API 测试。</td>
-</tr>
-<tr>
-<td><code>/api</code> 可能会落入 SPA</td>
-<td>已关闭（056e712）。守卫仅匹配<code>api/</code>。</td>
-<td>在 SPA 回退之前保留 <code>api</code> 和 <code>api/</code>。测试 <code>/api</code>、<code>/api/unknown</code> 和正常的客户端路由。</td>
-</tr>
-<tr>
-<td>不记名令牌可以发送到任意媒体 URL</td>
-<td>已关闭 (4aa7254)。 <code>loadMediaBlobUrl</code> 接受任何 URL。</td>
-<td>在附加令牌之前，要求媒体 URL 的来源等于配置的 HTTP API 来源。允许测试同源/API 源，并且在没有请求的情况下拒绝外国源。</td>
-</tr>
-<tr>
-<td>生产包可以默默选择模拟模式</td>
-<td>已关闭 (4aa7254)。 <code>VITE_API_MODE</code> 默认为模拟并且不存在构建时强制。</td>
-<td>除非模式恰好是<code>http</code>，否则使生产构建失败；保留显式的模拟开发模式。添加针对未设置、无效、模拟开发和 http 生产模式的构建/配置测试。</td>
-</tr>
-<tr>
-<td>缺少 CSP</td>
-<td>已关闭（056e712）。</td>
-<td>添加与本地服务的仪表板兼容的最低权限 CSP 并测试响应标头。</td>
-</tr>
-<tr>
-<td>实时视图、WebSocket 间隙、线路过滤器、浅记录验证</td>
-<td>已关闭 (4aa7254)。未路由的<code>LiveView.vue</code>被移除；路由的<code>LiveInspection.vue</code>是真正的只读实时页面（由served-dashboard e2e验证）。 WebSocket 服务现在发出序列间隙信号，统计服务在 HTTP 模式下删除不支持的行过滤器，并记录验证检查嵌套使用的字段。</td>
-<td>路由真实的实时页面或明确删除/推迟它；删除 HTTP 模式下不支持的线路控制或保留线路标识；在 <code>sequence &gt; previous + 1</code> 上发出/重新获取；验证嵌套的消费字段。为每个选定的行为添加组件/API 测试。</td>
-</tr>
-<tr>
-<td>~~通过反射的<code>X-Request-ID</code>注入CRLF~~</td>
-<td>~~如上所述无效。~~在此应用程序收到值之前，HTTP 服务器会拒绝请求标头中的 CR/LF；审计没有建立可利用的 CRLF 路径。</td>
-<td>不需要特定于 CRLF 的修复。为了可观察性，仍可采用单独的相关ID格式/长度策略。</td>
-</tr>
-<tr>
-<td>~~WebSocket 序列必须在重新连接时重置~~</td>
-<td>~~无效。~~ 设计 14.4.1 仅在源身份更改时才需要序列重置，而不是在重新连接时重置。</td>
-<td>保留上面单独的缺失间隙信号发现。</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="5-stress-test-record">5. 压测记录<a class="headerlink" href="#5-stress-test-record" title="Permanent link">&para;</a></h2>
-<p>最初的动态观察仍然是历史证据，而不是证明
-当前工作树已修复：</p>
-<table>
-<thead>
-<tr>
-<th>测试</th>
-<th>记录结果</th>
-<th>当前审核状态</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>协调 3000 个捆绑包</td>
-<td>7.6 秒，4.8 MB 数据库</td>
-<td>信息性；协调更改后重新运行。</td>
-</tr>
-<tr>
-<td>200 个并发 HTTP GET</td>
-<td>200/200 成功</td>
-<td>信息性；不进行并发迁移或写入竞争。</td>
-</tr>
-<tr>
-<td>NUL 字节媒体路径</td>
-<td>启动崩溃</td>
-<td>保留为 M1。</td>
-</tr>
-<tr>
-<td>并发规则注册</td>
-<td>原始 <code>IntegrityError</code></td>
-<td>保留为 M2。</td>
-</tr>
-<tr>
-<td>并发首次迁移</td>
-<td>蒸馏器 <code>KeyError</code></td>
-<td>保留为 M3。</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="6-documentation-and-tooling-consistency">6. 文档和工具的一致性<a class="headerlink" href="#6-documentation-and-tooling-consistency" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>寻找</th>
-<th>状态</th>
-<th>所需变更和接受</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Design 14 描述了一个权威的可操作 SQLite 存储，而不是 M1 可重建投影</td>
-<td>已关闭 (5488804)。</td>
-<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作联系起来。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
-</tr>
-<tr>
-<td>附录 原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
-<td>已关闭 (5488804)。</td>
-<td>使 <code>reason_codes.py</code> 成为显式规范列表或从中生成术语表。测试必须比较所有声明的静态代码和记录的参数化前缀。</td>
-</tr>
-<tr>
-<td>承保范围索赔</td>
-<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍需要基于来源的验证。</td>
-<td>将数字声明替换为带日期的命令/输出参考，或更新来自一个 CI 工件的所有源。</td>
-</tr>
-<tr>
-<td><code>context.md</code> 中的访问次数</td>
-<td>~~无效/陈旧~~。 <code>context.md:295-297</code> 已记录 63 次测试 (30 + 13 + 17 + 3)。</td>
-<td>此项目无需更改。</td>
-</tr>
-<tr>
-<td>README/QUICKSTART 分支注释和 SECURITY 支持的版本</td>
-<td>已关闭 (5488804)。</td>
-<td>从当前 Git 状态更新合并分支/发布语句。在发布之前根据 <code>git branch -a</code> 和 GitHub 验证所有分支/PR 断言。</td>
-</tr>
-<tr>
-<td>Runbook 10 需要 <code>feat/mvp</code></td>
-<td>已关闭 (5488804)。</td>
-<td>替换为受支持的 <code>main</code>/当前开发工作流程，并在干净的检查中测试每个记录的命令。</td>
-</tr>
-<tr>
-<td>Design 19.17.4/runbook 11/QUICKSTART 声明严格配对和可用适配器 YAML</td>
-<td>H1/H2 后已关闭 (5488804)。</td>
-<td>仅在H1/H2验收通过后更新；文档必须准确描述最终行为。</td>
-</tr>
-<tr>
-<td>合成生成器具有旋转绘图/标签不匹配和无法到达的芯片/二极管丢失情况</td>
-<td>已关闭 (237f96d)。</td>
-<td>更正旋转变换和场景时间表。添加确定性图像/标签几何测试，并断言代表性训练计数中出现的每个缺失场景。</td>
-</tr>
-<tr>
-<td>记录的管道密钥被配置加载器拒绝</td>
-<td>已关闭 (5488804)：2009 年 6 月 8 日设计现在将其标记为推迟。</td>
-<td>要么使用故障安全语义实施和测试每个记录的密钥，要么从设计中删除/推迟它 06/08/09。没有记录的接受密钥可能会因未知而被拒绝。</td>
-</tr>
-<tr>
-<td>清单出处忽略了设计所需的再现性数据 19.8</td>
-<td>已关闭 (99de074)。</td>
-<td>使用不可变数据集/分割引用、种子、纪元、增强、框架/环境版本和校验和扩展清单/运行元数据。测试训练调用会产生所有必需的值。</td>
-</tr>
-<tr>
-<td>合约 10 示例与 <code>ModelManifest</code></td>
-<td>不匹配~~作为架构违规而无效。~~合同 10 表示清单“类似于”示例；它不是一个精确的模式声明。</td>
-<td>改进示例或将其链接到规范模式作为文档质量工作，而不是违反合同。</td>
-</tr>
-<tr>
-<td><code>--allow-missing-labels</code> 标记在以后的运行中不会被读取</td>
-<td>~~不是一个既定的缺陷~~。该标志是每次调用的遗留选择加入；记录它是出处，而不是记录在案的持久授权。</td>
-<td>如果需要持久授权，请创建单独的 ADR/合同和验证设计；否则澄清帮助文本。</td>
-</tr>
-<tr>
-<td>QUICKSTART 调用实时配置/日志视图占位符并将派生端点与设计 15.3 合并在一起</td>
-<td>已关闭 (5488804)。</td>
-<td>更正端点描述和范围标签。添加与已发布端点表匹配的文档链接检查和 API 冒烟测试。</td>
-</tr>
-</tbody>
-</table>
-<h2 id="7-closure-order">7. 关闭令<a class="headerlink" href="#7-closure-order" title="Permanent link">&para;</a></h2>
+<p><strong>问题</strong></p>
+<p>对于支持的跨域开发设置，<code>VITE_API_BASE_URL</code> 是
+边缘原点，例如 <code>http://edge-host:8000</code>。 <code>runtimeWsUrl()</code> 将其转换为
+<code>ws://edge-host:8000/ws/runtime</code>，但服务器端点是
+<code>/api/v1/ws/runtime</code>；连接在身份验证之前收到 404
+考虑过。</p>
+<p>即使路径已更正，仪表板也无法在以下情况下进行身份验证：
+<code>api_token</code>已配置。现有的跨源流有意保留
+内存中的查看者承载令牌并将其添加到 <code>fetch</code> 请求中。浏览器
+<code>WebSocket</code> 无法设置 <code>Authorization</code> 标头，跨域模式不会
+接收同源会话 cookie，并且禁止查询字符串标记。
+因此，服务器使用 <code>4401</code> 关闭每个此类套接字。</p>
+<p>这使得 E4 实时更新路径在文档中不可用
+受令牌保护的 Vite-to-edge 开发配置。也违反了
+ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
+无需 URL 令牌即可交付。</p>
+<p><strong>所需的解决方案</strong></p>
 <ol>
-<li>H1、H2 和 H3：它们阻止了可靠的记录训练和检查循环。</li>
-<li>M1、M2、M3、规则引擎证据验证和清单遏制：
-   它们是直接的鲁棒性或故障安全缺陷。</li>
-<li>解决之前的M1投影与权威持久性边界
-   实现上传调度程序、WebSocket 运行时或多边缘托管。</li>
-<li>仅在行为发生后才完成文档和工具更正
-   描述已通过其特定的验收标准。</li>
+<li>集中 API 到 WebSocket URL 构建并始终保留
+   <code>/api/v1</code> 前缀。 HTTP 客户端使用的仅原始基本 URL 必须映射
+   到<code>ws(s)://&lt;origin&gt;/api/v1/ws/runtime</code>。</li>
+<li>添加一张短期、单一用途、一次性的 WebSocket 票证
+   经过身份验证的 REST 请求。它的范围必须限于运行时通道，
+   很快就会过期，并在套接字接受期间被原子消耗。</li>
+<li>将票证发送到 URL 之外，例如作为专用协商票证
+   <code>Sec-WebSocket-Protocol</code>值。在<code>accept()</code>之前验证一下，只选择一个
+   修复了非秘密响应子协议，并且从不记录票证。不要放
+   查询参数或浏览器存储中的长期持有者令牌。</li>
+<li>保留同源部署和承载的 cookie 身份验证
+   对可以设置标头的非浏览器客户端进行身份验证。更新
+   仅当工单流是跨源且
+   存在承载支持的查看器会话。</li>
+<li>记录票证有效期、单次使用行为、故障关闭代码，以及
+   反向代理要求。添加对过期票证的有界清理。</li>
 </ol>
-<h2 id="8-resolution-log-2026-08-09">8. 解决日志 (2026-08-09)<a class="headerlink" href="#8-resolution-log-2026-08-09" title="Permanent link">&para;</a></h2>
-<p>每个条目都会列出审核项目、关闭该项目的提交以及
-验证满足验收标准。所有关闭都运行了
-共享门（Ruff、format、MyPy、Pytest）；前端关闭还运行
-<code>pnpm -r build/lint/test</code> 和 Playwright 套件以及文档
-关闭已通过<code>uv run mkdocs build --strict</code>。</p>
+<p><strong>验收标准</strong></p>
+<ul>
+<li>使用<code>VITE_API_BASE_URL=http://edge-host:8000</code>，浏览器连接到
+  <code>ws://edge-host:8000/api/v1/ws/runtime</code>； HTTPS 基础使用 <code>wss</code>。</li>
+<li>同源身份验证会话无需放置任何凭据即可连接
+  在网址中。</li>
+<li>跨源令牌保护仪表板通过 REST 获取票证并
+  接收运行时事件；它的 WebSocket 握手没有不记名令牌或
+  URL 中的票证。</li>
+<li>无效、过期、重播、错误渠道、未经验证的门票
+  在发送任何事件之前被拒绝。一次成功连接效果相同
+  票证无法用于第二次连接。</li>
+<li>测试涵盖 URL 映射、票证发行/消费/重播/过期路径、
+  现有的承载和会话路径，并断言 URL 中没有出现任何秘密或
+  应用程序日志。</li>
+</ul>
+<h3 id="pr23-f02---p1-cross-thread-queue-delivery-can-drop-events-with-instead-of-disconnecting-the-slow-consumer">PR23-F02 - P1：跨线程队列传递可以使用 <code>QueueFull</code> 删除事件，而不是断开慢速消费者的连接<a class="headerlink" href="#pr23-f02---p1-cross-thread-queue-delivery-can-drop-events-with-instead-of-disconnecting-the-slow-consumer" title="Permanent link">&para;</a></h3>
+<p><strong>参考文献</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/events.py:86-119</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/events.py:121-143</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:411-425</code></li>
+<li><code>docs/tasks/E4-runtime.md:54-56, 91-103, 157-158</code></li>
+</ul>
+<p><strong>问题</strong></p>
+<p>检查和上传工作线程从非 asyncio 线程调用 <code>publish()</code>。对于一个
+非循环发布者，总线先调用<code>queue.full()</code>，然后调度
+<code>queue.put_nowait(envelope)</code> 分别通过 <code>call_soon_threadsafe</code> 进行。</p>
+<p>在这两个操作之间队列可能会变满。预定的
+<code>put_nowait</code> 然后在事件循环内引发 <code>asyncio.QueueFull</code>。它不是
+捕获后，套接字未发送<code>_Disconnect</code>，并且下一个事件可能会丢失
+除了事件循环异常之外，默默地。 <code>asyncio.Queue</code> 不是
+跨线程同步原语，因此即使预调度能力
+检查不得用作正确性决策。</p>
+<p>这违反了 E4 不变量 2：必须断开慢速消费者的连接而不是
+导致无限制/容易出错的传递路径。它还破坏了序列间隙
+恢复，因为失败的回调不能保证稍后的消息
+会暴露差距。</p>
+<p><strong>所需的解决方案</strong></p>
+<ol>
+<li>对于每个跨线程发布，安排一个调用的回调
+   <code>_deliver(queue, envelope)</code> 在所属事件循环上。 <code>_deliver()</code>必须使
+   填充度决定并将信封入队或排出并入队
+   恰好有一个 <code>_Disconnect</code> 哨兵。</li>
+<li>不要从检查/上传中访问或改变 <code>asyncio.Queue</code>
+   线程。仅保留订阅图和序列簿记在
+   螺纹锁。</li>
+<li>使计划的交付能够容忍关闭事件循环：事件发布
+   仍然尽最大努力，绝不能进行检查、坚持或
+   上传工作者。安全地删除/取消订阅无效订阅。</li>
+<li>保留每个订阅连接的事件顺序并确保消费者被标记
+   因为断开连接无法接收以后的正常信封。</li>
+</ol>
+<p><strong>验收标准</strong></p>
+<ul>
+<li>确定性工作线程测试在生产者之后填充队列
+  调度点但在交付运行之前。结果是一个<code>_Disconnect</code>，
+  没有未捕获的<code>QueueFull</code>，也没有哨兵之后的正常事件。</li>
+<li>重复的工作线程发布到完整队列保持非阻塞，离开
+  队列有界，并且不产生事件循环异常处理程序输出。</li>
+<li>在套接字/事件循环开始关闭后发布是无操作的
+  订阅并且不会中断检查循环或上传调度程序。</li>
+<li>现有的测试仍然证明单调序列分配和即时
+  同循环传递行为。</li>
+</ul>
+<h3 id="pr23-f03---p1-default-per-frame-inspection-never-publishes">PR23-F03 - P1：默认每帧检查从未发布 <code>inspection.started</code><a class="headerlink" href="#pr23-f03---p1-default-per-frame-inspection-never-publishes" title="Permanent link">&para;</a></h3>
+<p><strong>参考文献</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:358-392</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/pipeline.py:239-258</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:438-471</code></li>
+<li><code>docs/design/decisions/ADR-013-camera-frame-sources-and-multi-instance.md:53-61</code></li>
+<li><code>docs/tasks/E4-runtime.md:26-28, 98-114</code></li>
+</ul>
+<p><strong>问题</strong></p>
+<p><code>inspection.started</code> 仅在之后的时间窗口分支中发出
+<code>ProductWindowManager.feed()</code> 打开一个窗口。默认ADR-013运行模式
+没有临时策略并直接调用<code>pipeline.inspect_frame()</code>。那
+路径在持久持久化后发布 <code>inspection.completed</code> 但从未发布
+发布<code>inspection.started</code>。</p>
+<p>每帧检查是启用多实例的默认设置
+运行时，而不是死分支。因此，仪表板和任何其他事件
+尽管 E4a，消费者仍收到默认模式的不完整生命周期
+明确承诺来自真实检查循环的开始和完成事件
+过渡。</p>
+<p><strong>所需的解决方案</strong></p>
+<ol>
+<li>在两种模式的推理之前定义生命周期标识。的
+   每帧管道必须接受调用者提供的检查 ID（或公开
+   输入开始检查操作），以便运行时可以发布一个
+   <code>inspection.started</code> 在调用 <code>inspect_frame()</code> 并发布相同内容之前
+   完成时的 ID。</li>
+<li>保留<code>ProductWindowManager</code>拥有的时间窗口ID；不更换
+   身份密封窗口行为或为其生成第二个 ID。</li>
+<li>仅在<code>_persist_projection()</code>成功后发布<code>inspection.completed</code>，
+   就像当前代码一样。失败的推理/持久路径不得发出
+   错误完成；如果引入显式故障事件，请记录其
+   语义并保持 REST 权威。</li>
+<li>在开始和完成的有效负载中一致地包含 <code>instance_id</code>
+   因此，多实例仪表板可能会使正确的资源失效。</li>
+</ol>
+<p><strong>验收标准</strong></p>
+<ul>
+<li>启用的非临时实例恰好发出一个 <code>inspection.started</code> 且
+  一个 <code>inspection.completed</code> 表示一个捕获的帧，按此顺序，其中
+  相同的 <code>inspection_id</code>、<code>instance_id</code> 以及递增的事件序列。</li>
+<li>临时身份窗口实例仍然为每个打开的窗口发出一个启动信号
+  每个持久的最终窗口完成一次，包括差距和身份
+  过渡边界。</li>
+<li>推理失败、投影失败、暂停、存储停止、无帧
+  路径不会产生完整的事件。他们的事件行为经过测试
+  并记录下来。</li>
+<li>仪表板协调测试证明任一模式都会刷新最终结果
+  REST 记录并且从不将开始事件视为已完成的决策。</li>
+</ul>
+<h2 id="31-resolution-status">3.1 解析状态<a class="headerlink" href="#31-resolution-status" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>项目</th>
-<th>提交</th>
-<th>验证</th>
+<th>寻找</th>
+<th>严重程度</th>
+<th>分辨率</th>
+<th>测试</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>H1</td>
-<td>3CE3147</td>
-<td>适配器测试缺失标签（train/val/test）、显式空标签、词干冲突和 <code>valid</code> 别名；失败时没有暂存工件。</td>
+<td>PR23-F01</td>
+<td>P1</td>
+<td><code>POST /api/v1/ws/runtime/ticket</code> 发出一个 30 秒的一次性票据，在套接字接受期间以原子方式消耗；仪表板将其作为协商的 <code>Sec-WebSocket-Protocol</code> 值发送； <code>getRuntimeWsUrl()</code> 保留 <code>/api/v1</code> 前缀，<code>ReconnectingWebSocket</code> 接受静态子协议或每次重新连接时重新调用的提供程序； cookie 和承载路径不变</td>
+<td><code>test_runtime_ticket_requires_viewer</code>、<code>test_runtime_ticket_is_single_use</code>、<code>test_expired_runtime_ticket_is_rejected</code>、<code>test_bearer_authenticated_socket_streams</code>、<code>test_unauthenticated_socket_is_rejected</code>、api-client <code>passes static subprotocols</code> / <code>resolves protocol providers</code>、edge-web <code>maps an http origin base</code> / <code>requests a runtime ticket with the in-memory bearer credential</code></td>
 </tr>
 <tr>
-<td>H2</td>
-<td>7af307b</td>
-<td>7af307b测试重新加载每个已发布的 <code>data.yaml</code>，在输出根下解析 <code>images/train</code>/<code>images/val</code>，并断言没有 <code>.staging-</code> 引用。</td>
+<td>PR23-F02</td>
+<td>P1</td>
+<td>跨线程发布调度一个回调，该回调在所属循环上执行填充度决策；生产者永远不会接触队列，死队列标记可以防止断开标记后的任何信封，关闭循环会在不引发的情况下删除订阅，并且注册表锁是可重入的</td>
+<td><code>test_cross_thread_publish_disconnects_slow_consumer_without_queuefull</code>、<code>test_publish_after_loop_close_is_a_noop</code>、现有同循环有界缓冲区测试</td>
 </tr>
 <tr>
-<td>H3</td>
-<td>fcfcf7c</td>
-<td>fcfcf7c</td>
+<td>PR23-F03</td>
+<td>P1</td>
+<td><code>InspectionPipeline.inspect_frame</code> 接受调用者提供的<code>inspection_id</code>；对于每帧和窗口模式，运行时在推理之前发出一个 <code>inspection.started</code> ，并仅在持久持久化之后发出匹配的 <code>inspection.completed</code> （相同的 id 和 <code>instance_id</code>）</td>
+<td><code>test_per_frame_inspection_publishes_started_then_completed</code>，现有窗口/间隙测试</td>
 </tr>
 <tr>
-<td>M1</td>
-<td>7d987e7</td>
-<td>7d987e7当导入有效的同级捆绑包时，会跳过 NUL 字节媒体路径； <code>media_path_is_safe</code> 的单元测试。</td>
+<td>PR23-F04</td>
+<td>P2</td>
+<td><code>WSEventEnvelope</code> 镜像完整的 v1 信封（<code>event_id</code>、<code>type</code>、<code>schema_version</code>、<code>occurred_at</code>、<code>source_id</code>、<code>sequence</code>、<code>correlation_id</code>、<code>data</code>），并在序列处理之前进行结构验证</td>
+<td><code>exposes the full v1 envelope fields including data</code>、<code>drops malformed envelopes without corrupting the sequence baseline</code>，更新的灯具使用真实的 v1 信封</td>
 </tr>
 <tr>
-<td>M2</td>
-<td>5f70071</td>
-<td>基于屏障的 8 线程相同内容竞赛不会产生原始 <code>IntegrityError</code>；不同内容竞赛引发 <code>RepositoryError</code> 并保留原始哈希值。</td>
-</tr>
-<tr>
-<td>M3</td>
-<td>84e5fd5</td>
-<td>84e5fd5两个子进程打开同一个新数据库并且都成功；规则标识保持一致（flock + 线程锁）。</td>
-</tr>
-<tr>
-<td>4.2</td>
-<td>653a850</td>
-<td>653a850 NaN/inf 比率和中心、零可用框架、缺乏置信度和空支撑框架都会返回业务 <code>NG</code>；有效证据仍然返回<code>OK</code>。</td>
-</tr>
-<tr>
-<td>4.3</td>
-<td>16448b5</td>
-<td>16448b5测试拒绝非 Ultralytics 运行时、转义模型包的路径、方案 URI、驱动器段、符号链接转义以及带有 <code>ConfigError</code> 的非连续类映射；记录的兄弟姐妹体重仍然有效。</td>
-</tr>
-<tr>
-<td>4.5 后端</td>
-<td>056e712</td>
-<td>测试非环回绑定拒绝、日志路径清理、身份验证限制 (429)、会话上限、<code>400 INVALID_CURSOR</code> + 过滤器绑定、<code>410</code>（用于幸存的清除文件）、非 ASCII 承载 <code>401</code>、<code>/api</code> SPA 防护。</td>
-</tr>
-<tr>
-<td>4.5 前端</td>
-<td>4aa7254</td>
-<td><code>VITE_API_MODE</code> 生产执行（在模拟下构建失败）、外国来源媒体拒绝、HTTP 模式行过滤器条带、WebSocket 间隙信号、嵌套记录验证、CSP 标头；通过了 12 项剧作家测试，包括所提供的仪表板。</td>
-</tr>
-<tr>
-<td>6 发电机</td>
-<td>237f96d</td>
-<td>237f96d几何测试（旋转 0 标签与矩形匹配；旋转的 AABB 包含旋转角）和断言每个缺失组件的场景覆盖测试在训练中发生。</td>
-</tr>
-<tr>
-<td>6 出处</td>
-<td>99de074</td>
-<td><code>write_run_metadata</code> 测试断言所有可重复性密钥；幂等重新运行和不同内容拒绝已验证。</td>
-</tr>
-<tr>
-<td>6 个文档</td>
-<td>5488804</td>
-<td>设计 14 M1 边界、原因代码同步测试（模块 == 文档集）、延迟配置密钥、适配器声明、分支/版本文档； <code>mkdocs build --strict</code> 通过。</td>
+<td>PR23-F05</td>
+<td>P2</td>
+<td><code>RuntimeEventBus</code> 跟踪已发布的事件（总数/按类型）、慢速消费者断开连接和交付失败； <code>GET /api/v1/ws/runtime/stats</code> 公开经过身份验证的快照</td>
+<td><code>test_stats_count_events_and_slow_consumers</code>、<code>test_delivery_failures_are_counted</code>、<code>test_runtime_stats_endpoint_requires_viewer</code></td>
 </tr>
 </tbody>
 </table>
-<p>唯一没有闭包提交的是 4.4 的权威模式，即
-故意推迟到上传调度程序里程碑。</p>
+<h2 id="4-non-blocking-improvements">4. 非阻塞改进<a class="headerlink" href="#4-non-blocking-improvements" title="Permanent link">&para;</a></h2>
+<h3 id="pr23-f04---p2-shared-typescript-event-contract-still-uses-rather-than-the-servers-envelope">PR23-F04 - P2：共享 TypeScript 事件契约仍然使用 <code>payload</code> 而不是服务器的 <code>data</code> 信封<a class="headerlink" href="#pr23-f04---p2-shared-typescript-event-contract-still-uses-rather-than-the-servers-envelope" title="Permanent link">&para;</a></h3>
+<p><strong>参考文献</strong></p>
+<ul>
+<li><code>packages/typescript/api-client/src/edge/websocket.ts:10-15</code></li>
+<li><code>packages/typescript/api-client/tests/websocket.test.ts:34-70</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/events.py:27-41</code></li>
+<li><code>docs/design/15-rest-api-and-events.md:162-177</code></li>
+</ul>
+<p><code>WSEventEnvelope</code> 仅公开 <code>type</code>、<code>sequence</code>、<code>source_id</code> 和 <code>payload</code>，
+而服务器发出设计 15.6 字段并将有效负载命名为 <code>data</code>。
+<code>LiveInspection.vue</code> 目前仅检查 <code>type</code>，因此这不会阻止其
+当前刷新行为。它确实使共享客户合同不正确
+并且序列测试验证了合成的遗留形状而不是真实的形状
+服务器信封。</p>
+<p><strong>推荐解决方案</strong></p>
+<p>更新 API 客户端类型以精确模拟版本 1 信封：
+<code>event_id</code>、<code>type</code>、<code>schema_version</code>、<code>occurred_at</code>、<code>source_id</code>、<code>sequence</code>、
+<code>correlation_id</code>和<code>data</code>。之前添加最小运行时结构验证
+序列处理，保留未知事件类型的容忍度，并使用
+实际的服务器字段名称。</p>
+<p><strong>验收标准</strong></p>
+<ul>
+<li>TypeScript 使用者可以访问 <code>event.data</code> 和所有强制信封
+  没有强制转换的字段。</li>
+<li>有效的服务器信封发送；畸形的信封不会损坏
+  序列基线；未知事件类型仍然可交付/可忽略。</li>
+<li>包测试和至少一个仪表板测试使用真实的 v1 信封
+  固定装置而不是 <code>payload</code>。</li>
+</ul>
+<h3 id="pr23-f05---p2-required-websocket-connection-and-event-counts-are-not-observable">PR23-F05 - P2：无法观察到所需的 WebSocket 连接和事件计数<a class="headerlink" href="#pr23-f05---p2-required-websocket-connection-and-event-counts-are-not-observable" title="Permanent link">&para;</a></h3>
+<p><strong>参考文献</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/events.py:76-84</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/app.py:87-93</code></li>
+<li><code>docs/tasks/E4-runtime.md:162, 169-172</code></li>
+<li><code>docs/contracts/07-deployment-observability-and-operations.md:84-98</code></li>
+</ul>
+<p>总线保留<code>connection_count</code>和<code>last_sequence</code>，但都不暴露
+通过运营指标、结构化状态或经过身份验证的支持
+端点。也没有发布/慢消费者断开计数器。 E4的
+强制矩阵明确要求可观察的连接和事件计数，
+因此操作员无法区分空闲仪表板和失败的事件源。</p>
+<p><strong>推荐解决方案</strong></p>
+<p>添加包含活动连接、事件的类型化运行时事件运行状况快照
+按类型发布、消费者断开连接缓慢以及传递回调失败。
+通过现有的经过身份验证的设备/状态或可观察性将其公开
+表面，文档单位/重置语义，并避免放置无界
+每个连接的标识符转化为指标。</p>
+<p><strong>验收标准</strong></p>
+<ul>
+<li>连接打开/关闭、发布事件、缓慢消费和失败传递
+  计数器在测试中确定性地变化。</li>
+<li>操作员可以通过经过身份验证的现有值检索当前值
+  带有记录字段的状态/指标表面。</li>
+<li>计数器收集保持非阻塞并且不会暴露凭据，
+  身份或有效负载内容。</li>
+</ul>
+<h2 id="5-positive-findings">5. 积极的发现<a class="headerlink" href="#5-positive-findings" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>inspection.completed</code>仅在投影/发件箱持久化后发出
+  成功 (<code>state.py:438-471</code>)，保留 REST/SQLite 作为权威
+  真相的来源。</li>
+<li>运行时事件路径保留在检测器和规则引擎逻辑之外，
+  保留合同 01 边界。</li>
+<li>模拟触发器配置仅接受显式<code>source: mock</code>；不支持的
+  硬件源拒绝配置而不是默默地替换
+  模拟身份 (<code>config.py:499-534</code>)。</li>
+<li>触发相关器使没有经过验证的身份的帧保持不变，
+  允许身份密封窗口管理器失败关闭而不是
+  捏造证据 (<code>trigger/source.py:104-118</code>)。</li>
+<li>审查修复正确地将每个工件的推理锁添加到
+  共享注册表，避免并发访问可变的 Ultralytics 预测器
+  状态，同时保持不同的工件/设备独立。</li>
+</ul>
+<h2 id="6-resolution-checklist">6. 解决方案清单<a class="headerlink" href="#6-resolution-checklist" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>寻找</th>
+<th style="text-align: right;">严重程度</th>
+<th>合并前需要</th>
+<th>决议状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PR23-F01</td>
+<td style="text-align: right;">P1</td>
+<td>是的</td>
+<td>已解决</td>
+</tr>
+<tr>
+<td>PR23-F02</td>
+<td style="text-align: right;">P1</td>
+<td>是的</td>
+<td>已解决</td>
+</tr>
+<tr>
+<td>PR23-F03</td>
+<td style="text-align: right;">P1</td>
+<td>是的</td>
+<td>已解决</td>
+</tr>
+<tr>
+<td>PR23-F04</td>
+<td style="text-align: right;">P2</td>
+<td>否，E4 生产准备就绪之前需要</td>
+<td>已解决</td>
+</tr>
+<tr>
+<td>PR23-F05</td>
+<td style="text-align: right;">P2</td>
+<td>否，E4 生产准备就绪之前需要</td>
+<td>已解决</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-final-merge-gate">7. 最终合并门<a class="headerlink" href="#7-final-merge-gate" title="Permanent link">&para;</a></h2>
+<p>所有发现均通过回归测试得到解决，满足他们的接受度
+标准，并更新了 E4 任务/文档以进行身份验证
+和事件包络行为的变化。强制性质量关卡再次通过：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv run ruff check .
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv run ruff format --check .
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>uv run mypy .
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>uv run pytest
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>pnpm -r build
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>pnpm -r lint
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>pnpm -r test
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>cd apps/edge-web &amp;&amp; pnpm test:e2e
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>uv run mkdocs build --strict
+</code></pre></div>
+<h2 id="8-follow-up-re-review">8. 后续复审<a class="headerlink" href="#8-follow-up-re-review" title="Permanent link">&para;</a></h2>
+<p><strong>状态：已解决</strong></p>
+<p>决议后审查发现了两个小的生命周期/并发风险
+在合并之前修复它们：</p>
+<table>
+<thead>
+<tr>
+<th>寻找</th>
+<th>分辨率</th>
+<th>回归测试</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>票证发行/消费可以同时访问 <code>app.state.ws_tickets</code>，因为同步 REST 处理程序可能在工作线程中运行，而 WebSocket 握手在 ASGI 循环上运行</td>
+<td>进程本地锁现在序列化票证清理、发行和原子消耗，防止并发字典突变，同时保留一次性语义</td>
+<td>现有票据发行/消费/重播/过期测试；运行时事件测试套件</td>
+</tr>
+<tr>
+<td>异步票证提供程序可以在仪表板断开连接或更新的连接启动后完成，从而允许过时的套接字或其关闭回调更改当前的连接状态</td>
+<td><code>ReconnectingWebSocket</code> 现在使用连接生成来进行票据解析、重新连接调度和套接字回调；陈旧操作返回而不创建或更改活动套接字</td>
+<td><code>does not open a socket after disconnect during a ticket exchange</code>； <code>ignores an old socket closing after a newer connection starts</code></td>
+</tr>
+</tbody>
+</table>
 
 
 

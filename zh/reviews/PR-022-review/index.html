@@ -3242,7 +3242,7 @@
 真实：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>tokens &lt;= rate * 1 second &lt; amount
 </code></pre></div>
-<p>调度程序在调用 <code>acquire()</code> 之前已经租用了该任务。那么它
+<p>调度程序在调用<code>acquire()</code>之前就已经租用了该任务。那么它
 在 250 毫秒内无限循环休眠并且从不调用接收器或写入任务
 过渡。例如，1 Mbps 的 8 MiB 媒体任务有 125,000 字节的存储桶
 容量并永久卡住。工人可以保留过去的任务租约
@@ -3297,7 +3297,7 @@
 比原始媒体字节加上 JSON 元数据大约三分之一。的
 然后，在原始字节等待之后，将完整的信封在一次写入中传递给 <code>httpx</code>。
 因此，实际网络上配置的带宽最大值超出了
-有效负载和 <code>upload_bytes_sent</code> 指标报告更小的、不同的单位。</p>
+有效负载和<code>upload_bytes_sent</code>度量报告更小的、不同的单位。</p>
 <p>这与 E3a 将限制器应用于网络有效负载的要求相矛盾
 字节，并使容量规划/可观察性在中断期间产生误导。</p>
 <p><strong>所需的解决方案</strong></p>
@@ -3489,7 +3489,7 @@
 </tr>
 <tr>
 <td>重试 CAS</td>
-<td>调度程序/操作员竞争和两个操作员竞争产生一个权威转换；不合格/未知的情况不会发生变异。</td>
+<td>调度程序/操作员竞赛和两个操作员竞赛产生一个权威转换；不合格/未知的情况不会发生变异。</td>
 </tr>
 <tr>
 <td>同步和保留</td>

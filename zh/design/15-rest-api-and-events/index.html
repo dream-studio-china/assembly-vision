@@ -1023,7 +1023,7 @@
   <a href="#1521-authentication-and-authorization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.2.1 认证和授权
+        15.2.1 认证与授权
       
     </span>
   </a>
@@ -3347,7 +3347,7 @@
   <a href="#1521-authentication-and-authorization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.2.1 认证和授权
+        15.2.1 认证与授权
       
     </span>
   </a>
@@ -3584,7 +3584,7 @@
 <p>模式在 <a href="../14-data-model-and-database/">Data Model and Database</a> 中定义。 UI 消费者在 <a href="../16-edge-dashboard/">Edge Dashboard</a> 和 <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a> 中描述。</p>
 <p>所有 JSON 均使用 UTF-8、snake_case 字段、ISO 8601 UTC 时间戳、UUID 字符串和 <code>application/problem+json</code> 错误。问题响应包括<code>type</code>、<code>title</code>、<code>status</code>、<code>detail</code>、<code>code</code>、<code>request_id</code>和可选字段<code>errors</code>。</p>
 <h2 id="152-common-behavior">15.2 常见行为<a class="headerlink" href="#152-common-behavior" title="Permanent link">&para;</a></h2>
-<h3 id="1521-authentication-and-authorization">15.2.1 认证和授权<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
+<h3 id="1521-authentication-and-authorization">15.2.1 认证与授权<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Edge UI 请求源自本地管理网络。 MVP 可以使用本地操作员会话，但改变路由需要 <code>operator</code> 或 <code>edge_admin</code>；只读健康状况被故意限制。不要将 localhost 视为身份验证。</li>
 <li>设备到中心的调用使用相互验证的 TLS 或绑定到 <code>device_id</code> 的短期设备凭据。</li>
@@ -3664,6 +3664,24 @@
 <td><code>Idempotency-Key</code></td>
 <td>-</td>
 <td>一个</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/ws/runtime/ticket</code></td>
+<td>发出短期的一次性票证，以便跨源浏览器套接字可以进行身份​​验证，而无需在 URL 中放置凭据。</td>
+<td>无 / <code>WsTicket</code></td>
+<td><code>401 UNAUTHENTICATED</code>、<code>429 RATE_LIMITED</code></td>
+<td>每次呼叫都会发出一张新票</td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/ws/runtime/stats</code></td>
+<td>运行时事件通道计数器：活动连接、按类型发布的事件、慢速消费者断开连接、传递失败。</td>
+<td>无 / <code>RuntimeEventStats</code></td>
+<td><code>401 UNAUTHENTICATED</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
 </tr>
 <tr>
 <td><code>GET /api/v1/inspection/state</code></td>
@@ -3790,7 +3808,7 @@
 <tr>
 <td><code>PUT /api/v1/configuration/local-overrides</code></td>
 <td>替换允许的站点本地覆盖。</td>
-<td><code>If-Match</code>、<code>LocalOverrides</code> / 新修订</td>
+<td><code>If-Match</code>、<code>LocalOverrides</code> / 新修订版</td>
 <td><code>400 INVALID_CONFIG</code>、<code>403 MANAGED_FIELD</code>、<code>412 REVISION_MISMATCH</code></td>
 <td>幂等替代</td>
 <td>-</td>
@@ -4283,7 +4301,7 @@
 <td><code>400 INVALID_FILTER</code></td>
 <td>安全获取</td>
 <td>光标</td>
-<td>O/审计师</td>
+<td>O/审计员</td>
 </tr>
 </tbody>
 </table>
@@ -4313,7 +4331,7 @@
 </tr>
 </tbody>
 </table>
-<p>WebSocket 身份验证使用现有的安全会话 cookie 或通过 REST 获取的短期、单一用途票证。令牌不得出现在 URL 查询日志中。</p>
+<p>WebSocket 身份验证使用现有的安全会话 cookie 或通过 REST 获取的短期、单一用途票证。令牌不得出现在 URL 查询日志中。浏览器 WebSocket 无法设置 <code>Authorization</code> 标头，因此跨域仪表板将其查看者凭证交换为 <code>POST /api/v1/ws/runtime/ticket</code> 处的一次性票证，并将其作为协商的 <code>Sec-WebSocket-Protocol</code> 值发送；该票证在接受过程中会被自动消耗，几秒钟内就会过期，并且永远不会被记录。</p>
 <h2 id="156-event-envelope-and-evolution">15.6 事件包络和演化<a class="headerlink" href="#156-event-envelope-and-evolution" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;event_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span>
