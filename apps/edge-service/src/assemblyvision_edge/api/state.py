@@ -525,8 +525,12 @@ class EdgeRuntime:
         cleanup: CleanupHealth | None,
         metrics: RetentionMetrics | None,
         enabled: bool,
+        integrity_scan: Any = None,
+        integrity_scan_at: str | None = None,
+        integrity_verify_checksums: bool = False,
+        integrity_fault: bool = False,
     ) -> tuple[dict[str, Any], list[str]]:
-        """Derive the storage/cleanup observability fields and alerts (E2c)."""
+        """Derive the storage/cleanup observability fields and alerts (E2c/E2d)."""
         mode = storage.mode if storage is not None else ("STOP" if write_fault else "NORMAL")
         fields: dict[str, Any] = {
             "storage_mode": mode,
@@ -534,6 +538,10 @@ class EdgeRuntime:
             "storage_free_percent": storage.free_percent if storage else 0.0,
             "storage_free_inodes": storage.free_inodes if storage else 0,
             "storage_inode_percent": storage.inode_free_percent if storage else 0.0,
+            "storage_warning_free_percent": (storage.warning_free_percent if storage else 0.0),
+            "storage_critical_free_percent": (storage.critical_free_percent if storage else 0.0),
+            "storage_stop_free_percent": storage.stop_free_percent if storage else 0.0,
+            "storage_observed_at": storage.observed_at if storage else None,
             "storage_write_fault": write_fault,
             "cleanup_enabled": enabled,
             "cleanup_eligible_count": metrics.eligible_count if metrics else 0,
@@ -544,6 +552,17 @@ class EdgeRuntime:
             "cleanup_integrity_fault_count": metrics.integrity_fault_count if metrics else 0,
             "cleanup_last_run_at": cleanup.last_run_at if cleanup else None,
             "cleanup_last_error_code": cleanup.last_error_code if cleanup else None,
+            "integrity_scan_last_run_at": integrity_scan_at,
+            "integrity_scan_checked": integrity_scan.checked if integrity_scan else 0,
+            "integrity_scan_faults": integrity_scan.faults if integrity_scan else 0,
+            "integrity_scan_checksummed": (
+                integrity_scan.checksum_checked if integrity_scan else 0
+            ),
+            "integrity_scan_skipped": integrity_scan.skipped if integrity_scan else 0,
+            "integrity_scan_skipped_reason": (
+                integrity_scan.skipped_reason if integrity_scan else None
+            ),
+            "integrity_verify_checksums": integrity_verify_checksums,
         }
         alerts: list[str] = []
         if write_fault:
@@ -554,6 +573,8 @@ class EdgeRuntime:
             alerts.append("DISK_CRITICAL")
         elif mode == "WARNING":
             alerts.append("DISK_WARNING")
+        if integrity_fault or (metrics is not None and metrics.integrity_fault_count > 0):
+            alerts.append("STORAGE_INTEGRITY_FAULT")
         if metrics is not None and metrics.delete_error_count > 0:
             alerts.append("CLEANUP_FAULT")
         return fields, alerts
@@ -608,13 +629,29 @@ class EdgeRuntime:
             inspection_ready = not self.paused
         alerts: list[str] = []
         storage_fields, storage_alerts = self._storage_status_fields(
-            storage, write_fault, cleanup, cleanup_metrics, cleanup_enabled
+            storage,
+            write_fault,
+            cleanup,
+            cleanup_metrics,
+            cleanup_enabled,
+            integrity_scan=self.integrity_scan,
+            integrity_scan_at=self.integrity_scan_at,
+            integrity_verify_checksums=(
+                self.integrity_scan_settings.verify_checksums
+                if self.integrity_scan_settings is not None
+                else False
+            ),
+            integrity_fault=self.storage_integrity_fault,
         )
         alerts.extend(storage_alerts)
-        # Stop pressure or a write fault means mandatory persistence cannot be
-        # guaranteed: the runtime must not advertise inspection readiness (E2
-        # task invariant 7/8, E2c exit criteria).
-        if write_fault or (storage is not None and storage.mode == "STOP"):
+        # Stop pressure, a latched write fault, or an integrity fault means
+        # mandatory persistence cannot be guaranteed: the runtime must not
+        # advertise inspection readiness (E2 task invariant 7/8, PR-020 F05/F08).
+        if (
+            write_fault
+            or self.storage_integrity_fault
+            or (storage is not None and storage.mode == "STOP")
+        ):
             inspection_ready = False
         if not inspection_ready:
             alerts.append("NOT_READY")
@@ -677,10 +714,26 @@ class EdgeRuntime:
             operational = "READY" if inspection_ready else "DEGRADED"
         alerts: list[str] = []
         storage_fields, storage_alerts = self._storage_status_fields(
-            storage, write_fault, cleanup, cleanup_metrics, cleanup_enabled
+            storage,
+            write_fault,
+            cleanup,
+            cleanup_metrics,
+            cleanup_enabled,
+            integrity_scan=self.integrity_scan,
+            integrity_scan_at=self.integrity_scan_at,
+            integrity_verify_checksums=(
+                self.integrity_scan_settings.verify_checksums
+                if self.integrity_scan_settings is not None
+                else False
+            ),
+            integrity_fault=self.storage_integrity_fault,
         )
         alerts.extend(storage_alerts)
-        if write_fault or (storage is not None and storage.mode == "STOP"):
+        if (
+            write_fault
+            or self.storage_integrity_fault
+            or (storage is not None and storage.mode == "STOP")
+        ):
             inspection_ready = False
         if not inspection_ready:
             alerts.append("NOT_READY")

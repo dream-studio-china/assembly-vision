@@ -21,6 +21,7 @@ from assemblyvision_vision.sources.folder_source import FolderSource
 
 from assemblyvision_edge import __version__
 from assemblyvision_edge.api.settings import (
+    IntegrityScanSettings,
     RetentionSettings,
     StorageSettings,
     UploadSettings,
@@ -403,6 +404,36 @@ def _build_retention_settings() -> RetentionSettings | None:
     return settings
 
 
+def _build_integrity_scan_settings() -> IntegrityScanSettings | None:
+    """Assemble startup integrity-scan policy from AV_EDGE_STORAGE_INTEGRITY_* (F09)."""
+    names = (
+        "AV_EDGE_STORAGE_INTEGRITY_VERIFY_CHECKSUMS",
+        "AV_EDGE_STORAGE_INTEGRITY_SAMPLE_LIMIT",
+        "AV_EDGE_STORAGE_INTEGRITY_SAMPLE_MAX_BYTES",
+    )
+    if not any(os.environ.get(name) is not None for name in names):
+        return None
+    sample_limit = _optional_int_env("AV_EDGE_STORAGE_INTEGRITY_SAMPLE_LIMIT")
+    sample_max_bytes = _optional_int_env("AV_EDGE_STORAGE_INTEGRITY_SAMPLE_MAX_BYTES")
+    settings = IntegrityScanSettings(
+        verify_checksums=_bool_env("AV_EDGE_STORAGE_INTEGRITY_VERIFY_CHECKSUMS", True),
+        sample_limit=sample_limit,
+        sample_max_bytes=sample_max_bytes,
+    )
+    settings.validate()
+    return settings
+
+
+def _optional_int_env(name: str) -> int | None:
+    raw = os.environ.get(name)
+    if raw is None:
+        return None
+    try:
+        return int(raw)
+    except ValueError as exc:
+        raise ConfigError(f"{name} must be an integer, got {raw!r}") from exc
+
+
 def _validate_serve_bind(host: str, api_token: str | None, allow_dev_auth: bool) -> None:
     """Reject a non-loopback bind without authentication.
 
@@ -444,6 +475,7 @@ def _run_serve(args: argparse.Namespace) -> int:
             upload=_build_upload_settings(args),
             storage=_build_storage_settings(),
             retention=_build_retention_settings(),
+            integrity_scan=_build_integrity_scan_settings(),
         )
         app = create_app(settings)
         uvicorn.run(app, host=args.host, port=args.port, log_level="info")

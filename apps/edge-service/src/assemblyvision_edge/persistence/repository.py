@@ -1303,7 +1303,8 @@ class EdgeRepository:
                     text(
                         f"SELECT media_id, inspection_id, kind, relative_path, "
                         f"size_bytes, checksum_sha256 FROM {media.name} "
-                        "WHERE lifecycle = 'AVAILABLE'"
+                        "WHERE lifecycle = 'AVAILABLE' "
+                        "ORDER BY inspection_id ASC, media_id ASC"
                     )
                 )
                 .mappings()

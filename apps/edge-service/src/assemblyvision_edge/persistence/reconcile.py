@@ -100,11 +100,20 @@ def quarantine_bundle(output_root: Path, directory: Path, reason: str) -> bool:
 
 @dataclass(frozen=True)
 class IntegrityScanReport:
-    """Result of the startup media/filesystem integrity scan (E2d)."""
+    """Result of the startup media/filesystem integrity scan (E2d).
+
+    ``checked`` is the number of projected media artifacts examined; ``faults``
+    counts artifacts marked ``FAULT``. ``checksum_checked``/``skipped`` record
+    how many artifacts were actually checksum-verified under the configured
+    sampling policy and how many were size-checked only (PR-020 F09).
+    """
 
     checked: int
     faults: int
     fault_codes: dict[str, int]
+    checksum_checked: int = 0
+    skipped: int = 0
+    skipped_reason: str | None = None
 
 
 def _verify_media(output_root: Path, identity: MediaIdentity, verify_checksums: bool) -> str | None:
@@ -128,25 +137,61 @@ def scan_storage_integrity(
     output_root: Path,
     *,
     verify_checksums: bool = False,
+    sample_limit: int | None = None,
+    sample_max_bytes: int | None = None,
 ) -> IntegrityScanReport:
     """Verify projected media against the filesystem and mark faults (E2d).
 
     Runs at startup before any worker: missing files, size mismatches, unsafe
-    paths, and (optionally) checksum mismatches durably mark the artifact
+    paths, and (when enabled) checksum mismatches durably mark the artifact
     ``integrity_status='FAULT'`` so it is protected from retention deletion
     until an operator reconciles it (design 12.8).
+
+    Checksum verification is bounded deterministically by ``sample_limit``
+    (number of files) and ``sample_max_bytes`` (total bytes read) using stable
+    ordering; artifacts outside the budget are size-checked only and reported
+    as skipped (PR-020 F09).
     """
     faults = 0
     codes: dict[str, int] = {}
+    checksummed = 0
+    skipped = 0
+    budget_bytes = sample_max_bytes
     identities = repository.list_media_for_integrity()
     for identity in identities:
-        code = _verify_media(output_root, identity, verify_checksums)
-        if code is None:
+        code = _verify_media(output_root, identity, verify_checksums=False)
+        if code is not None:
+            repository.mark_media_integrity_fault_direct(str(identity.media_id), code)
+            faults += 1
+            codes[code] = codes.get(code, 0) + 1
             continue
-        repository.mark_media_integrity_fault_direct(str(identity.media_id), code)
-        faults += 1
-        codes[code] = codes.get(code, 0) + 1
-    return IntegrityScanReport(checked=len(identities), faults=faults, fault_codes=codes)
+        if not verify_checksums:
+            continue
+        if sample_limit is not None and checksummed >= sample_limit:
+            skipped += 1
+            continue
+        if budget_bytes is not None and budget_bytes < identity.size_bytes:
+            skipped += 1
+            continue
+        if budget_bytes is not None:
+            budget_bytes -= identity.size_bytes
+        checksummed += 1
+        checksum_code = _verify_media(output_root, identity, verify_checksums=True)
+        if checksum_code is not None:
+            repository.mark_media_integrity_fault_direct(str(identity.media_id), checksum_code)
+            faults += 1
+            codes[checksum_code] = codes.get(checksum_code, 0) + 1
+    skipped_reason = None
+    if skipped:
+        skipped_reason = "sample_limit" if sample_limit is not None else "sample_max_bytes"
+    return IntegrityScanReport(
+        checked=len(identities),
+        faults=faults,
+        fault_codes=codes,
+        checksum_checked=checksummed,
+        skipped=skipped,
+        skipped_reason=skipped_reason,
+    )
 
 
 def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:

@@ -89,17 +89,41 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
                 log.info("reconciled %d inspection records from output root", imported)
             # Startup integrity (design 12.8, E2d): verify projected media
             # against the filesystem and recover abandoned cleanup claims
-            # before any worker starts. Faults durably protect the artifact.
+            # before any worker starts. Faults durably protect the artifact and
+            # gate intake/readiness until documented reconciliation (PR-020
+            # F08); checksum policy and coverage are exposed for operations
+            # (PR-020 F09).
+            # Full verification is the safe default. Deployments that cannot
+            # afford it must explicitly configure a bounded checksum sample.
+            from assemblyvision_edge.api.settings import IntegrityScanSettings
             from assemblyvision_edge.persistence.reconcile import scan_storage_integrity
 
-            report = scan_storage_integrity(repository, settings.output_root)
-            if report.faults:
+            scan_settings = settings.integrity_scan or IntegrityScanSettings(verify_checksums=True)
+            report = scan_storage_integrity(
+                repository,
+                settings.output_root,
+                verify_checksums=bool(scan_settings and scan_settings.verify_checksums),
+                sample_limit=scan_settings.sample_limit if scan_settings else None,
+                sample_max_bytes=scan_settings.sample_max_bytes if scan_settings else None,
+            )
+            runtime.integrity_scan = report
+            runtime.integrity_scan_at = datetime.now(UTC).isoformat()
+            runtime.integrity_scan_settings = scan_settings
+            integrity_fault_count = repository.retention_metrics(
+                datetime.now(UTC).isoformat()
+            ).integrity_fault_count
+            if report.faults or integrity_fault_count:
                 log.warning(
-                    "storage integrity scan found %d fault(s) of %d media: %s",
-                    report.faults,
+                    "storage integrity scan has %d fault(s) of %d media: %s "
+                    "(checksummed %d, skipped %d)",
+                    integrity_fault_count,
                     report.checked,
                     report.fault_codes,
+                    report.checksum_checked,
+                    report.skipped,
                 )
+            if integrity_fault_count:
+                runtime.storage_integrity_fault = True
             repository.recover_expired_retention_claims(datetime.now(UTC).isoformat())
         runtime.load_config(repository)
         if runtime.pipeline is None and not runtime.instances:

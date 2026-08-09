@@ -158,6 +158,28 @@ class StorageSettings:
 
 
 @dataclass(frozen=True)
+class IntegrityScanSettings:
+    """Startup integrity-scan policy (design 12.8, PR-020 F09).
+
+    ``verify_checksums`` enables SHA-256 verification; without it the scan
+    checks existence and size only and must not claim checksum verification.
+    ``sample_limit`` and ``sample_max_bytes`` bound how many files are
+    checksummed per scan (deterministic ordering); files outside the budget are
+    size-checked but reported as skipped.
+    """
+
+    verify_checksums: bool = False
+    sample_limit: int | None = None
+    sample_max_bytes: int | None = None
+
+    def validate(self) -> None:
+        if self.sample_limit is not None and self.sample_limit < 1:
+            raise ConfigError("integrity scan: sample_limit must be positive")
+        if self.sample_max_bytes is not None and self.sample_max_bytes < 1:
+            raise ConfigError("integrity scan: sample_max_bytes must be positive")
+
+
+@dataclass(frozen=True)
 class ServerSettings:
     """Runtime configuration for the local edge API (design 15.3)."""
 
@@ -176,6 +198,7 @@ class ServerSettings:
     upload: UploadSettings | None = None
     storage: StorageSettings | None = None
     retention: RetentionSettings | None = None
+    integrity_scan: IntegrityScanSettings | None = None
 
     def validate(self) -> None:
         if self.upload is not None:
@@ -184,3 +207,5 @@ class ServerSettings:
             self.storage.validate()
         if self.retention is not None:
             self.retention.validate()
+        if self.integrity_scan is not None:
+            self.integrity_scan.validate()
