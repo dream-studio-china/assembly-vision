@@ -3288,6 +3288,49 @@
           "uploads"
         ]
       }
+    },
+    "/api/v1/uploads/{upload_task_id}/retry": {
+      "post": {
+        "description": "Reset one eligible upload task to ``PENDING`` for a manual retry (E3c).\n\nOnly ``RETRY_WAIT`` and ``PERMANENT_FAILURE`` tasks are eligible; the\ntransition preserves attempt history by incrementing ``attempt_count``.\nUnknown tasks return 404 and non-eligible tasks return 409 with their\ncurrent state, so an operator action can never reset a task that is\nsucceeded, leased by the worker, or cancelled (E3 task invariant 3).",
+        "operationId": "retry_upload_api_v1_uploads__upload_task_id__retry_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "upload_task_id",
+            "required": true,
+            "schema": {
+              "title": "Upload Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadTask"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retry Upload",
+        "tags": [
+          "uploads"
+        ]
+      }
     }
   }
 }
