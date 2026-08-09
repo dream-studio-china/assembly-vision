@@ -156,7 +156,9 @@ def test_load_instances_runs_inspection_loop(
             return _fake_record()
 
     monkeypatch.setattr(
-        state, "_build_instance_pipeline", lambda instance, rule_registry=None: FakePipeline()
+        state,
+        "_build_instance_pipeline",
+        lambda instance, rule_registry=None, model_registry=None: FakePipeline(),
     )
     (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
@@ -259,7 +261,7 @@ def test_inspection_loop_no_silent_frame_loss(
     monkeypatch.setattr(
         state_module,
         "_build_instance_pipeline",
-        lambda instance, rule_registry=None: SlowPipeline(),
+        lambda instance, rule_registry=None, model_registry=None: SlowPipeline(),
     )
     (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
@@ -312,7 +314,7 @@ def test_pause_stops_inspection_and_status_reports_paused(
     monkeypatch.setattr(
         state_module,
         "_build_instance_pipeline",
-        lambda instance, rule_registry=None: FastPipeline(),
+        lambda instance, rule_registry=None, model_registry=None: FastPipeline(),
     )
     (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
@@ -389,7 +391,7 @@ def test_temporal_loop_expires_idle_window(tmp_path: Path, monkeypatch: pytest.M
     monkeypatch.setattr(
         state_module,
         "_build_instance_pipeline",
-        lambda instance, rule_registry=None: TemporalPipeline(),
+        lambda instance, rule_registry=None, model_registry=None: TemporalPipeline(),
     )
     (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
@@ -454,7 +456,7 @@ def test_temporal_loop_emits_windowed_records(
     monkeypatch.setattr(
         state_module,
         "_build_instance_pipeline",
-        lambda instance, rule_registry=None: TemporalPipeline(),
+        lambda instance, rule_registry=None, model_registry=None: TemporalPipeline(),
     )
     (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")

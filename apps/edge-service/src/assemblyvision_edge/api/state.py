@@ -101,6 +101,9 @@ class EdgeRuntime:
         # inspection/device/upload transitions can notify dashboards without
         # the runtime ever depending on the channel (REST stays authoritative).
         self.event_bus: Any = None
+        # E4c: process-wide read-only model weight cache shared by instances
+        # that reference the same immutable artifact (ADR-013 Phase 3).
+        self.model_registry: Any = None
         self._stop = threading.Event()
         self._preview_cache: dict[str, tuple[float, bytes]] = {}
         # E2c disk-pressure state: refreshed by the inspection loop and by the
@@ -192,6 +195,10 @@ class EdgeRuntime:
             log.error("edge configuration failed: %s", exc)
             return
         registry = repository.register_rule_identity if repository is not None else None
+        if self.model_registry is None:
+            from assemblyvision_edge.detection.registry import ModelRegistry
+
+            self.model_registry = ModelRegistry()
         instances: dict[str, InstanceRuntime] = {}
         sources: dict[str, Any] = {}
         unavailable: dict[str, str] = {}
@@ -199,7 +206,11 @@ class EdgeRuntime:
             pipeline: Any = None
             pipeline_error: str | None = None
             try:
-                pipeline = _build_instance_pipeline(instance, rule_registry=registry)
+                pipeline = _build_instance_pipeline(
+                    instance,
+                    rule_registry=registry,
+                    model_registry=self.model_registry,
+                )
             except (ConfigError, ValueError, RepositoryError) as exc:
                 pipeline_error = str(exc)
                 log.error("instance %s pipeline build failed: %s", instance.instance_id, exc)
@@ -1049,9 +1060,15 @@ def _build_pipeline(
 
 
 def _build_instance_pipeline(
-    instance: InstanceConfig, rule_registry: Callable[[str, int, str], None] | None = None
+    instance: InstanceConfig,
+    rule_registry: Callable[[str, int, str], None] | None = None,
+    model_registry: Any = None,
 ) -> Any:
-    """Build the inspection pipeline for one instance (ADR-013)."""
+    """Build the inspection pipeline for one instance (ADR-013).
+
+    ``model_registry`` (E4c) lets instances that reference the same immutable
+    model artifact share one read-only loaded model handle.
+    """
     from assemblyvision_domain.models import ModelManifest
     from assemblyvision_vision.manifests import load_model_manifest
     from assemblyvision_vision.roi.roi_engine import ROIEngine
@@ -1085,10 +1102,14 @@ def _build_instance_pipeline(
     )
     validate_rule_component_compatibility(rule, config, component_manifest)
     product_detector = ProductDetector.from_manifest(
-        product_manifest, config.product_detection, config.product_manifest
+        product_manifest, config.product_detection, config.product_manifest, registry=model_registry
     )
     component_detector = ComponentDetector.from_manifest(
-        component_manifest, config.component_detection, config.components, config.component_manifest
+        component_manifest,
+        config.component_detection,
+        config.components,
+        config.component_manifest,
+        registry=model_registry,
     )
     return InspectionPipeline(
         product_detector=product_detector,

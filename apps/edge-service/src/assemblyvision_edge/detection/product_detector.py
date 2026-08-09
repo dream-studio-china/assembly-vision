@@ -61,11 +61,19 @@ class ProductDetector:
         settings: DetectionSettings,
         manifest_path: Any,
         device: str | None = None,
+        registry: Any = None,
     ) -> ProductDetector:
         from ultralytics import YOLO  # type: ignore[attr-defined]
 
+        from assemblyvision_edge.detection.registry import model_weight_key
+
         weights = verify_manifest_artifact(manifest, manifest_path)
-        model = YOLO(str(weights))
+        if registry is not None:
+            # E4c: share one read-only model handle per artifact across
+            # instances that reference the same manifest.
+            model = registry.load(model_weight_key(manifest, device), lambda: YOLO(str(weights)))
+        else:
+            model = YOLO(str(weights))
         verify_model_class_map(model.names, manifest)
         return cls(manifest, settings, model, device)
 
