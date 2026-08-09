@@ -8,6 +8,7 @@ actionable configuration errors.
 
 from __future__ import annotations
 
+import argparse
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -18,6 +19,7 @@ from assemblyvision_domain.errors import ConfigError
 from assemblyvision_domain.models import BusinessResult
 from assemblyvision_edge.api.app import create_app
 from assemblyvision_edge.api.settings import ServerSettings, UploadSettings
+from assemblyvision_edge.cli import _build_upload_settings
 from assemblyvision_edge.persistence.repository import EdgeRepository
 from fastapi.testclient import TestClient
 
@@ -111,8 +113,10 @@ class TestServeWiring:
         """F7: inspection evidence must not travel over plaintext http."""
         with pytest.raises(ConfigError, match="https"):
             UploadSettings(base_url="http://central.invalid").validate()
-        # The explicit development flag permits http for local testing only.
-        UploadSettings(base_url="http://central.invalid", allow_insecure_http=True).validate()
+        # The explicit development flag permits HTTP for loopback testing only.
+        with pytest.raises(ConfigError, match="loopback"):
+            UploadSettings(base_url="http://central.invalid", allow_insecure_http=True).validate()
+        UploadSettings(base_url="http://localhost:9000", allow_insecure_http=True).validate()
         # HTTPS is the supported production form.
         UploadSettings(base_url="https://central.invalid").validate()
 
@@ -122,3 +126,24 @@ class TestServeWiring:
             UploadSettings(base_url="https:///missing-host").validate()
         with pytest.raises(ConfigError, match="must not embed credentials"):
             UploadSettings(base_url="https://user:pass@central.invalid").validate()
+
+    def test_composition_root_revalidates_programmatic_upload_settings(
+        self, tmp_path: Path
+    ) -> None:
+        """F7 follow-up: direct create_app callers cannot bypass the TLS policy."""
+        insecure = UploadSettings(base_url="http://central.invalid", allow_insecure_http=True)
+        with pytest.raises(ConfigError, match="loopback"):
+            create_app(_settings(tmp_path, upload=insecure))
+
+    def test_zero_bandwidth_environment_value_is_rejected(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """F6 follow-up: an explicit zero is invalid, not an omitted bound."""
+        monkeypatch.setenv("AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS", "0")
+        args = argparse.Namespace(
+            upload_base_url="https://central.invalid",
+            upload_sink_dir=None,
+            upload_insecure_http=False,
+        )
+        with pytest.raises(ConfigError, match="maximum_bandwidth_mbps"):
+            _build_upload_settings(args)

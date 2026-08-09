@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from ipaddress import ip_address
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -69,16 +70,34 @@ class UploadSettings:
         ``allow_insecure_http`` development flag.
         """
         parts = urlsplit(self.base_url)
-        if parts.scheme != "https" and not self.allow_insecure_http:
-            raise ConfigError(
-                "upload configuration: base_url must use https; plaintext http "
-                "is only allowed with the explicit allow_insecure_http "
-                "development flag"
-            )
-        if not parts.hostname:
+        host = parts.hostname
+        if not isinstance(host, str) or not host:
             raise ConfigError("upload configuration: base_url must include a non-empty host")
         if parts.username is not None or parts.password is not None:
             raise ConfigError("upload configuration: base_url must not embed credentials")
+        if parts.scheme == "https":
+            return
+        if parts.scheme == "http" and self.allow_insecure_http and _is_loopback_host(host):
+            return
+        if parts.scheme == "http" and self.allow_insecure_http:
+            raise ConfigError(
+                "upload configuration: plaintext http is only allowed for a loopback host"
+            )
+        raise ConfigError(
+            "upload configuration: base_url must use https; plaintext http "
+            "is only allowed with the explicit allow_insecure_http "
+            "development flag on a loopback host"
+        )
+
+
+def _is_loopback_host(host: str) -> bool:
+    """Return whether a development HTTP endpoint is confined to loopback."""
+    if host.lower() == "localhost":
+        return True
+    try:
+        return ip_address(host).is_loopback
+    except ValueError:
+        return False
 
 
 @dataclass(frozen=True)

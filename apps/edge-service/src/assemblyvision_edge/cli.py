@@ -277,6 +277,17 @@ def _float_env(name: str, default: float) -> float:
         raise ConfigError(f"{name} must be a number, got {raw!r}") from exc
 
 
+def _optional_float_env(name: str) -> float | None:
+    """Return a configured float without treating zero as an omitted value."""
+    raw = os.environ.get(name)
+    if raw is None:
+        return None
+    try:
+        return float(raw)
+    except ValueError as exc:
+        raise ConfigError(f"{name} must be a number, got {raw!r}") from exc
+
+
 def _int_env(name: str, default: int) -> int:
     raw = os.environ.get(name)
     if raw is None:
@@ -322,9 +333,7 @@ def _build_upload_settings(args: argparse.Namespace) -> UploadSettings | None:
         base_retry_seconds=_float_env("AV_EDGE_UPLOAD_BASE_RETRY_SECONDS", 2.0),
         maximum_retry_seconds=_float_env("AV_EDGE_UPLOAD_MAXIMUM_RETRY_SECONDS", 900.0),
         exponent_cap=_int_env("AV_EDGE_UPLOAD_EXPONENT_CAP", 8),
-        maximum_bandwidth_mbps=(_float_env("AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS", 0.0) or None)
-        if os.environ.get("AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS") is not None
-        else None,
+        maximum_bandwidth_mbps=_optional_float_env("AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS"),
         allow_insecure_http=getattr(args, "upload_insecure_http", False)
         or _bool_env("AV_EDGE_UPLOAD_INSECURE_HTTP", False),
     )

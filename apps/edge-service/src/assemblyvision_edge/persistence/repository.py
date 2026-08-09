@@ -181,6 +181,20 @@ def _content_hash(record: InspectionRecord) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def _has_verified_receipt(row: Any) -> bool:
+    """Return whether a succeeded task has the persisted receipt required for sync.
+
+    Metadata needs a verified receipt; media additionally needs the central
+    object identifier that retention and central binding rely on (PR-017 F5
+    follow-up).
+    """
+    return (
+        row["status"] == "SUCCEEDED"
+        and bool(row["receipt_json"])
+        and (row["kind"] != "MEDIA" or bool(row["central_object_id"]))
+    )
+
+
 class EdgeRepository:
     """SQLite-backed query layer for the local edge API."""
 
@@ -1011,6 +1025,8 @@ class EdgeRepository:
             )
             if row is None:
                 return 0
+            if receipt_json is None or (row["kind"] == "MEDIA" and central_object_id is None):
+                return 0
             result = conn.execute(
                 text(
                     f"""
@@ -1047,19 +1063,22 @@ class EdgeRepository:
         """
         rows = (
             conn.execute(
-                text(f"SELECT status FROM {upload_tasks.name} WHERE inspection_id = :id"),
+                text(
+                    f"SELECT kind, status, central_object_id, receipt_json "
+                    f"FROM {upload_tasks.name} WHERE inspection_id = :id"
+                ),
                 {"id": inspection_id},
             )
-            .scalars()
+            .mappings()
             .all()
         )
         if not rows:
             return
-        if any(status == "PERMANENT_FAILURE" for status in rows):
+        if any(row["status"] == "PERMANENT_FAILURE" for row in rows):
             state = "FAILED"
-        elif all(status == "SUCCEEDED" for status in rows):
+        elif all(_has_verified_receipt(row) for row in rows):
             state = "SYNCED"
-        elif any(status == "SUCCEEDED" for status in rows):
+        elif any(_has_verified_receipt(row) for row in rows):
             state = "PARTIAL"
         else:
             state = "QUEUED"

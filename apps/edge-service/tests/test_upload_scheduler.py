@@ -47,6 +47,7 @@ def _write_media(output_root: Path, record: InspectionRecord) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         data = f"jpeg-bytes-{item.media_id}".encode()
         path.write_bytes(data)
+        item.size_bytes = len(data)
         item.checksum_sha256 = hashlib.sha256(data).hexdigest()
 
 
@@ -412,12 +413,27 @@ class TestPermanentFailures:
         self, repo: EdgeRepository, tmp_path: Path
     ) -> None:
         record = _seed(repo, tmp_path)[0]
-        (tmp_path / record.media[0].relative_path).write_bytes(b"corrupted-bytes")
+        path = tmp_path / record.media[0].relative_path
+        path.write_bytes(b"x" * len(path.read_bytes()))
         scheduler = _scheduler(repo, tmp_path, _ScriptedSink())
         _drain(scheduler)
         by_kind = _by_kind(repo.list_uploads(limit=100).items)
         assert by_kind["MEDIA"].status == "PERMANENT_FAILURE"
         assert by_kind["MEDIA"].last_error_code == "MEDIA_CHECKSUM_MISMATCH"
+
+    def test_media_size_mismatch_is_permanent_failure(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """Follow-up: immutable media size must match the bytes before upload."""
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-size")
+        _write_media(tmp_path, record)
+        record.media[0].size_bytes += 1
+        repo.persist_inspection_and_enqueue_uploads(record)
+        scheduler = _scheduler(repo, tmp_path, _ScriptedSink())
+        _drain(scheduler)
+        by_kind = _by_kind(repo.list_uploads(limit=100).items)
+        assert by_kind["MEDIA"].status == "PERMANENT_FAILURE"
+        assert by_kind["MEDIA"].last_error_code == "MEDIA_SIZE_MISMATCH"
 
     def test_server_idempotency_conflict_is_permanent(
         self, repo: EdgeRepository, tmp_path: Path
@@ -488,8 +504,19 @@ class TestRestartRecovery:
         )
         # The current owner still owns the task and can complete it.
         current = second[0]
+        # F5 follow-up: even a current lease holder cannot claim success
+        # without a persisted verified receipt.
         assert (
             repo.mark_upload_succeeded(str(current.task.upload_task_id), current.lease_owner, later)
+            == 0
+        )
+        assert (
+            repo.mark_upload_succeeded(
+                str(current.task.upload_task_id),
+                current.lease_owner,
+                later,
+                receipt_json='{"verified":true}',
+            )
             == 1
         )
         by_kind = _by_kind(repo.list_uploads(limit=100).items)
@@ -705,6 +732,20 @@ class TestHttpSink:
                         "object_id": str(task.object_id),
                         "kind": task.kind,
                         "size_bytes": 999,
+                    },
+                )
+            ).status
+            == "PERMANENT"
+        )
+        # Matching identity is insufficient: size and checksum are mandatory.
+        assert (
+            upload_with(
+                lambda req: httpx.Response(
+                    200,
+                    json={
+                        "idempotency_key": task.idempotency_key,
+                        "object_id": str(task.object_id),
+                        "kind": task.kind,
                     },
                 )
             ).status

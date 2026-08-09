@@ -68,6 +68,12 @@ failed before the fix and pass after:
 - **F8** - an injected clock anchors every transition to the response/failure
   time, so a slow request cannot erode `Retry-After`; the deterministic test
   verifies `next_attempt_at = response_time + 60` (`81fc6f4`).
+- **Post-resolution hardening** - final review closed four small gaps in the
+  original fixes: receipts now require matching size/checksum and a media
+  central-object ID before success; repository sync requires persisted verified
+  receipt metadata; `create_app` revalidates programmatic upload settings and
+  limits plaintext development HTTP to loopback; media size and explicit zero
+  bandwidth configuration now fail closed (follow-up commit pending).
 
 Validation executed after the fixes (all green):
 

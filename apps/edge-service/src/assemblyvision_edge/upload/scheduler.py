@@ -206,13 +206,11 @@ class HttpUploadSink:
             or receipt.kind != task.kind
         ):
             return None
-        if receipt.size_bytes is not None and receipt.size_bytes != size_bytes:
+        if receipt.size_bytes != size_bytes:
             return None
-        if (
-            receipt.checksum_sha256 is not None
-            and task.checksum_sha256 is not None
-            and receipt.checksum_sha256 != task.checksum_sha256
-        ):
+        if task.checksum_sha256 is None or receipt.checksum_sha256 != task.checksum_sha256:
+            return None
+        if task.kind == "MEDIA" and not receipt.central_object_id:
             return None
         return receipt
 
@@ -392,6 +390,8 @@ class UploadScheduler:
             if not path.is_file():
                 raise _PermanentPayloadError("MEDIA_EVIDENCE_MISSING")
             data = path.read_bytes()
+            if len(data) != media_metadata.size_bytes:
+                raise _PermanentPayloadError("MEDIA_SIZE_MISMATCH")
             expected = task.checksum_sha256 or media_metadata.checksum_sha256
             if expected and hashlib.sha256(data).hexdigest() != expected:
                 raise _PermanentPayloadError("MEDIA_CHECKSUM_MISMATCH")

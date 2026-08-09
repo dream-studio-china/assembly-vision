@@ -172,8 +172,9 @@ The persistent upload outbox and its worker are implemented in
   failures while local evidence is preserved.
 - **Verified receipts**: a 2xx is only success when the bounded typed receipt
   echoes the idempotency key, object, kind, byte size, and checksum of the
-  payload actually sent; verified receipts and central object identifiers are
-  persisted. Inspection synchronization is recomputed from all required tasks:
+  payload actually sent; media receipts additionally require a central object
+  identifier. Verified receipts and central object identifiers are persisted.
+  Inspection synchronization is recomputed from all required tasks:
   `QUEUED` while outstanding, `PARTIAL` after metadata with pending media,
   `SYNCED` only when every required task has a verified receipt, and `FAILED`
   on any permanent failure.
@@ -183,8 +184,10 @@ The persistent upload outbox and its worker are implemented in
   worker is enabled through the supported `serve` path via `UploadSettings`
   and `AV_EDGE_UPLOAD_*` environment variables (endpoint or local sink,
   separate `AV_EDGE_UPLOAD_TOKEN` credential, timeouts, retry/lease/batch
-  tunables, bandwidth bound); without a configured destination it stays
-  explicitly disabled and tasks remain visible in the uploads API.
+  tunables, bandwidth bound). Central endpoints require HTTPS; explicit
+  development HTTP is restricted to loopback. Without a configured destination
+  the worker stays explicitly disabled and tasks remain visible in the uploads
+  API.
 - **Contract 06 coverage**: tests cover successful upload, network
   interruption, retry/backoff, `Retry-After` timing, duplicate enqueue, process
   restart with lease reclamation and fencing, missing file, checksum mismatch,

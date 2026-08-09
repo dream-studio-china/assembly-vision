@@ -68,6 +68,10 @@ _CSP = (
 
 
 def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
+    # Validate at the composition root as well as the CLI path: programmatic
+    # callers must not bypass the TLS/credential policy (PR-017 F7 follow-up).
+    if settings.upload is not None:
+        settings.upload.validate()
     runtime = EdgeRuntime(settings)
 
     @asynccontextmanager
