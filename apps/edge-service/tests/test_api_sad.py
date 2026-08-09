@@ -165,9 +165,11 @@ def test_camera_state_and_removed_reconnect(client: TestClient) -> None:
 
 
 def test_upload_retry_404(client: TestClient) -> None:
-    response = client.post("/api/v1/uploads/nope/retry", json={"reason": "why"})
+    # E3c: the manual-retry endpoint exists; an unknown task is a NOT_FOUND
+    # problem rather than an HTTP_404 fallback for the whole route.
+    response = client.post("/api/v1/uploads/nope/retry")
     assert response.status_code == 404
-    assert response.json()["code"] == "HTTP_404"
+    assert response.json()["code"] == "NOT_FOUND"
 
 
 def test_validation_error_is_problem(client: TestClient) -> None:
