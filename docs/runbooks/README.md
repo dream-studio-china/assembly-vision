@@ -17,6 +17,9 @@ Site-specific contacts, commands, thresholds, and hardware steps must be added d
 | Rule rollback | [09 - Rule Rollback](09-rule-rollback.md) |
 | Model improvement | [10 - Model Improvement](10-model-improvement.md) |
 | Data collection and annotation | [11 - Data Collection and Annotation](11-data-collection-and-annotation.md) |
+| Backup and recovery | [12 - Backup and Recovery](12-backup-and-recovery.md) |
+| TLS certificate rotation | [13 - TLS Certificate Rotation](13-tls-certificate-rotation.md) |
+| Deployment upgrade and rollback | [14 - Deployment Upgrade and Rollback](14-deployment-upgrade-rollback.md) |
 
 Every execution records device/site, start/end time, actor, affected inspections, evidence/log bundle,
 actions, result, and escalation reference. A runbook never converts incomplete evidence to `OK`.
