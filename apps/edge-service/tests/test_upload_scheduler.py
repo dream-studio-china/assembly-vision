@@ -195,14 +195,24 @@ class TestAtomicPersistence:
         assert len(repo.list_uploads(limit=100).items) == 2
 
 
+def _drain(scheduler: UploadScheduler, max_passes: int = 20) -> int:
+    """Run the scheduler until a pass handles nothing; returns tasks handled."""
+    total = 0
+    for _ in range(max_passes):
+        handled = scheduler.run_once()
+        total += handled
+        if handled == 0:
+            break
+    return total
+
+
 class TestSuccessfulUpload:
     def test_scheduler_drains_to_sink(self, repo: EdgeRepository, tmp_path: Path) -> None:
         record = _seed(repo, tmp_path)[0]
         sink_dir = tmp_path / "sink"
         sink = DirectoryUploadSink(sink_dir)
         scheduler = _scheduler(repo, tmp_path, sink)
-        handled = scheduler.run_once()
-        assert handled == 2
+        assert _drain(scheduler) == 2
         assert all(task.status == "SUCCEEDED" for task in repo.list_uploads(limit=100).items)
         inspection_payload = (
             sink_dir / "inspection" / f"inspection:{record.device_id}:{record.inspection_id}.bin"
@@ -217,10 +227,44 @@ class TestSuccessfulUpload:
         claimed = repo.claim_upload_tasks(
             10, lease_seconds=120, now_iso=datetime.now(UTC).isoformat()
         )
-        assert len(claimed) == 2
-        assert all(item.task.status == "IN_PROGRESS" for item in claimed)
+        # F4: only the metadata task is due; media waits for its receipt.
+        assert len(claimed) == 1
+        assert claimed[0].task.kind == "INSPECTION"
+        assert claimed[0].task.status == "IN_PROGRESS"
         # F3: every claim carries a distinct fencing token.
-        assert len({item.lease_owner for item in claimed}) == 2
+        assert len({item.lease_owner for item in claimed}) == 1
+
+
+class TestMetadataBeforeMedia:
+    def test_media_drains_only_after_inspection_receipt(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """F4: a media request is never sent before its inspection receipt."""
+        import json
+
+        import httpx
+
+        _seed(repo, tmp_path)
+        seen: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            body = json.loads(request.content)
+            seen.append(body["kind"])
+            return httpx.Response(200, text="receipt-ok")
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
+        scheduler = _scheduler(repo, tmp_path, sink)
+        # First pass: only metadata is due; media must not be requested yet.
+        assert scheduler.run_once() == 1
+        assert seen == ["INSPECTION"]
+        by_kind = _by_kind(repo.list_uploads(limit=100).items)
+        assert by_kind["INSPECTION"].status == "SUCCEEDED"
+        assert by_kind["MEDIA"].status == "PENDING"
+        # Second pass: media becomes due now that its parent has a receipt.
+        assert scheduler.run_once() == 1
+        assert seen == ["INSPECTION", "MEDIA"]
+        assert all(t.status == "SUCCEEDED" for t in repo.list_uploads(limit=100).items)
 
 
 class TestRetryBehavior:
@@ -231,14 +275,16 @@ class TestRetryBehavior:
         sink = _ScriptedSink([UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")])
         scheduler = _scheduler(repo, tmp_path, sink)
         now = datetime.now(UTC)
-        assert scheduler.run_once() == 2
-        tasks = repo.list_uploads(limit=100).items
-        assert all(task.status == "RETRY_WAIT" for task in tasks)
-        assert all(task.attempt_count == 1 for task in tasks)
-        assert all(task.last_error_code == "TRANSPORT_ERROR" for task in tasks)
-        for task in tasks:
-            assert task.next_attempt_at is not None
-            assert task.next_attempt_at > now
+        # Only the metadata task is claimed; media stays pending on its receipt.
+        assert scheduler.run_once() == 1
+        by_kind = _by_kind(repo.list_uploads(limit=100).items)
+        inspection = by_kind["INSPECTION"]
+        assert inspection.status == "RETRY_WAIT"
+        assert inspection.attempt_count == 1
+        assert inspection.last_error_code == "TRANSPORT_ERROR"
+        assert inspection.next_attempt_at is not None
+        assert inspection.next_attempt_at > now
+        assert by_kind["MEDIA"].status == "PENDING"
 
     def test_retry_eventually_succeeds(self, repo: EdgeRepository, tmp_path: Path) -> None:
         _seed(repo, tmp_path)
@@ -250,15 +296,10 @@ class TestRetryBehavior:
             ]
         )
         # base_retry_seconds=0 keeps the task immediately due so successive
-        # run_once calls exercise the full retry ladder.
+        # run_once calls exercise the full retry ladder; metadata retries first,
+        # then media, so the scripted outcomes must serve both tasks.
         scheduler = _scheduler(repo, tmp_path, sink, base_retry_seconds=0.0)
-        scheduler.run_once()  # attempt 1: both retryable
-        tasks = repo.list_uploads(limit=100).items
-        assert all(t.status == "RETRY_WAIT" for t in tasks)
-        for _ in range(4):
-            scheduler.run_once()
-            if all(t.status == "SUCCEEDED" for t in repo.list_uploads(limit=100).items):
-                break
+        _drain(scheduler, max_passes=12)
         tasks = repo.list_uploads(limit=100).items
         assert all(t.status == "SUCCEEDED" for t in tasks)
         assert all(t.attempt_count >= 1 for t in tasks)  # both retried at least once
@@ -271,11 +312,12 @@ class TestRetryBehavior:
         scheduler = _scheduler(repo, tmp_path, sink)
         now = datetime.now(UTC)
         scheduler.run_once()
-        tasks = repo.list_uploads(limit=100).items
-        assert all(t.status == "RETRY_WAIT" for t in tasks)
-        for task in tasks:
-            assert task.next_attempt_at is not None
-            assert task.next_attempt_at >= now + timedelta(seconds=60)
+        by_kind = _by_kind(repo.list_uploads(limit=100).items)
+        inspection = by_kind["INSPECTION"]
+        assert inspection.status == "RETRY_WAIT"
+        assert inspection.next_attempt_at is not None
+        assert inspection.next_attempt_at >= now + timedelta(seconds=60)
+        assert by_kind["MEDIA"].status == "PENDING"
 
     def test_backoff_bounds(self) -> None:
         for attempt in range(10):
@@ -292,7 +334,7 @@ class TestPermanentFailures:
         record = _seed(repo, tmp_path)[0]
         (tmp_path / record.media[0].relative_path).unlink()
         scheduler = _scheduler(repo, tmp_path, _ScriptedSink())
-        scheduler.run_once()
+        _drain(scheduler)
         by_kind = _by_kind(repo.list_uploads(limit=100).items)
         assert by_kind["MEDIA"].status == "PERMANENT_FAILURE"
         assert by_kind["MEDIA"].last_error_code == "MEDIA_EVIDENCE_MISSING"
@@ -305,7 +347,7 @@ class TestPermanentFailures:
         record = _seed(repo, tmp_path)[0]
         (tmp_path / record.media[0].relative_path).write_bytes(b"corrupted-bytes")
         scheduler = _scheduler(repo, tmp_path, _ScriptedSink())
-        scheduler.run_once()
+        _drain(scheduler)
         by_kind = _by_kind(repo.list_uploads(limit=100).items)
         assert by_kind["MEDIA"].status == "PERMANENT_FAILURE"
         assert by_kind["MEDIA"].last_error_code == "MEDIA_CHECKSUM_MISMATCH"
@@ -317,9 +359,13 @@ class TestPermanentFailures:
         sink = _ScriptedSink([UploadResult(status="PERMANENT", error_code="HTTP_409")])
         scheduler = _scheduler(repo, tmp_path, sink)
         scheduler.run_once()
-        tasks = repo.list_uploads(limit=100).items
-        assert all(t.status == "PERMANENT_FAILURE" for t in tasks)
-        assert all(t.last_error_code == "HTTP_409" for t in tasks)
+        by_kind = _by_kind(repo.list_uploads(limit=100).items)
+        inspection = by_kind["INSPECTION"]
+        assert inspection.status == "PERMANENT_FAILURE"
+        assert inspection.last_error_code == "HTTP_409"
+        # Media stays pending behind the permanently failed metadata task
+        # (F4); it is never sent and never classified as evidence failure.
+        assert by_kind["MEDIA"].status == "PENDING"
 
     def test_missing_inspection_evidence_is_permanent(
         self, repo: EdgeRepository, tmp_path: Path
@@ -341,14 +387,15 @@ class TestRestartRecovery:
     ) -> None:
         _seed(repo, tmp_path)
         now = datetime.now(UTC)
-        tasks = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=now.isoformat())
-        assert all(t.task.status == "IN_PROGRESS" for t in tasks)
+        claimed = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=now.isoformat())
+        assert len(claimed) == 1
+        assert claimed[0].task.status == "IN_PROGRESS"
         # Simulate a crashed worker: the lease expires, then a new scheduler
         # instance must reclaim the tasks.
         later = (now + timedelta(seconds=300)).isoformat()
         reclaimed = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=later)
-        assert len(reclaimed) == 2
-        assert all(t.task.status == "IN_PROGRESS" for t in reclaimed)
+        assert len(reclaimed) == 1
+        assert reclaimed[0].task.status == "IN_PROGRESS"
 
     def test_late_worker_cannot_overwrite_reclaimed_task(
         self, repo: EdgeRepository, tmp_path: Path
@@ -357,35 +404,32 @@ class TestRestartRecovery:
         _seed(repo, tmp_path)
         now = datetime.now(UTC)
         first = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=now.isoformat())
-        assert len(first) == 2
+        assert len(first) == 1
         # The first worker stalls past its lease; a second worker reclaims.
         later = (now + timedelta(seconds=300)).isoformat()
         second = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=later)
-        assert len(second) == 2
-        for stale in first:
-            stale_owner = stale.lease_owner
-            task_id = str(stale.task.upload_task_id)
-            # The stale worker's updates are rejected: zero rows changed.
-            assert repo.mark_upload_succeeded(task_id, stale_owner, now.isoformat()) == 0
-            assert (
-                repo.mark_upload_retry(task_id, stale_owner, "HTTP_503", later, now.isoformat())
-                == 0
-            )
-            assert (
-                repo.mark_upload_permanent_failure(
-                    task_id, stale_owner, "HTTP_409", now.isoformat()
-                )
-                == 0
-            )
-        # The current owner still owns the tasks and can complete them.
-        for current in second:
-            assert (
-                repo.mark_upload_succeeded(
-                    str(current.task.upload_task_id), current.lease_owner, later
-                )
-                == 1
-            )
-        assert all(t.status == "SUCCEEDED" for t in repo.list_uploads(limit=100).items)
+        assert len(second) == 1
+        stale = first[0]
+        stale_owner = stale.lease_owner
+        task_id = str(stale.task.upload_task_id)
+        # The stale worker's updates are rejected: zero rows changed.
+        assert repo.mark_upload_succeeded(task_id, stale_owner, now.isoformat()) == 0
+        assert repo.mark_upload_retry(task_id, stale_owner, "HTTP_503", later, now.isoformat()) == 0
+        assert (
+            repo.mark_upload_permanent_failure(task_id, stale_owner, "HTTP_409", now.isoformat())
+            == 0
+        )
+        # The current owner still owns the task and can complete it.
+        current = second[0]
+        assert (
+            repo.mark_upload_succeeded(str(current.task.upload_task_id), current.lease_owner, later)
+            == 1
+        )
+        by_kind = _by_kind(repo.list_uploads(limit=100).items)
+        assert by_kind["INSPECTION"].status == "SUCCEEDED"
+        # Media remains pending behind its (now succeeded) parent; it is not
+        # claimed by this fencing scenario.
+        assert by_kind["MEDIA"].status == "PENDING"
 
     def test_restart_reclaims_and_drains(self, repo: EdgeRepository, tmp_path: Path) -> None:
         _seed(repo, tmp_path)
@@ -404,7 +448,7 @@ class TestRestartRecovery:
         try:
             sink = DirectoryUploadSink(tmp_path / "sink")
             scheduler = _scheduler(restarted, tmp_path, sink)
-            assert scheduler.run_once() == 2
+            assert _drain(scheduler) == 2
             assert all(t.status == "SUCCEEDED" for t in restarted.list_uploads(limit=100).items)
         finally:
             restarted.close()
@@ -413,9 +457,7 @@ class TestRestartRecovery:
         _seed(repo, tmp_path, count=3)
         sink = _ScriptedSink()
         scheduler = _scheduler(repo, tmp_path, sink)
-        for _ in range(10):
-            if scheduler.run_once() == 0:
-                break
+        assert _drain(scheduler) == 6
         assert len(sink.keys) == len(set(sink.keys)) == 6
         assert all(t.status == "SUCCEEDED" for t in repo.list_uploads(limit=100).items)
 

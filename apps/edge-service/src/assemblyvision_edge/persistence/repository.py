@@ -919,7 +919,18 @@ class EdgeRepository:
                         SELECT * FROM {upload_tasks.name}
                         WHERE status IN ('PENDING', 'RETRY_WAIT')
                           AND (next_attempt_at IS NULL OR next_attempt_at <= :now)
-                        ORDER BY created_at ASC, upload_task_id ASC
+                          AND (
+                              kind != 'MEDIA'
+                              OR inspection_id IS NULL
+                              OR EXISTS (
+                                  SELECT 1 FROM {upload_tasks.name} parent
+                                  WHERE parent.kind = 'INSPECTION'
+                                    AND parent.inspection_id = {upload_tasks.name}.inspection_id
+                                    AND parent.status = 'SUCCEEDED'
+                              )
+                          )
+                        ORDER BY CASE kind WHEN 'INSPECTION' THEN 0 ELSE 1 END,
+                                 created_at ASC, upload_task_id ASC
                         LIMIT :limit
                         """
                     ),
