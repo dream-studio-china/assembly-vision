@@ -33,6 +33,7 @@ from assemblyvision_edge.persistence.schema import (
     rule_identities,
     upload_tasks,
 )
+from assemblyvision_edge.retention.policy import RetentionPolicy
 
 _PAGE_DEFAULT_LIMIT = 50
 _PAGE_MAX_LIMIT = 200
@@ -95,6 +96,83 @@ class UploadQueueMetrics:
     by_state: dict[str, int]
     pending_bytes: int
     oldest_pending_at: str | None
+
+
+@dataclass(frozen=True)
+class RetentionTarget:
+    """One media artifact that is receipt-verified and past its hold deadline.
+
+    Eligibility (design 12.7, E2 task E2a): the artifact must be ``AVAILABLE``,
+    not purged/deleting/held/faulted, past its ``retention_eligible_at``, and
+    its inspection ``SYNCED`` with a verified media receipt that includes the
+    central object identifier.
+    """
+
+    media_id: UUID
+    inspection_id: UUID
+    kind: str
+    relative_path: str
+    size_bytes: int
+    retention_eligible_at: str
+
+
+@dataclass(frozen=True)
+class ClaimedRetentionTarget:
+    """A retention target leased to one cleanup worker with a fencing token.
+
+    The token is persisted in ``delete_lease_owner``; every terminal or retry
+    transition must present the same token so a worker whose lease was
+    reclaimed can never overwrite the new holder (E2 task invariant 4/5).
+    """
+
+    media_id: UUID
+    inspection_id: UUID
+    kind: str
+    relative_path: str
+    size_bytes: int
+    retention_eligible_at: str
+    lease_owner: str
+    lease_expires_at: str
+
+
+@dataclass(frozen=True)
+class RetentionMetrics:
+    """Persistent cleanup state for device status and alerts (E2)."""
+
+    eligible_count: int
+    eligible_bytes: int
+    deleting_count: int
+    delete_error_count: int
+    purged_count: int
+    integrity_fault_count: int = 0
+
+
+def _retention_eligible_where() -> str:
+    """SQL predicate for receipt-gated retention eligibility (design 12.7).
+
+    Protects pending/in-progress/retrying/failed/cancelled uploads (the
+    inspection can only be ``SYNCED`` when every task holds a verified
+    receipt), held/locked/faulted artifacts, and anything without an elapsed
+    hold deadline. Shared by the eligibility query, the claim transaction, and
+    the metrics aggregate.
+    """
+    return f"""
+        m.lifecycle = 'AVAILABLE'
+        AND m.purged_at IS NULL
+        AND m.deleting_at IS NULL
+        AND (m.integrity_status IS NULL OR m.integrity_status <> 'FAULT')
+        AND m.hold_reason IS NULL
+        AND m.retention_eligible_at IS NOT NULL
+        AND m.retention_eligible_at <= :now
+        AND i.synchronization_status = 'SYNCED'
+        AND EXISTS (
+            SELECT 1 FROM {upload_tasks.name} t
+            WHERE t.kind = 'MEDIA' AND t.object_id = m.media_id
+              AND t.status = 'SUCCEEDED'
+              AND t.receipt_json IS NOT NULL
+              AND t.central_object_id IS NOT NULL
+        )
+    """
 
 
 def _filter_fingerprint(filters: dict[str, object]) -> str:
@@ -243,7 +321,9 @@ class EdgeRepository:
     def close(self) -> None:
         self._engine.dispose()
 
-    def upsert_inspection(self, record: InspectionRecord) -> str:
+    def upsert_inspection(
+        self, record: InspectionRecord, *, retention: RetentionPolicy | None = None
+    ) -> str:
         """Insert an inspection idempotently, returning ``inserted`` or ``unchanged``.
 
         The inspection projection is immutable (F10): re-importing identical
@@ -261,7 +341,15 @@ class EdgeRepository:
         try:
             with self._engine.begin() as conn:
                 return self._upsert_inspection_inner(
-                    conn, record, content_hash, payload, decision, barcode, product, media_ids
+                    conn,
+                    record,
+                    content_hash,
+                    payload,
+                    decision,
+                    barcode,
+                    product,
+                    media_ids,
+                    retention=retention,
                 )
         except IntegrityError as exc:
             raise RepositoryError(
@@ -300,6 +388,8 @@ class EdgeRepository:
         barcode: str | None,
         product: str | None,
         media_ids: list[str],
+        *,
+        retention: RetentionPolicy | None = None,
     ) -> str:
         """Insert the immutable projection inside an open transaction.
 
@@ -421,15 +511,21 @@ class EdgeRepository:
                 },
             )
         for item in record.media:
+            eligible_at = None
+            if retention is not None:
+                deadline = retention.eligible_at(item.kind, record.completed_at)
+                eligible_at = deadline.isoformat() if deadline is not None else None
             conn.execute(
                 text(
                     f"""
                     INSERT INTO {media.name} (
                         media_id, inspection_id, kind, lifecycle, relative_path,
-                        mime_type, size_bytes, checksum_sha256
+                        mime_type, size_bytes, checksum_sha256, created_at,
+                        retention_eligible_at
                     ) VALUES (
                         :media_id, :inspection_id, :kind, :lifecycle, :relative_path,
-                        :mime_type, :size_bytes, :checksum_sha256
+                        :mime_type, :size_bytes, :checksum_sha256, :created_at,
+                        :retention_eligible_at
                     )
                     """
                 ),
@@ -442,11 +538,15 @@ class EdgeRepository:
                     "mime_type": item.mime_type,
                     "size_bytes": item.size_bytes,
                     "checksum_sha256": item.checksum_sha256,
+                    "created_at": record.completed_at.isoformat(),
+                    "retention_eligible_at": eligible_at,
                 },
             )
         return "inserted"
 
-    def persist_inspection_and_enqueue_uploads(self, record: InspectionRecord) -> str:
+    def persist_inspection_and_enqueue_uploads(
+        self, record: InspectionRecord, *, retention: RetentionPolicy | None = None
+    ) -> str:
         """Atomically persist the immutable projection and its upload outbox.
 
         Design 12.4 steps 3+4 and contract 04 section 3: the projection and its
@@ -464,7 +564,15 @@ class EdgeRepository:
         try:
             with self._engine.begin() as conn:
                 status = self._upsert_inspection_inner(
-                    conn, record, content_hash, payload, decision, barcode, product, media_ids
+                    conn,
+                    record,
+                    content_hash,
+                    payload,
+                    decision,
+                    barcode,
+                    product,
+                    media_ids,
+                    retention=retention,
                 )
                 self._enqueue_inspection_uploads_inner(conn, record, now)
                 return status
@@ -851,6 +959,281 @@ class EdgeRepository:
             by_state=by_state,
             pending_bytes=pending_bytes,
             oldest_pending_at=oldest,
+        )
+
+    def retention_eligible(self, now_iso: str, limit: int = 200) -> list[RetentionTarget]:
+        """Return receipt-gated retention candidates (design 12.7, E2a).
+
+        Read-only view used by the cleanup worker and by observability; the
+        claim transaction re-checks the same predicate atomically.
+        """
+        with self._engine.connect() as conn:
+            rows = (
+                conn.execute(
+                    text(
+                        f"""
+                    SELECT m.media_id, m.inspection_id, m.kind, m.relative_path,
+                           m.size_bytes, m.retention_eligible_at
+                    FROM {media.name} m
+                    JOIN {inspections.name} i ON i.inspection_id = m.inspection_id
+                    WHERE {_retention_eligible_where()}
+                    ORDER BY m.retention_eligible_at ASC, m.created_at ASC, m.media_id ASC
+                    LIMIT :limit
+                    """
+                    ),
+                    {"now": now_iso, "limit": limit},
+                )
+                .mappings()
+                .all()
+            )
+        return [self._retention_target(r) for r in rows]
+
+    @staticmethod
+    def _retention_target(row: Any) -> RetentionTarget:
+        return RetentionTarget(
+            media_id=UUID(str(row["media_id"])),
+            inspection_id=UUID(str(row["inspection_id"])),
+            kind=str(row["kind"]),
+            relative_path=str(row["relative_path"]),
+            size_bytes=int(row["size_bytes"]),
+            retention_eligible_at=str(row["retention_eligible_at"]),
+        )
+
+    def claim_retention_batch(
+        self, limit: int, lease_seconds: int, now_iso: str
+    ) -> list[ClaimedRetentionTarget]:
+        """Lease up to ``limit`` retention candidates to one cleanup worker.
+
+        Runs in an immediate transaction so one writer claims each artifact
+        (E2 task E2a). Abandoned claims whose lease expired are released first,
+        then eligible artifacts are claimed with a fresh per-artifact fencing
+        token. The update re-checks the eligibility predicate, so an artifact
+        already claimed by a concurrent worker is never double-claimed.
+        """
+        lease_expires = (
+            datetime.fromisoformat(now_iso) + timedelta(seconds=lease_seconds)
+        ).isoformat()
+        with self._engine.begin() as conn:
+            conn.execute(
+                text(
+                    f"""
+                    UPDATE {media.name}
+                    SET deleting_at = NULL, delete_lease_owner = NULL,
+                        delete_lease_expires_at = NULL
+                    WHERE deleting_at IS NOT NULL AND delete_lease_expires_at IS NOT NULL
+                      AND delete_lease_expires_at < :now
+                    """
+                ),
+                {"now": now_iso},
+            )
+            rows = (
+                conn.execute(
+                    text(
+                        f"""
+                        SELECT m.media_id, m.inspection_id, m.kind, m.relative_path,
+                               m.size_bytes, m.retention_eligible_at
+                        FROM {media.name} m
+                        JOIN {inspections.name} i ON i.inspection_id = m.inspection_id
+                        WHERE {_retention_eligible_where()}
+                        ORDER BY m.retention_eligible_at ASC, m.created_at ASC, m.media_id ASC
+                        LIMIT :limit
+                        """
+                    ),
+                    {"now": now_iso, "limit": limit},
+                )
+                .mappings()
+                .all()
+            )
+            ids = [str(r["media_id"]) for r in rows]
+            if not ids:
+                return []
+            owners = {media_id: str(uuid4()) for media_id in ids}
+            conn.execute(
+                text(
+                    f"""
+                    UPDATE {media.name}
+                    SET deleting_at = :now, delete_lease_owner = :owner,
+                        delete_lease_expires_at = :lease
+                    WHERE media_id = :media_id
+                      AND lifecycle = 'AVAILABLE' AND purged_at IS NULL
+                      AND deleting_at IS NULL AND hold_reason IS NULL
+                      AND (integrity_status IS NULL OR integrity_status <> 'FAULT')
+                      AND retention_eligible_at IS NOT NULL
+                      AND retention_eligible_at <= :now
+                    """
+                ),
+                [
+                    {
+                        "now": now_iso,
+                        "owner": owners[media_id],
+                        "lease": lease_expires,
+                        "media_id": media_id,
+                    }
+                    for media_id in ids
+                ],
+            )
+            claimed: list[ClaimedRetentionTarget] = []
+            for row in rows:
+                media_id = str(row["media_id"])
+                still_held = conn.execute(
+                    text(
+                        f"SELECT 1 FROM {media.name} "
+                        "WHERE media_id = :id AND delete_lease_owner = :owner "
+                        "AND deleting_at IS NOT NULL"
+                    ),
+                    {"id": media_id, "owner": owners[media_id]},
+                ).scalar_one_or_none()
+                if still_held is None:
+                    # A concurrent worker claimed it after our SELECT; skip.
+                    continue
+                target = self._retention_target(row)
+                claimed.append(
+                    ClaimedRetentionTarget(
+                        media_id=target.media_id,
+                        inspection_id=target.inspection_id,
+                        kind=target.kind,
+                        relative_path=target.relative_path,
+                        size_bytes=target.size_bytes,
+                        retention_eligible_at=target.retention_eligible_at,
+                        lease_owner=owners[media_id],
+                        lease_expires_at=lease_expires,
+                    )
+                )
+        return claimed
+
+    def finalize_media_purge(
+        self, media_id: str, lease_owner: str, now_iso: str, reason: str
+    ) -> int:
+        """Mark one media artifact purged when the caller still holds its lease.
+
+        The row becomes an audit tombstone (``PURGED`` + timestamp/reason); the
+        file must already be absent on disk. Returns 0 when the lease was
+        reclaimed or expired, so a stale worker can never purge a newer
+        holder's artifact.
+        """
+        with self._engine.begin() as conn:
+            result = conn.execute(
+                text(
+                    f"""
+                    UPDATE {media.name}
+                    SET lifecycle = 'PURGED', purged_at = :now, purge_reason = :reason,
+                        deleting_at = NULL, delete_lease_owner = NULL,
+                        delete_lease_expires_at = NULL
+                    WHERE media_id = :id AND delete_lease_owner = :owner
+                      AND deleting_at IS NOT NULL
+                      AND delete_lease_expires_at IS NOT NULL
+                      AND delete_lease_expires_at >= :now
+                    """
+                ),
+                {"now": now_iso, "reason": reason, "owner": lease_owner, "id": media_id},
+            )
+        return int(result.rowcount or 0)
+
+    def record_media_delete_failure(
+        self, media_id: str, lease_owner: str, error_code: str, now_iso: str
+    ) -> int:
+        """Record a retryable unlink failure and release the claim (E2b).
+
+        The artifact stays ``AVAILABLE`` with ``last_delete_error`` set so the
+        failure is observable and the next cycle can retry it. Returns 0 when
+        the lease was reclaimed or expired.
+        """
+        with self._engine.begin() as conn:
+            result = conn.execute(
+                text(
+                    f"""
+                    UPDATE {media.name}
+                    SET last_delete_error = :error, deleting_at = NULL,
+                        delete_lease_owner = NULL, delete_lease_expires_at = NULL
+                    WHERE media_id = :id AND delete_lease_owner = :owner
+                      AND delete_lease_expires_at IS NOT NULL
+                      AND delete_lease_expires_at >= :now
+                    """
+                ),
+                {"error": error_code, "owner": lease_owner, "id": media_id, "now": now_iso},
+            )
+        return int(result.rowcount or 0)
+
+    def mark_media_integrity_fault(
+        self, media_id: str, lease_owner: str, error_code: str, now_iso: str
+    ) -> int:
+        """Mark media as integrity-faulted and release its cleanup claim (E2b).
+
+        A faulted artifact is never eligible for deletion again (E2 invariant
+        3/8); the row stays as evidence for operator reconciliation. Returns 0
+        when the lease was reclaimed or expired.
+        """
+        with self._engine.begin() as conn:
+            result = conn.execute(
+                text(
+                    f"""
+                    UPDATE {media.name}
+                    SET integrity_status = 'FAULT', last_delete_error = NULL,
+                        deleting_at = NULL, delete_lease_owner = NULL,
+                        delete_lease_expires_at = NULL
+                    WHERE media_id = :id AND delete_lease_owner = :owner
+                      AND delete_lease_expires_at IS NOT NULL
+                      AND delete_lease_expires_at >= :now
+                    """
+                ),
+                {"error": error_code, "owner": lease_owner, "id": media_id, "now": now_iso},
+            )
+        return int(result.rowcount or 0)
+
+    def recover_expired_retention_claims(self, now_iso: str) -> int:
+        """Release retention claims whose lease expired (crash recovery)."""
+        with self._engine.begin() as conn:
+            result = conn.execute(
+                text(
+                    f"""
+                    UPDATE {media.name}
+                    SET deleting_at = NULL, delete_lease_owner = NULL,
+                        delete_lease_expires_at = NULL
+                    WHERE deleting_at IS NOT NULL AND delete_lease_expires_at IS NOT NULL
+                      AND delete_lease_expires_at < :now
+                    """
+                ),
+                {"now": now_iso},
+            )
+        return int(result.rowcount or 0)
+
+    def retention_metrics(self, now_iso: str) -> RetentionMetrics:
+        """Aggregate cleanup state for device status and alerts (E2)."""
+        with self._engine.connect() as conn:
+            eligible = (
+                conn.execute(
+                    text(
+                        f"""
+                        SELECT COUNT(*) AS n, COALESCE(SUM(m.size_bytes), 0) AS bytes
+                        FROM {media.name} m
+                        JOIN {inspections.name} i ON i.inspection_id = m.inspection_id
+                        WHERE {_retention_eligible_where()}
+                        """
+                    ),
+                    {"now": now_iso},
+                )
+                .mappings()
+                .one()
+            )
+            deleting = conn.execute(
+                text(f"SELECT COUNT(*) FROM {media.name} WHERE deleting_at IS NOT NULL")
+            ).scalar()
+            delete_errors = conn.execute(
+                text(
+                    f"SELECT COUNT(*) FROM {media.name} "
+                    "WHERE last_delete_error IS NOT NULL AND lifecycle = 'AVAILABLE' "
+                    "AND purged_at IS NULL"
+                )
+            ).scalar()
+            purged = conn.execute(
+                text(f"SELECT COUNT(*) FROM {media.name} WHERE lifecycle = 'PURGED'")
+            ).scalar()
+        return RetentionMetrics(
+            eligible_count=int(eligible["n"]),
+            eligible_bytes=int(eligible["bytes"]),
+            deleting_count=int(deleting or 0),
+            delete_error_count=int(delete_errors or 0),
+            purged_count=int(purged or 0),
         )
 
     def enqueue_inspection_uploads(self, record: InspectionRecord) -> int:
