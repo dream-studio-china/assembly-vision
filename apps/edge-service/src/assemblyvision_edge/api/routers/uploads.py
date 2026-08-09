@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 from assemblyvision_domain.models import UploadTask
 from fastapi import APIRouter, Depends
 
@@ -11,8 +13,6 @@ from assemblyvision_edge.api.schemas import Page
 from assemblyvision_edge.persistence.repository import EdgeRepository
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
-
-_RETRYABLE_STATES = ("RETRY_WAIT", "PERMANENT_FAILURE")
 
 
 @router.get("", response_model=Page[UploadTask])
@@ -33,25 +33,32 @@ def retry_upload(
     """Reset one eligible upload task to ``PENDING`` for a manual retry (E3c).
 
     Only ``RETRY_WAIT`` and ``PERMANENT_FAILURE`` tasks are eligible; the
-    transition preserves attempt history by incrementing ``attempt_count``.
-    Unknown tasks return 404 and non-eligible tasks return 409 with their
-    current state, so an operator action can never reset a task that is
-    succeeded, leased by the worker, or cancelled (E3 task invariant 3).
+    transition is compare-and-set in the repository so a concurrent worker
+    claim or a second retry cannot report a false success (PR-022 F03). It
+    preserves attempt history by incrementing ``attempt_count`` and clears
+    terminal/retry fields. Unknown tasks return 404 and non-eligible tasks
+    return 409 with their current state, so an operator action can never reset
+    a task that is succeeded, leased by the worker, or cancelled (E3 task
+    invariant 3).
     """
-    task = repository.get_upload_task(upload_task_id)
-    if task is None:
+    result = repository.retry_upload(upload_task_id, "manual", datetime.now(UTC).isoformat())
+    if result.outcome == "NOT_FOUND":
         raise ApiProblem(
             status_code=404,
             code="NOT_FOUND",
             detail="upload task not found",
         )
-    if task.status not in _RETRYABLE_STATES:
+    if result.outcome == "NOT_RETRYABLE":
+        state = result.task.status if result.task is not None else "UNKNOWN"
         raise ApiProblem(
             status_code=409,
             code="TASK_NOT_RETRYABLE",
-            detail=f"upload task is {task.status} and cannot be manually retried",
+            detail=f"upload task is {state} and cannot be manually retried",
         )
-    updated = repository.retry_upload(upload_task_id, "manual")
-    if updated is None:  # pragma: no cover - guarded by the lookup above
-        raise ApiProblem(status_code=404, code="NOT_FOUND", detail="upload task not found")
-    return updated
+    if result.task is None:  # pragma: no cover - RETRIED always carries the task
+        raise ApiProblem(
+            status_code=500,
+            code="INTERNAL_ERROR",
+            detail="retry succeeded but the task could not be loaded",
+        )
+    return result.task

@@ -151,32 +151,37 @@ def test_list_uploads_and_pagination(repo: EdgeRepository) -> None:
 
 
 def test_retry_upload_not_found(repo: EdgeRepository) -> None:
-    assert repo.retry_upload(str(uuid4()), "why") is None
+    result = repo.retry_upload(str(uuid4()), "why", datetime.now(UTC).isoformat())
+    assert result.outcome == "NOT_FOUND"
+    assert result.task is None
 
 
 def test_retry_upload_ignores_succeeded(repo: EdgeRepository) -> None:
     task_id = _insert_upload(repo, status="SUCCEEDED", created_offset_min=1)
-    task = repo.retry_upload(task_id, "why")
-    assert task is not None
-    assert task.status == "SUCCEEDED"
-    assert task.attempt_count == 0
+    result = repo.retry_upload(task_id, "why", datetime.now(UTC).isoformat())
+    assert result.outcome == "NOT_RETRYABLE"
+    assert result.task is not None
+    assert result.task.status == "SUCCEEDED"
+    assert result.task.attempt_count == 0
 
 
 def test_retry_upload_requeues_retry_wait(repo: EdgeRepository) -> None:
     task_id = _insert_upload(repo, status="RETRY_WAIT", created_offset_min=1)
-    task = repo.retry_upload(task_id, "operator action")
-    assert task is not None
-    assert task.status == "PENDING"
-    assert task.attempt_count == 1
-    assert task.last_error_code is None
+    result = repo.retry_upload(task_id, "operator action", datetime.now(UTC).isoformat())
+    assert result.outcome == "RETRIED"
+    assert result.task is not None
+    assert result.task.status == "PENDING"
+    assert result.task.attempt_count == 1
+    assert result.task.last_error_code is None
 
 
 def test_retry_upload_requeues_permanent_failure(repo: EdgeRepository) -> None:
     task_id = _insert_upload(repo, status="PERMANENT_FAILURE", created_offset_min=1)
-    task = repo.retry_upload(task_id, "operator action")
-    assert task is not None
-    assert task.status == "PENDING"
-    assert task.attempt_count == 1
+    result = repo.retry_upload(task_id, "operator action", datetime.now(UTC).isoformat())
+    assert result.outcome == "RETRIED"
+    assert result.task is not None
+    assert result.task.status == "PENDING"
+    assert result.task.attempt_count == 1
 
 
 def test_count_pending_uploads(repo: EdgeRepository) -> None:

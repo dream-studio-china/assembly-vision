@@ -366,10 +366,13 @@ export interface paths {
          * @description Reset one eligible upload task to ``PENDING`` for a manual retry (E3c).
          *
          *     Only ``RETRY_WAIT`` and ``PERMANENT_FAILURE`` tasks are eligible; the
-         *     transition preserves attempt history by incrementing ``attempt_count``.
-         *     Unknown tasks return 404 and non-eligible tasks return 409 with their
-         *     current state, so an operator action can never reset a task that is
-         *     succeeded, leased by the worker, or cancelled (E3 task invariant 3).
+         *     transition is compare-and-set in the repository so a concurrent worker
+         *     claim or a second retry cannot report a false success (PR-022 F03). It
+         *     preserves attempt history by incrementing ``attempt_count`` and clears
+         *     terminal/retry fields. Unknown tasks return 404 and non-eligible tasks
+         *     return 409 with their current state, so an operator action can never reset
+         *     a task that is succeeded, leased by the worker, or cancelled (E3 task
+         *     invariant 3).
          */
         post: operations["retry_upload_api_v1_uploads__upload_task_id__retry_post"];
         delete?: never;
