@@ -14,7 +14,7 @@ class FakeWebSocket {
   onclose: (() => void) | null = null;
   onerror: (() => void) | null = null;
 
-  constructor(public url: string) {
+  constructor(public url: string, public protocols: string[] = []) {
     FakeWebSocket.instances.push(this);
   }
 
@@ -68,5 +68,29 @@ describe("ReconnectingWebSocket sequence handling (AUDIT-001 4.5)", () => {
     // Reconnect: the server continues at sequence 3, so no gap is signalled.
     fake.onmessage?.({ data: JSON.stringify({ type: "t", sequence: 3, source_id: "s", payload: {} }) });
     expect(gaps).toHaveLength(0);
+  });
+
+  it("passes static subprotocols to the socket", () => {
+    FakeWebSocket.instances = [];
+    vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+    const ws = new ReconnectingWebSocket();
+    ws.connect("ws://edge.test/events", ["av-runtime-v1"]);
+    const fake = FakeWebSocket.instances[0]!;
+    expect(fake.protocols).toEqual(["av-runtime-v1"]);
+  });
+
+  it("resolves protocol providers before each connect (single-use tickets)", async () => {
+    FakeWebSocket.instances = [];
+    vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+    const ws = new ReconnectingWebSocket();
+    const tickets: string[] = [];
+    ws.connect("ws://edge.test/events", async () => {
+      tickets.push("issued");
+      return ["ticket-1"];
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const fake = FakeWebSocket.instances[0]!;
+    expect(fake.protocols).toEqual(["ticket-1"]);
+    expect(tickets).toEqual(["issued"]);
   });
 });

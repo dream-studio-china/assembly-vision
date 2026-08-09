@@ -2282,6 +2282,30 @@
         ],
         "title": "VideoInspectResult",
         "type": "object"
+      },
+      "WsTicket": {
+        "description": "One-time credential for one browser WebSocket connection (PR-023 F01).",
+        "properties": {
+          "channel": {
+            "default": "runtime",
+            "title": "Channel",
+            "type": "string"
+          },
+          "expires_at": {
+            "title": "Expires At",
+            "type": "string"
+          },
+          "ticket": {
+            "title": "Ticket",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "expires_at"
+        ],
+        "title": "WsTicket",
+        "type": "object"
       }
     }
   },
@@ -3329,6 +3353,28 @@
         "summary": "Retry Upload",
         "tags": [
           "uploads"
+        ]
+      }
+    },
+    "/api/v1/ws/runtime/ticket": {
+      "post": {
+        "description": "Issue a short-lived, single-use ticket for the runtime channel.\n\nThe ticket is consumed atomically during socket acceptance, expires\nquickly, and is scoped to this channel only; the long-lived viewer\ncredential is never placed in a URL or in browser storage.",
+        "operationId": "create_runtime_ticket_api_v1_ws_runtime_ticket_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WsTicket"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create Runtime Ticket",
+        "tags": [
+          "runtime-events"
         ]
       }
     }

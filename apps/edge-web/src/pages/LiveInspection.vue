@@ -11,7 +11,12 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { mockCameraFrame } from "../mock/images";
 import { useInspectionStore } from "../stores/inspection";
 import { useRuntimeStore } from "../stores/runtime";
-import { getApiBaseUrl, isMockMode } from "../services/client";
+import {
+  getRuntimeWsUrl,
+  isCrossOriginHttp,
+  isMockMode,
+  requestRuntimeTicket,
+} from "../services/client";
 import { inspectionService } from "../services/inspectionService";
 
 const store = useInspectionStore();
@@ -93,14 +98,7 @@ function onRuntimeEvent(event: WSEventEnvelope): void {
 }
 
 function runtimeWsUrl(): string {
-  const base = getApiBaseUrl();
-  if (base.startsWith("http")) {
-    const url = new URL(base);
-    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-    return `${url.href.replace(/\/$/, "")}/ws/runtime`;
-  }
-  const protocol = location.protocol === "https:" ? "wss:" : "ws:";
-  return `${protocol}//${location.host}/api/v1/ws/runtime`;
+  return getRuntimeWsUrl();
 }
 
 onMounted(() => {
@@ -111,7 +109,14 @@ onMounted(() => {
     socket = new ReconnectingWebSocket();
     socket.onGap(() => void refresh());
     socket.subscribe(onRuntimeEvent);
-    socket.connect(runtimeWsUrl());
+    // Cross-origin browser sockets cannot set an Authorization header or use
+    // the same-origin session cookie, so exchange the viewer credential for a
+    // one-time ticket sent as the subprotocol; the provider is re-invoked on
+    // every (re)connect because tickets are single-use (PR-023 F01).
+    const protocols = isCrossOriginHttp()
+      ? async () => [await requestRuntimeTicket()]
+      : undefined;
+    socket.connect(runtimeWsUrl(), protocols);
   }
 });
 

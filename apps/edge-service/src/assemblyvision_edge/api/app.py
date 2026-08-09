@@ -218,6 +218,9 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     app.state.settings = settings
     app.state.viewer_sessions = {}
     app.state.auth_failures = {}
+    # E4a/PR-023 F01: short-lived, single-use WebSocket runtime tickets issued
+    # over authenticated REST for cross-origin browser sockets.
+    app.state.ws_tickets = {}
 
     # The Vite dev server calls the API cross-origin during development; the
     # served dashboard is same-origin and needs no CORS. Allow only anchored

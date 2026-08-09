@@ -200,6 +200,72 @@ class TestWebSocketChannel:
             envelope = ws.receive_json()
             assert envelope["type"] == "alert.raised"
 
+    def test_runtime_ticket_requires_viewer(self, tmp_path: Path) -> None:
+        settings = ServerSettings(
+            output_root=tmp_path / "out",
+            db_path=tmp_path / "edge.sqlite3",
+            api_token="viewer-secret",  # noqa: S106 - test fixture credential
+        )
+        app = create_app(settings)
+        with TestClient(app) as client:
+            denied = client.post("/api/v1/ws/runtime/ticket")
+            assert denied.status_code == 401
+            granted = client.post(
+                "/api/v1/ws/runtime/ticket",
+                headers={"Authorization": "Bearer viewer-secret"},
+            )
+            assert granted.status_code == 200
+            body = granted.json()
+            assert body["ticket"]
+            assert body["channel"] == "runtime"
+            assert body["expires_at"]
+
+    def test_runtime_ticket_is_single_use(self, tmp_path: Path) -> None:
+        settings = ServerSettings(
+            output_root=tmp_path / "out",
+            db_path=tmp_path / "edge.sqlite3",
+            api_token="viewer-secret",  # noqa: S106 - test fixture credential
+        )
+        app = create_app(settings)
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/v1/ws/runtime/ticket",
+                headers={"Authorization": "Bearer viewer-secret"},
+            )
+            ticket = response.json()["ticket"]
+            # First connection succeeds and streams events.
+            with client.websocket_connect("/api/v1/ws/runtime", subprotocols=[ticket]) as ws:
+                bus = app.state.event_bus
+                bus.publish("alert.raised", {"code": "TICKET"})
+                envelope = ws.receive_json()
+                assert envelope["type"] == "alert.raised"
+            # The same ticket cannot be replayed on a second connection.
+            with (  # noqa: SIM117
+                pytest.raises(WebSocketDisconnect) as excinfo,
+                client.websocket_connect("/api/v1/ws/runtime", subprotocols=[ticket]),
+            ):
+                pass
+            assert excinfo.value.code == 4401
+
+    def test_expired_runtime_ticket_is_rejected(self, tmp_path: Path) -> None:
+        from datetime import timedelta
+
+        settings = ServerSettings(
+            output_root=tmp_path / "out",
+            db_path=tmp_path / "edge.sqlite3",
+            api_token="viewer-secret",  # noqa: S106 - test fixture credential
+        )
+        app = create_app(settings)
+        with TestClient(app) as client:
+            stale = "stale-ticket"
+            app.state.ws_tickets[stale] = datetime.now(UTC) - timedelta(seconds=1)
+            with (  # noqa: SIM117
+                pytest.raises(WebSocketDisconnect) as excinfo,
+                client.websocket_connect("/api/v1/ws/runtime", subprotocols=[stale]),
+            ):
+                pass
+            assert excinfo.value.code == 4401
+
 
 class TestEventSources:
     def test_pause_resume_publishes_device_status(self, tmp_path: Path) -> None:
@@ -289,7 +355,7 @@ class TestEventSources:
         (tmp_path / "out").mkdir(parents=True, exist_ok=True)
         settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
         runtime = EdgeRuntime(settings)
-        runtime.event_bus = RecordingBus()  # type: ignore[assignment]
+        runtime.event_bus = RecordingBus()
         repository = EdgeRepository.open(settings.db_path)
         config_path = _write_edge_config(tmp_path, _make_images(tmp_path))
         runtime.load_instances(config_path, repository)

@@ -14,10 +14,17 @@ export type WSEventEnvelope = {
   payload: unknown;
 };
 
+/**
+ * Resolves the WebSocket subprotocols for one (re)connect attempt. Providers
+ * are re-invoked on every connect so single-use credentials such as the
+ * runtime ticket can be refreshed (PR-023 F01).
+ */
+export type WebSocketProtocolProvider = () => Promise<string[]>;
+
 export interface WebSocketService {
   readonly status: WSStatus;
-  /** Connect (or reconnect) to the event feed. */
-  connect(url: string): void;
+  /** Connect (or reconnect) to the event feed, optionally with subprotocols. */
+  connect(url: string, protocols?: string[] | WebSocketProtocolProvider): void;
   /** Close the feed; no reconnect is scheduled. */
   disconnect(): void;
   /** Subscribe to typed envelopes. Returns an unsubscribe function. */
@@ -43,6 +50,7 @@ function backoffDelay(attempt: number, baseMs = 1000, maxMs = 30000): number {
 export class ReconnectingWebSocket implements WebSocketService {
   #socket: WebSocket | null = null;
   #url = "";
+  #protocols: string[] | WebSocketProtocolProvider | null = null;
   #attempt = 0;
   #timer: ReturnType<typeof setTimeout> | null = null;
   #listeners: Array<(event: WSEventEnvelope) => void> = [];
@@ -52,10 +60,11 @@ export class ReconnectingWebSocket implements WebSocketService {
 
   status: WSStatus = "disconnected";
 
-  connect(url: string): void {
+  connect(url: string, protocols?: string[] | WebSocketProtocolProvider): void {
     this.#url = url;
+    this.#protocols = protocols ?? null;
     this.#manualClose = false;
-    this.#open();
+    void this.#open();
   }
 
   disconnect(): void {
@@ -83,11 +92,27 @@ export class ReconnectingWebSocket implements WebSocketService {
     };
   }
 
-  #open(): void {
+  async #open(): Promise<void> {
     this.status = "connecting";
+    let protocols: string[] = [];
+    if (typeof this.#protocols === "function") {
+      try {
+        protocols = await this.#protocols();
+      } catch {
+        // A failed credential exchange must not crash the caller; retry with
+        // backoff so a transient ticket outage recovers (PR-023 F01).
+        this.#scheduleReconnect();
+        return;
+      }
+    } else if (this.#protocols !== null) {
+      protocols = this.#protocols;
+    }
     let socket: WebSocket;
     try {
-      socket = new WebSocket(this.#url);
+      socket =
+        protocols.length > 0
+          ? new WebSocket(this.#url, protocols)
+          : new WebSocket(this.#url);
     } catch {
       this.#scheduleReconnect();
       return;
@@ -130,7 +155,7 @@ export class ReconnectingWebSocket implements WebSocketService {
     this.#attempt += 1;
     this.#timer = setTimeout(() => {
       this.#timer = null;
-      this.#open();
+      void this.#open();
     }, delay);
   }
 }
