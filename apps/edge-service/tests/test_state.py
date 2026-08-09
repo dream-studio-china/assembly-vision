@@ -10,6 +10,8 @@ import pytest
 from assemblyvision_domain.errors import ConfigError
 from assemblyvision_edge.api.settings import ServerSettings
 from assemblyvision_edge.api.state import EdgeRuntime, InstanceRuntime, _build_pipeline
+from assemblyvision_edge.persistence.repository import UploadQueueMetrics
+from assemblyvision_edge.upload.scheduler import SchedulerHealth
 
 RULE_ID = "model-a-presence"
 
@@ -229,6 +231,20 @@ def test_device_status_faulted_when_pipeline_error(tmp_path: Path) -> None:
     assert "NOT_READY" in status["alerts"]
     assert status["upload_pending_count"] == 3
     assert status["central_connected"] is False
+
+
+def test_device_status_alerts_when_retry_wait_remains_after_a_success(tmp_path: Path) -> None:
+    """A later retry backlog remains actionable even after an earlier success."""
+    runtime = EdgeRuntime(_settings(tmp_path))
+    status = runtime.device_status(
+        upload_pending=1,
+        queue=UploadQueueMetrics(
+            by_state={"RETRY_WAIT": 1}, pending_bytes=1, oldest_pending_at=None
+        ),
+        health=SchedulerHealth(attempts=2, successes=1, failures=1),
+        scheduler_enabled=True,
+    )
+    assert "UPLOAD_FAILING" in status["alerts"]
 
 
 def test_device_status_initializing_without_error(tmp_path: Path) -> None:

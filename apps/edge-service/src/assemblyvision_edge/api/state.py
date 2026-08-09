@@ -364,7 +364,10 @@ class EdgeRuntime:
         alerts: list[str] = []
         if pending > 0 and not enabled:
             alerts.append("UPLOAD_BLOCKED")
-        elif pending > 0 and health is not None and health.attempts > 0 and health.successes == 0:
+        elif pending > 0 and (
+            queue.by_state.get("RETRY_WAIT", 0) > 0
+            or (health is not None and health.attempts > 0 and health.successes == 0)
+        ):
             alerts.append("UPLOAD_FAILING")
         return fields, alerts
 

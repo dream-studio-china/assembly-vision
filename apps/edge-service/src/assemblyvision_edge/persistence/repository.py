@@ -838,7 +838,7 @@ class EdgeRepository:
             oldest = conn.execute(
                 text(
                     f"SELECT MIN(created_at) FROM {upload_tasks.name} "
-                    "WHERE status IN ('PENDING', 'RETRY_WAIT')"
+                    "WHERE status IN ('PENDING', 'RETRY_WAIT', 'IN_PROGRESS')"
                 )
             ).scalar()
         by_state = {row["status"]: int(row["n"]) for row in rows}

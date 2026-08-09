@@ -141,21 +141,24 @@ class TestQueueMetricsAndHealth:
         self, repo: EdgeRepository, tmp_path: Path
     ) -> None:
         """E1: queue bytes and oldest pending come from persisted task sizes."""
-        record = _seed(repo, tmp_path, count=2)[0]
+        _seed(repo, tmp_path, count=2)
         metrics = repo.upload_queue_metrics()
         assert metrics.by_state["PENDING"] == 4  # 2 inspections + 2 media
         assert metrics.pending_bytes > 0
         assert metrics.oldest_pending_at is not None
-        assert metrics.oldest_pending_at <= record.completed_at.isoformat() or True
-        # Sizes must match what will actually be uploaded.
         tasks = repo.list_uploads(limit=100).items
-        inspection = next(t for t in tasks if t.kind == "INSPECTION")
         with repo._engine.connect() as conn:  # noqa: SLF001
-            stored = conn.execute(
-                sa.text("SELECT size_bytes FROM upload_tasks WHERE upload_task_id = :id"),
-                {"id": str(inspection.upload_task_id)},
-            ).scalar_one()
-        assert stored is not None and stored > 0
+            expected_bytes = conn.execute(
+                sa.text("SELECT SUM(size_bytes) FROM upload_tasks")
+            ).scalar()
+        assert metrics.pending_bytes == expected_bytes
+        assert metrics.oldest_pending_at == min(task.created_at.isoformat() for task in tasks)
+
+        # A stalled leased task is still pending work and must contribute its age.
+        with repo._engine.begin() as conn:  # noqa: SLF001
+            conn.execute(sa.text("UPDATE upload_tasks SET status = 'IN_PROGRESS'"))
+        in_progress = repo.upload_queue_metrics()
+        assert in_progress.oldest_pending_at == min(task.created_at.isoformat() for task in tasks)
 
     def test_scheduler_health_tracks_attempts_and_success(
         self, repo: EdgeRepository, tmp_path: Path
