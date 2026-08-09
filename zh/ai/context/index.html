@@ -3226,6 +3226,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#810-deployment-and-security-e5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.10 部署和安全（E5）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3466,6 +3477,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#810-deployment-and-security-e5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.10 部署和安全（E5）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3672,9 +3694,9 @@
   保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
   被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
 <li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
-  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
+  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也可以使用中文。</li>
 <li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
-  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民意调查（应该是轮询）。发布前进行审查。</li>
+  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
 <li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
 </ul>
 <h2 id="7-conventions-agentsmd">7.约定（AGENTS.md）<a class="headerlink" href="#7-conventions-agentsmd" title="Permanent link">&para;</a></h2>
@@ -3889,7 +3911,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   包包含和类映射（<code>ConfigError</code>，绝不泄漏）。</li>
 <li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
   覆盖）；日志消息清理绝对路径；失败尝试节流
-  <code>Retry-After</code>;有界会话；光标绑定过滤指纹
+  <code>Retry-After</code>；有界会话；光标绑定过滤指纹
   (<code>400 INVALID_CURSOR</code>);始终清除介质<code>410</code>；非 ASCII 承载 <code>401</code>；
   <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
 <li><strong>前端强化</strong>：生产构建失败，除非<code>VITE_API_MODE=http</code>；
@@ -4128,15 +4150,43 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   不同的工件/设备保持独立，并且不共享可变状态
   （ADR-013 第 3 阶段）。</li>
 </ul>
+<h2 id="810-deployment-and-security-e5">8.10 部署和安全（E5）<a class="headerlink" href="#810-deployment-and-security-e5" title="Permanent link">&para;</a></h2>
+<p>于<code>feat/e5-deployment-security</code>实现（投递任务
+<code>docs/tasks/E5-deployment-and-security.md</code>):</p>
+<ul>
+<li><strong>Docker 打包 (E5a)</strong>：多阶段 <code>apps/edge-service/Dockerfile</code>
+  解析固定的 uv 工作区并安装不可编辑的依赖项，然后
+  仅在作为 <code>av</code> 运行的精简运行时映像中传送 virtualenv
+  (10001:10001) 具有只读根文件系统的用户；数据挂载点是
+  由 <code>av</code> 预先创建并拥有的卷继承了正确的所有者。
+  <code>python -m assemblyvision.healthcheck</code> 控制 Docker HEALTHCHECK，以及
+  <code>compose.yaml</code>模板提供持久卷、重启策略、
+  环回绑定，启动时不依赖中央 DNS。验证结束至
+  在 Docker 上结束：<code>health=healthy</code>、<code>user=av</code>、只读 rootfs。</li>
+<li><strong>秘密和 TLS (E5b)</strong>：<code>serve</code> 从 <code>AV_EDGE_*</code> 环境回退
+  为查看者提供 <code>/run/secrets/</code> 下的 Docker 秘密文件的变量
+  上传令牌（因无法读取的秘密文件而关闭失败）；可选本地
+  启动时通过 <code>--tls-cert</code>/<code>--tls-key</code>（或 <code>AV_EDGE_TLS_*</code>）进行 HTTPS
+  验证存在、私钥权限和证书/密钥
+  比赛。</li>
+<li><strong>备份和恢复（E5c）</strong>：<code>assemblyvision backup</code>采用一致的
+  SQLite 在线快照以及受管理的配置/规则/清单文件和挂起的文件
+  将具有 SHA-256 校验和的证据放入 <code>tar.gz</code> 捆绑包中； <code>assemblyvision
+  restore</code> 在应用之前验证每个校验和，保留 <code>.pre-restore</code>
+  复制，从不覆盖冲突的媒体，并协调存储，以便
+  待处理的上传任务将继续存在。</li>
+<li><strong>Runbooks (E5d)</strong>：Runbook 12（备份和恢复）、13（TLS 证书
+  旋转），并将 14（部署升级和回滚）添加到索引中
+  运行手册集。</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）； <strong>E1
   可观察性</strong>（PR #18/#19），<strong>E2 保留和磁盘安全性</strong>（PR #20，
   PR-020 审核已解决），<strong>E3 上传弹性</strong>（PR #22，第 8.8 节），
-  和 <strong>E4 运行时</strong>（第 8.9 节）已实现。剩余边数
-  生产候选工作被跟踪为 E5-E6：</li>
-<li><strong>E5 部署和安全</strong>：Docker 打包、秘密/TLS 配置、
-    备份/恢复、操作手册。</li>
+  <strong>E4 运行时</strong>（第 8.9 节）和 <strong>E5 部署和安全性</strong>（第 8.9 节）
+  8.10) 已实施。剩余的 Edge 生产候选工作是
+  追踪为 E6：</li>
 <li><strong>E6 验收</strong>：弹性矩阵、浸泡、保留模型验证、
     包含硬件先决条件的边缘验收报告。</li>
 <li>实现了 <strong>WebSocket 运行时通道</strong>（第 8.9 节）；民意调查
@@ -4148,7 +4198,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
   <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
-  <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
+  <code>scripts/adapt-xanylabeling.py</code>（书面形式；支持classes.txt/data.yaml，
   图像优先和分割优先布局）到
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>

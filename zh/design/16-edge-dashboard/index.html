@@ -1095,7 +1095,7 @@
   <a href="#1643-preview-transport" class="md-nav__link">
     <span class="md-ellipsis">
       
-        16.4.3 预览传输
+        16.4.3 Preview Transport
       
     </span>
   </a>
@@ -3368,7 +3368,7 @@
   <a href="#1643-preview-transport" class="md-nav__link">
     <span class="md-ellipsis">
       
-        16.4.3 预览传输
+        16.4.3 Preview Transport
       
     </span>
   </a>
@@ -3607,7 +3607,7 @@
 <p>桌面使用主摄像头/证据窗格和固定宽度的决策窗格。在 1280 像素及以上，两者均可见，无需垂直滚动。平板电脑/移动设备堆栈首先是决策，然后是证据，最后是诊断；暂停/恢复仍然可以访问，但不是可以意外触发的浮动控件。</p>
 <p>屏幕包括：</p>
 <ul>
-<li>相机预览包含缩放、源分辨率、捕获时间戳和过时帧标记。</li>
+<li>相机预览包含缩放、源分辨率、捕获时间戳和陈旧帧标记。</li>
 <li>从源坐标映射的可选产品和组件边界框，从不预先缩放服务器坐标。</li>
 <li>最终的 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code> 面板，包含检查 ID、条形码、产品类型、处理延迟和完成时间。</li>
 <li>所需组件矩阵：存在、缺失、不确定、最佳置信度、支持框架计数和政策原因。</li>
@@ -3618,7 +3618,7 @@
 <h3 id="1642-result-presentation">16.4.2 结果呈现<a class="headerlink" href="#1642-result-presentation" title="Permanent link">&para;</a></h3>
 <p><code>OK</code> 可以使用绿色，但包含单词“OK”和复选图标。 <code>NG</code> 使用红色、“NG”一词、警报图标以及缺失/不确定的组件名称。 <code>UNCERTAIN</code> 使用琥珀色并说明物理处理路径是否将其视为 NG。新结果使用简短的非阻塞转换；动画必须尊重简化动作偏好。</p>
 <p>条形码故障、未知产品、不可用框架、型号故障和缺少组件是单独的原因代码。 UI 不得将所有 NG 结果折叠为“组件缺失”。</p>
-<h3 id="1643-preview-transport">16.4.3 预览传输<a class="headerlink" href="#1643-preview-transport" title="Permanent link">&para;</a></h3>
+<h3 id="1643-preview-transport">16.4.3 Preview Transport<a class="headerlink" href="#1643-preview-transport" title="Permanent link">&para;</a></h3>
 <p>仅当延迟要求合理时才使用带宽受限的 JPEG/MJPEG 或 WebRTC 预览。不要通过 JSON WebSocket 消息发送完整的生产帧。覆盖事件携带源维度和框； UI 会丢弃帧 ID 与显示的预览帧不匹配的叠加。预览丢失永远不会改变检查引擎的状态。</p>
 <p>直到WebSocket运行时通道落地，仪表板实时视图消耗
 每个实例的 REST 预览 <code>GET /api/v1/camera/{instance_id}/preview</code>

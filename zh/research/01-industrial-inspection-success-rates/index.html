@@ -2871,7 +2871,7 @@
   <a href="#1-scope-and-definitions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 范围和定义
+        1. Scope and Definitions
       
     </span>
   </a>
@@ -3009,7 +3009,7 @@
   <a href="#6-implications-and-caveats-for-assemblyvision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. AssemblyVision 的含义和注意事项
+        6. Implications and Caveats for AssemblyVision
       
     </span>
   </a>
@@ -3246,7 +3246,7 @@
   <a href="#1-scope-and-definitions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 范围和定义
+        1. Scope and Definitions
       
     </span>
   </a>
@@ -3384,7 +3384,7 @@
   <a href="#6-implications-and-caveats-for-assemblyvision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. AssemblyVision 的含义和注意事项
+        6. Implications and Caveats for AssemblyVision
       
     </span>
   </a>
@@ -3430,7 +3430,7 @@
 始终遵循诚实惯例：<strong>实验室/基准数据与生产线报告明确分开</strong>；供应商或数据集报告的数字被标记为此类；估计值和有争议的数字已被标记。当某个号码不可用时，它被明确声明为不可用，而不是发明的。</p>
 </blockquote>
 <hr />
-<h2 id="1-scope-and-definitions">1. 范围和定义<a class="headerlink" href="#1-scope-and-definitions" title="Permanent link">&para;</a></h2>
+<h2 id="1-scope-and-definitions">1. Scope and Definitions<a class="headerlink" href="#1-scope-and-definitions" title="Permanent link">&para;</a></h2>
 <p>本文档比较了与 AssemblyVision 任务类似的检查任务的<strong>实现的检测成功率</strong>：<strong>组装产品上组件的存在/完整性验证，由固定工业相机在受控照明下成像</strong>。</p>
 <p>最具可比性的已发表证据来自：</p>
 <ul>
@@ -3441,7 +3441,7 @@
 <li><strong>金属铸造/焊接检查</strong>（孔隙、裂纹、夹杂物）</li>
 <li><strong>药品检验</strong>（直接公布的数字很少；仅邻近证据）</li>
 </ul>
-<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回率）在 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
+<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回）在 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
 <hr />
 <h2 id="2-reference-datasets-and-benchmarks-environment-size-ground-truth">2. 参考数据集和基准（环境、大小、地面实况）<a class="headerlink" href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" title="Permanent link">&para;</a></h2>
 <table>
@@ -3866,7 +3866,7 @@
 </ul>
 <p><strong>AssemblyVision 的底线：</strong>已发布的证据支持在稳定成像下进行存在检查的高单帧检测置信度（mAP50 ~0.95+），但<strong>没有公共来源报告装配完整性的生产假阴性率</strong>。 AssemblyVision 的故障安全设计（对任何缺失/不确定的证据、时间聚合、人工审核的 NG）是对这种不确定性的正确响应，其接受阈值必须来自测量的客户数据，而不是来自这些基准数字。</p>
 <hr />
-<h2 id="6-implications-and-caveats-for-assemblyvision">6. AssemblyVision 的含义和注意事项<a class="headerlink" href="#6-implications-and-caveats-for-assemblyvision" title="Permanent link">&para;</a></h2>
+<h2 id="6-implications-and-caveats-for-assemblyvision">6. Implications and Caveats for AssemblyVision<a class="headerlink" href="#6-implications-and-caveats-for-assemblyvision" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>mAP 不是生产召回率。</strong> 上述每个基准数字都是测试集平均值； AssemblyVision 的验收指标（NG 召回）必须使用排除的生产数据的固定阈值进行测量。</li>
 <li><strong>微小的姿势和光照变化在误差预算中占主导地位。</strong> 它们的预算（VR-YOLO -4pp；MVTec AD2 &lt;60% AU-PRO）。仅当监测漂移时，AssemblyVision 的固定摄像头 + 固定照明才有优势（请参阅<code>[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)</code>）。</li>

@@ -4059,7 +4059,7 @@ API。因此 <code>paused_by</code> 被硬编码为 <code>"operator"</code>，�
   如果适用，对中止的窗口采取保守的 NG 持久性。
 - 对于协调器选项，resume 返回 <code>409 PRECONDITION_FAILED</code> 除非
   相机、模型、规则、数据库和磁盘先决条件通过，但 UI 未通过
-  在确认之前乐观渲染<code>READY</code>。</p>
+  在确认之前乐观地渲染<code>READY</code>。</p>
 <h3 id="f5-the-documented-quickstart-serves-a-mock-backed-dashboard">F5。记录的 <code>serve</code> 快速入门提供模拟支持的仪表板<a class="headerlink" href="#f5-the-documented-quickstart-serves-a-mock-backed-dashboard" title="Permanent link">&para;</a></h3>
 <p><strong>问题：</strong> <code>VITE_API_BASE_URL</code> 在构建时嵌入。快速启动运行
 <code>pnpm --filter edge-web build</code> 没有设置它，所以捆绑包选择
@@ -4383,7 +4383,7 @@ static-MVP 结果并显式地将 SQLite 视为可重建的读取投影。
 有界校验和验证、过期上传租约）并输入
 无法恢复的损坏时的存储未就绪模式。</p>
 <p><strong>权威持久性激活之前的接受标准：</strong>
-- 启动检测并报告丢失或损坏的引用媒体。
+- 启动检测并报告引用的媒体丢失或损坏。
 - 过时的<code>IN_PROGRESS</code>任务恢复到可重试状态。
 - 不可恢复的数据库损坏将服务设置为存储未就绪，并且
   永远不会在损坏的证据上初始化新的数据库。</p>
@@ -4402,7 +4402,7 @@ static-MVP 结果并显式地将 SQLite 视为可重建的读取投影。
 <li>
 <p><strong>历史游标/过滤器不实现记录的合同。</strong>
   <code>apps/edge-service/src/assemblyvision_edge/api/routers/inspections.py:17-38</code>。
-  游标未绑定到标准化过滤器集，无效游标变为500，
+  游标未绑定到归一化过滤器集，无效游标变为500，
   无效的决策/时间戳被接受为字符串，并且超出范围限制
   默默重置。
   <em>解决方案：</em> 验证边界处的类型化枚举/日期时间/范围，绑定
@@ -4410,7 +4410,7 @@ static-MVP 结果并显式地将 SQLite 视为可重建的读取投影。
 </li>
 <li>
 <p><strong>上传重试会忽略资格、幂等性、原因和状态元数据。</strong>
-  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>；
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>;
   <code>repository.retry_upload</code> 接受任何状态，忽略 <code>Idempotency-Key</code> 和
   原因，并且不更新 <code>updated_at</code>/<code>next_attempt_at</code>。
   <em>解决方案：</em> 因为调度程序超出了 M1 范围，所以删除/禁用

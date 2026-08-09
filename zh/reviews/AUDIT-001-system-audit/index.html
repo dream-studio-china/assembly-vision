@@ -3546,68 +3546,68 @@
 
 <h1 id="audit-001-system-and-documentation-consistency-audit">AUDIT-001：系统和文档一致性审核<a class="headerlink" href="#audit-001-system-and-documentation-consistency-audit" title="Permanent link">&para;</a></h1>
 <h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision 存储库的只读审核（边缘运行时、持久性、
-API、前端、培训、脚本和文档），于 2026 年 8 月 8 日执行。
-此验证更新是针对当前工作树执行的
-2026年8月9日。此更新没有更改生产代码。</p>
+<p>Read-only audit of the AssemblyVision repository (edge runtime, persistence,
+API, frontend, training, scripts, and documentation), performed 2026-08-08.
+This verification update was performed against the current worktree on
+2026-08-09. No production code was changed by this update.</p>
 <h2 id="method">方法<a class="headerlink" href="#method" title="Permanent link">&para;</a></h2>
 <ul>
-<li>审查了管理安全、存储、数据/API、安全性和模型发布
-  合同；设计11、14和19；以及 ADR-011 和 ADR-012。</li>
-<li>检查每个引用的当前实施及其相关测试。</li>
-<li>仅当当前代码演示了所述情况时才保留结果
-  行为或当前文档明显冲突的地方。被击中的物品
-  不是一个开放的发现；其原始证据是陈旧的、虚假的或基于
-  不受支持的要求。</li>
+<li>Reviewed the governing safety, storage, data/API, security, and model-release
+  contracts; design 11, 14, and 19; and ADR-011 and ADR-012.</li>
+<li>Inspected each cited current implementation and its related tests.</li>
+<li>A finding is retained only where the current code demonstrates the stated
+  behavior or where the current documents demonstrably conflict. A struck item
+  is not an open finding; its original evidence is stale, false, or based on an
+  unsupported requirement.</li>
 </ul>
 <h2 id="resolution-status">解决状态<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
-<p>所有 HIGH 结果和复制的 MED 结果、规则引擎和清单
-缺陷、API/前端强化项目以及文档对齐
-截至 2026 年 8 月 9 日，项目已<strong>关闭</strong>。每次关闭都记录在
-<a href="#8-resolution-log-2026-08-09">Section 8</a> 提交和验证
-满足其验收标准。唯一剩下的工作是
-权威持久化模式（4.4），明确推迟到
-上传调度程序已构建； M1边界文件现在将其命名为未来
-工作。</p>
-<p>每个行为改变的共享关闭门是：</p>
+<p>All HIGH findings and reproduced MED findings, the rule-engine and manifest
+defects, the API/frontend hardening items, and the documentation alignment
+items are <strong>closed</strong> as of 2026-08-09. Each closure is recorded in
+<a href="#8-resolution-log-2026-08-09">Section 8</a> with the commit and the verification
+that satisfied its acceptance criteria. The only remaining work is the
+authoritative persistence schema (4.4), which is explicitly deferred until the
+upload scheduler is built; the M1 boundary document now names it as future
+work.</p>
+<p>The shared closure gate for every behavioral change is:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv run ruff check .
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv run ruff format --check .
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv run mypy .
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv run pytest
 </code></pre></div>
-<p>仅文档更改也必须通过 <code>uv run mkdocs build --strict</code> 时
-文档环境已安装。调查结果仅在以下情况下结束：
-CI 中的具体验收标准和适用的共享门通行证。</p>
+<p>Documentation-only changes must also pass <code>uv run mkdocs build --strict</code> when
+the documentation environment is installed. A finding closes only when its
+specific acceptance criteria and the applicable shared gate pass in CI.</p>
 <h2 id="overall-verdict">总体判断<a class="headerlink" href="#overall-verdict" title="Permanent link">&para;</a></h2>
-<p>本次审查中没有任何证据与先前的结论相矛盾，即当前的
-对于普通无效管道状态，单帧管道无法关闭。的
-最高的具体风险是数据集标签伪造、无法发布
-训练数据集，以及记录的训练命令，可以选择错误的
-Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
-留下来。 M1 SQLite 数据库是可重建的读投影，而不是
-合同要求的权威检验/发箱店；未来的调度程序和
-权威持久性工作不得将其当前模式视为令人满意的
-那个生产合同。</p>
+<p>No evidence in this review contradicts the prior conclusion that the current
+single-frame pipeline fails closed for ordinary invalid pipeline states. The
+highest concrete risks are dataset-label fabrication, unusable published
+training datasets, and a documented training command that can select the wrong
+Ultralytics run directory. Several lower-severity robustness and contract gaps
+remain. The M1 SQLite database is a rebuildable read projection, not the
+contract-required authoritative inspection/outbox store; future scheduler and
+authoritative-persistence work must not treat its current schema as fulfilling
+that production contract.</p>
 <hr />
 <h2 id="3-high-findings">3. 高发现<a class="headerlink" href="#3-high-findings" title="Permanent link">&para;</a></h2>
 <h3 id="h1-missing-label-files-fabricate-ground-truth">H1。丢失的标签文件伪造了真实情况<a class="headerlink" href="#h1-missing-label-files-fabricate-ground-truth" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>状态：</strong> 关闭 (3ce3147)。</li>
-<li><strong>证据：</strong> 当 <code>&lt;image-stem&gt;.txt</code> 不存在时，两个适配器都使用 <code>[]</code>
-  （<code>adapt-roboflow-dataset.py:191</code>、<code>adapt-xanylabeling.py:231</code>）。结果是
-  解释为明确的阴性或预期的缺失成分测试
-  样品。这与设计 19.17.3 相矛盾，设计 19.17.3 需要显式的空标签
-  文件和图像/标签配对。</li>
-<li><strong>所需的更改：</strong> 拒绝每个受支持的拆分中每个丢失的标签文件。
-  不要添加适配器选择加入，除非其语义、出处和下游
-  设计并记录验证行为；最小的安全修复是
-  拒绝。在输出之前还拒绝分割内重复的图像主干
-  写入，并将 Roboflow 的 <code>valid</code> 拆分标准化为 <code>val</code>（如果支持）。</li>
-<li><strong>接受：</strong> 为两个适配器添加参数化测试，证明
-  缺少训练、验证或测试标签会引发 <code>ValueError</code>，不留下任何输出
-  或暂存目录，并且不写入<code>test-expected.json</code>。添加测试
-  显式空标签（接受）、同干碰撞（拒绝）和
-  记录的 <code>valid</code> 布局（仅在规范化为 <code>val</code> 时接受）。</li>
+<li><strong>Status:</strong> CLOSED (3ce3147).</li>
+<li><strong>Evidence:</strong> Both adapters use <code>[]</code> when <code>&lt;image-stem&gt;.txt</code> is absent
+  (<code>adapt-roboflow-dataset.py:191</code>, <code>adapt-xanylabeling.py:231</code>). The result is
+  interpreted as an explicit negative or an expected missing-component test
+  sample. This contradicts design 19.17.3, which requires explicit empty label
+  files and image/label pairing.</li>
+<li><strong>Required change:</strong> Reject every missing label file in every supported split.
+  Do not add an adapter opt-in unless its semantics, provenance, and downstream
+  validation behavior are designed and documented; the minimal safe fix is
+  rejection. Also reject duplicate image stems within a split before output
+  writing, and normalize Roboflow's <code>valid</code> split to <code>val</code> if it is supported.</li>
+<li><strong>Acceptance:</strong> Add parameterized tests for both adapters proving that a
+  missing train, validation, or test label raises <code>ValueError</code>, leaves no output
+  or staging directory, and does not write <code>test-expected.json</code>. Add tests for
+  an explicit empty label (accepted), same-stem collision (rejected), and the
+  documented <code>valid</code> layout (accepted only when normalized to <code>val</code>).</li>
 </ul>
 <h3 id="h2-published-references-the-removed-staging-directory">H2。发布的 <code>data.yaml</code> 引用已删除的暂存目录<a class="headerlink" href="#h2-published-references-the-removed-staging-directory" title="Permanent link">&para;</a></h3>
 <ul>
@@ -3665,7 +3665,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tbody>
 <tr>
 <td>M1</td>
-<td>已关闭（7d987e7）。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
+<td>已关闭 (7d987e7)。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
 <td>将路径构建/解析期间引发的 <code>ValueError</code> 视为格式错误的媒体并跳过该记录。隔离单个包中的错误。</td>
 <td>包含 NUL 字节媒体路径的协调测试会导入有效的同级包，跳过格式错误的包，返回正确的导入计数，并发出警告而不引发警告。</td>
 </tr>
@@ -3737,7 +3737,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
   或多写入器部署，为权威添加 Alembic 迁移
   模式，保留一个非空的受控产品配置版本，并制作
   等内容并发检查更新插入幂等返回<code>unchanged</code>。</li>
-<li><strong>接受：</strong> 边界文件指出了投影的非权威性
+<li><strong>接受：</strong> 边界文件指出投影的非权威性
   限制。权威商店测试验证所有合同 04/05 约束，
   租赁字段、产品版本追溯、并发等内容
   更新插入返回<code>unchanged</code>；不同的内容必须在没有突变的情况下失败。</li>
@@ -3754,37 +3754,37 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tbody>
 <tr>
 <td>无token非环回服务</td>
-<td>已关闭（056e712）。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
+<td>已关闭 (056e712)。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
 <td>没有令牌的非环回绑定启动失败，或者需要记录高严重性警告的显式开发覆盖。测试环回/dev、非环回/拒绝和非环回/显式覆盖路径。</td>
 </tr>
 <tr>
 <td>经过身份验证的日志端点公开异常消息/路径</td>
-<td>已关闭（056e712）。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
+<td>已关闭 (056e712)。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
 <td>从查看器记录中排除回溯/绝对路径或将端点限制为更高的特权角色。测试引发的异常是否不会在 <code>/logs</code> 中产生回溯或绝对路径。</td>
 </tr>
 <tr>
 <td>会话交换缺乏限制，会话存储没有扫描/上限</td>
-<td>已关闭（056e712）。</td>
+<td>已关闭 (056e712)。</td>
 <td>添加有界的每个源失败尝试限制和有界会话存储以及到期清除；文件 M1 限制。测试重复失败、冷却后成功交换、过期清理和容量行为。</td>
 </tr>
 <tr>
 <td>光标错误和过滤器绑定</td>
-<td>已关闭（056e712）。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
+<td>已关闭 (056e712)。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
 <td>将格式错误的光标映射到 <code>400 INVALID_CURSOR</code>；将游标绑定到规范过滤器哈希。测试必须拒绝没有 500 的格式错误/不匹配的游标，并为匹配的过滤器保留稳定的分页。</td>
 </tr>
 <tr>
 <td>如果文件仍然存在，则可以对已清除的媒体进行流式传输</td>
-<td>已关闭（056e712）。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
+<td>已关闭 (056e712)。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
 <td>首先检查 <code>PURGED</code> 并始终返回 <code>410 MEDIA_PURGED</code>。使用幸存的文件添加测试。</td>
 </tr>
 <tr>
 <td>非 ASCII 承载标头可以从 <code>compare_digest</code></td>
-<td>引发已关闭（056e712）。</td>
+<td>引发已关闭 (056e712)。</td>
 <td>将比较类型/编码失败视为无效凭证并返回 <code>401</code>。添加具有非 ASCII 授权输入的 API 测试。</td>
 </tr>
 <tr>
 <td><code>/api</code> 可能会落入 SPA</td>
-<td>已关闭（056e712）。守卫仅匹配<code>api/</code>。</td>
+<td>已关闭 (056e712)。守卫仅匹配<code>api/</code>。</td>
 <td>在 SPA 回退之前保留 <code>api</code> 和 <code>api/</code>。测试 <code>/api</code>、<code>/api/unknown</code> 和正常的客户端路由。</td>
 </tr>
 <tr>
@@ -3799,7 +3799,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </tr>
 <tr>
 <td>缺少 CSP</td>
-<td>已关闭（056e712）。</td>
+<td>已关闭 (056e712)。</td>
 <td>添加与本地服务的仪表板兼容的最低权限 CSP 并测试响应标头。</td>
 </tr>
 <tr>
@@ -3873,16 +3873,16 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tr>
 <td>Design 14 描述了一个权威的可操作 SQLite 存储，而不是 M1 可重建投影</td>
 <td>已关闭 (5488804)。</td>
-<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作联系起来。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
+<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
 </tr>
 <tr>
-<td>附录 原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
+<td>附录原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
 <td>已关闭 (5488804)。</td>
 <td>使 <code>reason_codes.py</code> 成为显式规范列表或从中生成术语表。测试必须比较所有声明的静态代码和记录的参数化前缀。</td>
 </tr>
 <tr>
 <td>承保范围索赔</td>
-<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍需要基于来源的验证。</td>
+<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍然需要基于来源的验证。</td>
 <td>将数字声明替换为带日期的命令/输出参考，或更新来自一个 CI 工件的所有源。</td>
 </tr>
 <tr>

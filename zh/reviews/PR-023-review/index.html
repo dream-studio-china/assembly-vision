@@ -3080,7 +3080,7 @@
   <a href="#pr23-f02---p1-cross-thread-queue-delivery-can-drop-events-with-instead-of-disconnecting-the-slow-consumer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR23-F02 - P1：跨线程队列传递可以使用 QueueFull 删除事件，而不是断开慢速消费者的连接
+        PR23-F02 - P1: Cross-Thread Queue Delivery Can Drop Events With QueueFull Instead of Disconnecting the Slow Consumer
       
     </span>
   </a>
@@ -3222,7 +3222,7 @@
 <p><strong>状态：已解决</strong></p>
 <p>PR #23 具有预期的 E4 结构：瞬态服务器端运行时事件，
 显式模拟触发接缝，以及校验和/设备键控共享模型
-注册表。实施正确地保持检查持久性领先
+注册表。实施正确地保持检查持续性领先
 <code>inspection.completed</code> 发布并序列化共享的推理
 超解预测器。</p>
 <p>初步审查发现了三个阻止运行时通道的 P1 问题
@@ -3267,7 +3267,7 @@
 <li><code>docs/design/15-rest-api-and-events.md:157-160</code></li>
 </ul>
 <p><strong>问题</strong></p>
-<p>对于支持的跨域开发设置，<code>VITE_API_BASE_URL</code> 是
+<p>对于支持的跨源开发设置，<code>VITE_API_BASE_URL</code> 是
 边缘原点，例如 <code>http://edge-host:8000</code>。 <code>runtimeWsUrl()</code> 将其转换为
 <code>ws://edge-host:8000/ws/runtime</code>，但服务器端点是
 <code>/api/v1/ws/runtime</code>；连接在身份验证之前收到 404
@@ -3317,7 +3317,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
   现有的承载和会话路径，并断言 URL 中没有出现任何秘密或
   应用程序日志。</li>
 </ul>
-<h3 id="pr23-f02---p1-cross-thread-queue-delivery-can-drop-events-with-instead-of-disconnecting-the-slow-consumer">PR23-F02 - P1：跨线程队列传递可以使用 <code>QueueFull</code> 删除事件，而不是断开慢速消费者的连接<a class="headerlink" href="#pr23-f02---p1-cross-thread-queue-delivery-can-drop-events-with-instead-of-disconnecting-the-slow-consumer" title="Permanent link">&para;</a></h3>
+<h3 id="pr23-f02---p1-cross-thread-queue-delivery-can-drop-events-with-instead-of-disconnecting-the-slow-consumer">PR23-F02 - P1: Cross-Thread Queue Delivery Can Drop Events With <code>QueueFull</code> Instead of Disconnecting the Slow Consumer<a class="headerlink" href="#pr23-f02---p1-cross-thread-queue-delivery-can-drop-events-with-instead-of-disconnecting-the-slow-consumer" title="Permanent link">&para;</a></h3>
 <p><strong>参考文献</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/events.py:86-119</code></li>
@@ -3397,7 +3397,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
    身份密封窗口行为或为其生成第二个 ID。</li>
 <li>仅在<code>_persist_projection()</code>成功后发布<code>inspection.completed</code>，
    就像当前代码一样。失败的推理/持久路径不得发出
-   错误完成；如果引入显式故障事件，请记录其
+   错误完成；如果引入了明确的故障事件，请记录其
    语义并保持 REST 权威。</li>
 <li>在开始和完成的有效负载中一致地包含 <code>instance_id</code>
    因此，多实例仪表板可能会使正确的资源失效。</li>
@@ -3421,7 +3421,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <thead>
 <tr>
 <th>寻找</th>
-<th>严重程度</th>
+<th>严重性</th>
 <th>分辨率</th>
 <th>测试</th>
 </tr>
@@ -3499,7 +3499,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 </ul>
 <p>总线保留<code>connection_count</code>和<code>last_sequence</code>，但都不暴露
 通过运营指标、结构化状态或经过身份验证的支持
-端点。也没有发布/慢消费者断开计数器。 E4的
+端点。也没有发布/慢速消费者断开计数器。 E4的
 强制矩阵明确要求可观察的连接和事件计数，
 因此操作员无法区分空闲仪表板和失败的事件源。</p>
 <p><strong>推荐解决方案</strong></p>
@@ -3539,7 +3539,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <thead>
 <tr>
 <th>寻找</th>
-<th style="text-align: right;">严重程度</th>
+<th style="text-align: right;">严重性</th>
 <th>合并前需要</th>
 <th>决议状态</th>
 </tr>

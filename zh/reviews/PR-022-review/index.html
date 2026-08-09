@@ -3242,7 +3242,7 @@
 真实：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>tokens &lt;= rate * 1 second &lt; amount
 </code></pre></div>
-<p>调度程序在调用<code>acquire()</code>之前就已经租用了该任务。那么它
+<p>调度程序在调用 <code>acquire()</code> 之前已经租用了该任务。那么它
 在 250 毫秒内无限循环休眠并且从不调用接收器或写入任务
 过渡。例如，1 Mbps 的 8 MiB 媒体任务有 125,000 字节的存储桶
 容量并永久卡住。工人可以保留过去的任务租约
@@ -3297,7 +3297,7 @@
 比原始媒体字节加上 JSON 元数据大约三分之一。的
 然后，在原始字节等待之后，将完整的信封在一次写入中传递给 <code>httpx</code>。
 因此，实际网络上配置的带宽最大值超出了
-有效负载和<code>upload_bytes_sent</code>度量报告更小的、不同的单位。</p>
+有效负载和 <code>upload_bytes_sent</code> 指标报告更小的、不同的单位。</p>
 <p>这与 E3a 将限制器应用于网络有效负载的要求相矛盾
 字节，并使容量规划/可观察性在中断期间产生误导。</p>
 <p><strong>所需的解决方案</strong></p>
@@ -3387,7 +3387,7 @@
 <thead>
 <tr>
 <th>寻找</th>
-<th>严重程度</th>
+<th>严重性</th>
 <th>分辨率</th>
 <th>测试</th>
 </tr>
@@ -3466,50 +3466,50 @@
 <table>
 <thead>
 <tr>
-<th>面积</th>
-<th>所需证据</th>
+<th>Area</th>
+<th>Required evidence</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>大媒体节流</td>
-<td>大于一桶容量的有效负载完成，具有有限的吞吐量，更新其租约，并在停止/故障时保持可恢复。</td>
+<td>Large media throttle</td>
+<td>Payload larger than one bucket capacity completes, has bounded throughput, renews its lease, and remains recoverable on stop/failure.</td>
 </tr>
 <tr>
-<td>实际线数限制</td>
-<td>Base64 JSON 正文（而不是原始源字节）受到速率限制并计入状态遥测。</td>
+<td>Actual wire limit</td>
+<td>Base64 JSON body, not raw source bytes, is rate-limited and counted in status telemetry.</td>
 </tr>
 <tr>
-<td>本地安全第一</td>
-<td>节流/积压的上传不能延迟单独的检查/发件箱提交。</td>
+<td>Local-first safety</td>
+<td>A throttled/backlogged upload cannot delay a separate inspection/outbox commit.</td>
 </tr>
 <tr>
-<td>断路器</td>
-<td>阈值/开放/半开放成功/失败，开放时无索赔，排除永久故障，并且无重复恢复保持通过。</td>
+<td>Circuit breaker</td>
+<td>Threshold/open/half-open success/failure, no claims while open, permanent failures excluded, and duplicate-free recovery remain passing.</td>
 </tr>
 <tr>
-<td>重试 CAS</td>
-<td>调度程序/操作员竞赛和两个操作员竞赛产生一个权威转换；不合格/未知的情况不会发生变异。</td>
+<td>Retry CAS</td>
+<td>Scheduler/operator race and two-operator race yield one authoritative transition; ineligible/unknown cases do not mutate.</td>
 </tr>
 <tr>
-<td>同步和保留</td>
-<td>重试的永久媒体会立即重新计算聚合同步状态，并且在没有新的经过验证的收据的情况下无法成为清理资格。</td>
+<td>Sync and retention</td>
+<td>Retried permanent media immediately recomputes aggregate sync state and cannot become cleanup-eligible without a new verified receipt.</td>
 </tr>
 <tr>
-<td>公共合同</td>
-<td>OpenAPI/生成的类型/客户端接口、状态单元、设置文档和运行手册一致地描述了实现的行为。</td>
+<td>Public contracts</td>
+<td>OpenAPI/generated types/client interfaces, status units, settings documentation, and runbook describe the implemented behavior consistently.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="6-production-enablement-conditions">6. 生产启用条件<a class="headerlink" href="#6-production-enablement-conditions" title="Permanent link">&para;</a></h2>
-<p>即使上述调查结果得到解决，E3仍不授权生产
-可恢复媒体上传。中央摄取端点，块接收格式，
-对象绑定、大小/校验和确认以及兼容性/版本处理
-保持明确推迟，直到边缘到中心协议合同冻结。</p>
-<p>特定于站点的阻止程序也仍然存在：批准的带宽上限/调度
-窗口、电路阈值/开放持续时间值、最大停电/积压大小、
-需要可恢复传输、保留策略和响应的媒体类
-当受保护的本地容量达到其停止储备时的程序。</p>
+<p>Even after the findings above are resolved, E3 does not authorize production
+resumable media upload. The central ingestion endpoint, chunk receipt format,
+object binding, size/checksum confirmation, and compatibility/version handling
+remain explicitly deferred until the Edge-to-central protocol contract freezes.</p>
+<p>Site-specific blockers also remain: approved bandwidth ceilings/scheduling
+windows, circuit threshold/open-duration values, maximum outage/backlog sizing,
+media classes requiring resumable transfer, retention policy, and the response
+procedure when protected local capacity reaches its stop reserve.</p>
 
 
 

@@ -1538,7 +1538,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        2. Context
       
     </span>
   </a>
@@ -1549,7 +1549,7 @@
   <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 决定
+        3. Decision
       
     </span>
   </a>
@@ -1594,7 +1594,7 @@
   <a href="#52-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 负面和权衡
+        5.2 Negative and Trade-offs
       
     </span>
   </a>
@@ -1621,7 +1621,7 @@
   <a href="#7-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. 开放式问题和需要验证
+        7. Open Questions and Validation Required
       
     </span>
   </a>
@@ -3213,7 +3213,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        2. Context
       
     </span>
   </a>
@@ -3224,7 +3224,7 @@
   <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 决定
+        3. Decision
       
     </span>
   </a>
@@ -3269,7 +3269,7 @@
   <a href="#52-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 负面和权衡
+        5.2 Negative and Trade-offs
       
     </span>
   </a>
@@ -3296,7 +3296,7 @@
   <a href="#7-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. 开放式问题和需要验证
+        7. Open Questions and Validation Required
       
     </span>
   </a>
@@ -3337,9 +3337,9 @@
 <h1 id="adr-003-vue-3-and-typescript-frontend">ADR-003：Vue 3 和 TypeScript 前端<a class="headerlink" href="#adr-003-vue-3-and-typescript-frontend" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
 <p>已接受</p>
-<h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
+<h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 需要两个重要的 Web 应用程序：一个可离线使用的本地边缘仪表板和一个中央管理仪表板。它们需要类型化 API 集成、可重用表格和表单、实时状态、图像覆盖、审查、图表、设备/配置管理以及清晰的错误/降级状态。</p>
-<h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
+<h2 id="3-decision">3. Decision<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
 <p>将 Vue 3 和 TypeScript 与 Vite 用于两个前端。使用 Vue Router、Pinia、OpenAPI 生成的客户端或 Axios、一致选择的组件库（Element Plus 或 Naive UI）、ECharts、VueUse、Vitest、ESLint 和 Prettier。共享 API 合约和经过验证的可重用功能，同时保持边缘和中央应用程序分离；这一决定并不要求每种功能都有一个包。最初仅使用两个具体消费者提取生成的 API 客户端和检测坐标/查看器原语。将图表、身份验证、验证、格式化、存储和路由功能保留在本地，直到演示重用为止。</p>
 <p>边缘应用程序在本地提供服务，无需中央连接即可保持可用。标准浏览器或 kiosk 模式是初始 shell； Tauri 包装纸仍然是未来的选择。</p>
 <h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
@@ -3352,7 +3352,7 @@
 <li>静态前端工件可以直接在容器中提供服务。</li>
 <li>OpenAPI 生成减少了 Python/TypeScript 合约漂移。</li>
 </ul>
-<h3 id="52-negative-and-trade-offs">5.2 负面和权衡<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
+<h3 id="52-negative-and-trade-offs">5.2 Negative and Trade-offs<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
 <li>共享包需要治理以避免两个应用程序耦合。</li>
 <li>浏览器提供的 JavaScript 是可检查的并且不能包含秘密。</li>
@@ -3366,7 +3366,7 @@
 <li><strong>Tkinter、PyQt 或 PySide：</strong> 对于主仪表板被拒绝，因为它们重复了 Web 管理功能并减少了共享 UI 代码。</li>
 <li><strong>Tauri 立即：</strong> 推迟，直到具体的信息亭/设备集成需求证明另一个包装层是合理的。</li>
 </ul>
-<h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="7-open-questions-and-validation-required">7. Open Questions and Validation Required<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Element Plus 和 Naive UI 之间的选择。</li>
 <li>所需的浏览器、信息亭管理、本地化和可访问性期望。</li>

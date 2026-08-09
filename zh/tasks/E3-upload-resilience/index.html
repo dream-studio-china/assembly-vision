@@ -3130,7 +3130,7 @@
   <a href="#e3b-circuit-breaker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        E3b：断路器
+        E3b: Circuit Breaker
       
     </span>
   </a>
@@ -3141,7 +3141,7 @@
   <a href="#e3c-controlled-manual-retry" class="md-nav__link">
     <span class="md-ellipsis">
       
-        E3c：受控手动重试
+        E3c: Controlled Manual Retry
       
     </span>
   </a>
@@ -3231,7 +3231,7 @@
 <h1 id="e3-pipeline-upload-resilience">E3 管道：上传弹性<a class="headerlink" href="#e3-pipeline-upload-resilience" title="Permanent link">&para;</a></h1>
 <h2 id="1-purpose">1. 目的<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
 <p>使边缘上传路径在退化网络和长中心网络下具有弹性
-中断，而不削弱边缘优先、故障安全检查合同。 E3
+在不削弱边缘优先、故障安全检查合同的情况下实现停电。 E3
 添加带宽限制、断路器、受控手动重试、长
 停电排水测试，以及可恢复的大媒体客户合同
 PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
@@ -3314,11 +3314,11 @@ PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
 <li>节流下的长媒体上传不会缺乏检查：调度程序
   停止发送，同时本地检查持久性继续提交。</li>
 </ul>
-<h3 id="e3b-circuit-breaker">E3b：断路器<a class="headerlink" href="#e3b-circuit-breaker" title="Permanent link">&para;</a></h3>
+<h3 id="e3b-circuit-breaker">E3b: Circuit Breaker<a class="headerlink" href="#e3b-circuit-breaker" title="Permanent link">&para;</a></h3>
 <p><strong>实施</strong></p>
 <ul>
 <li>添加类型化电路设置（<code>failure_threshold</code>、<code>open_seconds</code>）
-  <code>UploadSettings</code>;默认关闭。</li>
+  <code>UploadSettings</code>；默认关闭。</li>
 <li>跟踪连续失败（传输错误和可重试的 HTTP 状态）。
   当达到阈值时，电路打开：调度程序停止
   要求/尝试任务。 <code>open_seconds</code>后，它半开并允许
@@ -3334,7 +3334,7 @@ PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
   半开探针故障重新打开它；开路不会改变任务
   状态和恢复消除了积压的重复。</li>
 </ul>
-<h3 id="e3c-controlled-manual-retry">E3c：受控手动重试<a class="headerlink" href="#e3c-controlled-manual-retry" title="Permanent link">&para;</a></h3>
+<h3 id="e3c-controlled-manual-retry">E3c: Controlled Manual Retry<a class="headerlink" href="#e3c-controlled-manual-retry" title="Permanent link">&para;</a></h3>
 <p><strong>实施</strong></p>
 <ul>
 <li>添加<code>POST /api/v1/uploads/{upload_task_id}/retry</code>（查看者验证）
@@ -3413,26 +3413,26 @@ PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
 </table>
 <h2 id="7-merge-and-release-gates">7. 合并和释放门<a class="headerlink" href="#7-merge-and-release-gates" title="Permanent link">&para;</a></h2>
 <ul>
-<li>通过类型化接口进行重点更改，并且没有非结构化字典
-  公共边界。</li>
-<li>对每个更改的安全不变量进行回归测试。</li>
-<li>公共架构更改时的当前 OpenAPI/TypeScript 工件。</li>
-<li>通过强制性质量命令：<code>ruff check/format</code>、<code>mypy</code>、<code>pytest</code>、
-  <code>mkdocs build --strict</code>、<code>pnpm -r build/lint/test</code>、边缘网络 e2e。</li>
-<li>审查节流/电路/手动重试不能丢失或
-  重复的任务，并且在没有经过验证的收据的情况下无法重新授权删除。</li>
+<li>Focused changes with typed interfaces and no unstructured dictionary at the
+  public boundary.</li>
+<li>Regression tests for every changed safety invariant.</li>
+<li>Current OpenAPI/TypeScript artifacts when a public schema changes.</li>
+<li>Passing mandatory quality commands: <code>ruff check/format</code>, <code>mypy</code>, <code>pytest</code>,
+  <code>mkdocs build --strict</code>, <code>pnpm -r build/lint/test</code>, edge-web e2e.</li>
+<li>Review evidence that throttling/circuit/manual-retry cannot lose or
+  duplicate tasks, and cannot re-authorize deletion without a verified receipt.</li>
 </ul>
 <h2 id="8-references">8. 参考文献<a class="headerlink" href="#8-references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../design/13-upload-and-synchronization/">Upload and Synchronization</a>：
-  第 13.3-13.11 节。</li>
-<li><a href="../../design/12-local-storage-and-retention/">Local Storage and Retention</a>：
-  经验证的收据上的保留门。</li>
-<li><a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/">ADR-005: Local-First Storage and Delayed Upload</a>。</li>
-<li><a href="../../contracts/04-edge-storage-upload-contracts/">Contract 04: Edge, Storage, and Upload Contracts</a>。</li>
-<li><a href="../../design/23-observability-and-support/">Observability and Support</a>：
-  队列/电路可观察性。</li>
-<li><a href="../../runbooks/04-upload-backlog/">Runbook 04: Upload Backlog</a>。</li>
+<li><a href="../../design/13-upload-and-synchronization/">Upload and Synchronization</a>:
+  sections 13.3-13.11.</li>
+<li><a href="../../design/12-local-storage-and-retention/">Local Storage and Retention</a>:
+  retention gates on verified receipts.</li>
+<li><a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/">ADR-005: Local-First Storage and Delayed Upload</a>.</li>
+<li><a href="../../contracts/04-edge-storage-upload-contracts/">Contract 04: Edge, Storage, and Upload Contracts</a>.</li>
+<li><a href="../../design/23-observability-and-support/">Observability and Support</a>:
+  queue/circuit observability.</li>
+<li><a href="../../runbooks/04-upload-backlog/">Runbook 04: Upload Backlog</a>.</li>
 </ul>
 
 

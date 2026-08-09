@@ -1442,7 +1442,7 @@
   <a href="#35-security-and-operations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.5 安全和运营
+        3.5 Security and Operations
       
     </span>
   </a>
@@ -3363,7 +3363,7 @@
   <a href="#35-security-and-operations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.5 安全和运营
+        3.5 Security and Operations
       
     </span>
   </a>
@@ -3506,7 +3506,7 @@
 <thead>
 <tr>
 <th>术语</th>
-<th>规范含义</th>
+<th>规范意义</th>
 </tr>
 </thead>
 <tbody>
@@ -3827,13 +3827,13 @@ CI 和运行时中的这些规则；如果清单项目与合同冲突，则以�
 </tr>
 <tr>
 <td>OQ-020</td>
-<td>预期的检查/媒体量、设备数量、查询并发性和增长决定了容量？</td>
+<td>预期检查/媒体量、设备数量、查询并发性和增长决定了容量？</td>
 <td>数据库/对象存储/作业</td>
 <td>生产目标</td>
 </tr>
 </tbody>
 </table>
-<h3 id="35-security-and-operations">3.5 安全和运营<a class="headerlink" href="#35-security-and-operations" title="Permanent link">&para;</a></h3>
+<h3 id="35-security-and-operations">3.5 Security and Operations<a class="headerlink" href="#35-security-and-operations" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4070,130 +4070,130 @@ Python 模块是可执行的事实来源 (AUDIT-001)。</p>
 </tr>
 </tbody>
 </table>
-<p>| <code>ERROR_UPLOAD_CONFLICT</code> | Central 检测到具有不同内容的相同身份/幂等密钥。 |降级|检疫任务及诚信调查|
-| <code>WARN_CLOCK_DRIFT</code> |设备挂钟的差异超出了经过验证的容差。 |降级|正确的时钟；使用接收/单调证据 |
-| <code>CANCELLED_OPERATOR_REQUEST</code> |授权操作员根据批准的政策取消了主动检查。 | <code>UNCERTAIN</code> |商业<code>NG</code>；审计主体及原因|</p>
-<p>捕获/媒体故障的故障与不确定行为取决于当前窗口内的恢复是否得到验证。它必须显式配置，并且不能默认为 <code>OK</code>。</p>
+<p>| <code>ERROR_UPLOAD_CONFLICT</code> | Central detected the same identity/idempotency key with different content. | Degraded | Quarantine task and investigate integrity |
+| <code>WARN_CLOCK_DRIFT</code> | Device wall clock differs beyond the validated tolerance. | Degraded | Correct clock; use receive/monotonic evidence |
+| <code>CANCELLED_OPERATOR_REQUEST</code> | An authorized operator cancelled an active inspection under approved policy. | <code>UNCERTAIN</code> | Business <code>NG</code>; audit actor and reason |</p>
+<p>Fault-versus-uncertain behavior for capture/media failures depends on whether recovery within the current window is validated. It must be configured explicitly and can never default to <code>OK</code>.</p>
 <h2 id="5-traceability-conventions">5. 可追溯性约定<a class="headerlink" href="#5-traceability-conventions" title="Permanent link">&para;</a></h2>
 <h3 id="51-identifier-namespaces">5.1 标识符命名空间<a class="headerlink" href="#51-identifier-namespaces" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>前缀</th>
-<th>神器</th>
-<th>示例</th>
+<th>Prefix</th>
+<th>Artifact</th>
+<th>Example</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>BR-</code></td>
-<td>业务需求</td>
+<td>Business requirement</td>
 <td><code>BR-003</code></td>
 </tr>
 <tr>
 <td><code>EDGE-</code></td>
-<td>边缘功能需求</td>
+<td>Edge functional requirement</td>
 <td><code>EDGE-009</code></td>
 </tr>
 <tr>
 <td><code>CENTRAL-</code></td>
-<td>中心功能需求</td>
+<td>Central functional requirement</td>
 <td><code>CENTRAL-001</code></td>
 </tr>
 <tr>
 <td><code>QA-</code></td>
-<td>质量属性要求</td>
+<td>Quality attribute requirement</td>
 <td><code>QA-005</code></td>
 </tr>
 <tr>
 <td><code>OQ-</code></td>
-<td>开放问题</td>
+<td>Open question</td>
 <td><code>OQ-016</code></td>
 </tr>
 <tr>
 <td><code>ADR-</code></td>
-<td>架构决策记录</td>
+<td>Architecture decision record</td>
 <td><code>ADR-001</code></td>
 </tr>
 <tr>
 <td><code>TC-</code></td>
-<td>测试案例</td>
+<td>Test case</td>
 <td><code>TC-EDGE-009-01</code></td>
 </tr>
 <tr>
 <td><code>EV-</code></td>
-<td>评估/验收证据</td>
+<td>Evaluation/acceptance evidence</td>
 <td><code>EV-MODEL-2026-001</code></td>
 </tr>
 </tbody>
 </table>
-<p>ID 发布后绝不会重复使用。更改后的含义会收到新的 ID 或显式的取代链接。</p>
+<p>IDs are never reused after publication. Changed meaning receives a new ID or an explicit supersession link.</p>
 <h3 id="52-inspection-correlation">5.2 检验关联性<a class="headerlink" href="#52-inspection-correlation" title="Permanent link">&para;</a></h3>
-<p>使用全局唯一的不透明<code>device_id</code>和边缘生成的<code>inspection_id</code>。 <code>frame_id</code>、<code>media_id</code> 和 <code>upload_task_id</code> 是唯一的并引用检查。每个帧/证据项记录捕获序列/时间和坐标空间（<code>FULL_FRAME</code>、<code>PRODUCT_ROI</code>或派生空间）以及叠加所需的变换。</p>
-<p>在窗口启动时，固定并保留：</p>
+<p>Use globally unique opaque <code>device_id</code> and edge-generated <code>inspection_id</code>. <code>frame_id</code>, <code>media_id</code>, and <code>upload_task_id</code> are unique and reference the inspection. Every frame/evidence item records capture sequence/time and coordinate space (<code>FULL_FRAME</code>, <code>PRODUCT_ROI</code>, or derived space) plus the transform needed for overlays.</p>
+<p>At window start, pin and persist:</p>
 <ul>
-<li>产品检测器型号 ID/版本/校验和。</li>
-<li>组件检测器型号 ID/版本/校验和。</li>
-<li>规则 ID/版本。</li>
-<li>产品配置 ID/版本。</li>
-<li>聚合和帧质量策略版本（如果规则版本未完全包含）。</li>
-<li>应用程序/构建版本和相关适配器/配置版本。</li>
+<li>Product-detector model ID/version/checksum.</li>
+<li>Component-detector model ID/version/checksum.</li>
+<li>Rule ID/version.</li>
+<li>Product-configuration ID/version.</li>
+<li>Aggregation and frame-quality policy versions if not fully contained by the rule version.</li>
+<li>Application/build version and relevant adapter/configuration versions.</li>
 </ul>
-<p>挂钟时间戳使用 RFC 3339 UTC。保留原始设备时间、单调序列/持续时间（如果可用）、时区/时钟运行状况元数据以及中央接收时间；永远不要默默地重写边缘时间戳。</p>
+<p>Wall-clock timestamps use RFC 3339 UTC. Preserve original device time, monotonic sequence/duration where available, timezone/clock-health metadata, and central receive time; never silently rewrite an edge timestamp.</p>
 <h3 id="53-requirement-to-evidence-matrix">5.3 需求证据矩阵<a class="headerlink" href="#53-requirement-to-evidence-matrix" title="Permanent link">&para;</a></h3>
-<p>每个实施拉取请求或发布记录都应标识受影响的需求 ID。测试在元数据或文档字符串中命名需求，并发布证据将需求链接到代码/模块、测试用例、结果、环境、相关数据集版本以及批准角色。</p>
+<p>Each implementation pull request or release record should identify affected requirement IDs. Tests name the requirement in metadata or docstrings, and release evidence links requirements to code/module, test case, result, environment, dataset version where relevant, and approving role.</p>
 <table>
 <thead>
 <tr>
-<th>要求</th>
-<th>设计业主</th>
-<th>验证神器</th>
-<th>公布证据</th>
+<th>Requirement</th>
+<th>Design owner</th>
+<th>Verification artifact</th>
+<th>Release evidence</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>BR-003</code></td>
-<td>规则和失败语义</td>
-<td>保守路径黄金测试</td>
-<td>测试报告以及经过审查的异常样本</td>
+<td>Rule and failure semantics</td>
+<td>Conservative-path golden tests</td>
+<td>Test report plus reviewed exception samples</td>
 </tr>
 <tr>
 <td><code>EDGE-009</code></td>
-<td>每个组件聚合器</td>
-<td>单元/序列测试</td>
-<td>按组件划分的评估报告</td>
+<td>Per-component aggregator</td>
+<td>Unit/sequence tests</td>
+<td>Evaluation report by component</td>
 </tr>
 <tr>
 <td><code>EDGE-012</code></td>
-<td>上传调度程序/摄取</td>
-<td>重试、冲突、中断测试</td>
-<td>弹性运行日志和收据</td>
+<td>Upload scheduler/ingestion</td>
+<td>Retry, conflict, outage tests</td>
+<td>Resilience run log and receipts</td>
 </tr>
 <tr>
 <td><code>CENTRAL-005</code></td>
-<td>审查/审计领域</td>
-<td>API 和并发测试</td>
-<td>验收运行中的审计导出</td>
+<td>Review/audit domain</td>
+<td>API and concurrency tests</td>
+<td>Audit export from acceptance run</td>
 </tr>
 <tr>
 <td><code>QA-005</code></td>
-<td>储存/保留</td>
-<td>磁盘水印/全面测试</td>
-<td>恢复和无数据丢失报告</td>
+<td>Storage/retention</td>
+<td>Disk watermark/full tests</td>
+<td>Recovery and no-data-loss report</td>
 </tr>
 </tbody>
 </table>
-<p>该表是说明性的，不能替代完整生成的迹线矩阵。</p>
+<p>The table is illustrative, not a substitute for a complete generated trace matrix.</p>
 <h3 id="54-model-and-dataset-lineage">5.4 模型和数据集谱系<a class="headerlink" href="#54-model-and-dataset-lineage" title="Permanent link">&para;</a></h3>
-<p>模型清单链接工件校验和、架构/运行时要求、类映射、训练数据集版本、拆分策略、代码/配置修订、评估数据集、产品/组件指标、限制、批准和取代版本。数据集按批次、捕获会话/日期和物理产品进行分组，因此相邻帧不会在训练集和验证集上泄漏。</p>
-<p>起始数据目标是主要产品类别的大约 300-800 个真实图像以及每个组件类别的大约 300-500 个标记实例，包括实际的有意丢失的场景（在可行的情况下，最初每个丢失场景大约 100 个图像）。这些只是计划的开始，而不是保证；测量的验证决定额外的收集。</p>
+<p>A model manifest links artifact checksum, architecture/runtime requirements, class map, training dataset version, split strategy, code/configuration revision, evaluation dataset(s), metrics by product/component, limitations, approval, and superseded version. Dataset splits group by batch, capture session/date, and physical product so adjacent frames do not leak across train and validation sets.</p>
+<p>Starting data targets are approximately 300-800 real images for a primary product class and approximately 300-500 labeled instances per component class, including practical intentionally missing scenarios (initially around 100 images per missing scenario where feasible). These are planning starts, not guarantees; measured validation determines additional collection.</p>
 <h3 id="55-review-lineage">5.5 回顾血统<a class="headerlink" href="#55-review-lineage" title="Permanent link">&para;</a></h3>
-<p>审核记录引用不可变的检查、原始业务/内部结果、选定的证据、审核者身份、审核结果、原因、时间戳和修订/并发令牌。更正的案例通过引用进入培训待办事项列表。数据集纳入需要单独批准的标记行动；审核不会自动重新训练或重新标记历史模型指标。</p>
+<p>审核记录引用不可变的检查、原始业务/内部结果、选定的证据、审核者身份、审核结果、原因、时间戳和修订/并发令牌。更正的案例通过引用进入培训待办事项列表。数据集包含需要单独批准的标记操作；审核不会自动重新训练或重新标记历史模型指标。</p>
 <h2 id="6-scope-language-convention">6. 范围-语言约定<a class="headerlink" href="#6-scope-language-convention" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>两天 MVP</strong> 指静态图像垂直切片，不包括摄像头/视频/中央/UI/身份验证/集成。</li>
-<li><strong>一个月目标</strong>是指受硬件、数据和站点依赖性影响的实施目标；一个月后不会自动投入生产。</li>
+<li><strong>两天 MVP</strong> 指静态图像垂直切片，不包括相机/视频/中央/UI/身份验证/集成。</li>
+<li><strong>一个月目标</strong>是指受硬件、数据和站点依赖性影响的实施目标；一个月后它不会自动投入生产。</li>
 <li><strong>生产目标</strong>是指经过测量验证、验收、安全/操作强化和运行手册批准后所需的行为。</li>
 <li><strong>未来</strong>表示可选范围，当前没有交付承诺。</li>
 </ul>

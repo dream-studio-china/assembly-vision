@@ -3226,6 +3226,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#810-deployment-and-security-e5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.10 Deployment and Security (E5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3459,6 +3470,17 @@
     <span class="md-ellipsis">
       
         8.9 Runtime and Live Event Channel (E4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#810-deployment-and-security-e5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.10 Deployment and Security (E5)
       
     </span>
   </a>
@@ -4128,15 +4150,43 @@ desktop 3), and 12 Playwright e2e.</p>
   distinct artifacts/devices stay separate and no mutable state is shared
   (ADR-013 Phase 3).</li>
 </ul>
+<h2 id="810-deployment-and-security-e5">8.10 Deployment and Security (E5)<a class="headerlink" href="#810-deployment-and-security-e5" title="Permanent link">&para;</a></h2>
+<p>Implemented on <code>feat/e5-deployment-security</code> (delivery task
+<code>docs/tasks/E5-deployment-and-security.md</code>):</p>
+<ul>
+<li><strong>Docker packaging (E5a)</strong>: a multi-stage <code>apps/edge-service/Dockerfile</code>
+  resolves the pinned uv workspace and installs dependencies non-editable, then
+  ships only the virtualenv in a slim runtime image running as the <code>av</code>
+  (10001:10001) user with a read-only root filesystem; data mount points are
+  pre-created and owned by <code>av</code> so named volumes inherit the right owner.
+  <code>python -m assemblyvision.healthcheck</code> gates the Docker HEALTHCHECK, and a
+  <code>compose.yaml</code> template provides persistent volumes, restart policy,
+  loopback binding, and no central-DNS dependency at startup. Verified end to
+  end on Docker: <code>health=healthy</code>, <code>user=av</code>, read-only rootfs.</li>
+<li><strong>Secrets and TLS (E5b)</strong>: <code>serve</code> falls back from <code>AV_EDGE_*</code> environment
+  variables to Docker secret files under <code>/run/secrets/</code> for the viewer and
+  upload tokens (failing closed on unreadable secret files); optional local
+  HTTPS via <code>--tls-cert</code>/<code>--tls-key</code> (or <code>AV_EDGE_TLS_*</code>) with startup
+  validation of existence, private-key permissions, and certificate/key
+  match.</li>
+<li><strong>Backup and restore (E5c)</strong>: <code>assemblyvision backup</code> takes a consistent
+  SQLite online snapshot plus governed config/rule/manifest files and pending
+  evidence with SHA-256 checksums into a <code>tar.gz</code> bundle; <code>assemblyvision
+  restore</code> verifies every checksum before applying, keeps a <code>.pre-restore</code>
+  copy, never overwrites conflicting media, and reconciles the store so
+  pending upload tasks survive.</li>
+<li><strong>Runbooks (E5d)</strong>: runbook 12 (backup and recovery), 13 (TLS certificate
+  rotation), and 14 (deployment upgrade and rollback) added to the indexed
+  runbook set.</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The <strong>upload queue scheduler</strong> gap is closed (PR #17, section 8.6); <strong>E1
   observability</strong> (PRs #18/#19), <strong>E2 retention and disk safety</strong> (PR #20,
   PR-020 review resolved), <strong>E3 upload resilience</strong> (PR #22, section 8.8),
-  and <strong>E4 runtime</strong> (section 8.9) are implemented. The remaining Edge
-  production-candidate work is tracked as E5-E6:</li>
-<li><strong>E5 deployment and security</strong>: Docker packaging, secret/TLS provisioning,
-    backup/restore, runbooks.</li>
+  <strong>E4 runtime</strong> (section 8.9), and <strong>E5 deployment and security</strong> (section
+  8.10) are implemented. The remaining Edge production-candidate work is
+  tracked as E6:</li>
 <li><strong>E6 acceptance</strong>: resilience matrix, soak, held-out model validation,
     Edge acceptance report with hardware prerequisites.</li>
 <li>The <strong>WebSocket runtime channel</strong> is implemented (section 8.9); the polling
