@@ -167,6 +167,14 @@ export class HttpApiClient implements ApiClient {
     return this.#request(`/uploads${qs ? `?${qs}` : ""}`, undefined, validators.uploadPage);
   }
 
+  retryUpload(uploadTaskId: string): Promise<UploadTask> {
+    return this.#request(
+      `/uploads/${encodeURIComponent(uploadTaskId)}/retry`,
+      { method: "POST" },
+      validators.uploadTask,
+    );
+  }
+
   getEffectiveConfiguration(): Promise<EffectiveConfiguration> {
     return this.#request("/configuration/effective", undefined, validators.effectiveConfiguration);
   }

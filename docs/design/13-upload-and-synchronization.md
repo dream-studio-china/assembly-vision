@@ -106,10 +106,17 @@ upload:
   exponent_cap: 8
   task_lease_seconds: 120
   maximum_bandwidth_mbps: null
-  media_chunk_bytes: 8388608
+  circuit_failure_threshold: 5
+  circuit_open_seconds: 60
+  media_chunk_bytes: 8388608  # reserved; single POST envelope until the
+                              # Edge-to-central resumable contract freezes
 ```
 
-The placeholder URL and `null` bandwidth require site configuration.
+The placeholder URL, `null` bandwidth, circuit threshold/open duration, and
+`media_chunk_bytes` require site configuration; the environment equivalents
+are `AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS`,
+`AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD`,
+`AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS`, and `AV_EDGE_UPLOAD_MEDIA_CHUNK_BYTES`.
 
 ## 13.9 Failure Handling and Operations
 

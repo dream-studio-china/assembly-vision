@@ -282,6 +282,7 @@ export const validators: Record<string, Validator> = {
     body.forEach((item) => validateMediaMetadata(item));
   },
   uploadPage: (body) => pageOf(body, validateUploadTask),
+  uploadTask: validateUploadTask,
   logPage: (body) => pageOf(body, validateLogEvent),
   effectiveConfiguration: validateEffectiveConfiguration,
   inspectionImages: validateInspectionImages,

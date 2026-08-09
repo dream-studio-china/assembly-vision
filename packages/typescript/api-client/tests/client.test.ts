@@ -89,6 +89,24 @@ describe("MockApiClient", () => {
     expect(images.detection).toBeTruthy();
     expect(images.annotated).toBeTruthy();
   });
+
+  it("retries an eligible upload task and rejects non-eligible states", async () => {
+    const client = new MockApiClient();
+    const before = (await client.listUploads()).items.find((t) => t.status === "RETRY_WAIT");
+    expect(before).toBeTruthy();
+    const updated = await client.retryUpload(before!.upload_task_id);
+    expect(updated.status).toBe("PENDING");
+    expect(updated.attempt_count).toBe(before!.attempt_count + 1);
+    // A second retry is now a conflict, mirroring the server's CAS transition.
+    await expect(client.retryUpload(before!.upload_task_id)).rejects.toMatchObject({
+      code: "TASK_NOT_RETRYABLE",
+      status: 409,
+    });
+    await expect(client.retryUpload("00000000-0000-4000-8000-ffffffffffff")).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      status: 404,
+    });
+  });
 });
 
 describe("HttpApiClient", () => {
@@ -124,6 +142,55 @@ describe("HttpApiClient", () => {
     await expect(client.getInspection("nope")).rejects.toMatchObject({
       code: "INSPECTION_NOT_FOUND",
       status: 404,
+    });
+  });
+
+  it("posts a manual retry and validates the returned task", async () => {
+    let called = "";
+    let method = "";
+    const task = {
+      upload_task_id: "task-1",
+      device_id: "00000000-0000-4000-8000-000000000001",
+      inspection_id: null,
+      kind: "INSPECTION",
+      object_id: "00000000-0000-4000-8000-000000000002",
+      payload_hash: "abc",
+      status: "PENDING",
+      idempotency_key: "inspection:device:104",
+      checksum_sha256: "0".repeat(64),
+      attempt_count: 4,
+      next_attempt_at: null,
+      last_error_code: null,
+      created_at: "2026-01-01T00:00:00Z",
+      updated_at: "2026-01-02T00:00:00Z",
+      completed_at: null,
+    };
+    const fetchImpl = ((input: RequestInfo | URL, init?: RequestInit) => {
+      called = String(input);
+      method = init?.method ?? "GET";
+      return Promise.resolve(new Response(JSON.stringify(task), { status: 200 }));
+    }) as typeof fetch;
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    const updated = await client.retryUpload("task-1");
+    expect(method).toBe("POST");
+    expect(called).toContain("/api/v1/uploads/task-1/retry");
+    expect(updated.status).toBe("PENDING");
+  });
+
+  it("maps a 409 TASK_NOT_RETRYABLE into a typed ApiError", async () => {
+    const body = {
+      type: "https://assemblyvision.example/problems/task-not-retryable",
+      title: "Task not retryable",
+      status: 409,
+      detail: "upload task is SUCCEEDED and cannot be manually retried",
+      code: "TASK_NOT_RETRYABLE",
+      request_id: "req-1",
+    };
+    const fetchImpl = fakeFetch(409, body);
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    await expect(client.retryUpload("task-9")).rejects.toMatchObject({
+      code: "TASK_NOT_RETRYABLE",
+      status: 409,
     });
   });
 
