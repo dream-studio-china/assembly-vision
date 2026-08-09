@@ -158,7 +158,9 @@ The retention and disk-safety milestone is implemented in `assemblyvision_edge`
   reports `inspection_ready=false`; it never returns an unrecorded `OK`. The
   dashboard renders server-authoritative state instead of a fixed threshold.
 - **Startup integrity (E2d)**: `scan_storage_integrity` verifies projected
-  media existence/size (and optional checksums) and marks faults durably;
+  media existence, size, and checksums by default; deployments may explicitly
+  configure bounded deterministic checksum sampling and its coverage is exposed
+  through device status. Faults are marked durably;
   malformed/unsafe/conflicting bundles are moved to `quarantine/`, never
   re-imported or deleted; `PRAGMA quick_check` runs at every open and fails
   closed on corruption; abandoned cleanup claims are recovered at startup.
