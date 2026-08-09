@@ -9,6 +9,8 @@ improve a component's state through frames that belong elsewhere.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass, field
 from typing import Literal
 from uuid import UUID
@@ -72,6 +74,36 @@ class TemporalAggregationConfig:
 
     def policy_for(self, component_code: str) -> ComponentTemporalPolicy | None:
         return self.components.get(component_code)
+
+
+def temporal_policy_version(config: TemporalAggregationConfig) -> str:
+    """Return a reproducible identity for all temporal decision parameters.
+
+    ``InspectionRecord.aggregation_policy_version`` is limited to 64 columns
+    in the durable projection, so it stores the complete SHA-256 digest of a
+    canonical policy document. The format label is part of that document; a
+    policy format change and any threshold, hit, window, or component change
+    therefore produce a different persisted identity (PR-015 follow-up F3).
+    """
+    payload = {
+        "format": "per-component-temporal-v1",
+        "minimum_valid_frames": config.minimum_valid_frames,
+        "maximum_window_ms": config.maximum_window_ms,
+        "reject_duplicate_frame_ids": config.reject_duplicate_frame_ids,
+        "window_strategy": config.window_strategy,
+        "components": {
+            code: {
+                "high_confidence": policy.high_confidence,
+                "medium_confidence": policy.medium_confidence,
+                "medium_hits": policy.medium_hits,
+                "require_adjacent_hits": policy.require_adjacent_hits,
+                "max_frame_gap": policy.max_frame_gap,
+            }
+            for code, policy in sorted(config.components.items())
+        },
+    }
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)

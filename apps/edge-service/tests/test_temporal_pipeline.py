@@ -27,6 +27,7 @@ from assemblyvision_edge.rules.rule_engine import RuleEngine
 from assemblyvision_edge.temporal.aggregator import (
     ComponentTemporalPolicy,
     TemporalAggregationConfig,
+    temporal_policy_version,
 )
 from assemblyvision_edge.temporal.window_manager import ProductWindow, ProductWindowManager
 from assemblyvision_vision.manifests import load_model_manifest
@@ -248,7 +249,7 @@ class TestTemporalRecord:
         pipeline = _build_pipeline(_ALL_HIGH, _temporal_config())
         closed, _manager = _run_window(pipeline, _temporal_config(), 3)
         record = pipeline.inspect_window(closed)
-        assert record.aggregation_policy_version == "per-component-temporal-v1"
+        assert record.aggregation_policy_version == temporal_policy_version(_temporal_config())
         assert record.decision.business_result == "OK"
         assert record.decision.internal_decision == "OK"
         assert all(e.state == "PRESENT" for e in record.evidence)
@@ -313,7 +314,37 @@ class TestTemporalPersistence:
         assert (bundle / "inspection.json").exists()
         assert (bundle / "key_frame.jpg").exists()
         payload = (bundle / "inspection.json").read_text(encoding="utf-8")
-        assert '"aggregation_policy_version": "per-component-temporal-v1"' in payload
+        assert (
+            f'"aggregation_policy_version": "{temporal_policy_version(_temporal_config())}"'
+            in payload
+        )
+
+    def test_policy_change_produces_distinct_persisted_identity(self) -> None:
+        baseline = _temporal_config()
+        changed = TemporalAggregationConfig(
+            minimum_valid_frames=baseline.minimum_valid_frames,
+            maximum_window_ms=baseline.maximum_window_ms,
+            reject_duplicate_frame_ids=baseline.reject_duplicate_frame_ids,
+            window_strategy=baseline.window_strategy,
+            components={
+                code: ComponentTemporalPolicy(
+                    high_confidence=0.96,
+                    medium_confidence=policy.medium_confidence,
+                    medium_hits=policy.medium_hits,
+                    require_adjacent_hits=policy.require_adjacent_hits,
+                    max_frame_gap=policy.max_frame_gap,
+                )
+                for code, policy in baseline.components.items()
+            },
+        )
+        baseline_pipeline = _build_pipeline(_ALL_HIGH, baseline)
+        changed_pipeline = _build_pipeline(_ALL_HIGH, changed)
+        baseline_window, _ = _run_window(baseline_pipeline, baseline, 3)
+        changed_window, _ = _run_window(changed_pipeline, changed, 3)
+        assert (
+            baseline_pipeline.inspect_window(baseline_window).aggregation_policy_version
+            != changed_pipeline.inspect_window(changed_window).aggregation_policy_version
+        )
 
 
 class TestQualityGate:

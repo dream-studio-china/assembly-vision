@@ -63,6 +63,7 @@ from assemblyvision_edge.rules.rule_engine import (
 from assemblyvision_edge.temporal.aggregator import (
     TemporalAggregationConfig,
     TemporalAggregator,
+    temporal_policy_version,
 )
 from assemblyvision_edge.temporal.window_manager import FrameObservation, ProductWindow
 
@@ -293,7 +294,7 @@ class InspectionPipeline:
 
         The per-component temporal aggregator resolves frame evidence, the rule
         engine evaluates the aggregated evidence exactly once, and the record
-        is emitted with ``aggregation_policy_version="per-component-temporal-v1"``
+        stores a canonical SHA-256 identity for the exact temporal policy
         (design 10, ADR-010).
         """
         if self._temporal is None:
@@ -383,7 +384,7 @@ class InspectionPipeline:
             component_model_version_id=self._component_manifest.model_version_id,
             component_model_checksum_sha256=_artifact_checksum(self._component_manifest),
             rule_version_id=rule_version_id(self._rule),
-            aggregation_policy_version="per-component-temporal-v1",
+            aggregation_policy_version=temporal_policy_version(self._temporal.config),
             evidence=[evidence_map[key] for key in self._rule.required_components],
             decision=decision,
             synchronization_status="LOCAL_ONLY",

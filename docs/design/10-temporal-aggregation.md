@@ -152,6 +152,11 @@ Window grouping, quality, and policy behavior enforced by the review fixes
   rule loads); a missing policy resolves defensively to `UNVERIFIABLE` with
   `COMPONENT_POLICY_MISSING`. `medium_confidence` must be strictly less than
   `high_confidence`.
+- **Policy identity**: every temporal record persists the complete SHA-256 of
+  a canonical policy document in `aggregation_policy_version`. The document
+  includes the aggregation format, window strategy, window parameters, and
+  every component threshold/hit rule, so historical decisions remain
+  reproducible after configuration changes.
 - **Count evidence**: `detection_count`, box-area, and center summaries include
   only detections at or above the count-evidence threshold (the policy
   `medium_confidence` at minimum), so low-confidence false positives cannot
