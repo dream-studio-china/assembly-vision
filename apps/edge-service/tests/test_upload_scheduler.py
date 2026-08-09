@@ -9,7 +9,7 @@ tasks (design 13.5/13.9, ADR-005).
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
@@ -22,6 +22,7 @@ from assemblyvision_edge.persistence.repository import EdgeRepository
 from assemblyvision_edge.upload.scheduler import (
     DirectoryUploadSink,
     HttpUploadSink,
+    UploadReceipt,
     UploadResult,
     UploadScheduler,
     _full_jitter_backoff,
@@ -88,6 +89,19 @@ class _ScriptedSink:
         self.keys.append(task.idempotency_key)
         result = self._outcomes[self._index % len(self._outcomes)]
         self._index += 1
+        if result.status == "SUCCEEDED":
+            # F5: success must carry a verified receipt matching the task.
+            return UploadResult(
+                status="SUCCEEDED",
+                receipt=UploadReceipt(
+                    idempotency_key=task.idempotency_key,
+                    object_id=str(task.object_id),
+                    kind=task.kind,
+                    checksum_sha256=task.checksum_sha256,
+                    size_bytes=len(payload),
+                    central_object_id=f"central-{task.idempotency_key}",
+                ),
+            )
         return result
 
 
@@ -250,7 +264,17 @@ class TestMetadataBeforeMedia:
         def handler(request: httpx.Request) -> httpx.Response:
             body = json.loads(request.content)
             seen.append(body["kind"])
-            return httpx.Response(200, text="receipt-ok")
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": f"obj-{body['kind']}",
+                },
+            )
 
         client = httpx.Client(transport=httpx.MockTransport(handler))
         sink = HttpUploadSink("https://central.invalid", client=client)
@@ -464,6 +488,8 @@ class TestRestartRecovery:
 
 class TestHttpSink:
     def test_classifies_statuses(self) -> None:
+        import json
+
         import httpx
 
         calls = {"n": 0}
@@ -472,7 +498,18 @@ class TestHttpSink:
             call = calls["n"]
             calls["n"] += 1
             if call == 0:
-                return httpx.Response(200, text="receipt-ok")
+                body = json.loads(request.content)
+                return httpx.Response(
+                    200,
+                    json={
+                        "idempotency_key": body["idempotency_key"],
+                        "object_id": body["object_id"],
+                        "kind": body["kind"],
+                        "checksum_sha256": body["checksum_sha256"],
+                        "size_bytes": body["size_bytes"],
+                        "central_object_id": "obj-1",
+                    },
+                )
             if call == 1:
                 return httpx.Response(503)
             if call == 2:
@@ -480,9 +517,12 @@ class TestHttpSink:
             return httpx.Response(409)
 
         client = httpx.Client(transport=httpx.MockTransport(handler))
-        sink = HttpUploadSink("http://central.invalid", client=client)
+        sink = HttpUploadSink("https://central.invalid", client=client)
         task = _task()
-        assert sink.upload(task, b"{}").status == "SUCCEEDED"
+        ok = sink.upload(task, b"{}")
+        assert ok.status == "SUCCEEDED"
+        assert ok.receipt is not None
+        assert ok.receipt.central_object_id == "obj-1"
         assert sink.upload(task, b"{}").status == "RETRYABLE"  # 503
         throttled = sink.upload(task, b"{}")
         assert throttled.status == "RETRYABLE"
@@ -496,7 +536,7 @@ class TestHttpSink:
             raise httpx.ConnectError("connection refused")
 
         client = httpx.Client(transport=httpx.MockTransport(handler))
-        sink = HttpUploadSink("http://central.invalid", client=client)
+        sink = HttpUploadSink("https://central.invalid", client=client)
         result = sink.upload(_task(), b"{}")
         assert result.status == "RETRYABLE"
         assert result.error_code == "TRANSPORT_ERROR"
@@ -511,8 +551,19 @@ class TestHttpSink:
         received: dict[str, object] = {}
 
         def handler(request: httpx.Request) -> httpx.Response:
-            received.update(json.loads(request.content))
-            return httpx.Response(200, text="receipt-ok")
+            body = json.loads(request.content)
+            received.update(body)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": "obj-bin",
+                },
+            )
 
         client = httpx.Client(transport=httpx.MockTransport(handler))
         sink = HttpUploadSink("https://central.invalid", client=client)
@@ -527,6 +578,151 @@ class TestHttpSink:
         assert base64.b64decode(payload_b64) == raw
         assert received["checksum_sha256"] == task.checksum_sha256
 
+    def test_malformed_receipts_never_mark_success(self) -> None:
+        """F5: a 2xx is only success when its receipt matches the task."""
+        import httpx
+
+        def echo(request: httpx.Request) -> httpx.Response:
+            import json
+
+            body = json.loads(request.content)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": "obj-ok",
+                },
+            )
+
+        task = _task()
+
+        def upload_with(handler: Callable[[httpx.Request], httpx.Response]) -> UploadResult:
+            c = httpx.Client(transport=httpx.MockTransport(handler))
+            return HttpUploadSink("https://central.invalid", client=c).upload(task, b"{}")
+
+        assert upload_with(echo).status == "SUCCEEDED"  # sanity
+        # Empty body.
+        assert upload_with(lambda req: httpx.Response(200, text="")).status == "PERMANENT"
+        # Unparseable body.
+        assert upload_with(lambda req: httpx.Response(200, text="not json")).status == "PERMANENT"
+        # Wrong idempotency key.
+        assert (
+            upload_with(
+                lambda req: httpx.Response(
+                    200,
+                    json={
+                        "idempotency_key": "inspection:other",
+                        "object_id": str(task.object_id),
+                        "kind": task.kind,
+                    },
+                )
+            ).status
+            == "PERMANENT"
+        )
+        # Wrong object id.
+        assert (
+            upload_with(
+                lambda req: httpx.Response(
+                    200,
+                    json={
+                        "idempotency_key": task.idempotency_key,
+                        "object_id": str(uuid4()),
+                        "kind": task.kind,
+                    },
+                )
+            ).status
+            == "PERMANENT"
+        )
+        # Wrong checksum.
+        assert (
+            upload_with(
+                lambda req: httpx.Response(
+                    200,
+                    json={
+                        "idempotency_key": task.idempotency_key,
+                        "object_id": str(task.object_id),
+                        "kind": task.kind,
+                        "checksum_sha256": "1" * 64,
+                    },
+                )
+            ).status
+            == "PERMANENT"
+        )
+        # Wrong byte size.
+        assert (
+            upload_with(
+                lambda req: httpx.Response(
+                    200,
+                    json={
+                        "idempotency_key": task.idempotency_key,
+                        "object_id": str(task.object_id),
+                        "kind": task.kind,
+                        "size_bytes": 999,
+                    },
+                )
+            ).status
+            == "PERMANENT"
+        )
+
+    def test_receipt_is_persisted_with_task_success(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """F5: verified receipts and central object ids are stored durably."""
+        import json
+
+        _seed(repo, tmp_path)
+        sink = DirectoryUploadSink(tmp_path / "sink")
+        scheduler = _scheduler(repo, tmp_path, sink)
+        assert _drain(scheduler) == 2
+        with repo._engine.connect() as conn:  # noqa: SLF001
+            rows = (
+                conn.execute(
+                    sa.text(
+                        "SELECT idempotency_key, central_object_id, receipt_json "
+                        "FROM upload_tasks WHERE status = 'SUCCEEDED'"
+                    )
+                )
+                .mappings()
+                .all()
+            )
+        assert len(rows) == 2
+        for row in rows:
+            assert row["central_object_id"] == row["idempotency_key"]
+            receipt = json.loads(row["receipt_json"])
+            assert receipt["idempotency_key"] == row["idempotency_key"]
+            assert receipt["central_object_id"] == row["central_object_id"]
+
+    def test_inspection_sync_state_machine(self, repo: EdgeRepository, tmp_path: Path) -> None:
+        """F5: PARTIAL/SYNCED/FAILED derive from all required tasks."""
+        record = _seed(repo, tmp_path)[0]
+        scheduler = _scheduler(repo, tmp_path, DirectoryUploadSink(tmp_path / "sink"))
+        # Metadata succeeds first; media still pending => PARTIAL.
+        assert scheduler.run_once() == 1
+        fetched = repo.get_inspection(str(record.inspection_id))
+        assert fetched is not None
+        assert fetched.synchronization_status == "PARTIAL"
+        # Media succeeds => SYNCED.
+        assert scheduler.run_once() == 1
+        fetched = repo.get_inspection(str(record.inspection_id))
+        assert fetched is not None
+        assert fetched.synchronization_status == "SYNCED"
+
+    def test_permanent_media_failure_marks_inspection_failed(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """F5: a required-media permanent failure reports FAILED, not SYNCED."""
+        record = _seed(repo, tmp_path)[0]
+        (tmp_path / record.media[0].relative_path).unlink()
+        scheduler = _scheduler(repo, tmp_path, DirectoryUploadSink(tmp_path / "sink"))
+        _drain(scheduler)
+        fetched = repo.get_inspection(str(record.inspection_id))
+        assert fetched is not None
+        assert fetched.synchronization_status == "FAILED"
+
 
 def _task() -> UploadTask:
     return UploadTask(
@@ -538,6 +734,7 @@ def _task() -> UploadTask:
         payload_hash="0" * 64,
         status="PENDING",
         idempotency_key="inspection:test",
+        checksum_sha256="0" * 64,
         attempt_count=0,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),

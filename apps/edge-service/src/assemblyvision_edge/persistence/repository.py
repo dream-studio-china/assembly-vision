@@ -980,12 +980,22 @@ class EdgeRepository:
                 ]
         return claimed
 
-    def mark_upload_succeeded(self, upload_task_id: str, lease_owner: str, now_iso: str) -> int:
+    def mark_upload_succeeded(
+        self,
+        upload_task_id: str,
+        lease_owner: str,
+        now_iso: str,
+        *,
+        central_object_id: str | None = None,
+        receipt_json: str | None = None,
+    ) -> int:
         """Mark one task succeeded when the caller still holds its lease.
 
-        Returns the number of updated rows: zero means the lease was reclaimed
-        (stale worker) and nothing is mutated. A successful inspection also
-        recomputes its projection synchronization state.
+        The verified receipt and central object identifier are persisted so
+        retention can later gate on confirmed uploads (contract 04 section 6,
+        PR-017 F5). Returns the number of updated rows: zero means the lease
+        was reclaimed (stale worker) and nothing is mutated. The inspection's
+        synchronization state is recomputed from all of its tasks.
         """
         with self._engine.begin() as conn:
             row = (
@@ -1006,24 +1016,60 @@ class EdgeRepository:
                     f"""
                     UPDATE {upload_tasks.name}
                     SET status = 'SUCCEEDED', completed_at = :now, updated_at = :now,
-                        lease_expires_at = NULL, lease_owner = NULL, last_error_code = NULL
+                        lease_expires_at = NULL, lease_owner = NULL, last_error_code = NULL,
+                        central_object_id = :object_id, receipt_json = :receipt
                     WHERE upload_task_id = :id AND status = 'IN_PROGRESS'
                       AND lease_owner = :owner
                     """
                 ),
-                {"now": now_iso, "owner": lease_owner, "id": upload_task_id},
+                {
+                    "now": now_iso,
+                    "owner": lease_owner,
+                    "object_id": central_object_id,
+                    "receipt": receipt_json,
+                    "id": upload_task_id,
+                },
             )
             if result.rowcount == 0:
                 return 0
-            if row["kind"] == "INSPECTION" and row["inspection_id"] is not None:
-                conn.execute(
-                    text(
-                        f"UPDATE {inspections.name} SET synchronization_status = 'SYNCED' "
-                        "WHERE inspection_id = :id"
-                    ),
-                    {"id": row["inspection_id"]},
-                )
+            if row["inspection_id"] is not None:
+                self._refresh_inspection_sync(conn, str(row["inspection_id"]))
         return 1
+
+    @staticmethod
+    def _refresh_inspection_sync(conn: Any, inspection_id: str) -> None:
+        """Recompute an inspection's synchronization state from all its tasks.
+
+        Design 14: ``QUEUED`` while work is outstanding, ``PARTIAL`` after some
+        required task succeeded, ``SYNCED`` only when every required task has a
+        verified receipt, and ``FAILED`` when any required task is permanently
+        failed (PR-017 F5).
+        """
+        rows = (
+            conn.execute(
+                text(f"SELECT status FROM {upload_tasks.name} WHERE inspection_id = :id"),
+                {"id": inspection_id},
+            )
+            .scalars()
+            .all()
+        )
+        if not rows:
+            return
+        if any(status == "PERMANENT_FAILURE" for status in rows):
+            state = "FAILED"
+        elif all(status == "SUCCEEDED" for status in rows):
+            state = "SYNCED"
+        elif any(status == "SUCCEEDED" for status in rows):
+            state = "PARTIAL"
+        else:
+            state = "QUEUED"
+        conn.execute(
+            text(
+                f"UPDATE {inspections.name} SET synchronization_status = :state "
+                "WHERE inspection_id = :id"
+            ),
+            {"state": state, "id": inspection_id},
+        )
 
     def mark_upload_retry(
         self,
@@ -1092,13 +1138,7 @@ class EdgeRepository:
             if result.rowcount == 0:
                 return 0
             if row["inspection_id"] is not None:
-                conn.execute(
-                    text(
-                        f"UPDATE {inspections.name} SET synchronization_status = 'FAILED' "
-                        "WHERE inspection_id = :id"
-                    ),
-                    {"id": row["inspection_id"]},
-                )
+                self._refresh_inspection_sync(conn, str(row["inspection_id"]))
         return 1
 
     def get_upload_task(self, upload_task_id: str) -> UploadTask | None:

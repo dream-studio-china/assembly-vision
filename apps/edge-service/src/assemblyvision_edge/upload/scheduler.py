@@ -16,7 +16,7 @@ import json
 import logging
 import random
 import threading
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal, Protocol
@@ -27,13 +27,38 @@ from assemblyvision_edge.persistence.repository import ClaimedUploadTask, EdgeRe
 
 log = logging.getLogger("assemblyvision.upload")
 
+# Bound for parsed receipt bodies; a central response larger than this is an
+# integrity anomaly and never accepted as a receipt (PR-017 F5).
+_MAX_RECEIPT_BYTES = 65536
+
+
+@dataclass(frozen=True)
+class UploadReceipt:
+    """Server-confirmed receipt for one uploaded task payload (design 13.3/13.4).
+
+    A task may only become ``SUCCEEDED`` when the central response echoes the
+    idempotency key, object identity, kind, byte size, and checksum of the
+    payload that was actually sent. The verified receipt and central object
+    identifier are persisted so retention can later gate on verified uploads.
+    """
+
+    idempotency_key: str
+    object_id: str
+    kind: str
+    checksum_sha256: str | None = None
+    size_bytes: int | None = None
+    central_object_id: str | None = None
+
+    def to_json(self) -> str:
+        return json.dumps(asdict(self), sort_keys=True, separators=(",", ":"))
+
 
 @dataclass(frozen=True)
 class UploadResult:
     """Outcome of one sink attempt, classified for the scheduler."""
 
     status: Literal["SUCCEEDED", "RETRYABLE", "PERMANENT"]
-    receipt: str | None = None
+    receipt: UploadReceipt | None = None
     error_code: str | None = None
     retry_after_seconds: float | None = None
 
@@ -68,7 +93,17 @@ class DirectoryUploadSink:
         except OSError:
             tmp.unlink(missing_ok=True)
             return UploadResult(status="PERMANENT", error_code="SINK_WRITE_FAILED")
-        return UploadResult(status="SUCCEEDED", receipt=task.idempotency_key)
+        return UploadResult(
+            status="SUCCEEDED",
+            receipt=UploadReceipt(
+                idempotency_key=task.idempotency_key,
+                object_id=str(task.object_id),
+                kind=task.kind,
+                checksum_sha256=task.checksum_sha256,
+                size_bytes=len(payload),
+                central_object_id=task.idempotency_key,
+            ),
+        )
 
 
 class HttpUploadSink:
@@ -119,7 +154,12 @@ class HttpUploadSink:
         except Exception:  # noqa: BLE001 - any transport failure is retryable
             return UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")
         if 200 <= response.status_code < 300:
-            return UploadResult(status="SUCCEEDED", receipt=response.text or task.idempotency_key)
+            # A 2xx is only a verified success when the receipt matches the
+            # task and the payload that was actually sent (PR-017 F5).
+            receipt = self._parse_receipt(response, task, len(payload))
+            if receipt is None:
+                return UploadResult(status="PERMANENT", error_code="INVALID_RECEIPT")
+            return UploadResult(status="SUCCEEDED", receipt=receipt)
         retry_after: float | None = None
         raw = response.headers.get("Retry-After")
         if raw is not None and raw.isdigit():
@@ -131,6 +171,49 @@ class HttpUploadSink:
                 retry_after_seconds=retry_after,
             )
         return UploadResult(status="PERMANENT", error_code=f"HTTP_{response.status_code}")
+
+    @staticmethod
+    def _parse_receipt(response: Any, task: UploadTask, size_bytes: int) -> UploadReceipt | None:
+        """Parse and validate a 2xx receipt against the task and sent payload.
+
+        Returns ``None`` for malformed, oversized, or mismatched responses so
+        the task is never marked successful without a verified receipt.
+        """
+        raw = response.content
+        if not raw or len(raw) > _MAX_RECEIPT_BYTES:
+            return None
+        try:
+            data = json.loads(raw)
+        except (ValueError, UnicodeDecodeError):
+            return None
+        if not isinstance(data, dict):
+            return None
+        try:
+            receipt = UploadReceipt(
+                idempotency_key=str(data["idempotency_key"]),
+                object_id=str(data["object_id"]),
+                kind=str(data["kind"]),
+                checksum_sha256=data.get("checksum_sha256"),
+                size_bytes=data.get("size_bytes"),
+                central_object_id=data.get("central_object_id"),
+            )
+        except (KeyError, TypeError):
+            return None
+        if (
+            receipt.idempotency_key != task.idempotency_key
+            or receipt.object_id != str(task.object_id)
+            or receipt.kind != task.kind
+        ):
+            return None
+        if receipt.size_bytes is not None and receipt.size_bytes != size_bytes:
+            return None
+        if (
+            receipt.checksum_sha256 is not None
+            and task.checksum_sha256 is not None
+            and receipt.checksum_sha256 != task.checksum_sha256
+        ):
+            return None
+        return receipt
 
 
 class _PermanentPayloadError(Exception):
@@ -239,7 +322,21 @@ class UploadScheduler:
         result = self._sink.upload(task, payload)
         now_iso = datetime.now(UTC).isoformat()
         if result.status == "SUCCEEDED":
-            self._repository.mark_upload_succeeded(str(task.upload_task_id), lease_owner, now_iso)
+            if result.receipt is None:
+                # A sink claiming success without a verified receipt is an
+                # integrity violation; never mark the task successful
+                # (PR-017 F5).
+                self._repository.mark_upload_permanent_failure(
+                    str(task.upload_task_id), lease_owner, "RECEIPT_MISSING", now_iso
+                )
+                return
+            self._repository.mark_upload_succeeded(
+                str(task.upload_task_id),
+                lease_owner,
+                now_iso,
+                central_object_id=result.receipt.central_object_id,
+                receipt_json=result.receipt.to_json(),
+            )
             return
         if result.status == "PERMANENT":
             self._repository.mark_upload_permanent_failure(
