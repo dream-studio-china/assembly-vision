@@ -5,6 +5,7 @@
 - [Software architecture and design](design/README.md)
 - [Engineering contracts](contracts/README.md)
 - [Operational runbooks](runbooks/README.md)
+- [Delivery tasks](tasks/E2-retention-and-disk-safety.md)
 - [Contributor documentation](contributing.md)
 - [AI context snapshot](ai/context.md)
 - [Source architecture brief](source-brief.md)
