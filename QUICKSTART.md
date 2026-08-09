@@ -188,6 +188,7 @@ uv run assemblyvision serve \
 ```
 
 Endpoints: the design 15.3 read routes `GET /api/v1/health/live`, `GET
+/api/v1/health/ready`, `GET
 /api/v1/inspections`, `GET /api/v1/inspections/{id}`, `GET
 /api/v1/inspections/{id}/media`, `GET /api/v1/media/{id}/content` (Range
 supported), `GET /api/v1/device/status`, `GET /api/v1/inspection/state`,
@@ -196,14 +197,58 @@ supported), `GET /api/v1/device/status`, `GET /api/v1/inspection/state`,
 endpoints `GET /api/v1/traceability/{sn}` and `GET /api/v1/statistics` (not
 part of design 15.3).
 
-The M1 API is **read-only** (ADR-012): mutation controls such as
-`POST /api/v1/inspection/{pause,resume}`, camera reconnect, and upload retry
-are not exposed. When `AV_EDGE_API_TOKEN` (or `--api-token`) is configured,
-every route except `GET /api/v1/health/live` requires
+The API is **read-only for mutation** (ADR-012): operator controls such as
+`POST /api/v1/inspection/{pause,resume}` and camera reconnect are not exposed,
+and `GET /api/v1/uploads` lists the queue without a manual-retry action (E3).
+When `AV_EDGE_API_TOKEN` (or `--api-token`) is configured, every route except
+`GET /api/v1/health/live` requires
 `Authorization: Bearer <token>` or an authenticated same-origin viewer session.
 Open `/login` in the served dashboard and enter the configured token once; it is
 exchanged for an HttpOnly, same-origin session cookie and is never bundled or
 stored by the dashboard.
+
+#### Upload, storage, and retention configuration (E1/E2)
+
+The upload scheduler drains the transactional outbox only when a destination is
+configured — a local development sink or an HTTPS central endpoint. Without
+one, tasks accumulate visibly in the API and the queue stays intact:
+
+```bash
+# Local development sink (writes each payload to a directory):
+AV_EDGE_UPLOAD_SINK_DIR=/tmp/av-uploads \
+  AV_EDGE_UPLOAD_INTERVAL_SECONDS=1 \
+  AV_EDGE_UPLOAD_LEASE_SECONDS=120 \
+  uv run assemblyvision serve --output out/ --db out/edge.sqlite3 \
+    --config config/examples/pipeline.yaml --rule config/examples/product-rule.yaml \
+    --static apps/edge-web/dist --host 127.0.0.1 --port 8000
+
+# Or an HTTPS central endpoint (AV_EDGE_UPLOAD_TOKEN is a separate credential;
+# plaintext http is allowed only for a loopback host with
+# AV_EDGE_UPLOAD_INSECURE_HTTP=true in development).
+```
+
+Disk-pressure thresholds and retention durations are environment-configured
+(`AV_EDGE_STORAGE_WARNING/CRITICAL/STOP_FREE_PERCENT`, `AV_EDGE_RETENTION_*`)
+and always fail closed:
+
+- **Cleanup is disabled by default.** Deletion only runs with an explicitly
+  approved, enabled policy, e.g.
+  `AV_EDGE_RETENTION_ENABLED=true AV_EDGE_RETENTION_DURATIONS='{"KEY_FRAME":"30d"}'`;
+  media kinds absent from the map are protected forever.
+- At **critical** free space optional OK capture is suppressed while NG
+  evidence and metadata persist; at **stop** pressure, on a write fault, or on
+  a startup integrity fault the runtime stops intake, reports
+  `inspection_ready=false` in `GET /api/v1/device/status`, and
+  `GET /api/v1/health/ready` returns `503` — never an unrecorded `OK`.
+- Startup integrity scanning verifies media existence/size/checksums by
+  default (`AV_EDGE_STORAGE_INTEGRITY_VERIFY_CHECKSUMS=false` disables checksum
+  verification; `AV_EDGE_STORAGE_INTEGRITY_SAMPLE_LIMIT` /
+  `..._SAMPLE_MAX_BYTES` bound the checksum budget). Malformed or orphan
+  bundles are quarantined, never deleted.
+
+See [docs/contracts/04-edge-storage-upload-contracts.md](docs/contracts/04-edge-storage-upload-contracts.md)
+and the E2 task ([docs/tasks/E2-retention-and-disk-safety.md](docs/tasks/E2-retention-and-disk-safety.md))
+for the full policy and safety invariants.
 
 ### 4.7 Multi-camera serve (`instances`, ADR-013)
 
@@ -288,8 +333,8 @@ pnpm --filter edge-web dev        # http://localhost:5173
 | `/images/:id` | Inspection images — original, detection result, annotations |
 | `/statistics` | Production statistics — totals, PASS/NG, pass rate, date/line filters |
 | `/device` | Device status — camera, vision engine, inspection service |
-| `/uploads` | Upload queue — read-only in M1 (manual retry is not exposed) |
-| `/health` | Disk/queue charts (ECharts) and device status |
+| `/uploads` | Upload queue — persistent outbox state (manual retry is not exposed until E3) |
+| `/health` | Disk/queue charts (ECharts), server-authoritative storage mode and alerts, device status |
 | `/inspections` | Full record history (internal records) |
 | `/configuration`, `/logs` | Read-only views of the effective configuration and the bounded log buffer |
 
@@ -442,6 +487,16 @@ docs/                           # architecture, contracts, ADRs, runbooks
   X-AnyLabeling per `docs/runbooks/11-data-collection-and-annotation.md`,
   convert the export with `scripts/adapt-xanylabeling.py`, then run `av-train`
   -> `assemblyvision inspect` -> `assemblyvision verify`.
-- **Upload scheduler + WebSocket channel** — the next backend gaps after the
-  merged M1 layer (PR #8): real `upload_tasks` rows with retry backoff and
-  idempotency, and the runtime WebSocket channel.
+- **Upload resilience (E3)** — bandwidth throttling, a circuit breaker,
+  controlled manual retry for `GET /api/v1/uploads`, long-outage drain tests,
+  and a resumable large-media client (central protocol contract only).
+- **Runtime/WebSocket (E4)** — the WebSocket runtime channel (replaces the
+  polling preview), hardware-agnostic trigger/barcode/identity seams, and
+  multi-instance resource sharing.
+- **Deployment and security (E5) and acceptance (E6)** — Docker packaging,
+  secret/TLS provisioning and backup/restore, then the resilience matrix,
+  soak, held-out model validation, and the Edge acceptance report.
+
+The upload outbox, scheduler, retention, and disk-safety milestones (PRs
+#17-#20) are merged; the central server remains out of scope until the E1-E6
+Edge gates pass.

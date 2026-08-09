@@ -9,8 +9,10 @@ Edge-first industrial AI vision inspection platform powered by YOLO detection an
 - **Edge-first architecture** — offline inspection; no central round-trip required
 - **Full traceability** — every decision records model, rule, and configuration versions
 - **Atomic evidence output** — JSON records + annotated images with SHA-256 checksums
+- **Durable upload outbox** — transactional queue with retry/backoff, idempotency keys, and verified receipts (ADR-005)
+- **Retention and disk safety** — receipt-gated cleanup with lease fencing, startup integrity scanning/quarantine, and a fail-safe stop gate that never returns an unrecorded `OK`
 - **Python monorepo** — uv workspace, strict typing (MyPy), Pydantic domain models
-- **Edge dashboard** — Vue 3 + TypeScript operator UI (current inspection, live view, history, traceability, statistics, device status, images), decoupled from the backend via a typed API client
+- **Edge dashboard** — Vue 3 + TypeScript operator UI (current inspection, live view, history, traceability, statistics, device status, images, upload queue, health), decoupled from the backend via a typed API client
 - **Edge desktop** — Electron shell that runs the dashboard as a local desktop/kiosk app
 - **Frontend workspace** — pnpm workspace with a typed `api-client` (synchronized from the domain models) and shared UI primitives
 
@@ -87,9 +89,13 @@ img/product_001.jpg  NG  INFERENCE_ERROR,GATE_FAILED:product_detected,...  <insp
 ```
 
 The edge makes every inspection decision. Central is never in the real-time
-path. The MVP runs as a CLI; a Vue dashboard (`apps/edge-web`) consumes the
-edge API contract through a decoupled client backed by a local FastAPI service
-(`assemblyvision serve`, read-only M1 API per ADR-012).
+path. The edge runs as a CLI (`assemblyvision inspect`/`verify`) and as a local
+FastAPI service (`assemblyvision serve`) that serves the Vue dashboard
+(`apps/edge-web`) through a decoupled typed client. The service persists every
+inspection and its upload tasks atomically, retries uploads from a durable
+queue with idempotency and verified receipts, enforces receipt-gated retention
+cleanup, and fails closed under disk pressure or integrity faults — an
+unrecorded `OK` is never possible.
 
 ## Project Structure
 
@@ -161,8 +167,15 @@ the native app / RTSP / camera sources. See [QUICKSTART](QUICKSTART.md) §4.8.
 | **Static train-and-inspect MVP** | Done — merged to `main` (PR #3) |
 | **Edge dashboard + desktop** | Done — merged to `main` (PR #6) |
 | **Edge backend layer (M1)** | Done — merged to `main` (PR #8) — `assemblyvision serve`, SQLite index, read-only API |
-| One-month camera integration + upload scheduler + WebSocket + persistence | Planned |
-| Production hardening + acceptance | Planned |
+| **Camera frame sources + multi-instance serve** | Done — merged to `main` (PR #14) — folder/video/OpenCV/RTSP/HTTP sources, web dev test harness |
+| **Temporal aggregation (product windows)** | Done — merged to `main` (PRs #15/#16) — per-component aggregation, identity-sealed windows |
+| **Durable upload outbox + scheduler** | Done — merged to `main` (PR #17) — transactional outbox, leased worker, verified receipts |
+| **Observability (E1)** | Done — merged to `main` (PRs #18/#19) — log capture, upload-queue device status |
+| **Retention and disk safety (E2)** | Done — merged to `main` (PR #20) — receipt-gated cleanup, storage-pressure fail-safe, startup integrity scan |
+| **Upload resilience (E3)** | Planned — bandwidth throttling, circuit breaker, manual retry, resumable large media |
+| **Runtime/WebSocket (E4)** | Planned — WebSocket channel, hardware trigger/barcode/identity seams |
+| **Deployment and security (E5)** | Planned — Docker packaging, secret/TLS provisioning, backup/restore |
+| **Acceptance (E6)** | Planned — resilience matrix, soak, held-out model validation, Edge acceptance report |
 
 ## License
 
