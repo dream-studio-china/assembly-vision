@@ -2,6 +2,36 @@
 
 Edge-first industrial AI vision inspection platform powered by YOLO detection and configurable rule engines. Supports automated assembly verification, quality inspection, offline edge inference, and traceable inspection workflows.
 
+## Current Status
+
+The Edge production-candidate gates E1-E5 are implemented; the Central server
+is intentionally not started until the Edge gates and the Edge-to-central
+contract are ready.
+
+| Milestone | Status |
+|---|---|
+| E1 Observability | Merged (PRs #18/#19) |
+| E2 Retention and disk safety | Merged (PR #20) |
+| E3 Upload resilience | Merged (PR #22) |
+| E4 Runtime and live event channel | Merged (PR #23) |
+| E5 Deployment and security | Implemented (PR #24, open) |
+| E6 Edge acceptance | E6-prep tooling delivered; clock-drift harness and on-site acceptance remain open |
+| Central server | Not started (post E6) |
+
+**E6 edge acceptance** is split into two phases. The **E6-prep** deliverables
+need no real environment and are delivered: the acceptance test matrix
+(`docs/tasks/E6-edge-acceptance.md`), the local automation runner
+(`scripts/edge-acceptance-run.py`) that emits a machine-readable evidence
+manifest with `NOT_EXECUTED` entries for on-site items, the acceptance report
+template (`docs/design/28-edge-acceptance-report.md`), and the on-site
+execution plan. The **on-site acceptance** phase cannot run in this repository's
+environment: it requires customer-approved targets, real edge hardware
+(camera/SDK, barcode, PLC/photo-eye trigger, GPU), unseen customer data, and
+executed resilience/soak evidence. Until that evidence exists the acceptance
+report stays a template with `NOT_MEASURED` metrics; no fabricated pass results
+are ever recorded. The runner also records the unimplemented clock-drift
+harness as `NOT_EXECUTED`/incomplete rather than claiming local coverage.
+
 ## Features
 
 - **Two-stage detection** — product localization → ROI extraction → component presence check
@@ -113,7 +143,7 @@ packages/
     ui/                   # shared UI primitives (detection viewer, status)
 config/examples/          # pipeline, rule, and manifest examples
 models/manifests/         # model metadata (weights outside Git)
-scripts/                  # dataset adapters (Roboflow / X-AnyLabeling), e2e demo
+scripts/                  # dataset adapters (Roboflow / X-AnyLabeling), e2e demo, E6 acceptance runner
 docs/                     # architecture, contracts, ADRs, runbooks
 ```
 
@@ -127,6 +157,8 @@ docs/                     # architecture, contracts, ADRs, runbooks
 | [Edge client](docs/design/04-edge-client-architecture.md) | Offline runtime and ingestion |
 | [Requirements](docs/design/02-requirements.md) | Functional and quality requirements |
 | [Single-product data acquisition](docs/design/19-training-and-evaluation.md#1917-single-product-data-acquisition-and-annotation-checklist) | What to collect and how to annotate the real-data baseline |
+| [E6 edge acceptance (matrix)](docs/tasks/E6-edge-acceptance.md) | E6-prep vs on-site split and the mandatory acceptance test matrix |
+| [Edge acceptance report template](docs/design/28-edge-acceptance-report.md) | Evidence-based report structure with `NOT_MEASURED` defaults |
 | [Decisions (ADRs)](docs/design/decisions/README.md) | Why major architecture choices were made |
 | [Contracts](docs/contracts/README.md) | Mandatory implementation constraints |
 | [Runbooks](docs/runbooks/README.md) | Operational recovery procedures (incl. data collection and annotation) |
@@ -148,7 +180,12 @@ power loss, disk-full recovery, accelerator/GPU failure with validated CPU
 fallback, repeated network disconnects with persistent queue drain, and
 long-running soak stability (duration agreed from operating patterns). Recovery
 procedures live in the runbooks (camera disconnection, low disk space, database
-recovery, network recovery synchronization).
+recovery, network recovery synchronization). The E6 acceptance matrix
+([docs/tasks/E6-edge-acceptance.md](docs/tasks/E6-edge-acceptance.md)) classifies
+every scenario by environment, and the local runner
+(`scripts/edge-acceptance-run.py`, see QUICKSTART §8.1) executes supported
+locally automatable items while on-site and unsupported items stay
+`NOT_EXECUTED` until their required evidence is available.
 
 ## Developer Tools (web test harness)
 
@@ -172,10 +209,11 @@ the native app / RTSP / camera sources. See [QUICKSTART](QUICKSTART.md) §4.8.
 | **Durable upload outbox + scheduler** | Done — merged to `main` (PR #17) — transactional outbox, leased worker, verified receipts |
 | **Observability (E1)** | Done — merged to `main` (PRs #18/#19) — log capture, upload-queue device status |
 | **Retention and disk safety (E2)** | Done — merged to `main` (PR #20) — receipt-gated cleanup, storage-pressure fail-safe, startup integrity scan |
-| **Upload resilience (E3)** | Planned — bandwidth throttling, circuit breaker, manual retry, resumable large media |
-| **Runtime/WebSocket (E4)** | Planned — WebSocket channel, hardware trigger/barcode/identity seams |
-| **Deployment and security (E5)** | Planned — Docker packaging, secret/TLS provisioning, backup/restore |
-| **Acceptance (E6)** | Planned — resilience matrix, soak, held-out model validation, Edge acceptance report |
+| **Upload resilience (E3)** | Done — merged to `main` (PR #22) — bandwidth throttling, circuit breaker, controlled manual retry, long-outage drain |
+| **Runtime/WebSocket (E4)** | Done — merged to `main` (PR #23) — WebSocket runtime channel, trigger/barcode/identity seams, shared model weights |
+| **Deployment and security (E5)** | Implemented — PR #24 (open) — Docker packaging, runtime secrets/TLS, backup/restore, deployment runbooks |
+| **Edge acceptance (E6)** | E6-prep tooling delivered (matrix, runner, report template, on-site plan); clock-drift harness and on-site acceptance remain open |
+| **Central server** | Not started — begins after the Edge gates and the Edge-to-central contract are ready |
 
 ## License
 
