@@ -117,9 +117,12 @@ class TestWebSocketChannel:
         app = create_app(settings)
         # pytest.raises must wrap the websocket session context, so the
         # contexts cannot be flattened.
-        with TestClient(app) as client, pytest.raises(  # noqa: SIM117
-            WebSocketDisconnect
-        ) as excinfo:
+        with (
+            TestClient(app) as client,
+            pytest.raises(  # noqa: SIM117
+                WebSocketDisconnect
+            ) as excinfo,
+        ):
             with client.websocket_connect("/api/v1/ws/runtime"):
                 pass
         assert excinfo.value.code == 4401
@@ -131,9 +134,12 @@ class TestWebSocketChannel:
             api_token="viewer-secret",  # noqa: S106 - test fixture credential
         )
         app = create_app(settings)
-        with TestClient(app) as client, client.websocket_connect(
-            "/api/v1/ws/runtime", headers={"Authorization": "Bearer viewer-secret"}
-        ) as ws:
+        with (
+            TestClient(app) as client,
+            client.websocket_connect(
+                "/api/v1/ws/runtime", headers={"Authorization": "Bearer viewer-secret"}
+            ) as ws,
+        ):
             bus = app.state.event_bus
             bus.publish("alert.raised", {"code": "TEST"})
             envelope = ws.receive_json()
