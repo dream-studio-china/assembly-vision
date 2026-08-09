@@ -346,6 +346,7 @@ def _build_upload_settings(args: argparse.Namespace) -> UploadSettings | None:
         or _bool_env("AV_EDGE_UPLOAD_INSECURE_HTTP", False),
         circuit_failure_threshold=_int_env("AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD", 5),
         circuit_open_seconds=_float_env("AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS", 60.0),
+        media_chunk_bytes=_int_env("AV_EDGE_UPLOAD_MEDIA_CHUNK_BYTES", 8_388_608),
     )
     settings.validate()
     return settings
