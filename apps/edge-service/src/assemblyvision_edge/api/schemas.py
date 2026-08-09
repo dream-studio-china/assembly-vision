@@ -60,6 +60,13 @@ class DeviceStatus(BaseModel):
     upload_last_attempt_at: str | None = None
     upload_last_success_at: str | None = None
     upload_last_error_code: str | None = None
+    # Upload throughput observability (design 13.9, E3a): bytes actually sent
+    # to the sink and the configured bandwidth ceiling (None = unthrottled).
+    upload_bytes_sent: int = 0
+    upload_bandwidth_mbps: float | None = None
+    # Circuit-breaker liveness (design 13.5, E3b): CLOSED / OPEN / HALF_OPEN.
+    upload_circuit_state: str = "CLOSED"
+    upload_circuit_last_change_at: str | None = None
     # Storage pressure and cleanup observability (design 12.7, E2c): the
     # server is the single authority for thresholds and mode; the dashboard
     # renders these instead of duplicating a fixed warning threshold.

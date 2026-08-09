@@ -532,6 +532,38 @@
             "title": "Upload Attempts",
             "type": "integer"
           },
+          "upload_bandwidth_mbps": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Bandwidth Mbps"
+          },
+          "upload_bytes_sent": {
+            "default": 0,
+            "title": "Upload Bytes Sent",
+            "type": "integer"
+          },
+          "upload_circuit_last_change_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Circuit Last Change At"
+          },
+          "upload_circuit_state": {
+            "default": "CLOSED",
+            "title": "Upload Circuit State",
+            "type": "string"
+          },
           "upload_failure_rate": {
             "default": 0.0,
             "title": "Upload Failure Rate",
@@ -3252,6 +3284,49 @@
           }
         },
         "summary": "List Uploads",
+        "tags": [
+          "uploads"
+        ]
+      }
+    },
+    "/api/v1/uploads/{upload_task_id}/retry": {
+      "post": {
+        "description": "Reset one eligible upload task to ``PENDING`` for a manual retry (E3c).\n\nOnly ``RETRY_WAIT`` and ``PERMANENT_FAILURE`` tasks are eligible; the\ntransition is compare-and-set in the repository so a concurrent worker\nclaim or a second retry cannot report a false success (PR-022 F03). It\npreserves attempt history by incrementing ``attempt_count`` and clears\nterminal/retry fields. Unknown tasks return 404 and non-eligible tasks\nreturn 409 with their current state, so an operator action can never reset\na task that is succeeded, leased by the worker, or cancelled (E3 task\ninvariant 3).",
+        "operationId": "retry_upload_api_v1_uploads__upload_task_id__retry_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "upload_task_id",
+            "required": true,
+            "schema": {
+              "title": "Upload Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadTask"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retry Upload",
         "tags": [
           "uploads"
         ]

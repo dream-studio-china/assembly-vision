@@ -598,6 +598,10 @@ class EdgeRuntime:
             "upload_last_attempt_at": health.last_attempt_at if health else None,
             "upload_last_success_at": health.last_success_at if health else None,
             "upload_last_error_code": health.last_error_code if health else None,
+            "upload_bytes_sent": health.bytes_sent if health else 0,
+            "upload_bandwidth_mbps": health.bandwidth_mbps if health else None,
+            "upload_circuit_state": health.circuit_state if health else "CLOSED",
+            "upload_circuit_last_change_at": (health.circuit_last_change_at if health else None),
         }
         alerts: list[str] = []
         if pending > 0 and not enabled:
@@ -607,6 +611,8 @@ class EdgeRuntime:
             or (health is not None and health.attempts > 0 and health.successes == 0)
         ):
             alerts.append("UPLOAD_FAILING")
+        if health is not None and health.circuit_state == "OPEN":
+            alerts.append("UPLOAD_CIRCUIT_OPEN")
         return fields, alerts
 
     def _device_status_single(

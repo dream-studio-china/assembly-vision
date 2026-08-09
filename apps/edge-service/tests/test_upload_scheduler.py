@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 from collections.abc import Callable, Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -106,7 +107,8 @@ class _ScriptedSink:
         result = self._outcomes[self._index % len(self._outcomes)]
         self._index += 1
         if result.status == "SUCCEEDED":
-            # F5: success must carry a verified receipt matching the task.
+            # F5: success must carry a verified receipt matching the task;
+            # the reported bytes are the request body sent (PR-022 F02).
             return UploadResult(
                 status="SUCCEEDED",
                 receipt=UploadReceipt(
@@ -117,6 +119,7 @@ class _ScriptedSink:
                     size_bytes=len(payload),
                     central_object_id=f"central-{task.idempotency_key}",
                 ),
+                payload_bytes_sent=len(payload),
             )
         return result
 
@@ -647,6 +650,85 @@ class TestRestartRecovery:
 
 
 class TestHttpSink:
+    def test_wire_size_counts_serialized_body_not_raw_bytes(self) -> None:
+        """PR-022 F02: the throttled unit is the Base64 JSON envelope."""
+        import httpx
+
+        task = _task()
+        raw = b"\x00" * 1000
+        sink = HttpUploadSink("https://central.invalid", client=httpx.Client())
+        wire = sink.wire_size(task, raw)
+        # Base64 expansion (4/3) plus JSON metadata exceeds the raw payload.
+        assert wire > len(raw) * 1.3
+
+    def test_payload_bytes_sent_matches_the_transport_body(self) -> None:
+        """PR-022 F02: the reported bytes equal the body the sink actually sent."""
+        import json
+
+        import httpx
+
+        received = {"body_len": 0}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            received["body_len"] = len(request.content)
+            body = json.loads(request.content)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": "obj-wire",
+                },
+            )
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
+        task = _task()
+        raw = b"\x01\x02" * 100
+        result = sink.upload(task, raw)
+        assert result.status == "SUCCEEDED"
+        assert result.payload_bytes_sent == received["body_len"]
+        assert result.payload_bytes_sent == sink.wire_size(task, raw)
+
+    def test_throttled_http_upload_yields_bounded_body_segments(self) -> None:
+        """Re-review: each segment is budgeted immediately before transport yield."""
+        import json
+
+        import httpx
+
+        yielded: list[int] = []
+        received = {"body_len": 0, "content_length": ""}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            received["body_len"] = len(request.content)
+            received["content_length"] = request.headers["content-length"]
+            body = json.loads(request.content)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": "obj-stream",
+                },
+            )
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
+        task = _task()
+        raw = b"x" * (200 * 1024)
+        result = sink.upload_throttled(task, raw, yielded.append)
+        wire_size = sink.wire_size(task, raw)
+        assert result.status == "SUCCEEDED"
+        assert sum(yielded) == wire_size == received["body_len"]
+        assert max(yielded) <= 64 * 1024
+        assert received["content_length"] == str(wire_size)
+
     def test_classifies_statuses(self) -> None:
         import json
 
@@ -929,6 +1011,448 @@ class TestHttpSink:
         fetched = repo.get_inspection(str(record.inspection_id))
         assert fetched is not None
         assert fetched.synchronization_status == "FAILED"
+
+
+class TestBandwidthThrottling:
+    """E3a: the scheduler bounds network bytes per second when configured."""
+
+    def test_token_bucket_never_delays_without_a_ceiling(self) -> None:
+        from assemblyvision_edge.upload.scheduler import _TokenBucket
+
+        bucket = _TokenBucket(None)
+        started = time.monotonic()
+        bucket.acquire(1_000_000)
+        assert time.monotonic() - started < 0.1
+
+    def test_token_bucket_enforces_the_rate_ceiling(self) -> None:
+        from assemblyvision_edge.upload.scheduler import _TokenBucket
+
+        # 200_000 bytes/s; the first acquire fits the one-second burst, the
+        # second needs 0.5 s of refill.
+        bucket = _TokenBucket(200_000.0)
+        started = time.monotonic()
+        bucket.acquire(100_000)
+        bucket.acquire(100_000)
+        elapsed = time.monotonic() - started
+        assert elapsed >= 0.4
+
+    def test_token_bucket_splits_large_amounts_across_bursts(self) -> None:
+        """PR-022 F01: an amount above one burst capacity must not deadlock."""
+        from assemblyvision_edge.upload.scheduler import _TokenBucket
+
+        # Burst capacity is one second of tokens (200_000 B); a 500_000 B
+        # acquire must be split into per-burst waits and complete.
+        bucket = _TokenBucket(200_000.0)
+        started = time.monotonic()
+        bucket.acquire(500_000)
+        elapsed = time.monotonic() - started
+        assert elapsed >= 1.9
+
+    def test_token_bucket_on_wait_runs_and_can_abort(self) -> None:
+        """PR-022 F01: an on_wait callback runs during refill and can abort."""
+        from assemblyvision_edge.upload.scheduler import _TokenBucket
+
+        bucket = _TokenBucket(100.0)
+        calls = {"n": 0}
+
+        def on_wait() -> None:
+            calls["n"] += 1
+            raise RuntimeError("abort")
+
+        with pytest.raises(RuntimeError, match="abort"):
+            bucket.acquire(1_000, on_wait=on_wait)
+        assert calls["n"] >= 1
+
+    def test_large_media_throttle_completes_and_renews_lease(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """PR-022 F01: a payload above one burst capacity drains and renews its lease."""
+        import json
+
+        import httpx
+
+        out = tmp_path / "out"
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-big")
+        data = b"x" * (1024 * 1024)
+        item = record.media[0]
+        item.size_bytes = len(data)
+        item.checksum_sha256 = hashlib.sha256(data).hexdigest()
+        path = out / item.relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        repo.persist_inspection_and_enqueue_uploads(record)
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            body = json.loads(request.content)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": f"obj-{body['kind']}",
+                },
+            )
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
+
+        class _RenewSpy:
+            """Counts lease renewals while delegating to the real repository."""
+
+            def __init__(self, underlying: EdgeRepository) -> None:
+                self.repo = underlying
+                self.renews = 0
+
+            def renew_upload_lease(
+                self, upload_task_id: str, lease_owner: str, lease_seconds: int, now_iso: str
+            ) -> bool:
+                self.renews += 1
+                return self.repo.renew_upload_lease(
+                    upload_task_id, lease_owner, lease_seconds, now_iso
+                )
+
+            def __getattr__(self, name: str) -> object:
+                return getattr(self.repo, name)
+
+        spy = _RenewSpy(repo)
+        # 4 Mbps -> 500_000 B/s, burst 500_000 B < 1 MiB payload, so the media
+        # upload must wait across multiple refills (real-time waits ~3 s).
+        scheduler = UploadScheduler(
+            spy,  # type: ignore[arg-type]
+            sink,
+            output_root=out,
+            maximum_bandwidth_mbps=4.0,
+            interval_seconds=0.0,
+            base_retry_seconds=0.0,
+        )
+        _drain(scheduler)
+        tasks = repo.list_uploads(limit=10).items
+        assert all(t.status == "SUCCEEDED" for t in tasks)
+        assert spy.renews > 0
+
+    def test_throttle_aborts_on_stop_without_terminal_transition(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """PR-022 F01: a stopped worker aborts the throttle wait, never the sink."""
+        import json
+
+        import httpx
+
+        out = tmp_path / "out"
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-stop")
+        data = b"y" * (1024 * 1024)
+        item = record.media[0]
+        item.size_bytes = len(data)
+        item.checksum_sha256 = hashlib.sha256(data).hexdigest()
+        path = out / item.relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        repo.persist_inspection_and_enqueue_uploads(record)
+
+        calls = {"n": 0}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls["n"] += 1
+            body = json.loads(request.content)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": f"obj-{body['kind']}",
+                },
+            )
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
+        scheduler = UploadScheduler(
+            repo,
+            sink,
+            output_root=out,
+            maximum_bandwidth_mbps=0.1,
+            interval_seconds=0.0,
+        )
+        scheduler._stop.set()  # noqa: SLF001 - simulate a worker stop
+        assert scheduler.run_once() == 1  # a task is claimed
+        # The wait aborted: nothing reached the sink and no terminal transition
+        # was written for the claimed task; the lease-recovery path reclaims it
+        # later. Media stays pending behind its unverified inspection receipt.
+        assert calls["n"] == 0
+        tasks = repo.list_uploads(limit=10).items
+        assert all(t.status == "IN_PROGRESS" for t in tasks if t.kind == "INSPECTION")
+        assert all(t.status == "PENDING" for t in tasks if t.kind == "MEDIA")
+
+    def test_renew_upload_lease_is_compare_and_set(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """PR-022 F01: only the current lease owner can renew the lease."""
+        _seed(repo, tmp_path / "out")
+        now = datetime.now(UTC)
+        claimed = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=now.isoformat())
+        assert len(claimed) == 1
+        task_id = str(claimed[0].task.upload_task_id)
+        owner = claimed[0].lease_owner
+        assert repo.renew_upload_lease(task_id, owner, 120, now.isoformat()) is True
+        # A foreign owner cannot renew; the lease belongs to the worker.
+        assert repo.renew_upload_lease(task_id, "other-owner", 120, now.isoformat()) is False
+        # An unknown task cannot renew.
+        assert repo.renew_upload_lease(str(uuid4()), owner, 120, now.isoformat()) is False
+
+    def test_scheduler_exposes_bytes_sent_and_bandwidth_ceiling(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        sink = _ScriptedSink()
+        scheduler = UploadScheduler(
+            repo,
+            sink,
+            output_root=tmp_path / "out",
+            maximum_bandwidth_mbps=10.0,
+            interval_seconds=0.0,
+        )
+        _seed(repo, tmp_path / "out", count=2)
+        handled = scheduler.run_once()
+        assert handled >= 2
+        health = scheduler.health()
+        assert health.bytes_sent > 0
+        assert health.bandwidth_mbps == 10.0
+        assert health.successes >= 2
+
+    def test_directory_sink_reports_zero_network_bytes(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """PR-022 F02: a local sink is not network traffic and counts 0 bytes."""
+        _seed(repo, tmp_path)
+        scheduler = _scheduler(repo, tmp_path, DirectoryUploadSink(tmp_path / "sink"))
+        _drain(scheduler)
+        assert scheduler.health().bytes_sent == 0
+
+    def test_device_status_reports_bytes_sent_and_bandwidth(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        from assemblyvision_edge.api.settings import ServerSettings
+        from assemblyvision_edge.api.state import EdgeRuntime
+
+        sink = _ScriptedSink()
+        scheduler = UploadScheduler(
+            repo,
+            sink,
+            output_root=tmp_path / "out",
+            maximum_bandwidth_mbps=5.0,
+            interval_seconds=0.0,
+        )
+        _seed(repo, tmp_path / "out", count=1)
+        scheduler.run_once()
+        runtime = EdgeRuntime(
+            ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
+        )
+        status = runtime.device_status(0, health=scheduler.health())
+        assert status["upload_bytes_sent"] > 0
+        assert status["upload_bandwidth_mbps"] == 5.0
+
+
+class _FlipSink:
+    """Sink that fails the first ``fail_count`` attempts, then succeeds."""
+
+    def __init__(self, fail_count: int) -> None:
+        self._remaining = fail_count
+        self.keys: list[str] = []
+
+    def upload(self, task: UploadTask, payload: bytes) -> UploadResult:
+        self.keys.append(task.idempotency_key)
+        if self._remaining > 0:
+            self._remaining -= 1
+            return UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")
+        return UploadResult(
+            status="SUCCEEDED",
+            receipt=UploadReceipt(
+                idempotency_key=task.idempotency_key,
+                object_id=str(task.object_id),
+                kind=task.kind,
+                checksum_sha256=task.checksum_sha256,
+                size_bytes=len(payload),
+                central_object_id=f"central-{task.idempotency_key}",
+            ),
+            payload_bytes_sent=len(payload),
+        )
+
+
+class TestCircuitBreaker:
+    """E3b: consecutive retryable failures open the circuit and stop traffic."""
+
+    @staticmethod
+    def _scheduler(
+        repo: EdgeRepository,
+        output_root: Path,
+        sink: object,
+        clock: _AdvancingClock,
+        *,
+        threshold: int = 3,
+        open_seconds: float = 60.0,
+    ) -> UploadScheduler:
+        return UploadScheduler(
+            repo,
+            sink,  # type: ignore[arg-type]
+            output_root=output_root,
+            base_retry_seconds=0.0,
+            maximum_retry_seconds=60.0,
+            exponent_cap=3,
+            circuit_failure_threshold=threshold,
+            circuit_open_seconds=open_seconds,
+            now=clock,
+        )
+
+    def test_retryable_failures_open_circuit_and_stop_attempts(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        clock = _AdvancingClock(datetime.now(UTC))
+        sink = _ScriptedSink([UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")])
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=3)  # 6 tasks
+        attempts_after_open = len(sink.keys)
+        for _ in range(30):
+            if scheduler.health().circuit_state == "OPEN":
+                break
+            scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+        attempts_after_open = len(sink.keys)
+        # An open circuit produces zero further attempts.
+        for _ in range(5):
+            assert scheduler.run_once() == 0
+        assert len(sink.keys) == attempts_after_open
+        # The queue is untouched: tasks are still present, not lost.
+        assert repo.count_pending_uploads() >= 6
+
+    def test_half_open_probe_success_closes_circuit_and_resumes_drain(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        clock = _AdvancingClock(datetime.now(UTC))
+        # Three INSPECTION tasks fail first (metadata-before-media ordering), so
+        # exactly the threshold of retryable failures opens the circuit and the
+        # sink recovers in time for the half-open probe.
+        sink = _FlipSink(fail_count=3)
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=3)
+        for _ in range(30):
+            if scheduler.health().circuit_state == "OPEN":
+                break
+            scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+        clock.advance(61)
+        # Half-open probe succeeds and closes the circuit.
+        scheduler.run_once()
+        assert scheduler.health().circuit_state == "CLOSED"
+        # Drain completes after recovery.
+        _drain(scheduler)
+        assert repo.count_pending_uploads() == 0
+        assert len(sink.keys) >= 6
+
+    def test_half_open_probe_failure_reopens_circuit(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        clock = _AdvancingClock(datetime.now(UTC))
+        sink = _ScriptedSink([UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")])
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=1)
+        for _ in range(30):
+            if scheduler.health().circuit_state == "OPEN":
+                break
+            scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+        clock.advance(61)
+        scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+
+    def test_permanent_failures_never_open_circuit(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        clock = _AdvancingClock(datetime.now(UTC))
+        sink = _ScriptedSink([UploadResult(status="PERMANENT", error_code="HTTP_409")])
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=2)
+        _drain(scheduler)
+        assert scheduler.health().circuit_state == "CLOSED"
+
+    def test_device_status_exposes_circuit_state_and_alert(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        from assemblyvision_edge.api.settings import ServerSettings
+        from assemblyvision_edge.api.state import EdgeRuntime
+
+        clock = _AdvancingClock(datetime.now(UTC))
+        sink = _ScriptedSink([UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")])
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=3)
+        for _ in range(30):
+            if scheduler.health().circuit_state == "OPEN":
+                break
+            scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+        runtime = EdgeRuntime(
+            ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
+        )
+        status = runtime.device_status(0, health=scheduler.health())
+        assert status["upload_circuit_state"] == "OPEN"
+        assert "UPLOAD_CIRCUIT_OPEN" in status["alerts"]
+
+
+class TestLongOutageDrain:
+    """E3d: a prolonged outage preserves the queue and drains duplicate-free."""
+
+    def test_prolonged_offline_inspection_restart_and_duplicate_free_drain(
+        self, tmp_path: Path
+    ) -> None:
+        db = tmp_path / "edge.sqlite3"
+        out = tmp_path / "out"
+        clock = _AdvancingClock(datetime.now(UTC))
+        repo = EdgeRepository.open(db)
+        try:
+            failing = _ScriptedSink(
+                [UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")]
+            )
+            scheduler = UploadScheduler(
+                repo,
+                failing,
+                output_root=out,
+                base_retry_seconds=2.0,
+                maximum_retry_seconds=900.0,
+                exponent_cap=8,
+                now=clock,
+            )
+            # Products keep being inspected while the network is down; the
+            # queue persists every task with retry/backoff.
+            _seed(repo, out, count=5)
+            for _ in range(3):
+                scheduler.run_once()
+            # The outage continues for days; new inspections still persist
+            # locally and enqueue their tasks.
+            clock.advance(3 * 86400)
+            _seed(repo, out, count=3)
+        finally:
+            repo.close()
+        # Process restart with the same database; connectivity is restored.
+        restarted = EdgeRepository.open(db)
+        try:
+            restored = DirectoryUploadSink(tmp_path / "sink")
+            scheduler2 = UploadScheduler(restarted, restored, output_root=out, now=clock)
+            _drain(scheduler2)
+            tasks = restarted.list_uploads(limit=1000).items
+            # 8 inspections x (INSPECTION + MEDIA): nothing lost, nothing duplicated.
+            assert len(tasks) == 16
+            assert all(t.status == "SUCCEEDED" for t in tasks)
+            keys = [t.idempotency_key for t in tasks]
+            assert len(keys) == len(set(keys))
+            # Metadata-before-media drain: every inspection is fully SYNCED.
+            summaries = restarted.list_inspections(limit=100).items
+            assert len(summaries) == 8
+            assert all(s.upload_state == "SYNCED" for s in summaries)
+        finally:
+            restarted.close()
 
 
 def _task() -> UploadTask:

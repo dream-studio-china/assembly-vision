@@ -139,6 +139,12 @@ class TestServeWiring:
             UploadSettings(base_retry_seconds=10.0, maximum_retry_seconds=5.0).validate()
         with pytest.raises(ConfigError, match="maximum_bandwidth_mbps"):
             UploadSettings(maximum_bandwidth_mbps=-1.0).validate()
+        with pytest.raises(ConfigError, match="circuit_failure_threshold"):
+            UploadSettings(circuit_failure_threshold=0).validate()
+        with pytest.raises(ConfigError, match="circuit_open_seconds"):
+            UploadSettings(circuit_open_seconds=0).validate()
+        with pytest.raises(ConfigError, match="media_chunk_bytes"):
+            UploadSettings(media_chunk_bytes=0).validate()
         # All-unset is a valid, explicitly disabled configuration.
         UploadSettings().validate()
 
@@ -179,4 +185,34 @@ class TestServeWiring:
             upload_insecure_http=False,
         )
         with pytest.raises(ConfigError, match="maximum_bandwidth_mbps"):
+            _build_upload_settings(args)
+
+    def test_circuit_and_chunk_environment_values_are_parsed(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """PR-022 F03/P2: E3b/E3e environment values reach the settings."""
+        monkeypatch.setenv("AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD", "3")
+        monkeypatch.setenv("AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS", "15")
+        monkeypatch.setenv("AV_EDGE_UPLOAD_MEDIA_CHUNK_BYTES", "1048576")
+        args = argparse.Namespace(
+            upload_base_url="https://central.invalid",
+            upload_sink_dir=None,
+            upload_insecure_http=False,
+        )
+        settings = _build_upload_settings(args)
+        assert settings is not None
+        assert settings.circuit_failure_threshold == 3
+        assert settings.circuit_open_seconds == 15.0
+        assert settings.media_chunk_bytes == 1_048_576
+
+    def test_invalid_circuit_environment_values_are_rejected(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS", "0")
+        args = argparse.Namespace(
+            upload_base_url="https://central.invalid",
+            upload_sink_dir=None,
+            upload_insecure_http=False,
+        )
+        with pytest.raises(ConfigError, match="circuit_open_seconds"):
             _build_upload_settings(args)

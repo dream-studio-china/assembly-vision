@@ -44,6 +44,14 @@ export interface ApiClient {
   getInspection(inspectionId: string): Promise<InspectionRecord>;
   listInspectionMedia(inspectionId: string): Promise<MediaMetadata[]>;
   listUploads(cursor?: string, limit?: number): Promise<Page<UploadTask>>;
+  /**
+   * Reset one eligible upload task to PENDING for a manual retry (E3c).
+   *
+   * Only `RETRY_WAIT` and `PERMANENT_FAILURE` tasks are eligible; the
+   * transition is atomic server-side (PR-022 F03). Unknown tasks reject with
+   * 404 `NOT_FOUND`; non-eligible tasks reject with 409 `TASK_NOT_RETRYABLE`.
+   */
+  retryUpload(uploadTaskId: string): Promise<UploadTask>;
   getEffectiveConfiguration(): Promise<EffectiveConfiguration>;
   listLogs(cursor?: string, limit?: number): Promise<Page<LogEvent>>;
 

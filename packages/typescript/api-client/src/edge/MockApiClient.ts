@@ -388,7 +388,7 @@ const INITIAL_LOGS: LogEvent[] = [
  */
 export class MockApiClient implements ApiClient {
   #records: InspectionRecord[] = RECORDS;
-  #uploads: UploadTask[] = UPLOADS;
+  #uploads: UploadTask[] = UPLOADS.slice();
   #paused = false;
   #current: CurrentInspection = buildCurrent("SN-0001", "PROCESSING");
   #queueIndex = 0;
@@ -506,6 +506,27 @@ export class MockApiClient implements ApiClient {
     void cursor;
     const items = this.#uploads.slice(0, limit ?? 50);
     return { items, next_cursor: null };
+  }
+
+  async retryUpload(uploadTaskId: string): Promise<UploadTask> {
+    const task = this.#uploads.find((t) => t.upload_task_id === uploadTaskId);
+    if (!task) throw new ApiError(404, "NOT_FOUND", `upload task ${uploadTaskId} not found`);
+    if (task.status !== "RETRY_WAIT" && task.status !== "PERMANENT_FAILURE") {
+      throw new ApiError(
+        409,
+        "TASK_NOT_RETRYABLE",
+        `upload task is ${task.status} and cannot be manually retried`,
+      );
+    }
+    const updated: UploadTask = {
+      ...task,
+      status: "PENDING",
+      attempt_count: task.attempt_count + 1,
+      last_error_code: null,
+    };
+    const index = this.#uploads.indexOf(task);
+    this.#uploads[index] = updated;
+    return updated;
   }
 
   async getEffectiveConfiguration(): Promise<EffectiveConfiguration> {

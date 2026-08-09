@@ -106,10 +106,17 @@ upload:
   exponent_cap: 8
   task_lease_seconds: 120
   maximum_bandwidth_mbps: null
-  media_chunk_bytes: 8388608
+  circuit_failure_threshold: 5
+  circuit_open_seconds: 60
+  media_chunk_bytes: 8388608  # reserved; single POST envelope until the
+                              # Edge-to-central resumable contract freezes
 ```
 
-The placeholder URL and `null` bandwidth require site configuration.
+The placeholder URL, `null` bandwidth, circuit threshold/open duration, and
+`media_chunk_bytes` require site configuration; the environment equivalents
+are `AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS`,
+`AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD`,
+`AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS`, and `AV_EDGE_UPLOAD_MEDIA_CHUNK_BYTES`.
 
 ## 13.9 Failure Handling and Operations
 
@@ -203,6 +210,58 @@ The persistent upload outbox and its worker are implemented in
   media reads.
 
 Remaining for the connected pilot: the central ingestion endpoint and its
-server-side receipt contract, media binding confirmations, bandwidth
-throttling enforcement, a circuit breaker, and retention gating on verified
-receipts.
+server-side receipt contract, media binding confirmations, and retention
+gating on verified receipts.
+
+## 13.13 Implementation Status (upload resilience, E3)
+
+The upload-resilience milestone adds outage behavior on top of the outbox
+scheduler (design 13.5/13.9, E3 task):
+
+- **Bandwidth throttling**: a token-bucket limiter bounds the serialized
+  request-body bytes actually sent to the HTTP sink per second from
+  `UploadSettings.maximum_bandwidth_mbps` (`None` disables throttling). The
+  unit is the JSON envelope the transport writes (Base64 payload plus
+  metadata), not the raw media bytes; the local directory sink reports zero
+  network bytes. Burst is capped at one second of tokens and the limiter never
+  gates local persistence. Amounts above one burst are split into per-burst
+  waits that renew the fenced upload lease and abort on worker stop or lease
+  loss (PR-022 F01/F02). Cumulative bytes sent and the configured ceiling are
+  exposed through scheduler health and device status.
+- **Circuit breaker**: consecutive retryable failures
+  (`circuit_failure_threshold`) open the circuit; while open the scheduler
+  claims nothing, and after `circuit_open_seconds` a single half-open probe
+  judges recovery — success closes the circuit, failure reopens it.
+  Permanent failures never count toward the circuit. Circuit state and last
+  change are exposed with a stable `UPLOAD_CIRCUIT_OPEN` alert; the durable
+  queue is never mutated by the circuit.
+- **Controlled manual retry**: `POST /api/v1/uploads/{upload_task_id}/retry`
+  resets only `RETRY_WAIT` / `PERMANENT_FAILURE` tasks to `PENDING` with
+  `attempt_count + 1`; unknown tasks are 404 and non-eligible tasks are 409
+  without mutation.
+- **Long-outage drain**: fault-injection tests run days of offline
+  inspection, a process restart, and a restore that drains the whole queue
+  duplicate-free with ordered metadata-before-media uploads.
+
+## 13.14 Resumable Large-Media Client Contract (E3e)
+
+Large media (NG clips, full video segments) may exceed a single upload
+envelope. The edge-side boundary and the central protocol contract are
+defined here; the central endpoint is not implemented and chunked transfer
+starts only after the Edge-to-central contract freezes:
+
+- Each media upload task keeps its stable `upload_task_id` and idempotency
+  key; retries of any chunk or of the whole object reuse the same key, so
+  the central server can deduplicate every chunk and completion.
+- Transfer is chunked with a configured `media_chunk_bytes` ceiling
+  (`UploadSettings.media_chunk_bytes`, default 8 MiB, reserved until the
+  contract freezes). Each chunk carries the task idempotency key, a
+  zero-based chunk index, the total object size and SHA-256, and the chunk
+  bytes; chunk writes are idempotent by `(task, chunk index)`.
+- Completion is accepted only when the server confirms the expected total
+  size and SHA-256 and binds the object to the inspection; the persisted
+  media receipt then carries the central object identifier exactly as the
+  single-envelope path does today.
+- Until the central protocol is available, every task uses the single POST
+  envelope; the chunk settings are placeholders and must not be assumed to
+  change transfer behavior.

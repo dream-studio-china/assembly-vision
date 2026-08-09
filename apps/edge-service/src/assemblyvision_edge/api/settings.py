@@ -37,6 +37,15 @@ class UploadSettings:
     exponent_cap: int = 8
     maximum_bandwidth_mbps: float | None = None
     allow_insecure_http: bool = False
+    # Circuit breaker (design 13.5, E3b): consecutive retryable failures open
+    # the circuit for ``circuit_open_seconds`` before a half-open probe.
+    circuit_failure_threshold: int = 5
+    circuit_open_seconds: float = 60.0
+    # Reserved for the resumable large-media contract (design 13.14, E3e):
+    # chunk size for future chunked transfer. Not used by the current single
+    # POST envelope and must not change transfer behavior until the central
+    # protocol contract is frozen.
+    media_chunk_bytes: int = 8_388_608
 
     def validate(self) -> None:
         """Reject invalid upload configurations with actionable errors."""
@@ -62,6 +71,12 @@ class UploadSettings:
             raise ConfigError("upload configuration: exponent_cap must not be negative")
         if self.maximum_bandwidth_mbps is not None and self.maximum_bandwidth_mbps <= 0:
             raise ConfigError("upload configuration: maximum_bandwidth_mbps must be positive")
+        if self.circuit_failure_threshold < 1:
+            raise ConfigError("upload configuration: circuit_failure_threshold must be at least 1")
+        if self.circuit_open_seconds <= 0:
+            raise ConfigError("upload configuration: circuit_open_seconds must be positive")
+        if self.media_chunk_bytes < 1:
+            raise ConfigError("upload configuration: media_chunk_bytes must be positive")
         if self.base_url is not None:
             self._validate_base_url()
 

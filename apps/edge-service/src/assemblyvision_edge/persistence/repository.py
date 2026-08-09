@@ -12,7 +12,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID, uuid4
 
 from assemblyvision_domain.errors import AssemblyVisionError
@@ -114,6 +114,20 @@ class RetentionTarget:
     relative_path: str
     size_bytes: int
     retention_eligible_at: str
+
+
+@dataclass(frozen=True)
+class UploadRetryResult:
+    """Outcome of one manual upload retry transition (PR-022 F03).
+
+    ``NOT_FOUND`` means no such task; ``NOT_RETRYABLE`` means the task exists
+    but is not in an eligible state (``task`` carries its current state);
+    ``RETRIED`` means the task was reset to ``PENDING`` (``task`` carries the
+    updated task).
+    """
+
+    outcome: Literal["NOT_FOUND", "NOT_RETRYABLE", "RETRIED"]
+    task: UploadTask | None = None
 
 
 @dataclass(frozen=True)
@@ -990,7 +1004,48 @@ class EdgeRepository:
             }
         )
 
-    def retry_upload(self, upload_task_id: str, reason: str) -> UploadTask | None:
+    def renew_upload_lease(
+        self, upload_task_id: str, lease_owner: str, lease_seconds: int, now_iso: str
+    ) -> bool:
+        """CAS-renew an active upload lease; False when the lease was lost.
+
+        Used by the scheduler while a throttled upload waits (PR-022 F01): a
+        renewed lease keeps the worker's claim valid, and a False result means
+        the task was reclaimed by another worker or its lease expired, so the
+        caller must abort without writing a terminal transition.
+        """
+        lease_expires = (
+            datetime.fromisoformat(now_iso) + timedelta(seconds=lease_seconds)
+        ).isoformat()
+        with self._engine.begin() as conn:
+            result = conn.execute(
+                text(
+                    f"""
+                    UPDATE {upload_tasks.name}
+                    SET lease_expires_at = :lease, updated_at = :now
+                    WHERE upload_task_id = :id AND status = 'IN_PROGRESS'
+                      AND lease_owner = :owner
+                    """
+                ),
+                {
+                    "lease": lease_expires,
+                    "now": now_iso,
+                    "owner": lease_owner,
+                    "id": upload_task_id,
+                },
+            )
+            return result.rowcount == 1
+
+    def retry_upload(self, upload_task_id: str, reason: str, now_iso: str) -> UploadRetryResult:
+        """Atomically reset one eligible task to ``PENDING`` (PR-022 F03).
+
+        Only ``RETRY_WAIT`` / ``PERMANENT_FAILURE`` tasks are eligible. The
+        eligibility check and the state transition share one transaction with
+        a compare-and-set on the eligible states, so a concurrent worker claim
+        or a second manual retry can never report a false success. The
+        transition clears terminal/retry/lease fields and recomputes the
+        inspection's aggregate synchronization state in the same transaction.
+        """
         with self._engine.begin() as conn:
             row = (
                 conn.execute(
@@ -1001,20 +1056,39 @@ class EdgeRepository:
                 .first()
             )
             if row is None:
-                return None
+                return UploadRetryResult(outcome="NOT_FOUND")
             if row["status"] not in ("RETRY_WAIT", "PERMANENT_FAILURE"):
-                return self._upload_task(row)
-            conn.execute(
+                return UploadRetryResult(outcome="NOT_RETRYABLE", task=self._upload_task(row))
+            result = conn.execute(
                 text(
                     f"""
                     UPDATE {upload_tasks.name}
                     SET status = 'PENDING', attempt_count = attempt_count + 1,
-                        last_error_code = NULL
+                        last_error_code = NULL, next_attempt_at = NULL,
+                        completed_at = NULL, lease_expires_at = NULL,
+                        lease_owner = NULL, updated_at = :now
                     WHERE upload_task_id = :id
+                      AND status IN ('RETRY_WAIT', 'PERMANENT_FAILURE')
                     """
                 ),
-                {"id": upload_task_id},
+                {"now": now_iso, "id": upload_task_id},
             )
+            if result.rowcount == 0:
+                # A concurrent transition won (e.g. the worker claimed the
+                # task between the read and the update): report the current
+                # state instead of a false success.
+                fresh = (
+                    conn.execute(
+                        text(f"SELECT * FROM {upload_tasks.name} WHERE upload_task_id = :id"),
+                        {"id": upload_task_id},
+                    )
+                    .mappings()
+                    .first()
+                )
+                return UploadRetryResult(
+                    outcome="NOT_RETRYABLE",
+                    task=self._upload_task(fresh) if fresh is not None else None,
+                )
             updated = (
                 conn.execute(
                     text(f"SELECT * FROM {upload_tasks.name} WHERE upload_task_id = :id"),
@@ -1023,7 +1097,12 @@ class EdgeRepository:
                 .mappings()
                 .first()
             )
-        return self._upload_task(updated)
+            if updated is not None and updated["inspection_id"] is not None:
+                self._refresh_inspection_sync(conn, str(updated["inspection_id"]))
+            return UploadRetryResult(
+                outcome="RETRIED",
+                task=self._upload_task(updated) if updated is not None else None,
+            )
 
     def count_pending_uploads(self) -> int:
         with self._engine.connect() as conn:

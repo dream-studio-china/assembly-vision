@@ -352,6 +352,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/uploads/{upload_task_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry Upload
+         * @description Reset one eligible upload task to ``PENDING`` for a manual retry (E3c).
+         *
+         *     Only ``RETRY_WAIT`` and ``PERMANENT_FAILURE`` tasks are eligible; the
+         *     transition is compare-and-set in the repository so a concurrent worker
+         *     claim or a second retry cannot report a false success (PR-022 F03). It
+         *     preserves attempt history by incrementing ``attempt_count`` and clears
+         *     terminal/retry fields. Unknown tasks return 404 and non-eligible tasks
+         *     return 409 with their current state, so an operator action can never reset
+         *     a task that is succeeded, leased by the worker, or cancelled (E3 task
+         *     invariant 3).
+         */
+        post: operations["retry_upload_api_v1_uploads__upload_task_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -611,6 +640,20 @@ export interface components {
              * @default 0
              */
             upload_attempts: number;
+            /** Upload Bandwidth Mbps */
+            upload_bandwidth_mbps?: number | null;
+            /**
+             * Upload Bytes Sent
+             * @default 0
+             */
+            upload_bytes_sent: number;
+            /** Upload Circuit Last Change At */
+            upload_circuit_last_change_at?: string | null;
+            /**
+             * Upload Circuit State
+             * @default CLOSED
+             */
+            upload_circuit_state: string;
             /**
              * Upload Failure Rate
              * @default 0
@@ -1894,6 +1937,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_UploadTask_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_upload_api_v1_uploads__upload_task_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                upload_task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadTask"];
                 };
             };
             /** @description Validation Error */

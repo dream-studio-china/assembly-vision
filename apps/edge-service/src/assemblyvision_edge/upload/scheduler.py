@@ -16,7 +16,8 @@ import json
 import logging
 import random
 import threading
-from collections.abc import Callable
+import time
+from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -31,6 +32,62 @@ log = logging.getLogger("assemblyvision.upload")
 # Bound for parsed receipt bodies; a central response larger than this is an
 # integrity anomaly and never accepted as a receipt (PR-017 F5).
 _MAX_RECEIPT_BYTES = 65536
+
+# Token-bucket burst is capped at one second of tokens so a large backlog
+# cannot burst past the configured ceiling (E3a).
+_BUCKET_BURST_SECONDS = 1.0
+_MBPS_TO_BYTES_PER_SECOND = 1_000_000 / 8
+_HTTP_BODY_CHUNK_BYTES = 64 * 1024
+
+
+class _TokenBucket:
+    """Bounds network upload bytes per second for the scheduler (E3a).
+
+    A ``None`` rate disables throttling entirely. ``acquire`` blocks until
+    ``amount`` bytes may be sent at the configured rate; tokens refill
+    continuously and burst is capped at one second of tokens. Amounts larger
+    than one burst are split into per-burst waits so a large media object can
+    never deadlock against the burst cap (PR-022 F01).
+    """
+
+    def __init__(self, rate_bytes_per_second: float | None) -> None:
+        self._rate = rate_bytes_per_second
+        self._tokens = 0.0
+        self._last = time.monotonic()
+
+    def acquire(self, amount: int, *, on_wait: Callable[[], None] | None = None) -> None:
+        """Block until ``amount`` bytes may be sent at the configured rate.
+
+        ``on_wait`` runs on every refill wake-up; raising from it aborts the
+        wait (e.g. worker stop or a lost upload lease, PR-022 F01).
+        """
+        rate = self._rate
+        if rate is None or amount <= 0:
+            return
+        remaining = float(amount)
+        while remaining > 0:
+            chunk = min(remaining, rate * _BUCKET_BURST_SECONDS)
+            self._wait_for(chunk, rate, on_wait)
+            remaining -= chunk
+
+    def _wait_for(self, amount: float, rate: float, on_wait: Callable[[], None] | None) -> None:
+        """Sleep until ``amount`` tokens are available, honoring ``on_wait``."""
+        while True:
+            now = time.monotonic()
+            self._tokens = min(
+                self._tokens + (now - self._last) * rate,
+                rate * _BUCKET_BURST_SECONDS,
+            )
+            self._last = now
+            if self._tokens >= amount:
+                self._tokens -= amount
+                return
+            deficit = amount - self._tokens
+            # Wake frequently to refill, renew the lease, and stay responsive
+            # to stop signals.
+            time.sleep(min(deficit / rate, 0.25))
+            if on_wait is not None:
+                on_wait()
 
 
 @dataclass(frozen=True)
@@ -56,12 +113,18 @@ class UploadReceipt:
 
 @dataclass(frozen=True)
 class UploadResult:
-    """Outcome of one sink attempt, classified for the scheduler."""
+    """Outcome of one sink attempt, classified for the scheduler.
+
+    ``payload_bytes_sent`` is the serialized request-body bytes actually
+    handed to the transport (PR-022 F02); None means no network body was sent
+    (transport failure before sending, or a non-network sink).
+    """
 
     status: Literal["SUCCEEDED", "RETRYABLE", "PERMANENT"]
     receipt: UploadReceipt | None = None
     error_code: str | None = None
     retry_after_seconds: float | None = None
+    payload_bytes_sent: int | None = None
 
 
 class UploadSink(Protocol):
@@ -134,33 +197,69 @@ class HttpUploadSink:
         )
 
     def upload(self, task: UploadTask, payload: bytes) -> UploadResult:
+        return self._upload(task, payload)
+
+    def upload_throttled(
+        self, task: UploadTask, payload: bytes, throttle: Callable[[int], None]
+    ) -> UploadResult:
+        """Send the request body in rate-limited chunks (PR-022 re-review).
+
+        The limiter is invoked immediately before each body segment is yielded
+        to httpx, rather than waiting once and then handing the transport a
+        full payload. An explicit Content-Length preserves the single-envelope
+        protocol while keeping the transport write stream bounded.
+        """
+        return self._upload(task, payload, throttle=throttle)
+
+    def _upload(
+        self,
+        task: UploadTask,
+        payload: bytes,
+        *,
+        throttle: Callable[[int], None] | None = None,
+    ) -> UploadResult:
         headers = {"Content-Type": "application/json"}
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
-        body = {
-            "idempotency_key": task.idempotency_key,
-            "kind": task.kind,
-            "object_id": str(task.object_id),
-            "inspection_id": str(task.inspection_id) if task.inspection_id else None,
-            "checksum_sha256": task.checksum_sha256,
-            "size_bytes": len(payload),
-            "payload_b64": base64.b64encode(payload).decode("ascii"),
-        }
+        body = self._build_body(task, payload)
+        bytes_sent = 0
+
+        def body_chunks() -> Iterator[bytes]:
+            nonlocal bytes_sent
+            for start in range(0, len(body), _HTTP_BODY_CHUNK_BYTES):
+                chunk = body[start : start + _HTTP_BODY_CHUNK_BYTES]
+                if throttle is not None:
+                    throttle(len(chunk))
+                bytes_sent += len(chunk)
+                yield chunk
+
+        content: bytes | Any = body
+        if throttle is not None:
+            headers["Content-Length"] = str(len(body))
+            content = body_chunks()
         try:
             response = self._client.post(
                 f"{self._base_url}/inspection-uploads",
-                json=body,
+                content=content,
                 headers=headers,
             )
+        except _ThrottleAborted:
+            raise
         except Exception:  # noqa: BLE001 - any transport failure is retryable
-            return UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")
+            return UploadResult(
+                status="RETRYABLE",
+                error_code="TRANSPORT_ERROR",
+                payload_bytes_sent=bytes_sent or None,
+            )
         if 200 <= response.status_code < 300:
             # A 2xx is only a verified success when the receipt matches the
             # task and the payload that was actually sent (PR-017 F5).
             receipt = self._parse_receipt(response, task, len(payload))
             if receipt is None:
                 return UploadResult(status="PERMANENT", error_code="INVALID_RECEIPT")
-            return UploadResult(status="SUCCEEDED", receipt=receipt)
+            return UploadResult(
+                status="SUCCEEDED", receipt=receipt, payload_bytes_sent=bytes_sent or len(body)
+            )
         retry_after: float | None = None
         raw = response.headers.get("Retry-After")
         if raw is not None and raw.isdigit():
@@ -170,8 +269,36 @@ class HttpUploadSink:
                 status="RETRYABLE",
                 error_code=f"HTTP_{response.status_code}",
                 retry_after_seconds=retry_after,
+                payload_bytes_sent=bytes_sent or len(body),
             )
-        return UploadResult(status="PERMANENT", error_code=f"HTTP_{response.status_code}")
+        return UploadResult(
+            status="PERMANENT",
+            error_code=f"HTTP_{response.status_code}",
+            payload_bytes_sent=bytes_sent or len(body),
+        )
+
+    def wire_size(self, task: UploadTask, payload: bytes) -> int:
+        """Serialized request-body bytes for one payload (PR-022 F02).
+
+        The scheduler throttles this count, not the raw source bytes: the
+        JSON envelope carries a Base64 payload, so its wire size exceeds the
+        media bytes by roughly one third plus metadata.
+        """
+        return len(self._build_body(task, payload))
+
+    @staticmethod
+    def _build_body(task: UploadTask, payload: bytes) -> bytes:
+        """Serialize the JSON upload envelope once (PR-022 F02)."""
+        body = {
+            "idempotency_key": task.idempotency_key,
+            "kind": task.kind,
+            "object_id": str(task.object_id),
+            "inspection_id": str(task.inspection_id) if task.inspection_id else None,
+            "checksum_sha256": task.checksum_sha256,
+            "size_bytes": len(payload),
+            "payload_b64": base64.b64encode(payload).decode("ascii"),
+        }
+        return json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
     @staticmethod
     def _parse_receipt(response: Any, task: UploadTask, size_bytes: int) -> UploadReceipt | None:
@@ -223,6 +350,15 @@ class _PermanentPayloadError(Exception):
         self.code = code
 
 
+class _ThrottleAborted(Exception):
+    """Throttle wait interrupted by worker stop or a lost upload lease.
+
+    The task stays leased (or is reclaimed by the lease-recovery path) and no
+    terminal transition is written, so recovery never loses the task
+    (PR-022 F01).
+    """
+
+
 def _full_jitter_backoff(
     attempt: int,
     *,
@@ -245,6 +381,8 @@ class SchedulerHealth:
     """Process-local worker health counters (design 13.9, E1).
 
     Counters reset on scheduler start; queue truth lives in the repository.
+    ``bytes_sent`` and ``bandwidth_mbps`` expose the enforced upload ceiling
+    and actual volume for operators (E3a).
     """
 
     attempts: int
@@ -253,6 +391,11 @@ class SchedulerHealth:
     last_attempt_at: str | None = None
     last_success_at: str | None = None
     last_error_code: str | None = None
+    bytes_sent: int = 0
+    bandwidth_mbps: float | None = None
+    # Circuit-breaker liveness (design 13.5, E3b): CLOSED / OPEN / HALF_OPEN.
+    circuit_state: str = "CLOSED"
+    circuit_last_change_at: str | None = None
 
     @property
     def failure_rate(self) -> float:
@@ -274,6 +417,9 @@ class UploadScheduler:
         base_retry_seconds: float = 2.0,
         maximum_retry_seconds: float = 900.0,
         exponent_cap: int = 8,
+        maximum_bandwidth_mbps: float | None = None,
+        circuit_failure_threshold: int = 5,
+        circuit_open_seconds: float = 60.0,
         now: Callable[[], datetime] | None = None,
     ) -> None:
         self._repository = repository
@@ -285,6 +431,15 @@ class UploadScheduler:
         self._base_retry_seconds = base_retry_seconds
         self._maximum_retry_seconds = maximum_retry_seconds
         self._exponent_cap = exponent_cap
+        self._bandwidth_mbps = maximum_bandwidth_mbps
+        rate = (
+            maximum_bandwidth_mbps * _MBPS_TO_BYTES_PER_SECOND
+            if maximum_bandwidth_mbps is not None
+            else None
+        )
+        self._bucket = _TokenBucket(rate)
+        self._circuit_failure_threshold = circuit_failure_threshold
+        self._circuit_open_seconds = circuit_open_seconds
         # Injected clock for deterministic retry-deadline tests (PR-017 F8).
         self._now = now or (lambda: datetime.now(UTC))
         self._stop = threading.Event()
@@ -294,9 +449,15 @@ class UploadScheduler:
         self._attempts = 0
         self._successes = 0
         self._failures = 0
+        self._bytes_sent = 0
         self._last_attempt_at: str | None = None
         self._last_success_at: str | None = None
         self._last_error_code: str | None = None
+        # Circuit-breaker state (E3b).
+        self._circuit_state = "CLOSED"
+        self._circuit_last_change_at: str | None = None
+        self._circuit_opened_at: str | None = None
+        self._consecutive_failures = 0
 
     def health(self) -> SchedulerHealth:
         with self._health_lock:
@@ -307,12 +468,21 @@ class UploadScheduler:
                 last_attempt_at=self._last_attempt_at,
                 last_success_at=self._last_success_at,
                 last_error_code=self._last_error_code,
+                bytes_sent=self._bytes_sent,
+                bandwidth_mbps=self._bandwidth_mbps,
+                circuit_state=self._circuit_state,
+                circuit_last_change_at=self._circuit_last_change_at,
             )
 
     def _record_attempt(self, when: str) -> None:
         with self._health_lock:
             self._attempts += 1
             self._last_attempt_at = when
+
+    def _record_bytes(self, amount: int) -> None:
+        """Count payload bytes handed to the sink (E3a)."""
+        with self._health_lock:
+            self._bytes_sent += amount
 
     def _record_success(self, when: str) -> None:
         with self._health_lock:
@@ -346,10 +516,17 @@ class UploadScheduler:
             self._stop.wait(self._interval_seconds)
 
     def run_once(self) -> int:
-        """Process one batch; returns the number of tasks handled."""
-        claimed = self._repository.claim_upload_tasks(
-            self._batch_size, self._lease_seconds, self._now().isoformat()
-        )
+        """Process one batch; returns the number of tasks handled.
+
+        An open circuit stops all attempts (no hot-looping, E3b); a half-open
+        circuit allows exactly one probe task before judging recovery.
+        """
+        now_iso = self._now().isoformat()
+        state = self._effective_circuit_state(now_iso)
+        if state == "OPEN":
+            return 0
+        limit = 1 if state == "HALF_OPEN" else self._batch_size
+        claimed = self._repository.claim_upload_tasks(limit, self._lease_seconds, now_iso)
         for item in claimed:
             try:
                 self._process(item)
@@ -366,6 +543,64 @@ class UploadScheduler:
                 )
         return len(claimed)
 
+    def _effective_circuit_state(self, now_iso: str) -> str:
+        """Return the effective circuit state, advancing OPEN -> HALF_OPEN."""
+        with self._health_lock:
+            if self._circuit_state != "OPEN" or self._circuit_opened_at is None:
+                return self._circuit_state
+            opened = datetime.fromisoformat(self._circuit_opened_at)
+            elapsed = (datetime.fromisoformat(now_iso) - opened).total_seconds()
+            if elapsed >= self._circuit_open_seconds:
+                self._circuit_state = "HALF_OPEN"
+                self._circuit_last_change_at = now_iso
+            return self._circuit_state
+
+    def _on_transient_outcome(self, failed: bool, now_iso: str) -> None:
+        """Update the circuit from a retryable outcome (E3b).
+
+        Consecutive retryable failures open the circuit; a half-open probe
+        success closes it and a probe failure reopens it. Permanent failures
+        never count toward the circuit because they are not outage traffic.
+        """
+        with self._health_lock:
+            if not failed:
+                self._consecutive_failures = 0
+                self._circuit_opened_at = None
+                if self._circuit_state == "HALF_OPEN":
+                    self._circuit_state = "CLOSED"
+                    self._circuit_last_change_at = now_iso
+                return
+            if self._circuit_state == "CLOSED":
+                self._consecutive_failures += 1
+                if self._consecutive_failures >= self._circuit_failure_threshold:
+                    self._circuit_state = "OPEN"
+                    self._circuit_last_change_at = now_iso
+                    self._circuit_opened_at = now_iso
+                return
+            if self._circuit_state == "HALF_OPEN":
+                self._circuit_state = "OPEN"
+                self._circuit_last_change_at = now_iso
+                self._circuit_opened_at = now_iso
+
+    def _lease_guard(self, task_id: str, lease_owner: str) -> Callable[[], None]:
+        """Return a throttle-wait callback that aborts on stop or lease loss.
+
+        While a throttled transfer waits, the active upload lease is renewed
+        so the claim cannot expire mid-transfer; if the worker stopped or the
+        lease was lost (reclaimed by another worker), the wait aborts without
+        a terminal transition (PR-022 F01).
+        """
+
+        def guard() -> None:
+            if self._stop.is_set():
+                raise _ThrottleAborted()
+            if not self._repository.renew_upload_lease(
+                task_id, lease_owner, self._lease_seconds, self._now().isoformat()
+            ):
+                raise _ThrottleAborted()
+
+        return guard
+
     def _process(self, claimed: ClaimedUploadTask) -> None:
         task = claimed.task
         lease_owner = claimed.lease_owner
@@ -379,7 +614,26 @@ class UploadScheduler:
                 str(task.upload_task_id), lease_owner, exc.code, self._now().isoformat()
             )
             return
-        result = self._sink.upload(task, payload)
+        # The HTTP sink acquires tokens immediately before yielding each
+        # serialized request-body segment to the transport. Local sinks are
+        # deliberately unthrottled because they do not consume network budget.
+        if isinstance(self._sink, HttpUploadSink):
+            try:
+                result = self._sink.upload_throttled(
+                    task,
+                    payload,
+                    lambda amount: self._bucket.acquire(
+                        amount,
+                        on_wait=self._lease_guard(str(task.upload_task_id), lease_owner),
+                    ),
+                )
+            except _ThrottleAborted:
+                return
+        else:
+            result = self._sink.upload(task, payload)
+        self._record_bytes(
+            result.payload_bytes_sent if result.payload_bytes_sent is not None else 0
+        )
         # Anchor the transition to the response/failure time, not the batch
         # start, so a slow request cannot erode Retry-After (PR-017 F8).
         outcome_time = self._now()
@@ -395,6 +649,7 @@ class UploadScheduler:
                 )
                 return
             self._record_success(now_iso)
+            self._on_transient_outcome(False, now_iso)
             self._repository.mark_upload_succeeded(
                 str(task.upload_task_id),
                 lease_owner,
@@ -410,6 +665,7 @@ class UploadScheduler:
             )
             return
         self._record_failure(now_iso, result.error_code or "RETRYABLE")
+        self._on_transient_outcome(True, now_iso)
         backoff = _full_jitter_backoff(
             task.attempt_count,
             base_seconds=self._base_retry_seconds,
