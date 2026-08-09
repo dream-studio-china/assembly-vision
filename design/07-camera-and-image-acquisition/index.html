@@ -3596,7 +3596,7 @@
 </tr>
 <tr>
 <td>Production target</td>
-<td>One fixed industrial camera with fixed lighting, reconnect handling, product-window correlation, optional rolling video</td>
+<td>GigE Vision / GenICam industrial camera as the primary path, with fixed lighting, reconnect handling, product-window correlation, and optional rolling video; UVC USB remains a compatibility path</td>
 </tr>
 <tr>
 <td>Future</td>
@@ -3604,7 +3604,17 @@
 </tr>
 </tbody>
 </table>
-<p>The camera vendor, SDK, operating system, trigger electrical interface, frame rate, exposure, and conveyor speed remain deployment decisions.</p>
+<p>Linux is the primary production runtime. Windows compatibility is supported only
+when the selected camera's GenTL producer or UVC driver is available and passes
+the same adapter conformance suite; Windows is not assumed to be production
+ready before that validation. The camera vendor, SDK/GenTL producer, trigger
+electrical interface, exposure, and conveyor speed remain deployment decisions.</p>
+<p>The initial target profile is approximately 4 megapixels at 25-30 FPS. It does
+not imply that every camera format is accepted: the adapter must explicitly
+report supported formats and either convert an approved format deterministically
+or fail before inspection. At minimum, the production validation covers the
+selected camera's Mono8, Bayer8, RGB8, BGR8, or YUV format as applicable; raw
+buffers are never silently reinterpreted.</p>
 <h2 id="73-adapter-interface">7.3 Adapter Interface<a class="headerlink" href="#73-adapter-interface" title="Permanent link">&para;</a></h2>
 <p>Vendor code is isolated behind a <code>FrameSource</code> protocol so recorded data can exercise the same pipeline.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">FrameSource</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
@@ -3618,10 +3628,25 @@
 image directory, optional loop), <code>video</code> (local video file), <code>opencv-device</code>
 (local camera index or <code>/dev/videoN</code>, including virtual cameras such as Linux
 <code>v4l2loopback</code> or OBS Virtual Camera), <code>rtsp</code> (remote RTSP stream via PyAV
-with an OpenCV fallback), and <code>http-image</code> (poll a remote JPEG URL at a
-configured interval). Vendor SDK adapters are future implementations of the
-same protocol. Read/decode failures raise a frame-stream error and are never
-silently skipped.</p>
+with an OpenCV fallback), <code>http-image</code> (poll a remote JPEG URL at a
+configured interval), and <code>gige-vision</code> (GenICam/GenTL via Harvester and a
+vendor GenTL producer). Read/decode failures raise a frame-stream error and
+are never silently skipped.</p>
+<p>The production <code>gige-vision</code> source is a GenICam/GenTL consumer behind
+the same protocol. It binds a camera by stable serial number rather than an IP
+address and exposes the serial, model, firmware, GenTL producer, transport
+parent, pixel format, and applied acquisition settings through typed camera
+state at startup and after configuration. It supports continuous,
+software-triggered, and hardware-triggered acquisition; hardware trigger is
+preferred for a production product boundary. Configured pixel format, exposure,
+gain, and packet size are applied to the GenICam node map and verified by
+read-back; only the supported formats (<code>Mono8</code>, <code>RGB8</code>, <code>BGR8</code>) convert
+deterministically to RGB and anything else fails before inspection (fail-safe).
+The GenTL bindings ship only manylinux and Windows wheels, so the GigE Vision
+path is Linux/Windows-only; macOS resolves the extra to nothing. PTP is not
+required for the initial deployment: process-monotonic time controls windows
+and UTC remains traceability metadata. PTP may be enabled later only after a
+site requirement and validation.</p>
 <p>Static files receive stable IDs derived from relative path plus content checksum. Unsupported, partially written, or undecodable files are recorded as failed inputs rather than silently skipped.</p>
 <h2 id="74-trigger-and-product-window-strategy">7.4 Trigger and Product-Window Strategy<a class="headerlink" href="#74-trigger-and-product-window-strategy" title="Permanent link">&para;</a></h2>
 <p>Preferred production ordering is:</p>
@@ -3731,9 +3756,29 @@ lives under the <code>instances:</code> list in the shared pipeline configuratio
 <td><code>url</code></td>
 <td>Polled at <code>fps</code>/interval with a bounded HTTP timeout</td>
 </tr>
+<tr>
+<td><code>gige-vision</code></td>
+<td><code>serial</code></td>
+<td>GenICam/GenTL via Harvester + vendor <code>.cti</code>; continuous, software, or hardware trigger; <code>gentl_producer</code> deployment-provided</td>
+</tr>
 </tbody>
 </table>
-<p><code>null</code> exposure and gain mean site calibration is required, not an automatic default. Applied camera settings and serial number are recorded at startup and on change.</p>
+<p><code>null</code> exposure and gain mean site calibration is required, not an automatic default. The current typed camera state exposes applied settings and serial number at startup and on change; acceptance evidence records the approved site configuration separately.</p>
+<p>GigE packet size is negotiated only when both the camera and selected network
+interface support it. Jumbo frames are an optional optimization, not a
+requirement: the deployment validates NIC MTU, switch path, packet loss, and
+camera packet size before applying a value. A path that does not support jumbo
+frames remains valid at standard MTU if it meets the measured frame-loss and
+latency budget.</p>
+<p>USB UVC cameras use <code>opencv-device</code> and are appropriate for compatibility,
+development, and any validated low-risk deployment. USB3 Vision cameras that
+expose GenICam use the <code>gige-vision</code>/GenTL-style adapter rather than being
+silently downgraded to OpenCV. Phone cameras and low-cost Ethernet cameras are
+not classified by price or connector: a phone may be used through a validated
+UVC, RTSP, or HTTP source for development, while an Ethernet camera must prove
+GigE Vision / GenICam support before it can use the production adapter. A
+camera exposing only RTSP/ONVIF remains an RTSP compatibility source and does
+not gain industrial trigger guarantees.</p>
 <h2 id="78-recovery-and-failure-handling">7.8 Recovery and Failure Handling<a class="headerlink" href="#78-recovery-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
 <li>On disconnect, stop accepting new inspections, close any active window as <code>NG</code> with <code>CAMERA_DISCONNECTED</code>, and reconnect with bounded exponential backoff.</li>

@@ -2829,7 +2829,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3365,7 +3365,7 @@
   <a href="#pr20-f05---p1-storage-write-fault-is-cleared-by-a-successful-stat-call" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR20-F05 - P1: Storage Write Fault Is Cleared by a Successful Stat Call
+        PR20-F05 - P1：成功的 Stat 调用清除了存储写入故障
       
     </span>
   </a>
@@ -3409,7 +3409,7 @@
   <a href="#pr20-f09---p1-production-startup-skips-same-size-checksum-tampering" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR20-F09 - P1: Production Startup Skips Same-Size Checksum Tampering
+        PR20-F09 - P1：生产启动跳过相同大小的校验和篡改
       
     </span>
   </a>
@@ -3715,7 +3715,7 @@ B 遇到文件丢失并记录完整性错误。证据是
 <li>遍历、绝对路径、最终文件符号链接和中间目录
   符号链接情况都证明清理保留在预期的包内。</li>
 </ul>
-<h3 id="pr20-f05---p1-storage-write-fault-is-cleared-by-a-successful-stat-call">PR20-F05 - P1: Storage Write Fault Is Cleared by a Successful Stat Call<a class="headerlink" href="#pr20-f05---p1-storage-write-fault-is-cleared-by-a-successful-stat-call" title="Permanent link">&para;</a></h3>
+<h3 id="pr20-f05---p1-storage-write-fault-is-cleared-by-a-successful-stat-call">PR20-F05 - P1：成功的 Stat 调用清除了存储写入故障<a class="headerlink" href="#pr20-f05---p1-storage-write-fault-is-cleared-by-a-successful-stat-call" title="Permanent link">&para;</a></h3>
 <p><strong>参考文献</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:327-335</code></li>
@@ -3725,7 +3725,7 @@ B 遇到文件丢失并记录完整性错误。证据是
 <p><code>_note_storage_write_fault()</code> 在合格的 I/O 上设置 <code>storage_write_fault</code>
 错误，但以后每一次成功的 <code>refresh_storage()</code> 都会无条件地设置它
 为假。因此，短暂的完整/只读/数据库写入失败可以清除
-当<code>statvfs</code>工作时，无需证明强制输出和SQLite/outbox
+当 <code>statvfs</code> 工作时，无需证明强制输出和 SQLite/outbox
 毅力已经恢复。</p>
 <p><strong>所需的解决方案</strong></p>
 <ol>
@@ -3823,7 +3823,7 @@ capture 不断消耗受限体积。这不符合设计
 <li>重复启动不会消除完整性故障或静默恢复
   准备状态。</li>
 </ul>
-<h3 id="pr20-f09---p1-production-startup-skips-same-size-checksum-tampering">PR20-F09 - P1: Production Startup Skips Same-Size Checksum Tampering<a class="headerlink" href="#pr20-f09---p1-production-startup-skips-same-size-checksum-tampering" title="Permanent link">&para;</a></h3>
+<h3 id="pr20-f09---p1-production-startup-skips-same-size-checksum-tampering">PR20-F09 - P1：生产启动跳过相同大小的校验和篡改<a class="headerlink" href="#pr20-f09---p1-production-startup-skips-same-size-checksum-tampering" title="Permanent link">&para;</a></h3>
 <p><strong>参考文献</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/app.py:93-103</code></li>
@@ -3926,7 +3926,7 @@ E2任务需要完整的校验和扫描或显式配置的有界
 <thead>
 <tr>
 <th>寻找</th>
-<th>严重性</th>
+<th>严重程度</th>
 <th>分辨率</th>
 <th>测试</th>
 </tr>
@@ -4027,7 +4027,7 @@ E2任务需要完整的校验和扫描或显式配置的有界
 <p><strong>解决方案及验收</strong></p>
 <ul>
 <li>添加配置阈值、存储观察时间戳、完整性扫描
-  摘要，以及稳定的服务器警报代码<code>DeviceStatus</code>；重新生成 OpenAPI
+  摘要和稳定的服务器警报代码为<code>DeviceStatus</code>；重新生成 OpenAPI
   和 TypeScript 类型；同步模拟/运行时验证器。</li>
 <li>在仪表板中呈现服务器提供的警报和策略值。</li>
 <li>添加 API 合约和前端测试，证明完整性/停止/清理故障

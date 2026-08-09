@@ -3051,7 +3051,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3706,7 +3706,7 @@
 下面。它可以从同一个包中删除和重建，它不是
 完成/发件箱存储，其模式尚未携带唯一的
 约束、产品配置列或上传所需的租约
-生产设计。权威商店与上传一起构建
+生产设计。权威商店与上传一起搭建
 调度程序；在此之前，该设计描述的是目标，而不是当前
 实施（AUDIT-001）。</p>
 </blockquote>
@@ -4332,14 +4332,14 @@ OpenAPI 中的模型。最小注册表是：</p>
     PRODUCTION_LINE ||--o{ DEVICE :运作
     ORGANIZATION ||--o{ USER :有
     USER ||--o{ USER_ROLE :收到
-    ROLE ||--o{ USER_ROLE :赠款
-    ORGANIZATION ||--o{ PRODUCT :owns
+    ROLE ||--o{ USER_ROLE :补助金
+    ORGANIZATION ||--o{ PRODUCT :拥有
     PRODUCT ||--o{ PRODUCT_VERSION :版本
     PRODUCT_VERSION ||--o{ RULE_VERSION :检查者
     RULE ||--o{ RULE_VERSION :版本
     MODEL_PACKAGE ||--o{ MODEL_VERSION :版本
     DEVICE ||--o{ INSPECTION :产生
-    PRODUCT_VERSION ||--o{ INSPECTION :classifies
+    PRODUCT_VERSION ||--o{ INSPECTION :分类
     RULE_VERSION ||--o{ INSPECTION :评估
     MODEL_VERSION ||--o{ INSPECTION :运行
     INSPECTION ||--o{ INSPECTION_COMPONENT :包含
@@ -4360,40 +4360,40 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>使用键集分页 <code>(completed_at, id) &lt; (:cursor_time, :cursor_id)</code> 来获取历史记录。偏移分页仅适用于小型配置列表。</li>
 </ul>
 <h2 id="149-media-metadata-and-integrity">14.9 媒体元数据和完整性<a class="headerlink" href="#149-media-metadata-and-integrity" title="Permanent link">&para;</a></h2>
-<p>Databases store media metadata, never large image/video blobs. Edge writes to a temporary path, <code>fsync</code>s where supported, atomically renames, calculates SHA-256, then commits metadata and its upload task. Central upload uses a staged object key; the API verifies size and checksum before marking media available. A database row must not claim <code>AVAILABLE</code> until the final object exists.</p>
-<p>Object keys are opaque and tenant scoped, for example <code>org/{organization_id}/device/{device_id}/2026/08/04/{media_id}.jpg</code>. API responses issue authorized short-lived URLs rather than exposing storage credentials.</p>
+<p>数据库存储媒体元数据，而不是大图像/视频 blob。 Edge 写入临时路径（在支持的情况下<code>fsync</code>），自动重命名、计算 SHA-256，然后提交元数据及其上传任务。集中上传使用暂存对象密钥； API 在标记媒体可用之前验证大小和校验和。在最终对象存在之前，数据库行不得声明 <code>AVAILABLE</code>。</p>
+<p>对象键是不透明的且具有租户范围，例如 <code>org/{organization_id}/device/{device_id}/2026/08/04/{media_id}.jpg</code>。 API 响应发出授权的短期 URL，而不是公开存储凭据。</p>
 <h2 id="1410-retention-and-safe-cleanup">14.10 保留和安全清理<a class="headerlink" href="#1410-retention-and-safe-cleanup" title="Permanent link">&para;</a></h2>
-<p>Retention values are deployment configuration, not hard-coded defaults. The cleanup worker applies this order:</p>
+<p>保留值是部署配置，而不是硬编码的默认值。清理工人应用此命令：</p>
 <ol>
-<li>Never remove a media file with a nonterminal required upload task.</li>
-<li>Prefer removing rolling video and uploaded OK media before NG evidence.</li>
-<li>Delete the file/object, verify absence, then mark metadata <code>PURGED</code> with reason and timestamp.</li>
-<li>Retain inspection metadata longer than high-volume frame and media detail.</li>
-<li>Apply legal hold and investigation hold before any policy.</li>
-<li>Delete central objects and database detail through a recorded retention job; retain a tombstone if required for audit reconciliation.</li>
+<li>切勿删除具有非终端所需上传任务的媒体文件。</li>
+<li>在 NG 证据之前，优先删除滚动视频并上传 OK 媒体。</li>
+<li>删除文件/对象，验证是否存在，然后用原因和时间戳标记元数据 <code>PURGED</code>。</li>
+<li>保留检查元数据的时间长于大容量帧和媒体细节。</li>
+<li>在任何保单之前应用法律保留和调查保留。</li>
+<li>通过记录的保留作业删除中心对象和数据库详细信息；如果需要进行审计核对，请保留墓碑。</li>
 </ol>
-<p>Suggested policy classes, pending customer approval, are rolling video (hours/days), frame detail (days), OK key frames (short), NG evidence (longer), inspection metadata (long), operational logs (bounded), and audit logs (security/compliance term). See the task requirements in <a href="../../source-brief/#7-local-storage-architecture">the source brief</a>.</p>
+<p>建议的策略类别（待客户批准）包括滚动视频（小时/天）、帧详细信息（天）、OK 关键帧（短）、NG 证据（较长）、检查元数据（长）、操作日志（有界）和审核日志（安全/合规术语）。请参阅<a href="../../source-brief/#7-local-storage-architecture">the source brief</a>中的任务要求。</p>
 <h2 id="1411-audit-and-mutation-rules">14.11 审计和变更规则<a class="headerlink" href="#1411-audit-and-mutation-rules" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Audit login, role assignment, device enrollment, configuration draft/publish/activation, model lifecycle changes, manual review, export, retention, and break-glass actions.</li>
-<li>Store actor type (<code>USER</code>, <code>DEVICE</code>, <code>SYSTEM</code>), actor ID, action, target, before/after values with secrets removed, UTC time, request ID, and reason where required.</li>
-<li>Published product, model, and rule versions are immutable. Correction creates a new version.</li>
-<li>Reviews are append-only revisions. The latest revision is projected for the UI, while all revisions remain queryable.</li>
-<li>Audit rows are append-only to the application role. Administrative alteration requires a separately logged operational procedure.</li>
-<li>Sensitive barcode and identity data must be masked in general logs and exports according to customer policy.</li>
+<li>审核登录、角色分配、设备注册、配置草稿/发布/激活、模型生命周期更改、手动审核、导出、保留和打破玻璃操作。</li>
+<li>存储参与者类型（<code>USER</code>、<code>DEVICE</code>、<code>SYSTEM</code>）、参与者 ID、操作、目标、删除机密的前后值、UTC 时间、请求 ID 和原因（如果需要）。</li>
+<li>已发布的产品、模型和规则版本是不可变的。更正创建新版本。</li>
+<li>评论是仅附加的修订。 UI 会预测最新修订版本，而所有修订版本仍可查询。</li>
+<li>审核行仅附加到应用程序角色。行政变更需要单独记录的操作程序。</li>
+<li>根据客户政策，敏感条形码和身份数据必须在一般日志和导出中进行屏蔽。</li>
 </ul>
 <h2 id="1412-migration-and-recovery">14.12 迁移和恢复<a class="headerlink" href="#1412-migration-and-recovery" title="Permanent link">&para;</a></h2>
-<p>Alembic owns both schemas through separate migration branches/configurations. Edge upgrades take a database backup, stop new inspection windows, apply forward migrations, validate schema revision, and resume. Long SQLite rewrites require disk-space preflight. Central migrations use expand/migrate/contract changes so mixed API versions can run during deployment.</p>
-<p>Edge recovery reconciles media paths, expired upload leases, and incomplete inspection windows at startup. An interrupted window is persisted with lifecycle status <code>ABORTED</code>; if a business result is required it is <code>NG</code>, and the record can never become <code>OK</code>. Database backups do not replace media backup policy.</p>
+<p>Alembic 通过单独的迁移分支/配置拥有这两种模式。边缘升级进行数据库备份、停止新的检查窗口、应用前向迁移、验证架构修订并恢复。长 SQLite 重写需要磁盘空间预检。集中迁移使用扩展/迁移/收缩更改，因此可以在部署期间运行混合 API 版本。</p>
+<p>边缘恢复可协调媒体路径、过期的上传租约以及启动时不完整的检查窗口。中断的窗口以生命周期状态 <code>ABORTED</code> 持久化；如果需要业务结果，则为 <code>NG</code>，并且记录永远不能变为 <code>OK</code>。数据库备份不会取代介质备份策略。</p>
 <h2 id="1413-openapi-synchronization-strategy">14.13 OpenAPI同步策略<a class="headerlink" href="#1413-openapi-synchronization-strategy" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Pydantic models in the shared Python domain package are referenced directly by FastAPI request and response declarations.</li>
-<li>CI starts/imports each API and emits deterministic <code>edge-openapi.json</code> and <code>central-openapi.json</code> with a pinned FastAPI/Pydantic toolchain.</li>
-<li>CI validates each document and checks the committed/generated artifact for drift.</li>
-<li><code>openapi-typescript</code> or Orval generates TypeScript schemas and clients into <code>packages/typescript/api-client/generated</code>; generated files are not manually edited.</li>
-<li>Frontend wrappers add transport concerns such as authentication and error mapping without redefining payloads.</li>
-<li>Contract tests deserialize representative server responses and run TypeScript type-checking. Breaking schema changes require a versioned endpoint or a coordinated release.</li>
-<li>Date-time and UUID runtime validation is added at frontend boundaries where needed; generated TypeScript types alone do not validate JSON.</li>
+<li>共享Python域包中的Pydantic模型由FastAPI请求和响应声明直接引用。</li>
+<li>CI 启动/导入每个 API，并使用固定的 FastAPI/Pydantic 工具链发出确定性的 <code>edge-openapi.json</code> 和 <code>central-openapi.json</code>。</li>
+<li>CI 验证每个文档并检查提交/生成的工件是否存在偏差。</li>
+<li><code>openapi-typescript</code> 或 Orval 生成 TypeScript 模式和客户端到 <code>packages/typescript/api-client/generated</code> 中；生成的文件不需手动编辑。</li>
+<li>前端包装器添加了身份验证和错误映射等传输问题，而无需重新定义有效负载。</li>
+<li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。破坏性架构更改需要版本化端点或协调发布。</li>
+<li>在需要时在前端边界添加日期时间和 UUID 运行时验证；单独生成的 TypeScript 类型并不能验证 JSON。</li>
 </ol>
 <p>OpenAPI 涵盖按名称引用的 REST 快照和 WebSocket 事件负载模式。由于 OpenAPI 没有完全描述 WebSocket 通道，因此事件信封从相同的 Pydantic 类导出为 JSON 模式，并针对前端验证器进行测试。</p>
 <h2 id="1414-open-questions-and-validation-required">14.14 未解决的问题和需要验证<a class="headerlink" href="#1414-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>

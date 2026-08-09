@@ -353,7 +353,7 @@
   <a href="#safety-position" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Safety Position
+        安全位置
       
     </span>
   </a>
@@ -2922,7 +2922,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3380,7 +3380,7 @@
   <a href="#safety-position" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Safety Position
+        安全位置
       
     </span>
   </a>
@@ -3441,72 +3441,72 @@
 
 
 <h1 id="assemblyvision-industrial-assembly-inspection-system">AssemblyVision — 工业装配检测系统<a class="headerlink" href="#assemblyvision-industrial-assembly-inspection-system" title="Permanent link">&para;</a></h1>
-<p>AssemblyVision is an <strong>edge-first industrial computer-vision inspection platform</strong> for conveyor-based
-production lines. It inspects completed products and verifies that all required assembly components
-are present, using a two-stage YOLO detection pipeline, per-component temporal aggregation, and a
-deterministic rule engine. The system makes its production decision <strong>on the edge</strong> and synchronizes
-selected evidence to a central server without depending on it for real-time inspection.</p>
-<h2 id="safety-position">Safety Position<a class="headerlink" href="#safety-position" title="Permanent link">&para;</a></h2>
-<p>The system prioritizes <strong>high NG recall</strong> and an <strong>extremely low false-negative rate</strong>. Only complete,
-valid evidence for every required component may produce <code>OK</code>; missing, uncertain, or unverifiable
-evidence produces the business result <code>NG</code>. Production acceptance must be based on measured customer
-production data excluded from training.</p>
+<p>AssemblyVision 是<strong>边缘优先的工业计算机视觉检测平台</strong>，适用于基于传送带的
+生产线。它检查成品并验证所有必需的组装部件
+存在，使用两阶段 YOLO 检测管道、每个组件时间聚合和
+确定性规则引擎。系统<strong>在边缘</strong>做出生产决策并同步
+将证据选择到中央服务器，而不依赖它进行实时检查。</p>
+<h2 id="safety-position">安全位置<a class="headerlink" href="#safety-position" title="Permanent link">&para;</a></h2>
+<p>系统优先考虑<strong>高 NG 召回率</strong>和<strong>极低的假阴性率</strong>。只有完整、
+每个必需组件的有效证据可能会产生<code>OK</code>；缺失、不确定或无法验证
+证据产生业务结果<code>NG</code>。生产验收必须根据客户实测
+生产数据不包括在培训中。</p>
 <h2 id="documentation-map">文档地图<a class="headerlink" href="#documentation-map" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Section</th>
-<th>Contents</th>
+<th>部分</th>
+<th>内容</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><a href="source-brief/">Source Brief</a></td>
-<td>The original architecture task that drives this document set</td>
+<td>驱动此文档集的原始架构任务</td>
 </tr>
 <tr>
 <td><a href="design/">Architecture Design</a></td>
-<td>28 design documents: edge/central architecture, AI pipeline, data model, APIs, deployment, testing, roadmap, risk register</td>
+<td>28 个设计文档：边缘/中央架构、AI 管道、数据模型、API、部署、测试、路线图、风险登记册</td>
 </tr>
 <tr>
 <td><a href="design/decisions/">Architecture Decisions</a></td>
-<td>ADR-001 through ADR-010</td>
+<td>ADR-001 至 ADR-010</td>
 </tr>
 <tr>
 <td><a href="contracts/">Engineering Contracts</a></td>
-<td>Mandatory architecture, safety, API, quality, deployment, and acceptance constraints</td>
+<td>强制性架构、安全性、API、质量、部署和验收约束</td>
 </tr>
 <tr>
 <td><a href="runbooks/">Operational Runbooks</a></td>
-<td>Executable recovery procedures for required failure scenarios</td>
+<td>针对所需故障场景的可执行恢复过程</td>
 </tr>
 <tr>
 <td><a href="research/01-industrial-inspection-success-rates/">Research</a></td>
-<td>Industry success rates, YOLO capabilities, imaging and training practices</td>
+<td>行业成功率、YOLO 能力、成像和培训实践</td>
 </tr>
 <tr>
 <td><a href="contributing/">Contributor Documentation</a></td>
-<td>Required reading, precedence, language, Git, and quality rules</td>
+<td>必读内容、优先顺序、语言、Git 和质量规则</td>
 </tr>
 </tbody>
 </table>
 <h2 id="delivery-horizons">交付范围<a class="headerlink" href="#delivery-horizons" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Two-day MVP</strong> — static images, two-stage detection, generated ROI, deterministic rules, JSON and
-  image evidence, CLI.</li>
-<li><strong>One-month target</strong> — camera and barcode integration, product windows, local persistence, temporal
-  aggregation, local dashboard, delayed upload, initial central management.</li>
-<li><strong>Production target</strong> — validated resilience, security, retention, observability, human review,
-  release governance, and customer acceptance.</li>
+<li><strong>两天 MVP</strong> — 静态图像、两阶段检测、生成的 ROI、确定性规则、JSON 和
+  图像证据，CLI。</li>
+<li><strong>一个月目标</strong> — 相机和条形码集成、产品窗口、本地持久性、时间
+  聚合、本地仪表板、延迟上传、初始集中管理。</li>
+<li><strong>生产目标</strong> - 经过验证的弹性、安全性、保留性、可观察性、人工审查、
+  发布治理和客户接受度。</li>
 </ul>
-<p>See the <a href="design/25-roadmap/">Roadmap</a> and the <a href="design/appendices/#3-global-open-questions">Global Open Questions</a>
-before implementation planning.</p>
+<p>请参阅 <a href="design/25-roadmap/">Roadmap</a> 和 <a href="design/appendices/#3-global-open-questions">Global Open Questions</a>
+在实施计划之前。</p>
 <h2 id="repository-conventions">存储库约定<a class="headerlink" href="#repository-conventions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Runtime data, model weights, production media, datasets, and secrets are <strong>not</strong> stored in Git.</li>
-<li><code>docs/design/</code> is the English architecture baseline; the Chinese mirror <code>docs-zh/</code> is generated by
-  <code>scripts/translate-docs.py</code>.</li>
-<li>Bilingual static site build: <code>bash scripts/build-docs.sh</code>.</li>
+<li>运行时数据、模型权重、生产媒体、数据集和秘密<strong>不</strong>存储在 Git 中。</li>
+<li><code>docs/design/</code>是英文架构基线；中文镜像<code>docs-zh/</code>是由
+  <code>scripts/translate-docs.py</code>。</li>
+<li>双语静态站点构建：<code>bash scripts/build-docs.sh</code>。</li>
 </ul>
 
 

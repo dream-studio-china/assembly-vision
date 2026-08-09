@@ -2974,7 +2974,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3573,10 +3573,22 @@
 <li><strong>可插拔源，全部实现协议</strong>：<code>folder</code>（静态图像
    目录，可选循环），<code>video</code>（本地视频文件），<code>opencv-device</code>
    （本地相机索引或<code>/dev/videoN</code>，包括虚拟相机，例如
-   Linux <code>v4l2loopback</code> 或 OBS 虚拟摄像机）、<code>rtsp</code>（通过远程 RTSP 流
-   PyAV 与 OpenCV 后备），以及 <code>http-image</code> （轮询远程 JPEG URL
-   配置的间隔）。供应商 SDK 适配器可以稍后添加到相同的后面
-   协议而不改变管道。</li>
+    Linux <code>v4l2loopback</code> 或 OBS 虚拟摄像机）、<code>rtsp</code>（通过远程 RTSP 流
+    PyAV 与 OpenCV 后备），<code>http-image</code>（轮询远程 JPEG URL
+    配置的间隔）和 <code>gige-vision</code> （GenICam/GenTL 通过 Harvester 和
+    供应商 GenTL 生产商）。供应商 SDK 适配器可以稍后添加到
+    相同的协议而不改变管道。
+   生产首选适配器是 <code>gige-vision</code> GenICam/GenTL
+   消费者，而 <code>opencv-device</code> 仍然是 UVC USB 兼容源。
+   Linux 是主要的生产运行时；仅在以下情况下才支持 Windows
+   所选相机的 GenTL 生产商或 UVC 驱动程序通过相同的一致性
+   套房。初始目标配置文件在 25-30 时约为 4 兆像素
+   FPS。 GigE Vision设备通过序列号绑定，支持
+   连续/软件/硬件触发模式，并公开应用的像素格式
+   以及通过键入相机状态进行采集设置。生产时首选硬件触发
+   边界。最初不需要 PTP；单调时间控制持续时间
+   UTC 仍然是可追溯性元数据。巨型帧是可选的并且需要
+   经过验证的相机/NIC/交换机支持。</li>
 <li><strong>多实例配置</strong>（<code>pipeline.yaml</code>、<code>instances:</code>列表）：每个
    实例是一个独立的检查管道，有自己的<code>camera</code>，
    模型、阈值、ROI 和规则。现有的扁平单配置形式
@@ -3640,7 +3652,7 @@
 <h2 id="5-open-questions-and-validation-required">5. 开放式问题和需要验证<a class="headerlink" href="#5-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>选择真正的相机供应商/SDK 并根据
-  <code>FrameSource</code> 收缩和重新连接行为。</li>
+  <code>FrameSource</code>收缩和重新连接行为。</li>
 <li>验证目标产品上的 RTSP 延迟、重新连接和帧丢失
   网络。</li>
 <li>在内存之前决定是否需要按实例模型权重共享

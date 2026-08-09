@@ -976,7 +976,7 @@
   <a href="#79-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.9 Verification
+        7.9 验证
       
     </span>
   </a>
@@ -2990,7 +2990,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3536,7 +3536,7 @@
   <a href="#79-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.9 Verification
+        7.9 验证
       
     </span>
   </a>
@@ -3596,7 +3596,7 @@
 </tr>
 <tr>
 <td>生产目标</td>
-<td>一台固定工业相机，具有固定照明、重新连接处理、产品窗口关联、可选滚动视频</td>
+<td>GigE Vision / GenICam 工业相机作为主要路径，具有固定照明、重新连接处理、产品窗口关联和可选的滚动视频； UVC USB 仍是一条兼容之路</td>
 </tr>
 <tr>
 <td>未来</td>
@@ -3604,7 +3604,17 @@
 </tr>
 </tbody>
 </table>
-<p>相机供应商、SDK、操作系统、触发电气接口、帧速率、曝光和传送带速度仍然是部署决策。</p>
+<p>Linux 是主要的生产运行时。仅支持 Windows 兼容性
+当所选相机的 GenTL 生产者或 UVC 驱动程序可用并通过时
+相同的适配器一致性套件； Windows 不被假定为生产版本
+在验证之前准备好。相机厂商、SDK/GenTL制作者、触发器
+电气接口、曝光和传送带速度仍然是部署决策。</p>
+<p>初始目标配置文件约为 4 兆像素（25-30 FPS）。确实如此
+并不意味着接受每种相机格式：适配器必须明确
+报告支持的格式并确定地转换批准的格式
+或检查前不合格。生产验证至少涵盖
+选择相机的 Mono8、Bayer8、RGB8、BGR8 或 YUV 格式（如果适用）；原始的
+缓冲区永远不会被默默地重新解释。</p>
 <h2 id="73-adapter-interface">7.3 适配器接口<a class="headerlink" href="#73-adapter-interface" title="Permanent link">&para;</a></h2>
 <p>供应商代码被隔离在 <code>FrameSource</code> 协议后面，因此记录的数据可以使用相同的管道。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">FrameSource</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
@@ -3618,10 +3628,25 @@
 图片目录，可选循环），<code>video</code>（本地视频文件），<code>opencv-device</code>
 （本地相机索引或<code>/dev/videoN</code>，包括Linux等虚拟相机
 <code>v4l2loopback</code>或OBS虚拟摄像机），<code>rtsp</code>（通过PyAV的远程RTSP流
-使用 OpenCV 后备）和 <code>http-image</code> （轮询远程 JPEG URL
-配置的间隔）。供应商 SDK 适配器是未来的实现
-相同的协议。读取/解码失败会引发帧流错误，并且永远不会
-默默地跳过了。</p>
+使用 OpenCV 后备），<code>http-image</code>（轮询远程 JPEG URL
+配置的间隔）和 <code>gige-vision</code> （GenICam/GenTL 通过 Harvester 和
+供应商 GenTL 生产商）。读取/解码失败会引发帧流错误，
+永远不会默默地跳过。</p>
+<p>生产 <code>gige-vision</code> 源是背后的 GenICam/GenTL 消费者
+相同的协议。它通过稳定的序列号而不是IP来绑定相机
+地址并公开序列号、型号、固件、GenTL 生产者、传输
+父级、像素格式以及通过类型相机应用的采集设置
+启动时和配置后的状态。它支持连续、
+软件触发和硬件触发采集；硬件触发是
+生产产品边界的首选。配置的像素格式、曝光、
+增益和数据包大小应用于 GenICam 节点图并通过以下方式验证
+回读；仅支持的格式（<code>Mono8</code>、<code>RGB8</code>、<code>BGR8</code>）转换
+在检查之前确定性地对 RGB 和其他任何内容进行失败（故障安全）。
+GenTL 绑定仅提供许多 Linux 和 Windows 轮子，因此 GigE Vision
+路径仅限 Linux/Windows； macOS 将额外的问题解决为无。 PTP 不是
+初始部署所需：进程单调时间控制窗口
+UTC 仍然是可追溯性元数据。 PTP 只能在稍后启用
+场地要求和验证。</p>
 <p>静态文件接收从相对路径加上内容校验和派生的稳定 ID。不支持的、部分写入的或不可解码的文件将被记录为失败的输入，而不是默默地跳过。</p>
 <h2 id="74-trigger-and-product-window-strategy">7.4 触发器和产品窗口策略<a class="headerlink" href="#74-trigger-and-product-window-strategy" title="Permanent link">&para;</a></h2>
 <p>首选生产订单是：</p>
@@ -3635,7 +3660,7 @@
     participant Sensor as 触发器或传感器
     participant Capture as 相机适配器
     participant Window as 产品窗口管理器
-    participant Vision as Vision Pipeline
+    participant Vision as 愿景管道
     participant Aggregate as 时间聚合器
     participant Rules as 规则引擎
     participant Store as 本地存储
@@ -3649,12 +3674,12 @@ loop 直到退出或超时
     end
     Sensor-&gt;&gt;Window:产品退出事件
     Window-&gt;&gt;Aggregate:关闭检查窗口
-    Aggregate--&gt;&gt;Rules:Evidence per required component
-    Rules--&gt;&gt;Store:OK or NG with reason codes
+    Aggregate--&gt;&gt;Rules:每个所需组件的证据
+    Rules--&gt;&gt;Store:OK 或 NG 以及原因代码
     Store--&gt;&gt;Upload:将持久结果和媒体入队
     Note over Store,Upload:上传是异步的，不能阻塞检查</code></pre>
 <p>每个实例独立地将其最新捕获的帧公开为
-速率受限的 JPEG 预览 (<code>GET /api/v1/camera/{instance_id}/preview</code>,
+速率限制的 JPEG 预览 (<code>GET /api/v1/camera/{instance_id}/preview</code>,
 ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 运行时通道取代它；预览损失永远不会改变检查
 发动机状态。</p>
@@ -3729,24 +3754,44 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <td><code>url</code></td>
 <td>以有限的 HTTP 超时时间以 <code>fps</code>/interval 进行轮询</td>
 </tr>
+<tr>
+<td><code>gige-vision</code></td>
+<td><code>serial</code></td>
+<td>GenICam/GenTL 通过 Harvester + 供应商 <code>.cti</code>；连续、软件或硬件触发； <code>gentl_producer</code>部署提供</td>
+</tr>
 </tbody>
 </table>
-<p><code>null</code> 曝光和增益意味着需要进行现场校准，而不是自动默认。应用的相机设置和序列号会在启动和更改时记录。</p>
+<p><code>null</code> 曝光和增益意味着需要进行现场校准，而不是自动默认。当前键入的相机状态会在启动和更改时公开应用的设置和序列号；验收证据单独记录批准的场地配置。</p>
+<p>仅当摄像机和所选网络都协商 GigE 数据包大小时
+接口支持它。巨型帧是一种可选的优化，而不是
+要求：部署验证 NIC MTU、交换机路径、数据包丢失和
+应用值之前的相机数据包大小。不支持 jumbo 的路径
+如果帧满足测量的帧丢失，则帧在标准 MTU 下仍然有效，并且
+延迟预算。</p>
+<p>USB UVC 相机使用 <code>opencv-device</code> 并且适合兼容性，
+开发以及任何经过验证的低风险部署。 USB3 Vision 相机
+公开 GenICam 使用 <code>gige-vision</code>/GenTL 样式适配器而不是
+默默降级到OpenCV。电话摄像头和低成本以太网摄像头
+不按价格或连接器分类：电话可以通过经过验证的使用
+用于开发的 UVC、RTSP 或 HTTP 源，而以太网摄像头必须证明
+GigE Vision / GenICam 支持才可以使用生产适配器。一个
+仅暴露 RTSP/ONVIF 的摄像机仍然是 RTSP 兼容源，并且不会
+未获得工业触发保证。</p>
 <h2 id="78-recovery-and-failure-handling">7.8 恢复和故障处理<a class="headerlink" href="#78-recovery-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
-<li>断开连接时，停止接受新的检查，将任何活动窗口关闭为 <code>NG</code> 和 <code>CAMERA_DISCONNECTED</code>，并使用有界指数退避重新连接。</li>
+<li>断开连接时，停止接受新检查，将任何活动窗口关闭为 <code>NG</code> 和 <code>CAMERA_DISCONNECTED</code>，并使用有界指数退避重新连接。</li>
 <li>在序列间隙或缓冲区溢出时，增加指标并将受影响的窗口标记为降级；证据不足产生<code>NG</code>。</li>
 <li>对于陈旧或重复的帧，拒绝这些帧并报告相机运行状况恶化。</li>
 <li>在时钟调整时，继续使用单调时钟计算持续时间并记录挂钟的不连续性。</li>
-<li>在捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断的<code>NG</code>。</li>
+<li>捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断<code>NG</code>。</li>
 <li>服务器中断时，不要进行采集更改。在储存能力允许的情况下，当地捕获和检查将继续进行。</li>
 </ul>
 <p>滚动视频写入分段文件以限制断电后的损坏。媒体持久化和删除规则在<a href="../12-local-storage-and-retention/">local storage and retention</a>中定义。</p>
-<h2 id="79-verification">7.9 Verification<a class="headerlink" href="#79-verification" title="Permanent link">&para;</a></h2>
+<h2 id="79-verification">7.9 验证<a class="headerlink" href="#79-verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>根据记录和模拟的 SDK 行为对每个供应商适配器进行合同测试。</li>
 <li>测试断开、重新连接、丢帧、重复序列号、损坏的缓冲区和延迟帧。</li>
-<li>在每个窗口阶段验证触发去抖、相邻产品、超时和重新启动。</li>
+<li>验证触发去抖、相邻产品、超时以及每个窗口阶段的重新启动。</li>
 <li>使用正常、模糊、黑暗、明亮、反射和空的生产场景校准质量阈值。</li>
 <li>浸泡测试捕获时间比正常生产班次长，同时监控内存和缓冲区增长。</li>
 <li>验证文件源排序和输出 ID 是否可重复。</li>

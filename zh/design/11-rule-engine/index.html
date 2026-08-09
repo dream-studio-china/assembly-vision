@@ -1044,7 +1044,7 @@
   <a href="#115-reason-codes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.5 Reason Codes
+        11.5 原因代码
       
     </span>
   </a>
@@ -2979,7 +2979,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3481,7 +3481,7 @@
   <a href="#115-reason-codes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.5 Reason Codes
+        11.5 原因代码
       
     </span>
   </a>
@@ -3552,7 +3552,7 @@
   
 
 
-<h1 id="11-rule-engine">11. Rule Engine<a class="headerlink" href="#11-rule-engine" title="Permanent link">&para;</a></h1>
+<h1 id="11-rule-engine">11. 规则引擎<a class="headerlink" href="#11-rule-engine" title="Permanent link">&para;</a></h1>
 <h2 id="111-purpose-and-independence">11.1 目的和独立性<a class="headerlink" href="#111-purpose-and-independence" title="Permanent link">&para;</a></h2>
 <p>规则引擎将解析的产品身份、管道状态和每个组件的聚合证据转换为确定性的检查决策。它独立于YOLO，不包含图像推理。输入来自 <a href="../06-ai-detection-pipeline/">AI detection pipeline</a> 和 <a href="../10-temporal-aggregation/">temporal aggregation</a>。</p>
 <h2 id="112-decision-semantics">11.2 决策语义<a class="headerlink" href="#112-decision-semantics" title="Permanent link">&para;</a></h2>
@@ -3604,7 +3604,7 @@
 <a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="k">return</span> <span class="n">InspectionDecision</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="s2">&quot;NG&quot;</span> <span class="k">if</span> <span class="n">reasons</span> <span class="k">else</span> <span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="n">reasons</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">reasons</span><span class="p">))</span>
 </code></pre></div>
 <p>排序和稳定的组件迭代产生可重现的原因排序。引擎返回所有适用的原因，而不是一开始就停止，除非无法安全地解析输入。</p>
-<h2 id="115-reason-codes">11.5 Reason Codes<a class="headerlink" href="#115-reason-codes" title="Permanent link">&para;</a></h2>
+<h2 id="115-reason-codes">11.5 原因代码<a class="headerlink" href="#115-reason-codes" title="Permanent link">&para;</a></h2>
 <p>原因代码是稳定的机器可读标识符，分组为：</p>
 <ul>
 <li>身份：<code>BARCODE_UNREADABLE</code>、<code>PRODUCT_TYPE_UNKNOWN</code>、<code>PRODUCT_MAPPING_AMBIGUOUS</code>、<code>PRODUCT_IDENTITY_UNVERIFIED</code>；</li>
@@ -3644,7 +3644,7 @@
 <ul>
 <li>确认面向客户的界面是否仅支持<code>OK</code>/<code>NG</code>或还显示内部不确定类别。</li>
 <li>当条形码可读但未知时，定义精确的产品到条形码映射和行为。</li>
-<li>按产品变体定义所需的组件数量和任何条件要求。</li>
+<li>按产品变型定义所需的组件数量和任何条件要求。</li>
 <li>建立规则发布、批准、签署和紧急回滚角色。</li>
 <li>确认下游驱动语义和时序；这里不假设任何 PLC 行为。</li>
 </ul>

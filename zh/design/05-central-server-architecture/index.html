@@ -893,7 +893,7 @@
   <a href="#4-domain-and-persistence-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Domain and Persistence Model
+        4. 领域和持久化模型
       
     </span>
   </a>
@@ -987,7 +987,7 @@
   <a href="#10-deployment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Deployment
+        10. 部署
       
     </span>
   </a>
@@ -1021,7 +1021,7 @@
   <a href="#112-one-month-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.2 One-Month Target
+        11.2 一个月目标
       
     </span>
   </a>
@@ -3129,7 +3129,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3648,7 +3648,7 @@
   <a href="#4-domain-and-persistence-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Domain and Persistence Model
+        4. 领域和持久化模型
       
     </span>
   </a>
@@ -3742,7 +3742,7 @@
   <a href="#10-deployment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Deployment
+        10. 部署
       
     </span>
   </a>
@@ -3776,7 +3776,7 @@
   <a href="#112-one-month-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.2 One-Month Target
+        11.2 一个月目标
       
     </span>
   </a>
@@ -3852,7 +3852,7 @@
   
 
 
-<h1 id="assemblyvision-central-server-architecture">AssemblyVision Central Server Architecture<a class="headerlink" href="#assemblyvision-central-server-architecture" title="Permanent link">&para;</a></h1>
+<h1 id="assemblyvision-central-server-architecture">AssemblyVision 中央服务器架构<a class="headerlink" href="#assemblyvision-central-server-architecture" title="Permanent link">&para;</a></h1>
 <h2 id="1-responsibilities-and-boundary">1. 职责与边界<a class="headerlink" href="#1-responsibilities-and-boundary" title="Permanent link">&para;</a></h2>
 <p>中央服务器接收延迟的检查结果和选定的证据，维护跨设备历史记录和报告，管理设备/产品/规则/模型/用户，支持手动审核，记录审核事件并分发批准的配置。它是一个管理和证据平面，从来不是生产检验的同步依赖。</p>
 <p>最初的自动化决策是来自边缘的仅附加事实。中央审查和更正是相互关联的事实；它们不会覆盖原始结果。请参阅<a href="../03-architecture-overview/">Architecture Overview</a>和<a href="../04-edge-client-architecture/">Edge Client Architecture</a>。</p>
@@ -3886,7 +3886,7 @@
 <h3 id="32-media-transfer">3.2 媒体传输<a class="headerlink" href="#32-media-transfer" title="Permanent link">&para;</a></h3>
 <p>OK通常会贡献一帧代表性的帧。 NG 提供多个关键帧、注释、ROI 以及可选的简短事件剪辑。例外情况只能提供有限的诊断证据。 API最初可以直接接受小媒体；生产应使用经过验证的大小限制，并可选择为较大对象发出上传会话。</p>
 <p>字节被暂存、校验和/大小验证，然后在不透明的存储密钥下最终确定。 PostgreSQL 存储媒体类型、校验和、大小、内容类型、状态、保留类别和对象密钥，而不是公共文件系统路径。部分/孤立上传是异步协调的。根据安全模型，检索使用授权的 API 流或限时链接。</p>
-<h2 id="4-domain-and-persistence-model">4. Domain and Persistence Model<a class="headerlink" href="#4-domain-and-persistence-model" title="Permanent link">&para;</a></h2>
+<h2 id="4-domain-and-persistence-model">4. 领域和持久化模型<a class="headerlink" href="#4-domain-and-persistence-model" title="Permanent link">&para;</a></h2>
 <p>核心 PostgreSQL 聚合是：</p>
 <ul>
 <li>租户/位置：验证所需租户层次结构的组织、站点、生产线和设备。</li>
@@ -3904,7 +3904,7 @@
 <p>包会经历草稿、验证、批准、分配、下载、边缘验证、激活和确认状态。不可变内容收到新版本而不是就地编辑。在更广泛的分配之前，推出支持较小的设备群。边缘保留最后一次已知良好的包裹，并仅在检查之间激活。中心地位将分配与实际确认区分开来；任何仪表板都不应暗示仅通过分配即可激活。</p>
 <p>模型和远程配置/规则交付是生产目标功能。一个月的演示者可以集中注册所需的版本，同时在边缘手动安装软件包；安装仍会在本地验证不可变内容、校验和、兼容性和最后一次正确的回滚。分配绝不能显示为激活。</p>
 <h2 id="6-manual-review-and-reporting">6. 人工审核和报告<a class="headerlink" href="#6-manual-review-and-reporting" title="Permanent link">&para;</a></h2>
-<p>审查呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
+<p>审核呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
 <p>报告将自动计数与经过审查的真实情况分开，并清楚地说明样本覆盖范围。所需的视图包括 OK/NG 趋势、缺失组件、条形码故障、产品/系列/设备故障、模型/规则版本性能、设备运行状况/上次查看、上传延迟、审核率和纠正率。估计的假阴性指标需要抽样 OK 审核或独立标记的验收数据；未经审查不能被解释为正确性。</p>
 <h2 id="7-api-and-web-architecture">7. API 和 Web 架构<a class="headerlink" href="#7-api-and-web-architecture" title="Permanent link">&para;</a></h2>
 <p>建议的版本组为 <code>/api/v1/device-ingest</code>、<code>/devices</code>、<code>/lines</code>、<code>/inspections</code>、<code>/media</code>、<code>/reviews</code>、<code>/products</code>、<code>/rules</code>、<code>/models</code>、<code>/device-configurations</code>、<code>/dashboard</code>、<code>/reports</code>、<code>/events</code>、<code>/audit-logs</code> 和 <code>/auth</code>。集合 API 使用游标分页和有界过滤器。变异请求在客户端重试时使用乐观并发和幂等性。</p>
@@ -3923,13 +3923,13 @@
 <p>除了数据库/对象存储依赖项之外，API 是水平无状态的。 PostgreSQL 在需要时使用经过测试的备份和时间点恢复。对象存储使用与数据库保留和备份策略兼容的生命周期规则。健康检查区分活跃度/就绪度；可观察性将请求、设备、检查、媒体、作业和用户/审核 ID 关联起来。</p>
 <p>异步作业是可重试的和幂等的，持久存储状态，对瞬时/永久故障进行分类，并在合理的情况下使用死信/运算符处理。仪表板查询优化仅在查询测量之后从索引和预聚合表/物化视图开始； Redis 是可选的而不是记录系统。</p>
 <p>指标涵盖摄取量/错误/幂等重播/冲突、媒体验证、API 延迟/错误、数据库/对象存储运行状况、作业滞后/失败、设备上次查看、上传延迟、包确认、审核积压和审核失败。警报必须是可操作的，并避免将故意离线的设备视为无法解释的健康设备。</p>
-<h2 id="10-deployment">10. Deployment<a class="headerlink" href="#10-deployment" title="Permanent link">&para;</a></h2>
+<h2 id="10-deployment">10. 部署<a class="headerlink" href="#10-deployment" title="Permanent link">&para;</a></h2>
 <p>最初的中央部署是 Docker Compose 友好的：Nginx、内置管理资产、FastAPI API、PostgreSQL、对象存储实现以及只有合理的工作人员/代理。容器使用多阶段构建、非 root 用户、运行状况检查、重启策略、显式机密/配置和持久卷。架构迁移是一个受控发布步骤，并非由每个 API 副本同时运行。</p>
 <p>未来的 Kubernetes 部署可能会取代编排，同时保留 API 和持久性边界。不假定确切的托管位置、可用性拓扑、备份目标和数据驻留。</p>
 <h2 id="11-delivery-horizons">11. 交付范围<a class="headerlink" href="#11-delivery-horizons" title="Permanent link">&para;</a></h2>
 <h3 id="111-static-train-and-inspect-mvp">11.1 静态训练和检查 MVP<a class="headerlink" href="#111-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
 <p>没有建立中央服务器。单独的仅供开发人员使用的培训 CLI 和静态检查 CLI 使用未来兼容的标识符、原因代码、清单和版本，因此集成不需要重新定义决策。</p>
-<h3 id="112-one-month-target">11.2 One-Month Target<a class="headerlink" href="#112-one-month-target" title="Permanent link">&para;</a></h3>
+<h3 id="112-one-month-target">11.2 一个月目标<a class="headerlink" href="#112-one-month-target" title="Permanent link">&para;</a></h3>
 <p>实施设备范围的幂等摄取、PostgreSQL 检查历史记录、选定的证据存储、初始设备/产品/规则元数据、最小检查/审查视图、最小试点身份验证和 Compose 部署。推迟一般管理、复杂分析、报告/导出作业和远程包分发。</p>
 <h3 id="113-production-target">11.3 生产目标<a class="headerlink" href="#113-production-target" title="Permanent link">&para;</a></h3>
 <p>添加批准的身份/授权、凭证轮换、审计、备份/恢复测试、保留、安全媒体访问、转出/回滚、协调、警报、报告正确性控制、性能/浸泡测试和操作运行手册。</p>

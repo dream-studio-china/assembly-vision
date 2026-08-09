@@ -3012,7 +3012,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3618,7 +3618,7 @@
   
 
 
-<h1 id="10-temporal-aggregation">10. Temporal Aggregation<a class="headerlink" href="#10-temporal-aggregation" title="Permanent link">&para;</a></h1>
+<h1 id="10-temporal-aggregation">10. 时间聚合<a class="headerlink" href="#10-temporal-aggregation" title="Permanent link">&para;</a></h1>
 <h2 id="101-purpose">10.1 目的<a class="headerlink" href="#101-purpose" title="Permanent link">&para;</a></h2>
 <p>时间聚合器将 <a href="../09-component-detection/">component detection</a> 的帧级观察结果转换为 <a href="../11-rule-engine/">rule engine</a> 的产品级证据。 YOLO 仍然处理单个帧。聚合通过组合观察结果来提高系统的鲁棒性；它不会提高模型的单帧精度。</p>
 <h2 id="102-scope">10.2 范围<a class="headerlink" href="#102-scope" title="Permanent link">&para;</a></h2>
@@ -3670,7 +3670,7 @@
 <pre class="mermaid"><code>sequenceDiagram
     participant Window as 产品展示
     participant Quality as 框架质量门
-    participant Detector as Component Detector
+    participant Detector as 元件检测器
     participant Aggregate as 每个组件聚合器
     participant Rules as 规则引擎
     Window-&gt;&gt;Aggregate:打开检查所需的组件
@@ -3684,7 +3684,7 @@ else 帧无效
             Quality--&gt;&gt;Aggregate:仅拒绝原因
         end
     end
-    Window-&gt;&gt;Aggregate:Close window
+    Window-&gt;&gt;Aggregate:关闭窗口
 loop 每个必需的组件
         Aggregate-&gt;&gt;Aggregate:解决现有、缺失、不确定或无法验证的问题
     end
@@ -3787,7 +3787,7 @@ loop 每个必需的组件
 <li><strong>计数证据</strong>：<code>detection_count</code>、方框区域和中心摘要包括
   仅检测到等于或高于计数证据阈值（策略
   <code>medium_confidence</code> 至少），因此低置信度误报不能
-  膨胀一个精确的 <code>expected_count</code>。</li>
+  膨胀一个精确的<code>expected_count</code>。</li>
 </ul>
 <h2 id="108-window-integrity-and-failure-handling">10.8 窗口完整性和故障处理<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>

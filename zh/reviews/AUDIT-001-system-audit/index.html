@@ -2833,7 +2833,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3022,12 +3022,12 @@
   <a href="#3-high-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. HIGH Findings
+        3. 高发现
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. HIGH Findings">
+    <nav class="md-nav" aria-label="3. 高发现">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3045,7 +3045,7 @@
   <a href="#h2-published-references-the-removed-staging-directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H2. Published data.yaml references the removed staging directory
+        H2。发布的 data.yaml 引用已删除的暂存目录
       
     </span>
   </a>
@@ -3603,12 +3603,12 @@
   <a href="#3-high-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. HIGH Findings
+        3. 高发现
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. HIGH Findings">
+    <nav class="md-nav" aria-label="3. 高发现">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3626,7 +3626,7 @@
   <a href="#h2-published-references-the-removed-staging-directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H2. Published data.yaml references the removed staging directory
+        H2。发布的 data.yaml 引用已删除的暂存目录
       
     </span>
   </a>
@@ -3841,7 +3841,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 权威持久性工作不得将其当前模式视为令人满意的
 那个生产合同。</p>
 <hr />
-<h2 id="3-high-findings">3. HIGH Findings<a class="headerlink" href="#3-high-findings" title="Permanent link">&para;</a></h2>
+<h2 id="3-high-findings">3. 高发现<a class="headerlink" href="#3-high-findings" title="Permanent link">&para;</a></h2>
 <h3 id="h1-missing-label-files-fabricate-ground-truth">H1。丢失的标签文件伪造了真实情况<a class="headerlink" href="#h1-missing-label-files-fabricate-ground-truth" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>状态：</strong> 关闭 (3ce3147)。</li>
@@ -3861,7 +3861,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
   显式空标签（接受）、同干碰撞（拒绝）和
   记录的 <code>valid</code> 布局（仅在规范化为 <code>val</code> 时接受）。</li>
 </ul>
-<h3 id="h2-published-references-the-removed-staging-directory">H2. Published <code>data.yaml</code> references the removed staging directory<a class="headerlink" href="#h2-published-references-the-removed-staging-directory" title="Permanent link">&para;</a></h3>
+<h3 id="h2-published-references-the-removed-staging-directory">H2。发布的 <code>data.yaml</code> 引用已删除的暂存目录<a class="headerlink" href="#h2-published-references-the-removed-staging-directory" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>状态：</strong> 关闭 (7af307b)。</li>
 <li><strong>证据：</strong> 两个适配器和 <code>prepare_components.py:181-189</code> 序列化
@@ -3917,7 +3917,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tbody>
 <tr>
 <td>M1</td>
-<td>已关闭 (7d987e7)。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
+<td>已关闭（7d987e7）。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
 <td>将路径构建/解析期间引发的 <code>ValueError</code> 视为格式错误的媒体并跳过该记录。隔离单个包中的错误。</td>
 <td>包含 NUL 字节媒体路径的协调测试会导入有效的同级包，跳过格式错误的包，返回正确的导入计数，并发出警告而不引发警告。</td>
 </tr>
@@ -3989,7 +3989,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
   或多写入器部署，为权威添加 Alembic 迁移
   模式，保留一个非空的受控产品配置版本，并制作
   等内容并发检查更新插入幂等返回<code>unchanged</code>。</li>
-<li><strong>接受：</strong> 边界文件指出投影的非权威性
+<li><strong>接受：</strong> 边界文件指出了投影的非权威性
   限制。权威商店测试验证所有合同 04/05 约束，
   租赁字段、产品版本追溯、并发等内容
   更新插入返回<code>unchanged</code>；不同的内容必须在没有突变的情况下失败。</li>
@@ -4006,37 +4006,37 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tbody>
 <tr>
 <td>无token非环回服务</td>
-<td>已关闭 (056e712)。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
+<td>已关闭（056e712）。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
 <td>没有令牌的非环回绑定启动失败，或者需要记录高严重性警告的显式开发覆盖。测试环回/dev、非环回/拒绝和非环回/显式覆盖路径。</td>
 </tr>
 <tr>
 <td>经过身份验证的日志端点公开异常消息/路径</td>
-<td>已关闭 (056e712)。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
+<td>已关闭（056e712）。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
 <td>从查看器记录中排除回溯/绝对路径或将端点限制为更高的特权角色。测试引发的异常是否不会在 <code>/logs</code> 中产生回溯或绝对路径。</td>
 </tr>
 <tr>
 <td>会话交换缺乏限制，会话存储没有扫描/上限</td>
-<td>已关闭 (056e712)。</td>
+<td>已关闭（056e712）。</td>
 <td>添加有界的每个源失败尝试限制和有界会话存储以及到期清除；文件 M1 限制。测试重复失败、冷却后成功交换、过期清理和容量行为。</td>
 </tr>
 <tr>
 <td>光标错误和过滤器绑定</td>
-<td>已关闭 (056e712)。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
+<td>已关闭（056e712）。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
 <td>将格式错误的光标映射到 <code>400 INVALID_CURSOR</code>；将游标绑定到规范过滤器哈希。测试必须拒绝没有 500 的格式错误/不匹配的游标，并为匹配的过滤器保留稳定的分页。</td>
 </tr>
 <tr>
 <td>如果文件仍然存在，则可以对已清除的媒体进行流式传输</td>
-<td>已关闭 (056e712)。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
+<td>已关闭（056e712）。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
 <td>首先检查 <code>PURGED</code> 并始终返回 <code>410 MEDIA_PURGED</code>。使用幸存的文件添加测试。</td>
 </tr>
 <tr>
 <td>非 ASCII 承载标头可以从 <code>compare_digest</code></td>
-<td>引发已关闭 (056e712)。</td>
+<td>引发已关闭（056e712）。</td>
 <td>将比较类型/编码失败视为无效凭证并返回 <code>401</code>。添加具有非 ASCII 授权输入的 API 测试。</td>
 </tr>
 <tr>
 <td><code>/api</code> 可能会落入 SPA</td>
-<td>已关闭 (056e712)。守卫仅匹配<code>api/</code>。</td>
+<td>已关闭（056e712）。守卫仅匹配<code>api/</code>。</td>
 <td>在 SPA 回退之前保留 <code>api</code> 和 <code>api/</code>。测试 <code>/api</code>、<code>/api/unknown</code> 和正常的客户端路由。</td>
 </tr>
 <tr>
@@ -4051,7 +4051,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </tr>
 <tr>
 <td>缺少 CSP</td>
-<td>已关闭 (056e712)。</td>
+<td>已关闭（056e712）。</td>
 <td>添加与本地服务的仪表板兼容的最低权限 CSP 并测试响应标头。</td>
 </tr>
 <tr>
@@ -4116,88 +4116,88 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <table>
 <thead>
 <tr>
-<th>Finding</th>
-<th>Status</th>
-<th>Required change and acceptance</th>
+<th>寻找</th>
+<th>状态</th>
+<th>所需变更和接受</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Design 14 describes an authoritative operational SQLite store rather than the M1 rebuildable projection</td>
-<td>CLOSED (5488804).</td>
-<td>Update scope, tables, and recovery language; link the authoritative-store design as future work. Review against ADR-012 and context section 8.3.</td>
+<td>Design 14 描述了一个权威的可操作 SQLite 存储，而不是 M1 可重建投影</td>
+<td>已关闭 (5488804)。</td>
+<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作联系起来。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
 </tr>
 <tr>
-<td>Appendix reason-code glossary and design 11.5 omit/contradict emitted codes</td>
-<td>CLOSED (5488804).</td>
-<td>Make <code>reason_codes.py</code> the explicit canonical list or generate the glossary from it. A test must compare all declared static codes and documented parameterized prefixes.</td>
+<td>附录 原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
+<td>已关闭 (5488804)。</td>
+<td>使 <code>reason_codes.py</code> 成为显式规范列表或从中生成术语表。测试必须比较所有声明的静态代码和记录的参数化前缀。</td>
 </tr>
 <tr>
-<td>Coverage claims</td>
-<td>CLOSED (5488804). <code>context.md</code> currently says approximately 99.5%, so its claimed 99.6% discrepancy is ~~STALE~~; PR review claims still require source-based verification.</td>
-<td>Replace numeric claims with a dated command/output reference or update all sources from one CI artifact.</td>
+<td>承保范围索赔</td>
+<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍需要基于来源的验证。</td>
+<td>将数字声明替换为带日期的命令/输出参考，或更新来自一个 CI 工件的所有源。</td>
 </tr>
 <tr>
-<td>Vitest count in <code>context.md</code></td>
-<td>~~INVALID / STALE~~. <code>context.md:295-297</code> already records 63 tests (30 + 13 + 17 + 3).</td>
-<td>No change required for this item.</td>
+<td><code>context.md</code> 中的访问次数</td>
+<td>~~无效/陈旧~~。 <code>context.md:295-297</code> 已记录 63 次测试 (30 + 13 + 17 + 3)。</td>
+<td>此项目无需更改。</td>
 </tr>
 <tr>
-<td>README/QUICKSTART branch comments and SECURITY supported versions</td>
-<td>CLOSED (5488804).</td>
-<td>Update merged-branch/release statements from current Git state. Validate all branch/PR assertions against <code>git branch -a</code> and GitHub before publication.</td>
+<td>README/QUICKSTART 分支注释和 SECURITY 支持的版本</td>
+<td>已关闭 (5488804)。</td>
+<td>从当前 Git 状态更新合并分支/发布语句。在发布之前根据 <code>git branch -a</code> 和 GitHub 验证所有分支/PR 断言。</td>
 </tr>
 <tr>
-<td>Runbook 10 requires <code>feat/mvp</code></td>
-<td>CLOSED (5488804).</td>
-<td>Replace with the supported <code>main</code>/current development workflow and test every documented command in a clean checkout.</td>
+<td>Runbook 10 需要 <code>feat/mvp</code></td>
+<td>已关闭 (5488804)。</td>
+<td>替换为受支持的 <code>main</code>/当前开发工作流程，并在干净的检查中测试每个记录的命令。</td>
 </tr>
 <tr>
-<td>Design 19.17.4/runbook 11/QUICKSTART claim strict pairing and usable adapter YAML</td>
-<td>CLOSED (5488804), after H1/H2.</td>
-<td>Update only after H1/H2 acceptance passes; documentation must describe the final behavior exactly.</td>
+<td>Design 19.17.4/runbook 11/QUICKSTART 声明严格配对和可用适配器 YAML</td>
+<td>H1/H2 后已关闭 (5488804)。</td>
+<td>仅在H1/H2验收通过后更新；文档必须准确描述最终行为。</td>
 </tr>
 <tr>
-<td>Synthetic generator has rotated-drawing/label mismatch and unreachable chip/diode missing scenarios</td>
-<td>CLOSED (237f96d).</td>
-<td>Correct the rotation transform and scenario schedule. Add deterministic image/label geometry tests and assert every missing scenario occurs for a representative training count.</td>
+<td>合成生成器具有旋转绘图/标签不匹配和无法到达的芯片/二极管丢失情况</td>
+<td>已关闭 (237f96d)。</td>
+<td>更正旋转变换和场景时间表。添加确定性图像/标签几何测试，并断言代表性训练计数中出现的每个缺失场景。</td>
 </tr>
 <tr>
-<td>Documented pipeline keys are rejected by configuration loader</td>
-<td>CLOSED (5488804): design 06/08/09 now mark them deferred.</td>
-<td>Either implement and test each documented key with fail-safe semantics, or remove/defer it from design 06/08/09. No documented accepted key may be rejected as unknown.</td>
+<td>记录的管道密钥被配置加载器拒绝</td>
+<td>已关闭 (5488804)：2009 年 6 月 8 日设计现在将其标记为推迟。</td>
+<td>要么使用故障安全语义实施和测试每个记录的密钥，要么从设计中删除/推迟它 06/08/09。没有记录的接受密钥可能会因未知而被拒绝。</td>
 </tr>
 <tr>
-<td>Manifest provenance omits reproducibility data required by design 19.8</td>
-<td>CLOSED (99de074).</td>
-<td>Extend manifest/run metadata with immutable dataset/split references, seed, epochs, augmentations, framework/environment versions, and checksums. Test a training invocation produces all required values.</td>
+<td>清单出处忽略了设计所需的再现性数据 19.8</td>
+<td>已关闭 (99de074)。</td>
+<td>使用不可变数据集/分割引用、种子、纪元、增强、框架/环境版本和校验和扩展清单/运行元数据。测试训练调用会产生所有必需的值。</td>
 </tr>
 <tr>
-<td>Contract 10 example does not match <code>ModelManifest</code></td>
-<td>~~INVALID as a schema violation.~~ Contract 10 says a manifest "similar to" the example; it is not an exact schema declaration.</td>
-<td>Improve the example or link it to the canonical schema as documentation quality work, not a contract breach.</td>
+<td>合约 10 示例与 <code>ModelManifest</code></td>
+<td>不匹配~~作为架构违规而无效。~~合同 10 表示清单“类似于”示例；它不是一个精确的模式声明。</td>
+<td>改进示例或将其链接到规范模式作为文档质量工作，而不是违反合同。</td>
 </tr>
 <tr>
-<td><code>--allow-missing-labels</code> marker is not read on later runs</td>
-<td>~~NOT AN ESTABLISHED DEFECT~~. The flag is a per-invocation legacy opt-in; recording it is provenance, not a documented persistent authorization.</td>
-<td>If persistent authorization is desired, create a separate ADR/contract and validation design; otherwise clarify the help text.</td>
+<td><code>--allow-missing-labels</code> 标记在以后的运行中不会被读取</td>
+<td>~~不是一个既定的缺陷~~。该标志是每次调用的遗留选择加入；记录它是出处，而不是记录在案的持久授权。</td>
+<td>如果需要持久授权，请创建单独的 ADR/合同和验证设计；否则澄清帮助文本。</td>
 </tr>
 <tr>
-<td>QUICKSTART calls live configuration/log views placeholders and conflates derived endpoints with design 15.3</td>
-<td>CLOSED (5488804).</td>
-<td>Correct the endpoint descriptions and scope labels. Add a documentation link check and an API smoke test matching the published endpoint table.</td>
+<td>QUICKSTART 调用实时配置/日志视图占位符并将派生端点与设计 15.3 合并在一起</td>
+<td>已关闭 (5488804)。</td>
+<td>更正端点描述和范围标签。添加与已发布端点表匹配的文档链接检查和 API 冒烟测试。</td>
 </tr>
 </tbody>
 </table>
 <h2 id="7-closure-order">7. 关闭令<a class="headerlink" href="#7-closure-order" title="Permanent link">&para;</a></h2>
 <ol>
-<li>H1, H2, and H3: they block a trustworthy documented train-and-inspect loop.</li>
-<li>M1, M2, M3, rule-engine evidence validation, and manifest containment:
-   they are direct robustness or fail-safe defects.</li>
-<li>Resolve the M1 projection versus authoritative-persistence boundary before
-   implementing the upload scheduler, WebSocket runtime, or multi-edge hosting.</li>
-<li>Complete documentation and tooling corrections only after the behavior they
-   describe has passed its specific acceptance criteria.</li>
+<li>H1、H2 和 H3：它们阻止了可靠的记录训练和检查循环。</li>
+<li>M1、M2、M3、规则引擎证据验证和清单遏制：
+   它们是直接的鲁棒性或故障安全缺陷。</li>
+<li>解决之前的M1投影与权威持久性边界
+   实现上传调度程序、WebSocket 运行时或多边缘托管。</li>
+<li>仅在行为发生后才完成文档和工具更正
+   描述已通过其特定的验收标准。</li>
 </ol>
 <h2 id="8-resolution-log-2026-08-09">8. 解决日志 (2026-08-09)<a class="headerlink" href="#8-resolution-log-2026-08-09" title="Permanent link">&para;</a></h2>
 <p>每个条目都会列出审核项目、关闭该项目的提交以及

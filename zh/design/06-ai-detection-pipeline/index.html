@@ -860,7 +860,7 @@
   <a href="#61-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 Purpose
+        6.1 目的
       
     </span>
   </a>
@@ -959,7 +959,7 @@
   <a href="#610-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.10 Open Questions and Validation Required
+        6.10 未解决的问题和需要验证
       
     </span>
   </a>
@@ -2990,7 +2990,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3448,7 +3448,7 @@
   <a href="#61-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 Purpose
+        6.1 目的
       
     </span>
   </a>
@@ -3547,7 +3547,7 @@
   <a href="#610-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.10 Open Questions and Validation Required
+        6.10 未解决的问题和需要验证
       
     </span>
   </a>
@@ -3575,7 +3575,7 @@
 
 
 <h1 id="6-ai-detection-pipeline">6. AI检测流程<a class="headerlink" href="#6-ai-detection-pipeline" title="Permanent link">&para;</a></h1>
-<h2 id="61-purpose">6.1 Purpose<a class="headerlink" href="#61-purpose" title="Permanent link">&para;</a></h2>
+<h2 id="61-purpose">6.1 目的<a class="headerlink" href="#61-purpose" title="Permanent link">&para;</a></h2>
 <p>本文档定义了从获取的图像到持久的产品级决策的端到端检查流程。详细的子系统行为在 <a href="../07-camera-and-image-acquisition/">camera and image acquisition</a>、<a href="../08-product-detection-and-roi/">product detection and ROI</a>、<a href="../09-component-detection/">component detection</a>、<a href="../10-temporal-aggregation/">temporal aggregation</a> 和 <a href="../11-rule-engine/">rule engine</a> 中指定。</p>
 <p>安全不变量是：</p>
 <blockquote>
@@ -3635,20 +3635,20 @@ loop 每个支持的图像
         CLI-&gt;&gt;Product:检测产品
         Product--&gt;&gt;CLI:产品检测或故障
 alt 恰好一件有效产品
-            CLI-&gt;&gt;ROI:Crop and map coordinates
+            CLI-&gt;&gt;ROI:裁剪和地图坐标
             ROI--&gt;&gt;CLI:产品投资回报率和转型
             CLI-&gt;&gt;Component:检测所需的类
             Component--&gt;&gt;CLI:框架证据
             CLI-&gt;&gt;Rules:评估单帧证据
             Rules--&gt;&gt;CLI:OK 或 NG 并说明原因
 else 产品无法验证
-            CLI-&gt;&gt;Rules:Evaluate pipeline failure
+            CLI-&gt;&gt;Rules:评估管道故障
             Rules--&gt;&gt;CLI:有理由不合格
         end
         CLI-&gt;&gt;Storage:原子保存 JSON 和媒体
         Storage--&gt;&gt;CLI:持续存在或存储错误
     end
-    CLI--&gt;&gt;Operator:Batch summary and exit status</code></pre>
+    CLI--&gt;&gt;Operator:批次汇总和退出状态</code></pre>
 <p>单帧 MVP 证据不被视为时间证据。每个必需的组件必须独立地通过其配置的单帧阈值。</p>
 <h2 id="65-real-time-processing-flow">6.5 实时处理流程<a class="headerlink" href="#65-real-time-processing-flow" title="Permanent link">&para;</a></h2>
 <p>实时管道对每个物理产品执行以下步骤：</p>
@@ -3686,7 +3686,7 @@ else 产品无法验证
 deferred：M1静态单帧CLI仅接受<code>product_detection</code>，
 <code>component_detection</code>、<code>components</code> 和 <code>roi</code> 部分并拒绝未知
 键（AUDIT-001）。</p>
-<p>配置在启动时进行架构验证。无效的配置会妨碍检查准备工作。当产品窗口打开时，活动模型、规则和产品配置版本将被固定，并且无法在该窗口内更改。</p>
+<p>配置在启动时进行模式验证。无效的配置会妨碍检查准备工作。当产品窗口打开时，活动模型、规则和产品配置版本将被固定，并且无法在该窗口内更改。</p>
 <h2 id="67-failure-handling">6.7 故障处理<a class="headerlink" href="#67-failure-handling" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3733,12 +3733,12 @@ deferred：M1静态单帧CLI仅接受<code>product_detection</code>，
 <ul>
 <li>单元测试阶段契约、阈值边界、坐标变换和原因代码映射。</li>
 <li>运行黄金图像测试，并将预期检测和决策固定到模型清单上。</li>
-<li>验证每个注入的阶段异常是否都会生成 <code>NG</code> 或阻止就绪，而不是 <code>OK</code>。</li>
+<li>验证每个注入的阶段异常是否都会产生 <code>NG</code> 或阻止就绪，而不会产生 <code>OK</code>。</li>
 <li>在窗口边界测试混合产品类型和版本变化。</li>
 <li>测量平均和 P95 延迟、吞吐量、NG 召回、产品检测成功和每个组件召回。</li>
 <li>在确定性推理支持允许的情况下，从持久输入、配置和版本元数据中再现结果。</li>
 </ul>
-<h2 id="610-open-questions-and-validation-required">6.10 Open Questions and Validation Required<a class="headerlink" href="#610-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="610-open-questions-and-validation-required">6.10 未解决的问题和需要验证<a class="headerlink" href="#610-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>测量传送带速度后确认生产延迟和吞吐量预算。</li>
 <li>选择并验证边缘推理硬件和执行提供商。</li>

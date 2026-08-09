@@ -1144,7 +1144,7 @@
   <a href="#139-failure-handling-and-operations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.9 Failure Handling and Operations
+        13.9 故障处理与操作
       
     </span>
   </a>
@@ -3034,7 +3034,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3580,7 +3580,7 @@
   <a href="#139-failure-handling-and-operations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.9 Failure Handling and Operations
+        13.9 故障处理与操作
       
     </span>
   </a>
@@ -3677,8 +3677,8 @@
     participant Inspect as 检验管道
     participant DB as 本地数据库
     participant Worker as 上传工人
-    participant Server as Central API
-    participant Objects as Object Storage
+    participant Server as 中央API
+    participant Objects as 对象存储
     Inspect-&gt;&gt;DB:提交检查、媒体和上传任务
     Worker-&gt;&gt;DB:租赁下一个到期任务
     Worker-&gt;&gt;Server:使用幂等密钥 POST /api/v1/inspection-uploads
@@ -3750,7 +3750,7 @@ loop 到期排队任务
 是<code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code>，
 <code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code>,
 <code>AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS</code>和<code>AV_EDGE_UPLOAD_MEDIA_CHUNK_BYTES</code>。</p>
-<h2 id="139-failure-handling-and-operations">13.9 Failure Handling and Operations<a class="headerlink" href="#139-failure-handling-and-operations" title="Permanent link">&para;</a></h2>
+<h2 id="139-failure-handling-and-operations">13.9 故障处理与操作<a class="headerlink" href="#139-failure-handling-and-operations" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3796,7 +3796,7 @@ loop 到期排队任务
 <p>按状态显示队列计数和字节数、最早的挂起时间、尝试率、成功/失败率、上传延迟、吞吐量、电路状态和上次成功联系。手动重试仅重置符合条件的任务并保留尝试历史记录。</p>
 <h2 id="1310-verification">13.10 验证<a class="headerlink" href="#1310-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>在每个服务器提交边界超时后集成测试幂等重播。</li>
+<li>在每个服务器提交边界超时后集成测试幂等重放。</li>
 <li>测试重复的任务交付、无序检查、重复的介质以及冲突的校验和。</li>
 <li>故障注入 DNS 失败、连接重置、响应缓慢、<code>429</code>、<code>5xx</code>、<code>401</code>、<code>409</code> 和工作线程终止。</li>
 <li>运行长时间的离线测试，继续检查，重新启动边缘，恢复网络，并验证完全耗尽而没有重复。</li>
@@ -3824,7 +3824,7 @@ loop 到期排队任务
   （设计12.4步骤3+4）。启动协调应用相同的操作
   每个有效的包，修复搁浅的 <code>LOCAL_ONLY</code> 记录而不是
   跳过它们。</li>
-<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code> 在一个任务中声明到期任务
+<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code>在一个任务中声明到期任务
   即时交易； <code>MEDIA</code> 任务只有在检查后才到期
   任务保存经过验证的成功收据，因此元数据始终先于媒体。
   每个声明都带有一个每个任务的防护令牌（<code>lease_owner</code>），并且陈旧

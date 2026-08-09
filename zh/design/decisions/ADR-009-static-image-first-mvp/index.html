@@ -1846,7 +1846,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Context
+        2. 背景
       
     </span>
   </a>
@@ -1902,7 +1902,7 @@
   <a href="#52-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 Negative and Trade-offs
+        5.2 负面和权衡
       
     </span>
   </a>
@@ -2996,7 +2996,7 @@
   <span class="md-ellipsis">
     
   
-    Edge Acceptance Execution
+    边缘验收执行
   
 
     
@@ -3465,7 +3465,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Context
+        2. 背景
       
     </span>
   </a>
@@ -3521,7 +3521,7 @@
   <a href="#52-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 Negative and Trade-offs
+        5.2 负面和权衡
       
     </span>
   </a>
@@ -3586,10 +3586,10 @@
   
 
 
-<h1 id="adr-009-static-image-first-mvp">ADR-009: Static-Image-First MVP<a class="headerlink" href="#adr-009-static-image-first-mvp" title="Permanent link">&para;</a></h1>
+<h1 id="adr-009-static-image-first-mvp">ADR-009：静态图像优先 MVP<a class="headerlink" href="#adr-009-static-image-first-mvp" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
 <p>已接受；部分被 <a href="../ADR-011-labeled-train-and-inspect-mvp/">ADR-011: Labeled Train-and-Inspect MVP</a> 取代。</p>
-<h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
+<h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
 <p>终端系统需要摄像头捕捉、实时视频、产品窗口、条形码、时间聚合、持久性、同步和 Web 应用程序。在验证核心产品/投资回报率/组件/规则行为之前实施所有这些将结合模型、硬件、时序、状态和网络不确定性，并使故障难以隔离。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
 <p>首先构建静态图像 MVP。它读取一张图像或一个文件夹、检测产品、生成和映射 ROI、检测组件、评估版本化确定性规则、输出带有原因的 <code>OK</code> 或 <code>NG</code>，并通过 CLI 保存 JSON、ROI 和带注释的证据。</p>
@@ -3602,9 +3602,9 @@
 <li>快速验证核心两阶段和规则边界。</li>
 <li>生成可检查的确定性工件以进行调试和模型评估。</li>
 <li>将视觉/数据问题与相机/窗口/网络问题分离。</li>
-<li>在添加异步行为之前建立测试和架构。</li>
+<li>在添加异步行为之前建立测试和模式。</li>
 </ul>
-<h3 id="52-negative-and-trade-offs">5.2 Negative and Trade-offs<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
+<h3 id="52-negative-and-trade-offs">5.2 负面和权衡<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
 <li>不验证帧时序、相机 SDK、运动模糊、条形码或产品标识窗口。</li>
 <li>单图像结果不能证明时间系统的鲁棒性。</li>
@@ -3613,7 +3613,7 @@
 </ul>
 <h2 id="6-alternatives">6.替代方案<a class="headerlink" href="#6-alternatives" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>首先是实时摄像头：</strong> 被拒绝，因为硬件/计时故障模糊了基本模型和规则行为。</li>
+<li><strong>实时摄像头优先：</strong> 被拒绝，因为硬件/定时故障模糊了基本模型和规则行为。</li>
 <li><strong>首先是中央/仪表板：</strong> 被拒绝，因为它不会降低核心检查风险。</li>
 <li><strong>仅限模型笔记本：</strong> 被拒绝，因为它省略了生产风格的架构、规则、证据、CLI 和测试。</li>
 <li><strong>首先模拟视频：</strong> 在静态流之后有用，但对于静态图像目标来说不必要。</li>
