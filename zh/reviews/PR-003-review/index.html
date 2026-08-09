@@ -2710,7 +2710,7 @@
   <a href="#runtime-inference-does-not-apply-declared-model-settings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Runtime inference does not apply declared model settings
+        运行时推理不应用声明的模型设置
       
     </span>
   </a>
@@ -2732,7 +2732,7 @@
   <a href="#pipeline-does-not-validate-detection-provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pipeline does not validate detection provenance
+        Pipeline 不验证检测来源
       
     </span>
   </a>
@@ -2787,7 +2787,7 @@
   <a href="#verification-identifies-samples-only-by-basename" class="md-nav__link">
     <span class="md-ellipsis">
       
-        验证仅通过基本名称识别样本
+        Verification identifies samples only by basename
       
     </span>
   </a>
@@ -2826,7 +2826,7 @@
   <a href="#rule-version-identity-is-not-bound-to-rule-content" class="md-nav__link">
     <span class="md-ellipsis">
       
-        规则版本标识不与规则内容绑定
+        Rule version identity is not bound to rule content
       
     </span>
   </a>
@@ -3241,7 +3241,7 @@
   <a href="#runtime-inference-does-not-apply-declared-model-settings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Runtime inference does not apply declared model settings
+        运行时推理不应用声明的模型设置
       
     </span>
   </a>
@@ -3263,7 +3263,7 @@
   <a href="#pipeline-does-not-validate-detection-provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pipeline does not validate detection provenance
+        Pipeline 不验证检测来源
       
     </span>
   </a>
@@ -3318,7 +3318,7 @@
   <a href="#verification-identifies-samples-only-by-basename" class="md-nav__link">
     <span class="md-ellipsis">
       
-        验证仅通过基本名称识别样本
+        Verification identifies samples only by basename
       
     </span>
   </a>
@@ -3357,7 +3357,7 @@
   <a href="#rule-version-identity-is-not-bound-to-rule-content" class="md-nav__link">
     <span class="md-ellipsis">
       
-        规则版本标识不与规则内容绑定
+        Rule version identity is not bound to rule content
       
     </span>
   </a>
@@ -3441,7 +3441,7 @@ P0 修复已提交为 <code>677c094</code>、<code>c23d831</code> 和 <code>1618
 <p>相关参考：<code>docs/contracts/08-security-permissions-and-audit.md</code>、
 <code>docs/contracts/10-model-rule-release-and-acceptance.md</code>，以及
 <code>docs/design/19-training-and-evaluation.md</code>。</p>
-<h3 id="runtime-inference-does-not-apply-declared-model-settings">Runtime inference does not apply declared model settings<a class="headerlink" href="#runtime-inference-does-not-apply-declared-model-settings" title="Permanent link">&para;</a></h3>
+<h3 id="runtime-inference-does-not-apply-declared-model-settings">运行时推理不应用声明的模型设置<a class="headerlink" href="#runtime-inference-does-not-apply-declared-model-settings" title="Permanent link">&para;</a></h3>
 <p><code>apps/edge-service/src/assemblyvision_edge/detection/product_detector.py</code> 和
 <code>component_detector.py</code> 在没有清单输入大小的情况下调用 Ultralytics 或
 配置 IoU 和置信度设置。因此，运行时取决于库
@@ -3465,7 +3465,7 @@ NMS 可以在精确计数规则之前抑制重叠的产品或组件
 组件配置和清单。</p>
 <p>相关参考：<code>docs/contracts/03-ai-rule-and-safety-contracts.md</code>和
 <code>docs/contracts/05-data-api-and-versioning-contracts.md</code>。</p>
-<h3 id="pipeline-does-not-validate-detection-provenance">Pipeline does not validate detection provenance<a class="headerlink" href="#pipeline-does-not-validate-detection-provenance" title="Permanent link">&para;</a></h3>
+<h3 id="pipeline-does-not-validate-detection-provenance">Pipeline 不验证检测来源<a class="headerlink" href="#pipeline-does-not-validate-detection-provenance" title="Permanent link">&para;</a></h3>
 <p><code>apps/edge-service/src/assemblyvision_edge/pipeline.py</code> 不验证
 产品和组件检测属于当前框架、加载的模型、
 或证据聚合之前的预期坐标空间。目前的
@@ -3513,7 +3513,7 @@ NMS 可以在精确计数规则之前抑制重叠的产品或组件
 提供，要求其条目与
 输入文件，将丢失和意外的文件报告为验证差距。</p>
 <p>相关参考文献：<code>docs/design/22-testing-and-quality-assurance.md</code>。</p>
-<h3 id="verification-identifies-samples-only-by-basename">验证仅通过基本名称识别样本<a class="headerlink" href="#verification-identifies-samples-only-by-basename" title="Permanent link">&para;</a></h3>
+<h3 id="verification-identifies-samples-only-by-basename">Verification identifies samples only by basename<a class="headerlink" href="#verification-identifies-samples-only-by-basename" title="Permanent link">&para;</a></h3>
 <p><code>apps/edge-service/src/assemblyvision_edge/verify.py</code> 使用 <code>path.name</code> 作为
 预期结果键。不同文件夹提供的同名图像共享
 一个标签，<code>seen</code> 集会折叠它们，同时指标对两行进行计数。</p>
@@ -3533,7 +3533,7 @@ JSON独立在最终检查目录中。失败可以离开
 重新启动恢复测试。</p>
 <p>相关参考文献：<code>docs/design/06-ai-detection-pipeline.md</code>和
 <code>docs/design/23-observability-and-support.md</code>。</p>
-<h3 id="rule-version-identity-is-not-bound-to-rule-content">规则版本标识不与规则内容绑定<a class="headerlink" href="#rule-version-identity-is-not-bound-to-rule-content" title="Permanent link">&para;</a></h3>
+<h3 id="rule-version-identity-is-not-bound-to-rule-content">Rule version identity is not bound to rule content<a class="headerlink" href="#rule-version-identity-is-not-bound-to-rule-content" title="Permanent link">&para;</a></h3>
 <p><code>rule_version_id()</code> 在
 <code>apps/edge-service/src/assemblyvision_edge/rules/rule_engine.py</code> 仅限哈希值
 <code>rule_id</code> 和 <code>rule_version</code>。组件要求、门的变化，

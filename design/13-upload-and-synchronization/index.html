@@ -972,6 +972,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1312-implementation-status-edge-outbox-and-scheduler-milestone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.12 Implementation Status (edge outbox and scheduler milestone)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3235,6 +3246,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1312-implementation-status-edge-outbox-and-scheduler-milestone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.12 Implementation Status (edge outbox and scheduler milestone)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3399,6 +3421,58 @@
 <li>Define bandwidth limits, upload scheduling windows, and customer network proxy/firewall requirements.</li>
 <li>Define operational ownership and resolution targets for permanent upload failures.</li>
 </ul>
+<h2 id="1312-implementation-status-edge-outbox-and-scheduler-milestone">13.12 Implementation Status (edge outbox and scheduler milestone)<a class="headerlink" href="#1312-implementation-status-edge-outbox-and-scheduler-milestone" title="Permanent link">&para;</a></h2>
+<p>The persistent upload outbox and its worker are implemented in
+<code>assemblyvision_edge</code>:</p>
+<ul>
+<li><strong>Atomic projection and outbox</strong>: <code>persist_inspection_and_enqueue_uploads</code>
+  inserts the immutable projection, media, evidence, and one <code>INSPECTION</code> task
+  plus one <code>MEDIA</code> task per artifact in a single SQLite transaction, so a crash
+  cannot leave a completed inspection without its required upload tasks
+  (design 12.4 step 3+4). Startup reconciliation applies the same operation to
+  every valid bundle, repairing stranded <code>LOCAL_ONLY</code> records instead of
+  skipping them.</li>
+<li><strong>Ordered, leased worker</strong>: <code>UploadScheduler</code> claims due tasks in an
+  immediate transaction; <code>MEDIA</code> tasks become due only after their inspection
+  task holds a verified success receipt, so metadata always precedes media.
+  Each claim carries a per-task fencing token (<code>lease_owner</code>), and stale
+  <code>IN_PROGRESS</code> tasks are reclaimed after lease expiry; every terminal or retry
+  update requires the matching token, so a late worker cannot overwrite a
+  newer holder.</li>
+<li><strong>Failure classification</strong> (design 13.9): transport errors and
+  <code>408/429/5xx</code> schedule exponential backoff with full jitter, honoring a
+  numeric <code>Retry-After</code> measured from the response time; missing/corrupt local
+  evidence (<code>MEDIA_EVIDENCE_MISSING</code>, <code>MEDIA_CHECKSUM_MISMATCH</code>,
+  <code>INSPECTION_EVIDENCE_MISSING</code>) and server conflicts (<code>409</code>) become permanent
+  failures while local evidence is preserved.</li>
+<li><strong>Verified receipts</strong>: a 2xx is only success when the bounded typed receipt
+  echoes the idempotency key, object, kind, byte size, and checksum of the
+  payload actually sent; media receipts additionally require a central object
+  identifier. Verified receipts and central object identifiers are persisted.
+  Inspection synchronization is recomputed from all required tasks:
+  <code>QUEUED</code> while outstanding, <code>PARTIAL</code> after metadata with pending media,
+  <code>SYNCED</code> only when every required task has a verified receipt, and <code>FAILED</code>
+  on any permanent failure.</li>
+<li><strong>Sinks and configuration</strong>: <code>DirectoryUploadSink</code> (local/development and
+  tests, idempotent by key) and <code>HttpUploadSink</code> (HTTPS POST to
+  <code>{base_url}/inspection-uploads</code> with the idempotency key and payload). The
+  worker is enabled through the supported <code>serve</code> path via <code>UploadSettings</code>
+  and <code>AV_EDGE_UPLOAD_*</code> environment variables (endpoint or local sink,
+  separate <code>AV_EDGE_UPLOAD_TOKEN</code> credential, timeouts, retry/lease/batch
+  tunables, bandwidth bound). Central endpoints require HTTPS; explicit
+  development HTTP is restricted to loopback. Without a configured destination
+  the worker stays explicitly disabled and tasks remain visible in the uploads
+  API.</li>
+<li><strong>Contract 06 coverage</strong>: tests cover successful upload, network
+  interruption, retry/backoff, <code>Retry-After</code> timing, duplicate enqueue, process
+  restart with lease reclamation and fencing, missing file, checksum mismatch,
+  server idempotency conflict, receipt validation, ordered metadata-before-media
+  drain, synchronization states, and duplicate-free drain.</li>
+</ul>
+<p>Remaining for the connected pilot: the central ingestion endpoint and its
+server-side receipt contract, media binding confirmations, bandwidth
+throttling enforcement, a circuit breaker, and retention gating on verified
+receipts.</p>
 
 
 

@@ -698,7 +698,7 @@
   <a href="#72-scope-by-delivery-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.2 Scope by Delivery Phase
+        7.2 按交付阶段划分的范围
       
     </span>
   </a>
@@ -720,7 +720,7 @@
   <a href="#74-trigger-and-product-window-strategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.4 触发器和产品窗口策略
+        7.4 Trigger and Product-Window Strategy
       
     </span>
   </a>
@@ -731,7 +731,7 @@
   <a href="#75-real-time-inspection-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.5 Real-Time Inspection Sequence
+        7.5 实时检查顺序
       
     </span>
   </a>
@@ -775,7 +775,7 @@
   <a href="#79-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.9 验证
+        7.9 Verification
       
     </span>
   </a>
@@ -3118,7 +3118,7 @@
   <a href="#72-scope-by-delivery-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.2 Scope by Delivery Phase
+        7.2 按交付阶段划分的范围
       
     </span>
   </a>
@@ -3140,7 +3140,7 @@
   <a href="#74-trigger-and-product-window-strategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.4 触发器和产品窗口策略
+        7.4 Trigger and Product-Window Strategy
       
     </span>
   </a>
@@ -3151,7 +3151,7 @@
   <a href="#75-real-time-inspection-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.5 Real-Time Inspection Sequence
+        7.5 实时检查顺序
       
     </span>
   </a>
@@ -3195,7 +3195,7 @@
   <a href="#79-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.9 验证
+        7.9 Verification
       
     </span>
   </a>
@@ -3236,7 +3236,7 @@
 <h1 id="7-camera-and-image-acquisition">7. 相机和图像采集<a class="headerlink" href="#7-camera-and-image-acquisition" title="Permanent link">&para;</a></h1>
 <h2 id="71-purpose-and-boundary">7.1 目的和边界<a class="headerlink" href="#71-purpose-and-boundary" title="Permanent link">&para;</a></h2>
 <p>采集子系统拥有工业相机集成、触发处理、时间戳、帧缓冲和图像质量元数据。它发出帧；它不检测产品、决定检验结果或依赖于中央服务器。下游处理由<a href="../06-ai-detection-pipeline/">AI detection pipeline</a>定义。</p>
-<h2 id="72-scope-by-delivery-phase">7.2 Scope by Delivery Phase<a class="headerlink" href="#72-scope-by-delivery-phase" title="Permanent link">&para;</a></h2>
+<h2 id="72-scope-by-delivery-phase">7.2 按交付阶段划分的范围<a class="headerlink" href="#72-scope-by-delivery-phase" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3282,35 +3282,35 @@
 相同的协议。读取/解码失败会引发帧流错误，并且永远不会
 默默地跳过了。</p>
 <p>静态文件接收从相对路径加上内容校验和派生的稳定 ID。不支持的、部分写入的或不可解码的文件将被记录为失败的输入，而不是默默地跳过。</p>
-<h2 id="74-trigger-and-product-window-strategy">7.4 触发器和产品窗口策略<a class="headerlink" href="#74-trigger-and-product-window-strategy" title="Permanent link">&para;</a></h2>
+<h2 id="74-trigger-and-product-window-strategy">7.4 Trigger and Product-Window Strategy<a class="headerlink" href="#74-trigger-and-product-window-strategy" title="Permanent link">&para;</a></h2>
 <p>首选生产订单是：</p>
 <p>1.硬件光电或PLC触发，因为它提供了最清晰的物理-产品边界。
 2. 如果条形码定时可靠，则通过有界时间窗口关联条形码事件。
 3. 在针对相邻产品进行验证后，具有跟踪功能的视觉进入/退出区域。
 4. 仅时间窗口作为受控后备，因为改变传送带速度可能会混合产品。</p>
 <p>去抖触发器并立即分配唯一的 <code>inspection_id</code>。仅当物理进程验证该策略时，才会记录并抑制配置的死区时间内的重复触发器。重叠窗口被明确拒绝或支持；他们绝不能分享可变的证据。</p>
-<h2 id="75-real-time-inspection-sequence">7.5 Real-Time Inspection Sequence<a class="headerlink" href="#75-real-time-inspection-sequence" title="Permanent link">&para;</a></h2>
+<h2 id="75-real-time-inspection-sequence">7.5 实时检查顺序<a class="headerlink" href="#75-real-time-inspection-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Sensor as 触发器或传感器
-    participant Capture as Camera Adapter
+    participant Capture as 相机适配器
     participant Window as 产品窗口管理器
     participant Vision as 愿景管道
     participant Aggregate as 时间聚合器
     participant Rules as 规则引擎
     participant Store as 本地存储
-    participant Upload as Upload Queue
+    participant Upload as 上传队列
     Sensor-&gt;&gt;Window:产品入驻活动
     Window-&gt;&gt;Window:创建检查和引脚版本
 loop 直到退出或超时
         Capture-&gt;&gt;Window:带时间戳的帧
-        Window-&gt;&gt;Vision:相关框架
+        Window-&gt;&gt;Vision:Correlated frame
         Vision--&gt;&gt;Aggregate:每个组件的框架证据
     end
     Sensor-&gt;&gt;Window:产品退出事件
     Window-&gt;&gt;Aggregate:关闭检查窗口
     Aggregate--&gt;&gt;Rules:每个所需组件的证据
     Rules--&gt;&gt;Store:OK 或 NG 以及原因代码
-    Store--&gt;&gt;Upload:将持久结果和媒体入队
+    Store--&gt;&gt;Upload:Enqueue persisted result and media
     Note over Store,Upload:上传是异步的，不能阻塞检查</code></pre>
 <p>每个实例独立地将其最新捕获的帧公开为
 速率受限的 JPEG 预览 (<code>GET /api/v1/camera/{instance_id}/preview</code>,
@@ -3401,7 +3401,7 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <li>服务器中断时，不要进行采集更改。在储存能力允许的情况下，当地捕获和检查将继续进行。</li>
 </ul>
 <p>滚动视频写入分段文件以限制断电后的损坏。媒体持久化和删除规则在<a href="../12-local-storage-and-retention/">local storage and retention</a>中定义。</p>
-<h2 id="79-verification">7.9 验证<a class="headerlink" href="#79-verification" title="Permanent link">&para;</a></h2>
+<h2 id="79-verification">7.9 Verification<a class="headerlink" href="#79-verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>根据记录和模拟的 SDK 行为对每个供应商适配器进行合同测试。</li>
 <li>测试断开、重新连接、丢帧、重复序列号、损坏的缓冲区和延迟帧。</li>

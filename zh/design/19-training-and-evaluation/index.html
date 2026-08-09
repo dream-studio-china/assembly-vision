@@ -1112,7 +1112,7 @@
   <a href="#194-collection-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.4 集合设计
+        19.4 Collection Design
       
     </span>
   </a>
@@ -1134,12 +1134,12 @@
   <a href="#196-leakage-safe-data-splits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.6 Leakage-Safe Data Splits
+        19.6 防泄漏数据分割
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="19.6 Leakage-Safe Data Splits">
+    <nav class="md-nav" aria-label="19.6 防泄漏数据分割">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1261,7 +1261,7 @@
   <a href="#1914-production-monitoring-and-retraining" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.14 Production Monitoring and Retraining
+        19.14 生产监控和再培训
       
     </span>
   </a>
@@ -1328,7 +1328,7 @@
   <a href="#19173-hard-annotation-rules-enforced-by-the-adapters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.17.3 Hard Annotation Rules (Enforced by the Adapters)
+        19.17.3 硬注释规则（由适配器强制执行）
       
     </span>
   </a>
@@ -3418,7 +3418,7 @@
   <a href="#194-collection-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.4 集合设计
+        19.4 Collection Design
       
     </span>
   </a>
@@ -3440,12 +3440,12 @@
   <a href="#196-leakage-safe-data-splits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.6 Leakage-Safe Data Splits
+        19.6 防泄漏数据分割
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="19.6 Leakage-Safe Data Splits">
+    <nav class="md-nav" aria-label="19.6 防泄漏数据分割">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3567,7 +3567,7 @@
   <a href="#1914-production-monitoring-and-retraining" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.14 Production Monitoring and Retraining
+        19.14 生产监控和再培训
       
     </span>
   </a>
@@ -3634,7 +3634,7 @@
   <a href="#19173-hard-annotation-rules-enforced-by-the-adapters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.17.3 Hard Annotation Rules (Enforced by the Adapters)
+        19.17.3 硬注释规则（由适配器强制执行）
       
     </span>
   </a>
@@ -3714,7 +3714,7 @@
 <li>同意、保留和允许使用分类。</li>
 </ul>
 <p>原始数据是不可变的。更正创建新的注释/数据集版本。对个人或商业敏感的标识符进行假名化以进行培训，同时保留受控的可追溯性地图。</p>
-<h2 id="194-collection-design">19.4 集合设计<a class="headerlink" href="#194-collection-design" title="Permanent link">&para;</a></h2>
+<h2 id="194-collection-design">19.4 Collection Design<a class="headerlink" href="#194-collection-design" title="Permanent link">&para;</a></h2>
 <p>使用实际生产的相机、光学器件、安装、照明、传送带背景、捕获软件和图像编码进行收集。初始模型针对一个固定的生产角度进行优化。显着的角度变化（包括接近 45 度的变化）是需要评估、额外收集/微调和完全重新验证的域变化。</p>
 <p>集合必须代表：</p>
 <ul>
@@ -3737,7 +3737,7 @@
 <li>数据集发布冻结文件校验和、注释哈希、本体版本和出处清单。</li>
 </ol>
 <p>跟踪每类盒子计数、产品实例计数、会话、批次和缺陷场景。当许多帧来自一个产品通道时，仅帧数就夸大了多样性。</p>
-<h2 id="196-leakage-safe-data-splits">19.6 Leakage-Safe Data Splits<a class="headerlink" href="#196-leakage-safe-data-splits" title="Permanent link">&para;</a></h2>
+<h2 id="196-leakage-safe-data-splits">19.6 防泄漏数据分割<a class="headerlink" href="#196-leakage-safe-data-splits" title="Permanent link">&para;</a></h2>
 <h3 id="1961-split-unit">19.6.1 分割单元<a class="headerlink" href="#1961-split-unit" title="Permanent link">&para;</a></h3>
 <p>最小拆分组是整个检查/视频窗口中的物理产品实例。首选结合捕获会话、产品批次、生产日期和设置修订的更高级别组。从一个源组派生的所有相邻帧、裁剪、增强、重新编码和注释都保留在一个分割中。</p>
 <p>切勿随机分割单个视频帧。训练和验证过程中几乎相同的帧会产生误导性的指标，并根据重复的证据调整时间聚合。</p>
@@ -3847,7 +3847,7 @@
 <h2 id="1913-acceptance-evaluation">19.13 验收评估<a class="headerlink" href="#1913-acceptance-evaluation" title="Permanent link">&para;</a></h2>
 <p>客户验收集使用未用于培训、验证、阈值选择或内部测试调整的生产数据。该协议在运行前商定，并分别涵盖产品类型、每个缺少的组件/手册、条形码故障、允许的位置偏移、正常变化、连续/混合决策、离线操作、重新启动和长时间运行操作。</p>
 <p>每个结果都保留事实真相、决策、证据、图像/剪辑引用、模型/规则/产品版本、设备、时间戳和相关日志。主要指标是真实的 NG 召回率。在基线数据收集和风险审查之后，与客户一起确定数字验收目标和所需的样本量；本文件不构成任何保证。</p>
-<h2 id="1914-production-monitoring-and-retraining">19.14 Production Monitoring and Retraining<a class="headerlink" href="#1914-production-monitoring-and-retraining" title="Permanent link">&para;</a></h2>
+<h2 id="1914-production-monitoring-and-retraining">19.14 生产监控和再培训<a class="headerlink" href="#1914-production-monitoring-and-retraining" title="Permanent link">&para;</a></h2>
 <p>按版本和产品监控输入和结果信号：产品盒位置/尺寸、框架质量、置信度分布、条形码故障、不确定/NG率、组件原因、手动更正和延迟。漂移警报会触发调查，而不是自动重新训练或阈值更改。</p>
 <p>生产抽样必须包括经审查的不合格案例、低置信​​度案例、例外情况以及预测合格产品的随机/分层样本；仅审查预测的 NG 无法估计假阴性。策展人删除重复项、更正标签、保留来源并批准添加。再培训升级重复泄漏检查、锁定评估、兼容性检查、分阶段推出和回滚准备。</p>
 <h2 id="1915-model-promotion-gates">19.15 模型推广门<a class="headerlink" href="#1915-model-promotion-gates" title="Permanent link">&para;</a></h2>
@@ -3952,55 +3952,55 @@
 </tr>
 </tbody>
 </table>
-<p>Barcode (separate from YOLO): readable, damaged/occluded, and unreadable cases
-for product-type resolution and fail-safe paths.</p>
-<p>A <strong>minimal closed loop</strong> (get the pipeline running and measure trends) can
-start at 40-60 OK images plus 10-20 samples per missing location, then scale to
-the table above; expand where <code>verify</code> exposes missed NG.</p>
-<h3 id="19173-hard-annotation-rules-enforced-by-the-adapters">19.17.3 Hard Annotation Rules (Enforced by the Adapters)<a class="headerlink" href="#19173-hard-annotation-rules-enforced-by-the-adapters" title="Permanent link">&para;</a></h3>
+<p>条形码（与 YOLO 分开）：可读、损坏/遮挡和不可读的情况
+用于产品类型解析和故障安全路径。</p>
+<p><strong>最小闭环</strong>（让管道运行并测量趋势）可以
+从 40-60 个 OK 图像开始，每个缺失位置加上 10-20 个样本，然后扩展到
+上表；展开 <code>verify</code> 暴露遗漏 NG 的位置。</p>
+<h3 id="19173-hard-annotation-rules-enforced-by-the-adapters">19.17.3 硬注释规则（由适配器强制执行）<a class="headerlink" href="#19173-hard-annotation-rules-enforced-by-the-adapters" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Two datasets, two-stage semantics.</strong> <code>dataset_product</code> carries one class
-  <code>product</code> = an independently annotated full-board box. <code>dataset_components</code>
-  carries the required component classes in fixed order (the <code>data.yaml</code> order
-  is the class-ID mapping). Missing components are expressed by the <strong>absence
-  of the component's box</strong>; never train a generic <code>missing_*</code> class.</li>
-<li><strong>Product box is mandatory even when components are missing.</strong> Stage one must
-  localize the complete product for a defective board too. An image with
-  component boxes but no product box is a data error and is rejected; the
-  product box can never be derived from the union of present component boxes.</li>
-<li><strong>Explicit empty labels.</strong> Every background/negative image must have an
-  explicit empty label file; image/label pairing is required. The adapters
-  reject any image without a label file in every split, and <code>av-train</code>
-  validation rejects missing label files unless the recorded
-  <code>--allow-missing-labels</code> legacy opt-in is used.</li>
-<li><strong>Physical NG only.</strong> Do not synthesize all NG by digitally erasing
-  components; shadows, packaging deformation, and revealed backgrounds differ
-  (19.4).</li>
-<li><strong>Fixed capture conditions.</strong> Collect with the production camera, optics,
-  mounting, lighting, conveyor background, capture software, and encoding. A
-  significant angle change is a domain change requiring revalidation (19.4).</li>
-<li><strong>Second review.</strong> A reviewer examines every NG sample, all ambiguous labels,
-  and a sample of ordinary labels (19.5); disputes are adjudicated against a
-  locked ontology.</li>
+<li><strong>两个数据集，两阶段语义。</strong> <code>dataset_product</code> 承载一个类
+  <code>product</code> = 独立注释的全板框。 <code>dataset_components</code>
+  以固定顺序携带所需的组件类（<code>data.yaml</code>顺序
+  是类 ID 映射）。缺少的组件由 ** 不存在表示
+  组件盒的**；永远不要训练通用的 <code>missing_*</code> 类。</li>
+<li><strong>即使组件丢失，产品盒也是强制性的。</strong> 第一阶段必须
+  对于有缺陷的电路板也可以本地化完整的产品。图像与
+  组件盒但无产品盒为数据错误，被拒收；的
+  产品盒永远不能从现有组件盒的组合中派生出来。</li>
+<li><strong>显式空标签。</strong> 每个背景/底片图像必须有一个
+  显式空标签文件；需要图像/标签配对。适配器
+  拒绝每个分割中没有标签文件的任何图像，并且 <code>av-train</code>
+  验证拒绝丢失的标签文件，除非记录
+  <code>--allow-missing-labels</code> 使用旧版选择加入。</li>
+<li><strong>仅限物理 NG。</strong> 不要通过数字擦除来合成所有 NG
+  组件；阴影、包装变形和显示的背景不同
+  （19.4）。</li>
+<li><strong>固定捕获条件。</strong> 使用生产相机、光学器件收集，
+  安装、照明、传送带背景、捕获软件和编码。一个
+  显着的角度变化是需要重新验证的域变化（19.4）。</li>
+<li><strong>第二次审查。</strong> 审查员检查每个 NG 样本、所有不明确的标签、
+  和普通标签样本（19.5）；争议的裁决是针对
+  锁定本体。</li>
 </ul>
 <h3 id="19174-leakage-safe-splits-and-handover">19.17.4 防漏电分裂和切换<a class="headerlink" href="#19174-leakage-safe-splits-and-handover" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Split by <strong>physical product instance / capture session</strong>, never by random
-  frames; target 70/15/15 by grouped instances (19.6). The held-out <code>test</code>
-  split is used once for verification and never for tuning.</li>
-<li>Annotate with <strong>X-AnyLabeling</strong> and export the YOLO layout (train/val/test +
-  <code>classes.txt</code> or <code>data.yaml</code>), then run
-  <code>scripts/adapt-xanylabeling.py &lt;export&gt; &lt;out&gt; --product-class product --required '&lt;comma,separated&gt;'</code>.
-  The adapter validates every label line, enforces 19.17.3, keeps explicit
-  background negatives, rejects missing label files and same-stem image
-  collisions per split, normalizes Roboflow's <code>valid</code> split to <code>val</code>, and
-  publishes <code>dataset_product</code> + <code>dataset_components</code> +
-  <code>test-expected.json</code> + <code>manifest.json</code> atomically with dataset-relative
-  <code>data.yaml</code> paths. Roboflow exports use
-  <code>scripts/adapt-roboflow-dataset.py</code>.</li>
-<li>Freeze dataset checksums and the annotation/ontology version with the model
-  manifest (19.8, contract 10); the verification set must never be copied into
-  training or validation.</li>
+<li>按<strong>物理产品实例/捕获会话</strong>分割，绝不是随机分割
+  框架；目标为 2015 年 70 月 15 日，按分组实例 (19.6)。保留的 <code>test</code>
+  split 仅用于验证而不用于调整。</li>
+<li>使用 <strong>X-AnyLabeling</strong> 进行注释并导出 YOLO 布局（train/val/test +
+  <code>classes.txt</code> 或 <code>data.yaml</code>)，然后运行
+  <code>scripts/adapt-xanylabeling.py &lt;export&gt; &lt;out&gt; --product-class product --required '&lt;comma,separated&gt;'</code>。
+  适配器验证每个标签行，强制执行 19.17.3，保持显式
+  背景负片，拒绝丢失的标签文件和同干图像
+  每个分割的冲突，将 Roboflow 的 <code>valid</code> 分割标准化为 <code>val</code>，并且
+  发布 <code>dataset_product</code> + <code>dataset_components</code> +
+  <code>test-expected.json</code> + <code>manifest.json</code> 原子地与数据集相关
+  <code>data.yaml</code> 路径。 Roboflow 导出使用
+  <code>scripts/adapt-roboflow-dataset.py</code>。</li>
+<li>使用模型冻结数据集校验和以及注释/本体版本
+  舱单（19.8，合同10）；验证集绝不能复制到
+  培训或验证。</li>
 </ul>
 
 

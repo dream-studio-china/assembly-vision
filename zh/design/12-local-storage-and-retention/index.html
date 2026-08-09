@@ -3338,9 +3338,9 @@
     UploadPending --&gt; UploadConfirmed:服务器收据和校验和已验证
     UploadPending --&gt; Protected:离线或重试
     Protected --&gt; UploadPending:已安排重试
-    UploadConfirmed --&gt; RetentionEligible:最小本地保留时间已过
+    UploadConfirmed --&gt; RetentionEligible:Minimum local hold elapsed
     RetentionEligible --&gt; Deleting:保留和配额策略选择项目
-    Deleting --&gt; Deleted:文件已删除并更新了元数据
+    Deleting --&gt; Deleted:File removed and metadata updated
     Deleting --&gt; RetentionEligible:删除失败
     Quarantined --&gt; Deleted:经操作员批准的清理
     Deleted --&gt; [*]</code></pre>
@@ -3362,24 +3362,24 @@
 </code></pre></div>
 <p><code>null</code> 值有意要求客户在生产激活之前获得批准。</p>
 <h2 id="128-recovery-and-integrity">12.8 恢复和完整性<a class="headerlink" href="#128-recovery-and-integrity" title="Permanent link">&para;</a></h2>
-<p>启动时，运行迁移、适合启动延迟的数据库完整性检查、暂存协调、丢失文件检测和发件箱恢复。先前流程的开放检查因中断<code>NG</code>而关闭。 <code>IN_PROGRESS</code> 中的上传任务在租约到期后返回待处理状态。定期采样重新计算媒体校验和；不匹配会隔离工件并引发事件。</p>
-<p>数据库损坏使服务进入存储未就绪模式。从经过验证的备份或记录的恢复副本进行恢复；不要自动在损坏的证据上初始化新的数据库。</p>
+<p>At startup, run migrations, database integrity checks appropriate to startup latency, staging reconciliation, missing-file detection, and outbox recovery. Open inspections from a prior process are closed as interrupted <code>NG</code>. Upload tasks in <code>IN_PROGRESS</code> return to pending after lease expiry. Periodic sampling recomputes media checksums; a mismatch quarantines the artifact and raises an event.</p>
+<p>Database corruption puts the service into storage-not-ready mode. Restore from a validated backup or documented recovery copy; do not initialize a fresh database over corrupted evidence automatically.</p>
 <h2 id="129-verification">12.9 验证<a class="headerlink" href="#129-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>在每个原子持久性步骤终止进程并验证确定性恢复。</li>
-<li>测试断电、磁盘已满、只读文件系统、SQLite 锁定/繁忙、数据库损坏、介质丢失以及校验和不匹配。</li>
-<li>验证清理永远不会选择待处理/正在进行的上传或未过期的受保护工件。</li>
-<li>测试阈值转换并且存储停止模式无法报告<code>OK</code>。</li>
-<li>使用介质/参考协调测试备份和恢复。</li>
-<li>浸泡测试并发检查、上传、保留和仪表板读取。</li>
+<li>Kill the process at every atomic-persistence step and verify deterministic recovery.</li>
+<li>Test power loss, disk full, read-only filesystem, SQLite lock/busy, corrupt database, missing media, and checksum mismatch.</li>
+<li>Verify cleanup never selects pending/in-progress uploads or unexpired protected artifacts.</li>
+<li>Test threshold transitions and that storage stop mode cannot report <code>OK</code>.</li>
+<li>Test backup and restore with media/reference reconciliation.</li>
+<li>Soak-test concurrent inspection, upload, retention, and dashboard reads.</li>
 </ul>
 <h2 id="1210-open-questions-and-validation-required">12.10 开放问题和需要验证<a class="headerlink" href="#1210-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>就每种媒体类型、日志和元数据的确切保留期和配额达成一致。</li>
-<li>测量每日检查量、帧大小、剪辑大小和中断持续时间来调整磁盘大小。</li>
-<li>确认完整视频或滚动视频是否符合法律和操作要求。</li>
-<li>定义静态加密、备份和安全删除要求。</li>
-<li>当磁盘容量达到受保护数据停止阈值时，确认可接受的行为。</li>
+<li>Agree exact retention periods and quotas for each media type, logs, and metadata.</li>
+<li>Measure daily inspection volume, frame sizes, clip sizes, and outage duration to size the disk.</li>
+<li>Confirm whether full or rolling video is legally and operationally required.</li>
+<li>Define encryption-at-rest, backup, and secure-deletion requirements.</li>
+<li>Confirm acceptable behavior when disk capacity reaches the protected-data stop threshold.</li>
 </ul>
 
 

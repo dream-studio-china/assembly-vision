@@ -1162,7 +1162,7 @@
   <a href="#217-source-distribution-approach" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.7 Source Distribution Approach
+        21.7 源分发方法
       
     </span>
   </a>
@@ -1184,7 +1184,7 @@
   <a href="#219-secrets-management" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.9 Secrets Management
+        21.9 秘密管理
       
     </span>
   </a>
@@ -1267,7 +1267,7 @@
   <a href="#2113-related-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.13 相关决定
+        21.13 Related Decisions
       
     </span>
   </a>
@@ -3279,7 +3279,7 @@
   <a href="#217-source-distribution-approach" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.7 Source Distribution Approach
+        21.7 源分发方法
       
     </span>
   </a>
@@ -3301,7 +3301,7 @@
   <a href="#219-secrets-management" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.9 Secrets Management
+        21.9 秘密管理
       
     </span>
   </a>
@@ -3384,7 +3384,7 @@
   <a href="#2113-related-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.13 相关决定
+        21.13 Related Decisions
       
     </span>
   </a>
@@ -3413,56 +3413,56 @@
 
 <h1 id="21-security-and-source-distribution">21. 安全性和源代码分发<a class="headerlink" href="#21-security-and-source-distribution" title="Permanent link">&para;</a></h1>
 <h2 id="211-purpose-and-security-position">21.1 目的和安全地位<a class="headerlink" href="#211-purpose-and-security-position" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision protects production evidence, configuration integrity, credentials, and administrative actions while preserving offline edge inspection. Security controls are risk-based; neither Docker nor Python bytecode is represented as a strong source-code security boundary.</p>
+<p>AssemblyVision 可以保护生产证据、配置完整性、凭证和管理操作，同时保留离线边缘检查。安全控制是基于风险的； Docker 和 Python 字节码都没有被表示为强大的源代码安全边界。</p>
 <h3 id="2111-scope-distinction">21.1.1 范围区别<a class="headerlink" href="#2111-scope-distinction" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Static train-and-inspect MVP:</strong> no authentication is required while the training and inspection CLIs are used only in an isolated development environment with non-production data. Training code, datasets, notebooks, and experiment configuration are developer-only and are not included in a runtime distribution. Model encryption and <code>.pyc</code>-only packaging are deferred.</li>
-<li><strong>One-month target:</strong> local access controls, central authentication, TLS, device credentials, audit logs, non-root containers, and controlled artifact distribution.</li>
-<li><strong>Production target:</strong> customer-integrated identity where practical, role-based authorization, certificate lifecycle management, signed model/configuration packages, vulnerability management, backup encryption, and incident response.</li>
-<li><strong>Future scope:</strong> hardware-backed keys, remote attestation, stronger native compilation/obfuscation, or licensing controls only if justified by contractual threat analysis.</li>
+<li><strong>静态训练和检查 MVP：</strong> 不需要身份验证，而训练和检查 CLI 仅在具有非生产数据的隔离开发环境中使用。训练代码、数据集、笔记本和实验配置仅供开发人员使用，不包含在运行时发行版中。模型加密和仅限 <code>.pyc</code> 的打包被推迟。</li>
+<li><strong>一个月目标：</strong> 本地访问控制、中央身份验证、TLS、设备凭证、审核日志、非根容器和受控工件分发。</li>
+<li><strong>生产目标：</strong> 实用的客户集成身份、基于角色的授权、证书生命周期管理、签名模型/配置包、漏洞管理、备份加密和事件响应。</li>
+<li><strong>未来范围：</strong> 硬件支持的密钥、远程证明、更强大的本机编译/混淆或仅在合同威胁分析证明合理的情况下进行许可控制。</li>
 </ul>
 <h2 id="212-assets-and-trust-boundaries">21.2 资产和信托边界<a class="headerlink" href="#212-assets-and-trust-boundaries" title="Permanent link">&para;</a></h2>
-<p>Protected assets include inspection decisions, images and clips, barcodes, product configurations, rules, model packages, credentials, audit logs, source/build artifacts, and personal information in user accounts. Trust boundaries exist between camera/edge hardware, local browser/edge API, edge/central network, central API/workers, object storage, administrators, and the build/registry environment.</p>
-<p>Customer control of edge hardware means a sufficiently privileged customer administrator can inspect containers, volumes, memory, and traffic. The architecture prevents casual browsing and unauthorized application-level access; it cannot guarantee resistance to a determined privileged reverse engineer.</p>
+<p>受保护的资产包括检查决策、图像和剪辑、条形码、产品配置、规则、模型包、凭证、审核日志、源/构建工件以及用户帐户中的个人信息。相机/边缘硬件、本地浏览器/边缘 API、边缘/中央网络、中央 API/工作线程、对象存储、管理员和构建/注册环境之间存在信任边界。</p>
+<p>客户对边缘硬件的控制意味着拥有足够特权的客户管理员可以检查容器、卷、内存和流量。该架构可防止随意浏览和未经授权的应用程序级访问；它不能保证抵抗有决心的特权逆向工程师。</p>
 <h2 id="213-identity-and-authorization">21.3 身份和授权<a class="headerlink" href="#213-identity-and-authorization" title="Permanent link">&para;</a></h2>
-<p>Central users authenticate through customer identity federation when available or a securely managed local identity provider. Sessions use short-lived tokens and secure, HTTP-only cookies where browser architecture permits. Service-to-service and edge-to-central access uses a unique per-device identity; credentials are revocable and must not be shared across devices.</p>
-<p>Recommended roles are:</p>
+<p>中央用户通过客户身份联合（如果可用）或安全管理的本地身份提供商进行身份验证。在浏览器架构允许的情况下，会话使用短期令牌和安全的、仅限 HTTP 的 cookie。服务到服务和边缘到中心的访问使用唯一的每设备身份；凭据是可撤销的，并且不得跨设备共享。</p>
+<p>推荐角色有：</p>
 <table>
 <thead>
 <tr>
-<th>Role</th>
-<th>Permitted actions</th>
+<th>角色</th>
+<th>允许的行为</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Operator</td>
-<td>View current state, acknowledge alarms, initiate authorized retry/pause/resume</td>
+<td>操作员</td>
+<td>查看当前状态、确认警报、启动授权重试/暂停/恢复</td>
 </tr>
 <tr>
-<td>Reviewer</td>
-<td>View evidence and record review outcomes</td>
+<td>审稿人</td>
+<td>查看证据并记录审查结果</td>
 </tr>
 <tr>
-<td>Product engineer</td>
-<td>Draft product and rule configuration</td>
+<td>产品工程师</td>
+<td>产品和规则配置草案</td>
 </tr>
 <tr>
-<td>Release approver</td>
-<td>Approve and deploy signed rule/model/application releases</td>
+<td>发布审批人</td>
+<td>批准并部署已签名的规则/模型/应用程序版本</td>
 </tr>
 <tr>
-<td>Site administrator</td>
-<td>Manage devices and site-scoped users</td>
+<td>网站管理员</td>
+<td>管理设备和站点范围内的用户</td>
 </tr>
 <tr>
-<td>Auditor</td>
-<td>Read inspections, reviews, release history, and audit logs</td>
+<td>审计员</td>
+<td>阅读检查、评论、发布历史记录和审核日志</td>
 </tr>
 </tbody>
 </table>
-<p>Authorization is deny-by-default and scoped by organization/site/line/device. Drafting and approving safety-relevant configuration should be separated where staffing permits. All permission, configuration, rule, model, retention, and review changes are audited with actor, time, old/new values or checksum, reason, and correlation identifier.</p>
-<p>Local dashboard access must reflect site constraints. A loopback-only kiosk can reduce exposure but does not replace authentication where other users can reach the host. Emergency pause may be locally available; configuration changes require stronger authorization.</p>
+<p>授权默认拒绝，并按组织/站点/线路/设备划分范围。在人员配备允许的情况下，起草和批准安全相关配置应分开。所有权限、配置、规则、模型、保留和审查更改均通过参与者、时间、旧/新值或校验和、原因和相关标识符进行审核。</p>
+<p>本地仪表板访问必须反映站点限制。仅环回信息亭可以减少暴露，但不能取代其他用户可以访问主机的身份验证。本地可紧急暂停；配置更改需要更强的授权。</p>
 <h2 id="214-network-and-api-security">21.4 网络和API安全<a class="headerlink" href="#214-network-and-api-security" title="Permanent link">&para;</a></h2>
 <ul>
 <li>对边缘到中心和浏览器到中心的流量使用 TLS；验证主机名和信任链。</li>
@@ -3482,7 +3482,7 @@
 <h2 id="216-configuration-model-and-supply-chain-integrity">21.6 配置、模型和供应链完整性<a class="headerlink" href="#216-configuration-model-and-supply-chain-integrity" title="Permanent link">&para;</a></h2>
 <p>每个可部署的工件都有一个版本、加密校验和、兼容性元数据、出处和批准状态。签署生产包；边缘客户端在安装前验证校验和、签名、设备/产品兼容性、最低应用程序版本以及所需的规则/模型配对。激活发生在检查窗口之间，并保留最后的已知良好组。</p>
 <p>构建控制包括固定依赖项、审查的锁定文件更改、软件材料清单、容器和依赖项扫描、受限注册表发布、受保护的发布凭据和可重现的构建记录。模型和数据集作为受控工件进行处理：生产图像、训练数据、笔记本和实验凭证被排除在运行时图像之外。</p>
-<h2 id="217-source-distribution-approach">21.7 Source Distribution Approach<a class="headerlink" href="#217-source-distribution-approach" title="Permanent link">&para;</a></h2>
+<h2 id="217-source-distribution-approach">21.7 源分发方法<a class="headerlink" href="#217-source-distribution-approach" title="Permanent link">&para;</a></h2>
 <p>客户收到可运行的边缘工件，而不是 Git 存储库。分配管道应：</p>
 <ol>
 <li>在私有构建阶段构建 Python 轮子或应用程序树。</li>
@@ -3506,7 +3506,7 @@
 <li>当授权机器在没有额外可信硬件的情况下主动执行代码时，图像加密无法保护代码。</li>
 </ul>
 <p>MVP 接受此级别是因为直接要求是避免直接随意的源浏览，而不是保证免受高级逆向工程的影响。如果没有具体的商业和运营要求，则不会故意引入许可服务器、激进的混淆、自定义加壳程序和硬件绑定激活。</p>
-<h2 id="219-secrets-management">21.9 Secrets Management<a class="headerlink" href="#219-secrets-management" title="Permanent link">&para;</a></h2>
+<h2 id="219-secrets-management">21.9 秘密管理<a class="headerlink" href="#219-secrets-management" title="Permanent link">&para;</a></h2>
 <p>秘密被分类、清点并分配所有者和轮换方法。本地机密应只能由服务帐户读取，并通过客户批准的操作系统机密存储、Docker 机密挂载或受保护的文件提供。仅当了解流程和支持工具暴露时，环境变量才是可接受的。前端构建时变量是公共的，绝不能包含秘密。</p>
 <p>轮换必须支持重叠，以便排队上传能够在凭证替换后幸存下来。撤销一台设备不得使其他设备失效。日志显示凭证标识符，而不是凭证值。</p>
 <h2 id="2110-security-operations">21.10 安全操作<a class="headerlink" href="#2110-security-operations" title="Permanent link">&para;</a></h2>
@@ -3546,7 +3546,7 @@
 <li>合同源交付、托管、开源许可、支持或混淆义务。</li>
 <li>所需的漏洞响应时间和批准的注册/扫描产品。</li>
 </ul>
-<h2 id="2113-related-decisions">21.13 相关决定<a class="headerlink" href="#2113-related-decisions" title="Permanent link">&para;</a></h2>
+<h2 id="2113-related-decisions">21.13 Related Decisions<a class="headerlink" href="#2113-related-decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../decisions/ADR-001-edge-first-inspection/">ADR-001: Edge-first inspection</a></li>
 <li><a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/">ADR-005: Local-first storage and delayed upload</a></li>

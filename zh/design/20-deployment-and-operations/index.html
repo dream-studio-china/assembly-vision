@@ -1134,7 +1134,7 @@
   <a href="#205-central-docker-compose-profile" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.5 Central Docker Compose Profile
+        20.5 中央 Docker 撰写配置文件
       
     </span>
   </a>
@@ -1145,7 +1145,7 @@
   <a href="#206-nginx-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.6 Nginx Example
+        20.6 Nginx 示例
       
     </span>
   </a>
@@ -1234,7 +1234,7 @@
   <a href="#20113-central-or-network-outage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.11.3 Central or Network Outage
+        20.11.3 中央或网络中断
       
     </span>
   </a>
@@ -1245,7 +1245,7 @@
   <a href="#20114-edge-application-restart-or-power-loss" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.11.4 Edge Application Restart or Power Loss
+        20.11.4 边缘应用程序重启或断电
       
     </span>
   </a>
@@ -3334,7 +3334,7 @@
   <a href="#205-central-docker-compose-profile" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.5 Central Docker Compose Profile
+        20.5 中央 Docker 撰写配置文件
       
     </span>
   </a>
@@ -3345,7 +3345,7 @@
   <a href="#206-nginx-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.6 Nginx Example
+        20.6 Nginx 示例
       
     </span>
   </a>
@@ -3434,7 +3434,7 @@
   <a href="#20113-central-or-network-outage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.11.3 Central or Network Outage
+        20.11.3 中央或网络中断
       
     </span>
   </a>
@@ -3445,7 +3445,7 @@
   <a href="#20114-edge-application-restart-or-power-loss" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.11.4 Edge Application Restart or Power Loss
+        20.11.4 边缘应用程序重启或断电
       
     </span>
   </a>
@@ -3677,10 +3677,10 @@
 <a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="w">  </span><span class="nt">edge-tmp</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
 </code></pre></div>
 <p><code>depends_on</code> controls startup ordering only; the UI must tolerate service restarts. Decision-critical tasks inside <code>edge-service</code> must start and continue without DNS access to the central server. A supervised inference subprocess may be added inside the container when camera SDK or GPU isolation is required; a separately deployable edge worker is deferred until measurements justify it.</p>
-<h2 id="205-central-docker-compose-profile">20.5 Central Docker Compose Profile<a class="headerlink" href="#205-central-docker-compose-profile" title="Permanent link">&para;</a></h2>
+<h2 id="205-central-docker-compose-profile">20.5 中央 Docker 撰写配置文件<a class="headerlink" href="#205-central-docker-compose-profile" title="Permanent link">&para;</a></h2>
 <p>中央配置文件包含 Nginx、<code>central-api</code>、可选的 <code>central-worker</code>、PostgreSQL、对象存储和可选的 Redis。后台执行适用于大型媒体、缩略图、导出、报告生成、通知和模型包准备的校验和验证。检查摄取本身仍然是同步幂等 API 操作，在确认边缘之前持久记录收据。</p>
 <p>持久卷必须涵盖 PostgreSQL 和对象存储。数据库迁移在应用程序替换之前作为一次性发布任务运行；它们必须在滚动更换过程中向后兼容，或者需要有记录的维护窗口。</p>
-<h2 id="206-nginx-example">20.6 Nginx Example<a class="headerlink" href="#206-nginx-example" title="Permanent link">&para;</a></h2>
+<h2 id="206-nginx-example">20.6 Nginx 示例<a class="headerlink" href="#206-nginx-example" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">server</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">assemblyvision.example.invalid</span><span class="p">;</span>
@@ -3730,7 +3730,7 @@
     participant I as 检验员
     A-&gt;&gt;C:批准签署的发布清单
     C--&gt;&gt;E:宣布可用版本
-    E-&gt;&gt;C:下载包和清单
+    E-&gt;&gt;C:Download package and manifest
     E-&gt;&gt;E:验证身份、校验和和签名
     E-&gt;&gt;V:运行兼容性和烟雾检查
 alt 验证成功
@@ -3813,7 +3813,7 @@ else 验证或健康检查失败
 <li>如果不能保证持久的检查记录，则暂停检查并要求操作员干预。</li>
 <li>在恢复之前扩展/替换存储、验证文件系统运行状况并协调数据库路径。</li>
 </ol>
-<h3 id="20113-central-or-network-outage">20.11.3 Central or Network Outage<a class="headerlink" href="#20113-central-or-network-outage" title="Permanent link">&para;</a></h3>
+<h3 id="20113-central-or-network-outage">20.11.3 中央或网络中断<a class="headerlink" href="#20113-central-or-network-outage" title="Permanent link">&para;</a></h3>
 <ol>
 <li>继续本地检查并持久排队上传。</li>
 <li>显示断开连接状态和队列年龄/大小，而不阻塞决策。</li>
@@ -3821,7 +3821,7 @@ else 验证或健康检查失败
 <li>恢复时，使用指数退避、抖动、幂等密钥和校验和验证重试。</li>
 <li>核对已确认的收据并调查永久失败的任务。</li>
 </ol>
-<h3 id="20114-edge-application-restart-or-power-loss">20.11.4 Edge Application Restart or Power Loss<a class="headerlink" href="#20114-edge-application-restart-or-power-loss" title="Permanent link">&para;</a></h3>
+<h3 id="20114-edge-application-restart-or-power-loss">20.11.4 边缘应用程序重启或断电<a class="headerlink" href="#20114-edge-application-restart-or-power-loss" title="Permanent link">&para;</a></h3>
 <ol>
 <li>Supervisor根据配置的策略重新启动容器。</li>
 <li>启动时，运行数据库完整性和迁移检查，发现不完整的窗口，并在需要结果时将生命周期状态 <code>ABORTED</code> 与业务 <code>NG</code> 持久保存，或者仅在身份明确时恢复。</li>

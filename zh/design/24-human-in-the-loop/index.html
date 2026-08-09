@@ -1197,7 +1197,7 @@
   <a href="#2422-mature-production-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.2.2 成熟生产目标
+        24.2.2 Mature Production Target
       
     </span>
   </a>
@@ -1235,7 +1235,7 @@
   <a href="#244-review-queue-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.4 查看队列策略
+        24.4 Review Queue Policy
       
     </span>
   </a>
@@ -1301,7 +1301,7 @@
   <a href="#2410-metrics-and-review-reduction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.10 Metrics and Review Reduction
+        24.10 指标和审查减少
       
     </span>
   </a>
@@ -1323,7 +1323,7 @@
   <a href="#2412-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.12 Open Questions and Validation Required
+        24.12 未解决的问题和需要验证
       
     </span>
   </a>
@@ -3213,7 +3213,7 @@
   <a href="#2422-mature-production-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.2.2 成熟生产目标
+        24.2.2 Mature Production Target
       
     </span>
   </a>
@@ -3251,7 +3251,7 @@
   <a href="#244-review-queue-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.4 查看队列策略
+        24.4 Review Queue Policy
       
     </span>
   </a>
@@ -3317,7 +3317,7 @@
   <a href="#2410-metrics-and-review-reduction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.10 Metrics and Review Reduction
+        24.10 指标和审查减少
       
     </span>
   </a>
@@ -3339,7 +3339,7 @@
   <a href="#2412-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.12 Open Questions and Validation Required
+        24.12 未解决的问题和需要验证
       
     </span>
   </a>
@@ -3377,7 +3377,7 @@
   
 
 
-<h1 id="24-human-in-the-loop-operations">24. Human-in-the-Loop Operations<a class="headerlink" href="#24-human-in-the-loop-operations" title="Permanent link">&para;</a></h1>
+<h1 id="24-human-in-the-loop-operations">24. 人机交互操作<a class="headerlink" href="#24-human-in-the-loop-operations" title="Permanent link">&para;</a></h1>
 <h2 id="241-purpose-and-safety-position">24.1 目的和安全位置<a class="headerlink" href="#241-purpose-and-safety-position" title="Permanent link">&para;</a></h2>
 <p>人工审核是一个受控的质量流程，旨在谨慎推出、模糊证据、NG 处理和持续改进。它不会隐藏模型限制或改变原始机器决策。 AssemblyVision 优先考虑高 NG 召回率：早期操作接受额外的错误 NG 决策，因为它们可以进行审查，而错误地发布为 OK 的真正 NG 是主要的质量风险。</p>
 <h2 id="242-scope-by-phase">24.2 阶段范围<a class="headerlink" href="#242-scope-by-phase" title="Permanent link">&para;</a></h2>
@@ -3389,7 +3389,7 @@
 <li>保留原始证据、模型/规则/配置版本和机器原因代码。</li>
 <li>将审阅者的更正和确认的错误分类存储到受管理的培训待办事项中。</li>
 </ul>
-<h3 id="2422-mature-production-target">24.2.2 成熟生产目标<a class="headerlink" href="#2422-mature-production-target" title="Permanent link">&para;</a></h3>
+<h3 id="2422-mature-production-target">24.2.2 Mature Production Target<a class="headerlink" href="#2422-mature-production-target" title="Permanent link">&para;</a></h3>
 <ul>
 <li>按产品、组件、生产线、型号和规则版本分别调整审核路线。</li>
 <li>只有在有足够的生产证据和客户批准后才能减少人工审核。</li>
@@ -3437,7 +3437,7 @@
 </tbody>
 </table>
 <p>修正不会重写边缘决策。它记录审查者、时间、原因、真实成分状态、使用的证据以及与原始检查的关系。</p>
-<h2 id="244-review-queue-policy">24.4 查看队列策略<a class="headerlink" href="#244-review-queue-policy" title="Permanent link">&para;</a></h2>
+<h2 id="244-review-queue-policy">24.4 Review Queue Policy<a class="headerlink" href="#244-review-queue-policy" title="Permanent link">&para;</a></h2>
 <p>路由策略是版本化且可审计的。优先因素包括：</p>
 <ol>
 <li>缺失组件的潜在安全/质量影响。</li>
@@ -3463,7 +3463,7 @@
     R-&gt;&gt;C:打开原始和带注释的证据
     C--&gt;&gt;R:返回证据和机器原理
     R-&gt;&gt;C:提交处理意见和理由
-    C-&gt;&gt;C:附加不可变的审核记录和审核事件
+    C-&gt;&gt;C:Append immutable review record and audit event
 alt 机器决策修正
         C-&gt;&gt;T:添加具有审查出处的受治理候选人
         C--&gt;&gt;E:仅报告汇总反馈
@@ -3503,7 +3503,7 @@ else 机器决策确认
 <li>如果测量到的行为出现退化，则进行暂存、监视和回滚。</li>
 </ol>
 <p>没有个人审查会导致在线学习或默默地改变生产决策政策。</p>
-<h2 id="2410-metrics-and-review-reduction">24.10 Metrics and Review Reduction<a class="headerlink" href="#2410-metrics-and-review-reduction" title="Permanent link">&para;</a></h2>
+<h2 id="2410-metrics-and-review-reduction">24.10 指标和审查减少<a class="headerlink" href="#2410-metrics-and-review-reduction" title="Permanent link">&para;</a></h2>
 <p>跟踪审核率、队列年龄、审核者周转率、纠正率、误报率、OK 审核的估计误报率、不确定率、分歧率以及每个产品/每个组件/模型/规则结果。每个比率都包括其样本数量和抽样方法。</p>
 <p>仅当测量的生产证据支持更改时，才会减少手动审核。该决定考虑了 NG 召回、OK 审核结果、新颖性、审查纠正率、样本代表性、最近的相机/产品/配置更改以及客户风险承受能力。没有固定的日历日期或未经验证的数字触发器。</p>
 <h2 id="2411-operational-exceptions">24.11 操作异常<a class="headerlink" href="#2411-operational-exceptions" title="Permanent link">&para;</a></h2>
@@ -3514,7 +3514,7 @@ else 机器决策确认
 <li>如果审核者发现潜在的漏检 NG 模式，请遵循 <a href="../23-observability-and-support/">Observability and Support</a> 中的遏制运行手册。</li>
 <li>如果产品配置发生变化，请在激活之前和之后维护单独的审核指标。</li>
 </ul>
-<h2 id="2412-open-questions-and-validation-required">24.12 Open Questions and Validation Required<a class="headerlink" href="#2412-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="2412-open-questions-and-validation-required">24.12 未解决的问题和需要验证<a class="headerlink" href="#2412-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>内部<code>UNCERTAIN</code>如何显示为独特的评论类别，同时保留业务结果<code>NG</code>。</li>
 <li>谁有权定义基本事实、裁决分歧并在审查后发布产品。</li>

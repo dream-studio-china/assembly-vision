@@ -692,7 +692,7 @@
   <a href="#64-static-image-inspection-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.4 Static-Image Inspection Sequence
+        6.4 静态图像检查顺序
       
     </span>
   </a>
@@ -714,7 +714,7 @@
   <a href="#66-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.6 Configuration
+        6.6 配置
       
     </span>
   </a>
@@ -725,7 +725,7 @@
   <a href="#67-failure-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.7 故障处理
+        6.7 Failure Handling
       
     </span>
   </a>
@@ -736,7 +736,7 @@
   <a href="#68-observability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.8 可观测性
+        6.8 Observability
       
     </span>
   </a>
@@ -3140,7 +3140,7 @@
   <a href="#64-static-image-inspection-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.4 Static-Image Inspection Sequence
+        6.4 静态图像检查顺序
       
     </span>
   </a>
@@ -3162,7 +3162,7 @@
   <a href="#66-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.6 Configuration
+        6.6 配置
       
     </span>
   </a>
@@ -3173,7 +3173,7 @@
   <a href="#67-failure-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.7 故障处理
+        6.7 Failure Handling
       
     </span>
   </a>
@@ -3184,7 +3184,7 @@
   <a href="#68-observability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.8 可观测性
+        6.8 Observability
       
     </span>
   </a>
@@ -3235,65 +3235,65 @@
 
 <h1 id="6-ai-detection-pipeline">6. AI检测流程<a class="headerlink" href="#6-ai-detection-pipeline" title="Permanent link">&para;</a></h1>
 <h2 id="61-purpose">6.1 目的<a class="headerlink" href="#61-purpose" title="Permanent link">&para;</a></h2>
-<p>This document defines the end-to-end inspection pipeline from an acquired image to a persisted product-level decision. Detailed subsystem behavior is specified in <a href="../07-camera-and-image-acquisition/">camera and image acquisition</a>, <a href="../08-product-detection-and-roi/">product detection and ROI</a>, <a href="../09-component-detection/">component detection</a>, <a href="../10-temporal-aggregation/">temporal aggregation</a>, and the <a href="../11-rule-engine/">rule engine</a>.</p>
-<p>The safety invariant is:</p>
+<p>本文档定义了从获取的图像到持久的产品级决策的端到端检查流程。详细的子系统行为在 <a href="../07-camera-and-image-acquisition/">camera and image acquisition</a>、<a href="../08-product-detection-and-roi/">product detection and ROI</a>、<a href="../09-component-detection/">component detection</a>、<a href="../10-temporal-aggregation/">temporal aggregation</a> 和 <a href="../11-rule-engine/">rule engine</a> 中指定。</p>
+<p>安全不变量是：</p>
 <blockquote>
-<p>An inspection may be <code>OK</code> only when every required component has sufficient valid evidence and every mandatory pipeline stage is verifiable. Missing, uncertain, invalid, or unavailable evidence produces <code>NG</code>, never <code>OK</code>.</p>
+<p>只有当每个必需的组件都有足够的有效证据并且每个强制性管道阶段都可验证时，才可以进行检查。缺失、不确定、无效或不可用的证据会产生 <code>NG</code>，而不是 <code>OK</code>。</p>
 </blockquote>
-<p>This is a fail-safe classification policy, not a claim of perfect detection accuracy.</p>
+<p>这是一种自动防故障的分类策略，而不是完美的检测准确性。</p>
 <h2 id="62-scope-by-delivery-phase">6.2 按交付阶段划分的范围<a class="headerlink" href="#62-scope-by-delivery-phase" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Scope</th>
-<th>Included</th>
+<th>范围</th>
+<th>包含</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Static train-and-inspect MVP</td>
-<td>X-AnyLabeling YOLO labels, product and component model training, folder input, product detection, ROI extraction, component detection, deterministic rules, JSON result, ROI and annotated image, held-out verification</td>
+<td>静态训练和检查 MVP</td>
+<td>X-AnyLabeling YOLO 标签、产品和组件模型训练、文件夹输入、产品检测、ROI 提取、组件检测、确定性规则、JSON 结果、ROI 和注释图像、保留验证</td>
 </tr>
 <tr>
-<td>One-month production target</td>
-<td>Camera capture, barcode resolution, product windows, frame quality, per-component temporal aggregation, local persistence, asynchronous upload</td>
+<td>一个月生产目标</td>
+<td>相机捕获、条形码分辨率、产品窗口、帧质量、每个组件时间聚合、本地持久性、异步上传</td>
 </tr>
 <tr>
-<td>Future</td>
-<td>Perspective normalization where validated, hardware-trigger/PLC adapters, model ensembles, tracking across complex scenes</td>
+<td>未来</td>
+<td>经过验证的视角标准化、硬件触发/PLC 适配器、模型集成、跨复杂场景的跟踪</td>
 </tr>
 </tbody>
 </table>
-<p>The static MVP deliberately excludes video aggregation, central-server dependency, and automated actuation. Its training CLI is developer-only and never becomes a dependency of the inspection runtime. Production inspection remains entirely executable on the edge computer; server availability cannot block or alter the local decision path.</p>
+<p>静态 MVP 故意排除视频聚合、中央服务器依赖性和自动驱动。其训练 CLI 仅供开发人员使用，永远不会成为检查运行时的依赖项。生产检查仍然完全可以在边缘计算机上执行；服务器可用性不能阻止或改变本地决策路径。</p>
 <h2 id="63-pipeline-contracts">6.3 管道合同<a class="headerlink" href="#63-pipeline-contracts" title="Permanent link">&para;</a></h2>
-<p>All stages exchange typed, immutable records containing <code>inspection_id</code>, capture timestamps, coordinate-space identifiers, and version metadata. Coordinates are expressed as pixel-space <code>xyxy</code> values with an explicit image width and height. The pipeline records:</p>
+<p>所有阶段都会交换包含 <code>inspection_id</code>、捕获时间戳、坐标空间标识符和版本元数据的类型化、不可变记录。坐标表示为具有明确图像宽度和高度的像素空间 <code>xyxy</code> 值。管道记录：</p>
 <ul>
-<li>source and frame identity;</li>
-<li>frame quality and rejection reasons;</li>
-<li>barcode and product-type resolution status;</li>
-<li>product detection, ROI transform, and component detections;</li>
-<li>per-component aggregate evidence;</li>
-<li>final decision and reason codes;</li>
-<li>product-model, component-model, product-configuration, and rule versions.</li>
+<li>来源和框架标识；</li>
+<li>镜架质量和拒收原因；</li>
+<li>条形码和产品类型解析状态；</li>
+<li>产品检测、ROI 变换和组件检测；</li>
+<li>每个组件的汇总证据；</li>
+<li>最终决定和原因代码；</li>
+<li>产品模型、组件模型、产品配置和规则版本。</li>
 </ul>
-<p>The implementation should use bounded in-process queues between real-time stages. Queue saturation is observable and must discard according to a configured policy without mixing products; an inspection whose required evidence was discarded is <code>NG</code> with <code>INSUFFICIENT_VALID_FRAMES</code>.</p>
-<h2 id="64-static-image-inspection-sequence">6.4 Static-Image Inspection Sequence<a class="headerlink" href="#64-static-image-inspection-sequence" title="Permanent link">&para;</a></h2>
+<p>实现应该在实时阶段之间使用有界的进程内队列。队列饱和是可观察到的，并且必须根据配置的策略丢弃，而不混合产品；所需证据被丢弃的检查是<code>NG</code>和<code>INSUFFICIENT_VALID_FRAMES</code>。</p>
+<h2 id="64-static-image-inspection-sequence">6.4 静态图像检查顺序<a class="headerlink" href="#64-static-image-inspection-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Operator
     participant CLI as 边缘 CLI
-    participant Source as 文件夹图像源
+    participant Source as Folder Image Source
     participant Product as 产品检测仪
     participant ROI as 投资回报引擎
     participant Component as 元件检测器
-    participant Rules as Rule Engine
+    participant Rules as 规则引擎
     participant Storage as 本地存储
     Operator-&gt;&gt;CLI:使用配置启动批处理
 loop 每个支持的图像
         CLI-&gt;&gt;Source:读取图像
         Source--&gt;&gt;CLI:图像和源元数据
-        CLI-&gt;&gt;Product:Detect product
-        Product--&gt;&gt;CLI:产品检测或故障
-alt Exactly one valid product
+        CLI-&gt;&gt;Product:检测产品
+        Product--&gt;&gt;CLI:Product detection or failure
+alt 恰好一件有效产品
             CLI-&gt;&gt;ROI:裁剪和地图坐标
             ROI--&gt;&gt;CLI:产品投资回报率和转型
             CLI-&gt;&gt;Component:检测所需的类
@@ -3308,23 +3308,23 @@ else 产品无法验证
         Storage--&gt;&gt;CLI:持续存在或存储错误
     end
     CLI--&gt;&gt;Operator:批次汇总和退出状态</code></pre>
-<p>Single-frame MVP evidence is not treated as temporal evidence. Each required component must independently pass its configured single-frame threshold.</p>
+<p>单帧 MVP 证据不被视为时间证据。每个必需的组件必须独立地通过其配置的单帧阈值。</p>
 <h2 id="65-real-time-processing-flow">6.5 实时处理流程<a class="headerlink" href="#65-real-time-processing-flow" title="Permanent link">&para;</a></h2>
-<p>The real-time pipeline performs these steps for each physical product:</p>
+<p>实时管道对每个物理产品执行以下步骤：</p>
 <ol>
-<li>Open a product window from an authoritative trigger or validated entry event.</li>
-<li>Capture frames and reject unusable frames using deterministic quality gates.</li>
-<li>Resolve the barcode and product type; do not guess an ambiguous mapping.</li>
-<li>Detect exactly one inspectable product and derive its ROI.</li>
-<li>Detect components in each valid ROI and retain evidence by component key.</li>
-<li>Close the window using the configured exit, timeout, or trigger condition.</li>
-<li>Aggregate evidence independently for each required component.</li>
-<li>Evaluate the pinned rule and configuration versions.</li>
-<li>Persist the result and media transactionally before publishing completion.</li>
-<li>Enqueue uploads independently of inspection execution.</li>
+<li>从权威触发器或经过验证的输入事件打开产品窗口。</li>
+<li>使用确定性质量门捕获帧并拒绝不可用的帧。
+3、解析条码和产品类型；不要猜测不明确的映射。</li>
+<li>准确检测一种可检测产品并得出其投资回报率。</li>
+<li>检测每个有效 ROI 中的组件并按组件密钥保留证据。</li>
+<li>使用配置的退出、超时或触发条件关闭窗口。</li>
+<li>独立地汇总每个所需组件的证据。</li>
+<li>评估固定的规则和配置版本。</li>
+<li>在发布完成之前以事务方式保留结果和媒体。</li>
+<li>独立于检查执行的排队上传。</li>
 </ol>
-<p>Inference may be batched only when batching remains within the product-window latency budget and preserves frame-to-inspection correlation.</p>
-<h2 id="66-configuration">6.6 Configuration<a class="headerlink" href="#66-configuration" title="Permanent link">&para;</a></h2>
+<p>仅当批处理保持在产品窗口延迟预算内并保留帧与检查的相关性时，才可以对推理进行批处理。</p>
+<h2 id="66-configuration">6.6 配置<a class="headerlink" href="#66-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">pipeline</span><span class="p">:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">max_inflight_inspections</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">frame_queue_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12</span>
@@ -3341,12 +3341,12 @@ else 产品无法验证
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span><span class="nt">min_mean_brightness</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">35.0</span>
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="nt">max_mean_brightness</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">225.0</span>
 </code></pre></div>
-<p>The <code>pipeline.*</code> keys above describe the production windowed pipeline and are
-deferred: the M1 static single-frame CLI accepts only <code>product_detection</code>,
-<code>component_detection</code>, <code>components</code>, and <code>roi</code> sections and rejects unknown
-keys (AUDIT-001).</p>
-<p>Configuration is schema-validated at startup. Invalid configuration prevents inspection readiness. Active model, rule, and product configuration versions are pinned when a product window opens and cannot change within that window.</p>
-<h2 id="67-failure-handling">6.7 故障处理<a class="headerlink" href="#67-failure-handling" title="Permanent link">&para;</a></h2>
+<p>上面的 <code>pipeline.*</code> 键描述了生产窗口管道，并且是
+deferred：M1静态单帧CLI仅接受<code>product_detection</code>，
+<code>component_detection</code>、<code>components</code> 和 <code>roi</code> 部分并拒绝未知
+键（AUDIT-001）。</p>
+<p>配置在启动时进行模式验证。无效的配置会妨碍检查准备工作。当产品窗口打开时，活动模型、规则和产品配置版本将被固定，并且无法在该窗口内更改。</p>
+<h2 id="67-failure-handling">6.7 Failure Handling<a class="headerlink" href="#67-failure-handling" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3386,7 +3386,7 @@ keys (AUDIT-001).</p>
 </tbody>
 </table>
 <p>异常在子系统边界处转换为显式原因代码。原始异常和堆栈跟踪属于结构化日志，而检查记录包含稳定的业务原因代码。</p>
-<h2 id="68-observability">6.8 可观测性<a class="headerlink" href="#68-observability" title="Permanent link">&para;</a></h2>
+<h2 id="68-observability">6.8 Observability<a class="headerlink" href="#68-observability" title="Permanent link">&para;</a></h2>
 <p>记录阶段延迟、有效/拒绝帧计数、产品检测成功、ROI 失败、条形码读取成功、每个组件的置信度分布、按原因的决策计数、队列深度、推理设备和活动版本。日志包括<code>inspection_id</code>、<code>frame_id</code>、<code>device_id</code>；它们不得包含凭据或无限制的图像数据。</p>
 <h2 id="69-verification">6.9 验证<a class="headerlink" href="#69-verification" title="Permanent link">&para;</a></h2>
 <ul>

@@ -3008,7 +3008,7 @@
   <a href="#6-bilingual-mkdocs-english-chinese" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Bilingual MkDocs (English + Chinese)
+        6.双语MkDocs（英文+中文）
       
     </span>
   </a>
@@ -3204,7 +3204,7 @@
   <a href="#6-bilingual-mkdocs-english-chinese" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Bilingual MkDocs (English + Chinese)
+        6.双语MkDocs（英文+中文）
       
     </span>
   </a>
@@ -3473,36 +3473,36 @@
   运营场景，包括模型改进（运行手册 10）和数据
   收集和注释（运行手册 11）。</li>
 </ul>
-<h2 id="6-bilingual-mkdocs-english-chinese">6. Bilingual MkDocs (English + Chinese)<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
+<h2 id="6-bilingual-mkdocs-english-chinese">6.双语MkDocs（英文+中文）<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
-<li>主配置<code>mkdocs.yml</code>是唯一的事实来源（材质主题，美人鱼渲染通过
-  <code>pymdownx.superfences</code> 自定义围栏，<code>extra.alternate</code> 语言切换器）。</li>
-<li><code>scripts/build-docs.sh</code> 管道：<code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
-  <code>generate-mkdocs-configs.py</code> （生成 mkdocs-en.yml + mkdocs-zh.yml）-&gt; 构建 site/ 和 site/zh/。</li>
-<li>翻译使用 <code>deep-translator</code> GoogleTranslator（免费，无 API 密钥）。限速；一个完整的
-  翻译大约需要 15-30 分钟。单文件模式：
-  <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>。任何 API 失败时
-  保留原始英文块。</li>
-<li>所有内容均已翻译，包括<code>research/</code>和美人鱼图标签。美人鱼语法是
-  保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
-  被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
-<li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
-  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
-<li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
-  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
-<li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
+<li>Master config <code>mkdocs.yml</code> is the single source of truth (Material theme, Mermaid rendering via
+  <code>pymdownx.superfences</code> custom fence, <code>extra.alternate</code> language switcher).</li>
+<li><code>scripts/build-docs.sh</code> pipeline: <code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
+  <code>generate-mkdocs-configs.py</code> (produces mkdocs-en.yml + mkdocs-zh.yml) -&gt; build site/ and site/zh/.</li>
+<li>Translation uses <code>deep-translator</code> GoogleTranslator (free, no API key). Rate-limited; a full
+  translation takes ~15-30 minutes. Single-file mode:
+  <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>. On any API failure the
+  original English chunk is kept.</li>
+<li>All content is translated, including <code>research/</code> and Mermaid diagram labels. Mermaid syntax is
+  preserved; only node labels, edge text, subgraph titles, sequence messages, and state/ER labels
+  are translated. <code>research/</code> no longer has a special copy step (removed from build-docs.sh).</li>
+<li>Translated headings keep their original English slug as an explicit <code>{#slug}</code> attribute so
+  cross-document anchors (e.g. <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>) work in Chinese too.</li>
+<li>Known machine-translation quality issues (not script bugs): <code>frames</code> -&gt; 框架 (should be 帧),
+  <code>volume</code> -&gt; 音量 (should be 存储卷), <code>poll</code> -&gt; 民意调查 (should be 轮询). Review before publishing.</li>
+<li><code>docs-zh/</code>, <code>site/</code>, and the generated configs are build artifacts, not committed.</li>
 </ul>
 <h2 id="7-conventions-agentsmd">7.约定（AGENTS.md）<a class="headerlink" href="#7-conventions-agentsmd" title="Permanent link">&para;</a></h2>
 <ul>
-<li>英语为基础语言；所有文档/评论/提交/自述文件必须是英文。</li>
-<li>常规提交：<code>feat:</code>、<code>fix:</code>、<code>docs:</code>、<code>chore:</code>、<code>refactor:</code>。</li>
-<li>分支命名：<code>feat/xxx</code>、<code>fix/xxx</code>、<code>docs/xxx</code>。</li>
-<li>除非明确要求，否则请勿承诺；未经明确批准，请勿推动或强行推动。</li>
-<li>没有泄露任何秘密。使用类型化 Pydantic 模型和 TypeScript 接口。</li>
-<li>工程规则：保留边缘优先架构；保留AI推理/规则评估/
-  持久化/Web API 分离；不要将 YOLO 逻辑放入 FastAPI 路由处理程序中；不要放
-  AI模型中的业务规则；边缘不能依赖于中央服务器；运行测试 + Ruff +
-  我的Py；切勿在未执行的情况下声称测试已通过；永远不要声称 100% 准确。</li>
+<li>English is the base language; all docs/comments/commits/READMEs MUST be English.</li>
+<li>Conventional Commits: <code>feat:</code>, <code>fix:</code>, <code>docs:</code>, <code>chore:</code>, <code>refactor:</code>.</li>
+<li>Branch naming: <code>feat/xxx</code>, <code>fix/xxx</code>, <code>docs/xxx</code>.</li>
+<li>Do NOT commit unless explicitly asked; do NOT push or force-push without explicit approval.</li>
+<li>No secrets committed. Use typed Pydantic models and TypeScript interfaces.</li>
+<li>Engineering rules: preserve edge-first architecture; keep AI inference / rule evaluation /
+  persistence / Web APIs separated; do not put YOLO logic in FastAPI route handlers; do not put
+  business rules in the AI model; edge must not depend on the central server; run tests + Ruff +
+  MyPy; never claim tests passed without executing; never claim 100% accuracy.</li>
 </ul>
 <h2 id="8-latest-session-decisions">8. 最新会议决定<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3622,70 +3622,70 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
   部分；自述文件更新了新功能、项目结构和路线图。</li>
 </ul>
 <h2 id="83-edge-backend-layer-m1-pr-8">8.3 边缘后端层（M1，PR #8）<a class="headerlink" href="#83-edge-backend-layer-m1-pr-8" title="Permanent link">&para;</a></h2>
-<p><code>dev</code> 上的 FastAPI + SQLite 后端层提供真实的只读仪表板视图
-CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
-阻塞结果 (F1-F14) 和 M1 条件项 (C1-C4)
-<code>docs/reviews/PR-008-review.md</code> 在 <code>dev</code> 上得到解决和验证。</p>
+<p>The FastAPI + SQLite backend layer on <code>dev</code> gives read-only dashboard views real
+CLI inspection results. PR #8 (dev -&gt; main) carries this milestone; the
+blocking findings (F1-F14) and M1 conditional items (C1-C4) in
+<code>docs/reviews/PR-008-review.md</code> are resolved and validated on <code>dev</code>.</p>
 <ul>
-<li><strong><code>assemblyvision serve</code></strong>: starts the local API on <code>/api/v1</code> (design 15.3),
-  serves the built dashboard as static assets with SPA fallback, opens a SQLite
-  index, and reconciles existing CLI <code>inspection.json</code> output idempotently on
-  startup. Configuration/rule/manifest loading reuses the same verified
-  pipeline build as <code>inspect</code>.</li>
-<li><strong>Persistence</strong>: SQLAlchemy Core schema + Alembic migrations 0001/0002
-  (<code>apps/edge-service/migrations/</code>); tables for inspections, component
-  evidence, media, upload tasks, device events, active packages, and a durable
-  <code>rule_identities</code> registry with contract-05 indexes. Denormalized filter
-  columns (barcode, product, result) drive history queries. The SQLite index is
-  a <strong>rebuildable read projection</strong> of the CLI <code>inspection.json</code> bundles (C1,
-  ADR-012): it can be deleted and rebuilt from the same bundles without changing
-  them, and it is not the authoritative completion/outbox store. The static-MVP
-  <code>device_sequence</code> is per-process and is not a synchronization identity (C3).
-  The <code>rule_identities</code> table makes rule identity immutable across restarts: a
-  <code>(rule_id, rule_version)</code> reused with different content fails pipeline load
-  with <code>CONFIG_INVALID</code>.</li>
-<li><strong>Endpoints</strong>: health/device/camera, inspection state, inspections list
-  (cursor pagination + filters) and detail, inspection media, media content
-  with Range support, uploads (empty in M1), effective configuration, logs
-  (in-memory ring buffer), and derived traceability/statistics/images.
-  Statistics <code>from</code>/<code>to</code> filters are validated as timezone-aware UTC timestamps;
-  the derived images endpoint reports per-slot AVAILABLE/PURGED/UNAVAILABLE
-  status and returns 404 for unknown inspections. The M1 API is read-only
-  (ADR-012): pause/resume, camera reconnect, and upload retry are not exposed.</li>
-<li><strong>Viewer authentication</strong> (ADR-012): every route except <code>/health/live</code>
-  requires the configured <code>AV_EDGE_API_TOKEN</code> bearer token or a short-lived
-  HttpOnly, SameSite=strict, same-origin viewer session. <code>POST
-  /api/v1/auth/session</code> exchanges a valid bearer token for the session cookie;
-  the dashboard <code>/login</code> page provides the one-time entry so neither API JSON
-  requests nor media <code>&lt;img&gt;</code> requests need the token in browser storage.</li>
-<li><strong>Media isolation (F2)</strong>: media content is resolved only inside its
-  inspection bundle directory; traversal, absolute, cross-bundle, and symlink
-  escape paths are rejected at import and serve time, and duplicate media IDs
-  are rejected so malformed bundles are skipped without aborting startup.</li>
-<li><strong>Contract boundary (F9)</strong>: typed Pydantic response schemas with a committed
-  OpenAPI document (<code>apps/edge-service/openapi/edge-openapi.json</code>) and CI drift
-  checks, generated TypeScript types
-  (<code>packages/typescript/api-client/src/edge/generated/api.ts</code>), plus runtime
-  response validation in <code>HttpApiClient</code> (<code>validate.ts</code>) that rejects drifted
-  or malformed payloads instead of blindly casting.</li>
-<li><strong>Frontend split</strong>: read-only views route through the HTTP client when
-  <code>VITE_API_MODE=http</code>; operator workflow actions (current/confirm/next/
-  manual) stay on the deterministic mock because they are a demonstration
-  queue, not a design 15.3 endpoint.</li>
-<li><strong>PR-003 hardening folded in</strong>: rule version identity is bound to canonical
-  rule content and registered durably; the output writer publishes inspection
-  bundles atomically (staging + fsync + rename, rejects republish); detectors
-  pass manifest <code>imgsz</code>/<code>iou</code>/<code>conf</code> explicitly and persist effective values in
-  <code>InspectionRecord.inference_metadata</code>; the pipeline validates detection
-  provenance (frame/model/coordinate space) with an absolute-only coordinate
-  tolerance at the boundary.</li>
-<li><strong>Packaging</strong>: <code>py.typed</code> markers added to <code>domain</code> and <code>vision-core</code> so MyPy
-  strict passes repo-wide.</li>
-<li><strong>Test hardening</strong>: the shared gate (ruff, format, mypy, pytest) passes with
-  <code>557 passed</code> (2026-08-09); TypeScript is <code>37 passed</code> (api-client), <code>13 passed</code>
-  (ui), <code>28 passed</code> (edge-web), <code>3 passed</code> (desktop), plus 12 Playwright e2e
-  including a token-authenticated served dashboard that asserts real reconciled
-  data and purged-media rendering. <code>uv run mkdocs build --strict</code> passes.</li>
+<li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
+  将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
+  索引，并以幂等方式协调现有 CLI <code>inspection.json</code> 输出
+  启动。配置/规则/清单加载重用相同的验证
+  管道构建为 <code>inspect</code>。</li>
+<li><strong>持久性</strong>：SQLAlchemy 核心架构 + Alembic 迁移 0001/0002
+  (<code>apps/edge-service/migrations/</code>);检查表，组件
+  证据、媒体、上传任务、设备事件、活动包和持久的
+  <code>rule_identities</code> 具有合约 05 索引的注册表。非规格化过滤器
+  列（条形码、产品、结果）驱动历史查询。 SQLite 索引是
+  CLI <code>inspection.json</code> 包的 <strong>可重建读取投影</strong>（C1、
+  ADR-012)：可以从相同的捆绑包中删除和重建，而无需更改
+  他们，并且它不是权威的完成/发件箱商店。静态 MVP
+  <code>device_sequence</code> 是每个进程的，不是同步标识 (C3)。
+  <code>rule_identities</code> 表使规则身份在重新启动后不可变：
+  <code>(rule_id, rule_version)</code> 与不同内容重用导致管道加载失败
+  与<code>CONFIG_INVALID</code>。</li>
+<li><strong>端点</strong>：健康/设备/相机、检查状态、检查列表
+  （光标分页+过滤器）和详细信息，检查媒体，媒体内容
+  具有范围支持、上传（M1 中为空）、有效配置、日志
+  （内存环形缓冲区），以及派生的可追溯性/统计数据/图像。
+  统计信息 <code>from</code>/<code>to</code> 过滤器被验证为时区感知的 UTC 时间戳；
+  派生映像端点报告每个插槽可用/已清除/不可用
+  状态并返回 404 未知检查。 M1 API 是只读的
+  (ADR-012)：暂停/恢复、相机重新连接和上传重试不会暴露。</li>
+<li><strong>查看者身份验证</strong> (ADR-012)：除 <code>/health/live</code> 之外的所有路由
+  需要配置的 <code>AV_EDGE_API_TOKEN</code> 不记名令牌或短期的
+  HttpOnly、SameSite=严格、同源查看器会话。 <code>POST
+  /api/v1/auth/session</code> 为会话 cookie 交换有效的承载令牌；
+  仪表板 <code>/login</code> 页面提供一次性条目，因此 API JSON 都不是
+  请求和媒体 <code>&lt;img&gt;</code> 请求都需要浏览器存储中的令牌。</li>
+<li><strong>媒体隔离 (F2)</strong>：媒体内容仅在其内部解析
+  检查包目录；遍历、绝对、交叉捆绑和符号链接
+  转义路径在导入和服务时被拒绝，并且重复的媒体 ID
+  被拒绝，因此格式错误的捆绑包将被跳过，而不会中止启动。</li>
+<li><strong>合约边界 (F9)</strong>：带有承诺的类型化 Pydantic 响应模式
+  OpenAPI 文档 (<code>apps/edge-service/openapi/edge-openapi.json</code>) 和 CI 漂移
+  检查、生成的 TypeScript 类型
+  (<code>packages/typescript/api-client/src/edge/generated/api.ts</code>)，加上运行时
+  <code>HttpApiClient</code> (<code>validate.ts</code>) 中的响应验证拒绝漂移
+  或畸形的有效负载，而不是盲目地强制转换。</li>
+<li><strong>前端分割</strong>：只读视图在以下情况下通过 HTTP 客户端路由：
+  <code>VITE_API_MODE=http</code>；操作员工作流程操作（当前/确认/下一个/
+  手动）留在确定性模拟上，因为它们是演示
+  队列，不是设计 15.3 端点。</li>
+<li><strong>PR-003 强化合并</strong>：规则版本身份绑定到规范
+  规则内容并持久注册；输出作者发布检查
+  原子捆绑（暂存 + fsync + 重命名，拒绝重新发布）；探测器
+  显式传递清单 <code>imgsz</code>/<code>iou</code>/<code>conf</code> 并保留有效值
+  <code>InspectionRecord.inference_metadata</code>；管道验证检测
+  具有纯绝对坐标的出处（框架/模型/坐标空间）
+  边界处的公差。</li>
+<li><strong>包装</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
+  strict 在整个仓库范围内传递。</li>
+<li><strong>测试强化</strong>：共享门（ruff、format、mypy、pytest）通过
+  <code>557 passed</code> (2026-08-09); TypeScript 是 <code>37 passed</code> （api 客户端）、<code>13 passed</code>
+  (ui)、<code>28 passed</code>（边缘网络）、<code>3 passed</code>（桌面）以及 12 个 Playwright e2e
+  包括一个经过令牌验证的服务仪表板，断言真实一致
+  数据和清除媒体渲染。 <code>uv run mkdocs build --strict</code> 通过。</li>
 </ul>
 <h2 id="84-audit-001-closure-and-review-fixes-pr-12">8.4 AUDIT-001 关闭和审查修复（PR #12）<a class="headerlink" href="#84-audit-001-closure-and-review-fixes-pr-12" title="Permanent link">&para;</a></h2>
 <p>只读系统审核 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 是

@@ -843,7 +843,7 @@
   <a href="#115-reason-codes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.5 Reason Codes
+        11.5 原因代码
       
     </span>
   </a>
@@ -854,7 +854,7 @@
   <a href="#116-configuration-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.6 Configuration Lifecycle
+        11.6 配置生命周期
       
     </span>
   </a>
@@ -3140,7 +3140,7 @@
   <a href="#115-reason-codes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.5 Reason Codes
+        11.5 原因代码
       
     </span>
   </a>
@@ -3151,7 +3151,7 @@
   <a href="#116-configuration-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.6 Configuration Lifecycle
+        11.6 配置生命周期
       
     </span>
   </a>
@@ -3213,14 +3213,14 @@
 
 <h1 id="11-rule-engine">11. 规则引擎<a class="headerlink" href="#11-rule-engine" title="Permanent link">&para;</a></h1>
 <h2 id="111-purpose-and-independence">11.1 目的和独立性<a class="headerlink" href="#111-purpose-and-independence" title="Permanent link">&para;</a></h2>
-<p>规则引擎将解析的产品身份、管道状态和每个组件的聚合证据转换为确定性的检查决策。它独立于YOLO，不包含图像推理。输入来自 <a href="../06-ai-detection-pipeline/">AI detection pipeline</a> 和 <a href="../10-temporal-aggregation/">temporal aggregation</a>。</p>
+<p>The rule engine converts resolved product identity, pipeline status, and per-component aggregate evidence into a deterministic inspection decision. It is independent of YOLO and contains no image inference. Inputs come from the <a href="../06-ai-detection-pipeline/">AI detection pipeline</a> and <a href="../10-temporal-aggregation/">temporal aggregation</a>.</p>
 <h2 id="112-decision-semantics">11.2 决策语义<a class="headerlink" href="#112-decision-semantics" title="Permanent link">&para;</a></h2>
-<p>外部产生结果为<code>OK</code>或<code>NG</code>：</p>
+<p>The external production result is <code>OK</code> or <code>NG</code>:</p>
 <ul>
-<li><code>OK</code>：产品类型和规则有效，每个强制管道门都通过，并且每个所需组件独立地具有满足计数和约束规则的<code>PRESENT</code>证据。</li>
-<li><code>NG</code>：任何必需的组件是<code>MISSING</code>、<code>UNCERTAIN</code>或<code>UNVERIFIABLE</code>；或任何强制管道/配置门失败。</li>
+<li><code>OK</code>: product type and rule are valid, every mandatory pipeline gate passed, and every required component independently has <code>PRESENT</code> evidence satisfying count and constraint rules.</li>
+<li><code>NG</code>: any required component is <code>MISSING</code>, <code>UNCERTAIN</code>, or <code>UNVERIFIABLE</code>; or any mandatory pipeline/configuration gate failed.</li>
 </ul>
-<p>可以显示和报告内部<code>UNCERTAIN</code>证据状态，但它映射到外部<code>NG</code>。引擎没有允许的默认值。未知产品、缺少规则、格式错误的配置、模型/规则不兼容或评估异常是 <code>NG</code> 或阻止系统准备就绪。</p>
+<p>An internal <code>UNCERTAIN</code> evidence state may be displayed and reported, but it maps to external <code>NG</code>. The engine has no permissive default. Unknown product, missing rule, malformed configuration, model/rule incompatibility, or evaluation exception is <code>NG</code> or prevents system readiness.</p>
 <h2 id="113-versioned-rule-configuration">11.3 版本规则配置<a class="headerlink" href="#113-versioned-rule-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">schema_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">rule_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model-a-presence</span>
@@ -3241,7 +3241,7 @@
 <a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span><span class="nt">roi_valid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span><span class="nt">minimum_valid_frames_met</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </code></pre></div>
-<p>规则发布后不可更改。编辑创建新版本。产品窗口引脚规则、产品配置、型号版本；决策记录存储所有这些。仅应在生产中安装经过签名或以其他方式身份验证的配置包，并在激活之前进行本地验证。</p>
+<p>Rules are immutable after publication. Editing creates a new version. The product window pins rule, product configuration, and model versions; the decision record stores all of them. Only signed or otherwise authenticated configuration packages should be installed in production, with local validation before activation.</p>
 <h2 id="114-evaluation-algorithm">11.4 评估算法<a class="headerlink" href="#114-evaluation-algorithm" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">reasons</span> <span class="o">=</span> <span class="p">[]</span>
@@ -3262,42 +3262,42 @@
 <a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>            <span class="n">reasons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;COMPONENT_COUNT_INVALID:</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="k">return</span> <span class="n">InspectionDecision</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="s2">&quot;NG&quot;</span> <span class="k">if</span> <span class="n">reasons</span> <span class="k">else</span> <span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="n">reasons</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">reasons</span><span class="p">))</span>
 </code></pre></div>
-<p>排序和稳定的组件迭代产生可重现的原因排序。引擎返回所有适用的原因，而不是一开始就停止，除非无法安全地解析输入。</p>
-<h2 id="115-reason-codes">11.5 Reason Codes<a class="headerlink" href="#115-reason-codes" title="Permanent link">&para;</a></h2>
-<p>原因代码是稳定的机器可读标识符，分组为：</p>
+<p>Sorting and stable component iteration produce reproducible reason ordering. The engine returns all applicable reasons rather than stopping at the first, except when input cannot be parsed safely.</p>
+<h2 id="115-reason-codes">11.5 原因代码<a class="headerlink" href="#115-reason-codes" title="Permanent link">&para;</a></h2>
+<p>Reason codes are stable machine-readable identifiers grouped as:</p>
 <ul>
-<li>身份：<code>BARCODE_UNREADABLE</code>、<code>PRODUCT_TYPE_UNKNOWN</code>、<code>PRODUCT_MAPPING_AMBIGUOUS</code>、<code>PRODUCT_IDENTITY_UNVERIFIED</code>；</li>
-<li>管道：<code>CAMERA_DISCONNECTED</code>、<code>NO_PRODUCT</code>、<code>MULTIPLE_PRODUCTS</code>、<code>ROI_INVALID</code>、<code>INSUFFICIENT_VALID_FRAMES</code>、<code>INFERENCE_ERROR</code>、<code>IMAGE_READ_ERROR</code>、<code>PRODUCT_IDENTITY_MISSING</code>、<code>PRODUCT_IDENTITY_TRANSITION</code>、<code>WINDOW_MAX_DURATION_EXCEEDED</code>、<code>COMPONENT_POLICY_MISSING</code>、<code>GATE_FAILED:&lt;gate&gt;</code>；</li>
-<li>组件：带有组件键的<code>COMPONENT_MISSING</code>、<code>COMPONENT_UNCERTAIN</code>、<code>COMPONENT_UNVERIFIABLE</code>、<code>COMPONENT_COUNT_INVALID</code>、<code>COMPONENT_SPATIAL_INVALID</code>；</li>
-<li>配置：<code>RULE_NOT_FOUND</code>、<code>CONFIG_INVALID</code>、<code>VERSION_INCOMPATIBLE</code>；</li>
-<li>系统：<code>INSPECTION_INTERRUPTED</code>、<code>DECISION_PERSISTENCE_FAILED</code>、<code>RULE_EVALUATION_ERROR</code>。</li>
+<li>identity: <code>BARCODE_UNREADABLE</code>, <code>PRODUCT_TYPE_UNKNOWN</code>, <code>PRODUCT_MAPPING_AMBIGUOUS</code>, <code>PRODUCT_IDENTITY_UNVERIFIED</code>;</li>
+<li>pipeline: <code>CAMERA_DISCONNECTED</code>, <code>NO_PRODUCT</code>, <code>MULTIPLE_PRODUCTS</code>, <code>ROI_INVALID</code>, <code>INSUFFICIENT_VALID_FRAMES</code>, <code>INFERENCE_ERROR</code>, <code>IMAGE_READ_ERROR</code>, <code>PRODUCT_IDENTITY_MISSING</code>, <code>PRODUCT_IDENTITY_TRANSITION</code>, <code>WINDOW_MAX_DURATION_EXCEEDED</code>, <code>COMPONENT_POLICY_MISSING</code>, <code>GATE_FAILED:&lt;gate&gt;</code>;</li>
+<li>component: <code>COMPONENT_MISSING</code>, <code>COMPONENT_UNCERTAIN</code>, <code>COMPONENT_UNVERIFIABLE</code>, <code>COMPONENT_COUNT_INVALID</code>, <code>COMPONENT_SPATIAL_INVALID</code> with a component key;</li>
+<li>configuration: <code>RULE_NOT_FOUND</code>, <code>CONFIG_INVALID</code>, <code>VERSION_INCOMPATIBLE</code>;</li>
+<li>system: <code>INSPECTION_INTERRUPTED</code>, <code>DECISION_PERSISTENCE_FAILED</code>, <code>RULE_EVALUATION_ERROR</code>.</li>
 </ul>
-<p>规范的机器可读集的实现是
-<code>packages/python/domain/src/assemblyvision_domain/reason_codes.py</code>；设计11.5
-并且该模块必须保持同步 (AUDIT-001)。</p>
-<p>人类可读的文本是单独本地化的。分析使用原因代码加上结构化参数，而不是解析的显示消息。</p>
-<h2 id="116-configuration-lifecycle">11.6 Configuration Lifecycle<a class="headerlink" href="#116-configuration-lifecycle" title="Permanent link">&para;</a></h2>
-<p>草案规则经过模式验证并针对回归语料库进行模拟。发布需要授权和审核条目。边缘安装会持久写入程序包，验证校验和和兼容性，然后在产品窗口之间自动激活它。如果激活失败，请保留最后验证的版本并报告失败。如果某个产品不存在有效规则，则该产品为 <code>NG</code>；禁止通用许可规则。</p>
-<p>回滚将之前发布的不可变版本安装为新的激活事件。历史记录始终保留决策时使用的版本。</p>
+<p>The canonical machine-readable set is implemented in
+<code>packages/python/domain/src/assemblyvision_domain/reason_codes.py</code>; design 11.5
+and that module must stay in sync (AUDIT-001).</p>
+<p>Human-readable text is localized separately. Analytics use reason code plus structured parameters, not parsed display messages.</p>
+<h2 id="116-configuration-lifecycle">11.6 配置生命周期<a class="headerlink" href="#116-configuration-lifecycle" title="Permanent link">&para;</a></h2>
+<p>Draft rules are schema-validated and simulated against a regression corpus. Publication requires authorization and an audit entry. Edge installation writes the package durably, validates checksums and compatibility, then activates it atomically between product windows. If activation fails, retain the last validated version and report the failure. If no valid rule exists for a product, that product is <code>NG</code>; a generic permissive rule is prohibited.</p>
+<p>Rollback installs a previously published immutable version as a new activation event. Historical records always retain the version used at decision time.</p>
 <h2 id="117-failure-handling">11.7 故障处理<a class="headerlink" href="#117-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
-<li>缺少密钥和未知组件状态无法关闭<code>NG</code>。</li>
-<li>未知的可选字段将被拒绝或根据显式架构版本策略进行处理，而不会进行静默解释。</li>
-<li>评估异常在边界处捕获、记录并使用 <code>RULE_EVALUATION_ERROR</code> 转换为 <code>NG</code>。</li>
-<li>版本冲突的重复组件证据无效。</li>
-<li>中央服务器中断不会阻止使用最后本地安装的有效规则。</li>
-<li>新下载的无效规则无法替换活动规则。</li>
+<li>Missing keys and unknown component states fail closed to <code>NG</code>.</li>
+<li>Unknown optional fields are rejected or handled according to an explicit schema-version policy, never silently interpreted.</li>
+<li>Evaluation exceptions are caught at the boundary, logged, and converted to <code>NG</code> with <code>RULE_EVALUATION_ERROR</code>.</li>
+<li>Duplicate component evidence with conflicting versions is invalid.</li>
+<li>Central-server outage does not prevent use of the last locally installed valid rule.</li>
+<li>A newly downloaded invalid rule cannot replace the active rule.</li>
 </ul>
-<p>边缘仪表板可能会因全局配置错误而显示系统未就绪状态。当决策持久性失败时，它不得显示 <code>OK</code> 结果。</p>
+<p>The edge dashboard may show a system-not-ready state for global configuration faults. It must not display an <code>OK</code> result when decision persistence fails.</p>
 <h2 id="118-verification">11.8 验证<a class="headerlink" href="#118-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>对每个证据状态、门、身份状态、计数和原因代码使用表驱动的单元测试。</li>
-<li>属性测试：<code>OK</code> 意味着每个必需的组件都存在并且每个强制门都为真。</li>
-<li>属性测试：在没有证据的情况下添加所需的组件无法保留<code>OK</code>。</li>
-<li>针对固定检查上下文的黄金测试已发布规则版本。</li>
-<li>测试格式错误的 YAML、不受支持的架构版本、不兼容的模型、缺少规则和评估异常。</li>
-<li>在活动和空闲产品窗口期间集成测试原子激活。</li>
-<li>根据部署期间持续存在的证据审核 <code>OK</code> 结果样本。</li>
+<li>Use table-driven unit tests for every evidence state, gate, identity state, count, and reason code.</li>
+<li>Property-test: <code>OK</code> implies every required component is present and every mandatory gate is true.</li>
+<li>Property-test: adding a required component without evidence cannot preserve <code>OK</code>.</li>
+<li>Golden-test published rule versions against fixed inspection contexts.</li>
+<li>Test malformed YAML, unsupported schema versions, incompatible models, missing rules, and evaluation exceptions.</li>
+<li>Integration-test atomic activation during active and idle product windows.</li>
+<li>Audit a sample of <code>OK</code> results against persisted evidence during rollout.</li>
 </ul>
 <h2 id="119-open-questions-and-validation-required">11.9 未决问题和需要验证<a class="headerlink" href="#119-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>

@@ -877,7 +877,7 @@
   <a href="#133-task-and-protocol-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.3 任务和协议设计
+        13.3 Task and Protocol Design
       
     </span>
   </a>
@@ -921,7 +921,7 @@
   <a href="#137-ordering-and-synchronization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.7 排序和同步
+        13.7 Ordering and Synchronization
       
     </span>
   </a>
@@ -966,6 +966,17 @@
     <span class="md-ellipsis">
       
         13.11 未解决的问题和需要验证
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1312-implementation-status-edge-outbox-and-scheduler-milestone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.12 实施状态（边缘发件箱和调度程序里程碑）
       
     </span>
   </a>
@@ -3140,7 +3151,7 @@
   <a href="#133-task-and-protocol-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.3 任务和协议设计
+        13.3 Task and Protocol Design
       
     </span>
   </a>
@@ -3184,7 +3195,7 @@
   <a href="#137-ordering-and-synchronization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.7 排序和同步
+        13.7 Ordering and Synchronization
       
     </span>
   </a>
@@ -3235,6 +3246,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1312-implementation-status-edge-outbox-and-scheduler-milestone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.12 实施状态（边缘发件箱和调度程序里程碑）
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3261,7 +3283,7 @@
 <h2 id="132-upload-scope">13.2 上传范围<a class="headerlink" href="#132-upload-scope" title="Permanent link">&para;</a></h2>
 <p>对于 <code>OK</code>，上传检查元数据、条形码、产品类型、决策、组件/置信度摘要、版本、设备/时间戳和一个代表性关键帧。对于 <code>NG</code>，上传完整的元数据、缺失/不确定的组件、多个关键帧、带注释的图像、产品 ROI、可选事件剪辑和相关诊断。对于系统异常，上传异常类型、设备/摄像机状态、相关媒体/日志摘录和时间戳。</p>
 <p>不要上传每个视频帧。介质选择在本地进行并记录在检查清单中。</p>
-<h2 id="133-task-and-protocol-design">13.3 任务和协议设计<a class="headerlink" href="#133-task-and-protocol-design" title="Permanent link">&para;</a></h2>
+<h2 id="133-task-and-protocol-design">13.3 Task and Protocol Design<a class="headerlink" href="#133-task-and-protocol-design" title="Permanent link">&para;</a></h2>
 <p>一项检查具有稳定的客户端生成的 <code>inspection_id</code> 和清单校验和。每个上传任务都有一个稳定的 <code>upload_task_id</code>、设备 ID、可为空的检查 ID、工件身份、有效负载哈希、SHA-256 校验和（如果适用）、字节大小、尝试计数、下次尝试时间、时间戳、租用和状态。规范状态包括 <code>PENDING</code>、<code>IN_PROGRESS</code>、<code>RETRY_WAIT</code>、<code>SUCCEEDED</code>、<code>PERMANENT_FAILURE</code> 和 <code>CANCELLED</code>。</p>
 <p>元数据摄取使用稳定的幂等键<code>inspection:{device_id}:{inspection_id}</code>。架构和清单版本保留在散列有效负载内，而不是更改密钥。中央服务器强制 <code>(device_id, inspection_id)</code> 和 <code>(device_id, idempotency_key)</code> 的唯一性，使用接受的元数据自动存储收据，并将其返回以进行相同的重播。具有不同不可变内容的重播会返回冲突并被隔离而不是被覆盖。</p>
 <p>大型媒体应在合理的情况下使用可恢复或预签名的对象上传。仅在服务器确认预期大小/校验和并将对象绑定到检查后才接受完成。</p>
@@ -3302,7 +3324,7 @@ else 永久验证或内容冲突
     participant Edge as 边缘检测
     participant Store as 本地存储
     participant Queue as 持久上传队列
-    participant Server as 中央服务器
+    participant Server as Central Server
     Server--xQueue:网络不可用
 loop 停电期间的每个实物产品
         Camera-&gt;&gt;Edge:本地帧和触发器
@@ -3318,7 +3340,7 @@ loop 到期排队任务
         Queue-&gt;&gt;Store:标记上传已确认
     end</code></pre>
 <p>脱机持续时间受本地受保护存储容量的限制，而不是受服务器上软件依赖性的限制。如果容量达到停止阈值，边缘必须停止接受检查，而不是删除受保护的证据或发出不可审计的<code>OK</code>决策。</p>
-<h2 id="137-ordering-and-synchronization">13.7 排序和同步<a class="headerlink" href="#137-ordering-and-synchronization" title="Permanent link">&para;</a></h2>
+<h2 id="137-ordering-and-synchronization">13.7 Ordering and Synchronization<a class="headerlink" href="#137-ordering-and-synchronization" title="Permanent link">&para;</a></h2>
 <p>服务器不得要求全局按时间顺序到达。设备可能会延迟上传或无序上传。设备 UTC 时间戳与时钟健康元数据一起保留；服务器接收时间是分开的。元数据先于媒体绑定，但检查可以集中可见，同时所需媒体具有生命周期<code>PENDING</code>；已验证的媒体变为<code>AVAILABLE</code>，终端故障变为<code>FAILED</code>，保留清理记录变为<code>PURGED</code>。</p>
 <p>配置/模型分发是一个单独的拉取/下载工作流程。上传确认无法激活新的规则或模型，并且中央数据永远不会追溯性地改变不可变的本地决策。人工审查会创建额外的中央记录，而不是重写原始证据。</p>
 <h2 id="138-security-and-configuration">13.8 安全和配置<a class="headerlink" href="#138-security-and-configuration" title="Permanent link">&para;</a></h2>
@@ -3340,65 +3362,117 @@ loop 到期排队任务
 <table>
 <thead>
 <tr>
-<th>失败</th>
-<th>行为</th>
+<th>Failure</th>
+<th>Behavior</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>DNS/网络/服务器中断</td>
-<td>坚持并重试；当地检查仍在继续</td>
+<td>DNS/network/server outage</td>
+<td>Persist and retry; local inspection continues</td>
 </tr>
 <tr>
-<td>服务器提交后超时</td>
-<td>重放相同的幂等键；服务器返回相同的收据</td>
+<td>Timeout after server commit</td>
+<td>Replay same idempotency key; server returns same receipt</td>
 </tr>
 <tr>
-<td>工人坠毁</td>
-<td>租约到期且任务符合条件</td>
+<td>Worker crash</td>
+<td>Lease expires and task becomes eligible</td>
 </tr>
 <tr>
 <td>HTTP 401/403</td>
-<td>暂停受影响的任务，警告凭证错误，不要热循环</td>
+<td>Pause affected tasks, alert credential fault, do not hot-loop</td>
 </tr>
 <tr>
-<td>HTTP 409 内容不匹配</td>
-<td>永久故障/隔离；保存当地证据</td>
+<td>HTTP 409 content mismatch</td>
+<td>Permanent failure/quarantine; preserve local evidence</td>
 </tr>
 <tr>
-<td>校验和不匹配</td>
-<td>重新读取本地文件，如果本地有效则重试；隔离若地方腐败</td>
+<td>Checksum mismatch</td>
+<td>Re-read local file, retry if locally valid; quarantine if local corruption</td>
 </tr>
 <tr>
-<td>本地文件丢失</td>
-<td>永久介质故障、警报、保留检查元数据</td>
+<td>Local file missing</td>
+<td>Permanent media failure, alert, retain inspection metadata</td>
 </tr>
 <tr>
-<td>队列积压增长</td>
-<td>按年龄/计数/字节发出警报；保护推理资源</td>
+<td>Queue backlog growth</td>
+<td>Alert by age/count/bytes; protect inference resources</td>
 </tr>
 </tbody>
 </table>
-<p>按状态显示队列计数和字节数、最早的挂起时间、尝试率、成功/失败率、上传延迟、吞吐量、电路状态和上次成功联系。手动重试仅重置符合条件的任务并保留尝试历史记录。</p>
+<p>Expose queue count and bytes by state, oldest pending age, attempt rate, success/failure rate, upload latency, throughput, circuit state, and last successful contact. Manual retry resets only eligible tasks and preserves attempt history.</p>
 <h2 id="1310-verification">13.10 验证<a class="headerlink" href="#1310-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>在每个服务器提交边界超时后集成测试幂等重播。</li>
-<li>测试重复的任务交付、无序检查、重复的介质以及冲突的校验和。</li>
-<li>故障注入 DNS 失败、连接重置、响应缓慢、<code>429</code>、<code>5xx</code>、<code>401</code>、<code>409</code> 和工作线程终止。</li>
-<li>运行长时间的离线测试，继续检查，重新启动边缘，恢复网络，并验证完全耗尽而没有重复。</li>
-<li>验证上传负载不能违反检查延迟/资源限制。</li>
-<li>验证保留不会在验证收据之前删除所需的工件。</li>
-<li>合同测试客户端/服务器模式兼容性和不支持的版本处理。</li>
+<li>Integration-test idempotent replay after timeout at every server commit boundary.</li>
+<li>Test duplicate task delivery, out-of-order inspections, duplicate media, and conflicting checksums.</li>
+<li>Fault-inject DNS failure, connection reset, slow response, <code>429</code>, <code>5xx</code>, <code>401</code>, <code>409</code>, and worker termination.</li>
+<li>Run a prolonged offline test, continue inspections, restart the edge, restore network, and verify complete drain without duplicates.</li>
+<li>Verify upload load cannot breach inspection latency/resource limits.</li>
+<li>Verify retention does not delete required artifacts before a verified receipt.</li>
+<li>Contract-test client/server schema compatibility and unsupported-version handling.</li>
 </ul>
 <h2 id="1311-open-questions-and-validation-required">13.11 未解决的问题和需要验证<a class="headerlink" href="#1311-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>确认中央服务器位置、API 所有权、身份验证方法和证书配置过程。</li>
-<li>定义最大预期中断持续时间和积压，以调整本地存储和服务器摄取容量。</li>
-<li>商定哪些媒体是结果强制的以及哪些媒体可以抽样。</li>
-<li>在文件大小测量后选择直接 API 上传与预签名的 S3 兼容分段上传。</li>
-<li>定义带宽限制、上传调度窗口以及客户网络代理/防火墙要求。</li>
-<li>定义永久上传失败的操作所有权和解决目标。</li>
+<li>Confirm the central-server location, API ownership, authentication method, and certificate provisioning process.</li>
+<li>Define maximum expected outage duration and backlog to size local storage and server ingest capacity.</li>
+<li>Agree which media are mandatory by outcome and which may be sampled.</li>
+<li>Select direct API upload versus pre-signed S3-compatible multipart upload after file-size measurement.</li>
+<li>Define bandwidth limits, upload scheduling windows, and customer network proxy/firewall requirements.</li>
+<li>Define operational ownership and resolution targets for permanent upload failures.</li>
 </ul>
+<h2 id="1312-implementation-status-edge-outbox-and-scheduler-milestone">13.12 实施状态（边缘发件箱和调度程序里程碑）<a class="headerlink" href="#1312-implementation-status-edge-outbox-and-scheduler-milestone" title="Permanent link">&para;</a></h2>
+<p>The persistent upload outbox and its worker are implemented in
+<code>assemblyvision_edge</code>:</p>
+<ul>
+<li><strong>原子投影和发件箱</strong>：<code>persist_inspection_and_enqueue_uploads</code>
+  插入不可变的投影、媒体、证据和一个 <code>INSPECTION</code> 任务
+  在单个 SQLite 事务中为每个工件加上一个 <code>MEDIA</code> 任务，因此崩溃
+  无法在没有所需上传任务的情况下留下已完成的检查
+  （设计12.4步骤3+4）。启动协调应用相同的操作
+  每个有效的包，修复搁浅的 <code>LOCAL_ONLY</code> 记录而不是
+  跳过它们。</li>
+<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code> 在一个任务中声明到期任务
+  即时交易； <code>MEDIA</code> 任务只有在检查后才到期
+  任务保存经过验证的成功收据，因此元数据始终先于媒体。
+  每个声明都带有一个每个任务的防护令牌（<code>lease_owner</code>），并且陈旧
+  <code>IN_PROGRESS</code> 租约到期后任务被回收；每个终端或重试
+  更新需要匹配的令牌，因此迟到的工作人员无法覆盖
+  较新的支架。</li>
+<li><strong>故障分类</strong>（设计 13.9）：运输错误和
+  <code>408/429/5xx</code> 安排具有完全抖动的指数退避，尊重
+  根据响应时间测量的数字<code>Retry-After</code>；本地丢失/损坏
+  证据（<code>MEDIA_EVIDENCE_MISSING</code>、<code>MEDIA_CHECKSUM_MISMATCH</code>、
+  <code>INSPECTION_EVIDENCE_MISSING</code>）和服务器冲突（<code>409</code>）成为永久性的
+  失败，同时保留当地证据。</li>
+<li><strong>验证收据</strong>：只有当有界类型收据时，2xx 才是成功
+  回显幂等键、对象、种类、字节大小和校验和
+  实际发送的有效负载；媒体收据还需要一个中心对象
+  标识符。已验证的收据和中央对象标识符将被保留。
+  检查同步是根据所有必需的任务重新计算的：
+  <code>QUEUED</code> 未完成时， <code>PARTIAL</code> 在带有待处理媒体的元数据之后，
+  <code>SYNCED</code> 仅当每项必需的任务都有经过验证的收据时，并且 <code>FAILED</code>
+  任何永久性故障。</li>
+<li><strong>接收器和配置</strong>：<code>DirectoryUploadSink</code>（本地/开发和
+  测试，密钥幂等）和 <code>HttpUploadSink</code> （HTTPS POST 到
+  <code>{base_url}/inspection-uploads</code> 带有幂等密钥和负载）。的
+  通过 <code>UploadSettings</code> 支持的 <code>serve</code> 路径启用工作线程
+  和 <code>AV_EDGE_UPLOAD_*</code> 环境变量（端点或本地接收器，
+  单独的 <code>AV_EDGE_UPLOAD_TOKEN</code> 凭证、超时、重试/租用/批量
+  可调参数、带宽限制）。中央端点需要 HTTPS；明确的
+  开发 HTTP 仅限于环回。没有配置目的地
+  工作人员保持明确禁用状态，并且任务在上传中仍然可见
+  API。</li>
+<li><strong>合同06覆盖</strong>：测试覆盖成功上传、网络
+  中断、重试/退避、<code>Retry-After</code>计时、重复排队、进程
+  重新启动租约回收和防护、丢失文件、校验和不匹配、
+  服务器幂等性冲突、收据验证、媒体之前的有序元数据
+  消耗、同步状态和无重复消耗。</li>
+</ul>
+<p>剩下的连接试点：中央摄取端点及其
+服务器端收据合同、媒体绑定确认、带宽
+已验证的节流执行、断路器和保留门控
+收据。</p>
 
 
 

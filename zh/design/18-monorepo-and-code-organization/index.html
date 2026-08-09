@@ -1089,7 +1089,7 @@
   <a href="#185-python-package-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.5 Python 包边界
+        18.5 Python Package Boundaries
       
     </span>
   </a>
@@ -1194,7 +1194,7 @@
   <a href="#1811-models-data-and-generated-artifacts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.11 Models, Data, and Generated Artifacts
+        18.11 模型、数据和生成的工件
       
     </span>
   </a>
@@ -3345,7 +3345,7 @@
   <a href="#185-python-package-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.5 Python 包边界
+        18.5 Python Package Boundaries
       
     </span>
   </a>
@@ -3450,7 +3450,7 @@
   <a href="#1811-models-data-and-generated-artifacts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.11 Models, Data, and Generated Artifacts
+        18.11 模型、数据和生成的工件
       
     </span>
   </a>
@@ -3521,7 +3521,7 @@
   
 
 
-<h1 id="18-monorepo-and-code-organization">18. Monorepo and Code Organization<a class="headerlink" href="#18-monorepo-and-code-organization" title="Permanent link">&para;</a></h1>
+<h1 id="18-monorepo-and-code-organization">18. Monorepo 和代码组织<a class="headerlink" href="#18-monorepo-and-code-organization" title="Permanent link">&para;</a></h1>
 <h2 id="181-goals">18.1 目标<a class="headerlink" href="#181-goals" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 使用一个 Python/TypeScript monorepo 来协调域合约、边缘和中央版本、前端客户端、迁移、部署和评估。存储库必须保留运行时边界，而无需为每个管道步骤创建包。</p>
 <p>相关合约定义在<a href="../14-data-model-and-database/">Data Model and Database</a>和<a href="../15-rest-api-and-events/">REST API and Events</a>中。前端所有权在 <a href="../16-edge-dashboard/">Edge Dashboard</a> 和 <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a> 中描述； ML 工作流程在 <a href="../19-training-and-evaluation/">Training and Evaluation</a> 中描述。</p>
@@ -3667,7 +3667,7 @@
 <p>仅运行应比 HTTP 请求寿命更长的作业：报告/导出生成、昂贵时的媒体验证/衍生品创建、保留批次以及通知扇出（如果引入）。普通的 CRUD 或检查元数据摄取不需要它。 MVP 可以使用 PostgreSQL 支持的作业表；仅当重试、调度或吞吐量证明合理时，才会添加 Redis 和工作框架。</p>
 <h3 id="1844-web-applications">18.4.4 Web 应用程序<a class="headerlink" href="#1844-web-applications" title="Permanent link">&para;</a></h3>
 <p><code>edge-web</code> 和 <code>admin-web</code> 拥有路由级功能和部署品牌。它们共享生成的 API 客户端、检测坐标渲染、基本状态指示器和格式。复杂的产品/规则编辑器和车队图表仍然仅位于中央；边缘运行状况/队列控制仍然仅限边缘。</p>
-<h2 id="185-python-package-boundaries">18.5 Python 包边界<a class="headerlink" href="#185-python-package-boundaries" title="Permanent link">&para;</a></h2>
+<h2 id="185-python-package-boundaries">18.5 Python Package Boundaries<a class="headerlink" href="#185-python-package-boundaries" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3705,15 +3705,15 @@
 <h2 id="187-dependency-diagram">18.7 依赖关系图<a class="headerlink" href="#187-dependency-diagram" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
     EV[边缘网] --&gt; AC[TS api 客户端]
-    EV --&gt; UI[TS ui]
+    EV --&gt; UI[TS用户界面]
     AW[管理网] --&gt; AC
     AW --&gt; UI
     AC -. 产生于 .-&gt; EO[边缘开放API]
-    AC -. 产生于 .-&gt; CO[中央开放API]
+    AC -. 产生于 .-&gt; CO[Central OpenAPI]
 
     ES[边缘服务] --&gt; VD[Python域]
     ES --&gt; VC[愿景核心]
-    ES --&gt; PC[platform-common]
+    ES --&gt; PC[平台通用]
     VC --&gt; VD
     VC --&gt; PC
 
@@ -3736,64 +3736,64 @@
 <h3 id="1883-add-only-when-justified">18.8.3 仅在合理时添加<a class="headerlink" href="#1883-add-only-when-justified" title="Permanent link">&para;</a></h3>
 <p>潜在的后续软件包包括具有冲突的本机依赖性的特定于供应商的相机适配器、专用的 MES/PLC 集成包、多个流程的中央应用程序/域提取、由另一个应用程序重用的图表组件以及模型分发工具。不要为它们预先创建空包。</p>
 <h2 id="189-dependency-and-version-management">18.9 依赖关系和版本管理<a class="headerlink" href="#189-dependency-and-version-management" title="Permanent link">&para;</a></h2>
-<p>Use one root Python workspace with <code>uv</code> and per-app/package <code>pyproject.toml</code> declarations; production app lock resolution comes from committed <code>uv.lock</code>. Use pnpm workspaces with one committed lockfile. Pin major/minor runtime dependencies and model runtime/CUDA combinations explicitly. Renovation is reviewed with tests rather than blindly merged.</p>
-<p>Python supports 3.12. TypeScript uses a strict base configuration. Each package exports only public entry points. Circular dependencies fail CI through import/dependency checks. Native camera SDKs and GPU packages use optional dependency groups so central images do not include them.</p>
+<p>使用带有 <code>uv</code> 和每个应用程序/包 <code>pyproject.toml</code> 声明的一个根 Python 工作区；生产应用程序锁定解析来自已提交的 <code>uv.lock</code>。将 pnpm 工作区与一个提交的锁定文件结合使用。显式固定主要/次要运行时依赖项和模型运行时/CUDA 组合。改造是通过测试来审查的，而不是盲目合并的。</p>
+<p>Python 支持 3.12。 TypeScript 使用严格的基本配置。每个包仅导出公共入口点。循环依赖项使 CI 通过导入/依赖项检查失败。本机相机 SDK 和 GPU 包使用可选的依赖项组，因此中心图像不包含它们。</p>
 <h2 id="1810-configuration-and-secrets">18.10 配置和秘密<a class="headerlink" href="#1810-configuration-and-secrets" title="Permanent link">&para;</a></h2>
-<p>Typed settings live in each runnable app and compose shared primitives from <code>platform-common</code>. Resolution order is documented: defaults, configuration file, environment variables, then explicit approved runtime overrides. Example files contain no secrets. Credentials come from mounted secrets or deployment secret stores and are never part of model/configuration bundles.</p>
-<p>Configuration schemas and examples under <code>config/</code> are source-controlled. Effective runtime configuration and version checksum are observable, with sensitive fields redacted.</p>
-<h2 id="1811-models-data-and-generated-artifacts">18.11 Models, Data, and Generated Artifacts<a class="headerlink" href="#1811-models-data-and-generated-artifacts" title="Permanent link">&para;</a></h2>
+<p>类型化设置存在于每个可运行的应用程序中，并由 <code>platform-common</code> 组成共享原语。解决顺序已记录：默认值、配置文件、环境变量，然后是明确批准的运行时覆盖。示例文件不包含任何秘密。凭证来自已安装的机密或部署机密存储，并且绝不是模型/配置包的一部分。</p>
+<p><code>config/</code> 下的配置模式和示例受源代码控制。有效的运行时配置和版本校验和是可观察的，敏感字段已被编辑。</p>
+<h2 id="1811-models-data-and-generated-artifacts">18.11 模型、数据和生成的工件<a class="headerlink" href="#1811-models-data-and-generated-artifacts" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>models/manifests/</code> may contain small manifests and checksums for development references. Model weights live in an artifact registry/object store and are ignored by Git.</li>
-<li><code>training/</code> contains reproducible code, X-AnyLabeling-to-YOLO dataset validation, component-ROI preparation, and small synthetic test fixtures, not production datasets or uncurated exports. It is developer-only and excluded from runtime distributions.</li>
-<li>The static train-and-inspect MVP uses plain local model artifacts with checksums. Model encryption and <code>.pyc</code>-only runtime packaging are deferred to a separately justified distribution scope.</li>
-<li>Runtime databases, images, clips, logs, cache, and reports use explicit external volumes, never repository paths.</li>
-<li>OpenAPI documents and generated clients are produced deterministically. The chosen policy may commit generated output for easy frontend builds or regenerate in CI, but CI always checks drift.</li>
-<li>Built frontend assets and compiled Python runtime layers are build outputs, not source directories.</li>
+<li><code>models/manifests/</code> 可能包含小清单和校验和以供开发参考。模型权重存在于工件注册表/对象存储中，并被 Git 忽略。</li>
+<li><code>training/</code> 包含可重现的代码、X-AnyLabeling-to-YOLO 数据集验证、组件 ROI 准备和小型综合测试装置，而不是生产数据集或未经策划的导出。它仅供开发人员使用，并且不包含在运行时发行版中。</li>
+<li>静态训练和检查 MVP 使用带有校验和的普通本地模型工件。模型加密和仅限 <code>.pyc</code> 的运行时打包被推迟到单独合理的分发范围。</li>
+<li>运行时数据库、图像、剪辑、日志、缓存和报告使用显式外部卷，而不是存储库路径。</li>
+<li>OpenAPI 文档和生成的客户端是确定性生成的。所选策略可以提交生成的输出以方便前端构建或在 CI 中重新生成，但 CI 始终检查偏差。</li>
+<li>构建的前端资产和编译的 Python 运行时层是构建输出，而不是源目录。</li>
 </ul>
 <h2 id="1812-testing-layout">18.12 测试布局<a class="headerlink" href="#1812-testing-layout" title="Permanent link">&para;</a></h2>
-<p>Unit tests live beside their owning app/package. Root tests cover boundaries:</p>
+<p>单元测试位于其拥有的应用程序/包旁边。根测试涵盖边界：</p>
 <table>
 <thead>
 <tr>
-<th>Suite</th>
-<th>Scope</th>
+<th>套房</th>
+<th>范围</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>contract</code></td>
-<td>OpenAPI generation, client generation/type-check, event JSON Schema, edge-central ingestion compatibility</td>
+<td>OpenAPI 生成、客户端生成/类型检查、事件 JSON 架构、边缘中心摄取兼容性</td>
 </tr>
 <tr>
 <td><code>e2e</code></td>
-<td>Browser plus deployed API/database/object store workflows</td>
+<td>浏览器加上已部署的 API/数据库/对象存储工作流程</td>
 </tr>
 <tr>
 <td><code>resilience</code></td>
-<td>Network loss, restart, expired lease, disk-full, checksum mismatch, duplicate upload</td>
+<td>网络丢失、重启、租约过期、磁盘已满、校验和不匹配、重复上传</td>
 </tr>
 <tr>
 <td><code>performance</code></td>
-<td>Pipeline latency, API/dashboard queries, upload recovery, sustained operation</td>
+<td>管道延迟、API/仪表板查询、上传恢复、持续运行</td>
 </tr>
 <tr>
 <td><code>fixtures</code></td>
-<td>Small synthetic/non-sensitive images, API payloads, and factory builders</td>
+<td>小型合成/非敏感图像、API 有效负载和工厂构建器</td>
 </tr>
 </tbody>
 </table>
-<p>Tests do not import fixtures from production data directories. ML evaluation datasets are versioned externally and invoked separately from fast CI.</p>
+<p>测试不会从生产数据目录导入装置。 ML 评估数据集在外部进行版本控制，并与快速 CI 分开调用。</p>
 <h2 id="1813-ci-and-build-flow">18.13 CI 和构建流程<a class="headerlink" href="#1813-ci-and-build-flow" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Validate formatting, Ruff, MyPy, ESLint, TypeScript, and Markdown links/diagrams where tooling is available.</li>
-<li>Run changed-package unit tests, then contract and integration tests.</li>
-<li>Generate OpenAPI and TypeScript clients and fail on drift.</li>
-<li>Build each app in isolated multi-stage Docker builds using only declared workspace dependencies.</li>
-<li>Scan dependencies/images and produce an SBOM.</li>
-<li>Run Compose smoke tests for edge offline startup and central ingestion.</li>
-<li>Publish immutable images/artifacts only from reviewed, tagged revisions; record source revision in manifests.</li>
+<li>验证可用工具的格式、Ruff、MyPy、ESLint、TypeScript 和 Markdown 链接/图表。</li>
+<li>运行更改包单元测试，然后运行合同测试和集成测试。</li>
+<li>生成 OpenAPI 和 TypeScript 客户端并因漂移而失败。</li>
+<li>仅使用声明的工作区依赖项在隔离的多阶段 Docker 构建中构建每个应用程序。</li>
+<li>扫描依赖项/映像并生成 SBOM。</li>
+<li>运行 Compose 烟雾测试以进行边缘离线启动和中央摄取。</li>
+<li>仅发布经过审查、标记的修订版的不可变图像/工件；在清单中记录源修订。</li>
 </ol>
-<p>Training jobs are not part of every application CI run. Their code tests run in CI; full training/evaluation runs in a controlled ML environment and publishes signed/verified reports and model artifacts.</p>
+<p>培训作业并不是 CI 运行的每个应用程序的一部分。他们的代码测试在 CI 中运行；完整的培训/评估在受控的机器学习环境中运行，并发布签名/验证的报告和模型工件。</p>
 <h2 id="1814-ownership-and-change-rules">18.14 所有权和变更规则<a class="headerlink" href="#1814-ownership-and-change-rules" title="Permanent link">&para;</a></h2>
 <p>使用代码所有者进行愿景/规则、边缘运行时、中央/安全、前端共享包、迁移和培训/评估。 Pydantic 合约变更需要 API/客户端漂移检查。已发布的事件更改需要兼容性审查。数据库更改需要迁移和回滚/前恢复注释。共享 UI 添加需要两个具体的消费者；否则他们仍然是本地人。</p>
 <h2 id="1815-open-questions-and-validation-required">18.15 未解决的问题和需要验证<a class="headerlink" href="#1815-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>

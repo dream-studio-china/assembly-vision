@@ -999,7 +999,7 @@
   <a href="#1410-retention-and-safe-cleanup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.10 保留和安全清理
+        14.10 Retention and Safe Cleanup
       
     </span>
   </a>
@@ -3284,7 +3284,7 @@
   <a href="#1410-retention-and-safe-cleanup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.10 保留和安全清理
+        14.10 Retention and Safe Cleanup
       
     </span>
   </a>
@@ -3829,60 +3829,60 @@ OpenAPI 中的模型。最小注册表是：</p>
 <table>
 <thead>
 <tr>
-<th>表</th>
-<th>关键列和主要列</th>
-<th>限制和目的</th>
+<th>Table</th>
+<th>Key and principal columns</th>
+<th>Constraints and purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>local_inspections</code></td>
-<td><code>id</code> PK UUID、<code>device_id</code>、<code>device_sequence</code>、生命周期、时间戳、条形码状态/值、产品解析、内部决策、业务结果、应用程序/产品模型/组件模型/规则版本和校验和、原因 JSON、延迟</td>
-<td><code>UNIQUE(device_id, device_sequence)</code>；耐用的产品级结果和同步单元。</td>
+<td><code>id</code> PK UUID, <code>device_id</code>, <code>device_sequence</code>, lifecycle, timestamps, barcode status/value, product resolution, internal decision, business result, application/product-model/component-model/rule versions and checksums, reason JSON, latency</td>
+<td><code>UNIQUE(device_id, device_sequence)</code>; durable product-level result and synchronization unit.</td>
 </tr>
 <tr>
 <td><code>local_detection_frames</code></td>
-<td><code>id</code> PK、<code>inspection_id</code> FK、<code>frame_index</code>、捕获时间、质量字段、产品 bbox JSON</td>
-<td><code>UNIQUE(inspection_id, frame_index)</code>；可选的详细证据的保留时间较短。</td>
+<td><code>id</code> PK, <code>inspection_id</code> FK, <code>frame_index</code>, captured time, quality fields, product bbox JSON</td>
+<td><code>UNIQUE(inspection_id, frame_index)</code>; optional detailed evidence subject to shorter retention.</td>
 </tr>
 <tr>
 <td><code>local_component_evidence</code></td>
-<td><code>id</code> PK、<code>inspection_id</code> FK、组件代码、状态、置信度/计数字段、原因 JSON</td>
-<td><code>UNIQUE(inspection_id, component_code)</code>;最终每个组件的证据。</td>
+<td><code>id</code> PK, <code>inspection_id</code> FK, component code, state, confidence/count fields, reason JSON</td>
+<td><code>UNIQUE(inspection_id, component_code)</code>; final per-component evidence.</td>
 </tr>
 <tr>
 <td><code>local_media_files</code></td>
-<td><code>id</code> PK、<code>inspection_id</code> FK 可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
-<td>路径必须相对于配置的媒体根； <code>UNIQUE(relative_path)</code> 和 <code>UNIQUE(sha256, kind)</code> ，其中重复数据删除是安全的。</td>
+<td><code>id</code> PK, <code>inspection_id</code> FK nullable, kind, relative path, MIME type, bytes, SHA-256, captured time, upload-required flag</td>
+<td>Path must be relative to the configured media root; <code>UNIQUE(relative_path)</code> and <code>UNIQUE(sha256, kind)</code> where deduplication is safe.</td>
 </tr>
 <tr>
 <td><code>upload_tasks</code></td>
-<td><code>id</code> PK、设备/检查/对象 ID、种类、有效负载哈希、校验和、幂等性密钥、规范状态、尝试、租约所有者/到期、下次尝试、时间戳、错误</td>
-<td><code>UNIQUE(device_id, idempotency_key)</code>；具有可恢复租约的持久发件箱。</td>
+<td><code>id</code> PK, device/inspection/object IDs, kind, payload hash, checksum, idempotency key, canonical state, attempts, lease owner/expiry, next attempt, timestamps, error</td>
+<td><code>UNIQUE(device_id, idempotency_key)</code>; persistent outbox with recoverable leases.</td>
 </tr>
 <tr>
 <td><code>device_events</code></td>
-<td><code>id</code> PK、发生时间、严重程度、事件代码、详情JSON、上传状态</td>
-<td>仅附加操作事件流。</td>
+<td><code>id</code> PK, occurred time, severity, event code, details JSON, upload state</td>
+<td>Append-only operational event stream.</td>
 </tr>
 <tr>
 <td><code>local_configuration</code></td>
-<td><code>key</code> PK、修订、值 JSON、来源、应用时间、校验和</td>
-<td>原子有效配置快照；在历史或事件记录中保留先前的快照。</td>
+<td><code>key</code> PK, revision, value JSON, source, applied time, checksum</td>
+<td>Atomic effective configuration snapshot; retain prior snapshots in history or event records.</td>
 </tr>
 <tr>
 <td><code>model_installations</code></td>
-<td><code>model_version_id</code> PK、清单 JSON、本地路径、SHA-256、状态、安装/激活时间</td>
-<td>每个任务只有一个活动安装，以事务方式强制执行。</td>
+<td><code>model_version_id</code> PK, manifest JSON, local path, SHA-256, state, installed/activated times</td>
+<td>Only one active installation per task, enforced transactionally.</td>
 </tr>
 <tr>
 <td><code>rule_installations</code></td>
-<td><code>rule_version_id</code> PK、产品版本 ID、文档 JSON、校验和、状态、安装/激活次数</td>
-<td>激活验证兼容的模型类和产品版本。</td>
+<td><code>rule_version_id</code> PK, product version ID, document JSON, checksum, state, installed/activated times</td>
+<td>Activation validates compatible model classes and product version.</td>
 </tr>
 </tbody>
 </table>
-<p>所需的边索引：</p>
+<p>Required edge indexes:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_local_inspections_completed</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">local_inspections</span><span class="p">(</span><span class="n">completed_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_local_inspections_barcode</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">local_inspections</span><span class="p">(</span><span class="n">barcode</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">barcode</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_local_inspections_result_time</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">local_inspections</span><span class="p">(</span><span class="n">business_result</span><span class="p">,</span><span class="w"> </span><span class="n">completed_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
@@ -3891,7 +3891,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_device_events_time</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">device_events</span><span class="p">(</span><span class="n">occurred_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
 </code></pre></div>
 <h2 id="146-central-schema">14.6 中心模式<a class="headerlink" href="#146-central-schema" title="Permanent link">&para;</a></h2>
-<p>PostgreSQL 拥有租户隔离和全局历史记录。每个租户拥有的行都带有 <code>organization_id</code>；即使稍后启用行级安全性，存储库查询也必须对其进行范围限制。</p>
+<p>PostgreSQL owns tenant isolation and global history. Every tenant-owned row carries <code>organization_id</code>; repository queries must scope it even if row-level security is later enabled.</p>
 <table>
 <thead>
 <tr>
@@ -4021,7 +4021,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <h2 id="149-media-metadata-and-integrity">14.9 媒体元数据和完整性<a class="headerlink" href="#149-media-metadata-and-integrity" title="Permanent link">&para;</a></h2>
 <p>数据库存储媒体元数据，而不是大图像/视频 blob。 Edge 写入临时路径（在支持的情况下<code>fsync</code>），自动重命名、计算 SHA-256，然后提交元数据及其上传任务。集中上传使用暂存对象密钥； API 在标记媒体可用之前验证大小和校验和。在最终对象存在之前，数据库行不得声明 <code>AVAILABLE</code>。</p>
 <p>对象键是不透明的且具有租户范围，例如 <code>org/{organization_id}/device/{device_id}/2026/08/04/{media_id}.jpg</code>。 API 响应发出授权的短期 URL，而不是公开存储凭据。</p>
-<h2 id="1410-retention-and-safe-cleanup">14.10 保留和安全清理<a class="headerlink" href="#1410-retention-and-safe-cleanup" title="Permanent link">&para;</a></h2>
+<h2 id="1410-retention-and-safe-cleanup">14.10 Retention and Safe Cleanup<a class="headerlink" href="#1410-retention-and-safe-cleanup" title="Permanent link">&para;</a></h2>
 <p>保留值是部署配置，而不是硬编码的默认值。清理工人应用此命令：</p>
 <ol>
 <li>切勿删除具有非终端所需上传任务的媒体文件。</li>
@@ -4054,17 +4054,17 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。重大架构更改需要版本化端点或协调发布。</li>
 <li>在需要时在前端边界添加日期时间和 UUID 运行时验证；单独生成的 TypeScript 类型并不能验证 JSON。</li>
 </ol>
-<p>OpenAPI 涵盖按名称引用的 REST 快照和 WebSocket 事件负载模式。由于 OpenAPI 没有完全描述 WebSocket 通道，因此事件信封从相同的 Pydantic 类导出为 JSON 模式，并针对前端验证器进行测试。</p>
+<p>OpenAPI covers REST snapshots and WebSocket event payload schemas referenced by name. Because OpenAPI does not fully describe WebSocket channels, event envelopes are exported as JSON Schema from the same Pydantic classes and tested against frontend validators.</p>
 <h2 id="1414-open-questions-and-validation-required">14.14 未解决的问题和需要验证<a class="headerlink" href="#1414-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>确认每个设备的预期检查、帧、事件和媒体量以及保留级别。</li>
-<li>确认本地 SQLite 是否足够，或者较大的边缘安装是否需要 PostgreSQL。</li>
-<li>确认条形码格式、灵敏度分类以及条形码搜索是否需要标准化变体。</li>
-<li>与客户就中央和边缘保留期、合法保留、删除证据和审计保留达成一致。</li>
-<li>确认租户隔离要求以及 PostgreSQL 行级安全性是否是强制性的。</li>
-<li>确认客户时钟同步能力和可接受的时钟漂移处理。</li>
-<li>验证所选 Python 和 PostgreSQL 版本中的 UUIDv7 库/工具支持。</li>
-<li>定义内部 <code>UNCERTAIN</code> 状态是否作为解释性细节在外部可见；其业务和物理路径仍然是<code>NG</code>。</li>
+<li>Confirm expected inspection, frame, event, and media volumes per device and retention class.</li>
+<li>Confirm whether local SQLite is sufficient or a larger edge installation requires PostgreSQL.</li>
+<li>Confirm barcode formats, sensitivity classification, and whether barcode search needs normalized variants.</li>
+<li>Agree central and edge retention periods, legal holds, deletion evidence, and audit retention with the customer.</li>
+<li>Confirm tenant isolation requirements and whether PostgreSQL row-level security is mandatory.</li>
+<li>Confirm customer clock synchronization capability and acceptable clock-drift handling.</li>
+<li>Validate UUIDv7 library/tooling support in the selected Python and PostgreSQL versions.</li>
+<li>Define whether the internal <code>UNCERTAIN</code> state is externally visible as explanatory detail; its business and physical path remains <code>NG</code>.</li>
 </ul>
 
 
