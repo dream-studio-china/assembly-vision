@@ -3193,6 +3193,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 Observability (E1) and Retention and Disk Safety (E2) (PRs #18/#19, #20)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3400,6 +3411,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 Observability (E1) and Retention and Disk Safety (E2) (PRs #18/#19, #20)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3466,22 +3488,25 @@ and verifies that all required assembly components are present.</p>
   (merged 2026-08-09); see section 8.4. PR #14 added camera frame sources,
   multi-instance <code>serve</code>, and the gated web dev test harness (ADR-013/014);
   PR #15/#16 merged the product-window/temporal aggregation milestone
-  (ADR-010) with production safety; and PR #17 merged the durable upload
-  outbox and scheduler (ADR-005); see sections 8.5/8.6. The next milestones
-  complete the Edge production candidate: observability (E1), retention and
-  disk safety (E2), upload resilience (E3), runtime/WebSocket (E4),
-  deployment and security (E5), and acceptance (E6); the central server is
-  not implemented and stays out of scope until those Edge gates pass.</li>
+  (ADR-010) with production safety; PR #17 merged the durable upload
+  outbox and scheduler (ADR-005); and PRs #18/#19 (E1 observability) and
+  #20 (E2 retention and disk safety) completed the storage and
+  observability gates; see sections 8.5-8.7. The remaining Edge
+  production-candidate work is upload resilience (E3), runtime/WebSocket
+  (E4), deployment and security (E5), and acceptance (E6); the central
+  server is not implemented and stays out of scope until those Edge gates
+  pass.</li>
 </ul>
 <h2 id="2-repository-state">2. Repository State<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>. PRs #3, #6,
   #8, #9, #10, #11, #12, #14 (camera/multi-instance/dev harness),
-  #15/#16 (temporal aggregation + production safety), and #17 (durable upload
-  outbox/scheduler, ADR-005) are merged to <code>main</code>. The next milestones are the
-  Edge production-candidate completion (E1-E6); the central server is not
-  implemented yet and is intentionally out of scope until those Edge gates
-  pass.</li>
+  #15/#16 (temporal aggregation + production safety), #17 (durable upload
+  outbox/scheduler, ADR-005), #18/#19 (E1 observability), and #20 (E2
+  retention and disk safety) are merged to <code>main</code>. E3-E6 remain: upload
+  resilience, runtime/WebSocket, deployment and security, and acceptance;
+  the central server is not implemented yet and is intentionally out of
+  scope until those Edge gates pass.</li>
 <li><code>.obsidian/</code>, <code>.idea/</code>, and <code>.vscode/</code> are ignored local editor state.</li>
 <li>Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts <code>docs-zh/</code>, <code>site/</code>, <code>mkdocs-en.yml</code>, <code>mkdocs-zh.yml</code> are gitignored.</li>
@@ -3939,27 +3964,67 @@ are resolved with regression tests:</p>
   central endpoints require HTTPS (development HTTP loopback-only), and the
   viewer <code>api_token</code> is never reused for uploads.</li>
 </ul>
+<h2 id="87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20">8.7 Observability (E1) and Retention and Disk Safety (E2) (PRs #18/#19, #20)<a class="headerlink" href="#87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20" title="Permanent link">&para;</a></h2>
+<p>Observability merged via PRs #18 and #19 (dev -&gt; main): the Alembic
+<code>fileConfig</code> side effect that disabled <code>assemblyvision.*</code> loggers after
+migration is fixed so <code>/api/v1/logs</code> captures application records, and device
+status now exposes upload queue bytes, oldest pending age, attempt/success/
+failure counters, failure rate, last contact, and <code>UPLOAD_BLOCKED</code>/
+<code>UPLOAD_FAILING</code> alerts.</p>
+<p>Retention and disk safety merged via PR #20 (dev -&gt; main, E2a-E2d plus the
+PR-020 review hardening). The delivery task and mandatory safety invariants are
+in <code>docs/tasks/E2-retention-and-disk-safety.md</code>; the review and its per-finding
+resolutions are recorded in <code>docs/reviews/PR-020-review.md</code> (RESOLVED):</p>
+<ul>
+<li><strong>Durable retention state (E2a)</strong>: migration 0007 adds media <code>created_at</code>,
+  <code>retention_eligible_at</code>, hold state, deletion claim/lease/fencing columns,
+  purge timestamp/reason, delete error, and integrity status. A <code>PURGED</code> row
+  remains an audit tombstone. Eligibility requires a receipt-verified <code>SYNCED</code>
+  inspection with a media receipt containing the central object ID, an elapsed
+  hold deadline, and no hold/fault/purge/deleting state.</li>
+<li><strong>Cleanup worker (E2b)</strong>: <code>RetentionCleanupWorker</code> claims candidates under an
+  inter-process SQLite lease with per-artifact fencing tokens. A fenced
+  pre-unlink confirmation re-validates the full eligibility predicate and
+  renews the lease immediately before destructive I/O; holds and integrity
+  faults applied after a claim cancel it, and finalization re-checks the same
+  predicate. Unlink runs through <code>O_NOFOLLOW</code> directory file descriptors so a
+  concurrent symlink swap cannot remove a file outside the inspection bundle.
+  Missing files are integrity faults, never false purges; unlink failures are
+  retryable and observable. Without an approved, enabled policy the worker
+  performs zero filesystem mutation.</li>
+<li><strong>Disk pressure and fail-safe runtime (E2c)</strong>: <code>StorageSettings</code> /
+  <code>RetentionSettings</code> (<code>AV_EDGE_STORAGE_*</code>/<code>AV_EDGE_RETENTION_*</code>, strictly
+  ordered stop &lt; critical &lt; warning) drive free-byte/inode pressure modes with
+  at-or-below threshold semantics. At critical pressure optional OK capture is
+  suppressed while NG evidence and metadata persist; at stop pressure or on a
+  latched write fault the runtime stops intake and reports
+  <code>inspection_ready=false</code>. Inspection results publish only after the
+  projection/outbox transaction commits; a write fault clears only through a
+  mandatory persistence probe (probe file + fsync and a <code>BEGIN IMMEDIATE</code>
+  write). Device status exposes server-authoritative thresholds and stable
+  alerts (<code>DISK_WARNING</code>/<code>DISK_CRITICAL</code>/<code>DISK_STOP</code>/<code>STORAGE_WRITE_FAULT</code>/
+  <code>STORAGE_INTEGRITY_FAULT</code>/<code>CLEANUP_FAULT</code>), and the dashboard renders them
+  instead of fixed client thresholds.</li>
+<li><strong>Startup integrity (E2d)</strong>: <code>scan_storage_integrity</code> verifies media
+  existence, size, and checksums by default (bounded deterministic sampling is
+  explicitly configurable), quarantines malformed/orphan bundles idempotently,
+  and latches <code>STORAGE_INTEGRITY_FAULT</code>; existing faults remain latched across
+  restart. <code>PRAGMA quick_check</code> fails closed on corruption. <code>mark_upload_succeeded</code>
+  validates a typed receipt against the task's immutable fields inside the
+  repository, and <code>/health/ready</code> returns 503 whenever storage admission is
+  closed by stop pressure, a write fault, or an integrity fault.</li>
+</ul>
+<p>Cleanup stays disabled without an approved retention policy; customer retention
+periods, disk sizing, holds, and stop-mode line behavior remain release
+blockers for production enablement (E2 task section 4). Current suite: 781
+Python tests, 91 TypeScript unit tests (api-client 45, ui 13, edge-web 30,
+desktop 3), and 12 Playwright e2e.</p>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The <strong>upload queue scheduler</strong> gap is closed (PR #17, section 8.6). The
-  remaining Edge production-candidate work is tracked as E1-E6:</li>
-<li><strong>E1 observability</strong>: the Alembic <code>fileConfig</code> side effect that disabled
-    <code>assemblyvision.*</code> loggers after migration is fixed so <code>/api/v1/logs</code>
-    captures application records, and device status now exposes upload queue
-    bytes, oldest pending age, attempt/success/failure counters, failure rate,
-    last contact, and <code>UPLOAD_BLOCKED</code>/<code>UPLOAD_FAILING</code> alerts.</li>
-<li><strong>E2 retention and disk safety</strong>: implemented (E2a-E2d): migration 0007
-    adds media retention/deletion/fencing/integrity state; receipt-gated
-    eligibility + inter-process cleanup lease; <code>RetentionCleanupWorker</code> that
-    deletes only receipt-verified, hold-elapsed media and treats missing files
-    as integrity faults; <code>StorageSettings</code>/<code>RetentionSettings</code>
-    (<code>AV_EDGE_STORAGE_*</code>/<code>AV_EDGE_RETENTION_*</code>) with strict threshold ordering
-    and a fail-safe stop gate (<code>inspection_ready=false</code>, no unrecorded <code>OK</code>);
-    device-status storage/cleanup observability and stable alerts; startup
-    media/filesystem integrity scan + durable quarantine + <code>PRAGMA quick_check</code>
-    fail-closed. Cleanup stays disabled without an approved policy. Runbooks
-    03/04/05/07 updated. Customer retention periods and stop-mode line behavior
-    remain release blockers for production enablement (E2 task section 4).</li>
+<li>The <strong>upload queue scheduler</strong> gap is closed (PR #17, section 8.6); <strong>E1
+  observability</strong> (PRs #18/#19) and <strong>E2 retention and disk safety</strong> (PR #20,
+  PR-020 review resolved) are merged (section 8.7). The remaining Edge
+  production-candidate work is tracked as E3-E6:</li>
 <li><strong>E3 upload resilience</strong>: bandwidth throttling, circuit breaker,
     controlled manual retry, long-outage drain tests, resumable large-media
     client (central protocol contract only).</li>

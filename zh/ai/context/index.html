@@ -3193,6 +3193,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 可观察性 (E1) 以及保留和磁盘安全性 (E2)（PR #18/#19、#20）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3400,6 +3411,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 可观察性 (E1) 以及保留和磁盘安全性 (E2)（PR #18/#19、#20）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3466,22 +3488,25 @@
   （2026年8月9日合并）；参见第 8.4 节。 PR #14 添加了相机帧源，
   多实例 <code>serve</code> 和门控 Web 开发测试工具 (ADR-013/014)；
   PR #15/#16 合并了产品窗口/时间聚合里程碑
-  （ADR-010）与安全生产；和 PR #17 合并了持久上传
-  发件箱和调度程序（ADR-005）；参见第 8.5/8.6 节。下一个里程碑
-  完成边缘生产候选：可观测性 (E1)、保留性和
-  磁盘安全 (E2)、上传弹性 (E3)、运行时/WebSocket (E4)、
-  部署和安全（E5）以及验收（E6）；中央服务器是
-  在这些边缘门通过之前，不会实施并保持在范围之外。</li>
+  （ADR-010）与安全生产； PR #17 合并了持久上传
+  发件箱和调度程序（ADR-005）；和 PR #18/#19（E1 可观测性）和
+  #20（E2保留和磁盘安全）完成存储并
+  可观测性门；参见第 8.5-8.7 节。剩余边数
+  生产候选工作是上传弹性（E3）、运行时/WebSocket
+  （E4）、部署和安全（E5）以及验收（E6）；中央
+  服务器尚未实现，并且在这些边缘门之前保持在范围之外
+  通过。</li>
 </ul>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
 <li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。 PR #3、#6、
   #8、#9、#10、#11、#12、#14（相机/多实例/开发工具）、
-  #15/#16（时间聚合+生产安全）和#17（持久上传）
-  发件箱/调度程序，ADR-005) 合并到 <code>main</code>。下一个里程碑是
-  边缘生产-候选完成（E1-E6）；中央服务器不是
-  尚未实施，并且有意超出范围，直到这些边缘门
-  通过。</li>
+  #15/#16（时间聚合+生产安全），#17（持久上传
+  发件箱/调度程序，ADR-005）、#18/#19（E1 可观察性）和#20（E2
+  保留和磁盘安全）合并到<code>main</code>。 E3-E6 保留：上传
+  弹性、运行时/WebSocket、部署和安全性以及验收；
+  中央服务器尚未实现，并且是故意退出的
+  范围，直到那些边缘门通过。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
   吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
@@ -3603,9 +3628,9 @@
   保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
   被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
 <li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
-  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也可以使用中文。</li>
+  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
 <li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
-  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民意调查（应该是轮询）。发布前进行审查。</li>
+  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
 <li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
 </ul>
 <h2 id="7-conventions-agentsmd">7.约定（AGENTS.md）<a class="headerlink" href="#7-conventions-agentsmd" title="Permanent link">&para;</a></h2>
@@ -3820,7 +3845,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   包包含和类映射（<code>ConfigError</code>，绝不泄漏）。</li>
 <li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
   覆盖）；日志消息清理绝对路径；失败尝试节流
-  <code>Retry-After</code>;有界会话；光标绑定过滤指纹
+  <code>Retry-After</code>；有界会话；光标绑定过滤指纹
   (<code>400 INVALID_CURSOR</code>);始终清除介质<code>410</code>；非 ASCII 承载 <code>401</code>；
   <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
 <li><strong>前端强化</strong>：生产构建失败，除非<code>VITE_API_MODE=http</code>；
@@ -3939,27 +3964,67 @@ ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
   中央端点需要 HTTPS（仅开发 HTTP 环回），并且
   查看器 <code>api_token</code> 永远不会重复用于上传。</li>
 </ul>
+<h2 id="87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20">8.7 可观察性 (E1) 以及保留和磁盘安全性 (E2)（PR #18/#19、#20）<a class="headerlink" href="#87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20" title="Permanent link">&para;</a></h2>
+<p>通过 PR #18 和 #19 合并的可观测性（dev -&gt; main）：Alembic
+<code>fileConfig</code> 副作用，禁用 <code>assemblyvision.*</code> 记录器
+迁移已修复，因此 <code>/api/v1/logs</code> 捕获应用程序记录和设备
+状态现在公开上传队列字节、最早的挂起年龄、尝试/成功/
+失败计数器、失败率、上次联系和 <code>UPLOAD_BLOCKED</code>/
+<code>UPLOAD_FAILING</code> 警报。</p>
+<p>通过 PR #20 合并保留和磁盘安全（dev -&gt; main、E2a-E2d 加上
+PR-020 审查强化）。交付任务和强制性安全不变量是
+在 <code>docs/tasks/E2-retention-and-disk-safety.md</code> 中；审查及其结果
+决议记录在<code>docs/reviews/PR-020-review.md</code>中（已解决）：</p>
+<ul>
+<li><strong>持久保留状态 (E2a)</strong>：迁移 0007 添加介质 <code>created_at</code>，
+  <code>retention_eligible_at</code>，保留状态，删除声明/租赁/防护列，
+  清除时间戳/原因、删除错误和完整性状态。 <code>PURGED</code> 行
+  仍然是审计墓碑。资格需要经过验证的收据 <code>SYNCED</code>
+  使用包含中心对象 ID 的媒体收据进行检查
+  保留截止日期，并且没有保留/故障/清除/删除状态。</li>
+<li><strong>清洁工人 (E2b)</strong>：<code>RetentionCleanupWorker</code> 声称候选人在
+  使用每个工件的隔离令牌进行进程间 SQLite 租赁。一个有围栏的
+  取消链接前确认重新验证完整的资格谓词和
+  在破坏性 I/O 之前立即更新租约；持有和诚信
+  索赔取消后应用的故障，最终确定重新检查相同的情况
+  谓词。取消链接通过 <code>O_NOFOLLOW</code> 目录文件描述符运行，因此
+  并发符号链接交换无法删除检查包之外的文件。
+  丢失文件是完整性错误，绝不是错误清除；取消链接失败是
+  可重试且可观察。如果没有经过批准、启用的政策，工人
+  执行零文件系统突变。</li>
+<li><strong>磁盘压力和故障安全运行时（E2c）</strong>：<code>StorageSettings</code> /
+  <code>RetentionSettings</code>（<code>AV_EDGE_STORAGE_*</code>/<code>AV_EDGE_RETENTION_*</code>，严格来说
+  有序停止&lt;严重&lt;警告）驱动空闲字节/索引节点压力模式
+  等于或低于阈值语义。在临界压力下，可选择 OK 捕获
+  NG 证据和元数据持续存在时被抑制；在停止压力或在
+  锁存写入故障运行时停止摄入并报告
+  <code>inspection_ready=false</code>。检验结果待检验合格后方可公布
+  投影/发件箱事务提交；写故障只能通过a清除
+  强制持久性探测（探测文件 + fsync 和 <code>BEGIN IMMEDIATE</code>
+  写）。设备状态暴露服务器权威阈值和稳定
+  警报 (<code>DISK_WARNING</code>/<code>DISK_CRITICAL</code>/<code>DISK_STOP</code>/<code>STORAGE_WRITE_FAULT</code>/
+  <code>STORAGE_INTEGRITY_FAULT</code>/<code>CLEANUP_FAULT</code>)，仪表板呈现它们
+  而不是固定的客户阈值。</li>
+<li><strong>启动完整性 (E2d)</strong>：<code>scan_storage_integrity</code> 验证媒体
+  默认情况下存在、大小和校验和（有界确定性采样是
+  明确可配置），幂等地隔离畸形/孤立包，
+  和锁存器<code>STORAGE_INTEGRITY_FAULT</code>；现有的故障仍然被锁定
+  重新启动。 <code>PRAGMA quick_check</code> 未能关闭腐败。 <code>mark_upload_succeeded</code>
+  根据任务内的不可变字段验证输入的收据
+  存储库，并且每当存储准入时 <code>/health/ready</code> 返回 503
+  由停止压力、写入故障或完整性故障关闭。</li>
+</ul>
+<p>如果没有批准的保留策略，清理将保持禁用状态；客户保留
+周期、磁盘大小、保持和停止模式线路行为保持释放
+生产支持的阻碍因素（E2 任务第 4 节）。当前套房：781
+Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-web 30、
+桌面 3) 和 12 名剧作家 e2e。</p>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）。的
-  剩余的 Edge 生产候选工作被跟踪为 E1-E6：</li>
-<li><strong>E1 可观察性</strong>：禁用的 Alembic <code>fileConfig</code> 副作用
-    <code>assemblyvision.*</code> 迁移后的记录器已修复，因此 <code>/api/v1/logs</code>
-    捕获应用程序记录，设备状态现在公开上传队列
-    字节、最早的挂起年龄、尝试/成功/失败计数器、失败率、
-    最后一次联系以及 <code>UPLOAD_BLOCKED</code>/<code>UPLOAD_FAILING</code> 提醒。</li>
-<li><strong>E2 保留和磁盘安全</strong>：已实施 (E2a-E2d)：迁移 0007
-    添加媒体保留/删除/防护/完整性状态；收据门控
-    资格+进程间清理租赁； <code>RetentionCleanupWorker</code>那个
-    仅删除经过接收验证、已保留的媒体并处理丢失的文件
-    作为完整性缺陷； <code>StorageSettings</code>/<code>RetentionSettings</code>
-    (<code>AV_EDGE_STORAGE_*</code>/<code>AV_EDGE_RETENTION_*</code>) 具有严格的阈值排序
-    和故障安全停止门（<code>inspection_ready=false</code>，无未记录的<code>OK</code>）；
-    设备状态存储/清理可观察性和稳定警报；启动
-    媒体/文件系统完整性扫描 + 持久隔离 + <code>PRAGMA quick_check</code>
-    失败关闭。如果没有批准的策略，清理将保持禁用状态。操作手册
-    03/04/05/07 更新。客户保留期和停止模式线路行为
-    保留发布阻碍以实现生产（E2 任务第 4 节）。</li>
+<li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）； <strong>E1
+  可观察性</strong>（PR #18/#19）和 <strong>E2 保留和磁盘安全性</strong>（PR #20、
+  PR-020 审查已解决）被合并（第 8.7 节）。剩余边数
+  生产候选工作被跟踪为 E3-E6：</li>
 <li><strong>E3上传弹性</strong>：带宽限制、断路器、
     受控手动重试、长时间断电排水测试、可恢复大介质
     客户端（仅限中央协议合约）。</li>
@@ -3974,13 +4039,13 @@ ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
   轮询预览）。</li>
 <li>AUDIT-001 <strong>已关闭</strong>，包括延迟的 4.4 权威持久性
   项目（现在由 PR #17 交付）。第 3 阶段每主机多边缘“共享”模型
-  权重共享仍然是一个开放的优化（ADR-013 每个实例管道
+  权重共享仍然是开放式优化（ADR-013 每个实例管道
   加载自己的模型）。</li>
 <li>基线仍然需要真实的客户数据：收集和注释
   与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
   <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
-  <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
+  <code>scripts/adapt-xanylabeling.py</code>（书面形式；支持classes.txt/data.yaml，
   图像优先和分割优先布局）到
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>

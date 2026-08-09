@@ -3473,7 +3473,7 @@ B 遇到文件丢失并记录完整性错误。证据是
 <p><code>_note_storage_write_fault()</code> 在合格的 I/O 上设置 <code>storage_write_fault</code>
 错误，但以后每一次成功的 <code>refresh_storage()</code> 都会无条件地设置它
 为假。因此，短暂的完整/只读/数据库写入失败可以清除
-当 <code>statvfs</code> 工作时，无需证明强制输出和 SQLite/outbox
+当<code>statvfs</code>工作时，无需证明强制输出和SQLite/outbox
 毅力已经恢复。</p>
 <p><strong>所需的解决方案</strong></p>
 <ol>
@@ -3674,7 +3674,7 @@ E2任务需要完整的校验和扫描或显式配置的有界
 <thead>
 <tr>
 <th>寻找</th>
-<th>严重程度</th>
+<th>严重性</th>
 <th>分辨率</th>
 <th>测试</th>
 </tr>
@@ -3775,7 +3775,7 @@ E2任务需要完整的校验和扫描或显式配置的有界
 <p><strong>解决方案及验收</strong></p>
 <ul>
 <li>添加配置阈值、存储观察时间戳、完整性扫描
-  摘要和稳定的服务器警报代码为<code>DeviceStatus</code>；重新生成 OpenAPI
+  摘要，以及稳定的服务器警报代码<code>DeviceStatus</code>；重新生成 OpenAPI
   和 TypeScript 类型；同步模拟/运行时验证器。</li>
 <li>在仪表板中呈现服务器提供的警报和策略值。</li>
 <li>添加 API 合约和前端测试，证明完整性/停止/清理故障

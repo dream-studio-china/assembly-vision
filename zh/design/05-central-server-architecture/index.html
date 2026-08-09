@@ -3652,7 +3652,7 @@
 <p>包会经历草稿、验证、批准、分配、下载、边缘验证、激活和确认状态。不可变内容收到新版本而不是就地编辑。在更广泛的分配之前，推出支持较小的设备群。边缘保留最后一次已知良好的包裹，并仅在检查之间激活。中心地位将分配与实际确认区分开来；任何仪表板都不应暗示仅通过分配即可激活。</p>
 <p>模型和远程配置/规则交付是生产目标功能。一个月的演示者可以集中注册所需的版本，同时在边缘手动安装软件包；安装仍会在本地验证不可变内容、校验和、兼容性和最后一次正确的回滚。分配绝不能显示为激活。</p>
 <h2 id="6-manual-review-and-reporting">6. 人工审核和报告<a class="headerlink" href="#6-manual-review-and-reporting" title="Permanent link">&para;</a></h2>
-<p>审核呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
+<p>审查呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
 <p>报告将自动计数与经过审查的真实情况分开，并清楚地说明样本覆盖范围。所需的视图包括 OK/NG 趋势、缺失组件、条形码故障、产品/系列/设备故障、模型/规则版本性能、设备运行状况/上次查看、上传延迟、审核率和纠正率。估计的假阴性指标需要抽样 OK 审核或独立标记的验收数据；未经审查不能被解释为正确性。</p>
 <h2 id="7-api-and-web-architecture">7. API 和 Web 架构<a class="headerlink" href="#7-api-and-web-architecture" title="Permanent link">&para;</a></h2>
 <p>建议的版本组为 <code>/api/v1/device-ingest</code>、<code>/devices</code>、<code>/lines</code>、<code>/inspections</code>、<code>/media</code>、<code>/reviews</code>、<code>/products</code>、<code>/rules</code>、<code>/models</code>、<code>/device-configurations</code>、<code>/dashboard</code>、<code>/reports</code>、<code>/events</code>、<code>/audit-logs</code> 和 <code>/auth</code>。集合 API 使用游标分页和有界过滤器。变异请求在客户端重试时使用乐观并发和幂等性。</p>
