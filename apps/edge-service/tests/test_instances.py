@@ -351,6 +351,7 @@ def test_temporal_loop_expires_idle_window(tmp_path: Path, monkeypatch: pytest.M
                 roi_result=None,
                 observations=[],
                 image=frame.image,
+                product_identity="test-product",
             )
 
         def inspect_window(self, window: object, writer: object) -> object:
@@ -366,7 +367,11 @@ def test_temporal_loop_expires_idle_window(tmp_path: Path, monkeypatch: pytest.M
     runtime = EdgeRuntime(settings)
     images = _make_images(tmp_path)
     instance = _instance_yaml("line-1", {"source": "folder", "path": str(images), "fps": 20.0})
-    instance["temporal"] = {"minimum_valid_frames": 1, "maximum_window_ms": 1000}
+    instance["temporal"] = {
+        "window_strategy": "identity",
+        "minimum_valid_frames": 1,
+        "maximum_window_ms": 1000,
+    }
     config_path = _write_multi_edge_config(tmp_path, [instance])
     runtime.load_instances(config_path)
     try:
@@ -409,6 +414,7 @@ def test_temporal_loop_emits_windowed_records(
                 roi_result=None,
                 observations=[],
                 image=frame.image,
+                product_identity="test-product",
             )
 
         def inspect_window(self, window: object, writer: object) -> object:
@@ -425,7 +431,11 @@ def test_temporal_loop_emits_windowed_records(
     config_path = _write_edge_config(
         tmp_path,
         _make_images(tmp_path),
-        temporal={"minimum_valid_frames": 1, "maximum_window_ms": 200},
+        temporal={
+            "window_strategy": "identity",
+            "minimum_valid_frames": 1,
+            "maximum_window_ms": 200,
+        },
     )
     runtime.load_instances(config_path)
     try:

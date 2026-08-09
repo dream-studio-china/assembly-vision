@@ -304,6 +304,35 @@ def test_load_edge_config_defaults_window_strategy_to_time(tmp_path: Path) -> No
     assert temporal.window_strategy == "time"
 
 
+def test_load_edge_config_rejects_enabled_time_windowing(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                inspection={"enabled": True},
+                temporal={"window_strategy": "time"},
+            )
+        ],
+    )
+    with pytest.raises(ConfigError, match="time-only windowing is development-only"):
+        load_edge_config(path)
+
+
+def test_load_edge_config_allows_enabled_identity_windowing(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                inspection={"enabled": True},
+                temporal={"window_strategy": "identity"},
+            )
+        ],
+    )
+    assert load_edge_config(path).instances[0].inspection.enabled is True
+
+
 def test_load_edge_config_rejects_unknown_window_strategy(tmp_path: Path) -> None:
     path = _write_edge_config(
         tmp_path,
@@ -371,4 +400,4 @@ def test_committed_camera_example_loads() -> None:
     assert config.instances[0].camera.source == "rtsp"
     assert config.instances[1].camera.source == "video"
     assert config.instances[2].camera.source == "folder"
-    assert config.instances[2].inspection.enabled is True
+    assert config.instances[2].inspection.enabled is False

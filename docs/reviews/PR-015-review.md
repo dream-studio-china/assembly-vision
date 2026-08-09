@@ -78,14 +78,15 @@ that failed before the fix and pass after:
   SHA-256 of the canonical temporal policy document, including format, window
   parameters, and component thresholds/hit rules. A regression test verifies
   that a policy change produces a distinct persisted identity.
-- [ ] **Production boundary enforcement**: reject `window_strategy: time` for
-  enabled production inspection, or introduce an explicit, audited development
-  enablement guard. Time-only grouping remains a documented development
-  fallback and cannot prove physical-product isolation.
-- [ ] **Maximum-duration isolation**: define and implement the fail-closed
-  behavior when the same validated identity exceeds `maximum_window_ms`.
-  The identity must not be split into independently releasable windows without
-  a validated end/transition signal.
+- [x] **Production boundary enforcement**: configuration rejects
+  `inspection.enabled: true` with `window_strategy: time`; time-only grouping
+  remains usable only in disabled/local development configuration and cannot
+  prove physical-product isolation.
+- [x] **Maximum-duration isolation**: an identity-sealed window that reaches
+  `maximum_window_ms` closes as `NG` with `WINDOW_MAX_DURATION_EXCEEDED`; the
+  identity is quarantined and cannot begin a new window until a different
+  validated identity proves a product transition. Regression tests cover both
+  the window-manager and end-to-end decision paths.
 
 Validation executed after the fixes (all green):
 

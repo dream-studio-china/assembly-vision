@@ -463,6 +463,7 @@ def load_edge_config(path: Path) -> EdgeConfig:
         pipeline_config = _parse_pipeline_doc(pipeline_doc, base)
         temporal = _parse_temporal(instance.get("temporal"), f"{name}.temporal")
         _validate_temporal_against_pipeline(temporal, pipeline_config, f"{name}.temporal")
+        _validate_temporal_inspection_strategy(inspection, temporal, name)
         instances.append(
             InstanceConfig(
                 instance_id=instance_id,
@@ -649,6 +650,25 @@ def _validate_temporal_against_pipeline(
                 f"{name}.components.{code}: medium_confidence ({policy.medium_confidence}) must be "
                 f">= observation_threshold ({observation.observation_threshold})"
             )
+
+
+def _validate_temporal_inspection_strategy(
+    inspection: InspectionRunConfig,
+    temporal: TemporalAggregationConfig | None,
+    name: str,
+) -> None:
+    """Reject time-only temporal grouping before production inspection starts.
+
+    ``window_strategy: time`` cannot prove physical-product isolation and is
+    retained only for disabled/local development configuration. Any enabled
+    temporal inspection must require validated identity correlation (PR-015
+    production-boundary TODO).
+    """
+    if inspection.enabled and temporal is not None and temporal.window_strategy != "identity":
+        raise ConfigError(
+            f"{name}.temporal.window_strategy must be 'identity' when "
+            "inspection.enabled is true; time-only windowing is development-only"
+        )
 
 
 def validate_temporal_against_rule(

@@ -394,11 +394,11 @@ class TestFrameReasonsAreDiagnostic:
         assert "BLUR_EXCESSIVE" not in record.decision.reason_codes
 
 
-def _identity_config() -> TemporalAggregationConfig:
+def _identity_config(maximum_window_ms: int = 1000) -> TemporalAggregationConfig:
     """Identity-sealed window config with policies for every required component."""
     return TemporalAggregationConfig(
         minimum_valid_frames=1,
-        maximum_window_ms=1000,
+        maximum_window_ms=maximum_window_ms,
         reject_duplicate_frame_ids=True,
         window_strategy="identity",
         components=dict.fromkeys(_REQUIRED, ComponentTemporalPolicy(0.9, 0.7)),
@@ -484,6 +484,33 @@ class TestProductIsolation:
         record = pipeline.inspect_window(closed)
         assert record.decision.business_result == "NG"
         assert rc.MULTIPLE_PRODUCTS in record.decision.reason_codes
+
+    def test_max_duration_identity_window_is_ng_and_cannot_restart(self) -> None:
+        config = _identity_config(maximum_window_ms=1000)
+        pipeline = _build_pipeline(_ALL_HIGH, config)
+        manager = ProductWindowManager(config, pipeline._device_id)
+        base = 1000.0
+        for sequence, timestamp in ((1, base), (2, base + 0.9)):
+            observation = pipeline.frame_observations(_frame(sequence, product_identity="prod-a"))
+            assert manager.feed(observation, timestamp) is None
+
+        closed = manager.feed(
+            pipeline.frame_observations(_frame(3, product_identity="prod-a")), base + 1.0
+        )
+        assert closed is not None
+        record = pipeline.inspect_window(closed)
+        # The preceding frames contain every component, but max duration makes
+        # the physical-product boundary unverifiable and must veto OK.
+        assert record.decision.business_result == "NG"
+        assert rc.WINDOW_MAX_DURATION_EXCEEDED in record.decision.reason_codes
+
+        assert (
+            manager.feed(
+                pipeline.frame_observations(_frame(4, product_identity="prod-a")), base + 1.1
+            )
+            is None
+        )
+        assert manager.active_window is None
 
 
 def _count_rule() -> object:

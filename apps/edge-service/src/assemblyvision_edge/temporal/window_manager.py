@@ -127,6 +127,8 @@ class ProductWindowManager:
         self._latest_capture_monotonic: float | None = None
         self._closed_capture_cutoff: float | None = None
         self._stale_frame_count = 0
+        self._quarantined_identity: str | None = None
+        self._quarantined_frame_count = 0
 
     @property
     def config(self) -> TemporalAggregationConfig:
@@ -140,6 +142,11 @@ class ProductWindowManager:
     def stale_frame_count(self) -> int:
         """Number of stale frames dropped across completed and active windows."""
         return self._stale_frame_count
+
+    @property
+    def quarantined_frame_count(self) -> int:
+        """Number of frames rejected while their identity is quarantined."""
+        return self._quarantined_frame_count
 
     def feed(self, observation: FrameObservation, now_monotonic: float) -> ProductWindow | None:
         """Add one frame; returns the window closed by this frame, if any.
@@ -188,6 +195,13 @@ class ProductWindowManager:
                 # No boundary signal and nothing open: drop the frame; there is
                 # no product to decide.
                 return None
+            if identity == self._quarantined_identity:
+                # The same tracked product outlived the bounded inspection
+                # window. It cannot start a fresh releasable decision until a
+                # different validated identity proves a product transition.
+                self._quarantined_frame_count += 1
+                return None
+            self._quarantined_identity = None
             self._open(observation, now_monotonic, identity)
             return None
         if identity is None:
@@ -219,6 +233,10 @@ class ProductWindowManager:
             self._open(observation, now_monotonic, observation.product_identity)
             return closed
         if now_monotonic - active.started_at_monotonic >= gap_ms / 1000.0:
+            if self._config.window_strategy == "identity":
+                closed = self._close_integrity("MAX_DURATION", rc.WINDOW_MAX_DURATION_EXCEEDED)
+                self._quarantined_identity = closed.identity
+                return closed
             closed = self._close("MAX_DURATION")
             self._open(observation, now_monotonic, observation.product_identity)
             return closed
