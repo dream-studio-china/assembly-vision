@@ -653,12 +653,12 @@
   <a href="#3-ingestion-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Ingestion Architecture
+        3. 摄取架构
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Ingestion Architecture">
+    <nav class="md-nav" aria-label="3. 摄取架构">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -692,7 +692,7 @@
   <a href="#4-domain-and-persistence-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 领域和持久化模型
+        4. Domain and Persistence Model
       
     </span>
   </a>
@@ -842,7 +842,7 @@
   <a href="#114-future" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.4 Future
+        11.4 未来
       
     </span>
   </a>
@@ -2905,7 +2905,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3268,12 +3268,12 @@
   <a href="#3-ingestion-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Ingestion Architecture
+        3. 摄取架构
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Ingestion Architecture">
+    <nav class="md-nav" aria-label="3. 摄取架构">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3307,7 +3307,7 @@
   <a href="#4-domain-and-persistence-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 领域和持久化模型
+        4. Domain and Persistence Model
       
     </span>
   </a>
@@ -3457,7 +3457,7 @@
   <a href="#114-future" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11.4 Future
+        11.4 未来
       
     </span>
   </a>
@@ -3538,14 +3538,14 @@
     Jobs -. 仅在合理的情况下经纪人 .-&gt; Redis[(雷迪斯)]
     Config --&gt;|版本化的包交付| Edge</code></pre>
 <p>模块可以从一个具有明确域边界的可部署 FastAPI 开始。仅出于可衡量的扩展、隔离或所有权需求而引入单独的服务。工作人员有理由进行长期运行的媒体衍生品、导出/报告、通知、包组装和完整性/协调扫描，而不是简单的 CRUD。</p>
-<h2 id="3-ingestion-architecture">3. Ingestion Architecture<a class="headerlink" href="#3-ingestion-architecture" title="Permanent link">&para;</a></h2>
+<h2 id="3-ingestion-architecture">3. 摄取架构<a class="headerlink" href="#3-ingestion-architecture" title="Permanent link">&para;</a></h2>
 <h3 id="31-inspection-envelope">3.1 检验范围<a class="headerlink" href="#31-inspection-envelope" title="Permanent link">&para;</a></h3>
 <p>边缘发布一个版本化信封，其中包含身份、时间戳、产品解决方案、业务/内部结果、组件和聚合证据、原因代码、框架/投资回报率摘要、不可变版本和媒体清单。服务器对设备进行身份验证，验证架构和大小，验证设备所有权/状态和兼容引用，计算规范的有效负载哈希，并保留在事务中。</p>
 <p><code>(device_id, inspection_id)</code> 和幂等键是唯一的。相同的重试将返回先前的收据。具有不同规范散列的重用身份/密钥返回 <code>409 Conflict</code>，记录安全/数据完整性事件，并保留原始事件。收据包括中央记录 ID、接受的模式版本、服务器接收时间和媒体上传状态。</p>
 <h3 id="32-media-transfer">3.2 媒体传输<a class="headerlink" href="#32-media-transfer" title="Permanent link">&para;</a></h3>
 <p>OK通常会贡献一帧代表性的帧。 NG 提供多个关键帧、注释、ROI 以及可选的简短事件剪辑。例外情况只能提供有限的诊断证据。 API最初可以直接接受小媒体；生产应使用经过验证的大小限制，并可选择为较大对象发出上传会话。</p>
 <p>字节被暂存、校验和/大小验证，然后在不透明的存储密钥下最终确定。 PostgreSQL 存储媒体类型、校验和、大小、内容类型、状态、保留类别和对象密钥，而不是公共文件系统路径。部分/孤立上传是异步协调的。根据安全模型，检索使用授权的 API 流或限时链接。</p>
-<h2 id="4-domain-and-persistence-model">4. 领域和持久化模型<a class="headerlink" href="#4-domain-and-persistence-model" title="Permanent link">&para;</a></h2>
+<h2 id="4-domain-and-persistence-model">4. Domain and Persistence Model<a class="headerlink" href="#4-domain-and-persistence-model" title="Permanent link">&para;</a></h2>
 <p>核心 PostgreSQL 聚合是：</p>
 <ul>
 <li>租户/位置：验证所需租户层次结构的组织、站点、生产线和设备。</li>
@@ -3592,7 +3592,7 @@
 <p>实施设备范围的幂等摄取、PostgreSQL 检查历史记录、选定的证据存储、初始设备/产品/规则元数据、最小检查/审查视图、最小试点身份验证和 Compose 部署。推迟一般管理、复杂分析、报告/导出作业和远程包分发。</p>
 <h3 id="113-production-target">11.3 生产目标<a class="headerlink" href="#113-production-target" title="Permanent link">&para;</a></h3>
 <p>添加批准的身份/授权、凭证轮换、审计、备份/恢复测试、保留、安全媒体访问、转出/回滚、协调、警报、报告正确性控制、性能/浸泡测试和操作运行手册。</p>
-<h3 id="114-future">11.4 Future<a class="headerlink" href="#114-future" title="Permanent link">&para;</a></h3>
+<h3 id="114-future">11.4 未来<a class="headerlink" href="#114-future" title="Permanent link">&para;</a></h3>
 <p>仅当需求和负载合理时才添加签名模型分发、更大规模的工作人员和分析、外部身份/集成以及 Kubernetes。</p>
 <h2 id="12-assumptions">12. 假设<a class="headerlink" href="#12-assumptions" title="Permanent link">&para;</a></h2>
 <ul>

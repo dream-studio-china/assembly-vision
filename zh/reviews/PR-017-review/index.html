@@ -2605,7 +2605,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -2990,12 +2990,12 @@
   <a href="#blocking-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        阻塞结果
+        Blocking Findings
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="阻塞结果">
+    <nav class="md-nav" aria-label="Blocking Findings">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3013,7 +3013,7 @@
   <a href="#f2-inspection-projection-and-outbox-creation-are-separate-commits-and-recovery-skips-stranded-records" class="md-nav__link">
     <span class="md-ellipsis">
       
-        F2. Inspection projection and outbox creation are separate commits, and recovery skips stranded records
+        F2。检查投影和发件箱创建是单独提交的，恢复会跳过搁浅的记录
       
     </span>
   </a>
@@ -3084,12 +3084,12 @@
   <a href="#follow-up-finding" class="md-nav__link">
     <span class="md-ellipsis">
       
-        后续发现
+        Follow-up Finding
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="后续发现">
+    <nav class="md-nav" aria-label="Follow-up Finding">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3232,7 +3232,7 @@
   依赖顺序、接收完整性、部署配置或传输
   下面的安全案例。</li>
 </ul>
-<h2 id="blocking-findings">阻塞结果<a class="headerlink" href="#blocking-findings" title="Permanent link">&para;</a></h2>
+<h2 id="blocking-findings">Blocking Findings<a class="headerlink" href="#blocking-findings" title="Permanent link">&para;</a></h2>
 <h3 id="f1-http-media-uploads-corrupt-every-non-ascii-payload">F1。 HTTP 媒体上传会损坏所有非 ASCII 有效负载<a class="headerlink" href="#f1-http-media-uploads-corrupt-every-non-ascii-payload" title="Permanent link">&para;</a></h3>
 <p><strong>严重性：</strong> P1/高</p>
 <p><strong>地点：</strong></p>
@@ -3269,7 +3269,7 @@
 <li>除非收到字节和校验和，否则媒体任务不可能成功
   匹配任务元数据。</li>
 </ul>
-<h3 id="f2-inspection-projection-and-outbox-creation-are-separate-commits-and-recovery-skips-stranded-records">F2. Inspection projection and outbox creation are separate commits, and recovery skips stranded records<a class="headerlink" href="#f2-inspection-projection-and-outbox-creation-are-separate-commits-and-recovery-skips-stranded-records" title="Permanent link">&para;</a></h3>
+<h3 id="f2-inspection-projection-and-outbox-creation-are-separate-commits-and-recovery-skips-stranded-records">F2。检查投影和发件箱创建是单独提交的，恢复会跳过搁浅的记录<a class="headerlink" href="#f2-inspection-projection-and-outbox-creation-are-separate-commits-and-recovery-skips-stranded-records" title="Permanent link">&para;</a></h3>
 <p><strong>严重性：</strong> P1/高</p>
 <p><strong>地点：</strong></p>
 <ul>
@@ -3508,7 +3508,7 @@
 <li>测试涵盖证书验证配置并证明凭据确实有效
   不会出现在调度程序/应用程序日志中。</li>
 </ul>
-<h2 id="follow-up-finding">后续发现<a class="headerlink" href="#follow-up-finding" title="Permanent link">&para;</a></h2>
+<h2 id="follow-up-finding">Follow-up Finding<a class="headerlink" href="#follow-up-finding" title="Permanent link">&para;</a></h2>
 <h3 id="f8-retry-deadlines-are-calculated-from-batch-start-not-from-the-failure-response">F8。重试期限是从批次开始计算的，而不是从失败响应计算的<a class="headerlink" href="#f8-retry-deadlines-are-calculated-from-batch-start-not-from-the-failure-response" title="Permanent link">&para;</a></h3>
 <p><strong>严重性：</strong> P2 / 中</p>
 <p><strong>地点：</strong></p>
@@ -3550,12 +3550,13 @@
 <li><code>EdgeRuntime._run_instance_loop()</code>现在持续中断<code>force_close</code>
   通过原子投影 (<code>53a6385</code>) 进行记录，缩小了之前的差距。</li>
 <li>验证期间观察到的预先存在的潜在问题（本次未引入
-  PR 且超出范围）：<code>migrations/env.py</code> 调用 <code>fileConfig</code>
-  <code>alembic.ini</code>，其默认的<code>disable_existing_loggers=True</code>标记每个
-  <code>assemblyvision.*</code> 记录器 <code>disabled</code> 在第一次迁移运行后，因此
-  应用程序自己的 <code>LogBuffer</code> 不捕获任何应用程序日志记录。一个
-  后续应该通过 <code>disable_existing_loggers=False</code> 并添加一个日志端点
-  内容测试。</li>
+  PR): <code>migrations/env.py</code> 在 <code>alembic.ini</code> 上调用 <code>fileConfig</code>
+  默认<code>disable_existing_loggers=True</code>，标记每个<code>assemblyvision.*</code>
+  第一次迁移后禁用记录器，因此应用程序自己的 <code>LogBuffer</code>
+  没有捕获任何应用程序日志记录。 <strong>在 E1 边缘可观测性中解决
+  里程碑</strong>：<code>fileConfig(..., disable_existing_loggers=False)</code> 保留应用程序
+  启用记录器，回归测试证明 <code>/api/v1/logs</code> 返回
+  新迁移的数据库上的应用程序记录。</li>
 </ul>
 
 

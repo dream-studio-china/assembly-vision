@@ -1197,7 +1197,7 @@
   <a href="#2422-mature-production-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.2.2 Mature Production Target
+        24.2.2 成熟生产目标
       
     </span>
   </a>
@@ -1235,7 +1235,7 @@
   <a href="#244-review-queue-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.4 Review Queue Policy
+        24.4 查看队列策略
       
     </span>
   </a>
@@ -2838,7 +2838,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3213,7 +3213,7 @@
   <a href="#2422-mature-production-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.2.2 Mature Production Target
+        24.2.2 成熟生产目标
       
     </span>
   </a>
@@ -3251,7 +3251,7 @@
   <a href="#244-review-queue-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.4 Review Queue Policy
+        24.4 查看队列策略
       
     </span>
   </a>
@@ -3389,7 +3389,7 @@
 <li>保留原始证据、模型/规则/配置版本和机器原因代码。</li>
 <li>将审阅者的更正和确认的错误分类存储到受管理的培训待办事项中。</li>
 </ul>
-<h3 id="2422-mature-production-target">24.2.2 Mature Production Target<a class="headerlink" href="#2422-mature-production-target" title="Permanent link">&para;</a></h3>
+<h3 id="2422-mature-production-target">24.2.2 成熟生产目标<a class="headerlink" href="#2422-mature-production-target" title="Permanent link">&para;</a></h3>
 <ul>
 <li>按产品、组件、生产线、型号和规则版本分别调整审核路线。</li>
 <li>只有在有足够的生产证据和客户批准后才能减少人工审核。</li>
@@ -3437,7 +3437,7 @@
 </tbody>
 </table>
 <p>修正不会重写边缘决策。它记录审查者、时间、原因、真实成分状态、使用的证据以及与原始检查的关系。</p>
-<h2 id="244-review-queue-policy">24.4 Review Queue Policy<a class="headerlink" href="#244-review-queue-policy" title="Permanent link">&para;</a></h2>
+<h2 id="244-review-queue-policy">24.4 查看队列策略<a class="headerlink" href="#244-review-queue-policy" title="Permanent link">&para;</a></h2>
 <p>路由策略是版本化且可审计的。优先因素包括：</p>
 <ol>
 <li>缺失组件的潜在安全/质量影响。</li>
@@ -3456,14 +3456,14 @@
     participant Q as 审核队列
     participant R as 审稿人
     participant T as 培训待办事项
-    E-&gt;&gt;C:Upload decision, versions, and evidence
+    E-&gt;&gt;C:上传决定、版本和证据
     C-&gt;&gt;C:验证收据和证据校验和
     C-&gt;&gt;Q:应用版本化路由策略
     Q--&gt;&gt;R:分配优先审查项目
     R-&gt;&gt;C:打开原始和带注释的证据
     C--&gt;&gt;R:返回证据和机器原理
     R-&gt;&gt;C:提交处理意见和理由
-    C-&gt;&gt;C:Append immutable review record and audit event
+    C-&gt;&gt;C:附加不可变的审核记录和审核事件
 alt 机器决策修正
         C-&gt;&gt;T:添加具有审查出处的受治理候选人
         C--&gt;&gt;E:仅报告汇总反馈

@@ -815,7 +815,7 @@
   <a href="#105-temporal-aggregation-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.5 Temporal Aggregation Sequence
+        10.5 时间聚合序列
       
     </span>
   </a>
@@ -837,7 +837,7 @@
   <a href="#107-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.7 Configuration
+        10.7 配置
       
     </span>
   </a>
@@ -859,7 +859,7 @@
   <a href="#108-window-integrity-and-failure-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.8 窗口完整性和故障处理
+        10.8 Window Integrity and Failure Handling
       
     </span>
   </a>
@@ -870,7 +870,7 @@
   <a href="#109-persistence-and-observability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.9 Persistence and Observability
+        10.9 持久性和可观察性
       
     </span>
   </a>
@@ -881,7 +881,7 @@
   <a href="#1010-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.10 Verification
+        10.10 验证
       
     </span>
   </a>
@@ -2788,7 +2788,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3173,7 +3173,7 @@
   <a href="#105-temporal-aggregation-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.5 Temporal Aggregation Sequence
+        10.5 时间聚合序列
       
     </span>
   </a>
@@ -3195,7 +3195,7 @@
   <a href="#107-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.7 Configuration
+        10.7 配置
       
     </span>
   </a>
@@ -3217,7 +3217,7 @@
   <a href="#108-window-integrity-and-failure-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.8 窗口完整性和故障处理
+        10.8 Window Integrity and Failure Handling
       
     </span>
   </a>
@@ -3228,7 +3228,7 @@
   <a href="#109-persistence-and-observability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.9 Persistence and Observability
+        10.9 持久性和可观察性
       
     </span>
   </a>
@@ -3239,7 +3239,7 @@
   <a href="#1010-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.10 Verification
+        10.10 验证
       
     </span>
   </a>
@@ -3277,7 +3277,7 @@
   
 
 
-<h1 id="10-temporal-aggregation">10. Temporal Aggregation<a class="headerlink" href="#10-temporal-aggregation" title="Permanent link">&para;</a></h1>
+<h1 id="10-temporal-aggregation">10. 时间聚合<a class="headerlink" href="#10-temporal-aggregation" title="Permanent link">&para;</a></h1>
 <h2 id="101-purpose">10.1 目的<a class="headerlink" href="#101-purpose" title="Permanent link">&para;</a></h2>
 <p>时间聚合器将 <a href="../09-component-detection/">component detection</a> 的帧级观察结果转换为 <a href="../11-rule-engine/">rule engine</a> 的产品级证据。 YOLO 仍然处理单个帧。聚合通过组合观察结果来提高系统的鲁棒性；它不会提高模型的单帧精度。</p>
 <h2 id="102-scope">10.2 范围<a class="headerlink" href="#102-scope" title="Permanent link">&para;</a></h2>
@@ -3325,21 +3325,21 @@
 </tbody>
 </table>
 <p>即使外部业务接口仅公开 <code>OK</code> 和 <code>NG</code>，<code>UNCERTAIN</code> 和 <code>UNVERIFIABLE</code> 也会以诊断方式保留。</p>
-<h2 id="105-temporal-aggregation-sequence">10.5 Temporal Aggregation Sequence<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
+<h2 id="105-temporal-aggregation-sequence">10.5 时间聚合序列<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Window as 产品展示
-    participant Quality as Frame Quality Gate
+    participant Quality as 框架质量门
     participant Detector as 元件检测器
     participant Aggregate as 每个组件聚合器
     participant Rules as 规则引擎
     Window-&gt;&gt;Aggregate:打开检查所需的组件
 loop 每个相关帧
         Window-&gt;&gt;Quality:验证框架
-alt Frame valid
+alt 帧有效
             Quality-&gt;&gt;Detector:产品投资回报率
             Detector--&gt;&gt;Aggregate:按组件键控的观察结果
             Aggregate-&gt;&gt;Aggregate:对每个组件进行重复数据删除和更新
-else Frame invalid
+else 帧无效
             Quality--&gt;&gt;Aggregate:仅拒绝原因
         end
     end
@@ -3348,7 +3348,7 @@ loop 每个必需的组件
         Aggregate-&gt;&gt;Aggregate:解决现有、缺失、不确定或无法验证的问题
     end
     Aggregate--&gt;&gt;Rules:不可变组件证据集
-    Rules--&gt;&gt;Window:OK only if every required component is PRESENT</code></pre>
+    Rules--&gt;&gt;Window:仅当所有必需的组件都存在时才可以</code></pre>
 <h2 id="106-default-policy">10.6 默认策略<a class="headerlink" href="#106-default-policy" title="Permanent link">&para;</a></h2>
 <p>实用的初始策略接受不同相邻有效帧中的一个高置信度观察或至少两个中等置信度观察。它还需要足够的有效检查机会和可选的可见性约束。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="n">evidence</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
@@ -3365,7 +3365,7 @@ loop 每个必需的组件
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">return</span> <span class="n">MISSING</span>
 </code></pre></div>
 <p>帧邻接使用捕获序列和最大经过时间限制。除非规则明确基于计数，否则一帧中的多个框将计为一次临时命中。</p>
-<h2 id="107-configuration">10.7 Configuration<a class="headerlink" href="#107-configuration" title="Permanent link">&para;</a></h2>
+<h2 id="107-configuration">10.7 配置<a class="headerlink" href="#107-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">temporal</span><span class="p">:</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">window_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">identity</span><span class="w">   </span><span class="c1"># identity (validated correlation) or time (dev fallback)</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">minimum_valid_frames</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
@@ -3448,7 +3448,7 @@ loop 每个必需的组件
   <code>medium_confidence</code> 至少），因此低置信度误报不能
   膨胀一个精确的<code>expected_count</code>。</li>
 </ul>
-<h2 id="108-window-integrity-and-failure-handling">10.8 窗口完整性和故障处理<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
+<h2 id="108-window-integrity-and-failure-handling">10.8 Window Integrity and Failure Handling<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
 <li>触发超时将窗口视为不完整而关闭；未解析的组件变为 <code>UNVERIFIABLE</code>。</li>
 <li>重复的帧 ID 将被忽略并进行计数。</li>
@@ -3468,9 +3468,9 @@ loop 每个必需的组件
 <li>队列丢失或推理错误会减少有效机会，并且只能将证据移向<code>UNCERTAIN</code>或<code>UNVERIFIABLE</code>。</li>
 <li>默认情况下禁用早期<code>OK</code>最终确定，因为后面的帧可能会显示歧义；可选的提前完成需要生产验证，并且仍然必须满足每个组件的要求。</li>
 </ul>
-<h2 id="109-persistence-and-observability">10.9 Persistence and Observability<a class="headerlink" href="#109-persistence-and-observability" title="Permanent link">&para;</a></h2>
+<h2 id="109-persistence-and-observability">10.9 持久性和可观察性<a class="headerlink" href="#109-persistence-and-observability" title="Permanent link">&para;</a></h2>
 <p>保留帧机会、接受/拒绝状态、观察、重复数据删除决策、最终组件状态、阈值、命中帧 ID、置信度摘要和关闭原因。指标包括窗口打开/关闭/超时、帧混合尝试、每个组件状态计数、每个窗口的有效帧以及聚合延迟。</p>
-<h2 id="1010-verification">10.10 Verification<a class="headerlink" href="#1010-verification" title="Permanent link">&para;</a></h2>
+<h2 id="1010-verification">10.10 验证<a class="headerlink" href="#1010-verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>表测试阈值相等、一次高命中、重复同一帧命中、相邻/不相邻中等命中、无命中以及仅低置信度证据。</li>
 <li>属性测试添加无效证据不能将组件更改为<code>PRESENT</code>。</li>

@@ -1331,7 +1331,7 @@
   <a href="#33-decision-and-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.3 Decision and Validation
+        3.3 决策与验证
       
     </span>
   </a>
@@ -1436,7 +1436,7 @@
   <a href="#55-review-lineage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.5 Review Lineage
+        5.5 回顾血统
       
     </span>
   </a>
@@ -2855,7 +2855,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3252,7 +3252,7 @@
   <a href="#33-decision-and-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.3 Decision and Validation
+        3.3 决策与验证
       
     </span>
   </a>
@@ -3357,7 +3357,7 @@
   <a href="#55-review-lineage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.5 Review Lineage
+        5.5 回顾血统
       
     </span>
   </a>
@@ -3411,7 +3411,7 @@
   
 
 
-<h1 id="assemblyvision-architecture-appendices">AssemblyVision 架构附录<a class="headerlink" href="#assemblyvision-architecture-appendices" title="Permanent link">&para;</a></h1>
+<h1 id="assemblyvision-architecture-appendices">AssemblyVision Architecture Appendices<a class="headerlink" href="#assemblyvision-architecture-appendices" title="Permanent link">&para;</a></h1>
 <h2 id="1-terminology">1. 术语<a class="headerlink" href="#1-terminology" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3549,69 +3549,69 @@
 CI 和运行时中的这些规则；如果清单项目与合同冲突，则以合同为准
 优先。</p>
 <ul>
-<li>[ ] Production-critical decisions remain entirely executable at the edge.</li>
-<li>[ ] Network or central failure cannot turn incomplete evidence into <code>OK</code> or stop otherwise healthy local inspection.</li>
-<li>[ ] The business output remains <code>OK</code>/<code>NG</code>; any <code>UNCERTAIN</code> state is explicit and conservative.</li>
-<li>[ ] Product detection uses the full frame and creates the final product ROI; no perfect product position is assumed.</li>
-<li>[ ] Component detection runs on the generated ROI and detects present required classes, not an abstract global missing class.</li>
-<li>[ ] Barcode decoding remains separate from YOLO detection/classification.</li>
-<li>[ ] Temporal aggregation is per required component, excludes unusable evidence, and is not described as improving single-frame accuracy.</li>
-<li>[ ] The deterministic rule engine remains independent from model implementation.</li>
-<li>[ ] Each inspection pins immutable product-detector, component-detector, rule, and product-configuration versions.</li>
-<li>[ ] Identity, coordinate space, timestamps, evidence lineage, and reason codes remain traceable.</li>
-<li>[ ] Edge records/media/upload tasks survive restart and protect pending evidence from cleanup.</li>
-<li>[ ] Synchronization is at-least-once with stable idempotency and content/checksum conflict detection.</li>
-<li>[ ] The server never overwrites an original edge decision with a review outcome.</li>
-<li>[ ] OK uploads remain selective; all frames are not sent centrally by default.</li>
-<li>[ ] Thresholds, timing, retention, hardware, hosting, and acceptance claims are measured or marked unresolved.</li>
-<li>[ ] Two-day MVP, one-month target, production target, and future scope are not conflated.</li>
-<li>[ ] Docker Compose remains sufficient for edge and initial central deployment; edge has no Kubernetes dependency.</li>
-<li>[ ] Optional Redis, brokers, PostgreSQL at edge, Kubernetes, and desktop wrapping have a concrete justification before adoption.</li>
-<li>[ ] Source packaging is not represented as strong reverse-engineering protection.</li>
-<li>[ ] Training data, production media/data, notebooks, secrets, and runtime artifacts remain outside Git/client images as applicable.</li>
-<li>[ ] New requirements and decisions have trace links and objective verification evidence.</li>
+<li>[ ] 生产关键决策在边缘仍然完全可执行。</li>
+<li>[ ] 网络或中央故障无法将不完整的证据转化为<code>OK</code>或阻止其他健康的本地检查。</li>
+<li>[ ] 业务输出仍为<code>OK</code>/<code>NG</code>；任何 <code>UNCERTAIN</code> 状态都是显式的和保守的。</li>
+<li>[ ] 产品检测使用全帧并创建最终产品ROI；没有假设完美的产品定位。</li>
+<li>[ ] 组件检测在生成的 ROI 上运行并检测当前所需的类，而不是抽象的全局缺失类。</li>
+<li>[ ] 条码解码与 YOLO 检测/分类保持分离。</li>
+<li>[ ] 时间聚合是根据所需的组件进行的，排除了不可用的证据，并且没有被描述为提高单帧精度。</li>
+<li>[ ] 确定性规则引擎保持独立于模型实现。</li>
+<li>[ ] 每个检查引脚不可变的产品检测器、组件检测器、规则和产品配置版本。</li>
+<li>[ ] 身份、坐标空间、时间戳、证据谱系和原因代码保持可追溯。</li>
+<li>[ ] 边缘记录/媒体/上传任务在重新启动后仍然有效，并保护待处理的证据免遭清理。</li>
+<li>[ ] 同步至少一次，具有稳定的幂等性和内容/校验和冲突检测。</li>
+<li>[ ] 服务器永远不会用审核结果覆盖原始边缘决策。</li>
+<li>[ ] 确定上传保持选择性；默认情况下不集中发送所有帧。</li>
+<li>[ ] 阈值、时间、保留、硬件、托管和验收声明已测量或标记为未解决。</li>
+<li>[ ] 两天 MVP、一个月目标、生产目标和未来范围不混为一谈。</li>
+<li>[ ] Docker Compose 对于边缘和初始中央部署来说仍然足够； Edge 不依赖 Kubernetes。</li>
+<li>[ ] 可选的 Redis、代理、边缘 PostgreSQL、Kubernetes 和桌面包装在采用之前有具体的理由。</li>
+<li>[ ] 源打包并不代表强大的逆向工程保护。</li>
+<li>[ ] 训练数据、生产媒体/数据、笔记本、机密和运行时工件保留在 Git/客户端映像之外（如果适用）。</li>
+<li>[ ]新的要求和决策有踪迹联系和客观验证证据。</li>
 </ul>
 <h2 id="3-global-open-questions">3. 全球开放性问题<a class="headerlink" href="#3-global-open-questions" title="Permanent link">&para;</a></h2>
 <h3 id="31-product-and-process">3.1 产品与工艺<a class="headerlink" href="#31-product-and-process" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>ID</th>
-<th>Question</th>
-<th>Affects</th>
-<th>Needed by</th>
+<th>身份证</th>
+<th>问题</th>
+<th>影响</th>
+<th>需要者</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>OQ-001</td>
-<td>Which product types, exact required component classes, and variants are in scope?</td>
-<td>Data, models, rules, UI</td>
-<td>Two-day MVP configuration; production validation</td>
+<td>哪些产品类型、确切所需的组件类别和变体在范围内？</td>
+<td>数据、模型、规则、UI</td>
+<td>两天MVP配置；生产验证</td>
 </tr>
 <tr>
 <td>OQ-002</td>
-<td>What physical event opens/closes a product window, and can products overlap or appear in multiples?</td>
-<td>Acquisition, aggregation, duplicate prevention</td>
-<td>One-month target</td>
+<td>什么物理事件会打开/关闭产品窗口，产品是否可以重叠或多次出现？</td>
+<td>采集、聚合、防重复</td>
+<td>一个月目标</td>
 </tr>
 <tr>
 <td>OQ-003</td>
-<td>What is the measured conveyor cycle/line rate and required decision deadline?</td>
-<td>Hardware sizing, buffering, acceptance</td>
-<td>One-month target</td>
+<td>测量的输送机周期/生产线速率和所需的决策期限是多少？</td>
+<td>硬件选型、缓冲、验收</td>
+<td>一个月目标</td>
 </tr>
 <tr>
 <td>OQ-004</td>
-<td>How is <code>NG</code> consumed, and are PLC/MES/diverter integrations in scope?</td>
-<td>External interface, safe states</td>
-<td>Production target</td>
+<td><code>NG</code>是如何使用的，PLC/MES/转向器集成是否在范围内？</td>
+<td>外部接口，安全状态</td>
+<td>生产目标</td>
 </tr>
 <tr>
 <td>OQ-005</td>
-<td>Who can pause/resume inspection and what must the physical process do while paused/faulted?</td>
-<td>Operations, authorization</td>
-<td>Production target</td>
+<td>谁可以暂停/恢复检查以及物理过程在暂停/故障时必须做什么？</td>
+<td>运营、授权</td>
+<td>生产目标</td>
 </tr>
 </tbody>
 </table>
@@ -3619,46 +3619,46 @@ CI 和运行时中的这些规则；如果清单项目与合同冲突，则以�
 <table>
 <thead>
 <tr>
-<th>ID</th>
-<th>Question</th>
-<th>Affects</th>
-<th>Needed by</th>
+<th>身份证</th>
+<th>问题</th>
+<th>影响</th>
+<th>需要者</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>OQ-006</td>
-<td>What camera vendor/model, SDK, interface, trigger mode, lens, pixel format, and frame rate apply?</td>
-<td>Adapter, image quality, deployment</td>
-<td>One-month target</td>
+<td>适用哪些相机供应商/型号、SDK、接口、触发模式、镜头、像素格式和帧速率？</td>
+<td>适配器、图像质量、部署</td>
+<td>一个月目标</td>
 </tr>
 <tr>
 <td>OQ-007</td>
-<td>What barcode standard, location, reader/SDK, and read-rate expectation apply?</td>
-<td>Decoder, product resolution</td>
-<td>One-month target</td>
+<td>适用哪些条码标准、位置、读取器/SDK 和读取率预期？</td>
+<td>解码器、产品分辨率</td>
+<td>一个月目标</td>
 </tr>
 <tr>
 <td>OQ-008</td>
-<td>What OS, CPU, GPU/accelerator, memory, disk, and container runtime are supported?</td>
-<td>Packaging, performance, capacity</td>
-<td>One-month target</td>
+<td>支持哪些操作系统、CPU、GPU/加速器、内存、磁盘和容器运行时？</td>
+<td>包装、性能、容量</td>
+<td>一个月目标</td>
 </tr>
 <tr>
 <td>OQ-009</td>
-<td>What measured shift, rotation, blur, exposure, reflection, and occlusion ranges define normal operation?</td>
-<td>Data collection, quality gates, acceptance</td>
-<td>Production target</td>
+<td>哪些测量的移位、旋转、模糊、曝光、反射和遮挡范围定义了正常操作？</td>
+<td>数据收集、质量门、验收</td>
+<td>生产目标</td>
 </tr>
 <tr>
 <td>OQ-010</td>
-<td>What constitutes a meaningful camera move and how is recalibration/revalidation initiated?</td>
-<td>Health, operations, model validity</td>
-<td>Production target</td>
+<td>什么构成了有意义的相机移动以及如何启动重新校准/重新验证？</td>
+<td>健康、运营、模型有效性</td>
+<td>生产目标</td>
 </tr>
 </tbody>
 </table>
-<h3 id="33-decision-and-validation">3.3 Decision and Validation<a class="headerlink" href="#33-decision-and-validation" title="Permanent link">&para;</a></h3>
+<h3 id="33-decision-and-validation">3.3 决策与验证<a class="headerlink" href="#33-decision-and-validation" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4099,7 +4099,7 @@ Python 模块是可执行的事实来源 (AUDIT-001)。</p>
 <h3 id="54-model-and-dataset-lineage">5.4 模型和数据集谱系<a class="headerlink" href="#54-model-and-dataset-lineage" title="Permanent link">&para;</a></h3>
 <p>模型清单链接工件校验和、架构/运行时要求、类映射、训练数据集版本、拆分策略、代码/配置修订、评估数据集、产品/组件指标、限制、批准和取代版本。数据集按批次、捕获会话/日期和物理产品进行分组，因此相邻帧不会在训练集和验证集上泄漏。</p>
 <p>起始数据目标是主要产品类别的大约 300-800 个真实图像以及每个组件类别的大约 300-500 个标记实例，包括实际的有意丢失的场景（在可行的情况下，最初每个丢失场景大约 100 个图像）。这些只是计划的开始，而不是保证；测量的验证决定额外的收集。</p>
-<h3 id="55-review-lineage">5.5 Review Lineage<a class="headerlink" href="#55-review-lineage" title="Permanent link">&para;</a></h3>
+<h3 id="55-review-lineage">5.5 回顾血统<a class="headerlink" href="#55-review-lineage" title="Permanent link">&para;</a></h3>
 <p>审核记录引用不可变的检查、原始业务/内部结果、选定的证据、审核者身份、审核结果、原因、时间戳和修订/并发令牌。更正的案例通过引用进入培训待办事项列表。数据集包含需要单独批准的标记操作；审核不会自动重新训练或重新标记历史模型指标。</p>
 <h2 id="6-scope-language-convention">6. 范围-语言约定<a class="headerlink" href="#6-scope-language-convention" title="Permanent link">&para;</a></h2>
 <ul>

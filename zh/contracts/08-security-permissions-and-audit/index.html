@@ -2733,7 +2733,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3170,76 +3170,76 @@
 <h1 id="08-security-permissions-and-audit">08.安全、权限和审计<a class="headerlink" href="#08-security-permissions-and-audit" title="Permanent link">&para;</a></h1>
 <h2 id="1-recommended-roles">1. 推荐角色<a class="headerlink" href="#1-recommended-roles" title="Permanent link">&para;</a></h2>
 <ul>
-<li>管理员</li>
-<li>工程师</li>
-<li>操作员</li>
-<li>审稿人</li>
-<li>观众</li>
+<li>Administrator</li>
+<li>Engineer</li>
+<li>Operator</li>
+<li>Reviewer</li>
+<li>Viewer</li>
 </ul>
 <h2 id="2-backend-authorization">2. 后台授权<a class="headerlink" href="#2-backend-authorization" title="Permanent link">&para;</a></h2>
-<p>隐藏 UI 按钮不是授权边界。</p>
-<p>权限必须由 FastAPI 后端强制执行。</p>
+<p>Hiding UI buttons is not an authorization boundary.</p>
+<p>Permissions must be enforced by the FastAPI backend.</p>
 <h2 id="3-privileged-operations">3. 特权操作<a class="headerlink" href="#3-privileged-operations" title="Permanent link">&para;</a></h2>
-<p>以下操作需要提升权限：</p>
+<p>The following operations require elevated permissions:</p>
 <ul>
-<li>模型激活</li>
-<li>规则发布</li>
-<li>阈值变化</li>
-<li>数据删除</li>
-<li>远程设备配置</li>
-<li>用户管理</li>
-<li>附加或取代人类处置的人工审查行动</li>
+<li>Model activation</li>
+<li>Rule publication</li>
+<li>Threshold changes</li>
+<li>Data deletion</li>
+<li>Remote device configuration</li>
+<li>User management</li>
+<li>Human-review actions that append or supersede a human disposition</li>
 </ul>
-<p>Review 永远不会覆盖不可变边 <code>internal_decision</code> 或 <code>business_result</code>。它没有
-除非存在单独批准的 PLC/MES 处置合同，否则生产线释放效果。</p>
+<p>Review never overwrites the immutable edge <code>internal_decision</code> or <code>business_result</code>. It has no
+production-line release effect unless a separately approved PLC/MES disposition contract exists.</p>
 <h2 id="4-release-lifecycle">4. 发布生命周期<a class="headerlink" href="#4-release-lifecycle" title="Permanent link">&para;</a></h2>
-<p>模型和规则应遵循：</p>
+<p>Models and rules should follow:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Draft
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>→ Validated
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>→ Approved
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>→ Active
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>→ Retired
 </code></pre></div>
-<p>如果没有版本控制，则不得就地编辑生产规则。</p>
+<p>Production rules must not be edited in place without versioning.</p>
 <h2 id="5-audit-logging">5. 审计日志记录<a class="headerlink" href="#5-audit-logging" title="Permanent link">&para;</a></h2>
-<p>审核以下内容：</p>
+<p>Audit the following:</p>
 <ul>
-<li>产品配置变更</li>
-<li>规则变更</li>
-<li>阈值变化</li>
-<li>模型激活</li>
-<li>人工审核</li>
-<li>记录删除</li>
-<li>权限变更</li>
-<li>设备配置更改</li>
-<li>远程操作</li>
+<li>Product-configuration changes</li>
+<li>Rule changes</li>
+<li>Threshold changes</li>
+<li>Model activation</li>
+<li>Human review</li>
+<li>Record deletion</li>
+<li>Permission changes</li>
+<li>Device-configuration changes</li>
+<li>Remote operations</li>
 </ul>
-<p>审计条目应至少包含：</p>
+<p>Audit entries should contain at least:</p>
 <ul>
-<li>演员</li>
-<li>行动</li>
-<li>目标</li>
-<li>之前状态</li>
-<li>状态后</li>
-<li>时间戳</li>
-<li>设备或站点</li>
-<li>跟踪ID</li>
+<li>Actor</li>
+<li>Action</li>
+<li>Target</li>
+<li>Before state</li>
+<li>After state</li>
+<li>Timestamp</li>
+<li>Device or site</li>
+<li>Trace ID</li>
 </ul>
 <h2 id="6-source-distribution">6. 源码分发<a class="headerlink" href="#6-source-distribution" title="Permanent link">&para;</a></h2>
-<p>客户端打包的目标是防止随意的源浏览，而不是高级逆向工程。</p>
-<p>允许的措施包括：</p>
+<p>The goal of client-side packaging is to prevent casual source browsing, not advanced reverse engineering.</p>
+<p>Allowed measures include:</p>
 <ul>
-<li><code>.pyc</code>分布</li>
-<li>Docker 镜像</li>
-<li>多阶段构建</li>
-<li>从生产图像中删除原始 <code>.py</code> 文件</li>
-<li>仅部署构建的前端资产</li>
+<li><code>.pyc</code> distribution</li>
+<li>Docker images</li>
+<li>Multi-stage builds</li>
+<li>Removing original <code>.py</code> files from production images</li>
+<li>Deploying only built frontend assets</li>
 </ul>
-<p>文件必须明确说明：</p>
+<p>The documentation must clearly state:</p>
 <ul>
-<li><code>.pyc</code>没有很强的反逆向工程保护。</li>
-<li>Docker 不是源代码安全边界。</li>
-<li>长期秘密不得嵌入图像中。</li>
+<li><code>.pyc</code> is not strong anti-reverse-engineering protection.</li>
+<li>Docker is not a source-code security boundary.</li>
+<li>Long-term secrets must not be embedded in images.</li>
 </ul>
 <h2 id="related-documents">相关文件<a class="headerlink" href="#related-documents" title="Permanent link">&para;</a></h2>
 <ul>

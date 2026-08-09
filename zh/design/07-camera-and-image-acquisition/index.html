@@ -709,7 +709,7 @@
   <a href="#73-adapter-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.3 Adapter Interface
+        7.3 适配器接口
       
     </span>
   </a>
@@ -720,7 +720,7 @@
   <a href="#74-trigger-and-product-window-strategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.4 Trigger and Product-Window Strategy
+        7.4 触发器和产品窗口策略
       
     </span>
   </a>
@@ -775,7 +775,7 @@
   <a href="#79-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.9 Verification
+        7.9 验证
       
     </span>
   </a>
@@ -2766,7 +2766,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3129,7 +3129,7 @@
   <a href="#73-adapter-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.3 Adapter Interface
+        7.3 适配器接口
       
     </span>
   </a>
@@ -3140,7 +3140,7 @@
   <a href="#74-trigger-and-product-window-strategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.4 Trigger and Product-Window Strategy
+        7.4 触发器和产品窗口策略
       
     </span>
   </a>
@@ -3195,7 +3195,7 @@
   <a href="#79-verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.9 Verification
+        7.9 验证
       
     </span>
   </a>
@@ -3264,7 +3264,7 @@
 </tbody>
 </table>
 <p>相机供应商、SDK、操作系统、触发电气接口、帧速率、曝光和传送带速度仍然是部署决策。</p>
-<h2 id="73-adapter-interface">7.3 Adapter Interface<a class="headerlink" href="#73-adapter-interface" title="Permanent link">&para;</a></h2>
+<h2 id="73-adapter-interface">7.3 适配器接口<a class="headerlink" href="#73-adapter-interface" title="Permanent link">&para;</a></h2>
 <p>供应商代码被隔离在 <code>FrameSource</code> 协议后面，因此记录的数据可以使用相同的管道。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">FrameSource</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraCapabilities</span><span class="p">:</span> <span class="o">...</span>
@@ -3282,7 +3282,7 @@
 相同的协议。读取/解码失败会引发帧流错误，并且永远不会
 默默地跳过了。</p>
 <p>静态文件接收从相对路径加上内容校验和派生的稳定 ID。不支持的、部分写入的或不可解码的文件将被记录为失败的输入，而不是默默地跳过。</p>
-<h2 id="74-trigger-and-product-window-strategy">7.4 Trigger and Product-Window Strategy<a class="headerlink" href="#74-trigger-and-product-window-strategy" title="Permanent link">&para;</a></h2>
+<h2 id="74-trigger-and-product-window-strategy">7.4 触发器和产品窗口策略<a class="headerlink" href="#74-trigger-and-product-window-strategy" title="Permanent link">&para;</a></h2>
 <p>首选生产订单是：</p>
 <p>1.硬件光电或PLC触发，因为它提供了最清晰的物理-产品边界。
 2. 如果条形码定时可靠，则通过有界时间窗口关联条形码事件。
@@ -3293,7 +3293,7 @@
 <pre class="mermaid"><code>sequenceDiagram
     participant Sensor as 触发器或传感器
     participant Capture as 相机适配器
-    participant Window as 产品窗口管理器
+    participant Window as Product Window Manager
     participant Vision as 愿景管道
     participant Aggregate as 时间聚合器
     participant Rules as 规则引擎
@@ -3303,15 +3303,15 @@
     Window-&gt;&gt;Window:创建检查和引脚版本
 loop 直到退出或超时
         Capture-&gt;&gt;Window:带时间戳的帧
-        Window-&gt;&gt;Vision:Correlated frame
+        Window-&gt;&gt;Vision:相关框架
         Vision--&gt;&gt;Aggregate:每个组件的框架证据
     end
     Sensor-&gt;&gt;Window:产品退出事件
     Window-&gt;&gt;Aggregate:关闭检查窗口
     Aggregate--&gt;&gt;Rules:每个所需组件的证据
     Rules--&gt;&gt;Store:OK 或 NG 以及原因代码
-    Store--&gt;&gt;Upload:Enqueue persisted result and media
-    Note over Store,Upload:上传是异步的，不能阻塞检查</code></pre>
+    Store--&gt;&gt;Upload:将持久结果和媒体入队
+    Note over Store,Upload:Upload is asynchronous and cannot block inspection</code></pre>
 <p>每个实例独立地将其最新捕获的帧公开为
 速率受限的 JPEG 预览 (<code>GET /api/v1/camera/{instance_id}/preview</code>,
 ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
@@ -3401,7 +3401,7 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <li>服务器中断时，不要进行采集更改。在储存能力允许的情况下，当地捕获和检查将继续进行。</li>
 </ul>
 <p>滚动视频写入分段文件以限制断电后的损坏。媒体持久化和删除规则在<a href="../12-local-storage-and-retention/">local storage and retention</a>中定义。</p>
-<h2 id="79-verification">7.9 Verification<a class="headerlink" href="#79-verification" title="Permanent link">&para;</a></h2>
+<h2 id="79-verification">7.9 验证<a class="headerlink" href="#79-verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>根据记录和模拟的 SDK 行为对每个供应商适配器进行合同测试。</li>
 <li>测试断开、重新连接、丢帧、重复序列号、损坏的缓冲区和延迟帧。</li>

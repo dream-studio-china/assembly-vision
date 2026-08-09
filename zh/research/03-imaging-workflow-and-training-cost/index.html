@@ -2609,7 +2609,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3772,40 +3772,40 @@
 </ul>
 <h3 id="43-common-failures-and-tips-synthesis-of-cited-practitioner-material">4.3 常见故障和提示（引用的从业者材料的综合）<a class="headerlink" href="#43-common-failures-and-tips-synthesis-of-cited-practitioner-material" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>照明不佳/不一致是第一大故障</strong>（康耐视：“照明不佳是机器视觉性能不佳的最常见原因” - https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting）。</li>
-<li><strong>视频帧中的数据泄漏</strong>会夸大验证指标并误导阈值选择（AssemblyVision 第 19.6 节；这是整个社区众所周知的陷阱）。</li>
-<li><strong>真实的 NG 示例太少</strong> - 合成数字擦除不会再现阴影/背景变化（AssemblyVision 第 19.4 节）。</li>
-<li><strong>注释者之间和跨天的标签漂移/不一致的框</strong>；修复冻结本体版本、示例、审查抽样和裁决（AssemblyVision 第 19.5 节；https://docs.ultralytics.com/guides/data-collection-and-annotation/）。</li>
-<li><strong>过度信任 mAP</strong> - 选择验证时召回的阈值并在冻结阈值下进行评估（https://blog.roboflow.com/surface-defects/；AssemblyVision 第 19.9 节）。</li>
-<li><strong>集成失败是真正的杀手</strong> - 约 77% 的制造视觉试点因集成而停滞，而不是模型质量 (https://blog.roboflow.com/scale-a-computer-vision-pilot-to-products/)。 AssemblyVision 的设计（本地优先、离线功能、人工审查、证据持久性）旨在解决这一问题。</li>
-<li><strong>过于激进地开始增强</strong>可能会扭曲薄特征（例如，剪切扭曲划痕/裂纹 - https://blog.roboflow.com/flanges-uality-inspection/）。将增强限制在物理上合理的变化范围内（AssemblyVision 第 19.7 节）。</li>
-<li><strong>置信度分类</strong>（通过/审核/失败范围）减少错误的自动决策，并将审核流反馈到训练中 - 直接适用于 AssemblyVision 的低置信度 <code>UNCERTAIN</code> 处理（https://blog.roboflow.com/flanges-uality-inspection/；AssemblyVision BR-006）。</li>
+<li><strong>Poor/ inconsistent lighting is the #1 failure</strong> (Cognex: "Poor lighting is the most common cause of poor machine vision performance" - https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting).</li>
+<li><strong>Data leakage from video frames</strong> inflates validation metrics and misleads threshold choice (AssemblyVision Section 19.6; this is a well-known pitfall across the community).</li>
+<li><strong>Too few real NG examples</strong> - synthetic digital erasure does not reproduce shadows/background changes (AssemblyVision Section 19.4).</li>
+<li><strong>Label drift / inconsistent boxes</strong> between annotators and across days; fix with frozen ontology versions, examples, review sampling, and adjudication (AssemblyVision Section 19.5; https://docs.ultralytics.com/guides/data-collection-and-annotation/).</li>
+<li><strong>Over-trusting mAP</strong> - choose thresholds for recall on validation and evaluate at frozen thresholds (https://blog.roboflow.com/surface-defects/ ; AssemblyVision Section 19.9).</li>
+<li><strong>Integration failure is the real killer</strong> - ~77% of manufacturing vision pilots stall on integration, not model quality (https://blog.roboflow.com/scale-a-computer-vision-pilot-to-production/). AssemblyVision's design (local-first, offline-capable, human review, evidence persistence) is structured to counter this.</li>
+<li><strong>Starting augmentations too aggressively</strong> can distort thin features (e.g., shear distorting scratches/cracks - https://blog.roboflow.com/flanges-uality-inspection/). Keep augmentations bounded to physically plausible variation (AssemblyVision Section 19.7).</li>
+<li><strong>Confidence triage</strong> (PASS / REVIEW / FAIL bands) reduces wrong automatic decisions and feeds the review stream back into training - directly applicable to AssemblyVision's low-confidence <code>UNCERTAIN</code> handling (https://blog.roboflow.com/flanges-uality-inspection/ ; AssemblyVision BR-006).</li>
 </ol>
 <h3 id="44-iteration-cycles">4.4 迭代周期<a class="headerlink" href="#44-iteration-cycles" title="Permanent link">&para;</a></h3>
-<p>从业者材料一致地描述了<strong>短、反馈驱动的周期</strong>：在默认设置下运行第一个模型，检查误报/阴性，添加信息最丰富的错误分类/不确定图像，重新标记，重新训练（https://blog.roboflow.com/surface-defects/；https://blog.roboflow.com/flanges-uality-inspection/）。主动学习循环（上传低置信度预测以供审查和再培训）是一种标准生产模式，符合 AssemblyVision 的人机交互和生产监控要求（<code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 第 19.14 节）。</p>
+<p>Practitioner material consistently describes <strong>short, feedback-driven cycles</strong>: run a first model on default settings, review false positives/negatives, add the most informative misclassified/uncertain images, relabel, retrain (https://blog.roboflow.com/surface-defects/ ; https://blog.roboflow.com/flanges-uality-inspection/). The active-learning loop (upload low-confidence predictions for review and retraining) is a standard production pattern and matches AssemblyVision's human-in-the-loop and production-monitoring requirements (<code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> Section 19.14).</p>
 <hr />
 <h2 id="5-practical-checklists-for-assemblyvision">5. AssemblyVision 实用清单<a class="headerlink" href="#5-practical-checklists-for-assemblyvision" title="Permanent link">&para;</a></h2>
 <h3 id="51-imaging-station-checklist-pre-data-collection">5.1 成像站清单（数据收集前）<a class="headerlink" href="#51-imaging-station-checklist-pre-data-collection" title="Permanent link">&para;</a></h3>
 <ul>
-<li>[ ] 选择圆顶或同轴漫射照明并制作原型；环/明场基线测试</li>
-<li>[ ] 偏振器可用/已针对镜面组件面进行测试</li>
-<li>[ ] 排除环境光（外壳/护罩）</li>
-<li>[ ] 全局快门/频闪配置设置；在最大传送带速度下验证运动模糊</li>
-<li>[ ] 孔径/自由度覆盖整个产品高度范围；增益/ISO 保持较低水平</li>
-<li>[ ] 相机牢固安装；应用的设置+串行记录（根据<code>[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)</code>）</li>
-<li>[ ] 根据真实捕获校准帧质量门（模糊、亮度、眩光）</li>
-<li>[ ] 触发（光电眼/PLC）去抖动和产品窗口边界验证</li>
-<li>[ ] FOV/位置带根据阶段 1 最小框面积和 ROI 边距进行验证</li>
+<li>[ ] Dome or coaxial diffuse lighting chosen and prototyped; ring/bright-field baseline tested</li>
+<li>[ ] Polarizers available/tested for specular component faces</li>
+<li>[ ] Ambient light excluded (enclosure/shroud)</li>
+<li>[ ] Global shutter / strobe configuration set; motion blur verified at max conveyor speed</li>
+<li>[ ] Aperture/DoF covers full product height band; gain/ISO kept low</li>
+<li>[ ] Camera rigidly mounted; applied settings + serial logged (per <code>[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)</code>)</li>
+<li>[ ] Frame-quality gates calibrated on real captures (blur, brightness, glare)</li>
+<li>[ ] Trigger (photo-eye/PLC) debounce and product-window boundaries validated</li>
+<li>[ ] FOV/position band verified against stage-1 min box area and ROI margins</li>
 </ul>
 <h3 id="52-data-collection-checklist">5.2 数据收集清单<a class="headerlink" href="#52-data-collection-checklist" title="Permanent link">&para;</a></h3>
 <ul>
-<li>[ ] 使用精确的生产相机/光学器件/灯光/软件进行收集</li>
-<li>[ ] 涵盖所有产品、所有组件，跨批次/日期真正OK</li>
-<li>[ ] 为每个缺失的组件和缺失的手册物理构建 NG 案例</li>
-<li>[ ] 包括空帧、部分条目、模糊、反射、曝光变化、遮挡</li>
-<li>[ ] 记录每张图像的出处（站点、线路、摄像机、会话、产品实例、场景）</li>
-<li>[ ] 目标：~300-800 张产品图片； ~300-500 个实例/组件；每个缺失场景启动约 100 个产品实例（AssemblyVision 第 19.2 节）</li>
-<li>[ ] 冻结带有校验和的数据集版本和本体版本</li>
+<li>[ ] Collect with the exact production camera/optics/lighting/software</li>
+<li>[ ] Cover all products, all components, real OK across batches/dates</li>
+<li>[ ] Physically build NG cases for every missing component and missing manual</li>
+<li>[ ] Include empty frames, partial entries, blur, reflections, exposure variation, occlusion</li>
+<li>[ ] Record provenance per image (site, line, camera, session, product instance, scenario)</li>
+<li>[ ] Target: ~300-800 product images; ~300-500 instances/component; ~100 product instances per missing scenario to start (AssemblyVision Section 19.2)</li>
+<li>[ ] Freeze dataset version with checksums and ontology version</li>
 </ul>
 <h3 id="53-annotation-checklist">5.3 注释清单<a class="headerlink" href="#53-annotation-checklist" title="Permanent link">&para;</a></h3>
 <ul>

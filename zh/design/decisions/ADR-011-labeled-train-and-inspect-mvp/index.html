@@ -2750,7 +2750,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3203,42 +3203,42 @@
 
 <h1 id="adr-011-labeled-train-and-inspect-mvp">ADR-011：标记为训练和检查 MVP<a class="headerlink" href="#adr-011-labeled-train-and-inspect-mvp" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
-<p>Accepted</p>
+<p>已接受</p>
 <h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
-<p>ADR-009 establishes a static-image-first implementation sequence and excludes model training from its two-day scope. The current MVP objective requires a developer to train from a labeled static-image set and then inspect a separate image set one image at a time with traceable <code>OK</code> or <code>NG</code> results.</p>
-<p>The selected annotation tool is X-AnyLabeling. It exports product and component bounding boxes in Ultralytics YOLO text format. Filename <code>OK</code> or <code>NG</code> labels remain useful for held-out verification, but cannot train a bounding-box detector by themselves.</p>
-<p>The MVP runs on a developer-controlled Apple Silicon Mac with 16 GB memory. It must preserve the final two-stage architecture: product detection on the full frame, generated product ROI, component detection in that ROI, and deterministic rule evaluation. Training must remain separate from the edge runtime so it is not distributed with a customer runtime package.</p>
+<p>ADR-009 建立了静态图像优先的实施顺序，并将模型训练排除在其两天的范围之外。当前的 MVP 目标要求开发人员从带标签的静态图像集进行训练，然后检查单独的图像集，一次一张图像，并提供可追踪的 <code>OK</code> 或 <code>NG</code> 结果。</p>
+<p>所选的注释工具是X-AnyLabeling。它以 Ultralytics YOLO 文本格式导出产品和组件边界框。文件名 <code>OK</code> 或 <code>NG</code> 标签对于保留验证仍然有用，但不能单独训练边界框检测器。</p>
+<p>MVP 在开发人员控制的具有 16 GB 内存的 Apple Silicon Mac 上运行。它必须保留最终的两阶段架构：全帧上的产品检测、生成的产品 ROI、该 ROI 中的组件检测以及确定性规则评估。培训必须与边缘运行时保持分离，因此它不会与客户运行时包一起分发。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>Replace the training exclusion in ADR-009 for the MVP only. The labeled train-and-inspect MVP shall:</p>
+<p>仅替换 MVP 的 ADR-009 中的训练排除项。标记的培训和检查 MVP 应：</p>
 <ol>
-<li>Use X-AnyLabeling to create full-frame product and component bounding-box labels in standard YOLO format.</li>
-<li>Provide a developer-only <code>training/</code> workspace and <code>av-train</code> CLI that is separate from <code>edge-service</code>; runtime code must not import training code.</li>
-<li>Train the product detector from full-frame images and labels.</li>
-<li>Prepare the component dataset by generating product ROIs, cropping images, and mapping component boxes from full-frame coordinates into ROI coordinates before training the component detector.</li>
-<li>Write versioned model weights outside Git and produce checksummed model manifests consumed by <code>assemblyvision inspect</code>.</li>
-<li>Run the existing static inspection pipeline with real two-stage Ultralytics YOLO adapters, deterministic rules, JSON evidence, ROI images, and annotated images.</li>
-<li>Provide <code>assemblyvision verify</code> to compare inspection results with expected <code>OK</code> or <code>NG</code> labels parsed from a configured filename convention and report false negatives, false positives, and NG recall.</li>
+<li>使用 X-AnyLabeling 以标准 YOLO 格式创建全框架产品和组件边界框标签。</li>
+<li>提供仅供开发人员使用的<code>training/</code>工作区以及与<code>edge-service</code>分离的<code>av-train</code> CLI；运行时代码不得导入训练代码。</li>
+<li>根据全帧图像和标签训练产品检测器。</li>
+<li>在训练组件检测器之前，通过生成产品 ROI、裁剪图像以及将组件框从全帧坐标映射到 ROI 坐标来准备组件数据集。</li>
+<li>在 Git 外部编写版本化模型权重并生成 <code>assemblyvision inspect</code> 使用的校验和模型清单。</li>
+<li>使用真正的两阶段 Ultralytics YOLO 适配器、确定性规则、JSON 证据、ROI 图像和带注释的图像运行现有的静态检查管道。</li>
+<li>提供 <code>assemblyvision verify</code> 将检查结果与从配置的文件名约定解析的预期 <code>OK</code> 或 <code>NG</code> 标签进行比较，并报告误报、误报和 NG 召回。</li>
 </ol>
-<p>This MVP uses small models and measured input sizes appropriate for the developer hardware. It demonstrates a reproducible training-to-inspection flow, not production accuracy or production readiness.</p>
-<p>Model encryption and <code>.pyc</code>-only runtime packaging are deferred. The immediate protection boundary is that training code, datasets, notebooks, and experiment configuration are never included in a customer runtime distribution.</p>
+<p>该 MVP 使用适合开发人员硬件的小型模型和测量的输入大小。它展示了可重复的培训到检查流程，而不是生产精度或生产准备情况。</p>
+<p>模型加密和仅限 <code>.pyc</code> 的运行时打包被推迟。直接的保护边界是训练代码、数据集、笔记本和实验配置永远不会包含在客户运行时分发中。</p>
 <h2 id="4-consequences">4. 后果<a class="headerlink" href="#4-consequences" title="Permanent link">&para;</a></h2>
 <h3 id="41-positive">4.1 正面<a class="headerlink" href="#41-positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Exercises the same two-stage detection path intended for production instead of introducing a classification-only alternate path.</li>
-<li>Uses standard YOLO labels and training tooling, minimizing custom model-training behavior.</li>
-<li>Produces model manifests, checksums, and held-out verification evidence before camera, timing, and network complexity are introduced.</li>
-<li>Preserves the runtime/training separation required by the monorepo architecture.</li>
+<li>执行用于生产的相同两阶段检测路径，而不是引入仅分类的替代路径。</li>
+<li>使用标准 YOLO 标签和训练工具，最大限度地减少自定义模型训练行为。</li>
+<li>在引入相机、时序和网络复杂性之前生成模型清单、校验和和保留的验证证据。</li>
+<li>保留 monorepo 架构所需的运行时/训练分离。</li>
 </ul>
 <h3 id="42-negative-and-trade-offs">4.2 负面和权衡<a class="headerlink" href="#42-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Requires initial manual or model-assisted box annotation rather than filename labels alone.</li>
-<li>Component training requires an explicit ROI preparation step and coordinate-transform tests.</li>
-<li>Apple Silicon developer hardware constrains model size, batch size, and training duration.</li>
-<li>Plain model weights and Python source remain development artifacts in this MVP; they are not a distribution-security control.</li>
-<li>The resulting metrics are valid only for the labeled and held-out static-image sets, not a production acceptance claim.</li>
+<li>需要初始手动或模型辅助框注释，而不是单独的文件名标签。</li>
+<li>组件训练需要明确的 ROI 准备步骤和坐标转换测试。</li>
+<li>Apple Silicon 开发人员硬件限制模型大小、批量大小和训练持续时间。</li>
+<li>普通模型权重和 Python 源代码仍然是此 MVP 中的开发工件；它们不是分发安全控制。</li>
+<li>生成的指标仅对已标记和保留的静态图像集有效，而不是生产验收声明。</li>
 </ul>
 <h2 id="5-supersession">5. 取代<a class="headerlink" href="#5-supersession" title="Permanent link">&para;</a></h2>
-<p>This ADR supersedes only ADR-009's two-day scope and its exclusion of model training. ADR-009 remains in force for static-image-first sequencing, for exclusion of camera/video/central/dashboard work, and for the requirement that static artifacts remain deterministic regression fixtures.</p>
+<p>此 ADR 仅取代 ADR-009 的两天范围及其对模型训练的排除。 ADR-009 对于静态图像优先排序、排除摄像头/视频/中央/仪表板工作以及静态工件保持确定性回归装置的要求仍然有效。</p>
 <h2 id="6-links">6. 链接<a class="headerlink" href="#6-links" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../ADR-009-static-image-first-mvp/">ADR-009: Static-Image-First MVP</a></li>

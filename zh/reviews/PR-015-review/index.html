@@ -2605,7 +2605,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3013,7 +3013,7 @@
   <a href="#f1-time-only-grouping-can-merge-different-products-and-return" class="md-nav__link">
     <span class="md-ellipsis">
       
-        F1。仅时间分组可以合并不同的产品并返回OK
+        F1. Time-only grouping can merge different products and return OK
       
     </span>
   </a>
@@ -3057,7 +3057,7 @@
   <a href="#f5-any-rejected-frame-forces-despite-sufficient-valid-temporal-evidence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        F5。尽管有足够的有效时间证据，任何被拒绝的帧都会强制 NG
+        F5. Any rejected frame forces NG despite sufficient valid temporal evidence
       
     </span>
   </a>
@@ -3230,7 +3230,7 @@
 <li>通过的测试不执行下述安全案例。</li>
 </ul>
 <h2 id="blocking-findings">阻塞结果<a class="headerlink" href="#blocking-findings" title="Permanent link">&para;</a></h2>
-<h3 id="f1-time-only-grouping-can-merge-different-products-and-return">F1。仅时间分组可以合并不同的产品并返回<code>OK</code><a class="headerlink" href="#f1-time-only-grouping-can-merge-different-products-and-return" title="Permanent link">&para;</a></h3>
+<h3 id="f1-time-only-grouping-can-merge-different-products-and-return">F1. Time-only grouping can merge different products and return <code>OK</code><a class="headerlink" href="#f1-time-only-grouping-can-merge-different-products-and-return" title="Permanent link">&para;</a></h3>
 <p><strong>严重性：</strong> P0 / 严重</p>
 <p><strong>地点：</strong></p>
 <ul>
@@ -3295,177 +3295,177 @@
 3. 保留<code>force_close()</code>专用于关机/重启中断。</p>
 <p><strong>验收标准：</strong></p>
 <ul>
-<li>A complete window followed by no frames for <code>maximum_window_ms</code> persists one
-  normal decision without receiving a trigger frame.</li>
-<li>Shutting down after normal expiry does not create a second, interrupted
-  record.</li>
-<li>Shutting down before expiry creates one <code>NG</code> record containing
-  <code>INSPECTION_INTERRUPTED</code> and no reconstructed partial evidence.</li>
+<li>一个完整的窗口，后面没有 <code>maximum_window_ms</code> 的框架，仍然存在
+  没有收到触发帧的正常决策。</li>
+<li>正常到期后关闭不会产生第二次中断
+  记录。</li>
+<li>在到期之前关闭会创建一条 <code>NG</code> 记录，其中包含
+  <code>INSPECTION_INTERRUPTED</code>并且没有重建部分证据。</li>
 </ul>
 <h3 id="f3-window-membership-is-determined-by-post-inference-time-not-capture-time">F3。窗口成员资格由推理后时间决定，而不是捕获时间<a class="headerlink" href="#f3-window-membership-is-determined-by-post-inference-time-not-capture-time" title="Permanent link">&para;</a></h3>
-<p><strong>Severity:</strong> P1 / High</p>
-<p><strong>Locations:</strong></p>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:251-252</code></li>
 <li><code>packages/python/vision-core/src/assemblyvision_vision/sources/frame_source.py:33-38</code></li>
 </ul>
-<p>The runtime supplies <code>time.monotonic()</code> after <code>frame_observations()</code> completes.
-Inference latency, queue backlog, or scheduler delay can consequently split
-contiguous captured frames or merge separately captured products. Each
-<code>CapturedFrame</code> already contains its acquisition monotonic timestamp in
-<code>monotonic_ts_ns</code>, but it is not used by the window manager.</p>
-<p><strong>Resolution:</strong></p>
+<p>运行时在 <code>frame_observations()</code> 完成后提供 <code>time.monotonic()</code>。
+推理延迟、队列积压或调度程序延迟可能会因此而分裂
+连续捕获的帧或合并单独捕获的产品。每个
+<code>CapturedFrame</code> 已包含其获取单调时间戳
+<code>monotonic_ts_ns</code>，但窗口管理器不使用它。</p>
+<p><strong>分辨率：</strong></p>
 <ol>
-<li>Convert <code>CapturedFrame.monotonic_ts_ns</code> to seconds and pass it to
-   <code>ProductWindowManager.feed()</code> for all membership and duration comparisons.</li>
-<li>Use the runtime monotonic clock only for idle-expiration polling.</li>
-<li>Reject stale/out-of-order capture timestamps deterministically as unusable
-   evidence or a window-integrity failure; do not silently reorder them.</li>
+<li>将<code>CapturedFrame.monotonic_ts_ns</code>转换为秒并传递给
+   <code>ProductWindowManager.feed()</code> 用于所有成员资格和持续时间比较。</li>
+<li>仅将运行时单调时钟用于空闲到期轮询。</li>
+<li>明确拒绝陈旧/无序的捕获时间戳，因为它们不可用
+   证据或窗口完整性故障；不要默默地重新排序它们。</li>
 </ol>
-<p><strong>Acceptance criteria:</strong></p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>Given identical capture timestamps, a fast detector and an intentionally
-  delayed detector produce identical window membership and final decisions.</li>
-<li>Queued frames from different capture-time windows cannot merge merely because
-  they are drained quickly after a stall.</li>
-<li>Out-of-order timestamps have documented <code>NG</code>/discard behavior and regression
-  coverage.</li>
+<li>给定相同的捕获时间戳、快速检测器和有意的
+  延迟检测器产生相同的窗口成员资格和最终决策。</li>
+<li>来自不同捕获时间窗口的排队帧不能仅仅因为合并
+  摊位后它们很快就会被排干。</li>
+<li>无序时间戳记录了<code>NG</code>/丢弃行为和回归
+  覆盖范围。</li>
 </ul>
 <h3 id="f4-the-temporal-path-marks-every-detected-product-frame-as-quality-usable">F4。时间路径将每个检测到的产品框架标记为质量可用<a class="headerlink" href="#f4-the-temporal-path-marks-every-detected-product-frame-as-quality-usable" title="Permanent link">&para;</a></h3>
-<p><strong>Severity:</strong> P1 / High</p>
-<p><strong>Locations:</strong></p>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/pipeline.py:254-272</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/temporal/window_manager.py:65-70</code></li>
 </ul>
-<p><code>frame_observations()</code> sets <code>quality_usable=True</code> unconditionally, although the
-available <code>ProductDetection.quality.usable</code> carries the actual quality-gate
-result. A blurred or otherwise unusable frame with a high-confidence component
-detection can count toward <code>minimum_valid_frames</code> and establish <code>PRESENT</code>.
-This violates contract 03 section 5 and design 10 sections 10.3 and 10.6.</p>
-<p><strong>Resolution:</strong></p>
+<p><code>frame_observations()</code> 无条件设置 <code>quality_usable=True</code>，尽管
+available <code>ProductDetection.quality.usable</code> 携带实际的质量门
+结果。具有高置信度组件的模糊或无法使用的框架
+检测可以计入<code>minimum_valid_frames</code>并建立<code>PRESENT</code>。
+这违反了合同 03 第 5 节和设计 10 第 10.3 节和 10.6 节。</p>
+<p><strong>分辨率：</strong></p>
 <ol>
-<li>Set <code>FrameObservation.quality_usable</code> from the evaluated frame-quality gate
-   (<code>outcome.product_detection.quality.usable</code> when a product is detected).</li>
-<li>Preserve frame-quality rejection reason codes in the observation and
-   <code>FrameQualitySummary</code>.</li>
-<li>Ensure an unusable frame cannot contribute detections, valid opportunities,
-   or count evidence to the temporal aggregator.</li>
+<li>从评估的帧质量门设置<code>FrameObservation.quality_usable</code>
+   （<code>outcome.product_detection.quality.usable</code> 当检测到产品时）。</li>
+<li>在观察中保留帧质量拒绝原因代码
+   <code>FrameQualitySummary</code>。</li>
+<li>确保不可用的框架无法提供检测、有效机会、
+   或将证据计数到时间聚合器。</li>
 </ol>
-<p><strong>Acceptance criteria:</strong></p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>A <code>quality.usable=False</code> frame with high-confidence component boxes does not
-  establish <code>PRESENT</code> and does not increment <code>usable_frame_count</code>.</li>
-<li>A window whose remaining usable frames are below <code>minimum_valid_frames</code>
-  resolves every required component to <code>UNVERIFIABLE</code> and produces <code>NG</code>.</li>
-<li>The persisted frame-quality summary counts the rejected frame and includes
-  its quality reason code.</li>
+<li>具有高置信度组件框的 <code>quality.usable=False</code> 框架不会
+  建立<code>PRESENT</code>并且不增加<code>usable_frame_count</code>。</li>
+<li>剩余可用帧低于<code>minimum_valid_frames</code>的窗口
+  将每个必需的组件解析为 <code>UNVERIFIABLE</code> 并生成 <code>NG</code>。</li>
+<li>持续的帧质量摘要对被拒绝的帧进行计数并包括
+  其质量原因代码。</li>
 </ul>
-<h3 id="f5-any-rejected-frame-forces-despite-sufficient-valid-temporal-evidence">F5。尽管有足够的有效时间证据，任何被拒绝的帧都会强制 <code>NG</code><a class="headerlink" href="#f5-any-rejected-frame-forces-despite-sufficient-valid-temporal-evidence" title="Permanent link">&para;</a></h3>
-<p><strong>Severity:</strong> P1 / High</p>
-<p><strong>Locations:</strong></p>
+<h3 id="f5-any-rejected-frame-forces-despite-sufficient-valid-temporal-evidence">F5. Any rejected frame forces <code>NG</code> despite sufficient valid temporal evidence<a class="headerlink" href="#f5-any-rejected-frame-forces-despite-sufficient-valid-temporal-evidence" title="Permanent link">&para;</a></h3>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/pipeline.py:289-328</code></li>
 </ul>
-<p>All per-frame failure reasons are copied into <code>window_reasons</code>, unioned into
-the final decision reasons, and <code>final_reasons</code> unconditionally changes an
-otherwise successful rule decision to internal <code>NG</code>. Thus a window with the
-required valid high-confidence evidence plus one transient <code>NO_PRODUCT</code>, ROI
-failure, or detector error cannot be <code>OK</code>.</p>
-<p>This contradicts design 10 sections 10.3 and 10.8: rejected frames do not
-contribute, while queue loss and inference errors reduce valid opportunities and
-can only move evidence toward <code>UNCERTAIN</code> or <code>UNVERIFIABLE</code>. It also makes the
-new aggregation robustness ineffective for intermittent rejected frames.</p>
-<p><strong>Resolution:</strong></p>
+<p>所有每帧失败原因都复制到 <code>window_reasons</code> 中，并合并到
+最终决定原因，并且<code>final_reasons</code>无条件改变
+否则成功的规则决策将发送给内部<code>NG</code>。因此，一个窗口
+需要有效的高置信度证据加上一个瞬态<code>NO_PRODUCT</code>，ROI
+失败或检测器错误不能是<code>OK</code>。</p>
+<p>这与设计 10 第 10.3 和 10.8 节相矛盾：被拒绝的帧不
+贡献，而队列丢失和推理错误减少了有效机会，
+只能将证据移向<code>UNCERTAIN</code>或<code>UNVERIFIABLE</code>。这也使得
+新的聚合鲁棒性对于间歇性拒绝的帧无效。</p>
+<p><strong>分辨率：</strong></p>
 <ol>
-<li>Persist rejected-frame reasons as frame diagnostics and in
-   <code>FrameQualitySummary</code>, rather than treating all of them as window-level
-   decision reasons.</li>
-<li>Let the rule engine decide from aggregated evidence and mandatory gates.</li>
-<li>Independently force <code>NG</code> only for documented window-integrity failures, such
-   as interruption, identity mixing, or mandatory barcode/product-resolution
-   failure.</li>
+<li>保留拒绝帧的原因作为帧诊断并在
+   <code>FrameQualitySummary</code>，而不是将它们全部视为窗口级
+   决定原因。</li>
+<li>让规则引擎根据聚合证据和强制门做出决定。</li>
+<li>仅针对记录的窗口完整性故障独立强制 <code>NG</code>，例如
+   作为中断、身份混合或强制条形码/产品解析
+   失败。</li>
 </ol>
-<p><strong>Acceptance criteria:</strong></p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>A window meeting all component policies and <code>minimum_valid_frames</code> remains
-  <code>OK</code> when it also contains one rejected non-integrity frame.</li>
-<li>That frame's reason remains persisted and its usable-opportunity count is
-  zero.</li>
-<li>An interrupted or mixed-identity window remains <code>NG</code> even if other frames
-  satisfy every component policy.</li>
+<li>满足所有组件策略且<code>minimum_valid_frames</code>的窗口仍然存在
+  <code>OK</code> 当它还包含一个被拒绝的非完整性帧时。</li>
+<li>该框架的原因仍然存在，其可用机会计数为
+  零。</li>
+<li>即使有其他帧，中断或混合身份窗口仍保持<code>NG</code>
+  满足每个组件的策略。</li>
 </ul>
 <h3 id="f6-missing-policies-and-equal-thresholds-are-not-fail-closed">F6。缺失的策略和相同的阈值不会失败关闭<a class="headerlink" href="#f6-missing-policies-and-equal-thresholds-are-not-fail-closed" title="Permanent link">&para;</a></h3>
-<p><strong>Severity:</strong> P1 / High</p>
-<p><strong>Locations:</strong></p>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:127-164</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/config.py:599-622</code></li>
 </ul>
-<p>Required components need not have a temporal policy. The aggregator substitutes
-<code>1.0</code> for both thresholds when a policy is absent, and uses inclusive <code>&gt;=</code>, so
-an exact-confidence <code>1.0</code> detection can become <code>PRESENT</code> without a configured,
-versioned policy. The configuration parser also allows
-<code>medium_confidence == high_confidence</code>, despite the design 10 requirement
-<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>.</p>
-<p><strong>Resolution:</strong></p>
+<p>必需的组件不需要有临时策略。聚合器替代
+当策略不存在时，<code>1.0</code> 用于两个阈值，并使用包容性 <code>&gt;=</code>，因此
+精确置信度 <code>1.0</code> 检测可以变为 <code>PRESENT</code>，无需配置，
+版本化策略。配置解析器还允许
+<code>medium_confidence == high_confidence</code>，尽管有设计 10 的要求
+<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>。</p>
+<p><strong>分辨率：</strong></p>
 <ol>
-<li>After loading the rule, reject an enabled temporal configuration unless it
-   supplies exactly one policy for every required component and no unknown
-   component keys.</li>
-<li>Enforce <code>medium_confidence &lt; high_confidence</code> in both
-   <code>ComponentTemporalPolicy</code> and configuration parsing.</li>
-<li>Defensively resolve missing policies to <code>UNVERIFIABLE</code> with an explicit
-   configuration reason if invalid configuration reaches the aggregator.</li>
+<li>加载规则后，拒绝启用的临时配置，除非
+   为每个必需的组件提供准确的策略，并且没有未知的组件
+   组件键。</li>
+<li>在两者中强制执行 <code>medium_confidence &lt; high_confidence</code>
+   <code>ComponentTemporalPolicy</code>和配置解析。</li>
+<li>通过明确的方式防御性地解决 <code>UNVERIFIABLE</code> 缺失的策略
+   如果无效配置到达聚合器，则配置原因。</li>
 </ol>
-<p><strong>Acceptance criteria:</strong></p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>Configuration loading rejects missing required policies, extra policy keys,
-  and equal medium/high thresholds.</li>
-<li>An aggregation unit test proves that an absent policy cannot yield <code>PRESENT</code>,
-  including for confidence <code>1.0</code>.</li>
-<li>A valid complete policy retains the documented high-hit and medium-hit paths.</li>
+<li>配置加载拒绝缺少所需的策略、额外的策略密钥、
+  和相同的中/高阈值。</li>
+<li>聚合单元测试证明不存在的策略不能产生<code>PRESENT</code>，
+  包括信心<code>1.0</code>。</li>
+<li>有效的完整策略保留记录的高命中和中命中路径。</li>
 </ul>
 <h3 id="f7-below-threshold-detections-can-satisfy-exact-component-counts">F7。低于阈值的检测可以满足精确的元件计数<a class="headerlink" href="#f7-below-threshold-detections-can-satisfy-exact-component-counts" title="Permanent link">&para;</a></h3>
-<p><strong>Severity:</strong> P1 / High</p>
-<p><strong>Locations:</strong></p>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:159-164</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:201-240</code></li>
 </ul>
-<p>Once a high-confidence or qualifying medium hit establishes <code>PRESENT</code>,
-<code>_present()</code> computes <code>detection_count</code>, boxes, and centers from every raw
-detection for that component in the selected frame. A low-confidence false
-positive can therefore inflate a frame from one qualifying detection to the
-rule's exact expected count. For example, with <code>expected_count=2</code>, detections
-at <code>0.95</code> and <code>0.50</code> in one frame can report <code>detection_count=2</code> after the
-<code>0.95</code> detection establishes presence.</p>
-<p><strong>Resolution:</strong></p>
+<p>一旦建立了高置信度或合格的中等命中<code>PRESENT</code>，
+<code>_present()</code> 从每个原始数据中计算 <code>detection_count</code>、框和中心
+检测所选帧中的该组件。低置信度错误
+因此，阳性可以将一个帧从一个合格的检测膨胀到
+规则的确切预期计数。例如，对于 <code>expected_count=2</code>，检测
+在一帧中的<code>0.95</code>和<code>0.50</code>可以在之后报告<code>detection_count=2</code>
+<code>0.95</code> 检测表明存在。</p>
+<p><strong>分辨率：</strong></p>
 <ol>
-<li>Define and document a count-evidence confidence threshold; at minimum it
-   must be <code>medium_confidence</code>.</li>
-<li>Pass only qualifying detections to the count, area-ratio, and center summary
-   used by count/spatial rules.</li>
-<li>Keep below-threshold observations available in diagnostics if needed, but
-   never use them to satisfy a business rule.</li>
+<li>定义并记录计数证据置信度阈值；至少它
+   必须是<code>medium_confidence</code>。</li>
+<li>仅将合格检测传递给计数、面积比和中心摘要
+   由计数/空间规则使用。</li>
+<li>如果需要，在诊断中保留低于阈值的观察结果，但是
+   切勿使用它们来满足业务规则。</li>
 </ol>
-<p><strong>Acceptance criteria:</strong></p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>One high-confidence detection plus one below-medium detection reports a
-  count of one and fails an <code>expected_count=2</code> rule as <code>NG</code>.</li>
-<li>Two qualifying detections in one valid frame satisfy an <code>expected_count=2</code>
-  rule.</li>
-<li>Area and spatial evidence used for count-based rules comes only from the same
-  qualifying set as the count.</li>
+<li>一项高置信度检测加上一项低于中等的检测报告
+  计数为 1 并且未满足 <code>expected_count=2</code> 规则，如 <code>NG</code>。</li>
+<li>一个有效帧中的两个合格检测满足 <code>expected_count=2</code>
+  规则。</li>
+<li>用于基于计数的规则的面积和空间证据仅来自相同的
+  排位赛设为计数。</li>
 </ul>
 <h2 id="residual-review-notes">剩余审查说明<a class="headerlink" href="#residual-review-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The OpenAPI enum, generated TypeScript type, and runtime validator correctly
-  include <code>UNVERIFIABLE</code>.</li>
-<li>The aggregation unit tests cover many threshold, duplicate, adjacency, and
-  component-isolation cases. They need the product-isolation, idle-expiry,
-  acquisition-time, quality-gate, missing-policy, and count-confidence cases
-  specified above before the implementation is safe to merge.</li>
+<li>OpenAPI 枚举、生成的 TypeScript 类型和运行时验证器正确
+  包括<code>UNVERIFIABLE</code>。</li>
+<li>聚合单元测试涵盖许多阈值、重复、邻接和
+  组件隔离案例。他们需要产品隔离、闲置到期、
+  采集时间、质量门、缺失策略和计数置信度案例
+  上面指定的实现之前可以安全地合并。</li>
 </ul>
 
 

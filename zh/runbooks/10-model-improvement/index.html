@@ -2711,7 +2711,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3125,61 +3125,61 @@
 
 <h1 id="runbook-10-model-improvement">运行手册 10：模型改进<a class="headerlink" href="#runbook-10-model-improvement" title="Permanent link">&para;</a></h1>
 <h2 id="trigger">扳机<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
-<p>批准的模型变更请求：在产品上发现新的或缺失的组件数据
-生产线、新产品/组件、审查中发现的分类回归或
-接受的准确性改进。</p>
+<p>An approved model change request: new or missing-component data discovered on the
+line, a new product/component, a classification regression found in review, or an
+accepted accuracy improvement.</p>
 <h2 id="preconditions">前提条件<a class="headerlink" href="#preconditions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>已签出的 <code>main</code>（或 <code>dev</code>）工作区，且已完成 <code>uv sync</code>
-  （已安装 Ultralytics）。</li>
-<li>带标签的数据集（X-AnyLabeling 导出或 Roboflow 导出，适用于
-  <code>scripts/adapt-roboflow-dataset.py</code>) 使用泄漏安全的 train/val 分割。</li>
-<li>要替换的模型工件及其清单和校验和是
-  保留以供回滚。</li>
+<li>A checked-out <code>main</code> (or <code>dev</code>) workspace with <code>uv sync</code> completed
+  (ultralytics installed).</li>
+<li>A labeled dataset (X-AnyLabeling export or a Roboflow export adapted with
+  <code>scripts/adapt-roboflow-dataset.py</code>) using a leakage-safe train/val split.</li>
+<li>The model artifacts to be replaced, plus their manifests and checksums, are
+  preserved for rollback.</li>
 </ul>
 <h2 id="procedure">程序<a class="headerlink" href="#procedure" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>收集并标记数据。</strong> 将更正后的或新的样本添加到组件中
-   数据集；为每个所需组件创建缺失组件变体。不
-   在训练中重复使用保留/验证图像。</li>
-<li><strong>重新训练产品检测器</strong>（如果产品本地化发生变化）：
+<li><strong>Collect and label data.</strong> Add corrected or new samples to the component
+   dataset; create missing-component variants for every required component. Do not
+   reuse the held-out/verification images in training.</li>
+<li><strong>Retrain the product detector</strong> (if product localization changed):
    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>run<span class="w"> </span>av-train<span class="w"> </span>product<span class="w"> </span>&lt;dataset_product&gt;<span class="w"> </span>--semver<span class="w"> </span><span class="m">0</span>.2.0<span class="w"> </span>--epochs<span class="w"> </span><span class="m">120</span><span class="w"> </span>--no-augment<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--out-weights<span class="w"> </span>models/weights/product-yolo-0.2.0.pt<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--out-manifest<span class="w"> </span>models/manifests/product-manifest.json
 </code></pre></div></li>
-<li>**从新产品检测器（
-   清单经过校验和验证；具有零个或多个产品的框架是
-   记录在 <code>exclusions.json</code> 中，不是默默挑选的）：
+<li><strong>Regenerate the component ROI dataset</strong> from the new product detector (the
+   manifest is checksum-verified; frames with zero or multiple products are
+   recorded in <code>exclusions.json</code>, not silently picked):
    <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>av-train<span class="w"> </span>prepare-components<span class="w"> </span>&lt;dataset_components&gt;<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--product-manifest<span class="w"> </span>models/manifests/product-manifest.json<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--min-area<span class="w"> </span><span class="m">10000</span><span class="w"> </span>--min-retention<span class="w"> </span><span class="m">0</span>.80<span class="w"> </span>--out-dir<span class="w"> </span>&lt;roi-dataset&gt;
 </code></pre></div></li>
-<li><strong>重新训练组件检测器</strong>：
+<li><strong>Retrain the component detector</strong>:
    <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>run<span class="w"> </span>av-train<span class="w"> </span>component<span class="w"> </span>&lt;roi-dataset&gt;<span class="w"> </span>--semver<span class="w"> </span><span class="m">0</span>.2.0<span class="w"> </span>--epochs<span class="w"> </span><span class="m">150</span><span class="w"> </span>--no-augment<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--out-weights<span class="w"> </span>models/weights/component-yolo-0.2.0.pt<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--out-manifest<span class="w"> </span>models/manifests/component-manifest.json
 </code></pre></div></li>
-<li><strong>验证保留集上没有回归</strong>。假阴性（NG 预测为
-   OK）验证门失败，必须阻止升级：
+<li><strong>Verify no regression</strong> on the held-out set. A false negative (NG predicted as
+   OK) fails the verify gate and must block promotion:
    <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uv<span class="w"> </span>run<span class="w"> </span>assemblyvision<span class="w"> </span>verify<span class="w"> </span>&lt;test&gt;<span class="w"> </span>--config<span class="w"> </span>&lt;pipeline.yaml&gt;<span class="w"> </span>--rule<span class="w"> </span>&lt;rule.yaml&gt;<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>--expected<span class="w"> </span>test-expected.json<span class="w"> </span>--output<span class="w"> </span>verify-out/
 </code></pre></div></li>
-<li><strong>将版本合并在一起。</strong> 规则引擎拒绝以下组件模型：
-   未在规则的 <code>compatible_component_model_versions</code> 中列出
-   (<code>VERSION_INCOMPATIBLE</code>)。一起更新所有三个：</li>
+<li><strong>Bump versions together.</strong> The rule engine rejects a component model that is
+   not listed in the rule's <code>compatible_component_model_versions</code>
+   (<code>VERSION_INCOMPATIBLE</code>). Update all three together:</li>
 <li><code>pipeline.yaml</code> → <code>component_detection.model_version: component-yolo-0.2.0</code></li>
-<li><code>product-rule.yaml</code> → 添加<code>"component-yolo-0.2.0"</code>
-     <code>compatible_component_model_versions</code> 和增量 <code>rule_version</code></li>
-<li><code>pipeline.yaml</code> → <code>product_detection.model_version: product-yolo-0.2.0</code> 当
-     产品检测器发生变化</li>
-<li><strong>分发。</strong> 发送新的不可变权重、清单和更新的
-   配置/规则到边缘（在 MVP 中手动校验和验证安装；受管理
-   稍后分发）。</li>
+<li><code>product-rule.yaml</code> → add <code>"component-yolo-0.2.0"</code> to
+     <code>compatible_component_model_versions</code> and increment <code>rule_version</code></li>
+<li><code>pipeline.yaml</code> → <code>product_detection.model_version: product-yolo-0.2.0</code> when
+     the product detector changed</li>
+<li><strong>Distribute.</strong> Ship the new immutable weights, manifests, and updated
+   config/rule to the edge (manual checksum-verified install in the MVP; governed
+   distribution later).</li>
 </ol>
 <h2 id="exit-criteria">退出标准<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
-<p>编写新的模型工件和清单，记录校验和，保留
-验证显示没有回归，所有版本引用（配置+规则）都是
-已更新，并且以前的工件仍然可用于回滚。</p>
+<p>New model artifacts and manifests are written, checksums recorded, the held-out
+verification shows no regression, all version references (config + rule) are
+updated, and the previous artifacts remain available for rollback.</p>
 <h2 id="related">有关的<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../08-model-rollback/">Model Rollback</a></li>

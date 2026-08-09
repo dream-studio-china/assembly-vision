@@ -2927,7 +2927,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3572,16 +3572,16 @@
     CV --&gt; Aggregate
     Identity --&gt; Rules[确定性规则引擎]
     Aggregate --&gt; Rules
-    Rules --&gt; Persist[本地存储库和媒体管理器]
+    Rules --&gt; Persist[Local repository and media manager]
     Persist --&gt; DB[(SQLite)]
     Persist --&gt; Media[(媒体音量)]
-    Persist --&gt; Upload[(持久上传任务)]
+    Persist --&gt; Upload[(Persistent upload tasks)]
     Upload --&gt; Sync[上传调度程序]
     Sync --&gt;|当可用时| Central[中央摄取API]
     API[本地FastAPI] --&gt; Persist
     API --&gt; Coordinator
     Web[本地Vue应用程序] --&gt; API
-    Health[健康监测器] --&gt; Hardware
+    Health[Health monitor] --&gt; Hardware
     Health --&gt; DB
     Health --&gt; Media
     Health --&gt; API</code></pre>
@@ -3620,7 +3620,7 @@
     Queued --&gt; Idle:持久记录的任务
     WindowOpen --&gt; Cancelled:无效或重复的开始
     Collecting --&gt; Cancelled:根据批准的政策取消运营商
-    Cancelled --&gt; Persisting:取消记录及原因
+    Cancelled --&gt; Persisting:cancellation record and reason
     Faulted --&gt; Idle:授权恢复和健康检查通过</code></pre>
 <p>每个终端路径都会创建一个可审计的记录，其中存储仍然可用。取消或异常路径不能产生 <code>OK</code>。</p>
 <h2 id="5-device-state-model">5. 设备状态模型<a class="headerlink" href="#5-device-state-model" title="Permanent link">&para;</a></h2>
@@ -3628,7 +3628,7 @@
     [*] --&gt; Starting
     Starting --&gt; Ready:依赖项和活动包有效
     Starting --&gt; Faulted:强制依赖无效
-    Ready --&gt; Inspecting:检查窗口打开
+    Ready --&gt; Inspecting:inspection window opens
     Inspecting --&gt; Ready:已提交检查
     Ready --&gt; Degraded:非关键依赖性受损
     Inspecting --&gt; Degraded:网络或上传不可用

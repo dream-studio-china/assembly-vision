@@ -2609,7 +2609,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3598,105 +3598,105 @@
 <table>
 <thead>
 <tr>
-<th>案例</th>
-<th>方法</th>
-<th>任务/条件</th>
-<th>取得的数字</th>
-<th>课程</th>
-<th>来源</th>
+<th>Case</th>
+<th>Method</th>
+<th>Task / conditions</th>
+<th>Achieved numbers</th>
+<th>Lessons</th>
+<th>Source</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>VR-YOLO、PCB缺陷检测</td>
-<td>YOLOv8 + 视点鲁棒性</td>
-<td>PCB 缺陷、原始测试与视角转移测试</td>
-<td>mAP 98.9%（原始）、94.7%（视角转换）</td>
-<td>在姿势改变下，鲁棒性增强购买了~4 pp；添加少量成本</td>
+<td>VR-YOLO, PCB defect detection</td>
+<td>YOLOv8 + viewpoint robustness</td>
+<td>PCB defects, original vs viewpoint-shifted test</td>
+<td>mAP 98.9% (original), 94.7% (viewpoint shift)</td>
+<td>Robustness augmentation buys ~4 pp under pose change; small cost added</td>
 <td>https://arxiv.org/abs/2507.02963</td>
 </tr>
 <tr>
-<td>多尺度剪枝YOLOv8，PCB</td>
-<td>YOLOv8 + 剪枝/轻量级颈部 + MPDIoU 损失</td>
-<td>公共 PCB 缺陷数据集</td>
-<td>mAP50 99.32%，mAP50-95 75.18%（与 YOLOv8n 相比+10.13 pp）</td>
-<td>mAP50 饱和； mAP50-95是诚实的品质棒；小缺陷主导错误</td>
+<td>Multi-scale pruned YOLOv8, PCB</td>
+<td>YOLOv8 + pruning/lightweight neck + MPDIoU loss</td>
+<td>Public PCB defect dataset</td>
+<td>mAP50 99.32%, mAP50-95 75.18% (+10.13 pp vs YOLOv8n)</td>
+<td>mAP50 saturates; mAP50-95 is the honest quality bar; small defects dominate error</td>
 <td>https://arxiv.org/abs/2507.17176</td>
 </tr>
 <tr>
-<td>工业-YOLO，钢铁+ MVTec AD + 汽车</td>
-<td>微调 YOLOv8 + TensorRT/OpenVINO</td>
-<td>NEU-DET、MVTec AD、定制汽车/电池；声称边缘部署</td>
-<td>mAP 98.5%，&gt;120 FPS Jetson Orin（预印本，未经验证）</td>
-<td>视为作者报告；仅作为上限存在主张有用</td>
+<td>Industrial-YOLO, steel + MVTec AD + automotive</td>
+<td>Fine-tuned YOLOv8 + TensorRT/OpenVINO</td>
+<td>NEU-DET, MVTec AD, custom automotive/battery; claims edge deployment</td>
+<td>mAP 98.5%, &gt;120 FPS Jetson Orin (preprint, unverified)</td>
+<td>Treat as author-reported; useful only as an upper-bound existence claim</td>
 <td>https://arxiv.org/abs/2606.07659</td>
 </tr>
 <tr>
-<td>YOLOv8 DSA 半导体检测</td>
-<td>YOLOv8，以数据为中心的标签</td>
-<td>六边形接触孔图案的 SEM 图像</td>
-<td>缺陷检测精度&gt;0.9 mAP</td>
-<td>标签方法与架构一样重要</td>
+<td>YOLOv8 DSA semiconductor inspection</td>
+<td>YOLOv8, data-centric labeling</td>
+<td>SEM images of hexagonal contact-hole patterns</td>
+<td>Defect detection precision &gt;0.9 mAP</td>
+<td>Labeling methodology matters as much as architecture</td>
 <td>https://arxiv.org/abs/2307.15516</td>
 </tr>
 <tr>
-<td>ASDF装配状态检测</td>
-<td>YOLOv8 + 6D 姿势后期融合</td>
-<td>装配步骤/状态检测（医疗和工业）</td>
-<td>击败纯深度学习装配状态检测； GBOT 上更强的 6D 姿势</td>
-<td>将检测与几何验证相结合可改善状态分类</td>
+<td>ASDF assembly state detection</td>
+<td>YOLOv8 + 6D pose late fusion</td>
+<td>Assembly step/state detection (medical &amp; industrial)</td>
+<td>Beats pure-DL assembly state detection; stronger 6D pose on GBOT</td>
+<td>Combining detection with geometric verification improves state classification</td>
 <td>https://arxiv.org/abs/2403.16400</td>
 </tr>
 <tr>
-<td>手动组装跟踪支架</td>
-<td>YOLOv8，多摄像头</td>
-<td>120 个不同速度的装配，手动装配阶段</td>
-<td>检测精度高；发现阶段级时序偏差</td>
-<td>YOLOv8 在受控台上可靠地跟踪装配阶段</td>
+<td>Manual assembly tracking stand</td>
+<td>YOLOv8, multicamera</td>
+<td>120 assemblies at varied speeds, manual assembly stages</td>
+<td>High detection accuracy; stage-level timing deviations found</td>
+<td>YOLOv8 reliably follows assembly stages in a controlled stand</td>
 <td>https://arxiv.org/abs/2401.10777</td>
 </tr>
 <tr>
-<td>Roboflow 实时 PCB 检测</td>
-<td>RF-DETR Nano（YOLO替代品）</td>
-<td>Forked Universe PCB 数据集，6 类，conf 0.4</td>
-<td>测试中 mAP 0.99</td>
-<td>管理培训；置信阈值推荐范围0.3-0.5</td>
+<td>Roboflow real-time PCB inspection</td>
+<td>RF-DETR Nano (YOLO alternative)</td>
+<td>Forked Universe PCB dataset, 6 classes, conf 0.4</td>
+<td>mAP 0.99 on test</td>
+<td>Managed training; confidence threshold 0.3-0.5 recommended range</td>
 <td>https://blog.roboflow.com/pcb-defect-detection/</td>
 </tr>
 <tr>
-<td>Roboflow 瓶数缺失项目</td>
-<td>YOLO 计数</td>
-<td>自上而下的瓶子包装； 1 堂课 25-50 张图片</td>
-<td>定性通过（“计数了 12 个瓶盖”）</td>
-<td>单类存在/计数对于数十张图像是可行的</td>
+<td>Roboflow bottle-count missing item</td>
+<td>YOLO counting</td>
+<td>Top-down bottle packaging; 25-50 images for 1 class</td>
+<td>Qualitative pass ("12 bottle tops counted")</td>
+<td>Single-class presence/counting is feasible with tens of images</td>
 <td>https://blog.roboflow.com/missing-item-inspection/</td>
 </tr>
 <tr>
-<td>Roboflow 法兰检查</td>
-<td>RF-DETR + 工作流程分类</td>
-<td>法兰面划痕/裂纹/凹痕/针孔</td>
-<td>通过/审查/失败分类；阈值 0.4（决策）、0.6（失败）</td>
-<td>置信带分类（REVIEW）可减少错误的自动决策；回顾饲料再培训</td>
+<td>Roboflow flange inspection</td>
+<td>RF-DETR + workflow triage</td>
+<td>Flange face scratches/cracks/dents/pinholes</td>
+<td>PASS/REVIEW/FAIL triage; thresholds 0.4 (decision), 0.6 (fail)</td>
+<td>Confidence-band triage (REVIEW) reduces wrong auto-decisions; REVIEW feeds retraining</td>
 <td>https://blog.roboflow.com/flanges-uality-inspection/</td>
 </tr>
 </tbody>
 </table>
-<p><strong>案例报告中的跨领域教训：</strong></p>
+<p><strong>Cross-cutting lessons from the case reports:</strong></p>
 <ol>
-<li><strong>对于定义明确、光线充足的工业类别，实现的 mAP50 通常为 0.90-0.99。</strong> 差异来自条件（视角、照明）和评估严格性（mAP50 与 mAP50-95），而不是来自使用 YOLO 版本的情况。</li>
-<li><strong>鲁棒性成本：</strong> 姿态/光照变化确实会消耗几个 mAP 点（VR-YOLO：-4 pp）。设计成像站以最大限度地减少这种情况，并监测漂移。</li>
-<li><strong>分类击败二元自动决策：</strong> 法兰和 PCB 工作流程将中等置信度检测路由至人工审核。这直接映射到 AssemblyVision 的 <code>UNCERTAIN</code> 处理（请参阅 <code>[docs/design/02-requirements.md](../design/02-requirements.md)</code>、BR-006）。</li>
-<li><strong>检测器 + 规则 &gt; 单独检测器：</strong> 装配状态工作和 AssemblyVision 的确定性规则引擎一致：永远不要让最终的 OK/NG 仅由原始检测决定。</li>
+<li><strong>Achieved mAP50 for well-defined, well-lit industrial classes is typically 0.90-0.99.</strong> The spread comes from conditions (viewpoint, lighting) and evaluation strictness (mAP50 vs mAP50-95), not from which YOLO version was used.</li>
+<li><strong>Robustness cost:</strong> pose/lighting changes reliably cost several mAP points (VR-YOLO: -4 pp). Design the imaging station to minimize this, and monitor drift.</li>
+<li><strong>Triage beats binary auto-decisions:</strong> the flange and PCB workflows route mid-confidence detections to human review. This maps directly to AssemblyVision's <code>UNCERTAIN</code> handling (see <code>[docs/design/02-requirements.md](../design/02-requirements.md)</code>, BR-006).</li>
+<li><strong>Detector + rules &gt; detector alone:</strong> assembly-state work and AssemblyVision's deterministic rule engine agree: never let the final OK/NG be decided by raw detections alone.</li>
 </ol>
 <hr />
 <h2 id="6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection">6. 为 AssemblyVision 选择 YOLO 版本（两阶段、小规模存在检测）<a class="headerlink" href="#6-choosing-a-yolo-version-for-assemblyvision-two-stage-small-scale-presence-detection" title="Permanent link">&para;</a></h2>
 <h3 id="61-task-profile-from-the-assemblyvision-design-set">6.1 任务配置文件（来自 AssemblyVision 设计集）<a class="headerlink" href="#61-task-profile-from-the-assemblyvision-design-set" title="Permanent link">&para;</a></h3>
 <ul>
-<li>第 1 阶段：在完整的 ~4MP 帧（大约 2560x1440 或 2448x2048）中准确检测一个 <code>product</code>；投资回报率作物。</li>
-<li>第 2 阶段：检测 ROI 内的 <code>component_a</code>、<code>component_b</code>、...、<code>manual</code>（固定类别）。</li>
-<li>数据预算：约300-800张产品图片；每个组件类大约 300-500 个标记实例（参见 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>）。</li>
-<li>运行时：边缘盒（CPU 或适度的 GPU）；产品窗口延迟预算每次检查大约 2.5 秒，包括。多个帧（参见<code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code>）。</li>
-<li>优先级：NG召回高于吞吐量；故障安全行为。</li>
+<li>Stage 1: detect exactly one <code>product</code> in a full ~4MP frame (approx 2560x1440 or 2448x2048); ROI crop.</li>
+<li>Stage 2: detect <code>component_a</code>, <code>component_b</code>, ..., <code>manual</code> inside the ROI (fixed classes).</li>
+<li>Data budget: ~300-800 product images; ~300-500 labeled instances per component class (see <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>).</li>
+<li>Runtime: edge box (CPU or modest GPU); product-window latency budget around 2.5 s per inspection incl. multiple frames (see <code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code>).</li>
+<li>Priority: NG recall over throughput; fail-safe behavior.</li>
 </ul>
 <h3 id="62-candidate-choices-and-reasoning">6.2 候选选择和推理<a class="headerlink" href="#62-candidate-choices-and-reasoning" title="Permanent link">&para;</a></h3>
 <table>

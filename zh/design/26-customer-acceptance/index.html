@@ -1219,7 +1219,7 @@
   <a href="#261-purpose-and-acceptance-principle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        26.1 Purpose and Acceptance Principle
+        26.1 目的和接受原则
       
     </span>
   </a>
@@ -1335,7 +1335,7 @@
   <a href="#267-metrics-and-reporting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        26.7 Metrics and Reporting
+        26.7 指标和报告
       
     </span>
   </a>
@@ -1357,7 +1357,7 @@
   <a href="#269-operational-acceptance-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
-        26.9 Operational Acceptance Checklist
+        26.9 运行验收检查表
       
     </span>
   </a>
@@ -2838,7 +2838,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3179,7 +3179,7 @@
   <a href="#261-purpose-and-acceptance-principle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        26.1 Purpose and Acceptance Principle
+        26.1 目的和接受原则
       
     </span>
   </a>
@@ -3295,7 +3295,7 @@
   <a href="#267-metrics-and-reporting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        26.7 Metrics and Reporting
+        26.7 指标和报告
       
     </span>
   </a>
@@ -3317,7 +3317,7 @@
   <a href="#269-operational-acceptance-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
-        26.9 Operational Acceptance Checklist
+        26.9 运行验收检查表
       
     </span>
   </a>
@@ -3378,36 +3378,36 @@
 
 
 <h1 id="26-customer-acceptance">26. 客户验收<a class="headerlink" href="#26-customer-acceptance" title="Permanent link">&para;</a></h1>
-<h2 id="261-purpose-and-acceptance-principle">26.1 Purpose and Acceptance Principle<a class="headerlink" href="#261-purpose-and-acceptance-principle" title="Permanent link">&para;</a></h2>
-<p>Customer acceptance establishes measured fitness for a defined product mix, line, camera setup, software/model/rule release, and operating procedure. The primary inspection metric is real NG recall. Acceptance uses customer production data not used for model training and does not claim a universal or unvalidated numerical guarantee.</p>
+<h2 id="261-purpose-and-acceptance-principle">26.1 目的和接受原则<a class="headerlink" href="#261-purpose-and-acceptance-principle" title="Permanent link">&para;</a></h2>
+<p>客户认可度确定了对已定义的产品组合、生产线、相机设置、软件/模型/规则发布和操作程序的适用性。主要检查指标是真实的 NG 召回率。验收使用未用于模型训练的客户生产数据，并且不要求通用或未经验证的数值保证。</p>
 <h2 id="262-scope-definition">26.2 范围定义<a class="headerlink" href="#262-scope-definition" title="Permanent link">&para;</a></h2>
 <h3 id="2621-mvp-acceptance">26.2.1 MVP 接受<a class="headerlink" href="#2621-mvp-acceptance" title="Permanent link">&para;</a></h3>
-<p>The static train-and-inspect MVP is accepted as an engineering prototype when it reproducibly trains from a locked labeled static-image set, executes inspection against a separate held-out static-image set, reports verification results, and emits traceable evidence. It is not accepted for autonomous production disposition.</p>
+<p>当静态训练和检查 MVP 可重复地从锁定的标记静态图像集进行训练、针对单独保留的静态图像集执行检查、报告验证结果并发出可追踪证据时，它被接受为工程原型。不接受自主生产处置。</p>
 <h3 id="2622-pilot-acceptance">26.2.2 试点验收<a class="headerlink" href="#2622-pilot-acceptance" title="Permanent link">&para;</a></h3>
-<p>The one-month target may run a controlled baseline on selected edge hardware and one bounded customer-line path with human verification. It covers camera, barcode, local decision, persistence, offline operation, synchronization, central history, and review, but it is not final production acceptance.</p>
+<p>一个月的目标可以在选定的边缘硬件上运行受控基线，并通过人工验证运行一条有界的客户线路径。它涵盖了摄像头、条形码、本地决策、持久性、离线操作、同步、中央历史记录和审核，但不是最终的生产验收。</p>
 <h3 id="2623-production-acceptance">26.2.3 生产验收<a class="headerlink" href="#2623-production-acceptance" title="Permanent link">&para;</a></h3>
-<p>Production acceptance adds representative unseen data, agreed metric targets, resilience and long-running evidence, operational/security readiness, training, support ownership, and signed approval of residual risks.</p>
+<p>生产验收增加了代表性的看不见的数据、商定的指标目标、弹性和长期运行的证据、操作/安全准备、培训、支持所有权以及剩余风险的签署批准。</p>
 <h3 id="2624-out-of-scope-unless-added">26.2.4 超出范围，除非添加<a class="headerlink" href="#2624-out-of-scope-unless-added" title="Permanent link">&para;</a></h3>
-<p>Unvalidated product types, camera angles/locations, lighting regimes, tiny components, PLC/MES behavior, and throughput outside the tested envelope are not implicitly accepted.</p>
+<p>未经验证的产品类型、摄像机角度/位置、照明方式、微小组件、PLC/MES 行为以及测试范围之外的吞吐量不会被默认接受。</p>
 <h2 id="263-acceptance-baseline-and-target-agreement">26.3 验收基线和目标协议<a class="headerlink" href="#263-acceptance-baseline-and-target-agreement" title="Permanent link">&para;</a></h2>
-<p>The supplier and customer first lock the candidate application, model, rule, product configuration, camera configuration, and hardware. They then execute a baseline on representative, previously unused customer data. Based on measured sample counts, class distribution, confidence intervals, operational consequences, and review capacity, both parties record target values and decision rules in an acceptance protocol.</p>
-<p>The protocol must define:</p>
+<p>供应商和客户首先锁定候选应用、型号、规则、产品配置、相机配置和硬件。然后，他们对具有代表性的、以前未使用的客户数据执行基线。根据测量的样本数、类别分布、置信区间、操作结果和审核能力，双方在验收协议中记录目标值和决策规则。</p>
+<p>协议必须定义：</p>
 <ul>
-<li>Primary NG recall target and treatment of <code>UNCERTAIN</code> if adopted.</li>
-<li>Allowed false-negative findings and escalation/retest policy.</li>
-<li>False-positive/manual-review expectations as secondary operational metrics.</li>
-<li>Per-product and per-component minimum evidence and pass rules.</li>
-<li>Product-detection, ROI, barcode, latency, throughput, upload, and recovery targets.</li>
-<li>Statistical reporting method and handling of inconclusive ground truth.</li>
-<li>Conditions that trigger remediation, partial acceptance, restricted scope, or rejection.</li>
+<li>主要NG召回目标和<code>UNCERTAIN</code>的处理（如果采用）。</li>
+<li>允许假阴性结果和升级/重新测试政策。</li>
+<li>误报/手动审核期望作为次要运营指标。</li>
+<li>每个产品和每个组件的最低证据和通过规则。</li>
+<li>产品检测、投资回报率、条形码、延迟、吞吐量、上传和恢复目标。</li>
+<li>统计报告方法和不确定的基本事实的处理。</li>
+<li>触发补救、部分接受、限制范围或拒绝的条件。</li>
 </ul>
-<p>No value is inserted until the baseline and customer risk decision exist. A target applies only to the tested domain and release.</p>
+<p>在基线和客户风险决策存在之前，不会插入任何值。目标仅适用于测试的域和版本。</p>
 <h2 id="264-dataset-independence-and-governance">26.4 数据集独立性和治理<a class="headerlink" href="#264-dataset-independence-and-governance" title="Permanent link">&para;</a></h2>
-<p>Acceptance items are not used to train, tune thresholds, choose checkpoints, or select rules before the acceptance run. They are grouped by physical product, production batch, capture session/date, and scenario so adjacent video frames cannot leak across development and acceptance.</p>
-<p>The acceptance manifest records stable item/product identifiers, product type, expected component state, barcode ground truth, scenario, capture conditions, source group, adjudication status, and checksums. Access is restricted. If acceptance data is later approved for training, it leaves the locked acceptance set and a new independent set is required for the next acceptance claim.</p>
-<p>Ground truth is established by authorized customer product experts. Ambiguous cases are adjudicated or reported as inconclusive; they are not silently counted in the favorable class.</p>
+<p>验收项目不用于在验收运行之前进行训练、调整阈值、选择检查点或选择规则。它们按物理产品、生产批次、捕获会话/日期和场景进行分组，因此相邻的视频帧不会在开发和验收过程中泄漏。</p>
+<p>验收清单记录稳定的项目/产品标识符、产品类型、预期组件状态、条形码基本事实、场景、捕获条件、源组、裁决状态和校验和。访问受到限制。如果验收数据后来被批准用于训练，它将留下锁定的验收集，并且下一个验收声明需要一个新的独立集。</p>
+<p>真实情况由授权的客户产品专家建立。模棱两可的案件被裁定或报告为无定论；他们并没有被默默地算在有利的阶层中。</p>
 <h2 id="265-required-test-matrix">26.5 所需的测试矩阵<a class="headerlink" href="#265-required-test-matrix" title="Permanent link">&para;</a></h2>
-<p>Each applicable product type is tested separately and in the mixed operational flow.</p>
+<p>每种适用的产品类型均在混合操作流程中单独进行测试。</p>
 <table>
 <thead>
 <tr>
@@ -3499,7 +3499,7 @@
 <li>审阅者结果，其中人工验证是程序的一部分。</li>
 </ul>
 <p>证据是不可变的或受校验和保护，并通过检查标识符链接。</p>
-<h2 id="267-metrics-and-reporting">26.7 Metrics and Reporting<a class="headerlink" href="#267-metrics-and-reporting" title="Permanent link">&para;</a></h2>
+<h2 id="267-metrics-and-reporting">26.7 指标和报告<a class="headerlink" href="#267-metrics-and-reporting" title="Permanent link">&para;</a></h2>
 <p>首先报告 NG 召回率和假阴性率，然后报告假阳性率、每个组件召回率、每个产品召回率、产品检测成功率、ROI 生成成功率、条码读取成功率、平均/P95 延迟、吞吐量、上传延迟、审核率和纠正率。包括分子、分母、排除/不确定计数、有意义的置信区间以及按发布版本进行细分。</p>
 <p>整体准确性本身并不能作为验收指标。结果必须将自然发生的 NG 产品与分阶段或合成场景区分开来，并揭示任何覆盖范围差距。</p>
 <h2 id="268-execution-procedure">26.8 执行流程<a class="headerlink" href="#268-execution-procedure" title="Permanent link">&para;</a></h2>
@@ -3516,7 +3516,7 @@
 <li>记录批准、限制性批准、补救/重新测试或带有签名和残余风险的拒绝。</li>
 </ol>
 <p>如果发现释放阻塞问题，请保留运行。修复会创建新的候选版本并进行受控重新运行；历史的失败不会被覆盖。</p>
-<h2 id="269-operational-acceptance-checklist">26.9 Operational Acceptance Checklist<a class="headerlink" href="#269-operational-acceptance-checklist" title="Permanent link">&para;</a></h2>
+<h2 id="269-operational-acceptance-checklist">26.9 运行验收检查表<a class="headerlink" href="#269-operational-acceptance-checklist" title="Permanent link">&para;</a></h2>
 <ul>
 <li>在代表性硬件上演示安装和回滚。</li>
 <li>安全地执行摄像机断开连接、中央/网络中断、磁盘压力、重新启动和断电程序。</li>

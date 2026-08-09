@@ -702,7 +702,7 @@
   <a href="#9-security-and-source-distribution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. 安全性和源代码分发
+        9. Security and Source Distribution
       
     </span>
   </a>
@@ -736,7 +736,7 @@
   <a href="#102-one-month-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.2 一个月目标
+        10.2 One-Month Target
       
     </span>
   </a>
@@ -785,7 +785,7 @@
   <a href="#12-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        12. 开放问题和需要验证
+        12. Open Questions and Validation Required
       
     </span>
   </a>
@@ -2877,7 +2877,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3345,7 +3345,7 @@
   <a href="#9-security-and-source-distribution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. 安全性和源代码分发
+        9. Security and Source Distribution
       
     </span>
   </a>
@@ -3379,7 +3379,7 @@
   <a href="#102-one-month-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.2 一个月目标
+        10.2 One-Month Target
       
     </span>
   </a>
@@ -3428,7 +3428,7 @@
   <a href="#12-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        12. 开放问题和需要验证
+        12. Open Questions and Validation Required
       
     </span>
   </a>
@@ -3462,13 +3462,13 @@
 <h2 id="2-system-context">2. 系统上下文<a class="headerlink" href="#2-system-context" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
     Product[实物产品] --&gt;|通过检查区域| Edge[AssemblyVision 边缘客户端]
-    Camera[工业相机和可选的扫描仪或传感器] --&gt;|框架和事件| Edge
+    Camera[工业相机和可选的扫描仪或传感器] --&gt;|frames and events| Edge
     Operator[线路操作员] &lt;--&gt;|本地状态和控制| Edge
     Edge --&gt;|通过批准的集成输出 OK 或 NG| Line[外线流程]
     Edge &lt;--&gt;|延迟元数据媒体配置和运行状况| Central[AssemblyVision 中央服务器]
     Reviewer[质量审核员] &lt;--&gt;|审查和更正| Central
     Admin[系统管理员] &lt;--&gt;|设备用户规则模型和报告| Central
-    Vision[视觉工程师] --&gt;|批准的舱单和包裹| Central</code></pre>
+    Vision[视觉工程师] --&gt;|approved manifests and packages| Central</code></pre>
 <p>外线工艺以边界显示；确切的机制以及 AssemblyVision 是否驱动设备尚未确定。中央服务器从不同步参与检查决策。</p>
 <h2 id="3-logical-architecture">3. 逻辑架构<a class="headerlink" href="#3-logical-architecture" title="Permanent link">&para;</a></h2>
 <h3 id="31-edge-decision-plane">3.1 边缘决策平面<a class="headerlink" href="#31-edge-decision-plane" title="Permanent link">&para;</a></h3>
@@ -3497,7 +3497,7 @@
         end
     end
 
-    subgraph CentralSite[待选择的中央托管位置]
+    subgraph CentralSite[Central hosting location to be selected]
         ProxyC[Nginx 或入口]
         WebC[Vue 管理 Web 资产]
         ApiC[FastAPI中央API]
@@ -3632,13 +3632,13 @@
 <li>边缘在可能的情况下使用本地单调时间进行持续时间/窗口排序，并记录挂钟和中央接收时间以进行可追溯。</li>
 <li>存储压力、不兼容的包、相机故障和未解析的身份使系统降级/故障并防止不合理的<code>OK</code>。</li>
 </ul>
-<h2 id="9-security-and-source-distribution">9. 安全性和源代码分发<a class="headerlink" href="#9-security-and-source-distribution" title="Permanent link">&para;</a></h2>
+<h2 id="9-security-and-source-distribution">9. Security and Source Distribution<a class="headerlink" href="#9-security-and-source-distribution" title="Permanent link">&para;</a></h2>
 <p>中央 API 需要经过身份验证、授权和加密的传输。设备凭证必须是唯一且可替换的；图像中没有嵌入长期的秘密。应根据批准的本地威胁模型来保护边缘管理控制。审核记录涵盖配置、模型/规则激活、审查、用户/角色更改以及所需的证据访问。</p>
 <p>客户端映像使用多阶段构建、构建的 Web 资产、非根运行时、显式卷和只读文件系统（如果可行）。在可行的情况下，Python 可以作为编译后的 <code>.pyc</code> 进行分发，而无需原始 <code>.py</code>，但 <code>.pyc</code> 和 Docker 不会阻止高级逆向工程。公认的目标是避免随意浏览源代码；未部署 Git 存储库、数据集、笔记本和实验配置。</p>
 <h2 id="10-delivery-evolution">10. 交付的演变<a class="headerlink" href="#10-delivery-evolution" title="Permanent link">&para;</a></h2>
 <h3 id="101-static-train-and-inspect-mvp">10.1 静态训练和检查 MVP<a class="headerlink" href="#101-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
 <p>使用仅限开发人员的培训 CLI 从 X-AnyLabeling YOLO 标签生成产品和组件模型工件。进程内边缘 CLI 使用这些工件来检查文件夹输入并写入证据，同时保留未来的架构和版本字段。训练代码独立于边缘运行时，并且永远不会由边缘运行时导入。</p>
-<h3 id="102-one-month-target">10.2 一个月目标<a class="headerlink" href="#102-one-month-target" title="Permanent link">&para;</a></h3>
+<h3 id="102-one-month-target">10.2 One-Month Target<a class="headerlink" href="#102-one-month-target" title="Permanent link">&para;</a></h3>
 <p>在有界任务中运行捕获和决策工作，可以选择在监督推理子流程中运行，因此 UI/API 负载在不提前添加第二个边缘部署单元的情况下无法阻止捕获。添加硬件适配器、产品窗口、SQLite/媒体卷、队列调度程序、本地 Web 资产、中央摄取/历史记录和初始管理。使用 Compose 进行部署并练习中断并重新启动恢复。</p>
 <h3 id="103-production-target">10.3 生产目标<a class="headerlink" href="#103-production-target" title="Permanent link">&para;</a></h3>
 <p>强化凭证、审计、包升级/回滚、备份、保留、介质完整性、可观察性、警报、支持程序、模式迁移、浸泡/故障测试和受控部署。接受门是证据驱动的。</p>
@@ -3652,7 +3652,7 @@
 <li>模型运行时间可以满足所选硬件上观察到的生产线时序；这必须进行基准测试。</li>
 <li>可以针对重复和混合框架情况验证一种产品窗口机制。</li>
 </ul>
-<h2 id="12-open-questions-and-validation-required">12. 开放问题和需要验证<a class="headerlink" href="#12-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="12-open-questions-and-validation-required">12. Open Questions and Validation Required<a class="headerlink" href="#12-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ol>
 <li>硬件、操作系统、加速器、网络路由和中央托管限制是什么？</li>
 <li>什么事件打开/关闭检查窗口，以及如何物理处理重复/多个产品？</li>

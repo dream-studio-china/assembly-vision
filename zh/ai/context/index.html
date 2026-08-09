@@ -2607,7 +2607,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3093,6 +3093,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.6 持久上传发件箱和调度程序（PR #17，ADR-005）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3289,6 +3300,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.6 持久上传发件箱和调度程序（PR #17，ADR-005）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3352,20 +3374,25 @@
   更新。只读仪表板视图通过 HTTP 显示真实的 CLI 结果
   客户端，而操作员工作流操作保留在模拟客户端上。
   PR #12（开发 -&gt; 主要）通过验收测试结束了 AUDIT-001 的调查结果
-  （2026年8月9日合并）；参见第 8.4 节。 PR #14 (<code>feat/camera-frame-sources</code>,
-  open) 添加相机帧源、多实例 <code>serve</code> 和门控网络
-  开发测试工具（ADR-013/014）；参见第 8.5 节。</li>
+  （2026年8月9日合并）；参见第 8.4 节。 PR #14 添加了相机帧源，
+  多实例 <code>serve</code> 和门控 Web 开发测试工具 (ADR-013/014)；
+  PR #15/#16 合并了产品窗口/时间聚合里程碑
+  （ADR-010）与安全生产；和 PR #17 合并了持久上传
+  发件箱和调度程序（ADR-005）；参见第 8.5/8.6 节。下一个里程碑
+  完成边缘生产候选：可观测性 (E1)、保留性和
+  磁盘安全 (E2)、上传弹性 (E3)、运行时/WebSocket (E4)、
+  部署和安全（E5）以及验收（E6）；中央服务器是
+  在这些边缘门通过之前，不会实施并保持在范围之外。</li>
 </ul>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
 <li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。 PR #3、#6、
-  #8、#9、#10、#11、#12（以及文档 PR #13）合并到 <code>main</code>； PR #12 已合并
-  于 2026 年 8 月 9 日完成 AUDIT-001 关闭。公关 #14
-  (<code>feat/camera-frame-sources</code>, open) 携带相机帧源，
-  多实例服务、Web 开发测试工具 (ADR-013/014) 以及
-  产品窗口/时间聚合里程碑（ADR-010）。下一个
-  里程碑是上传调度程序+权威持久性（AUDIT-001
-  4.4）并收集真实的客户数据。</li>
+  #8、#9、#10、#11、#12、#14（相机/多实例/开发工具）、
+  #15/#16（时间聚合+生产安全）和#17（持久上传）
+  发件箱/调度程序，ADR-005) 合并到 <code>main</code>。下一个里程碑是
+  边缘生产-候选完成（E1-E6）；中央服务器不是
+  尚未实施，并且有意超出范围，直到这些边缘门
+  通过。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
   吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
@@ -3475,42 +3502,42 @@
 </ul>
 <h2 id="6-bilingual-mkdocs-english-chinese">6.双语MkDocs（英文+中文）<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Master config <code>mkdocs.yml</code> is the single source of truth (Material theme, Mermaid rendering via
-  <code>pymdownx.superfences</code> custom fence, <code>extra.alternate</code> language switcher).</li>
-<li><code>scripts/build-docs.sh</code> pipeline: <code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
-  <code>generate-mkdocs-configs.py</code> (produces mkdocs-en.yml + mkdocs-zh.yml) -&gt; build site/ and site/zh/.</li>
-<li>Translation uses <code>deep-translator</code> GoogleTranslator (free, no API key). Rate-limited; a full
-  translation takes ~15-30 minutes. Single-file mode:
-  <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>. On any API failure the
-  original English chunk is kept.</li>
-<li>All content is translated, including <code>research/</code> and Mermaid diagram labels. Mermaid syntax is
-  preserved; only node labels, edge text, subgraph titles, sequence messages, and state/ER labels
-  are translated. <code>research/</code> no longer has a special copy step (removed from build-docs.sh).</li>
-<li>Translated headings keep their original English slug as an explicit <code>{#slug}</code> attribute so
-  cross-document anchors (e.g. <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>) work in Chinese too.</li>
-<li>Known machine-translation quality issues (not script bugs): <code>frames</code> -&gt; 框架 (should be 帧),
-  <code>volume</code> -&gt; 音量 (should be 存储卷), <code>poll</code> -&gt; 民意调查 (should be 轮询). Review before publishing.</li>
-<li><code>docs-zh/</code>, <code>site/</code>, and the generated configs are build artifacts, not committed.</li>
+<li>主配置<code>mkdocs.yml</code>是唯一的事实来源（材质主题，美人鱼渲染通过
+  <code>pymdownx.superfences</code> 自定义围栏，<code>extra.alternate</code> 语言切换器）。</li>
+<li><code>scripts/build-docs.sh</code> 管道：<code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
+  <code>generate-mkdocs-configs.py</code> （生成 mkdocs-en.yml + mkdocs-zh.yml）-&gt; 构建 site/ 和 site/zh/。</li>
+<li>翻译使用<code>deep-translator</code> GoogleTranslator（免费，无API密钥）。限速；一个完整的
+  翻译大约需要 15-30 分钟。单文件模式：
+  <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>。任何 API 失败时
+  保留原始英文块。</li>
+<li>所有内容均已翻译，包括<code>research/</code>和美人鱼图标签。美人鱼语法是
+  保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
+  被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
+<li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
+  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
+<li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
+  <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
+<li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
 </ul>
 <h2 id="7-conventions-agentsmd">7.约定（AGENTS.md）<a class="headerlink" href="#7-conventions-agentsmd" title="Permanent link">&para;</a></h2>
 <ul>
-<li>English is the base language; all docs/comments/commits/READMEs MUST be English.</li>
-<li>Conventional Commits: <code>feat:</code>, <code>fix:</code>, <code>docs:</code>, <code>chore:</code>, <code>refactor:</code>.</li>
-<li>Branch naming: <code>feat/xxx</code>, <code>fix/xxx</code>, <code>docs/xxx</code>.</li>
-<li>Do NOT commit unless explicitly asked; do NOT push or force-push without explicit approval.</li>
-<li>No secrets committed. Use typed Pydantic models and TypeScript interfaces.</li>
-<li>Engineering rules: preserve edge-first architecture; keep AI inference / rule evaluation /
-  persistence / Web APIs separated; do not put YOLO logic in FastAPI route handlers; do not put
-  business rules in the AI model; edge must not depend on the central server; run tests + Ruff +
-  MyPy; never claim tests passed without executing; never claim 100% accuracy.</li>
+<li>英语为基础语言；所有文档/评论/提交/自述文件必须是英文。</li>
+<li>常规提交：<code>feat:</code>、<code>fix:</code>、<code>docs:</code>、<code>chore:</code>、<code>refactor:</code>。</li>
+<li>分支命名：<code>feat/xxx</code>、<code>fix/xxx</code>、<code>docs/xxx</code>。</li>
+<li>除非明确要求，否则请勿承诺；未经明确批准，请勿推动或强行推动。</li>
+<li>没有泄露任何秘密。使用类型化 Pydantic 模型和 TypeScript 接口。</li>
+<li>工程规则：保留边缘优先架构；保留AI推理/规则评估/
+  持久化/Web API 分离；不要将 YOLO 逻辑放入 FastAPI 路由处理程序中；不要放
+  AI模型中的业务规则；边缘不能依赖于中央服务器；运行测试 + Ruff +
+  我的Py；切勿在未执行的情况下声称测试已通过；永远不要声称 100% 准确。</li>
 </ul>
 <h2 id="8-latest-session-decisions">8. 最新会议决定<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 12 个 ADR +
   附录）来自<a href="../../source-brief/">docs/source-brief.md</a>（以前的<code>docs/doc-task.md</code>）。</li>
-<li>通过互联网研究创建了<code>docs/research/</code>（3份报告）。</li>
+<li>通过互联网研究创建<code>docs/research/</code>（3份报告）。</li>
 <li>构建了具有自动翻译功能的双语MkDocs，改编自<code>crud-skeleton</code>项目。</li>
-<li>添加了对 <code>translate-docs.py</code> 的美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
+<li>向<code>translate-docs.py</code>添加了美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
 <li><code>UNCERTAIN</code>决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
 <li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（一个单独的
   边缘工作者/API 分割被推迟，直到测量证明其合理为止）。</li>
@@ -3578,7 +3605,7 @@
   或坐标、越界框、不良张量形状）转换为
   <code>INFERENCE_ERROR</code> 在适配器边界，而不是转义或错误索引。</li>
 <li>配置：阈值必须是有限的，并且在<code>[0, 1]</code>中，布尔值是严格的，
-  <code>min_area_pixels</code> 必须是正整数，未知的键将被拒绝
+  <code>min_area_pixels</code>必须是正整数，未知的键将被拒绝
   每个部分。</li>
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
   盒子是致命的；丢失的标签文件无法验证，除非已记录
@@ -3586,7 +3613,7 @@
   底片；成分制备导致 ROI 作物为负值；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
 <li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code> 和
-  <code>pytest</code> 现在覆盖整个存储库（边缘、包、训练、脚本
+  <code>pytest</code> 现在覆盖整个存储库（边缘、包、培训、脚本
   测试）通过 Makefile 和新的 <code>.github/workflows/ci.yml</code>。</li>
 </ul>
 <h2 id="82-edge-dashboard-and-operator-prototype-pr-6">8.2 边缘仪表板和操作员原型（PR #6）<a class="headerlink" href="#82-edge-dashboard-and-operator-prototype-pr-6" title="Permanent link">&para;</a></h2>
@@ -3622,10 +3649,10 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
   部分；自述文件更新了新功能、项目结构和路线图。</li>
 </ul>
 <h2 id="83-edge-backend-layer-m1-pr-8">8.3 边缘后端层（M1，PR #8）<a class="headerlink" href="#83-edge-backend-layer-m1-pr-8" title="Permanent link">&para;</a></h2>
-<p>The FastAPI + SQLite backend layer on <code>dev</code> gives read-only dashboard views real
-CLI inspection results. PR #8 (dev -&gt; main) carries this milestone; the
-blocking findings (F1-F14) and M1 conditional items (C1-C4) in
-<code>docs/reviews/PR-008-review.md</code> are resolved and validated on <code>dev</code>.</p>
+<p><code>dev</code> 上的 FastAPI + SQLite 后端层提供真实的只读仪表板视图
+CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
+阻塞结果 (F1-F14) 和 M1 条件项 (C1-C4)
+<code>docs/reviews/PR-008-review.md</code> 于 <code>dev</code> 得到解决和验证。</p>
 <ul>
 <li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
   将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
@@ -3697,7 +3724,7 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   数据集相对 <code>data.yaml</code> 路径，<code>av-train</code> 解析绝对路径
   Ultralytics 项目目录并断言 <code>best.pt</code> 存在。</li>
 <li><strong>M1-M3</strong>：协调跳过 NUL 字节媒体路径；规则身份
-  注册解决并发竞赛而不泄漏<code>IntegrityError</code>；
+  注册可以解决并发竞赛而不会泄漏<code>IntegrityError</code>；
   首次打开的 SQLite 迁移是跨线程和进程序列化的。</li>
 <li><strong>规则/清单故障安全</strong>：规则引擎拒绝非有限几何并且
   现有证据不完整；清单验证强制执行运行时、工件
@@ -3705,9 +3732,9 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
 <li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
   覆盖）；日志消息清理绝对路径；失败尝试节流
   <code>Retry-After</code>;有界会话；光标绑定过滤指纹
-  (<code>400 INVALID_CURSOR</code>);始终清除介质 <code>410</code>；非 ASCII 承载 <code>401</code>；
+  (<code>400 INVALID_CURSOR</code>);始终清除介质<code>410</code>；非 ASCII 承载 <code>401</code>；
   <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
-<li><strong>前端强化</strong>：生产构建失败，除非 <code>VITE_API_MODE=http</code>；
+<li><strong>前端强化</strong>：生产构建失败，除非<code>VITE_API_MODE=http</code>；
   媒体 blob URL 拒绝外国来源； HTTP 模式删除不支持的行
   过滤器； WebSocket 间隙已发出信号；嵌套记录经过验证；的
   未路由的重复实时视图已被删除。</li>
@@ -3715,7 +3742,7 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   覆盖范围已修正；训练运行的再现性元数据记录在旁边
   体现；设计 14 M1 边界、原因代码、适配器、运行手册和
   快速启动对齐。</li>
-<li><strong>公关审查后续行动 (<code>c634ca5</code>)</strong>：保留记录的同级
+<li><strong>PR 审查后续 (<code>c634ca5</code>)</strong>：保留记录的同级
   包根包含下的 <code>models/manifests</code> + <code>models/weights</code> 布局，
   要求保留测试样品中的独立产品盒，重新验证
   在每个打开的数据库上进行迁移，并将 <code>Retry-After</code> 添加到 auth
@@ -3725,9 +3752,8 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   上传调度程序里程碑。</li>
 </ul>
 <h2 id="85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14">8.5 相机帧源、多实例边缘和 Web 开发测试工具（ADR-013/014、PR #14）<a class="headerlink" href="#85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14" title="Permanent link">&para;</a></h2>
-<p>在 <code>feat/camera-frame-sources</code> 上实现并由 PR #14 携带（开放；所有
-大门绿色）。审查驱动的强化过程记录在
-<code>docs/reviews/PR-014-review.md</code>；结果 F1-F14 通过回归得到解决
+<p>通过 PR #14 合并（dev -&gt; main）。审查驱动的强化过程记录在
+<code>docs/reviews/PR-014-review.md</code>;结果 F1-F14 通过回归得到解决
 测试。设计：</p>
 <ul>
 <li><strong><code>vision-core</code></strong>中的<code>FrameSource</code>协议（设计07§7.3）：<code>open /
@@ -3754,7 +3780,7 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   每个实例<code>camera_state</code>； WebSocket 运行时通道稍后取代
   预览。</li>
 <li><strong>Web 开发测试工具 (ADR-014)</strong>：门控 <code>/api/v1/dev/inspect-frame</code> 和
-  <code>/api/v1/dev/inspect-video</code>（404，除非<code>serve --enable-web-test</code>）让
+  <code>/api/v1/dev/inspect-video</code>（404除非<code>serve --enable-web-test</code>）让
   浏览器拍照（移动操作系统相机）、上传图像或上传短片
   录像并做出检查决定； <code>/dev</code> 仪表板页面将
   带有日志选项卡和客户端产品 bbox 覆盖层的工具。图像测试
@@ -3781,7 +3807,7 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
 <li><strong>仍处于里程碑</strong>：供应商 SDK 适配器、每实例模型
   权重共享（阶段 3），将 REST 预览折叠到 WebSocket 中
   通道和硬件触发/条码相关源
-  <code>window_strategy: identity</code>接缝（仅限时间的后备仍然是
+  <code>window_strategy: identity</code>接缝（仅时间回退仍然是
   开发模式，而不是生产产品边界）。</li>
 <li><strong>审查强化 (PR-014)</strong>：结果 F1-F14 通过回归结束
   测试：无静默帧丢失（有界队列+显式溢出），暂停
@@ -3792,79 +3818,87 @@ blocking findings (F1-F14) and M1 conditional items (C1-C4) in
   具有二进制主体和问题响应的规范业务/内部枚举
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
-<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code> 因此严格的 mypy 门会通过
-  回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
-  （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
+<p><code>assemblyvision_edge</code> now ships <code>py.typed</code> so the strict mypy gate passes
+  repo-wide; the current suite is 635 Python tests, 91 TypeScript unit tests
+  (api-client 45, ui 13, edge-web 30, desktop 3), and 12 Playwright e2e.</p>
+<h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
+<p>Merged via PR #17 (dev -&gt; main, 10 commits). Implements the persistent upload
+queue required by ADR-005 and closes the deferred AUDIT-001 4.4 persistence
+item. The review-driven hardening pass is recorded in
+<code>docs/reviews/PR-017-review.md</code>; findings F1-F8 plus a post-resolution pass
+are resolved with regression tests:</p>
+<ul>
+<li><strong>Atomic projection and outbox</strong>: <code>persist_inspection_and_enqueue_uploads</code>
+  commits the immutable inspection, media, evidence, and one <code>INSPECTION</code> task
+  plus one <code>MEDIA</code> task per artifact in a single SQLite transaction; startup
+  reconciliation repairs stranded <code>LOCAL_ONLY</code> records.</li>
+<li><strong>Ordered, leased worker</strong>: <code>UploadScheduler</code> claims due tasks in an
+  immediate transaction; <code>MEDIA</code> tasks become due only after their inspection
+  task has a verified receipt; each claim carries a per-task fencing token
+  (<code>lease_owner</code>), stale <code>IN_PROGRESS</code> tasks are reclaimed after lease expiry,
+  and terminal updates require the matching token.</li>
+<li><strong>Failure classification</strong>: transport errors and <code>408/429/5xx</code> schedule
+  full-jitter backoff honoring <code>Retry-After</code> from the response time; missing/
+  corrupt evidence, checksum/size mismatch, and server conflicts become
+  permanent failures while local evidence is preserved.</li>
+<li><strong>Verified receipts</strong>: a 2xx is success only when the bounded typed receipt
+  echoes idempotency key, object, kind, size, and checksum; media receipts
+  require a central object ID; receipts are persisted and inspection
+  synchronization is <code>QUEUED</code>/<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code> from all tasks.</li>
+<li><strong>Configuration and security</strong>: <code>UploadSettings</code> + <code>AV_EDGE_UPLOAD_*</code> wiring
+  through <code>serve</code> (endpoint or local sink, separate credential, tunables);
+  central endpoints require HTTPS (development HTTP loopback-only), and the
+  viewer <code>api_token</code> is never reused for uploads.</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>FastAPI + SQLite 后端层（<code>assemblyvision serve</code>，第 8.3 节）是
-  合并； <strong>上传队列调度程序</strong>（真实的 <code>upload_tasks</code> 行，重试
-  退避、幂等性）和 <strong>WebSocket 运行时通道</strong> 是下一个
-  后端差距。只读仪表板视图已通过 HTTP 路由
-  客户端（<code>VITE_API_MODE=http</code>）。</li>
-<li>AUDIT-001 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) <strong>已关闭</strong>：全部
-  已在 <code>dev</code>（第 8.4 节）上修复并提交的调查结果，通过以下方式合并到 <code>main</code>
-  公关#12，2026 年 8 月 9 日。唯一推迟的项目是4.4权威版
-  持久性，以上传调度程序里程碑为门控。第三阶段仍需
-  上传前决定每主机多边“共享”模型
-  调度程序、WebSocket、相机/条形码和硬件触发窗口工作；
-  ADR-013
-  通过每个实例管道部分解决它（每个实例加载其
-  自己的模型，因此权重共享仍然是一个开放的优化）。</li>
-<li>弹性文档（2026-08-09，新文档 PR）：设计 22 添加
-  加速器/GPU 故障和反复网络断开对恢复能力的影响
-  故障矩阵、设计 09 和合同 06 对齐，README 获得了
-  测试和弹性部分。</li>
-<li>PR-003后续事项全部解决（参见<code>docs/reviews/PR-003-review.md</code>）：
-  模型清单出版物现在比较完整的决策关键内容
-  （任务、类顺序、输入大小、工件、出处），Roboflow 适配器
-  严格验证每个来源标签并保留明确的背景
-  底片（没有独立产品盒的纯组件图像
-  被拒绝），默认情况下需要图像/标签配对与记录
-  <code>--allow-missing-labels</code> 选择加入，验证使用源相关示例
-  身份和数据集适应/组件准备拒绝过时的输出
-  目录并写入文件清单。组件准备现在加载
-  已验证的产品清单并精确镜像运行时一个产品
-  选择策略，在<code>exclusions.json</code>中记录不明确的样本。</li>
-<li>剩余的两个 M1 介质间隙已解决：</li>
-<li><strong>跨来源的受代币保护的 Vite 开发</strong>现在可以运行。环回
-    开发源可以使用 <code>GET</code>/<code>POST</code>/<code>OPTIONS</code> 和 <code>Authorization</code> 以及
-    <code>Content-Type</code> 标头，仪表板将查看者令牌保留在内存中
-    （从未持久化）当它跨域运行时，将其附加到 API 和媒体
-    请求；同源部署保持 HttpOnly-cookie 流。</li>
-<li><strong>CLI 规则身份注册表是持久的</strong>：<code>assemblyvision inspect</code>/<code>verify</code>
-    现在在同一个 SQLite <code>rule_identities</code> 中注册加载的规则标识
-    <code>serve</code> 使用 (<code>&lt;output&gt;/edge.sqlite3</code>) 的注册表，因此已发布
-    <code>(rule_id, rule_version)</code> 在 CLI 调用中保持不变，并且
-    服务重新启动。</li>
-<li>合并M1层后剩余的路线图范围：上传队列调度程序，
-  WebSocket 通道、相机/条形码适配器、硬件触发窗口
-  边界、Docker 打包和权威的 SQLite 持久化/发件箱。</li>
-<li>一个月的基线仍然需要真实的客户数据：收集和
-  使用 X-AnyLabeling 进行注释
+<li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）。的
+  剩余的 Edge 生产候选工作被跟踪为 E1-E6：</li>
+<li><strong>E1 可观测性</strong>：修复 Alembic <code>fileConfig</code> 的副作用
+    迁移后禁用 <code>assemblyvision.*</code> 记录器（因此 <code>/api/v1/logs</code>
+    捕获应用程序记录），然后添加调度程序运行状况、队列
+    字节/最旧年龄、失败率、上次成功联系和警报。</li>
+<li><strong>E2 保留和磁盘安全</strong>：具有进程间租赁的清理工作人员，
+    仅在验证收据+保留、磁盘压力后删除
+    警告/严重/停止策略，启动完整性扫描。</li>
+<li><strong>E3上传弹性</strong>：带宽限制、断路器、
+    受控手动重试、长时间断电排水测试、可恢复大介质
+    客户端（仅限中央协议合约）。</li>
+<li><strong>E4 运行时</strong>：WebSocket 通道、与硬件无关的触发器/条形码/
+    具有模拟硬件验证、多实例资源的身份接缝
+    分享。</li>
+<li><strong>E5 部署和安全</strong>：Docker 打包、秘密/TLS 配置、
+    备份/恢复、操作手册。</li>
+<li><strong>E6 验收</strong>：弹性矩阵、浸泡、保留模型验证、
+    包含硬件先决条件的边缘验收报告。</li>
+<li><strong>WebSocket 运行时通道</strong> 仍然是主要的后端差距（取代了
+  轮询预览）。</li>
+<li>AUDIT-001 <strong>已关闭</strong>，包括延迟的 4.4 权威持久性
+  项目（现在由 PR #17 交付）。第 3 阶段每主机多边缘“共享”模型
+  权重共享仍然是一个开放的优化（ADR-013 每个实例管道
+  加载自己的模型）。</li>
+<li>基线仍然需要真实的客户数据：收集和注释
+  与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
   <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
   <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
   图像优先和分割优先布局）到
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>
-<li>相机采集里程碑（ADR-013/014）由<strong>实施</strong>并由
-  PR #14（开放），包括产品窗口/时间聚合里程碑
-  （ADR-010）。剩下的里程碑：供应商 SDK 相机适配器，
-  每个实例模型权重共享，将 REST 预览折叠到
-  WebSocket 运行时通道和硬件触发/条形码窗口边界
-  取代仅时间的后备。</li>
-<li>相机/硬件集成（供应商 SDK）、条形码解码、硬件触发
-  产品窗口边界、权威的 SQLite 持久性（当前
-  索引是可重建的读取投影），上传队列调度程序，以及
-  Docker 部署仍为路线图 25.5 的一个月范围；只有
-  供应商 SDK、条形码和站点耦合部分在硬件上被阻止，并且
-  客户现场决策。</li>
-<li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：</li>
+<li>相机采集 (ADR-013/014) 被合并 (PR #14)，包括时间
+  聚合（PR #15/#16）。其余与硬件相关的项目：供应商 SDK
+  相机适配器、条形码解码和硬件触发产品窗口
+  边界来取代仅时间回退（这是一种开发模式，
+  不是生产产品边界）。</li>
+<li>中央服务器（摄取 API、PostgreSQL 模型、对象存储、
+  幂等收据，人工审核）<strong>未实现</strong>；只有
+  存在边缘侧请求/接收合同。中央工作在E1-E6之后开始
+  通过并且边缘到中心合约被冻结。</li>
+<li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
+  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
+  可靠性、中央服务器位置、接受阈值。</li>
+<li><code>.obsidian/</code> 根据选择保持不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
-<p>相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
-  可靠性、中央服务器位置、接受阈值。
-- <code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</p>
 
 
 
