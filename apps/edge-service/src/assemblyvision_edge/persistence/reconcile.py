@@ -11,6 +11,7 @@ import hashlib
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from uuid import uuid4
 
 from assemblyvision_domain.models import InspectionRecord
 
@@ -89,8 +90,12 @@ def quarantine_bundle(output_root: Path, directory: Path, reason: str) -> bool:
         return False
     quarantine_dir = output_root / "quarantine"
     quarantine_dir.mkdir(exist_ok=True)
+    target = quarantine_dir / directory.name
+    if target.exists():
+        # Preserve both artifacts instead of overwriting (PR-020 F10).
+        target = quarantine_dir / f"{directory.name}-{uuid4().hex[:8]}"
     try:
-        directory.rename(quarantine_dir / directory.name)
+        directory.rename(target)
     except OSError as exc:
         log.warning("cannot quarantine %s bundle %s: %s", reason, directory.name, exc)
         return False
@@ -211,6 +216,7 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
         return 0
     quarantine_stale_staging(output_root)
     imported = 0
+    valid_dirs: set[str] = set()
     for path in sorted(output_root.glob("*/inspection.json")):
         if path.parent.name.startswith((".staging", "quarantine")):
             continue
@@ -237,7 +243,20 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
             log.warning("skipping conflicting inspection %s: %s", record.inspection_id, exc)
             quarantine_bundle(output_root, path.parent, "content-conflict")
             continue
+        valid_dirs.add(path.parent.name)
         if status == "inserted":
             imported += 1
             log.info("imported inspection %s from %s", record.inspection_id, path)
+    # Orphan final bundles: any non-system subdirectory without a valid
+    # manifest is ambiguous evidence and must be quarantined (PR-020 F10).
+    # Known system roots from the storage layout (design 12.3) are excluded.
+    system_roots = {"quarantine", "db", "media", "video", "models", "rules", "logs"}
+    for directory in sorted(output_root.iterdir()):
+        if not directory.is_dir():
+            continue
+        if directory.name.startswith(".") or directory.name in system_roots:
+            continue
+        if directory.name in valid_dirs:
+            continue
+        quarantine_bundle(output_root, directory, "orphan-bundle")
     return imported
