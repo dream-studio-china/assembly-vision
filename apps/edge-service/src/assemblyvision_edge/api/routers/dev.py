@@ -165,18 +165,18 @@ def _import_projection(request: Request, record: InspectionRecord) -> None:
 
     Startup reconciliation imports bundles only once, so a persisted dev
     inspection would otherwise be invisible to history/detail until restart.
-    The published bundle remains the source of truth; this upsert mirrors the
-    per-bundle import path reconciliation uses (``upsert_inspection``) and is
-    content-hash idempotent, so restart reconciliation does not duplicate it.
-    The import is best-effort: publishing already succeeded, so a projection
-    failure is logged and the successful inspection is still returned rather
-    than falsely reporting a failed inspection.
+    The published bundle remains the source of truth; the atomic
+    persist-and-enqueue mirrors the per-bundle import path reconciliation uses
+    and is content-hash idempotent, so restart reconciliation does not
+    duplicate it. The import is best-effort: publishing already succeeded, so
+    a projection failure is logged and the successful inspection is still
+    returned rather than falsely reporting a failed inspection.
     """
     repository = getattr(request.app.state, "repository", None)
     if repository is None:
         return
     try:
-        repository.upsert_inspection(record)
+        repository.persist_inspection_and_enqueue_uploads(record)
     except RepositoryError as exc:
         log.warning(
             "inspection %s was published but the read projection could not be updated: %s",

@@ -17,6 +17,7 @@ from assemblyvision_vision.roi.roi_engine import ROIEngine
 from assemblyvision_vision.sources.folder_source import FolderSource
 
 from assemblyvision_edge import __version__
+from assemblyvision_edge.api.settings import UploadSettings
 from assemblyvision_edge.config import (
     RuleIdentityRegistry,
     load_pipeline_config,
@@ -106,6 +107,24 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Enable the gated /api/v1/dev test endpoints (frame/video "
         "inspection); disabled by default (ADR-014)",
+    )
+    serve.add_argument(
+        "--upload-base-url",
+        type=str,
+        default=None,
+        help="HTTPS central upload endpoint (overrides AV_EDGE_UPLOAD_BASE_URL)",
+    )
+    serve.add_argument(
+        "--upload-sink-dir",
+        type=Path,
+        default=None,
+        help="Local development upload sink directory (overrides AV_EDGE_UPLOAD_SINK_DIR)",
+    )
+    serve.add_argument(
+        "--upload-insecure-http",
+        action="store_true",
+        help="Development only: allow an http:// upload endpoint (design 13.8 "
+        "requires TLS in production)",
     )
     return parser
 
@@ -248,6 +267,80 @@ def _is_loopback_host(host: str) -> bool:
     return host in ("127.0.0.1", "localhost", "::1", "::")
 
 
+def _float_env(name: str, default: float) -> float:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    try:
+        return float(raw)
+    except ValueError as exc:
+        raise ConfigError(f"{name} must be a number, got {raw!r}") from exc
+
+
+def _optional_float_env(name: str) -> float | None:
+    """Return a configured float without treating zero as an omitted value."""
+    raw = os.environ.get(name)
+    if raw is None:
+        return None
+    try:
+        return float(raw)
+    except ValueError as exc:
+        raise ConfigError(f"{name} must be a number, got {raw!r}") from exc
+
+
+def _int_env(name: str, default: int) -> int:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    try:
+        return int(raw)
+    except ValueError as exc:
+        raise ConfigError(f"{name} must be an integer, got {raw!r}") from exc
+
+
+def _bool_env(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    if raw.lower() in ("1", "true", "yes", "on"):
+        return True
+    if raw.lower() in ("0", "false", "no", "off"):
+        return False
+    raise ConfigError(f"{name} must be a boolean, got {raw!r}")
+
+
+def _build_upload_settings(args: argparse.Namespace) -> UploadSettings | None:
+    """Assemble upload worker settings from CLI flags and AV_EDGE_UPLOAD_* env.
+
+    Credentials are read from ``AV_EDGE_UPLOAD_TOKEN`` only, never from process
+    arguments or committed files (design 13.8, PR-017 F6/F7). Returns ``None``
+    when no destination is configured, leaving the scheduler explicitly
+    disabled.
+    """
+    base_url = getattr(args, "upload_base_url", None) or os.environ.get("AV_EDGE_UPLOAD_BASE_URL")
+    sink_dir = getattr(args, "upload_sink_dir", None) or os.environ.get("AV_EDGE_UPLOAD_SINK_DIR")
+    if not base_url and not sink_dir:
+        return None
+    settings = UploadSettings(
+        base_url=base_url,
+        sink_dir=Path(sink_dir) if sink_dir else None,
+        token=os.environ.get("AV_EDGE_UPLOAD_TOKEN"),
+        connect_timeout_seconds=_float_env("AV_EDGE_UPLOAD_CONNECT_TIMEOUT_SECONDS", 5.0),
+        request_timeout_seconds=_float_env("AV_EDGE_UPLOAD_REQUEST_TIMEOUT_SECONDS", 30.0),
+        interval_seconds=_float_env("AV_EDGE_UPLOAD_INTERVAL_SECONDS", 1.0),
+        batch_size=_int_env("AV_EDGE_UPLOAD_BATCH_SIZE", 4),
+        lease_seconds=_int_env("AV_EDGE_UPLOAD_LEASE_SECONDS", 120),
+        base_retry_seconds=_float_env("AV_EDGE_UPLOAD_BASE_RETRY_SECONDS", 2.0),
+        maximum_retry_seconds=_float_env("AV_EDGE_UPLOAD_MAXIMUM_RETRY_SECONDS", 900.0),
+        exponent_cap=_int_env("AV_EDGE_UPLOAD_EXPONENT_CAP", 8),
+        maximum_bandwidth_mbps=_optional_float_env("AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS"),
+        allow_insecure_http=getattr(args, "upload_insecure_http", False)
+        or _bool_env("AV_EDGE_UPLOAD_INSECURE_HTTP", False),
+    )
+    settings.validate()
+    return settings
+
+
 def _validate_serve_bind(host: str, api_token: str | None, allow_dev_auth: bool) -> None:
     """Reject a non-loopback bind without authentication.
 
@@ -286,6 +379,7 @@ def _run_serve(args: argparse.Namespace) -> int:
             static_dir=args.static,
             api_token=api_token,
             enable_web_test=args.enable_web_test,
+            upload=_build_upload_settings(args),
         )
         app = create_app(settings)
         uvicorn.run(app, host=args.host, port=args.port, log_level="info")

@@ -123,7 +123,26 @@ upload_tasks = Table(
     Column("checksum_sha256", String(64), nullable=True),
     Column("attempt_count", Integer, nullable=False),
     Column("next_attempt_at", Text, nullable=True),
+    Column("lease_expires_at", Text, nullable=True),
+    Column(
+        "lease_owner",
+        String(36),
+        nullable=True,
+        comment="Unique per-claim token fencing terminal updates to the lease holder (PR-017 F3)",
+    ),
     Column("last_error_code", String(64), nullable=True),
+    Column(
+        "central_object_id",
+        String(256),
+        nullable=True,
+        comment="Central object identifier from the verified upload receipt (PR-017 F5)",
+    ),
+    Column(
+        "receipt_json",
+        Text,
+        nullable=True,
+        comment="Verified server receipt stored only after checksum/size validation (PR-017 F5)",
+    ),
     Column("created_at", Text, nullable=False),
     Column("updated_at", Text, nullable=False),
     Column("completed_at", Text, nullable=True),
@@ -131,6 +150,7 @@ upload_tasks = Table(
 
 Index("ix_upload_tasks_status", upload_tasks.c.status)
 Index("ix_upload_tasks_inspection", upload_tasks.c.inspection_id)
+Index("ix_upload_tasks_due", upload_tasks.c.status, upload_tasks.c.next_attempt_at)
 
 device_events = Table(
     "device_events",

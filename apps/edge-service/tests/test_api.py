@@ -351,7 +351,11 @@ def test_traceability_and_configuration(client: TestClient) -> None:
 
 def test_uploads_and_logs(client: TestClient) -> None:
     uploads = client.get("/api/v1/uploads").json()
-    assert uploads["items"] == []
+    # Reconcile now enqueues an outbox task per inspection and per media item
+    # (design 12.4/13.3); the worker is not draining without a configured sink.
+    assert len(uploads["items"]) == 4
+    assert {item["kind"] for item in uploads["items"]} == {"INSPECTION", "MEDIA"}
+    assert all(item["status"] == "PENDING" for item in uploads["items"])
     logs = client.get("/api/v1/logs").json()
     assert isinstance(logs["items"], list)
 
