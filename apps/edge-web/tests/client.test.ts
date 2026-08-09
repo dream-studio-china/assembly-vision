@@ -10,6 +10,8 @@ async function load() {
     isCrossOriginHttp: mod.isCrossOriginHttp,
     createViewerSession: mod.createViewerSession,
     loadMediaBlobUrl: mod.loadMediaBlobUrl,
+    getRuntimeWsUrl: mod.getRuntimeWsUrl,
+    requestRuntimeTicket: mod.requestRuntimeTicket,
     MockApiClient: api.MockApiClient,
     HttpApiClient: api.HttpApiClient,
   };
@@ -188,5 +190,62 @@ describe("token-protected cross-origin development (gap 1)", () => {
       String(url).includes("/media/"),
     );
     expect(mediaRequests).toHaveLength(0);
+  });
+});
+
+describe("runtime websocket url and ticket (PR-023 F01)", () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("maps an http origin base to the /api/v1 runtime path", async () => {
+    vi.stubEnv("VITE_API_MODE", "http");
+    vi.stubEnv("VITE_API_BASE_URL", "http://edge-host:8000");
+    const { getRuntimeWsUrl } = await load();
+    expect(getRuntimeWsUrl()).toBe("ws://edge-host:8000/api/v1/ws/runtime");
+  });
+
+  it("maps an https origin base to wss", async () => {
+    vi.stubEnv("VITE_API_MODE", "http");
+    vi.stubEnv("VITE_API_BASE_URL", "https://edge-host:8443");
+    const { getRuntimeWsUrl } = await load();
+    expect(getRuntimeWsUrl()).toBe("wss://edge-host:8443/api/v1/ws/runtime");
+  });
+
+  it("uses the page origin when no base url is configured", async () => {
+    vi.stubEnv("VITE_API_MODE", "http");
+    vi.stubEnv("VITE_API_BASE_URL", "");
+    vi.stubGlobal("window", { location: { protocol: "https:", host: "edge.test" } });
+    const { getRuntimeWsUrl } = await load();
+    expect(getRuntimeWsUrl()).toBe("wss://edge.test/api/v1/ws/runtime");
+  });
+
+  it("requests a runtime ticket with the in-memory bearer credential", async () => {
+    vi.stubEnv("VITE_API_MODE", "http");
+    vi.stubEnv("VITE_API_BASE_URL", "http://edge-host:8000");
+    vi.stubGlobal("window", { location: { origin: "http://localhost:5173" } });
+    const seen: { url: string; headers: Record<string, string> }[] = [];
+    const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      seen.push({
+        url: String(input),
+        headers: (init?.headers as Record<string, string>) ?? {},
+      });
+      if (String(input).includes("/auth/session")) return new Response(undefined, { status: 204 });
+      return new Response(JSON.stringify({ ticket: "ticket-abc", expires_at: "2026-01-01T00:00:00Z", channel: "runtime" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+    vi.stubGlobal("fetch", fetchImpl);
+
+    const { createViewerSession, requestRuntimeTicket } = await load();
+    await createViewerSession("secret-token");
+    const ticket = await requestRuntimeTicket();
+    expect(ticket).toBe("ticket-abc");
+    const ticketCall = seen.find((r) => r.url.includes("/ws/runtime/ticket"));
+    expect(ticketCall?.url).toBe("http://edge-host:8000/api/v1/ws/runtime/ticket");
+    expect(ticketCall?.headers["Authorization"]).toBe("Bearer secret-token");
   });
 });

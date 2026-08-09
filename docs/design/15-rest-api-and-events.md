@@ -39,6 +39,8 @@ In the tables, `R` means authenticated edge viewer, `O` operator, and `A` edge a
 | `GET /api/v1/camera/state` | Camera connection and capture settings, excluding secrets. | None / `CameraState` | `503 CAMERA_ADAPTER_ERROR` | Safe GET | - | R |
 | `GET /api/v1/camera/{instance_id}/preview` | Latest captured frame as a rate-limited JPEG for the configured instance (interim REST preview, ADR-013). | Path instance ID / JPEG bytes | `404 INSTANCE_NOT_FOUND`, `503 CAMERA_UNAVAILABLE` | Safe GET | - | R |
 | `POST /api/v1/camera/reconnect` | Request a supervised camera reconnect. | `{reason}` / `OperationAccepted` | `409 INSPECTION_ACTIVE`, `503 CAMERA_ADAPTER_ERROR` | `Idempotency-Key` | - | A |
+| `POST /api/v1/ws/runtime/ticket` | Issue a short-lived, single-use ticket so a cross-origin browser socket can authenticate without placing a credential in the URL. | None / `WsTicket` | `401 UNAUTHENTICATED`, `429 RATE_LIMITED` | Each call issues a new ticket | - | R |
+| `GET /api/v1/ws/runtime/stats` | Runtime event channel counters: active connections, published events by type, slow-consumer disconnects, delivery failures. | None / `RuntimeEventStats` | `401 UNAUTHENTICATED` | Safe GET | - | R |
 | `GET /api/v1/inspection/state` | Current window and pause/fault state. | None / `InspectionRuntimeState` | `503 STATE_UNAVAILABLE` | Safe GET | - | R |
 | `POST /api/v1/inspection/pause` | Stop opening new windows; finish or abort current window per safety policy. | `{reason}` / `InspectionRuntimeState` | `409 ALREADY_PAUSED`, `503 CONTROL_ERROR` | Repeated desired state succeeds | - | O |
 | `POST /api/v1/inspection/resume` | Resume after readiness checks. | `{reason}` / `InspectionRuntimeState` | `409 PRECONDITION_FAILED`, `503 CONTROL_ERROR` | Repeated desired state succeeds | - | O |
@@ -157,7 +159,7 @@ REST is authoritative for inspection details, queue state, configuration, comman
 | Edge `WS /api/v1/ws/runtime` | `device.status_changed`, `inspection.started`, `inspection.updated`, `inspection.completed`, `upload.changed`, `alert.raised`, `alert.cleared` | Best effort, ordered per connection, bounded buffer; slow clients disconnected | Apply transient preview updates; refetch resource on sequence gap |
 | Central `WS /api/v1/ws/organization` | `device.changed`, `inspection.received`, `review.changed`, `job.changed`, `configuration.assignment_changed` | Best effort after authorization filtering; no durable replay in MVP | Invalidate/refetch affected REST query |
 
-WebSocket authentication uses the existing secure session cookie or a short-lived, single-purpose ticket obtained over REST. Tokens must not appear in URL query logs.
+WebSocket authentication uses the existing secure session cookie or a short-lived, single-purpose ticket obtained over REST. Tokens must not appear in URL query logs. Browser WebSocket cannot set an `Authorization` header, so a cross-origin dashboard exchanges its viewer credential for a one-time ticket at `POST /api/v1/ws/runtime/ticket` and sends it as the negotiated `Sec-WebSocket-Protocol` value; the ticket is consumed atomically during acceptance, expires within seconds, and is never logged.
 
 ## 15.6 Event Envelope and Evolution
 

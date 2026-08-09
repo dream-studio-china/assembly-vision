@@ -7,17 +7,47 @@
 
 export type WSStatus = "disconnected" | "connecting" | "connected";
 
+/**
+ * One version-1 runtime event envelope (design 15.6, PR-023 F04).
+ * Field names mirror the server payload exactly; the event payload is `data`.
+ */
 export type WSEventEnvelope = {
+  event_id: string;
   type: string;
-  sequence: number;
+  schema_version: number;
+  occurred_at: string;
   source_id: string;
-  payload: unknown;
+  sequence: number;
+  correlation_id: string | null;
+  data: unknown;
 };
+
+function isEventEnvelope(value: unknown): value is WSEventEnvelope {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.event_id === "string" &&
+    typeof v.type === "string" &&
+    typeof v.schema_version === "number" &&
+    typeof v.occurred_at === "string" &&
+    typeof v.source_id === "string" &&
+    typeof v.sequence === "number" &&
+    (typeof v.correlation_id === "string" || v.correlation_id === null) &&
+    "data" in v
+  );
+}
+
+/**
+ * Resolves the WebSocket subprotocols for one (re)connect attempt. Providers
+ * are re-invoked on every connect so single-use credentials such as the
+ * runtime ticket can be refreshed (PR-023 F01).
+ */
+export type WebSocketProtocolProvider = () => Promise<string[]>;
 
 export interface WebSocketService {
   readonly status: WSStatus;
-  /** Connect (or reconnect) to the event feed. */
-  connect(url: string): void;
+  /** Connect (or reconnect) to the event feed, optionally with subprotocols. */
+  connect(url: string, protocols?: string[] | WebSocketProtocolProvider): void;
   /** Close the feed; no reconnect is scheduled. */
   disconnect(): void;
   /** Subscribe to typed envelopes. Returns an unsubscribe function. */
@@ -43,22 +73,27 @@ function backoffDelay(attempt: number, baseMs = 1000, maxMs = 30000): number {
 export class ReconnectingWebSocket implements WebSocketService {
   #socket: WebSocket | null = null;
   #url = "";
+  #protocols: string[] | WebSocketProtocolProvider | null = null;
   #attempt = 0;
   #timer: ReturnType<typeof setTimeout> | null = null;
   #listeners: Array<(event: WSEventEnvelope) => void> = [];
   #gapListeners: Array<() => void> = [];
   #lastSequence = new Map<string, number>();
   #manualClose = false;
+  #connectionGeneration = 0;
 
   status: WSStatus = "disconnected";
 
-  connect(url: string): void {
+  connect(url: string, protocols?: string[] | WebSocketProtocolProvider): void {
+    this.#connectionGeneration += 1;
     this.#url = url;
+    this.#protocols = protocols ?? null;
     this.#manualClose = false;
-    this.#open();
+    void this.#open(this.#connectionGeneration);
   }
 
   disconnect(): void {
+    this.#connectionGeneration += 1;
     this.#manualClose = true;
     if (this.#timer !== null) {
       clearTimeout(this.#timer);
@@ -83,27 +118,57 @@ export class ReconnectingWebSocket implements WebSocketService {
     };
   }
 
-  #open(): void {
+  async #open(generation: number): Promise<void> {
     this.status = "connecting";
+    let protocols: string[] = [];
+    if (typeof this.#protocols === "function") {
+      try {
+        protocols = await this.#protocols();
+      } catch {
+        // A failed credential exchange must not crash the caller; retry with
+        // backoff so a transient ticket outage recovers (PR-023 F01).
+        if (!this.#manualClose && generation === this.#connectionGeneration) {
+          this.#scheduleReconnect();
+        }
+        return;
+      }
+    } else if (this.#protocols !== null) {
+      protocols = this.#protocols;
+    }
+    // A component may unmount or create a newer connection while an async
+    // ticket exchange is in flight. Never open a stale socket afterward.
+    if (this.#manualClose || generation !== this.#connectionGeneration) return;
     let socket: WebSocket;
     try {
-      socket = new WebSocket(this.#url);
+      socket =
+        protocols.length > 0
+          ? new WebSocket(this.#url, protocols)
+          : new WebSocket(this.#url);
     } catch {
       this.#scheduleReconnect();
       return;
     }
     this.#socket = socket;
     socket.onopen = () => {
+      if (generation !== this.#connectionGeneration) {
+        socket.close();
+        return;
+      }
       this.#attempt = 0;
       this.status = "connected";
     };
     socket.onmessage = (message: MessageEvent<string>) => {
-      let envelope: WSEventEnvelope;
+      if (generation !== this.#connectionGeneration) return;
+      let parsed: unknown;
       try {
-        envelope = JSON.parse(message.data) as WSEventEnvelope;
+        parsed = JSON.parse(message.data);
       } catch {
         return;
       }
+      // Malformed envelopes are dropped before sequence handling so they can
+      // never corrupt the per-source baseline (PR-023 F04).
+      if (!isEventEnvelope(parsed)) return;
+      const envelope = parsed;
       const previous = this.#lastSequence.get(envelope.source_id) ?? -1;
       if (previous >= 0 && envelope.sequence > previous + 1) {
         // Missing events after an established baseline: signal the gap so
@@ -115,9 +180,12 @@ export class ReconnectingWebSocket implements WebSocketService {
       for (const listener of this.#listeners) listener(envelope);
     };
     socket.onclose = () => {
+      if (generation !== this.#connectionGeneration) return;
       this.#socket = null;
       this.status = "disconnected";
-      if (!this.#manualClose) this.#scheduleReconnect();
+      if (!this.#manualClose && generation === this.#connectionGeneration) {
+        this.#scheduleReconnect();
+      }
     };
     socket.onerror = () => {
       socket.close();
@@ -127,10 +195,13 @@ export class ReconnectingWebSocket implements WebSocketService {
   #scheduleReconnect(): void {
     if (this.#manualClose || this.#timer !== null) return;
     const delay = backoffDelay(this.#attempt);
+    const generation = this.#connectionGeneration;
     this.#attempt += 1;
     this.#timer = setTimeout(() => {
       this.#timer = null;
-      this.#open();
+      if (!this.#manualClose && generation === this.#connectionGeneration) {
+        void this.#open(generation);
+      }
     }, delay);
   }
 }

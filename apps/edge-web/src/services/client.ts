@@ -40,6 +40,46 @@ export function getApiBaseUrl(): string {
   return (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
 }
 
+/**
+ * Browser WebSocket URL for the runtime event channel.
+ *
+ * The API base URL is an origin without a path prefix, so the /api/v1 prefix
+ * is preserved explicitly here (PR-023 F01). The same-origin fallback derives
+ * the ws/wss scheme from the page itself.
+ */
+export function getRuntimeWsUrl(): string {
+  const base = getApiBaseUrl();
+  if (base.startsWith("http")) {
+    const url = new URL(base);
+    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+    url.pathname = "/api/v1/ws/runtime";
+    return url.toString();
+  }
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${protocol}//${window.location.host}/api/v1/ws/runtime`;
+}
+
+/**
+ * Exchange the in-memory viewer credential for a one-time runtime ticket.
+ *
+ * Browser WebSocket cannot set an Authorization header and cross-origin
+ * connections do not receive the same-origin session cookie, so the dashboard
+ * obtains a short-lived ticket over authenticated REST and sends it as the
+ * negotiated WebSocket subprotocol, never in the URL (PR-023 F01).
+ */
+export async function requestRuntimeTicket(): Promise<string> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/ws/runtime/ticket`, {
+    method: "POST",
+    headers: viewerToken ? { Authorization: `Bearer ${viewerToken}` } : undefined,
+    credentials: isCrossOriginHttp() ? "omit" : "same-origin",
+  });
+  if (!response.ok) {
+    throw new Error("The edge runtime ticket was not accepted.");
+  }
+  const body = (await response.json()) as { ticket: string };
+  return body.ticket;
+}
+
 function isCrossOrigin(): boolean {
   const base = getApiBaseUrl();
   if (!base || typeof window === "undefined") return false;

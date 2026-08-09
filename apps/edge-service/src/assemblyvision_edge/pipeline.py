@@ -242,19 +242,23 @@ class InspectionPipeline:
         writer: OutputWriter | None = None,
         *,
         suppress_optional_capture: bool = False,
+        inspection_id: UUID | None = None,
     ) -> InspectionRecord:
         """Inspect one captured camera frame; each frame is one inspection (ADR-013).
 
         ``writer`` is optional: a dev/test call can analyze without persisting
         evidence (ADR-014). ``suppress_optional_capture`` drops optional
         OK-sample media under critical storage pressure (PR-020 F07); mandatory
-        metadata and NG evidence are always preserved.
+        metadata and NG evidence are always preserved. ``inspection_id`` lets
+        the runtime publish a matching ``inspection.started`` before inference;
+        when omitted a new identity is generated here (PR-023 F03).
         """
         return self._inspect_impl(
             image=frame.image,
             image_read_error=False,
             writer=writer,
             suppress_optional_capture=suppress_optional_capture,
+            inspection_id=inspection_id,
         )
 
     def frame_observations(self, frame: CapturedFrame) -> FrameObservation:
@@ -503,8 +507,9 @@ class InspectionPipeline:
         image_read_error: bool,
         writer: OutputWriter | None,
         suppress_optional_capture: bool = False,
+        inspection_id: UUID | None = None,
     ) -> InspectionRecord:
-        inspection_id = uuid4()
+        inspection_id = inspection_id if inspection_id is not None else uuid4()
         frame_id = uuid4()
         started_at = datetime.now(UTC)
         started = time.monotonic()

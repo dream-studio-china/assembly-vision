@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime, timedelta
-from typing import Annotated, cast
+from typing import Annotated, Any, cast
 
 from fastapi import Depends, Request
 
@@ -41,12 +41,13 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client is not None else "unknown"
 
 
-def _has_valid_bearer_token(request: Request, settings: ServerSettings) -> bool:
+def _bearer_valid(headers: Any, settings: ServerSettings) -> bool:
+    """Return whether ``headers`` carries the configured viewer bearer token."""
     if not settings.api_token:
         return True
     try:
         return secrets.compare_digest(
-            request.headers.get("Authorization", ""), f"Bearer {settings.api_token}"
+            headers.get("Authorization", ""), f"Bearer {settings.api_token}"
         )
     except TypeError:
         # Non-ASCII header values are never valid credentials; treat them as
@@ -54,18 +55,28 @@ def _has_valid_bearer_token(request: Request, settings: ServerSettings) -> bool:
         return False
 
 
-def _has_valid_session(request: Request) -> bool:
-    session_id = request.cookies.get(_SESSION_COOKIE)
+def _has_valid_bearer_token(request: Request, settings: ServerSettings) -> bool:
+    return _bearer_valid(request.headers, settings)
+
+
+def _session_valid(cookies: Any, sessions: dict[str, datetime]) -> bool:
+    """Return whether ``cookies`` carries a live viewer session id."""
+    session_id = cookies.get(_SESSION_COOKIE)
     if not session_id:
         return False
-    sessions = cast(dict[str, datetime], request.app.state.viewer_sessions)
     expires_at = sessions.get(session_id)
     if expires_at is None:
         return False
     if expires_at <= datetime.now(UTC):
-        del sessions[session_id]
+        sessions.pop(session_id, None)
         return False
     return True
+
+
+def _has_valid_session(request: Request) -> bool:
+    return _session_valid(
+        request.cookies, cast(dict[str, datetime], request.app.state.viewer_sessions)
+    )
 
 
 def _is_rate_limited(request: Request) -> bool:

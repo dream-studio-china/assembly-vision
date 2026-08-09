@@ -607,26 +607,62 @@ Implemented on `feat/e3-upload-resilience` (delivery task
   reserved placeholder — the central endpoint is not implemented and chunked
   transfer starts only after the Edge-to-central contract freezes.
 
+## 8.9 Runtime and Live Event Channel (E4)
+
+Implemented on `feat/e4-runtime` (delivery task
+`docs/tasks/E4-runtime.md`):
+
+- **WebSocket runtime channel (E4a)**: an in-memory `RuntimeEventBus` assigns
+  monotonic per-source sequence numbers and keeps bounded per-connection
+  buffers that disconnect slow consumers instead of blocking publishers.
+  `WS /api/v1/ws/runtime` authenticates with the same viewer bearer/session
+  model as REST and streams design 15.6 envelopes (`inspection.started`,
+  `inspection.completed`, `device.status_changed`, `upload.changed`). Events
+  come from real transitions: the inspection loop (started on each new window
+  or per-frame inspection, completed after the projection/outbox commit),
+  pause/resume, and the upload scheduler worker. Cross-origin browser sockets
+  cannot set an `Authorization` header, so the dashboard exchanges its viewer
+  credential for a short-lived, single-use ticket over REST
+  (`POST /api/v1/ws/runtime/ticket`) and sends it as the negotiated
+  `Sec-WebSocket-Protocol` value, never in the URL (PR-023 F01). The dashboard
+  live view consumes the feed and refetches REST on reconnect or sequence
+  gaps, with the poll reduced to a slow fallback. Publishing never blocks
+  inspection, persistence, or the worker: cross-thread deliveries perform the
+  bounded-buffer decision on the owning event loop, so a slow consumer is
+  disconnected rather than raising `QueueFull` (PR-023 F02), and the channel
+  counters are exposed through the authenticated
+  `GET /api/v1/ws/runtime/stats` endpoint (PR-023 F05).
+- **Trigger/barcode/identity seam (E4b)**: a `TriggerSource` protocol plus a
+  deterministic `MockTriggerSource` (frame-ordered identities with barcode
+  correlation metadata and validity spans) feed an `IdentityCorrelator` that
+  stamps captured frames, so the identity-sealed product-window boundary
+  (PR-015 F1) groups by physical product; frames after a non-looping stream
+  keep no identity and fail the window closed. The mock source is gated behind
+  explicit instance `trigger:` configuration (development/test-only) and can
+  never masquerade as production hardware.
+- **Shared model weights (E4c)**: a process-wide `ModelRegistry` keyed by the
+  immutable artifact SHA-256 plus inference device lets instances referencing
+  the same manifest share one loaded handle; holders serialize inference on a
+  per-artifact lock because ultralytics predictors keep mutable state, while
+  distinct artifacts/devices stay separate and no mutable state is shared
+  (ADR-013 Phase 3).
+
 ## 9. Open Items / Next Steps
 
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6); **E1
   observability** (PRs #18/#19), **E2 retention and disk safety** (PR #20,
-  PR-020 review resolved), and **E3 upload resilience** (section 8.8) are
-  implemented. The remaining Edge production-candidate work is tracked as
-  E4-E6:
-  - **E4 runtime**: WebSocket channel, hardware-agnostic trigger/barcode/
-    identity seams with mock hardware validation, multi-instance resource
-    sharing.
+  PR-020 review resolved), **E3 upload resilience** (PR #22, section 8.8),
+  and **E4 runtime** (section 8.9) are implemented. The remaining Edge
+  production-candidate work is tracked as E5-E6:
   - **E5 deployment and security**: Docker packaging, secret/TLS provisioning,
     backup/restore, runbooks.
   - **E6 acceptance**: resilience matrix, soak, held-out model validation,
     Edge acceptance report with hardware prerequisites.
-- The **WebSocket runtime channel** remains the main backend gap (replaces the
-  polling preview).
+- The **WebSocket runtime channel** is implemented (section 8.9); the polling
+  preview remains as a pixel-feed stopgap and is not required for correctness.
 - AUDIT-001 is **closed** including the deferred 4.4 authoritative persistence
-  item (now delivered by PR #17). Phase 3 multi-edge-per-host "shared" model
-  weight sharing remains an open optimization (ADR-013 per-instance pipelines
-  load their own models).
+  item (now delivered by PR #17). Shared model weights are implemented (E4c);
+  per-instance pipelines use one registry.
 - Real customer data is still required for the baseline: collect and annotate
   with X-AnyLabeling per
   `docs/design/19-training-and-evaluation.md` §19.17 and
@@ -636,10 +672,11 @@ Implemented on `feat/e3-upload-resilience` (delivery task
   `dataset_product`/`dataset_components` + `test-expected.json`, then run
   `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
 - Camera acquisition (ADR-013/014) is merged (PR #14) including temporal
-  aggregation (PR #15/#16). Remaining hardware-dependent items: vendor SDK
-  camera adapters, barcode decoding, and hardware-trigger product-window
-  boundaries to replace the time-only fallback (which is a development mode,
-  not a production product boundary).
+  aggregation (PR #15/#16) and the trigger/identity seam (E4b). Remaining
+  hardware-dependent items: vendor SDK camera adapters, real barcode decoding,
+  and physical photo-eye/PLC triggers to replace the mock trigger source and
+  the time-only fallback (which is a development mode, not a production
+  product boundary).
 - The central server (ingestion API, PostgreSQL model, object storage,
   idempotent receipts, manual review) is **not implemented**; only the
   edge-side request/receipt contract exists. Central work starts after E1-E6

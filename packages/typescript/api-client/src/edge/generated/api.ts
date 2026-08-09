@@ -381,6 +381,53 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ws/runtime/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Runtime Event Stats
+         * @description Return authenticated runtime event channel observability (PR-023 F05).
+         *
+         *     Lets an operator distinguish an idle dashboard from a failed event feed.
+         *     Counters are process-local and never expose credentials or payloads.
+         */
+        get: operations["runtime_event_stats_api_v1_ws_runtime_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ws/runtime/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Runtime Ticket
+         * @description Issue a short-lived, single-use ticket for the runtime channel.
+         *
+         *     The ticket is consumed atomically during socket acceptance, expires
+         *     quickly, and is scoped to this channel only; the long-lived viewer
+         *     credential is never placed in a URL or in browser storage.
+         */
+        post: operations["create_runtime_ticket_api_v1_ws_runtime_ticket_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1174,6 +1221,29 @@ export interface components {
             /** Rule Version */
             rule_version: number;
         };
+        /**
+         * RuntimeEventStats
+         * @description Operational counters for the runtime event channel (PR-023 F05).
+         *
+         *     Exposed through the authenticated status surface so operators can
+         *     distinguish an idle dashboard from a failed event feed. Counters are
+         *     process-local and reset on restart; they never carry credentials,
+         *     identities, or payload contents.
+         */
+        RuntimeEventStats: {
+            /** Active Connections */
+            active_connections: number;
+            /** Delivery Failures */
+            delivery_failures: number;
+            /** Published By Type */
+            published_by_type: {
+                [key: string]: number;
+            };
+            /** Published Total */
+            published_total: number;
+            /** Slow Consumer Disconnects */
+            slow_consumer_disconnects: number;
+        };
         /** StatisticsSummary */
         StatisticsSummary: {
             /** Ng Count */
@@ -1318,6 +1388,21 @@ export interface components {
              * @default false
              */
             truncated: boolean;
+        };
+        /**
+         * WsTicket
+         * @description One-time credential for one browser WebSocket connection (PR-023 F01).
+         */
+        WsTicket: {
+            /**
+             * Channel
+             * @default runtime
+             */
+            channel: string;
+            /** Expires At */
+            expires_at: string;
+            /** Ticket */
+            ticket: string;
         };
     };
     responses: never;
@@ -1977,6 +2062,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    runtime_event_stats_api_v1_ws_runtime_stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuntimeEventStats"];
+                };
+            };
+        };
+    };
+    create_runtime_ticket_api_v1_ws_runtime_ticket_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WsTicket"];
                 };
             };
         };

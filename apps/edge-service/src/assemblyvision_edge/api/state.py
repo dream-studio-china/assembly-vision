@@ -57,6 +57,7 @@ class InstanceRuntime:
     temporal: Any = None
     last_result: str | None = None
     thread: threading.Thread | None = None
+    correlator: Any = None
 
 
 def _instance_device_id(instance: InstanceConfig) -> UUID:
@@ -64,6 +65,19 @@ def _instance_device_id(instance: InstanceConfig) -> UUID:
     if instance.device_id is not None:
         return UUID(instance.device_id)
     return uuid5(_INSTANCE_NAMESPACE, instance.instance_id)
+
+
+def _build_identity_correlator(trigger: Any) -> Any:
+    """Build the per-instance trigger/identity correlator (E4b).
+
+    Returns None when the instance has no trigger source. Only the explicit
+    mock source is available until hardware trigger/barcode sources land (E6).
+    """
+    if trigger is None:
+        return None
+    from assemblyvision_edge.trigger.source import IdentityCorrelator, MockTriggerSource
+
+    return IdentityCorrelator(MockTriggerSource(trigger.products))
 
 
 class EdgeRuntime:
@@ -83,6 +97,13 @@ class EdgeRuntime:
         self.instances: dict[str, InstanceRuntime] = {}
         self.camera_manager: Any = None
         self.repository: Any = None
+        # E4a: optional in-memory event bus; set by the API composition root so
+        # inspection/device/upload transitions can notify dashboards without
+        # the runtime ever depending on the channel (REST stays authoritative).
+        self.event_bus: Any = None
+        # E4c: process-wide read-only model weight cache shared by instances
+        # that reference the same immutable artifact (ADR-013 Phase 3).
+        self.model_registry: Any = None
         self._stop = threading.Event()
         self._preview_cache: dict[str, tuple[float, bytes]] = {}
         # E2c disk-pressure state: refreshed by the inspection loop and by the
@@ -174,6 +195,10 @@ class EdgeRuntime:
             log.error("edge configuration failed: %s", exc)
             return
         registry = repository.register_rule_identity if repository is not None else None
+        if self.model_registry is None:
+            from assemblyvision_edge.detection.registry import ModelRegistry
+
+            self.model_registry = ModelRegistry()
         instances: dict[str, InstanceRuntime] = {}
         sources: dict[str, Any] = {}
         unavailable: dict[str, str] = {}
@@ -181,7 +206,11 @@ class EdgeRuntime:
             pipeline: Any = None
             pipeline_error: str | None = None
             try:
-                pipeline = _build_instance_pipeline(instance, rule_registry=registry)
+                pipeline = _build_instance_pipeline(
+                    instance,
+                    rule_registry=registry,
+                    model_registry=self.model_registry,
+                )
             except (ConfigError, ValueError, RepositoryError) as exc:
                 pipeline_error = str(exc)
                 log.error("instance %s pipeline build failed: %s", instance.instance_id, exc)
@@ -192,6 +221,7 @@ class EdgeRuntime:
                 pipeline_error=pipeline_error,
                 inspection_enabled=instance.inspection.enabled,
                 temporal=instance.temporal,
+                correlator=_build_identity_correlator(instance.trigger),
             )
             try:
                 sources[instance.instance_id] = build_frame_source(
@@ -314,29 +344,65 @@ class EdgeRuntime:
                             record = runtime.pipeline.inspect_window(
                                 expired, writer, suppress_optional_capture=optional
                             )
-                            if self._persist_projection(record):
+                            if self._persist_projection(record, instance_id):
                                 runtime.last_result = record.decision.business_result
                     except Exception as exc:  # noqa: BLE001 - idle expiry must not kill the loop
                         self._note_storage_write_fault(exc)
                         log.exception("idle window expiry failed for instance %s", instance_id)
                 continue
+            if runtime.correlator is not None:
+                # Stamp the frame with the current validated product identity
+                # from the trigger source before any window grouping (E4b).
+                frame = runtime.correlator.annotate(frame)
             try:
                 if window_manager is not None:
                     observation = runtime.pipeline.frame_observations(frame)
                     # Group on the frame's acquisition time, not the time at
                     # which inference finished (PR-015 F3).
+                    previous_id = (
+                        window_manager.active_window.inspection_id
+                        if window_manager.active_window is not None
+                        else None
+                    )
                     closed = window_manager.feed(observation, frame.monotonic_ts_ns / 1e9)
+                    active = window_manager.active_window
+                    if active is not None and active.inspection_id != previous_id:
+                        # A new product window opened (including after a gap or
+                        # identity transition closed the previous one): notify
+                        # dashboards with its stable inspection id (E4a).
+                        self._publish(
+                            "inspection.started",
+                            {
+                                "inspection_id": str(active.inspection_id),
+                                "instance_id": instance_id,
+                            },
+                            correlation_id=str(active.inspection_id),
+                        )
                     if closed is not None:
                         record = runtime.pipeline.inspect_window(
                             closed, writer, suppress_optional_capture=optional
                         )
-                        if self._persist_projection(record):
+                        if self._persist_projection(record, instance_id):
                             runtime.last_result = record.decision.business_result
                 else:
-                    record = runtime.pipeline.inspect_frame(
-                        frame, writer, suppress_optional_capture=optional
+                    # Default per-frame mode (ADR-013): publish one start event
+                    # before inference so the lifecycle matches the temporal
+                    # branch. A failed inference/persistence never publishes a
+                    # matching completed event (PR-023 F03); REST stays
+                    # authoritative.
+                    inspection_id = uuid4()
+                    self._publish(
+                        "inspection.started",
+                        {"inspection_id": str(inspection_id), "instance_id": instance_id},
+                        correlation_id=str(inspection_id),
                     )
-                    if self._persist_projection(record):
+                    record = runtime.pipeline.inspect_frame(
+                        frame,
+                        writer,
+                        suppress_optional_capture=optional,
+                        inspection_id=inspection_id,
+                    )
+                    if self._persist_projection(record, instance_id):
                         runtime.last_result = record.decision.business_result
             except Exception as exc:  # noqa: BLE001 - loop must survive frame errors
                 self._note_storage_write_fault(exc)
@@ -351,10 +417,26 @@ class EdgeRuntime:
                     # An interrupted close is still a published bundle; mirror
                     # it so shutdown never loses the record or its outbox tasks
                     # (PR-017 F2 residual note).
-                    if self._persist_projection(record):
+                    if self._persist_projection(record, instance_id):
                         runtime.last_result = record.decision.business_result
             except Exception:  # noqa: BLE001 - interrupted close must not mask shutdown
                 log.exception("interrupted window close failed for instance %s", instance_id)
+
+    def _publish(
+        self,
+        event_type: str,
+        data: dict[str, object],
+        *,
+        correlation_id: str | None = None,
+    ) -> None:
+        """Publish one transient event when a bus is configured (E4a).
+
+        Publishing is non-blocking and never affects inspection or
+        persistence; without a bus this is a no-op.
+        """
+        bus = self.event_bus
+        if bus is not None:
+            bus.publish(event_type, data, correlation_id=correlation_id)
 
     def _note_storage_write_fault(self, exc: Exception) -> None:
         """Latch a storage write fault from any persistence/write failure (E2c).
@@ -367,7 +449,7 @@ class EdgeRuntime:
         """
         self.storage_write_fault = True
 
-    def _persist_projection(self, record: Any) -> bool:
+    def _persist_projection(self, record: Any, instance_id: str | None = None) -> bool:
         """Mirror a published bundle into the SQLite projection and outbox.
 
         Returns True only after the projection and its upload tasks committed.
@@ -383,7 +465,6 @@ class EdgeRuntime:
             repository.persist_inspection_and_enqueue_uploads(
                 record, retention=self._retention_policy()
             )
-            return True
         except Exception as exc:  # noqa: BLE001 - projection must not break the loop
             self.storage_write_fault = True
             log.warning(
@@ -392,6 +473,17 @@ class EdgeRuntime:
                 exc,
             )
             return False
+        self._publish(
+            "inspection.completed",
+            {
+                "inspection_id": str(record.inspection_id),
+                "instance_id": instance_id,
+                "business_result": record.decision.business_result,
+                "internal_decision": record.decision.internal_decision,
+            },
+            correlation_id=str(record.inspection_id),
+        )
+        return True
 
     def _retention_policy(self) -> RetentionPolicy | None:
         """Return the approved retention policy for new media, or None."""
@@ -452,12 +544,17 @@ class EdgeRuntime:
         self.paused_reason = reason
         self.paused_by = by
         self.paused_at = datetime.now(UTC).isoformat()
+        self._publish(
+            "device.status_changed",
+            {"paused": True, "paused_reason": reason, "paused_by": by},
+        )
 
     def resume(self) -> None:
         self.paused = False
         self.paused_reason = None
         self.paused_by = None
         self.paused_at = None
+        self._publish("device.status_changed", {"paused": False})
 
     def refresh_storage(self) -> StorageState | None:
         """Re-measure the output volume and update the pressure state (E2c).
@@ -983,9 +1080,15 @@ def _build_pipeline(
 
 
 def _build_instance_pipeline(
-    instance: InstanceConfig, rule_registry: Callable[[str, int, str], None] | None = None
+    instance: InstanceConfig,
+    rule_registry: Callable[[str, int, str], None] | None = None,
+    model_registry: Any = None,
 ) -> Any:
-    """Build the inspection pipeline for one instance (ADR-013)."""
+    """Build the inspection pipeline for one instance (ADR-013).
+
+    ``model_registry`` (E4c) lets instances that reference the same immutable
+    model artifact share one read-only loaded model handle.
+    """
     from assemblyvision_domain.models import ModelManifest
     from assemblyvision_vision.manifests import load_model_manifest
     from assemblyvision_vision.roi.roi_engine import ROIEngine
@@ -1019,10 +1122,14 @@ def _build_instance_pipeline(
     )
     validate_rule_component_compatibility(rule, config, component_manifest)
     product_detector = ProductDetector.from_manifest(
-        product_manifest, config.product_detection, config.product_manifest
+        product_manifest, config.product_detection, config.product_manifest, registry=model_registry
     )
     component_detector = ComponentDetector.from_manifest(
-        component_manifest, config.component_detection, config.components, config.component_manifest
+        component_manifest,
+        config.component_detection,
+        config.components,
+        config.component_manifest,
+        registry=model_registry,
     )
     return InspectionPipeline(
         product_detector=product_detector,

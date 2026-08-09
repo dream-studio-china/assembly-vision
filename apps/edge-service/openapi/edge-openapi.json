@@ -1945,6 +1945,43 @@
         "title": "RuleSnapshot",
         "type": "object"
       },
+      "RuntimeEventStats": {
+        "description": "Operational counters for the runtime event channel (PR-023 F05).\n\nExposed through the authenticated status surface so operators can\ndistinguish an idle dashboard from a failed event feed. Counters are\nprocess-local and reset on restart; they never carry credentials,\nidentities, or payload contents.",
+        "properties": {
+          "active_connections": {
+            "title": "Active Connections",
+            "type": "integer"
+          },
+          "delivery_failures": {
+            "title": "Delivery Failures",
+            "type": "integer"
+          },
+          "published_by_type": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Published By Type",
+            "type": "object"
+          },
+          "published_total": {
+            "title": "Published Total",
+            "type": "integer"
+          },
+          "slow_consumer_disconnects": {
+            "title": "Slow Consumer Disconnects",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "active_connections",
+          "published_total",
+          "published_by_type",
+          "slow_consumer_disconnects",
+          "delivery_failures"
+        ],
+        "title": "RuntimeEventStats",
+        "type": "object"
+      },
       "StatisticsSummary": {
         "properties": {
           "ng_count": {
@@ -2281,6 +2318,30 @@
           "ng_count"
         ],
         "title": "VideoInspectResult",
+        "type": "object"
+      },
+      "WsTicket": {
+        "description": "One-time credential for one browser WebSocket connection (PR-023 F01).",
+        "properties": {
+          "channel": {
+            "default": "runtime",
+            "title": "Channel",
+            "type": "string"
+          },
+          "expires_at": {
+            "title": "Expires At",
+            "type": "string"
+          },
+          "ticket": {
+            "title": "Ticket",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "expires_at"
+        ],
+        "title": "WsTicket",
         "type": "object"
       }
     }
@@ -3329,6 +3390,50 @@
         "summary": "Retry Upload",
         "tags": [
           "uploads"
+        ]
+      }
+    },
+    "/api/v1/ws/runtime/stats": {
+      "get": {
+        "description": "Return authenticated runtime event channel observability (PR-023 F05).\n\nLets an operator distinguish an idle dashboard from a failed event feed.\nCounters are process-local and never expose credentials or payloads.",
+        "operationId": "runtime_event_stats_api_v1_ws_runtime_stats_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeEventStats"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Runtime Event Stats",
+        "tags": [
+          "runtime-events"
+        ]
+      }
+    },
+    "/api/v1/ws/runtime/ticket": {
+      "post": {
+        "description": "Issue a short-lived, single-use ticket for the runtime channel.\n\nThe ticket is consumed atomically during socket acceptance, expires\nquickly, and is scoped to this channel only; the long-lived viewer\ncredential is never placed in a URL or in browser storage.",
+        "operationId": "create_runtime_ticket_api_v1_ws_runtime_ticket_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WsTicket"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create Runtime Ticket",
+        "tags": [
+          "runtime-events"
         ]
       }
     }
