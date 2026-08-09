@@ -580,15 +580,40 @@ blockers for production enablement (E2 task section 4). Current suite: 781
 Python tests, 91 TypeScript unit tests (api-client 45, ui 13, edge-web 30,
 desktop 3), and 12 Playwright e2e.
 
+## 8.8 Upload Resilience (E3)
+
+Implemented on `feat/e3-upload-resilience` (delivery task
+`docs/tasks/E3-upload-resilience.md`, design 13.13/13.14):
+
+- **Bandwidth throttling (E3a)**: a token-bucket limiter bounds network
+  payload bytes per second from `AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS`
+  (`None` disables); burst is capped at one second of tokens and the limiter
+  never gates local persistence. Bytes sent and the ceiling are exposed in
+  device status.
+- **Circuit breaker (E3b)**: consecutive retryable failures
+  (`AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD`/`_OPEN_SECONDS`) open the
+  circuit; while open the scheduler claims nothing, and after the open window
+  a single half-open probe judges recovery. Permanent failures never count.
+  `UPLOAD_CIRCUIT_OPEN` alert; the durable queue is never mutated.
+- **Controlled manual retry (E3c)**: `POST /api/v1/uploads/{id}/retry`
+  resets only `RETRY_WAIT`/`PERMANENT_FAILURE` tasks with
+  `attempt_count + 1`; 404 unknown, 409 non-eligible without mutation.
+- **Long-outage drain (E3d)**: days of offline inspection, a restart, and a
+  restore drain the queue duplicate-free with ordered metadata-before-media
+  uploads and every inspection `SYNCED`.
+- **Resumable large-media contract (E3e)**: design 13.14 defines chunked
+  transfer (stable task identity, chunk idempotency, size/checksum completion
+  confirmation, object binding); `media_chunk_bytes` is a clearly-marked
+  reserved placeholder — the central endpoint is not implemented and chunked
+  transfer starts only after the Edge-to-central contract freezes.
+
 ## 9. Open Items / Next Steps
 
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6); **E1
-  observability** (PRs #18/#19) and **E2 retention and disk safety** (PR #20,
-  PR-020 review resolved) are merged (section 8.7). The remaining Edge
-  production-candidate work is tracked as E3-E6:
-  - **E3 upload resilience**: bandwidth throttling, circuit breaker,
-    controlled manual retry, long-outage drain tests, resumable large-media
-    client (central protocol contract only).
+  observability** (PRs #18/#19), **E2 retention and disk safety** (PR #20,
+  PR-020 review resolved), and **E3 upload resilience** (section 8.8) are
+  implemented. The remaining Edge production-candidate work is tracked as
+  E4-E6:
   - **E4 runtime**: WebSocket channel, hardware-agnostic trigger/barcode/
     identity seams with mock hardware validation, multi-instance resource
     sharing.
