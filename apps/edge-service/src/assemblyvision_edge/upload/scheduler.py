@@ -17,7 +17,7 @@ import logging
 import random
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -37,6 +37,7 @@ _MAX_RECEIPT_BYTES = 65536
 # cannot burst past the configured ceiling (E3a).
 _BUCKET_BURST_SECONDS = 1.0
 _MBPS_TO_BYTES_PER_SECOND = 1_000_000 / 8
+_HTTP_BODY_CHUNK_BYTES = 64 * 1024
 
 
 class _TokenBucket:
@@ -196,25 +197,69 @@ class HttpUploadSink:
         )
 
     def upload(self, task: UploadTask, payload: bytes) -> UploadResult:
+        return self._upload(task, payload)
+
+    def upload_throttled(
+        self, task: UploadTask, payload: bytes, throttle: Callable[[int], None]
+    ) -> UploadResult:
+        """Send the request body in rate-limited chunks (PR-022 re-review).
+
+        The limiter is invoked immediately before each body segment is yielded
+        to httpx, rather than waiting once and then handing the transport a
+        full payload. An explicit Content-Length preserves the single-envelope
+        protocol while keeping the transport write stream bounded.
+        """
+        return self._upload(task, payload, throttle=throttle)
+
+    def _upload(
+        self,
+        task: UploadTask,
+        payload: bytes,
+        *,
+        throttle: Callable[[int], None] | None = None,
+    ) -> UploadResult:
         headers = {"Content-Type": "application/json"}
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
         body = self._build_body(task, payload)
+        bytes_sent = 0
+
+        def body_chunks() -> Iterator[bytes]:
+            nonlocal bytes_sent
+            for start in range(0, len(body), _HTTP_BODY_CHUNK_BYTES):
+                chunk = body[start : start + _HTTP_BODY_CHUNK_BYTES]
+                if throttle is not None:
+                    throttle(len(chunk))
+                bytes_sent += len(chunk)
+                yield chunk
+
+        content: bytes | Any = body
+        if throttle is not None:
+            headers["Content-Length"] = str(len(body))
+            content = body_chunks()
         try:
             response = self._client.post(
                 f"{self._base_url}/inspection-uploads",
-                content=body,
+                content=content,
                 headers=headers,
             )
+        except _ThrottleAborted:
+            raise
         except Exception:  # noqa: BLE001 - any transport failure is retryable
-            return UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")
+            return UploadResult(
+                status="RETRYABLE",
+                error_code="TRANSPORT_ERROR",
+                payload_bytes_sent=bytes_sent or None,
+            )
         if 200 <= response.status_code < 300:
             # A 2xx is only a verified success when the receipt matches the
             # task and the payload that was actually sent (PR-017 F5).
             receipt = self._parse_receipt(response, task, len(payload))
             if receipt is None:
                 return UploadResult(status="PERMANENT", error_code="INVALID_RECEIPT")
-            return UploadResult(status="SUCCEEDED", receipt=receipt, payload_bytes_sent=len(body))
+            return UploadResult(
+                status="SUCCEEDED", receipt=receipt, payload_bytes_sent=bytes_sent or len(body)
+            )
         retry_after: float | None = None
         raw = response.headers.get("Retry-After")
         if raw is not None and raw.isdigit():
@@ -224,12 +269,12 @@ class HttpUploadSink:
                 status="RETRYABLE",
                 error_code=f"HTTP_{response.status_code}",
                 retry_after_seconds=retry_after,
-                payload_bytes_sent=len(body),
+                payload_bytes_sent=bytes_sent or len(body),
             )
         return UploadResult(
             status="PERMANENT",
             error_code=f"HTTP_{response.status_code}",
-            payload_bytes_sent=len(body),
+            payload_bytes_sent=bytes_sent or len(body),
         )
 
     def wire_size(self, task: UploadTask, payload: bytes) -> int:
@@ -569,22 +614,23 @@ class UploadScheduler:
                 str(task.upload_task_id), lease_owner, exc.code, self._now().isoformat()
             )
             return
-        # Throttle to the configured ceiling before any network attempt (E3a).
-        # The budget covers the serialized request body the HTTP sink will
-        # send, not the raw source bytes, and the wait renews the active lease
-        # or aborts on stop/lease loss; local persistence is never gated
-        # (PR-022 F01/F02).
-        wire = (
-            self._sink.wire_size(task, payload) if isinstance(self._sink, HttpUploadSink) else None
-        )
-        if wire is not None:
+        # The HTTP sink acquires tokens immediately before yielding each
+        # serialized request-body segment to the transport. Local sinks are
+        # deliberately unthrottled because they do not consume network budget.
+        if isinstance(self._sink, HttpUploadSink):
             try:
-                self._bucket.acquire(
-                    wire, on_wait=self._lease_guard(str(task.upload_task_id), lease_owner)
+                result = self._sink.upload_throttled(
+                    task,
+                    payload,
+                    lambda amount: self._bucket.acquire(
+                        amount,
+                        on_wait=self._lease_guard(str(task.upload_task_id), lease_owner),
+                    ),
                 )
             except _ThrottleAborted:
                 return
-        result = self._sink.upload(task, payload)
+        else:
+            result = self._sink.upload(task, payload)
         self._record_bytes(
             result.payload_bytes_sent if result.payload_bytes_sent is not None else 0
         )

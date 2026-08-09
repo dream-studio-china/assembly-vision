@@ -107,6 +107,17 @@ describe("MockApiClient", () => {
       status: 404,
     });
   });
+
+  it("keeps mutable upload state isolated between mock clients", async () => {
+    const first = new MockApiClient();
+    const task = (await first.listUploads()).items.find((t) => t.status === "RETRY_WAIT");
+    expect(task).toBeTruthy();
+    await first.retryUpload(task!.upload_task_id);
+
+    const second = new MockApiClient();
+    const freshTask = (await second.listUploads()).items.find((t) => t.status === "RETRY_WAIT");
+    expect(freshTask).toBeTruthy();
+  });
 });
 
 describe("HttpApiClient", () => {

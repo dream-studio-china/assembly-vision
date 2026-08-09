@@ -388,7 +388,7 @@ const INITIAL_LOGS: LogEvent[] = [
  */
 export class MockApiClient implements ApiClient {
   #records: InspectionRecord[] = RECORDS;
-  #uploads: UploadTask[] = UPLOADS;
+  #uploads: UploadTask[] = UPLOADS.slice();
   #paused = false;
   #current: CurrentInspection = buildCurrent("SN-0001", "PROCESSING");
   #queueIndex = 0;

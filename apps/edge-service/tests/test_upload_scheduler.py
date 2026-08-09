@@ -693,6 +693,42 @@ class TestHttpSink:
         assert result.payload_bytes_sent == received["body_len"]
         assert result.payload_bytes_sent == sink.wire_size(task, raw)
 
+    def test_throttled_http_upload_yields_bounded_body_segments(self) -> None:
+        """Re-review: each segment is budgeted immediately before transport yield."""
+        import json
+
+        import httpx
+
+        yielded: list[int] = []
+        received = {"body_len": 0, "content_length": ""}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            received["body_len"] = len(request.content)
+            received["content_length"] = request.headers["content-length"]
+            body = json.loads(request.content)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": "obj-stream",
+                },
+            )
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
+        task = _task()
+        raw = b"x" * (200 * 1024)
+        result = sink.upload_throttled(task, raw, yielded.append)
+        wire_size = sink.wire_size(task, raw)
+        assert result.status == "SUCCEEDED"
+        assert sum(yielded) == wire_size == received["body_len"]
+        assert max(yielded) <= 64 * 1024
+        assert received["content_length"] == str(wire_size)
+
     def test_classifies_statuses(self) -> None:
         import json
 
