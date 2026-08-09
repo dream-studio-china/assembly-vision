@@ -8,6 +8,7 @@ import logging
 import os
 import re
 import sqlite3
+import ssl
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -134,6 +135,40 @@ def build_parser() -> argparse.ArgumentParser:
         help="Development only: allow an http:// upload endpoint (design 13.8 "
         "requires TLS in production)",
     )
+    serve.add_argument(
+        "--tls-cert",
+        type=Path,
+        default=None,
+        help="PEM certificate for local TLS on the edge API (or AV_EDGE_TLS_CERT)",
+    )
+    serve.add_argument(
+        "--tls-key",
+        type=Path,
+        default=None,
+        help="PEM private key for local TLS (or AV_EDGE_TLS_KEY); must be "
+        "provided together with --tls-cert and not readable by group/others",
+    )
+
+    backup = sub.add_parser("backup", help="Create a consistent, checksummed edge backup bundle")
+    backup.add_argument("--output", required=True, type=Path, help="Inspection output root")
+    backup.add_argument("--db", type=Path, default=None, help="SQLite database path")
+    backup.add_argument("--config", type=Path, default=None, help="Pipeline configuration file")
+    backup.add_argument("--rule", type=Path, default=None, help="Product rule definition file")
+    backup.add_argument(
+        "--dest", required=True, type=Path, help="Destination .tar.gz backup bundle"
+    )
+
+    restore = sub.add_parser("restore", help="Restore a verified edge backup bundle")
+    restore.add_argument("--backup", required=True, type=Path, help="Backup .tar.gz bundle")
+    restore.add_argument("--output", required=True, type=Path, help="Inspection output root")
+    restore.add_argument("--db", type=Path, default=None, help="SQLite database path")
+    restore.add_argument(
+        "--governed-dest",
+        type=Path,
+        default=None,
+        help="Restore governed config/rule/manifest files into this directory "
+        "(the approved release location; never an arbitrary path)",
+    )
     return parser
 
 
@@ -146,7 +181,11 @@ def main(argv: list[str] | None = None) -> int:
         return _run_verify(args)
     if args.command == "serve":
         return _run_serve(args)
-    # Unreachable: argparse only accepts the three subcommands above.
+    if args.command == "backup":
+        return _run_backup(args)
+    if args.command == "restore":
+        return _run_restore(args)
+    # Unreachable: argparse only accepts the five subcommands above.
     return 1  # pragma: no cover
 
 
@@ -332,7 +371,7 @@ def _build_upload_settings(args: argparse.Namespace) -> UploadSettings | None:
     settings = UploadSettings(
         base_url=base_url,
         sink_dir=Path(sink_dir) if sink_dir else None,
-        token=os.environ.get("AV_EDGE_UPLOAD_TOKEN"),
+        token=_secret_env("AV_EDGE_UPLOAD_TOKEN", "edge_upload_token"),
         connect_timeout_seconds=_float_env("AV_EDGE_UPLOAD_CONNECT_TIMEOUT_SECONDS", 5.0),
         request_timeout_seconds=_float_env("AV_EDGE_UPLOAD_REQUEST_TIMEOUT_SECONDS", 30.0),
         interval_seconds=_float_env("AV_EDGE_UPLOAD_INTERVAL_SECONDS", 1.0),
@@ -437,6 +476,58 @@ def _optional_int_env(name: str) -> int | None:
         raise ConfigError(f"{name} must be an integer, got {raw!r}") from exc
 
 
+_SECRET_DIR = Path("/run/secrets")
+
+
+def _secret_env(name: str, secret_file: str) -> str | None:
+    """Return an environment secret, falling back to a Docker secret file.
+
+    Docker secrets are mounted read-only under ``/run/secrets/<name>`` and
+    never appear in image layers or process arguments (design 21.9, E5b).
+    A secret file that exists but cannot be read fails closed instead of
+    silently treating the secret as unset.
+    """
+    value = os.environ.get(name)
+    if value:
+        return value
+    path = _SECRET_DIR / secret_file
+    if not path.exists():
+        return None
+    try:
+        content = path.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        raise ConfigError(f"cannot read secret file {path}: {exc}") from exc
+    return content or None
+
+
+def _optional_path_env(name: str) -> Path | None:
+    raw = os.environ.get(name)
+    if raw is None:
+        return None
+    return Path(raw)
+
+
+def _validate_tls_files(cert: Path, key: Path) -> None:
+    """Validate local TLS material before uvicorn starts (design 21.4, E5b).
+
+    The private key must not be readable by group or others; the certificate
+    and key must match, verified by loading them into a server TLS context.
+    """
+    if not cert.is_file() or not key.is_file():
+        raise ConfigError("tls certificate and key must be existing files")
+    key_mode = key.stat().st_mode & 0o777
+    if key_mode & 0o044:
+        raise ConfigError(
+            f"tls private key {key} must not be readable by group or others "
+            "(chmod 600 or mount as a Docker secret with mode 0400)"
+        )
+    try:
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(str(cert), str(key))
+    except (ssl.SSLError, OSError, ValueError) as exc:
+        raise ConfigError(f"tls certificate/key pair is invalid or mismatched: {exc}") from exc
+
+
 def _validate_serve_bind(host: str, api_token: str | None, allow_dev_auth: bool) -> None:
     """Reject a non-loopback bind without authentication.
 
@@ -452,6 +543,17 @@ def _validate_serve_bind(host: str, api_token: str | None, allow_dev_auth: bool)
         )
 
 
+def _resolve_tls_files(args: argparse.Namespace) -> tuple[Path | None, Path | None]:
+    """Resolve and validate the optional local TLS pair from flags/env (E5b)."""
+    cert = args.tls_cert or _optional_path_env("AV_EDGE_TLS_CERT")
+    key = args.tls_key or _optional_path_env("AV_EDGE_TLS_KEY")
+    if (cert is None) != (key is None):
+        raise ConfigError("tls certificate and key must be provided together")
+    if cert is not None and key is not None:
+        _validate_tls_files(cert, key)
+    return cert, key
+
+
 def _run_serve(args: argparse.Namespace) -> int:
     logging.basicConfig(
         level=logging.INFO,
@@ -464,8 +566,9 @@ def _run_serve(args: argparse.Namespace) -> int:
         from assemblyvision_edge.api.settings import ServerSettings
 
         db_path = args.db or (args.output / "edge.sqlite3")
-        api_token = args.api_token or os.environ.get("AV_EDGE_API_TOKEN")
+        api_token = args.api_token or _secret_env("AV_EDGE_API_TOKEN", "edge_api_token")
         _validate_serve_bind(args.host, api_token, args.allow_dev_auth)
+        tls_cert, tls_key = _resolve_tls_files(args)
         settings = ServerSettings(
             output_root=args.output,
             db_path=db_path,
@@ -481,11 +584,70 @@ def _run_serve(args: argparse.Namespace) -> int:
             integrity_scan=_build_integrity_scan_settings(),
         )
         app = create_app(settings)
-        uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+        uvicorn.run(
+            app,
+            host=args.host,
+            port=args.port,
+            log_level="info",
+            ssl_certfile=str(tls_cert) if tls_cert is not None else None,
+            ssl_keyfile=str(tls_key) if tls_key is not None else None,
+        )
     except (ConfigError, ValueError) as exc:
         log.error("configuration error: %s", exc)
         return 2
     return 0
+
+
+def _run_backup(args: argparse.Namespace) -> int:
+    """Create a consistent backup bundle (design 20.10, E5c)."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    try:
+        from assemblyvision_edge.backup import backup_edge
+
+        report = backup_edge(
+            output_root=args.output,
+            db_path=args.db or (args.output / "edge.sqlite3"),
+            dest=args.dest,
+            config_path=args.config,
+            rule_path=args.rule,
+        )
+        log.info(
+            "backup written to %s: %d governed files, %d pending media, sha256=%s",
+            report.bundle_path,
+            report.governed_files,
+            report.pending_media,
+            report.bundle_sha256,
+        )
+        return 0
+    except (ConfigError, ValueError, OSError) as exc:
+        log.error("backup failed: %s", exc)
+        return 2
+
+
+def _run_restore(args: argparse.Namespace) -> int:
+    """Restore a verified backup bundle (design 20.10, E5c)."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    try:
+        from assemblyvision_edge.backup import restore_edge
+
+        report = restore_edge(
+            backup=args.backup,
+            output_root=args.output,
+            db_path=args.db or (args.output / "edge.sqlite3"),
+            governed_dest=args.governed_dest,
+        )
+        log.info(
+            "restore from %s: db=%s, media=%d, governed=%d, reconciled=%d",
+            report.backup_path,
+            report.restored_db,
+            report.restored_media,
+            report.restored_governed,
+            report.reconciled,
+        )
+        return 0
+    except (ConfigError, ValueError, OSError) as exc:
+        log.error("restore failed: %s", exc)
+        return 2
 
 
 def _collect_sources(paths: list[str]) -> list[tuple[FolderSource, Path]]:

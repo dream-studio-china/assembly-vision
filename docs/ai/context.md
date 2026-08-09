@@ -647,15 +647,44 @@ Implemented on `feat/e4-runtime` (delivery task
   distinct artifacts/devices stay separate and no mutable state is shared
   (ADR-013 Phase 3).
 
+## 8.10 Deployment and Security (E5)
+
+Implemented on `feat/e5-deployment-security` (delivery task
+`docs/tasks/E5-deployment-and-security.md`):
+
+- **Docker packaging (E5a)**: a multi-stage `apps/edge-service/Dockerfile`
+  resolves the pinned uv workspace and installs dependencies non-editable, then
+  ships only the virtualenv in a slim runtime image running as the `av`
+  (10001:10001) user with a read-only root filesystem; data mount points are
+  pre-created and owned by `av` so named volumes inherit the right owner.
+  `python -m assemblyvision.healthcheck` gates the Docker HEALTHCHECK, and a
+  `compose.yaml` template provides persistent volumes, restart policy,
+  loopback binding, and no central-DNS dependency at startup. Verified end to
+  end on Docker: `health=healthy`, `user=av`, read-only rootfs.
+- **Secrets and TLS (E5b)**: `serve` falls back from `AV_EDGE_*` environment
+  variables to Docker secret files under `/run/secrets/` for the viewer and
+  upload tokens (failing closed on unreadable secret files); optional local
+  HTTPS via `--tls-cert`/`--tls-key` (or `AV_EDGE_TLS_*`) with startup
+  validation of existence, private-key permissions, and certificate/key
+  match.
+- **Backup and restore (E5c)**: `assemblyvision backup` takes a consistent
+  SQLite online snapshot plus governed config/rule/manifest files and pending
+  evidence with SHA-256 checksums into a `tar.gz` bundle; `assemblyvision
+  restore` verifies every checksum before applying, keeps a `.pre-restore`
+  copy, never overwrites conflicting media, and reconciles the store so
+  pending upload tasks survive.
+- **Runbooks (E5d)**: runbook 12 (backup and recovery), 13 (TLS certificate
+  rotation), and 14 (deployment upgrade and rollback) added to the indexed
+  runbook set.
+
 ## 9. Open Items / Next Steps
 
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6); **E1
   observability** (PRs #18/#19), **E2 retention and disk safety** (PR #20,
   PR-020 review resolved), **E3 upload resilience** (PR #22, section 8.8),
-  and **E4 runtime** (section 8.9) are implemented. The remaining Edge
-  production-candidate work is tracked as E5-E6:
-  - **E5 deployment and security**: Docker packaging, secret/TLS provisioning,
-    backup/restore, runbooks.
+  **E4 runtime** (section 8.9), and **E5 deployment and security** (section
+  8.10) are implemented. The remaining Edge production-candidate work is
+  tracked as E6:
   - **E6 acceptance**: resilience matrix, soak, held-out model validation,
     Edge acceptance report with hardware prerequisites.
 - The **WebSocket runtime channel** is implemented (section 8.9); the polling

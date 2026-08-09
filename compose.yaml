@@ -1,0 +1,105 @@
+# AssemblyVision edge deployment template (design 20.4, E5a).
+#
+# Template, not a finished deployment: image registry, storage paths, device
+# mappings, TLS, and resource limits must be validated per customer site.
+# The edge continues inspection while the central server is unreachable; the
+# container never depends on central DNS at startup.
+#
+# Static dashboard assets: build with `pnpm --filter edge-web build` and copy
+# the `dist/` output into the `edge-web` volume (served via --static).
+#
+# Volumes: named volumes inherit the image's av (10001:10001) ownership on
+# first creation. Bind mounts must be pre-owned by 10001:10001, e.g.
+# `chown -R 10001:10001 <host-path>`, or the service fails closed on startup.
+#
+# Secrets (E5b): `AV_EDGE_API_TOKEN` from the environment is the default.
+# To use a Docker secret instead, uncomment the `secrets:` entries below and
+# the service mount, create ./secrets/edge_api_token, and remove the token
+# from the environment. Never commit secret values.
+#
+# Optional local TLS (E5b, runbook 13): uncomment the `secrets:` entries and
+# the matching environment lines, place the certificate and private key in
+# ./secrets/, and the service validates the pair at startup:
+#   environment:
+#     AV_EDGE_TLS_CERT: /run/secrets/edge_tls_cert
+#     AV_EDGE_TLS_KEY: /run/secrets/edge_tls_key
+#   secrets:
+#     - edge_api_token
+#     - edge_tls_cert
+#     - edge_tls_key
+# Do not enable TLS until the certificate and key files exist, or the service
+# fails closed on startup.
+
+services:
+  edge-service:
+    build:
+      context: .
+      dockerfile: apps/edge-service/Dockerfile
+    image: registry.example.invalid/assemblyvision/edge-service:${AV_VERSION:-0.1.0}
+    user: "10001:10001"
+    read_only: true
+    restart: unless-stopped
+    ports:
+      # Loopback binding is not authentication: keep the port on 127.0.0.1 or
+      # terminate TLS in front and set AV_EDGE_API_TOKEN (design 15.2.1).
+      - "127.0.0.1:8000:8000"
+    environment:
+      AV_EDGE_API_TOKEN: ${AV_EDGE_API_TOKEN:-}
+    # Optional Docker secrets (E5b): uncomment when the secret files exist.
+    #   AV_EDGE_TLS_CERT: /run/secrets/edge_tls_cert
+    #   AV_EDGE_TLS_KEY: /run/secrets/edge_tls_key
+    # secrets:
+    #   - edge_api_token
+    #   - edge_tls_cert
+    #   - edge_tls_key
+    volumes:
+      - edge-db:/var/lib/assemblyvision/db
+      - edge-media:/var/lib/assemblyvision/media
+      - edge-config:/etc/assemblyvision:ro
+      - edge-models:/opt/assemblyvision/models:ro
+      - edge-web:/opt/assemblyvision/web:ro
+      - edge-tmp:/tmp
+    command:
+      - serve
+      - --output
+      - /var/lib/assemblyvision/media
+      - --db
+      - /var/lib/assemblyvision/db/edge.sqlite3
+      - --config
+      - /etc/assemblyvision/pipeline.yaml
+      - --rule
+      - /etc/assemblyvision/rule.yaml
+      - --static
+      - /opt/assemblyvision/web
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-m", "assemblyvision_edge.healthcheck", "http://127.0.0.1:8000/api/v1/health/live"]
+      interval: 15s
+      timeout: 3s
+      retries: 4
+      start_period: 30s
+    networks:
+      - edge-private
+
+networks:
+  edge-private: {}
+
+volumes:
+  edge-db: {}
+  edge-media: {}
+  edge-config: {}
+  edge-models: {}
+  edge-web: {}
+  edge-tmp: {}
+
+# Optional Docker secrets (E5b): uncomment and create the referenced files.
+# secrets:
+#   edge_api_token:
+#     file: ./secrets/edge_api_token
+#   edge_tls_cert:
+#     file: ./secrets/edge_tls_cert
+#   edge_tls_key:
+#     file: ./secrets/edge_tls_key
