@@ -198,9 +198,11 @@ endpoints `GET /api/v1/traceability/{sn}` and `GET /api/v1/statistics` (not
 part of design 15.3).
 
 The API is **read-only for mutation** (ADR-012): operator controls such as
-`POST /api/v1/inspection/{pause,resume}` and camera reconnect are not exposed,
-and `GET /api/v1/uploads` lists the queue without a manual-retry action (E3).
-When `AV_EDGE_API_TOKEN` (or `--api-token`) is configured, every route except
+`POST /api/v1/inspection/{pause,resume}` and camera reconnect are not exposed.
+The upload queue is visible at `GET /api/v1/uploads`, and E3 adds a controlled
+manual retry at `POST /api/v1/uploads/{id}/retry` (resets `RETRY_WAIT` and
+`PERMANENT_FAILURE` tasks only). When `AV_EDGE_API_TOKEN` (or `--api-token`) is
+configured, every route except
 `GET /api/v1/health/live` requires
 `Authorization: Bearer <token>` or an authenticated same-origin viewer session.
 Open `/login` in the served dashboard and enter the configured token once; it is
@@ -333,7 +335,7 @@ pnpm --filter edge-web dev        # http://localhost:5173
 | `/images/:id` | Inspection images — original, detection result, annotations |
 | `/statistics` | Production statistics — totals, PASS/NG, pass rate, date/line filters |
 | `/device` | Device status — camera, vision engine, inspection service |
-| `/uploads` | Upload queue — persistent outbox state (manual retry is not exposed until E3) |
+| `/uploads` | Upload queue — persistent outbox state with controlled manual retry (E3) |
 | `/health` | Disk/queue charts (ECharts), server-authoritative storage mode and alerts, device status |
 | `/inspections` | Full record history (internal records) |
 | `/configuration`, `/logs` | Read-only views of the effective configuration and the bounded log buffer |
@@ -461,6 +463,43 @@ pnpm -r build && pnpm -r lint && pnpm -r test          # TypeScript
 See [SECURITY.md](SECURITY.md) for the security policy, the M1
 authentication boundary, and how to report a vulnerability.
 
+### 8.1 E6 edge acceptance evidence
+
+The E6-prep acceptance runner executes every supported locally automatable E6
+acceptance item (Python/frontend/docs gates, compose render, optional Docker image
+healthcheck) and emits a machine-readable evidence manifest. On-site items —
+real camera/SDK, barcode decode, PLC/photo-eye trigger, GPU failure, power
+loss, long soak, and unseen customer data — are recorded as `NOT_EXECUTED`
+with their required environment, never as pass. The 12 locally asserted
+behavior items (no-product, offline, restart, backup/restore, checksum
+failure, ...) execute explicit pytest nodes or a Docker restart check, so a
+skipped or failed assertion can never yield `PASS`.
+
+```bash
+uv run python scripts/edge-acceptance-run.py --out evidence/ --label pre-release \
+  --artifact application=/path/to/edge-service-image.tar \
+  --artifact product-model=/path/to/product-model-manifest.json \
+  --artifact component-model=/path/to/component-model-manifest.json \
+  --artifact rule=/path/to/approved-rule.yaml \
+  --artifact configuration=/path/to/approved-pipeline.yaml \
+  --acceptance-manifest acceptance/manifest.json
+# Skip individual gates: --no-pytest --no-pnpm --no-docker --no-mkdocs
+# Opt-in slow Docker image build + container healthcheck: --docker
+```
+
+Outputs `evidence/edge-acceptance-evidence-<timestamp>.json` and a short
+human-readable summary. The application, product model, component model, rule,
+configuration, and acceptance manifest are required and locked with SHA-256
+before execution. Exit code `0` means all required local
+checks passed with a complete artifact lock; `1` means a check failed; `2` means
+the result is incomplete (missing artifact lock or a skipped/unsupported local
+check). `--no-*` flags therefore produce an evidence draft and exit `2`, never
+a successful E6-prep result. See
+[docs/tasks/E6-edge-acceptance.md](docs/tasks/E6-edge-acceptance.md) for the
+acceptance matrix and
+[docs/design/28-edge-acceptance-report.md](docs/design/28-edge-acceptance-report.md)
+for the report template.
+
 ## 9. Project layout
 
 ```text
@@ -483,20 +522,30 @@ docs/                           # architecture, contracts, ADRs, runbooks
 
 ## 10. What's next
 
-- **Real-data baseline** — collect and annotate production images with
-  X-AnyLabeling per `docs/runbooks/11-data-collection-and-annotation.md`,
-  convert the export with `scripts/adapt-xanylabeling.py`, then run `av-train`
-  -> `assemblyvision inspect` -> `assemblyvision verify`.
-- **Upload resilience (E3)** — bandwidth throttling, a circuit breaker,
-  controlled manual retry for `GET /api/v1/uploads`, long-outage drain tests,
-  and a resumable large-media client (central protocol contract only).
-- **Runtime/WebSocket (E4)** — the WebSocket runtime channel (replaces the
-  polling preview), hardware-agnostic trigger/barcode/identity seams, and
-  multi-instance resource sharing.
-- **Deployment and security (E5) and acceptance (E6)** — Docker packaging,
-  secret/TLS provisioning and backup/restore, then the resilience matrix,
-  soak, held-out model validation, and the Edge acceptance report.
+Milestones E1-E5 are implemented: observability (PRs #18/#19), retention and
+disk safety (PR #20), upload resilience (PR #22), runtime/WebSocket (PR #23),
+and deployment and security (E5, PR #24). The remaining Edge gate is E6, split
+into two phases:
 
-The upload outbox, scheduler, retention, and disk-safety milestones (PRs
-#17-#20) are merged; the central server remains out of scope until the E1-E6
-Edge gates pass.
+- **E6-prep tooling (delivered)** — acceptance test matrix, the local runner
+  (`scripts/edge-acceptance-run.py`, section 8.1), the acceptance report
+  template, and the on-site execution plan. The clock-drift harness remains an
+  explicit incomplete local item; the runner reports it as `NOT_EXECUTED`.
+- **On-site acceptance (gated)** — requires customer-approved targets, real
+  edge hardware (camera/SDK, barcode, PLC/photo-eye trigger, GPU), unseen
+  customer data, and executed resilience/soak evidence before the acceptance
+  report can be issued with measured metrics.
+
+Next work items:
+
+- **Run the E6 evidence runner** on every release candidate
+  (`uv run python scripts/edge-acceptance-run.py --out evidence/`) and attach
+  the manifest to the release record.
+- **On-site acceptance** — once hardware and customer data are available,
+  execute `docs/tasks/E6-edge-acceptance.md` §E6d and produce the report from
+  `docs/design/28-edge-acceptance-report.md`.
+- **Central server** — not started; ingestion API, PostgreSQL model, object
+  storage, idempotent receipts, and manual review begin after the Edge gates
+  and the Edge-to-central contract are ready. The edge uploader already
+  implements the outbox, idempotency keys, checksums, and verified-receipt
+  semantics the central ingestion contract will consume.

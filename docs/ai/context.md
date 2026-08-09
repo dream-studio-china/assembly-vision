@@ -682,11 +682,16 @@ Implemented on `feat/e5-deployment-security` (delivery task
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6); **E1
   observability** (PRs #18/#19), **E2 retention and disk safety** (PR #20,
   PR-020 review resolved), **E3 upload resilience** (PR #22, section 8.8),
-  **E4 runtime** (section 8.9), and **E5 deployment and security** (section
-  8.10) are implemented. The remaining Edge production-candidate work is
-  tracked as E6:
-  - **E6 acceptance**: resilience matrix, soak, held-out model validation,
-    Edge acceptance report with hardware prerequisites.
+   **E4 runtime** (section 8.9), and **E5 deployment and security** (section
+   8.10, PR #24 open) are implemented. **E6-prep tooling** is delivered: the
+   complete acceptance matrix (`docs/tasks/E6-edge-acceptance.md`), typed local
+   evidence runner (`scripts/edge-acceptance-run.py`), report template (design
+   28), and on-site execution checklist (runbook 15). The clock-drift harness
+   remains explicitly `NOT_EXECUTED`; E6 remains open until it and the
+   hardware/customer-data-gated acceptance phase execute:
+   - **E6 on-site acceptance**: resilience and soak evidence on the selected
+     hardware, held-out customer model validation, and signed Edge acceptance
+     report with hardware prerequisites.
 - The **WebSocket runtime channel** is implemented (section 8.9); the polling
   preview remains as a pixel-feed stopgap and is not required for correctness.
 - AUDIT-001 is **closed** including the deferred 4.4 authoritative persistence
