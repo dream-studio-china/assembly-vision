@@ -453,17 +453,26 @@ tests. The design:
   test harness, not production acquisition.
 - **Product window and temporal aggregation (ADR-010)**: an instance with a
   `temporal:` block in its pipeline config groups captured frames into
-  time-based per-product windows and emits one
-  `per-component-temporal-v1` inspection record per window via a deterministic
-  per-component aggregator (design 10). The default single-frame mode is
-  unchanged. `UNVERIFIABLE` was added as an aggregated evidence state;
-  insufficient valid frames yield `UNVERIFIABLE`/`INSUFFICIENT_VALID_FRAMES`,
-  an interrupted window is closed as NG with `INSPECTION_INTERRUPTED`, and the
-  OpenAPI/TypeScript contract was regenerated for the new state.
+  per-product windows and emits one `per-component-temporal-v1` inspection
+  record per window via a deterministic per-component aggregator (design 10).
+  The default single-frame mode is unchanged. `UNVERIFIABLE` was added as an
+  aggregated evidence state; insufficient valid frames yield
+  `UNVERIFIABLE`/`INSUFFICIENT_VALID_FRAMES`, an interrupted window is closed
+  as NG with `INSPECTION_INTERRUPTED`, and the OpenAPI/TypeScript contract was
+  regenerated for the new state. The PR-015 review hardening (F1-F7) is
+  applied: windows group on the frame capture monotonic clock and idle windows
+  expire normally; `window_strategy: identity` seals each window to one
+  validated product identity and aborts on missing/transitioning identities or
+  multi-product frames; quality-rejected frames contribute no evidence;
+  per-frame reasons are diagnostics while only window-integrity violations
+  force NG; temporal configs must cover every rule-required component with
+  strict `medium < high` thresholds; and count evidence is limited to detections
+  at or above the policy medium threshold.
 - **Remaining in the milestone**: vendor SDK adapters, per-instance model
   weight sharing (Phase 3), folding the REST preview into the WebSocket
-  channel, and hardware trigger / barcode window boundaries to replace the
-  time-only fallback.
+  channel, and hardware trigger / barcode correlation sources that feed the
+  `window_strategy: identity` seam (the time-only fallback remains a
+  development mode, not a production product boundary).
 - **Review hardening (PR-014)**: findings F1-F14 are closed with regression
   tests: no silent frame loss (bounded queue + explicit overflow), pause
   stops inspection and device status reports `PAUSED`, corrupt sources fail

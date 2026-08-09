@@ -89,6 +89,11 @@ instances:
     inspection:
       enabled: true
     temporal:
+      # window_strategy: time is a development fallback that separates windows
+      # only by capture-time gap. Production temporal inspection must use
+      # "identity" (or another validated correlation mechanism) so frames of
+      # different products can never merge into one window (PR-015 F1).
+      window_strategy: time
       minimum_valid_frames: 3
       maximum_window_ms: 2500
       reject_duplicate_frame_ids: true
@@ -100,6 +105,12 @@ instances:
           require_adjacent_hits: true
           max_frame_gap: 1
         component_a:
+          high_confidence: 0.90
+          medium_confidence: 0.60
+          medium_hits: 2
+          require_adjacent_hits: true
+          max_frame_gap: 1
+        component_b:
           high_confidence: 0.90
           medium_confidence: 0.60
           medium_hits: 2
@@ -119,6 +130,8 @@ instances:
         manual:
           observation_threshold: 0.45
         component_a:
+          observation_threshold: 0.50
+        component_b:
           observation_threshold: 0.50
     roi:
       margin_x_ratio: 0.05
