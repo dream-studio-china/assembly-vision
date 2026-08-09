@@ -268,7 +268,11 @@ def test_device_status_ready_with_pipeline(tmp_path: Path) -> None:
     assert status["current_component_model_version_id"] == str(
         runtime.pipeline._component_manifest.model_version_id
     )
-    assert status["alerts"] == []
+    # Storage alerts depend on the host volume (E2c); the readiness contract is
+    # that a ready pipeline carries no readiness or upload backlog alert.
+    assert "NOT_READY" not in status["alerts"]
+    assert "UPLOAD_BLOCKED" not in status["alerts"]
+    assert "UPLOAD_FAILING" not in status["alerts"]
 
 
 def test_device_status_paused_reports_not_ready(tmp_path: Path) -> None:
@@ -281,7 +285,7 @@ def test_device_status_paused_reports_not_ready(tmp_path: Path) -> None:
     assert "NOT_READY" in status["alerts"]
 
 
-def test_device_status_disk_error_reports_low(
+def test_device_status_storage_measurement_fault_fails_closed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     import shutil
@@ -293,7 +297,10 @@ def test_device_status_disk_error_reports_low(
     runtime = EdgeRuntime(_settings(tmp_path))
     status = runtime.device_status(upload_pending=0)
     assert status["disk_free_bytes"] == 0
-    assert "DISK_LOW" in status["alerts"]
+    assert status["storage_write_fault"] is True
+    assert status["storage_mode"] == "STOP"
+    assert "STORAGE_WRITE_FAULT" in status["alerts"]
+    assert status["inspection_ready"] is False
 
 
 def test_model_version_id_without_pipeline(tmp_path: Path) -> None:

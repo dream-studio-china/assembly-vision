@@ -478,6 +478,8 @@ def test_media_content_uses_mime_allowlist_not_persisted_mime(tmp_path: Path) ->
     media_dir = root / str(record.inspection_id)
     media_dir.mkdir()
     media_dir.joinpath("key.jpg").write_bytes(b"fake-jpeg-0000")
+    # A valid manifest keeps the bundle out of orphan quarantine (PR-020 F10).
+    media_dir.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
     db = tmp_path / "edge.sqlite3"
     repo = EdgeRepository.open(db)
     repo.upsert_inspection(record)

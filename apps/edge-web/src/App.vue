@@ -9,7 +9,7 @@ const localTime = ref(new Date());
 let clockTimer: ReturnType<typeof setInterval> | null = null;
 
 const deviceCode = computed(() => runtime.status?.device_id.slice(0, 8).toUpperCase() ?? "LOCAL EDGE");
-const diskWarning = computed(() => (runtime.status?.disk_free_bytes ?? Infinity) < 5 * 1024 ** 3);
+const diskWarning = computed(() => runtime.status?.storage_mode !== undefined && runtime.status.storage_mode !== "NORMAL");
 
 onMounted(() => {
   void runtime.refresh();

@@ -107,7 +107,27 @@ media = Table(
     Column("mime_type", String(64), nullable=False),
     Column("size_bytes", Integer, nullable=False),
     Column("checksum_sha256", String(64), nullable=False),
+    # Retention/deletion coordination state (design 12.6/12.7, E2). The
+    # filesystem holds media bytes; SQLite holds metadata and the deletion
+    # state machine. A PURGED row remains an audit tombstone.
+    Column("created_at", Text, nullable=True),
+    Column("retention_eligible_at", Text, nullable=True),
+    Column("hold_reason", String(128), nullable=True),
+    Column("deleting_at", Text, nullable=True),
+    Column("delete_lease_owner", String(36), nullable=True),
+    Column("delete_lease_expires_at", Text, nullable=True),
+    Column("purged_at", Text, nullable=True),
+    Column("purge_reason", String(64), nullable=True),
+    Column("last_delete_error", String(256), nullable=True),
+    Column(
+        "integrity_status",
+        String(16),
+        nullable=True,
+        comment="Integrity scan result; FAULT protects the artifact from deletion (E2)",
+    ),
 )
+
+Index("ix_media_retention", media.c.lifecycle, media.c.retention_eligible_at)
 
 upload_tasks = Table(
     "upload_tasks",

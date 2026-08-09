@@ -439,10 +439,12 @@ class UploadScheduler:
             record = self._repository.get_inspection_full(str(task.inspection_id))
             if record is None:
                 raise _PermanentPayloadError("INSPECTION_EVIDENCE_MISSING")
-            payload = json.dumps(
-                record.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
-            )
-            return payload.encode("utf-8")
+            payload = record.model_dump(mode="json")
+            # Mutable synchronization state is not evidence; excluding it keeps
+            # the uploaded payload byte-identical to the size recorded at
+            # enqueue (PR-020 F12).
+            payload.pop("synchronization_status", None)
+            return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
         if task.kind == "MEDIA":
             media = self._repository.get_media(str(task.object_id))
             if media is None:

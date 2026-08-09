@@ -69,9 +69,20 @@ onMounted(async () => {
     </el-table>
 
     <p class="device__meta">
-      Observed at {{ formatIsoTime(status?.observed_at) }} · Disk free
-      {{ ((status?.disk_free_bytes ?? 0) / 1024 ** 3).toFixed(1) }} GB ·
+      Observed at {{ formatIsoTime(status?.observed_at) }} · Storage
+      {{ status?.storage_mode ?? "NORMAL" }} ·
+      {{ ((status?.storage_free_bytes ?? 0) / 1024 ** 3).toFixed(1) }} GB free ·
       Pending uploads {{ status?.upload_pending_count ?? "-" }}
+    </p>
+    <p v-if="status && status.alerts.length" class="device__alerts">
+      Server alerts: {{ status.alerts.join(", ") }}
+    </p>
+    <p v-if="status" class="device__meta">
+      Integrity scan: checked {{ status.integrity_scan_checked }} ·
+      faults {{ status.integrity_scan_faults }} ·
+      checksummed {{ status.integrity_scan_checksummed }} ·
+      skipped {{ status.integrity_scan_skipped }}
+      (verify checksums: {{ status.integrity_verify_checksums ? "on" : "off" }})
     </p>
   </div>
 </template>
@@ -85,6 +96,11 @@ onMounted(async () => {
 .device__meta {
   color: #6b7280;
   font-size: 13px;
+}
+.device__alerts {
+  color: #b45309;
+  font-size: 13px;
+  font-weight: 600;
 }
 .pill {
   display: inline-block;

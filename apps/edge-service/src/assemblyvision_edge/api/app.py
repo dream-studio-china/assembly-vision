@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -69,9 +70,9 @@ _CSP = (
 
 def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     # Validate at the composition root as well as the CLI path: programmatic
-    # callers must not bypass the TLS/credential policy (PR-017 F7 follow-up).
-    if settings.upload is not None:
-        settings.upload.validate()
+    # callers must not bypass the TLS/credential/storage policy (PR-017 F7
+    # follow-up, E2c).
+    settings.validate()
     runtime = EdgeRuntime(settings)
 
     @asynccontextmanager
@@ -86,6 +87,44 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
             imported = reconcile_output_root(repository, settings.output_root)
             if imported:
                 log.info("reconciled %d inspection records from output root", imported)
+            # Startup integrity (design 12.8, E2d): verify projected media
+            # against the filesystem and recover abandoned cleanup claims
+            # before any worker starts. Faults durably protect the artifact and
+            # gate intake/readiness until documented reconciliation (PR-020
+            # F08); checksum policy and coverage are exposed for operations
+            # (PR-020 F09).
+            # Full verification is the safe default. Deployments that cannot
+            # afford it must explicitly configure a bounded checksum sample.
+            from assemblyvision_edge.api.settings import IntegrityScanSettings
+            from assemblyvision_edge.persistence.reconcile import scan_storage_integrity
+
+            scan_settings = settings.integrity_scan or IntegrityScanSettings(verify_checksums=True)
+            report = scan_storage_integrity(
+                repository,
+                settings.output_root,
+                verify_checksums=bool(scan_settings and scan_settings.verify_checksums),
+                sample_limit=scan_settings.sample_limit if scan_settings else None,
+                sample_max_bytes=scan_settings.sample_max_bytes if scan_settings else None,
+            )
+            runtime.integrity_scan = report
+            runtime.integrity_scan_at = datetime.now(UTC).isoformat()
+            runtime.integrity_scan_settings = scan_settings
+            integrity_fault_count = repository.retention_metrics(
+                datetime.now(UTC).isoformat()
+            ).integrity_fault_count
+            if report.faults or integrity_fault_count:
+                log.warning(
+                    "storage integrity scan has %d fault(s) of %d media: %s "
+                    "(checksummed %d, skipped %d)",
+                    integrity_fault_count,
+                    report.checked,
+                    report.fault_codes,
+                    report.checksum_checked,
+                    report.skipped,
+                )
+            if integrity_fault_count:
+                runtime.storage_integrity_fault = True
+            repository.recover_expired_retention_claims(datetime.now(UTC).isoformat())
         runtime.load_config(repository)
         if runtime.pipeline is None and not runtime.instances:
             log.warning("inspection engine is not ready: %s", runtime.pipeline_error)
@@ -133,7 +172,25 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         app.state.upload_scheduler = scheduler
         if scheduler is not None:
             scheduler.start()
+        # Retention cleanup worker (design 12.7, E2b): only an explicitly
+        # enabled, approved retention policy can ever delete local media. With
+        # no policy the worker is inert and never touches the filesystem.
+        from assemblyvision_edge.retention.worker import RetentionCleanupWorker
+
+        cleanup_worker: RetentionCleanupWorker | None = None
+        if settings.retention is not None and settings.retention.enabled:
+            cleanup_worker = RetentionCleanupWorker(
+                repository,
+                settings.output_root,
+                settings.retention.to_policy(),
+                lease_seconds=300,
+                batch_size=16,
+            )
+            cleanup_worker.start()
+        app.state.cleanup_worker = cleanup_worker
         yield
+        if cleanup_worker is not None:
+            cleanup_worker.stop()
         if scheduler is not None:
             scheduler.stop()
         runtime.shutdown()

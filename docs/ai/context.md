@@ -528,9 +528,18 @@ are resolved with regression tests:
     captures application records, and device status now exposes upload queue
     bytes, oldest pending age, attempt/success/failure counters, failure rate,
     last contact, and `UPLOAD_BLOCKED`/`UPLOAD_FAILING` alerts.
-  - **E2 retention and disk safety**: cleanup worker with inter-process lease,
-    deletion only after verified receipts + retention, disk-pressure
-    warning/critical/stop policy, startup integrity scan.
+  - **E2 retention and disk safety**: implemented (E2a-E2d): migration 0007
+    adds media retention/deletion/fencing/integrity state; receipt-gated
+    eligibility + inter-process cleanup lease; `RetentionCleanupWorker` that
+    deletes only receipt-verified, hold-elapsed media and treats missing files
+    as integrity faults; `StorageSettings`/`RetentionSettings`
+    (`AV_EDGE_STORAGE_*`/`AV_EDGE_RETENTION_*`) with strict threshold ordering
+    and a fail-safe stop gate (`inspection_ready=false`, no unrecorded `OK`);
+    device-status storage/cleanup observability and stable alerts; startup
+    media/filesystem integrity scan + durable quarantine + `PRAGMA quick_check`
+    fail-closed. Cleanup stays disabled without an approved policy. Runbooks
+    03/04/05/07 updated. Customer retention periods and stop-mode line behavior
+    remain release blockers for production enablement (E2 task section 4).
   - **E3 upload resilience**: bandwidth throttling, circuit breaker,
     controlled manual retry, long-outage drain tests, resumable large-media
     client (central protocol contract only).

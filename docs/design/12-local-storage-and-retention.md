@@ -127,3 +127,44 @@ Database corruption puts the service into storage-not-ready mode. Restore from a
 - Confirm whether full or rolling video is legally and operationally required.
 - Define encryption-at-rest, backup, and secure-deletion requirements.
 - Confirm acceptable behavior when disk capacity reaches the protected-data stop threshold.
+
+## 12.11 Implementation Status (E2)
+
+The retention and disk-safety milestone is implemented in `assemblyvision_edge`
+(see [the E2 delivery task](../tasks/E2-retention-and-disk-safety.md)):
+
+- **Durable retention state (E2a)**: migration 0007 adds media `created_at`,
+  `retention_eligible_at`, hold state, deletion claim/lease/fencing columns,
+  purge timestamp/reason, delete error, and integrity status. Media rows record
+  their hold deadline at enqueue from the approved policy; rows without a
+  deadline are never eligible. A `PURGED` row remains an audit tombstone.
+- **Receipt-gated eligibility and fencing**: an artifact is eligible only when
+  its inspection is `SYNCED` (every task receipt-verified) with a media receipt
+  that includes the central object identifier, the hold deadline elapsed, and
+  no hold/fault/purge/deleting state. The claim transaction releases expired
+  leases, re-checks eligibility, and issues a per-artifact fencing token;
+  purge/failure/fault transitions require the token and an unexpired lease.
+- **Cleanup worker (E2b)**: `RetentionCleanupWorker` claims candidates under the
+  inter-process lease, revalidates the trusted bundle path, unlinks, verifies
+  absence, and finalizes the tombstone. Missing files become integrity faults,
+  never false purges; unlink failures are retryable and observable. Without an
+  approved, enabled policy the worker never touches the filesystem.
+- **Disk pressure and fail-safe runtime (E2c)**: `StorageSettings`
+  (`AV_EDGE_STORAGE_*`, strictly ordered stop < critical < warning) drives
+  free-byte and free-inode pressure modes. Device status exposes the mode,
+  thresholds, cleanup health/metrics, and stable alerts (`DISK_WARNING`,
+  `DISK_CRITICAL`, `DISK_STOP`, `STORAGE_WRITE_FAULT`, `CLEANUP_FAULT`). At
+  stop pressure or on a write fault the runtime stops accepting new products and
+  reports `inspection_ready=false`; it never returns an unrecorded `OK`. The
+  dashboard renders server-authoritative state instead of a fixed threshold.
+- **Startup integrity (E2d)**: `scan_storage_integrity` verifies projected
+  media existence, size, and checksums by default; deployments may explicitly
+  configure bounded deterministic checksum sampling and its coverage is exposed
+  through device status. Faults are marked durably;
+  malformed/unsafe/conflicting bundles are moved to `quarantine/`, never
+  re-imported or deleted; `PRAGMA quick_check` runs at every open and fails
+  closed on corruption; abandoned cleanup claims are recovered at startup.
+
+Customer/site retention durations, disk sizing, holds, and stop-mode line
+behavior remain release blockers for enabling deletion in production
+(E2 task section 4).
