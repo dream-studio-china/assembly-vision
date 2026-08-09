@@ -8,6 +8,7 @@ the design 15.3 API routers, and serves the built frontend as static assets.
 from __future__ import annotations
 
 import logging
+import threading
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -221,6 +222,7 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     # E4a/PR-023 F01: short-lived, single-use WebSocket runtime tickets issued
     # over authenticated REST for cross-origin browser sockets.
     app.state.ws_tickets = {}
+    app.state.ws_tickets_lock = threading.Lock()
 
     # The Vite dev server calls the API cross-origin during development; the
     # served dashboard is same-origin and needs no CORS. Allow only anchored

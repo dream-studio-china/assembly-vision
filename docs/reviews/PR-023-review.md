@@ -344,3 +344,15 @@ pnpm -r test
 cd apps/edge-web && pnpm test:e2e
 uv run mkdocs build --strict
 ```
+
+## 8. Follow-Up Re-Review
+
+**Status: RESOLVED**
+
+The post-resolution review found two small lifecycle/concurrency risks and
+fixed them before merge:
+
+| Finding | Resolution | Regression tests |
+|---|---|---|
+| Ticket issuance/consumption could access `app.state.ws_tickets` concurrently because synchronous REST handlers may run in a worker thread while WebSocket handshakes run on the ASGI loop | A process-local lock now serializes ticket cleanup, issuance, and atomic consumption, preventing concurrent dictionary mutation while retaining one-time semantics | Existing ticket issue/consume/replay/expiry tests; runtime-event test suite |
+| An asynchronous ticket provider could complete after the dashboard disconnects or a newer connection starts, allowing a stale socket or its close callback to alter the current connection state | `ReconnectingWebSocket` now uses a connection generation for ticket resolution, reconnect scheduling, and socket callbacks; stale operations return without creating or changing the active socket | `does not open a socket after disconnect during a ticket exchange`; `ignores an old socket closing after a newer connection starts` |

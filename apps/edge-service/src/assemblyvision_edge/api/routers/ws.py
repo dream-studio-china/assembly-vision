@@ -68,14 +68,20 @@ def create_runtime_ticket(request: Request) -> WsTicket:
     """
     now = datetime.now(UTC)
     tickets = cast(dict[str, datetime], request.app.state.ws_tickets)
-    for expired in [key for key, expires in tickets.items() if expires <= now]:
-        del tickets[expired]
-    if len(tickets) >= _TICKET_MAX:
-        oldest = min(tickets, key=lambda key: tickets[key])
-        del tickets[oldest]
-    ticket = secrets.token_urlsafe(32)
-    expires_at = now + _TICKET_TTL
-    tickets[ticket] = expires_at
+    lock = request.app.state.ws_tickets_lock
+    # This route is synchronous (thread-pool eligible) while a WebSocket
+    # handshake runs on the ASGI loop. Keep cleanup, issue, and consumption
+    # mutually exclusive so concurrent access cannot mutate the dict while it
+    # is iterated (PR-023 re-review).
+    with lock:
+        for expired in [key for key, expires in tickets.items() if expires <= now]:
+            del tickets[expired]
+        if len(tickets) >= _TICKET_MAX:
+            oldest = min(tickets, key=lambda key: tickets[key])
+            del tickets[oldest]
+        ticket = secrets.token_urlsafe(32)
+        expires_at = now + _TICKET_TTL
+        tickets[ticket] = expires_at
     return WsTicket(ticket=ticket, expires_at=expires_at.isoformat())
 
 
@@ -127,7 +133,8 @@ def _consume_ticket(websocket: WebSocket) -> bool:
     ticket = _extract_ticket(websocket.headers)
     if not ticket:
         return False
-    expires_at = tickets.pop(ticket, None)
+    with websocket.app.state.ws_tickets_lock:
+        expires_at = tickets.pop(ticket, None)
     if expires_at is None:
         return False
     return expires_at > datetime.now(UTC)

@@ -80,17 +80,20 @@ export class ReconnectingWebSocket implements WebSocketService {
   #gapListeners: Array<() => void> = [];
   #lastSequence = new Map<string, number>();
   #manualClose = false;
+  #connectionGeneration = 0;
 
   status: WSStatus = "disconnected";
 
   connect(url: string, protocols?: string[] | WebSocketProtocolProvider): void {
+    this.#connectionGeneration += 1;
     this.#url = url;
     this.#protocols = protocols ?? null;
     this.#manualClose = false;
-    void this.#open();
+    void this.#open(this.#connectionGeneration);
   }
 
   disconnect(): void {
+    this.#connectionGeneration += 1;
     this.#manualClose = true;
     if (this.#timer !== null) {
       clearTimeout(this.#timer);
@@ -115,7 +118,7 @@ export class ReconnectingWebSocket implements WebSocketService {
     };
   }
 
-  async #open(): Promise<void> {
+  async #open(generation: number): Promise<void> {
     this.status = "connecting";
     let protocols: string[] = [];
     if (typeof this.#protocols === "function") {
@@ -124,12 +127,17 @@ export class ReconnectingWebSocket implements WebSocketService {
       } catch {
         // A failed credential exchange must not crash the caller; retry with
         // backoff so a transient ticket outage recovers (PR-023 F01).
-        this.#scheduleReconnect();
+        if (!this.#manualClose && generation === this.#connectionGeneration) {
+          this.#scheduleReconnect();
+        }
         return;
       }
     } else if (this.#protocols !== null) {
       protocols = this.#protocols;
     }
+    // A component may unmount or create a newer connection while an async
+    // ticket exchange is in flight. Never open a stale socket afterward.
+    if (this.#manualClose || generation !== this.#connectionGeneration) return;
     let socket: WebSocket;
     try {
       socket =
@@ -142,10 +150,15 @@ export class ReconnectingWebSocket implements WebSocketService {
     }
     this.#socket = socket;
     socket.onopen = () => {
+      if (generation !== this.#connectionGeneration) {
+        socket.close();
+        return;
+      }
       this.#attempt = 0;
       this.status = "connected";
     };
     socket.onmessage = (message: MessageEvent<string>) => {
+      if (generation !== this.#connectionGeneration) return;
       let parsed: unknown;
       try {
         parsed = JSON.parse(message.data);
@@ -167,9 +180,12 @@ export class ReconnectingWebSocket implements WebSocketService {
       for (const listener of this.#listeners) listener(envelope);
     };
     socket.onclose = () => {
+      if (generation !== this.#connectionGeneration) return;
       this.#socket = null;
       this.status = "disconnected";
-      if (!this.#manualClose) this.#scheduleReconnect();
+      if (!this.#manualClose && generation === this.#connectionGeneration) {
+        this.#scheduleReconnect();
+      }
     };
     socket.onerror = () => {
       socket.close();
@@ -179,10 +195,13 @@ export class ReconnectingWebSocket implements WebSocketService {
   #scheduleReconnect(): void {
     if (this.#manualClose || this.#timer !== null) return;
     const delay = backoffDelay(this.#attempt);
+    const generation = this.#connectionGeneration;
     this.#attempt += 1;
     this.#timer = setTimeout(() => {
       this.#timer = null;
-      void this.#open();
+      if (!this.#manualClose && generation === this.#connectionGeneration) {
+        void this.#open(generation);
+      }
     }, delay);
   }
 }

@@ -139,4 +139,32 @@ describe("ReconnectingWebSocket sequence handling (AUDIT-001 4.5)", () => {
     expect(fake.protocols).toEqual(["ticket-1"]);
     expect(tickets).toEqual(["issued"]);
   });
+
+  it("does not open a socket after disconnect during a ticket exchange", async () => {
+    FakeWebSocket.instances = [];
+    vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+    let resolveTicket: ((value: string[]) => void) | undefined;
+    const ticket = new Promise<string[]>((resolve) => {
+      resolveTicket = resolve;
+    });
+    const ws = new ReconnectingWebSocket();
+    ws.connect("ws://edge.test/events", () => ticket);
+    ws.disconnect();
+    resolveTicket?.(["ticket-after-disconnect"]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(FakeWebSocket.instances).toHaveLength(0);
+  });
+
+  it("ignores an old socket closing after a newer connection starts", () => {
+    FakeWebSocket.instances = [];
+    vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+    const ws = new ReconnectingWebSocket();
+    ws.connect("ws://edge.test/first");
+    const first = FakeWebSocket.instances[0]!;
+    ws.connect("ws://edge.test/second");
+    const second = FakeWebSocket.instances[1]!;
+    second.onopen?.();
+    first.onclose?.();
+    expect(ws.status).toBe("connected");
+  });
 });
