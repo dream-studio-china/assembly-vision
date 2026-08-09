@@ -282,6 +282,10 @@ class EdgeRuntime:
                 if closed is not None:
                     record = runtime.pipeline.inspect_window(closed, writer)
                     runtime.last_result = record.decision.business_result
+                    # An interrupted close is still a published bundle; mirror
+                    # it so shutdown never loses the record or its outbox tasks
+                    # (PR-017 F2 residual note).
+                    self._persist_projection(record)
             except Exception:  # noqa: BLE001 - interrupted close must not mask shutdown
                 log.exception("interrupted window close failed for instance %s", instance_id)
 
@@ -290,15 +294,15 @@ class EdgeRuntime:
 
         The writer already fsynced the bundle, so a projection failure is
         logged and never turns a completed inspection into a failure. The
-        outbox enqueue is idempotent and only applies to ``LOCAL_ONLY``
-        records, so restart reconciliation cannot duplicate tasks (ADR-005).
+        projection and its upload tasks commit in one transaction, so a crash
+        between them cannot strand a record without its outbox tasks
+        (PR-017 F2, design 12.4).
         """
         repository = self.repository
         if repository is None:
             return
         try:
-            repository.upsert_inspection(record)
-            repository.enqueue_inspection_uploads(record)
+            repository.persist_inspection_and_enqueue_uploads(record)
         except Exception as exc:  # noqa: BLE001 - projection must not break the loop
             log.warning(
                 "inspection %s was published but the projection/outbox could not be updated: %s",

@@ -17,6 +17,7 @@ from uuid import uuid4
 import pytest
 import sqlalchemy as sa
 from assemblyvision_domain.models import BusinessResult, InspectionRecord, UploadTask
+from assemblyvision_edge.persistence.reconcile import reconcile_output_root
 from assemblyvision_edge.persistence.repository import EdgeRepository
 from assemblyvision_edge.upload.scheduler import (
     DirectoryUploadSink,
@@ -46,6 +47,13 @@ def _write_media(output_root: Path, record: InspectionRecord) -> None:
         data = f"jpeg-bytes-{item.media_id}".encode()
         path.write_bytes(data)
         item.checksum_sha256 = hashlib.sha256(data).hexdigest()
+
+
+def _write_bundle(output_root: Path, record: InspectionRecord) -> None:
+    """Write the CLI-style inspection.json bundle the reconciliation imports."""
+    path = output_root / str(record.inspection_id) / "inspection.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(record.model_dump_json(), encoding="utf-8")
 
 
 def _seed(
@@ -138,6 +146,53 @@ class TestOutboxEnqueue:
             assert len(restarted.list_uploads(limit=100).items) == 2
         finally:
             restarted.close()
+
+
+class TestAtomicPersistence:
+    def test_persist_and_enqueue_commit_atomically(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """F2: projection + outbox tasks land in one repository call."""
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-atomic")
+        assert repo.persist_inspection_and_enqueue_uploads(record) == "inserted"
+        assert len(repo.list_uploads(limit=100).items) == 2
+        fetched = repo.get_inspection(str(record.inspection_id))
+        assert fetched is not None
+        assert fetched.synchronization_status == "QUEUED"
+        # Re-persisting is unchanged and creates nothing new.
+        assert repo.persist_inspection_and_enqueue_uploads(record) == "unchanged"
+        assert len(repo.list_uploads(limit=100).items) == 2
+
+    def test_reconcile_repairs_stranded_local_only_record(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """F2: a LOCAL_ONLY record whose outbox was lost gains its tasks."""
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-strand")
+        _write_media(tmp_path, record)
+        # The legacy seeding path leaves the record projected but not queued,
+        # exactly like a crash between the two old commits.
+        assert repo.upsert_inspection(record) == "inserted"
+        assert repo.list_uploads(limit=100).items == []
+        _write_bundle(tmp_path, record)
+        # Reconciliation must repair it even though it is not newly inserted.
+        assert reconcile_output_root(repo, tmp_path) == 0
+        assert len(repo.list_uploads(limit=100).items) == 2
+        fetched = repo.get_inspection(str(record.inspection_id))
+        assert fetched is not None
+        assert fetched.synchronization_status == "QUEUED"
+        # A second pass creates nothing.
+        assert reconcile_output_root(repo, tmp_path) == 0
+        assert len(repo.list_uploads(limit=100).items) == 2
+
+    def test_reconcile_imports_fresh_bundle_with_tasks(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """F2: a new bundle is imported and queued in the same operation."""
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-fresh")
+        _write_media(tmp_path, record)
+        _write_bundle(tmp_path, record)
+        assert reconcile_output_root(repo, tmp_path) == 1
+        assert len(repo.list_uploads(limit=100).items) == 2
 
 
 class TestSuccessfulUpload:

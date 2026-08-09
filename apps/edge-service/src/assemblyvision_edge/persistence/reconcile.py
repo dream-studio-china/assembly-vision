@@ -80,6 +80,11 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
     output root, or whose immutable content conflicts with an existing
     inspection ID, are skipped whole so no partially validated record is
     imported. Crash-left ``.staging-*`` bundles are quarantined first.
+
+    The atomic persist-and-enqueue operation is applied to every valid bundle,
+    not just newly inserted ones, so a stranded ``LOCAL_ONLY`` record whose
+    outbox tasks were lost in a crash is repaired instead of being skipped
+    (PR-017 F2).
     """
     if not output_root.is_dir():
         return 0
@@ -104,21 +109,11 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
             )
             continue
         try:
-            status = repository.upsert_inspection(record)
+            status = repository.persist_inspection_and_enqueue_uploads(record)
         except RepositoryError as exc:
             log.warning("skipping conflicting inspection %s: %s", record.inspection_id, exc)
             continue
         if status == "inserted":
             imported += 1
-            try:
-                # Outbox: any record not yet queued gets inspection+media tasks
-                # (design 12.4 step 4); idempotent per idempotency key.
-                repository.enqueue_inspection_uploads(record)
-            except RepositoryError as exc:
-                log.warning(
-                    "inspection %s imported but upload tasks could not be queued: %s",
-                    record.inspection_id,
-                    exc,
-                )
             log.info("imported inspection %s from %s", record.inspection_id, path)
     return imported

@@ -198,8 +198,28 @@ class EdgeRepository:
         content is a no-op, while different content for an existing inspection ID
         raises :class:`RepositoryError` without any partial mutation. Duplicate
         child identities (component evidence codes, media paths) are rejected so
-        an inspection is never partially imported (C2).
+        an inspection is never partially imported (C2). Seeding-only entry
+        point; production persistence must use
+        :meth:`persist_inspection_and_enqueue_uploads` so the projection and its
+        upload outbox tasks commit atomically (PR-017 F2).
         """
+        content_hash, payload, decision, barcode, product, media_ids = self._prepare_projection(
+            record
+        )
+        try:
+            with self._engine.begin() as conn:
+                return self._upsert_inspection_inner(
+                    conn, record, content_hash, payload, decision, barcode, product, media_ids
+                )
+        except IntegrityError as exc:
+            raise RepositoryError(
+                f"inspection {record.inspection_id} violates immutable projection constraints"
+            ) from exc
+
+    def _prepare_projection(
+        self, record: InspectionRecord
+    ) -> tuple[str, dict[str, Any], dict[str, Any], str | None, str | None, list[str]]:
+        """Validate the immutable projection and derive its persisted columns."""
         codes = [evidence.component_code for evidence in record.evidence]
         if len(codes) != len(set(codes)):
             raise RepositoryError(
@@ -216,152 +236,190 @@ class EdgeRepository:
         decision = payload["decision"]
         barcode = payload["barcode_result"].get("value")
         product = payload["product_resolution"].get("product_code")
+        return content_hash, payload, decision, barcode, product, media_ids
+
+    def _upsert_inspection_inner(
+        self,
+        conn: Any,
+        record: InspectionRecord,
+        content_hash: str,
+        payload: dict[str, Any],
+        decision: dict[str, Any],
+        barcode: str | None,
+        product: str | None,
+        media_ids: list[str],
+    ) -> str:
+        """Insert the immutable projection inside an open transaction.
+
+        Returns ``inserted`` or ``unchanged``; raises :class:`RepositoryError`
+        on a content conflict without partial mutation (PR-017 F2).
+        """
+        existing = conn.execute(
+            text("SELECT content_sha256 FROM inspections WHERE inspection_id = :id"),
+            {"id": str(record.inspection_id)},
+        ).scalar_one_or_none()
+        if existing is not None:
+            if existing != content_hash:
+                raise RepositoryError(
+                    f"inspection {record.inspection_id} content conflict; "
+                    "immutable evidence cannot be overwritten"
+                )
+            return "unchanged"
+        conflicting_media_id = conn.execute(
+            text(f"SELECT media_id FROM {media.name} WHERE media_id IN :media_ids").bindparams(
+                bindparam("media_ids", expanding=True)
+            ),
+            {"media_ids": media_ids},
+        ).scalar_one_or_none()
+        if conflicting_media_id is not None:
+            raise RepositoryError(
+                f"inspection {record.inspection_id} reuses media ID {conflicting_media_id}"
+            )
+        conn.execute(
+            text(
+                f"""
+                INSERT INTO {inspections.name} (
+                    inspection_id, device_id, device_sequence, lifecycle_status,
+                    started_at, completed_at, barcode_result, product_resolution,
+                    product_detection, roi_result, frame_quality_summary,
+                    application_version, product_model_version_id,
+                    product_model_checksum_sha256, component_model_version_id,
+                    component_model_checksum_sha256, rule_version_id,
+                    aggregation_policy_version, decision, synchronization_status,
+                    processing_ms, inference_metadata, content_sha256,
+                    business_result, internal_decision, barcode_value, product_code
+                ) VALUES (
+                    :inspection_id, :device_id, :device_sequence, :lifecycle_status,
+                    :started_at, :completed_at, :barcode_result, :product_resolution,
+                    :product_detection, :roi_result, :frame_quality_summary,
+                    :application_version, :product_model_version_id,
+                    :product_model_checksum_sha256, :component_model_version_id,
+                    :component_model_checksum_sha256, :rule_version_id,
+                    :aggregation_policy_version, :decision, :synchronization_status,
+                    :processing_ms, :inference_metadata, :content_sha256,
+                    :business_result, :internal_decision, :barcode_value, :product_code
+                )
+                """
+            ),
+            {
+                "inspection_id": str(record.inspection_id),
+                "device_id": str(record.device_id),
+                "device_sequence": record.device_sequence,
+                "lifecycle_status": record.lifecycle_status.value,
+                "started_at": record.started_at.isoformat(),
+                "completed_at": record.completed_at.isoformat(),
+                "barcode_result": json.dumps(payload["barcode_result"]),
+                "product_resolution": json.dumps(payload["product_resolution"]),
+                "product_detection": json.dumps(payload["product_detection"])
+                if payload["product_detection"]
+                else None,
+                "roi_result": json.dumps(payload["roi_result"]) if payload["roi_result"] else None,
+                "frame_quality_summary": json.dumps(payload["frame_quality_summary"]),
+                "application_version": record.application_version,
+                "product_model_version_id": str(record.product_model_version_id),
+                "product_model_checksum_sha256": record.product_model_checksum_sha256,
+                "component_model_version_id": str(record.component_model_version_id),
+                "component_model_checksum_sha256": record.component_model_checksum_sha256,
+                "rule_version_id": str(record.rule_version_id),
+                "aggregation_policy_version": record.aggregation_policy_version,
+                "decision": json.dumps(decision),
+                "synchronization_status": record.synchronization_status,
+                "processing_ms": record.processing_ms,
+                "inference_metadata": json.dumps(record.inference_metadata)
+                if record.inference_metadata
+                else None,
+                "content_sha256": content_hash,
+                "business_result": record.decision.business_result.value,
+                "internal_decision": record.decision.internal_decision.value,
+                "barcode_value": barcode,
+                "product_code": product,
+            },
+        )
+        for evidence in record.evidence:
+            conn.execute(
+                text(
+                    f"""
+                    INSERT INTO {component_evidence.name} (
+                        inspection_id, component_code, state, best_confidence,
+                        usable_frame_count, detection_count, adjacent_detection_run,
+                        supporting_frame_ids, policy_reason_codes, box_area_ratios,
+                        box_centers
+                    ) VALUES (
+                        :inspection_id, :component_code, :state, :best_confidence,
+                        :usable_frame_count, :detection_count, :adjacent_detection_run,
+                        :supporting_frame_ids, :policy_reason_codes, :box_area_ratios,
+                        :box_centers
+                    )
+                    """
+                ),
+                {
+                    "inspection_id": str(record.inspection_id),
+                    "component_code": evidence.component_code,
+                    "state": evidence.state,
+                    "best_confidence": evidence.best_confidence,
+                    "usable_frame_count": evidence.usable_frame_count,
+                    "detection_count": evidence.detection_count,
+                    "adjacent_detection_run": evidence.adjacent_detection_run,
+                    "supporting_frame_ids": json.dumps(
+                        [str(i) for i in evidence.supporting_frame_ids]
+                    ),
+                    "policy_reason_codes": json.dumps(evidence.policy_reason_codes),
+                    "box_area_ratios": json.dumps(evidence.box_area_ratios),
+                    "box_centers": json.dumps([[x, y] for x, y in evidence.box_centers]),
+                },
+            )
+        for item in record.media:
+            conn.execute(
+                text(
+                    f"""
+                    INSERT INTO {media.name} (
+                        media_id, inspection_id, kind, lifecycle, relative_path,
+                        mime_type, size_bytes, checksum_sha256
+                    ) VALUES (
+                        :media_id, :inspection_id, :kind, :lifecycle, :relative_path,
+                        :mime_type, :size_bytes, :checksum_sha256
+                    )
+                    """
+                ),
+                {
+                    "media_id": str(item.media_id),
+                    "inspection_id": str(record.inspection_id),
+                    "kind": item.kind,
+                    "lifecycle": item.lifecycle.value,
+                    "relative_path": item.relative_path,
+                    "mime_type": item.mime_type,
+                    "size_bytes": item.size_bytes,
+                    "checksum_sha256": item.checksum_sha256,
+                },
+            )
+        return "inserted"
+
+    def persist_inspection_and_enqueue_uploads(self, record: InspectionRecord) -> str:
+        """Atomically persist the immutable projection and its upload outbox.
+
+        Design 12.4 steps 3+4 and contract 04 section 3: the projection and its
+        upload tasks must commit as one recoverable unit so a crash or an
+        enqueue failure cannot leave a completed inspection without its required
+        tasks (PR-017 F2). Idempotency makes reconciliation a safe repair:
+        re-inserting a stranded ``LOCAL_ONLY`` record is ``unchanged``, then the
+        still-local status allows the missing tasks to be created; an already
+        queued record creates nothing.
+        """
+        content_hash, payload, decision, barcode, product, media_ids = self._prepare_projection(
+            record
+        )
+        now = datetime.now(UTC).isoformat()
         try:
             with self._engine.begin() as conn:
-                existing = conn.execute(
-                    text("SELECT content_sha256 FROM inspections WHERE inspection_id = :id"),
-                    {"id": str(record.inspection_id)},
-                ).scalar_one_or_none()
-                if existing is not None:
-                    if existing != content_hash:
-                        raise RepositoryError(
-                            f"inspection {record.inspection_id} content conflict; "
-                            "immutable evidence cannot be overwritten"
-                        )
-                    return "unchanged"
-                conflicting_media_id = conn.execute(
-                    text(
-                        f"SELECT media_id FROM {media.name} WHERE media_id IN :media_ids"
-                    ).bindparams(bindparam("media_ids", expanding=True)),
-                    {"media_ids": media_ids},
-                ).scalar_one_or_none()
-                if conflicting_media_id is not None:
-                    raise RepositoryError(
-                        f"inspection {record.inspection_id} reuses media ID {conflicting_media_id}"
-                    )
-                conn.execute(
-                    text(
-                        f"""
-                        INSERT INTO {inspections.name} (
-                            inspection_id, device_id, device_sequence, lifecycle_status,
-                            started_at, completed_at, barcode_result, product_resolution,
-                            product_detection, roi_result, frame_quality_summary,
-                            application_version, product_model_version_id,
-                            product_model_checksum_sha256, component_model_version_id,
-                            component_model_checksum_sha256, rule_version_id,
-                            aggregation_policy_version, decision, synchronization_status,
-                            processing_ms, inference_metadata, content_sha256,
-                            business_result, internal_decision, barcode_value, product_code
-                        ) VALUES (
-                            :inspection_id, :device_id, :device_sequence, :lifecycle_status,
-                            :started_at, :completed_at, :barcode_result, :product_resolution,
-                            :product_detection, :roi_result, :frame_quality_summary,
-                            :application_version, :product_model_version_id,
-                            :product_model_checksum_sha256, :component_model_version_id,
-                            :component_model_checksum_sha256, :rule_version_id,
-                            :aggregation_policy_version, :decision, :synchronization_status,
-                            :processing_ms, :inference_metadata, :content_sha256,
-                            :business_result, :internal_decision, :barcode_value, :product_code
-                        )
-                        """
-                    ),
-                    {
-                        "inspection_id": str(record.inspection_id),
-                        "device_id": str(record.device_id),
-                        "device_sequence": record.device_sequence,
-                        "lifecycle_status": record.lifecycle_status.value,
-                        "started_at": record.started_at.isoformat(),
-                        "completed_at": record.completed_at.isoformat(),
-                        "barcode_result": json.dumps(payload["barcode_result"]),
-                        "product_resolution": json.dumps(payload["product_resolution"]),
-                        "product_detection": json.dumps(payload["product_detection"])
-                        if payload["product_detection"]
-                        else None,
-                        "roi_result": json.dumps(payload["roi_result"])
-                        if payload["roi_result"]
-                        else None,
-                        "frame_quality_summary": json.dumps(payload["frame_quality_summary"]),
-                        "application_version": record.application_version,
-                        "product_model_version_id": str(record.product_model_version_id),
-                        "product_model_checksum_sha256": record.product_model_checksum_sha256,
-                        "component_model_version_id": str(record.component_model_version_id),
-                        "component_model_checksum_sha256": record.component_model_checksum_sha256,
-                        "rule_version_id": str(record.rule_version_id),
-                        "aggregation_policy_version": record.aggregation_policy_version,
-                        "decision": json.dumps(decision),
-                        "synchronization_status": record.synchronization_status,
-                        "processing_ms": record.processing_ms,
-                        "inference_metadata": json.dumps(record.inference_metadata)
-                        if record.inference_metadata
-                        else None,
-                        "content_sha256": content_hash,
-                        "business_result": record.decision.business_result.value,
-                        "internal_decision": record.decision.internal_decision.value,
-                        "barcode_value": barcode,
-                        "product_code": product,
-                    },
+                status = self._upsert_inspection_inner(
+                    conn, record, content_hash, payload, decision, barcode, product, media_ids
                 )
-                for evidence in record.evidence:
-                    conn.execute(
-                        text(
-                            f"""
-                            INSERT INTO {component_evidence.name} (
-                                inspection_id, component_code, state, best_confidence,
-                                usable_frame_count, detection_count, adjacent_detection_run,
-                                supporting_frame_ids, policy_reason_codes, box_area_ratios,
-                                box_centers
-                            ) VALUES (
-                                :inspection_id, :component_code, :state, :best_confidence,
-                                :usable_frame_count, :detection_count, :adjacent_detection_run,
-                                :supporting_frame_ids, :policy_reason_codes, :box_area_ratios,
-                                :box_centers
-                            )
-                            """
-                        ),
-                        {
-                            "inspection_id": str(record.inspection_id),
-                            "component_code": evidence.component_code,
-                            "state": evidence.state,
-                            "best_confidence": evidence.best_confidence,
-                            "usable_frame_count": evidence.usable_frame_count,
-                            "detection_count": evidence.detection_count,
-                            "adjacent_detection_run": evidence.adjacent_detection_run,
-                            "supporting_frame_ids": json.dumps(
-                                [str(i) for i in evidence.supporting_frame_ids]
-                            ),
-                            "policy_reason_codes": json.dumps(evidence.policy_reason_codes),
-                            "box_area_ratios": json.dumps(evidence.box_area_ratios),
-                            "box_centers": json.dumps([[x, y] for x, y in evidence.box_centers]),
-                        },
-                    )
-                for item in record.media:
-                    conn.execute(
-                        text(
-                            f"""
-                            INSERT INTO {media.name} (
-                                media_id, inspection_id, kind, lifecycle, relative_path,
-                                mime_type, size_bytes, checksum_sha256
-                            ) VALUES (
-                                :media_id, :inspection_id, :kind, :lifecycle, :relative_path,
-                                :mime_type, :size_bytes, :checksum_sha256
-                            )
-                            """
-                        ),
-                        {
-                            "media_id": str(item.media_id),
-                            "inspection_id": str(record.inspection_id),
-                            "kind": item.kind,
-                            "lifecycle": item.lifecycle.value,
-                            "relative_path": item.relative_path,
-                            "mime_type": item.mime_type,
-                            "size_bytes": item.size_bytes,
-                            "checksum_sha256": item.checksum_sha256,
-                        },
-                    )
-                return "inserted"
+                self._enqueue_inspection_uploads_inner(conn, record, now)
+                return status
         except IntegrityError as exc:
             raise RepositoryError(
-                f"inspection {record.inspection_id} violates immutable projection constraints"
+                f"inspection {record.inspection_id} violates immutable projection "
+                "or upload-task constraints"
             ) from exc
 
     def get_inspection(self, inspection_id: str) -> InspectionRecord | None:
@@ -715,14 +773,33 @@ class EdgeRepository:
     def enqueue_inspection_uploads(self, record: InspectionRecord) -> int:
         """Insert one inspection task plus one media task per artifact.
 
+        Seeding/repair-only entry point; production persistence should call
+        :meth:`persist_inspection_and_enqueue_uploads` so the projection and its
+        tasks commit atomically (PR-017 F2). See
+        :meth:`_enqueue_inspection_uploads_inner` for the idempotency semantics.
+        """
+        now = datetime.now(UTC).isoformat()
+        try:
+            with self._engine.begin() as conn:
+                return self._enqueue_inspection_uploads_inner(conn, record, now)
+        except IntegrityError as exc:
+            raise RepositoryError(
+                f"cannot enqueue uploads for inspection {record.inspection_id}: "
+                "upload tasks violate uniqueness constraints"
+            ) from exc
+
+    def _enqueue_inspection_uploads_inner(
+        self, conn: Any, record: InspectionRecord, now: str
+    ) -> int:
+        """Insert idempotent upload tasks inside an open transaction.
+
         Transactional outbox (design 12.4 step 4, ADR-005): tasks are inserted
         with stable idempotency keys so duplicate calls, restart reconciliation,
         and concurrent writers can never create a duplicate task. Enqueue only
-        applies while the inspection is still ``LOCAL_ONLY``; once any task was
-        created the projection moves to ``QUEUED`` and re-imports are no-ops.
-        Returns the number of newly inserted tasks.
+        applies while the inspection is still ``LOCAL_ONLY`` (or not yet
+        projected); once any task was created the projection moves to ``QUEUED``
+        and re-imports are no-ops. Returns the number of newly inserted tasks.
         """
-        now = datetime.now(UTC).isoformat()
         inspection_task = {
             "kind": "INSPECTION",
             "object_id": str(record.inspection_id),
@@ -742,65 +819,57 @@ class EdgeRepository:
         ]
         tasks = [inspection_task, *media_tasks]
         inserted = 0
-        try:
-            with self._engine.begin() as conn:
-                status_row = conn.execute(
-                    text(
-                        f"SELECT synchronization_status FROM {inspections.name} "
-                        "WHERE inspection_id = :id"
-                    ),
-                    {"id": str(record.inspection_id)},
-                ).scalar_one_or_none()
-                if status_row not in (None, "LOCAL_ONLY"):
-                    return 0
-                for task in tasks:
-                    exists = conn.execute(
-                        text(f"SELECT 1 FROM {upload_tasks.name} WHERE idempotency_key = :key"),
-                        {"key": task["idempotency_key"]},
-                    ).scalar_one_or_none()
-                    if exists is not None:
-                        continue
-                    conn.execute(
-                        text(
-                            f"""
-                            INSERT INTO {upload_tasks.name} (
-                                upload_task_id, device_id, inspection_id, kind, object_id,
-                                payload_hash, status, idempotency_key, checksum_sha256,
-                                attempt_count, next_attempt_at, last_error_code,
-                                created_at, updated_at, completed_at
-                            ) VALUES (
-                                :upload_task_id, :device_id, :inspection_id, :kind, :object_id,
-                                :payload_hash, 'PENDING', :idempotency_key, :checksum_sha256,
-                                0, NULL, NULL, :created_at, :created_at, NULL
-                            )
-                            """
-                        ),
-                        {
-                            "upload_task_id": str(uuid4()),
-                            "device_id": str(record.device_id),
-                            "inspection_id": str(record.inspection_id),
-                            "kind": task["kind"],
-                            "object_id": task["object_id"],
-                            "payload_hash": task["payload_hash"],
-                            "idempotency_key": task["idempotency_key"],
-                            "checksum_sha256": task["checksum_sha256"],
-                            "created_at": now,
-                        },
+        status_row = conn.execute(
+            text(
+                f"SELECT synchronization_status FROM {inspections.name} WHERE inspection_id = :id"
+            ),
+            {"id": str(record.inspection_id)},
+        ).scalar_one_or_none()
+        if status_row not in (None, "LOCAL_ONLY"):
+            return 0
+        for task in tasks:
+            exists = conn.execute(
+                text(f"SELECT 1 FROM {upload_tasks.name} WHERE idempotency_key = :key"),
+                {"key": task["idempotency_key"]},
+            ).scalar_one_or_none()
+            if exists is not None:
+                continue
+            conn.execute(
+                text(
+                    f"""
+                    INSERT INTO {upload_tasks.name} (
+                        upload_task_id, device_id, inspection_id, kind, object_id,
+                        payload_hash, status, idempotency_key, checksum_sha256,
+                        attempt_count, next_attempt_at, last_error_code,
+                        created_at, updated_at, completed_at
+                    ) VALUES (
+                        :upload_task_id, :device_id, :inspection_id, :kind, :object_id,
+                        :payload_hash, 'PENDING', :idempotency_key, :checksum_sha256,
+                        0, NULL, NULL, :created_at, :created_at, NULL
                     )
-                    inserted += 1
-                if status_row == "LOCAL_ONLY":
-                    conn.execute(
-                        text(
-                            f"UPDATE {inspections.name} SET synchronization_status = 'QUEUED' "
-                            "WHERE inspection_id = :id"
-                        ),
-                        {"id": str(record.inspection_id)},
-                    )
-        except IntegrityError as exc:
-            raise RepositoryError(
-                f"cannot enqueue uploads for inspection {record.inspection_id}: "
-                "upload tasks violate uniqueness constraints"
-            ) from exc
+                    """
+                ),
+                {
+                    "upload_task_id": str(uuid4()),
+                    "device_id": str(record.device_id),
+                    "inspection_id": str(record.inspection_id),
+                    "kind": task["kind"],
+                    "object_id": task["object_id"],
+                    "payload_hash": task["payload_hash"],
+                    "idempotency_key": task["idempotency_key"],
+                    "checksum_sha256": task["checksum_sha256"],
+                    "created_at": now,
+                },
+            )
+            inserted += 1
+        if status_row == "LOCAL_ONLY":
+            conn.execute(
+                text(
+                    f"UPDATE {inspections.name} SET synchronization_status = 'QUEUED' "
+                    "WHERE inspection_id = :id"
+                ),
+                {"id": str(record.inspection_id)},
+            )
         return inserted
 
     def claim_upload_tasks(self, limit: int, lease_seconds: int, now_iso: str) -> list[UploadTask]:
