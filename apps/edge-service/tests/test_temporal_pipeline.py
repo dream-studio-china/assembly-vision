@@ -41,8 +41,16 @@ _REQUIRED = ("component_a", "component_b", "manual")
 
 
 class ProductDetector:
+    def __init__(self, qualities: list[FrameQuality] | None = None) -> None:
+        self._qualities = iter(qualities or [])
+        self._last: FrameQuality | None = None
+
     def detect(self, frame: Image.Image, frame_id: UUID) -> object:
-        return _Outcome(selected=_product_detection(frame_id, frame.width, frame.height))
+        quality = next(self._qualities, self._last)
+        self._last = quality
+        return _Outcome(
+            selected=_product_detection(frame_id, frame.width, frame.height, quality=quality)
+        )
 
 
 class ScriptedComponentDetector:
@@ -104,7 +112,12 @@ class _Outcome:
         self.reason_code = reason_code
 
 
-def _product_detection(frame_id: UUID, width: int, height: int) -> ProductDetection:
+def _product_detection(
+    frame_id: UUID,
+    width: int,
+    height: int,
+    quality: FrameQuality | None = None,
+) -> ProductDetection:
     return ProductDetection(
         frame_id=frame_id,
         product_class="product",
@@ -118,12 +131,27 @@ def _product_detection(frame_id: UUID, width: int, height: int) -> ProductDetect
             image_height=height,
         ),
         model_version_id=load_model_manifest(PRODUCT_MANIFEST).model_version_id,
-        quality=FrameQuality(
+        quality=quality
+        or FrameQuality(
             usable=True,
             blur_score=0.0,
             brightness_mean=128.0,
             saturation_fraction=0.5,
         ),
+    )
+
+
+def _usable_quality() -> FrameQuality:
+    return FrameQuality(usable=True, blur_score=0.0, brightness_mean=128.0, saturation_fraction=0.5)
+
+
+def _unusable_quality() -> FrameQuality:
+    return FrameQuality(
+        usable=False,
+        blur_score=1.5,
+        brightness_mean=60.0,
+        saturation_fraction=0.05,
+        reason_codes=["BLUR_EXCESSIVE"],
     )
 
 
@@ -142,13 +170,15 @@ def _temporal_config(
 
 
 def _build_pipeline(
-    per_frame: list[list[tuple[str, float]]], temporal_config: TemporalAggregationConfig
+    per_frame: list[list[tuple[str, float]]],
+    temporal_config: TemporalAggregationConfig,
+    qualities: list[FrameQuality] | None = None,
 ) -> InspectionPipeline:
     config = load_pipeline_config(EXAMPLE_PIPELINE)
     rule = load_rule_definition(EXAMPLE_RULE)
     component_manifest = load_model_manifest(COMPONENT_MANIFEST)
     return InspectionPipeline(
-        product_detector=ProductDetector(),  # type: ignore[arg-type]
+        product_detector=ProductDetector(qualities),  # type: ignore[arg-type]
         component_detector=ScriptedComponentDetector(
             per_frame, component_manifest.model_version_id
         ),  # type: ignore[arg-type]
@@ -163,7 +193,7 @@ def _build_pipeline(
     )
 
 
-def _frame(sequence: int) -> CapturedFrame:
+def _frame(sequence: int, product_identity: str | None = None) -> CapturedFrame:
     return CapturedFrame(
         monotonic_ts_ns=time.monotonic_ns(),
         wall_clock_utc=datetime.now(UTC),
@@ -171,6 +201,7 @@ def _frame(sequence: int) -> CapturedFrame:
         pixel_format="RGB",
         status="OK",
         image=Image.new("RGB", (800, 600), "gray"),
+        product_identity=product_identity,
     )
 
 
@@ -271,3 +302,122 @@ class TestTemporalPersistence:
         assert (bundle / "key_frame.jpg").exists()
         payload = (bundle / "inspection.json").read_text(encoding="utf-8")
         assert '"aggregation_policy_version": "per-component-temporal-v1"' in payload
+
+
+class TestQualityGate:
+    """PR-015 F4: quality-rejected frames never contribute evidence."""
+
+    def test_unusable_frame_does_not_increment_usable_count(self) -> None:
+        pipeline = _build_pipeline(
+            _ALL_HIGH,
+            _temporal_config(),
+            qualities=[_usable_quality(), _usable_quality(), _unusable_quality()],
+        )
+        closed, _ = _run_window(pipeline, _temporal_config(), 3)
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "OK"
+        assert record.frame_quality_summary.usable_frame_count == 2
+        assert record.frame_quality_summary.rejected_frame_count == 1
+        quality_reasons = [r.reason_code for r in record.frame_quality_summary.reasons]
+        assert "BLUR_EXCESSIVE" in quality_reasons
+
+    def test_too_few_usable_frames_is_unverifiable_ng(self) -> None:
+        pipeline = _build_pipeline(
+            _ALL_HIGH,
+            _temporal_config(minimum_valid_frames=3),
+            qualities=[_usable_quality(), _unusable_quality(), _unusable_quality()],
+        )
+        closed, _ = _run_window(pipeline, _temporal_config(minimum_valid_frames=3), 3)
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "NG"
+        assert all(e.state == "UNVERIFIABLE" for e in record.evidence)
+
+
+class TestFrameReasonsAreDiagnostic:
+    """PR-015 F5: rejected frames cannot veto sufficient aggregated evidence."""
+
+    def test_rejected_frame_reason_does_not_force_ng(self) -> None:
+        pipeline = _build_pipeline(
+            _ALL_HIGH,
+            _temporal_config(),
+            qualities=[_usable_quality(), _usable_quality(), _unusable_quality()],
+        )
+        closed, _ = _run_window(pipeline, _temporal_config(), 3)
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "OK"
+        # The rejection is persisted as frame diagnostics only.
+        quality_reasons = [r.reason_code for r in record.frame_quality_summary.reasons]
+        assert "BLUR_EXCESSIVE" in quality_reasons
+        assert "BLUR_EXCESSIVE" not in record.decision.reason_codes
+
+
+def _identity_config() -> TemporalAggregationConfig:
+    """Identity-sealed window config with policies for every required component."""
+    return TemporalAggregationConfig(
+        minimum_valid_frames=1,
+        maximum_window_ms=1000,
+        reject_duplicate_frame_ids=True,
+        window_strategy="identity",  # type: ignore[arg-type]
+        components=dict.fromkeys(_REQUIRED, ComponentTemporalPolicy(0.9, 0.7)),
+    )
+
+
+class TestProductIsolation:
+    """PR-015 F1: different products must never mix evidence into one OK."""
+
+    def test_complementary_products_within_interval_never_ok(self) -> None:
+        # Product A supplies only component_a; product B supplies the rest. Both
+        # arrive inside one gap interval, so a time-only grouping would merge
+        # them into one all-PRESENT OK. Identity grouping must keep them apart.
+        frames = [
+            [("component_a", 0.95)],
+            [("component_a", 0.95)],
+            [("component_b", 0.95), ("manual", 0.95)],
+            [("component_b", 0.95), ("manual", 0.95)],
+        ]
+        pipeline = _build_pipeline(frames, _identity_config())
+        manager = ProductWindowManager(_identity_config(), pipeline._device_id)
+        base = 1000.0
+        for index, sequence in enumerate(range(1, len(frames) + 1)):
+            identity = "prod-a" if index < 2 else "prod-b"
+            observation = pipeline.frame_observations(_frame(sequence, product_identity=identity))
+            closed = manager.feed(observation, base + index * 0.1)
+            if closed is not None:
+                record = pipeline.inspect_window(closed)
+                assert record.decision.business_result == "NG"
+                assert rc.PRODUCT_IDENTITY_TRANSITION in record.decision.reason_codes
+        closed = manager.force_close()
+        if closed is not None:
+            record = pipeline.inspect_window(closed)
+            assert record.decision.business_result == "NG"
+
+    def test_same_identity_complete_window_is_ok(self) -> None:
+        pipeline = _build_pipeline(_ALL_HIGH, _identity_config())
+        manager = ProductWindowManager(_identity_config(), pipeline._device_id)
+        base = 1000.0
+        for index, sequence in enumerate(range(1, 4)):
+            observation = pipeline.frame_observations(_frame(sequence, product_identity="prod-a"))
+            assert manager.feed(observation, base + index * 0.1) is None
+        trigger = pipeline.frame_observations(_frame(4, product_identity="prod-a"))
+        closed = manager.feed(trigger, base + 4 * 0.1 + 1.1)
+        assert closed is not None
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "OK"
+        assert all(e.state == "PRESENT" for e in record.evidence)
+
+    def test_missing_identity_mid_window_aborts_as_ng(self) -> None:
+        frames = [
+            [("component_a", 0.95), ("component_b", 0.95), ("manual", 0.95)],
+            [("component_a", 0.95), ("component_b", 0.95), ("manual", 0.95)],
+        ]
+        pipeline = _build_pipeline(frames, _identity_config())
+        manager = ProductWindowManager(_identity_config(), pipeline._device_id)
+        base = 1000.0
+        manager.feed(pipeline.frame_observations(_frame(1, product_identity="prod-a")), base)
+        closed = manager.feed(
+            pipeline.frame_observations(_frame(2, product_identity=None)), base + 0.1
+        )
+        assert closed is not None
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "NG"
+        assert rc.PRODUCT_IDENTITY_MISSING in record.decision.reason_codes

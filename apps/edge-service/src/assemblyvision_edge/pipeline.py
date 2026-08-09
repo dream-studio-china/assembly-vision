@@ -250,14 +250,23 @@ class InspectionPipeline:
 
         Returns a frame observation carrying per-component detections, gate
         validity, and the images needed to persist a representative key frame.
+        A frame whose product-detection quality gate reports unusable is marked
+        unusable and cannot contribute evidence or valid opportunities
+        (PR-015 F4); its quality reasons are preserved for diagnostics.
         """
         frame_id = uuid4()
         outcome = self._detect_frame(frame.image, frame_id)
+        product_detection = outcome.product_detection
+        quality_usable = (
+            product_detection.quality.usable if product_detection is not None else False
+        )
+        if product_detection is not None and not product_detection.quality.usable:
+            outcome.reasons.extend(product_detection.quality.reason_codes)
         return FrameObservation(
             frame_id=frame_id,
             sequence=frame.sequence,
             captured_at=frame.wall_clock_utc,
-            quality_usable=True,
+            quality_usable=quality_usable,
             product_detected=outcome.gates["product_detected"],
             roi_valid=outcome.gates["roi_valid"],
             inference_valid=outcome.gates["component_inference_valid"],
@@ -288,16 +297,19 @@ class InspectionPipeline:
         evidence_map = self._temporal.aggregate(
             window.frame_evidence_list(), tuple(self._rule.required_components)
         )
-        window_reasons: list[str] = []
-        for frame in window.frames:
-            window_reasons.extend(frame.reasons)
-        if window.interrupted:
-            window_reasons.append(rc.INSPECTION_INTERRUPTED)
+        # Window-integrity violations (interruption, identity mixing, missing
+        # identity) are the only frame-independent reasons that force NG.
+        # Per-frame rejection reasons stay diagnostic and cannot veto a window
+        # whose aggregated evidence satisfies every rule (PR-015 F5).
+        integrity_reasons = list(window.integrity_reason_codes)
         total_frames = len(window.frames)
         usable_frames = sum(
             1 for frame in window.frames if frame.quality_usable and frame.inference_valid
         )
-        reason_counts = _reason_counts(window_reasons)
+        frame_reasons: list[str] = []
+        for frame in window.frames:
+            frame_reasons.extend(frame.reasons)
+        reason_counts = _reason_counts(frame_reasons)
         gates = {
             "product_detected": any(frame.product_detected for frame in window.frames),
             "roi_valid": any(frame.roi_valid for frame in window.frames),
@@ -310,23 +322,22 @@ class InspectionPipeline:
             gates=gates,
             components=evidence_map,
         )
-        extra_reasons = list(window_reasons)
         decided = None
         try:
             decided = self._rule_engine.evaluate(context, self._rule)
         except RuleEvaluationError as exc:
-            extra_reasons.append(rc.RULE_EVALUATION_ERROR)
+            integrity_reasons.append(rc.RULE_EVALUATION_ERROR)
             log.error("rule evaluation failed for window %s: %s", window.inspection_id, exc)
 
         if decided is None:
             missing = sorted(set(self._rule.required_components))
             low: list[str] = []
-            final_reasons = sorted(set(extra_reasons))
+            final_reasons = sorted(set(integrity_reasons))
             internal = InternalDecision.NG
         else:
             missing = decided.missing_components
             low = decided.low_confidence_components
-            final_reasons = sorted(set(decided.reason_codes) | set(extra_reasons))
+            final_reasons = sorted(set(decided.reason_codes) | set(integrity_reasons))
             internal = InternalDecision.NG if final_reasons else InternalDecision.OK
         decision = InspectionDecision(
             internal_decision=internal,
