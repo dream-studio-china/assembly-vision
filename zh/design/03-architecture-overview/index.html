@@ -575,7 +575,7 @@
   <a href="#1-architectural-drivers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Architectural Drivers
+        1. 架构驱动因素
       
     </span>
   </a>
@@ -747,7 +747,7 @@
   <a href="#103-production-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.3 Production Target
+        10.3 生产目标
       
     </span>
   </a>
@@ -1902,7 +1902,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2760,7 +2760,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3218,7 +3218,7 @@
   <a href="#1-architectural-drivers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Architectural Drivers
+        1. 架构驱动因素
       
     </span>
   </a>
@@ -3390,7 +3390,7 @@
   <a href="#103-production-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.3 Production Target
+        10.3 生产目标
       
     </span>
   </a>
@@ -3456,19 +3456,19 @@
 
 
 <h1 id="assemblyvision-architecture-overview">AssemblyVision 架构概述<a class="headerlink" href="#assemblyvision-architecture-overview" title="Permanent link">&para;</a></h1>
-<h2 id="1-architectural-drivers">1. Architectural Drivers<a class="headerlink" href="#1-architectural-drivers" title="Permanent link">&para;</a></h2>
+<h2 id="1-architectural-drivers">1. 架构驱动因素<a class="headerlink" href="#1-architectural-drivers" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 必须在受控但不完全注册的成像环境中做出保守的产品决策，在网络和中央中断时保持运行，保留可重复的证据，并从带标签的静态图像训练和检查证明发展为公认的生产系统。结果是具有异步中央同步的边缘优先架构。</p>
 <p>详细义务见<a href="../02-requirements/">Requirements</a>；共享条款和决策规则位于<a href="../appendices/">Appendices</a>中。</p>
 <h2 id="2-system-context">2. 系统上下文<a class="headerlink" href="#2-system-context" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
     Product[实物产品] --&gt;|通过检查区域| Edge[AssemblyVision 边缘客户端]
-    Camera[Industrial camera and optional scanner or sensor] --&gt;|frames and events| Edge
+    Camera[工业相机和可选的扫描仪或传感器] --&gt;|框架和事件| Edge
     Operator[线路操作员] &lt;--&gt;|本地状态和控制| Edge
-    Edge --&gt;|OK or NG output through approved integration| Line[外线流程]
-    Edge &lt;--&gt;|延迟元数据媒体配置和运行状况| Central[AssemblyVision central server]
+    Edge --&gt;|通过批准的集成输出 OK 或 NG| Line[外线流程]
+    Edge &lt;--&gt;|延迟元数据媒体配置和运行状况| Central[AssemblyVision 中央服务器]
     Reviewer[质量审核员] &lt;--&gt;|审查和更正| Central
     Admin[系统管理员] &lt;--&gt;|设备用户规则模型和报告| Central
-    Vision[视觉工程师] --&gt;|approved manifests and packages| Central</code></pre>
+    Vision[视觉工程师] --&gt;|批准的舱单和包裹| Central</code></pre>
 <p>外线工艺以边界显示；确切的机制以及 AssemblyVision 是否驱动设备尚未确定。中央服务器从不同步参与检查决策。</p>
 <h2 id="3-logical-architecture">3. 逻辑架构<a class="headerlink" href="#3-logical-architecture" title="Permanent link">&para;</a></h2>
 <h3 id="31-edge-decision-plane">3.1 边缘决策平面<a class="headerlink" href="#31-edge-decision-plane" title="Permanent link">&para;</a></h3>
@@ -3497,7 +3497,7 @@
         end
     end
 
-    subgraph CentralSite[Central hosting location to be selected]
+    subgraph CentralSite[待选择的中央托管位置]
         ProxyC[Nginx 或入口]
         WebC[Vue 管理 Web 资产]
         ApiC[FastAPI中央API]
@@ -3524,7 +3524,7 @@
 2.条码解码和其他配置的身份源解析产品类型；保守地记录分歧。</li>
 <li>框架质量门禁不可用的框架。第一阶段 YOLO 在每个可用的全帧中检测产品。</li>
 <li>ROI 引擎展开并裁剪产品框，记录坐标变换，并可选择应用经过验证的方向/视角标准化。</li>
-<li>第二阶段 YOLO 检测 ROI 中的配置组件；可选的 OpenCV 检查添加类型证据，而不是默默地覆盖模型输出。
+<li>第二阶段 YOLO 检测 ROI 中的配置组件；可选的 OpenCV 检查添加类型化证据，而不是默默地覆盖模型输出。
 6.时间聚合器使用活动版本化策略来组合每个所需组件的证据。
 7.确定性规则引擎产生内部状态、业务结果、组件列表和原因代码。只有完整有效的证据才能产生<code>OK</code>。
 8.本地事务记录元数据和媒体引用。在相关上传任务准备就绪之前，媒体将通过校验和完成。</li>
@@ -3578,7 +3578,7 @@
 </tr>
 </tbody>
 </table>
-<p>OpenAPI 是生成的 TypeScript API 客户端的来源。领域事件有效负载使用显式模式版本；数据库行不会直接作为 API 合约公开。</p>
+<p>OpenAPI 是生成的 TypeScript API 客户端的来源。领域事件有效负载使用显式架构版本；数据库行不会直接作为 API 合约公开。</p>
 <h2 id="7-technology-baseline">7. 技术基线<a class="headerlink" href="#7-technology-baseline" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3640,7 +3640,7 @@
 <p>使用仅限开发人员的培训 CLI 从 X-AnyLabeling YOLO 标签生成产品和组件模型工件。进程内边缘 CLI 使用这些工件来检查文件夹输入并写入证据，同时保留未来的架构和版本字段。训练代码独立于边缘运行时，并且永远不会由边缘运行时导入。</p>
 <h3 id="102-one-month-target">10.2 一个月目标<a class="headerlink" href="#102-one-month-target" title="Permanent link">&para;</a></h3>
 <p>在有界任务中运行捕获和决策工作，可以选择在监督推理子流程中运行，因此 UI/API 负载在不提前添加第二个边缘部署单元的情况下无法阻止捕获。添加硬件适配器、产品窗口、SQLite/媒体卷、队列调度程序、本地 Web 资产、中央摄取/历史记录和初始管理。使用 Compose 进行部署并练习中断并重新启动恢复。</p>
-<h3 id="103-production-target">10.3 Production Target<a class="headerlink" href="#103-production-target" title="Permanent link">&para;</a></h3>
+<h3 id="103-production-target">10.3 生产目标<a class="headerlink" href="#103-production-target" title="Permanent link">&para;</a></h3>
 <p>强化凭证、审计、包升级/回滚、备份、保留、介质完整性、可观察性、警报、支持程序、模式迁移、浸泡/故障测试和受控部署。接受门是证据驱动的。</p>
 <h3 id="104-future">10.4 未来<a class="headerlink" href="#104-future" title="Permanent link">&para;</a></h3>
 <p>根据测量扩展中央工作人员/存储；可选择采用 Kubernetes、边缘 PostgreSQL、桌面包装、外部集成和批准的再培训自动化。保留边缘决策边界。</p>

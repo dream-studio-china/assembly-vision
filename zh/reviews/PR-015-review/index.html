@@ -1630,7 +1630,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2488,7 +2488,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3191,20 +3191,21 @@
 </ul>
 <h2 id="follow-up-todos">后续 TODO<a class="headerlink" href="#follow-up-todos" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[x] <strong>策略身份</strong>：<code>aggregation_policy_version</code>存储完整的
-  规范时态策略文档的 SHA-256，包括格式、窗口
-  参数和组件阈值/命中规则。回归测试验证
-  政策变化会产生独特的持久身份。</li>
-<li>[ ] <strong>生产边界执行</strong>：拒绝 <code>window_strategy: time</code>
-  启用生产检查，或引入明确的、经过审计的开发
-  赋能守卫。仅时间分组仍然是有记录的开发
-  回退并且无法证明物理产品隔离。</li>
-<li>[ ] <strong>最大持续时间隔离</strong>：定义并实现故障关闭
-  当相同的经过验证的身份超过 <code>maximum_window_ms</code> 时的行为。
-  身份不得被分割成可独立发布的窗口，除非
-  经过验证的结束/转换信号。</li>
+<li>[x] <strong>Policy identity</strong>: <code>aggregation_policy_version</code> stores the full
+  SHA-256 of the canonical temporal policy document, including format, window
+  parameters, and component thresholds/hit rules. A regression test verifies
+  that a policy change produces a distinct persisted identity.</li>
+<li>[x] <strong>Production boundary enforcement</strong>: configuration rejects
+  <code>inspection.enabled: true</code> with <code>window_strategy: time</code>; time-only grouping
+  remains usable only in disabled/local development configuration and cannot
+  prove physical-product isolation.</li>
+<li>[x] <strong>Maximum-duration isolation</strong>: an identity-sealed window that reaches
+  <code>maximum_window_ms</code> closes as <code>NG</code> with <code>WINDOW_MAX_DURATION_EXCEEDED</code>; the
+  identity is quarantined and cannot begin a new window until a different
+  validated identity proves a product transition. Regression tests cover both
+  the window-manager and end-to-end decision paths.</li>
 </ul>
-<p>修复后执行的验证（全绿色）：</p>
+<p>Validation executed after the fixes (all green):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git diff --check origin/main...HEAD
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv run ruff check .
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv run ruff format --check .
@@ -3217,88 +3218,90 @@
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>uv run mkdocs build --strict
 </code></pre></div>
 <h2 id="validation-performed">已执行验证<a class="headerlink" href="#validation-performed" title="Permanent link">&para;</a></h2>
-<p>在 <code>feat/temporal-aggregation</code> 上执行，无需修改实现
-文件：</p>
+<p>Executed on <code>feat/temporal-aggregation</code> without modifying implementation
+files:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git diff --check origin/main...HEAD
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv run pytest apps/edge-service/tests/test_temporal_aggregator.py apps/edge-service/tests/test_product_window.py apps/edge-service/tests/test_temporal_pipeline.py apps/edge-service/tests/test_edge_config.py apps/edge-service/tests/test_instances.py apps/edge-service/tests/test_rule_engine.py -q
 </code></pre></div>
-<p>结果：</p>
+<p>Results:</p>
 <ul>
-<li>差异检查通过。</li>
-<li>通过了重点时间、运行时、配置和规则引擎测试。</li>
-<li>通过的测试不执行下述安全案例。</li>
+<li>The diff check passed.</li>
+<li>The focused temporal, runtime, configuration, and rule-engine tests passed.</li>
+<li>The passing tests do not exercise the safety cases described below.</li>
 </ul>
 <h2 id="blocking-findings">阻塞结果<a class="headerlink" href="#blocking-findings" title="Permanent link">&para;</a></h2>
 <h3 id="f1-time-only-grouping-can-merge-different-products-and-return">F1。仅时间分组可以合并不同的产品并返回<code>OK</code><a class="headerlink" href="#f1-time-only-grouping-can-merge-different-products-and-return" title="Permanent link">&para;</a></h3>
-<p><strong>严重性：</strong> P0 / 严重</p>
-<p><strong>地点：</strong></p>
+<p><strong>Severity:</strong> P0 / Critical</p>
+<p><strong>Locations:</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/temporal/window_manager.py:117-139</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:250-255</code></li>
 </ul>
-<p><code>ProductWindowManager.feed()</code> 接受到达的每个非重复帧
-在 <code>maximum_window_ms</code> 内。无产品标识、触发边界、条形码、
-进入/退出事件、经过验证的跟踪器连续性或多产品检查
-分离其证据。因此第一个产品只提供
-<code>component_a</code> 和仅提供 <code>component_b</code> 的第二种产品以及
-<code>manual</code>可以形成一个全<code>PRESENT</code>窗口并被评估为<code>OK</code>。</p>
-<p>这违反了设计 10 中的物理产品证据隔离不变量
-第 10.2 和 10.3 节，混合窗口排除要求
-10.8、ADR-010 第 3 节和合同 06 第 5 节要求的混合产品
-测试。</p>
-<p><strong>分辨率：</strong></p>
+<p><code>ProductWindowManager.feed()</code> accepts every non-duplicate frame that arrives
+within <code>maximum_window_ms</code>. No product identity, trigger boundary, barcode,
+entry/exit event, validated tracker continuity, or multiple-product check
+separates its evidence. Therefore a first product that supplies only
+<code>component_a</code> and a second product that supplies only <code>component_b</code> and
+<code>manual</code> can form one all-<code>PRESENT</code> window and be evaluated as <code>OK</code>.</p>
+<p>This violates the physical-product evidence-isolation invariant in design 10
+sections 10.2 and 10.3, the mixed-window exclusion requirement in section
+10.8, ADR-010 section 3, and contract 06 section 5's required mixed-product
+test.</p>
+<p><strong>Resolution:</strong></p>
 <ol>
-<li>将经过验证的相关性/边界机制作为明确的要求
-   启用时间检查：例如，硬件触发、条形码事件、
-   经过验证的跟踪器身份，或经过站点验证的进入/退出区域协议。</li>
-<li>携带相关身份和捕获时间来源
-   <code>FrameObservation</code> 并强制 <code>ProductWindowManager</code> 中的连续性。</li>
-<li>如果无法证明连续性，请使用耐用的按钮关闭/中止窗口
-   窗口完整性原因并产生 <code>NG</code>/<code>UNVERIFIABLE</code>；从不聚合其
-   对另一种产品的观察。</li>
-<li>不要将简单的时间间隔作为生产安全的产品边界
-   除非证明没有重叠的站点验证约束被编码并且
-   强制执行。</li>
+<li>Make a validated correlation/boundary mechanism an explicit requirement for
+   enabled temporal inspection: for example, a hardware trigger, barcode event,
+   validated tracker identity, or site-validated entry/exit-zone protocol.</li>
+<li>Carry the correlation identity and capture-time provenance in
+   <code>FrameObservation</code> and enforce continuity in <code>ProductWindowManager</code>.</li>
+<li>If continuity cannot be proven, close/abort the window with a durable
+   window-integrity reason and produce <code>NG</code>/<code>UNVERIFIABLE</code>; never aggregate its
+   observations with another product.</li>
+<li>Do not present a plain time-only gap as a production-safe product boundary
+   unless the site-validation constraints that prove no overlap are encoded and
+   enforced.</li>
 </ol>
-<p><strong>验收标准：</strong></p>
+<p><strong>Acceptance criteria:</strong></p>
 <ul>
-<li>集成测试从两个方面进行互补的所需组件检测
-  一个持续时间/间隙间隔内的不同产品标识并进行验证
-  两种产品都不产生<code>OK</code>。</li>
-<li>身份转换、边界信号缺失和已确认的多产品
-  将每个结果框入具有稳定原因的中止或未经验证的 <code>NG</code> 记录中
-  代码。</li>
-<li>具有所有必需组件证据的相同身份窗口仍然可以产生
-  恰好有一个 <code>OK</code> 记录。</li>
-<li>合同要求的混合产品测试保留在正常测试套件中。</li>
+<li>An integration test puts complementary required-component detections from two
+  different product identities inside one duration/gap interval and verifies
+  that neither product produces <code>OK</code>.</li>
+<li>An identity transition, missing boundary signal, and confirmed multi-product
+  frame each result in an aborted or unverified <code>NG</code> record with a stable reason
+  code.</li>
+<li>A same-identity window with all required component evidence can still produce
+  exactly one <code>OK</code> record.</li>
+<li>The contract-required mixed-product test is retained in the normal test suite.</li>
 </ul>
 <h3 id="f2-a-final-idle-window-is-never-normally-finalized">F2。最终空闲窗口通常不会最终确定<a class="headerlink" href="#f2-a-final-idle-window-is-never-normally-finalized" title="Permanent link">&para;</a></h3>
-<p><strong>严重性：</strong> P1/高</p>
-<p><strong>地点：</strong></p>
+<p><strong>Severity:</strong> P1 / High</p>
+<p><strong>Locations:</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:246-255</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/temporal/window_manager.py:117-139</code></li>
 </ul>
-<p>当较晚的帧到达时，间隙过期仅由 <code>feed()</code> 检查。当
-<code>next_frame()</code>超时，运行时立即继续。一款产品位于
-因此，流的末尾保持打开状态，直到进程关闭，此时
-<code>force_close()</code>丢弃收集到的证据并发出中断的<code>NG</code>。
-这导致设计 10 第 10.8 节的超时关闭行为失败，否则会失败
-完整的决定。</p>
-<p><strong>分辨率：</strong></p>
-<p>1.添加不中断的<code>expire(now_monotonic)</code>操作
-   <code>ProductWindowManager</code>；它应该将活动窗口关闭为 <code>GAP</code> 一旦
-   空闲时间达到配置的限制。
-2. 在每个空的 <code>next_frame()</code> 轮询中调用 <code>expire(time.monotonic())</code> 并发送
-   通过 <code>inspect_window()</code> 返回的窗口。
-3. 保留<code>force_close()</code>专用于关机/重启中断。</p>
-<p><strong>验收标准：</strong></p>
+<p>Gap expiration is checked only by <code>feed()</code> when a later frame arrives. When
+<code>next_frame()</code> times out, the runtime immediately continues. A product at the
+end of a stream therefore remains open until process shutdown, at which point
+<code>force_close()</code> discards the collected evidence and emits an interrupted <code>NG</code>.
+This fails design 10 section 10.8's timeout-close behavior and loses otherwise
+complete decisions.</p>
+<p><strong>Resolution:</strong></p>
+<ol>
+<li>Add a non-interrupted <code>expire(now_monotonic)</code> operation to
+   <code>ProductWindowManager</code>; it should close the active window as <code>GAP</code> once its
+   idle duration reaches the configured limit.</li>
+<li>Call <code>expire(time.monotonic())</code> on every empty <code>next_frame()</code> poll and send
+   a returned window through <code>inspect_window()</code>.</li>
+<li>Keep <code>force_close()</code> exclusively for shutdown/restart interruption.</li>
+</ol>
+<p><strong>Acceptance criteria:</strong></p>
 <ul>
 <li>一个完整的窗口，后面没有 <code>maximum_window_ms</code> 的框架，仍然存在
   没有收到触发帧的正常决策。</li>
 <li>正常到期后关闭不会产生第二次中断
   记录。</li>
-<li>到期前关闭会创建一条 <code>NG</code> 记录，其中包含
+<li>在到期之前关闭会创建一条 <code>NG</code> 记录，其中包含
   <code>INSPECTION_INTERRUPTED</code>并且没有重建部分证据。</li>
 </ul>
 <h3 id="f3-window-membership-is-determined-by-post-inference-time-not-capture-time">F3。窗口成员资格由推理后时间决定，而不是捕获时间<a class="headerlink" href="#f3-window-membership-is-determined-by-post-inference-time-not-capture-time" title="Permanent link">&para;</a></h3>
@@ -3315,7 +3318,7 @@
 <code>monotonic_ts_ns</code>，但窗口管理器不使用它。</p>
 <p><strong>分辨率：</strong></p>
 <ol>
-<li>将 <code>CapturedFrame.monotonic_ts_ns</code> 转换为秒并传递给
+<li>将<code>CapturedFrame.monotonic_ts_ns</code>转换为秒并传递给
    <code>ProductWindowManager.feed()</code> 用于所有成员资格和持续时间比较。</li>
 <li>仅将运行时单调时钟用于空闲到期轮询。</li>
 <li>明确拒绝陈旧/无序的捕获时间戳，因为它们不可用
@@ -3353,7 +3356,7 @@ available <code>ProductDetection.quality.usable</code> 携带实际的质量门
 </ol>
 <p><strong>验收标准：</strong></p>
 <ul>
-<li>具有高置信度组件盒的 <code>quality.usable=False</code> 框架不会
+<li>具有高置信度组件框的 <code>quality.usable=False</code> 框架不会
   建立<code>PRESENT</code>并且不增加<code>usable_frame_count</code>。</li>
 <li>剩余可用帧低于<code>minimum_valid_frames</code>的窗口
   将每个必需的组件解析为 <code>UNVERIFIABLE</code> 并生成 <code>NG</code>。</li>
@@ -3367,10 +3370,10 @@ available <code>ProductDetection.quality.usable</code> 携带实际的质量门
 <li><code>apps/edge-service/src/assemblyvision_edge/pipeline.py:289-328</code></li>
 </ul>
 <p>所有每帧失败原因都复制到 <code>window_reasons</code> 中，并合并到
-最终决定理由，并且<code>final_reasons</code>无条件改变
-否则成功的规则决策将由内部 <code>NG</code> 决定。因此，一个窗口
+最终决定原因，并且<code>final_reasons</code>无条件改变
+否则成功的规则决策将发送给内部<code>NG</code>。因此，一个窗口
 需要有效的高置信度证据加上一个瞬态<code>NO_PRODUCT</code>，ROI
-失败，或检测器错误不能为<code>OK</code>。</p>
+失败或检测器错误不能是<code>OK</code>。</p>
 <p>这与设计 10 第 10.3 和 10.8 节相矛盾：被拒绝的帧不
 贡献，而队列丢失和推理错误减少了有效机会，
 只能将证据移向<code>UNCERTAIN</code>或<code>UNVERIFIABLE</code>。这也使得
@@ -3391,7 +3394,7 @@ available <code>ProductDetection.quality.usable</code> 携带实际的质量门
   <code>OK</code> 当它还包含一个被拒绝的非完整性帧时。</li>
 <li>该框架的原因仍然存在，其可用机会计数为
   零。</li>
-<li>即使其他帧仍然存在，中断的或混合身份的窗口仍保持<code>NG</code>
+<li>即使有其他帧，中断或混合身份窗口仍保持<code>NG</code>
   满足每个组件的策略。</li>
 </ul>
 <h3 id="f6-missing-policies-and-equal-thresholds-are-not-fail-closed">F6。缺失的策略和相同的阈值不会失败关闭<a class="headerlink" href="#f6-missing-policies-and-equal-thresholds-are-not-fail-closed" title="Permanent link">&para;</a></h3>
@@ -3438,7 +3441,7 @@ available <code>ProductDetection.quality.usable</code> 携带实际的质量门
 因此，阳性可以将一个帧从一个合格的检测膨胀到
 规则的确切预期计数。例如，对于 <code>expected_count=2</code>，检测
 在一帧中的<code>0.95</code>和<code>0.50</code>可以在之后报告<code>detection_count=2</code>
-<code>0.95</code> 检测确定存在。</p>
+<code>0.95</code> 检测表明存在。</p>
 <p><strong>分辨率：</strong></p>
 <ol>
 <li>定义并记录计数证据置信度阈值；至少它
@@ -3451,7 +3454,7 @@ available <code>ProductDetection.quality.usable</code> 携带实际的质量门
 <p><strong>验收标准：</strong></p>
 <ul>
 <li>一项高置信度检测加上一项低于中等的检测报告
-  计数为 1 并且未通过 <code>expected_count=2</code> 规则，如 <code>NG</code>。</li>
+  计数为 1 并且未满足 <code>expected_count=2</code> 规则，如 <code>NG</code>。</li>
 <li>一个有效帧中的两个合格检测满足 <code>expected_count=2</code>
   规则。</li>
 <li>用于基于计数的规则的面积和空间证据仅来自相同的

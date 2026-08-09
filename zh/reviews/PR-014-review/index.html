@@ -1630,7 +1630,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2488,7 +2488,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3002,7 +3002,7 @@
   <a href="#f1-latest-frame-replacement-silently-discards-inspection-evidence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        F1. Latest-frame replacement silently discards inspection evidence
+        F1。最新的车架更换默默地丢弃了检查证据
       
     </span>
   </a>
@@ -3068,7 +3068,7 @@
   <a href="#f7-persisted-developer-inspections-are-not-visible-until-process-restart" class="md-nav__link">
     <span class="md-ellipsis">
       
-        F7。在流程重新启动之前，持续的开发人员检查不可见
+        F7. Persisted developer inspections are not visible until process restart
       
     </span>
   </a>
@@ -3329,7 +3329,7 @@ ADR-014 基于文件的门控开发工具、API/OpenAPI/客户端合约、
   下面。</li>
 </ul>
 <h2 id="blocking-findings">阻塞结果<a class="headerlink" href="#blocking-findings" title="Permanent link">&para;</a></h2>
-<h3 id="f1-latest-frame-replacement-silently-discards-inspection-evidence">F1. Latest-frame replacement silently discards inspection evidence<a class="headerlink" href="#f1-latest-frame-replacement-silently-discards-inspection-evidence" title="Permanent link">&para;</a></h3>
+<h3 id="f1-latest-frame-replacement-silently-discards-inspection-evidence">F1。最新的车架更换默默地丢弃了检查证据<a class="headerlink" href="#f1-latest-frame-replacement-silently-discards-inspection-evidence" title="Permanent link">&para;</a></h3>
 <p><strong>严重性：</strong> P0 / 高</p>
 <p><strong>地点：</strong></p>
 <ul>
@@ -3374,7 +3374,7 @@ ADR-014 基于文件的门控开发工具、API/OpenAPI/客户端合约、
 当流程仍在发出物理检查决策时暂停。</p>
 <p><strong>解决方案：</strong> 在出队/处理之前暂停时对每个检查循环进行门控
 新工作。在多实例模式下，报告 <code>PAUSED</code>
-<code>inspection_ready=false</code> 暂停时。保持预览/相机健康（如果有）
+<code>inspection_ready=false</code> 暂停时。如果出现这种情况，请保持预览/相机的健康状况
 是有意为之，但要在状态和文档中明确区分。</p>
 <p><strong>验收标准：</strong></p>
 <ul>
@@ -3419,87 +3419,87 @@ ADR-014 基于文件的门控开发工具、API/OpenAPI/客户端合约、
 <li><code>apps/edge-service/src/assemblyvision_edge/camera_manager.py:54-75</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/camera_manager.py:98-115</code></li>
 </ul>
-<p><code>HttpImageSource._fetch()</code> maps both transport errors and corrupt image bytes
-to <code>FrameStreamError</code>, then <code>frames()</code> retries both cases. A corrupt response
-is consequently silently skipped, contrary to ADR-013/design 07's requirement
-that decode failures surface rather than disappear as absent evidence.</p>
-<p><code>RTSPFrameSource</code> does not translate exceptions from <code>av.open()</code>,
-<code>container.decode()</code>, or <code>to_image()</code> into <code>FrameStreamError</code>. At startup an
-ordinary PyAV exception escapes <code>CameraSourceManager.start()</code> and can abort
-other instances. During capture it escapes the thread rather than following a
-defined source error/reconnect policy.</p>
-<p><strong>Resolution:</strong> Split recoverable transport disconnects from invalid/decode
-data. Retry only documented transport failures with bounded backoff; propagate
-corrupt-image/decode failures as <code>FrameStreamError</code> so the manager marks the
-instance failed. Wrap PyAV open/decode/conversion exceptions at the adapter
-boundary as <code>FrameStreamError</code>, and add a final unexpected-exception handler in
-the manager which records a camera error before terminating the thread.</p>
-<p><strong>Acceptance criteria:</strong></p>
+<p><code>HttpImageSource._fetch()</code> 映射传输错误和损坏的图像字节
+到 <code>FrameStreamError</code>，然后 <code>frames()</code> 重试这两种情况。腐败的回应
+因此被默默地跳过，这违反了 ADR-013/design 07 的要求
+解码失败会浮现出来，而不是作为缺乏证据而消失。</p>
+<p><code>RTSPFrameSource</code> 不翻译 <code>av.open()</code> 中的异常，
+<code>container.decode()</code>，或将 <code>to_image()</code> 转换为 <code>FrameStreamError</code>。在启动时
+普通 PyAV 异常转义 <code>CameraSourceManager.start()</code> 并可以中止
+其他情况。在捕获期间，它逃脱线程而不是跟随
+定义源错误/重新连接策略。</p>
+<p><strong>解决方案：</strong> 拆分可恢复传输与无效/解码断开连接
+数据。仅重试已记录的具有有限退避的传输失败；传播
+损坏图像/解码失败为 <code>FrameStreamError</code>，因此管理器将其标记为
+实例失败。在适配器处包装 PyAV 打开/解码/转换异常
+边界为 <code>FrameStreamError</code>，并在中添加最终的意外异常处理程序
+在终止线程之前记录相机错误的管理器。</p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>An HTTP server that returns valid bytes, corrupt bytes, then valid bytes
-  faults the source on corrupt bytes; it must not emit the final frame as if no
-  failure happened.</li>
-<li>Mocked PyAV failures at open and decode leave a healthy sibling instance
-  running and expose <code>CAMERA_UNAVAILABLE</code> or <code>CAMERA_STREAM_ERROR</code> for the
-  failed instance.</li>
-<li>No adapter exception escapes <code>CameraSourceManager.start()</code> or leaves the
-  manager reporting the stream as connected after a failure.</li>
+<li>HTTP 服务器返回有效字节、损坏字节、然后返回有效字节
+  对损坏的字节进行源故障；它不能像没有一样发出最终帧
+  失败发生了。</li>
+<li>模拟 PyAV 在打开和解码时失败，留下健康的同级实例
+  运行并公开 <code>CAMERA_UNAVAILABLE</code> 或 <code>CAMERA_STREAM_ERROR</code>
+  失败的实例。</li>
+<li>没有适配器异常转义 <code>CameraSourceManager.start()</code> 或离开
+  管理器在失败后报告流已连接。</li>
 </ul>
 <h3 id="f5-image-uploads-are-fully-buffered-and-decoded-without-a-pixel-limit">F5。图像上传完全缓冲和解码，没有像素限制<a class="headerlink" href="#f5-image-uploads-are-fully-buffered-and-decoded-without-a-pixel-limit" title="Permanent link">&para;</a></h3>
-<p><strong>Severity:</strong> P0 / High</p>
-<p><strong>Locations:</strong></p>
+<p><strong>严重性：</strong> P0 / 高</p>
+<p><strong>地点：</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/routers/dev.py:61-76</code></li>
 </ul>
-<p>The 20 MB image limit is checked only after <code>await request.body()</code> has buffered
-the complete payload. A chunked request with no <code>Content-Length</code> can consume
-arbitrarily more edge-process memory before it is rejected. Also, a compressed
-image below 20 MB can expand to an unbounded pixel buffer at <code>convert("RGB")</code>.
-An authenticated user of an explicitly enabled development endpoint can exhaust
-memory and disrupt local inspection.</p>
-<p><strong>Resolution:</strong> Stream request chunks into a bounded buffer while counting
-bytes, as the video route already does. Before conversion, enforce maximum
-width, height, and total pixels; treat Pillow decompression-bomb warnings and
-errors as <code>INVALID_IMAGE</code>. Pick limits explicitly and document them beside the
-20 MB wire-size limit.</p>
-<p><strong>Acceptance criteria:</strong></p>
+<p>仅在 <code>await request.body()</code> 缓冲后才检查 20 MB 图像限制
+完整的有效负载。没有 <code>Content-Length</code> 的分块请求可以消耗
+在被拒绝之前任意更多的边缘进程内存。另外，还有一个压缩包
+低于 20 MB 的图像可以扩展到 <code>convert("RGB")</code> 处的无界像素缓冲区。
+显式启用的开发端点的经过身份验证的用户可能会耗尽
+记忆并扰乱局部检查。</p>
+<p><strong>解决方案：</strong> 在计数时将请求块流式传输到有界缓冲区中
+字节，就像视频路由已经做的那样。转换前，强制执行最大
+宽度、高度和总像素；处理枕头减压炸弹警告和
+错误为 <code>INVALID_IMAGE</code>。明确选择限制并将其记录在
+20 MB 线路大小限制。</p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>An over-limit chunked ASGI request is rejected with <code>413 PAYLOAD_TOO_LARGE</code>
-  before a body larger than the configured limit is accumulated.</li>
-<li>A small compressed fixture exceeding the decoded-pixel limit returns
-  <code>400 INVALID_IMAGE</code> and does not invoke the pipeline.</li>
-<li>A valid image within both byte and pixel limits produces the same
-  <code>InspectionRecord</code> behavior as before.</li>
+<li>超过限制的分块 ASGI 请求被 <code>413 PAYLOAD_TOO_LARGE</code> 拒绝
+  在累积超过配置限制的主体之前。</li>
+<li>超出解码像素限制的小型压缩装置返回
+  <code>400 INVALID_IMAGE</code> 并且不调用管道。</li>
+<li>字节和像素限制内的有效图像产生相同的结果
+  <code>InspectionRecord</code> 行为与以前一样。</li>
 </ul>
 <h3 id="f6-video-sampling-bounds-inspected-frames-but-not-decode-work">F6。视频采样限制检查帧但不解码工作<a class="headerlink" href="#f6-video-sampling-bounds-inspected-frames-but-not-decode-work" title="Permanent link">&para;</a></h3>
-<p><strong>Severity:</strong> P1 / High</p>
-<p><strong>Locations:</strong></p>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/routers/dev.py:94</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/routers/dev.py:141-152</code></li>
 </ul>
-<p><code>step</code> has no maximum. Every skipped frame is fully decoded by
-<code>VideoFrameSource</code> before the modulo condition is evaluated. With a large
-<code>step</code>, the route may inspect one frame and then decode the remaining 100 MB
-video searching for the next selected frame. The advertised maximum of thirty
-frames bounds inference calls only, not decoder CPU time or elapsed request
-time.</p>
-<p><strong>Resolution:</strong> Bound <code>step</code> and total decoded frames independently, and add a
-wall-clock decode budget. Prefer seek-based sampling if codec support permits;
-otherwise return a bounded problem response when the decode-frame or time
-budget is reached. Document the selected policy in ADR-014/API documentation.</p>
-<p><strong>Acceptance criteria:</strong></p>
+<p><code>step</code> 没有最大值。每个跳帧都被完全解码
+<code>VideoFrameSource</code> 在计算模条件之前。与一个大
+<code>step</code>，路由可以检查一帧，然后解码剩余的 100 MB
+视频搜索下一个选定的帧。广告上的最多三十个
+帧仅限制推理调用，而不限制解码器 CPU 时间或已用请求
+时间。</p>
+<p><strong>分辨率：</strong> 独立绑定<code>step</code>和总解码帧，并添加一个
+挂钟解码预算。如果编解码器支持允许，首选基于搜索的采样；
+否则，当解码帧或时间达到时，返回有界问题响应
+预算达到。在 ADR-014/API 文档中记录所选策略。</p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>A fake source with many frames and a very large <code>step</code> stops at the decoded
-  frame/time budget instead of iterating the complete source.</li>
-<li>A too-large <code>step</code> is rejected by request validation.</li>
-<li>The response clearly identifies whether results are complete or stopped by a
-  documented resource limit; it must not imply that all video frames were
-  analyzed.</li>
+<li>具有许多帧和非常大的 <code>step</code> 的假源在解码时停止
+  帧/时间预算而不是迭代完整的源。</li>
+<li>太大的 <code>step</code> 会被请求验证拒绝。</li>
+<li>响应清楚地表明结果是完整的还是被停止的
+  记录资源限制；这并不意味着所有视频帧都是
+  分析了。</li>
 </ul>
-<h3 id="f7-persisted-developer-inspections-are-not-visible-until-process-restart">F7。在流程重新启动之前，持续的开发人员检查不可见<a class="headerlink" href="#f7-persisted-developer-inspections-are-not-visible-until-process-restart" title="Permanent link">&para;</a></h3>
-<p><strong>Severity:</strong> P1 / High</p>
-<p><strong>Locations:</strong></p>
+<h3 id="f7-persisted-developer-inspections-are-not-visible-until-process-restart">F7. Persisted developer inspections are not visible until process restart<a class="headerlink" href="#f7-persisted-developer-inspections-are-not-visible-until-process-restart" title="Permanent link">&para;</a></h3>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/routers/dev.py:86-87</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/api/app.py:81-85</code></li>

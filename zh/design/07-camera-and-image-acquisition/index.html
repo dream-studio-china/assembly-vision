@@ -698,7 +698,7 @@
   <a href="#72-scope-by-delivery-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.2 按交付阶段划分的范围
+        7.2 Scope by Delivery Phase
       
     </span>
   </a>
@@ -709,7 +709,7 @@
   <a href="#73-adapter-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.3 适配器接口
+        7.3 Adapter Interface
       
     </span>
   </a>
@@ -731,7 +731,7 @@
   <a href="#75-real-time-inspection-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.5 实时检查顺序
+        7.5 Real-Time Inspection Sequence
       
     </span>
   </a>
@@ -753,7 +753,7 @@
   <a href="#77-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.7 Configuration
+        7.7 配置
       
     </span>
   </a>
@@ -1791,7 +1791,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2649,7 +2649,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3118,7 +3118,7 @@
   <a href="#72-scope-by-delivery-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.2 按交付阶段划分的范围
+        7.2 Scope by Delivery Phase
       
     </span>
   </a>
@@ -3129,7 +3129,7 @@
   <a href="#73-adapter-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.3 适配器接口
+        7.3 Adapter Interface
       
     </span>
   </a>
@@ -3151,7 +3151,7 @@
   <a href="#75-real-time-inspection-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.5 实时检查顺序
+        7.5 Real-Time Inspection Sequence
       
     </span>
   </a>
@@ -3173,7 +3173,7 @@
   <a href="#77-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.7 Configuration
+        7.7 配置
       
     </span>
   </a>
@@ -3236,7 +3236,7 @@
 <h1 id="7-camera-and-image-acquisition">7. 相机和图像采集<a class="headerlink" href="#7-camera-and-image-acquisition" title="Permanent link">&para;</a></h1>
 <h2 id="71-purpose-and-boundary">7.1 目的和边界<a class="headerlink" href="#71-purpose-and-boundary" title="Permanent link">&para;</a></h2>
 <p>采集子系统拥有工业相机集成、触发处理、时间戳、帧缓冲和图像质量元数据。它发出帧；它不检测产品、决定检验结果或依赖于中央服务器。下游处理由<a href="../06-ai-detection-pipeline/">AI detection pipeline</a>定义。</p>
-<h2 id="72-scope-by-delivery-phase">7.2 按交付阶段划分的范围<a class="headerlink" href="#72-scope-by-delivery-phase" title="Permanent link">&para;</a></h2>
+<h2 id="72-scope-by-delivery-phase">7.2 Scope by Delivery Phase<a class="headerlink" href="#72-scope-by-delivery-phase" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3264,7 +3264,7 @@
 </tbody>
 </table>
 <p>相机供应商、SDK、操作系统、触发电气接口、帧速率、曝光和传送带速度仍然是部署决策。</p>
-<h2 id="73-adapter-interface">7.3 适配器接口<a class="headerlink" href="#73-adapter-interface" title="Permanent link">&para;</a></h2>
+<h2 id="73-adapter-interface">7.3 Adapter Interface<a class="headerlink" href="#73-adapter-interface" title="Permanent link">&para;</a></h2>
 <p>供应商代码被隔离在 <code>FrameSource</code> 协议后面，因此记录的数据可以使用相同的管道。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">FrameSource</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraCapabilities</span><span class="p">:</span> <span class="o">...</span>
@@ -3289,17 +3289,17 @@
 3. 在针对相邻产品进行验证后，具有跟踪功能的视觉进入/退出区域。
 4. 仅时间窗口作为受控后备，因为改变传送带速度可能会混合产品。</p>
 <p>去抖触发器并立即分配唯一的 <code>inspection_id</code>。仅当物理进程验证该策略时，才会记录并抑制配置的死区时间内的重复触发器。重叠窗口被明确拒绝或支持；他们绝不能分享可变的证据。</p>
-<h2 id="75-real-time-inspection-sequence">7.5 实时检查顺序<a class="headerlink" href="#75-real-time-inspection-sequence" title="Permanent link">&para;</a></h2>
+<h2 id="75-real-time-inspection-sequence">7.5 Real-Time Inspection Sequence<a class="headerlink" href="#75-real-time-inspection-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Sensor as 触发器或传感器
-    participant Capture as 相机适配器
+    participant Capture as Camera Adapter
     participant Window as 产品窗口管理器
-    participant Vision as Vision Pipeline
-    participant Aggregate as Temporal Aggregator
+    participant Vision as 愿景管道
+    participant Aggregate as 时间聚合器
     participant Rules as 规则引擎
     participant Store as 本地存储
-    participant Upload as 上传队列
-    Sensor-&gt;&gt;Window:Product entry event
+    participant Upload as Upload Queue
+    Sensor-&gt;&gt;Window:产品入驻活动
     Window-&gt;&gt;Window:创建检查和引脚版本
 loop 直到退出或超时
         Capture-&gt;&gt;Window:带时间戳的帧
@@ -3320,7 +3320,7 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <h2 id="76-frame-quality-and-color-handling">7.6 帧质量和颜色处理<a class="headerlink" href="#76-frame-quality-and-color-handling" title="Permanent link">&para;</a></h2>
 <p>解码为记录的规范格式，通常是 OpenCV 的 BGR8，同时保留原始尺寸。模型预处理执行其自己的 RGB 转换。质量检查应包括模糊、亮度范围、损坏、帧年龄以及可选的饱和度或眩光。阈值是特定于相机的，必须根据生产捕获进行校准。</p>
 <p>被拒绝的框架仍然可以追踪拒绝原因，但不会提供任何积极的证据。如果剩余的有效帧太少，则乘积为<code>NG</code>；由于没有矛盾的证据，不可用的输入不能成为 <code>OK</code>。</p>
-<h2 id="77-configuration">7.7 Configuration<a class="headerlink" href="#77-configuration" title="Permanent link">&para;</a></h2>
+<h2 id="77-configuration">7.7 配置<a class="headerlink" href="#77-configuration" title="Permanent link">&para;</a></h2>
 <p>一台边缘主机运行一个或多个独立的检查实例，每个实例都具有
 它自己的相机源和它自己的模型/规则/产品（ADR-013）。配置
 位于共享管道配置中的 <code>instances:</code> 列表下：</p>
@@ -3393,11 +3393,11 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <p><code>null</code> 曝光和增益意味着需要进行现场校准，而不是自动默认。应用的相机设置和序列号会在启动和更改时记录。</p>
 <h2 id="78-recovery-and-failure-handling">7.8 恢复和故障处理<a class="headerlink" href="#78-recovery-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
-<li>断开连接时，停止接受新的检查，将任何活动窗口关闭为 <code>NG</code> 和 <code>CAMERA_DISCONNECTED</code>，并使用有界指数退避重新连接。</li>
+<li>断开连接时，停止接受新检查，将任何活动窗口关闭为 <code>NG</code> 和 <code>CAMERA_DISCONNECTED</code>，并使用有界指数退避重新连接。</li>
 <li>在序列间隙或缓冲区溢出时，增加指标并将受影响的窗口标记为降级；证据不足产生<code>NG</code>。</li>
 <li>对于陈旧或重复的帧，拒绝这些帧并报告相机运行状况恶化。</li>
 <li>在时钟调整时，继续使用单调时钟计算持续时间并记录挂钟的不连续性。</li>
-<li>在捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断的<code>NG</code>。</li>
+<li>捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断的<code>NG</code>。</li>
 <li>服务器中断时，不要进行采集更改。在储存能力允许的情况下，当地捕获和检查将继续进行。</li>
 </ul>
 <p>滚动视频写入分段文件以限制断电后的损坏。媒体持久化和删除规则在<a href="../12-local-storage-and-retention/">local storage and retention</a>中定义。</p>

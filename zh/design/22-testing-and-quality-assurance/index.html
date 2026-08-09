@@ -1118,7 +1118,7 @@
   <a href="#222-scope-by-delivery-stage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        22.2 Scope by Delivery Stage
+        22.2 按交付阶段划分的范围
       
     </span>
   </a>
@@ -1835,7 +1835,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2693,7 +2693,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3162,7 +3162,7 @@
   <a href="#222-scope-by-delivery-stage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        22.2 Scope by Delivery Stage
+        22.2 按交付阶段划分的范围
       
     </span>
   </a>
@@ -3321,10 +3321,10 @@
   
 
 
-<h1 id="22-testing-and-quality-assurance">22. Testing and Quality Assurance<a class="headerlink" href="#22-testing-and-quality-assurance" title="Permanent link">&para;</a></h1>
+<h1 id="22-testing-and-quality-assurance">22. 测试和质量保证<a class="headerlink" href="#22-testing-and-quality-assurance" title="Permanent link">&para;</a></h1>
 <h2 id="221-purpose-and-quality-objective">22.1 目的和质量目标<a class="headerlink" href="#221-purpose-and-quality-objective" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 测试展示了在代表性生产条件下测量的行为。主要质量目标是真实 NG 产品的高召回率和极低的假阴性率，并有可追溯的证据和谨慎的人工验证支持。没有任何测试计划或模型能够保证 100% 的准确性。</p>
-<h2 id="222-scope-by-delivery-stage">22.2 Scope by Delivery Stage<a class="headerlink" href="#222-scope-by-delivery-stage" title="Permanent link">&para;</a></h2>
+<h2 id="222-scope-by-delivery-stage">22.2 按交付阶段划分的范围<a class="headerlink" href="#222-scope-by-delivery-stage" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>静态训练和检查 MVP：</strong> YOLO 数据集布局和标签验证、产品/ROI/组件坐标重新映射测试、合成夹具训练试运行、静态管道集成测试、确定性夹具、CLI 冒烟测试、保留文件名真实验证和基线模型评估。</li>
 <li><strong>一个月目标：</strong> 相机/条形码适配器、本地持久性、时间聚合、边缘 API/仪表板、一个中央摄取/历史/审核路径、有针对性的同步/重启/幂等性测试、部署冒烟测试以及访问允许的受控客户站点基线。</li>
@@ -3562,7 +3562,7 @@
 <p>性能测试使用生产分辨率图像和候选边缘硬件。测量捕获、条形码、产品检测、ROI、组件检测、聚合、规则、持久性和 UI/事件交付的阶段时序。单独报告预热并监控 CPU、GPU、内存、温度、磁盘 I/O 和队列增长。</p>
 <p>长时间运行的测试包括正常产品流、突发、空闲期、摄像头重新连接、中央中断、重复网络断开、加速器/推理故障和保留清理。通过意味着没有无限的内存/文件描述符/队列增长，没有数据丢失，并且延迟在客户同意的限制内稳定。工期和工作量根据实际操作模式商定；本文档并未发明它们。</p>
 <h2 id="2210-test-data-and-ground-truth-governance">22.10 测试数据和地面实况治理<a class="headerlink" href="#2210-test-data-and-ground-truth-governance" title="Permanent link">&para;</a></h2>
-<p>固定装置不包含不受控制的客户数据。每个评估项目都有一个不可变的标识符、源组、产品类型、预期组件状态、条形码基本事实（如果适用）、注释/审查出处以及允许的使用。更正创建新的注释版本。培训、验证、测试和客户验收清单均受校验和控制。</p>
+<p>固定装置不包含不受控制的客户数据。每个评估项目都有一个不可变的标识符、源组、产品类型、预期组件状态、条形码基本事实（如果适用）、注释/审查出处和允许的使用。更正创建新的注释版本。培训、验证、测试和客户验收清单均受校验和控制。</p>
 <p>针对每个必需的缺失组件情况，有意收集真实的 NG 示例。合成去除或分期可以作为补充，但必须与自然发生的缺陷分开报告。训练策略中的数据集数量只是起点，而不是保证。</p>
 <h2 id="2211-release-quality-gates">22.11 发布质量门<a class="headerlink" href="#2211-release-quality-gates" title="Permanent link">&para;</a></h2>
 <p>候选人只有在以下情况下才能晋升：</p>

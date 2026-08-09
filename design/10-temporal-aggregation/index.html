@@ -3419,7 +3419,13 @@ do not satisfy an exact <code>expected_count</code> without co-occurrence.</p>
   <code>PRODUCT_IDENTITY_TRANSITION</code>, <code>MULTIPLE_PRODUCTS</code>) that can never release
   <code>OK</code>. <code>window_strategy: time</code> remains an explicit development fallback; it
   does not prove that adjacent products cannot overlap, so production temporal
-  inspection must use <code>identity</code> or another validated correlation mechanism.</li>
+  inspection must use <code>identity</code> or another validated correlation mechanism.
+  Configuration rejects <code>inspection.enabled: true</code> with the time strategy.</li>
+<li><strong>Maximum duration</strong>: when an identity-sealed window reaches
+  <code>maximum_window_ms</code> while that identity remains continuous, it closes as
+  <code>NG</code> with <code>WINDOW_MAX_DURATION_EXCEEDED</code>. The identity is quarantined and
+  cannot begin another window until a different validated identity proves a
+  product transition.</li>
 <li><strong>Frame quality</strong>: a frame whose product-detection quality gate reports
   unusable contributes no detections and no valid opportunity; its quality
   reasons are preserved as frame diagnostics.</li>
@@ -3453,6 +3459,9 @@ do not satisfy an exact <code>expected_count</code> without co-occurrence.</p>
 <li>Identity-sealed windows abort on a missing identity, a mid-window identity
   transition, or a confirmed multi-product frame; their frames never mix with
   another product's evidence.</li>
+<li>An identity that exceeds <code>maximum_window_ms</code> is closed with
+  <code>WINDOW_MAX_DURATION_EXCEEDED</code> and quarantined until a different validated
+  identity arrives; it cannot be split into independently releasable windows.</li>
 <li>Frames outside the window or with mismatched inspection IDs are quarantined from evidence.</li>
 <li>Multiple products or identity switches invalidate the window unless a validated tracker proves continuity.</li>
 <li>Worker restart closes recovered open windows as interrupted <code>NG</code>; it does not reconstruct evidence from partial memory unless all state was durably journaled.</li>

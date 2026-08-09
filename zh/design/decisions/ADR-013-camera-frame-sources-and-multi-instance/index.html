@@ -1634,7 +1634,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -1774,7 +1774,7 @@
   <a href="#42-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2 Negative and Trade-offs
+        4.2 负面和权衡
       
     </span>
   </a>
@@ -2633,7 +2633,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3147,7 +3147,7 @@
   <a href="#42-negative-and-trade-offs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2 Negative and Trade-offs
+        4.2 负面和权衡
       
     </span>
   </a>
@@ -3270,42 +3270,42 @@
 <h2 id="4-consequences">4. 后果<a class="headerlink" href="#4-consequences" title="Permanent link">&para;</a></h2>
 <h3 id="41-positive">4.1 正面<a class="headerlink" href="#41-positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>The same pipeline consumes live, recorded, and simulated frames, so
-  deterministic regression fixtures work across acquisition modes.</li>
-<li>Development and CI need no camera hardware: folder, video, and local HTTP
-  servers exercise every code path the real camera uses.</li>
-<li>One edge host serves multiple independent lines, each with stable per-line
-  device identity, matching the fleet model (one device per line).</li>
-<li>Remote TCP/IP sources (RTSP, HTTP images) integrate without vendor SDKs, and
-  vendor adapters remain a future protocol implementation.</li>
-<li>The dashboard gets a real camera preview before the WebSocket milestone.</li>
+<li>相同的管道消耗实时、记录和模拟帧，因此
+  确定性回归装置可跨采集模式工作。</li>
+<li>开发和 CI 不需要相机硬件：文件夹、视频和本地 HTTP
+  服务器执行真实相机使用的每条代码路径。</li>
+<li>一台边缘主机服务多条独立线路，每条线路都有稳定的线路
+  设备标识，与车队模型匹配（每条线路一台设备）。</li>
+<li>远程 TCP/IP 源（RTSP、HTTP 图像）无需供应商 SDK 即可集成，并且
+  供应商适配器仍然是未来的协议实现。</li>
+<li>仪表板在 WebSocket 里程碑之前获得真实的相机预览。</li>
 </ul>
-<h3 id="42-negative-and-trade-offs">4.2 Negative and Trade-offs<a class="headerlink" href="#42-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
+<h3 id="42-negative-and-trade-offs">4.2 负面和权衡<a class="headerlink" href="#42-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Each instance loads its own model instances; memory grows linearly with the
-  number of instances until weight sharing is justified (the "shared model"
-  open question in context Phase 3 remains open).</li>
-<li>RTSP reliability depends on PyAV/OpenCV builds and network behavior; bounded
-  reconnect with backoff is implemented, but frame-loss and jitter behavior
-  must be validated on the target network.</li>
-<li>Per-frame inspection (one inspection per captured frame) is not a product
-  window; overlapping products and evidence mixing are not addressed until the
-  product-window/temporal milestone.</li>
-<li>The REST preview is a stopgap; it must not grow into a streaming path, and
-  the WebSocket milestone should supersede it for live dashboards.</li>
-<li>Adding dependencies (<code>av</code>, <code>opencv-python-headless</code>, <code>httpx</code>) increases the
-  runtime footprint and image size.</li>
+<li>每个实例加载自己的模型实例；内存随时间线性增长
+  权重共享合理之前的实例数量（“共享模型”
+  第三阶段中的悬而未决的问题仍然悬而未决）。</li>
+<li>RTSP 可靠性取决于 PyAV/OpenCV 构建和网络行为；有界的
+  实现了带退避的重新连接，但存在帧丢失和抖动行为
+  必须在目标网络上进行验证。</li>
+<li>每帧检查（每个捕获的帧进行一次检查）不是产品
+  窗户；重叠产品和证据混合问题直到
+  产品窗口/时间里程碑。</li>
+<li>REST 预览只是权宜之计；它不能成长为流路径，并且
+  对于实时仪表板，WebSocket 里程碑应该取代它。</li>
+<li>添加依赖项（<code>av</code>、<code>opencv-python-headless</code>、<code>httpx</code>）会增加
+  运行时占用空间和图像大小。</li>
 </ul>
 <h2 id="5-open-questions-and-validation-required">5. 开放式问题和需要验证<a class="headerlink" href="#5-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Select the real camera vendor/SDK and validate the vendor adapter against the
-  <code>FrameSource</code> contract and reconnect behavior.</li>
-<li>Validate RTSP latency, reconnect, and frame loss on the target production
-  network.</li>
-<li>Decide whether per-instance model weight sharing is needed before memory
-  becomes a constraint (context Phase 3 "shared model").</li>
-<li>Confirm whether HTTP-image polling is sufficient for the customer snapshot
-  cameras or an MJPEG parser is required.</li>
+<li>选择真正的相机供应商/SDK 并根据
+  <code>FrameSource</code> 收缩和重新连接行为。</li>
+<li>验证目标产品上的 RTSP 延迟、重新连接和帧丢失
+  网络。</li>
+<li>在内存之前决定是否需要按实例模型权重共享
+  成为一个约束（上下文第 3 阶段“共享模型”）。</li>
+<li>确认 HTTP 图像轮询对于客户快照是否足够
+  需要相机或 MJPEG 解析器。</li>
 </ul>
 <h2 id="6-links">6. 链接<a class="headerlink" href="#6-links" title="Permanent link">&para;</a></h2>
 <ul>

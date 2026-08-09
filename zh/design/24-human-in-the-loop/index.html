@@ -1301,7 +1301,7 @@
   <a href="#2410-metrics-and-review-reduction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.10 指标和审查减少
+        24.10 Metrics and Review Reduction
       
     </span>
   </a>
@@ -1323,7 +1323,7 @@
   <a href="#2412-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.12 未解决的问题和需要验证
+        24.12 Open Questions and Validation Required
       
     </span>
   </a>
@@ -1863,7 +1863,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2721,7 +2721,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3317,7 +3317,7 @@
   <a href="#2410-metrics-and-review-reduction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.10 指标和审查减少
+        24.10 Metrics and Review Reduction
       
     </span>
   </a>
@@ -3339,7 +3339,7 @@
   <a href="#2412-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.12 未解决的问题和需要验证
+        24.12 Open Questions and Validation Required
       
     </span>
   </a>
@@ -3377,7 +3377,7 @@
   
 
 
-<h1 id="24-human-in-the-loop-operations">24. 人机交互操作<a class="headerlink" href="#24-human-in-the-loop-operations" title="Permanent link">&para;</a></h1>
+<h1 id="24-human-in-the-loop-operations">24. Human-in-the-Loop Operations<a class="headerlink" href="#24-human-in-the-loop-operations" title="Permanent link">&para;</a></h1>
 <h2 id="241-purpose-and-safety-position">24.1 目的和安全位置<a class="headerlink" href="#241-purpose-and-safety-position" title="Permanent link">&para;</a></h2>
 <p>人工审核是一个受控的质量流程，旨在谨慎推出、模糊证据、NG 处理和持续改进。它不会隐藏模型限制或改变原始机器决策。 AssemblyVision 优先考虑高 NG 召回率：早期操作接受额外的错误 NG 决策，因为它们可以进行审查，而错误地发布为 OK 的真正 NG 是主要的质量风险。</p>
 <h2 id="242-scope-by-phase">24.2 阶段范围<a class="headerlink" href="#242-scope-by-phase" title="Permanent link">&para;</a></h2>
@@ -3456,7 +3456,7 @@
     participant Q as 审核队列
     participant R as 审稿人
     participant T as 培训待办事项
-    E-&gt;&gt;C:上传决定、版本和证据
+    E-&gt;&gt;C:Upload decision, versions, and evidence
     C-&gt;&gt;C:验证收据和证据校验和
     C-&gt;&gt;Q:应用版本化路由策略
     Q--&gt;&gt;R:分配优先审查项目
@@ -3503,18 +3503,18 @@ else 机器决策确认
 <li>如果测量到的行为出现退化，则进行暂存、监视和回滚。</li>
 </ol>
 <p>没有个人审查会导致在线学习或默默地改变生产决策政策。</p>
-<h2 id="2410-metrics-and-review-reduction">24.10 指标和审查减少<a class="headerlink" href="#2410-metrics-and-review-reduction" title="Permanent link">&para;</a></h2>
+<h2 id="2410-metrics-and-review-reduction">24.10 Metrics and Review Reduction<a class="headerlink" href="#2410-metrics-and-review-reduction" title="Permanent link">&para;</a></h2>
 <p>跟踪审核率、队列年龄、审核者周转率、纠正率、误报率、OK 审核的估计误报率、不确定率、分歧率以及每个产品/每个组件/模型/规则结果。每个比率都包括其样本数量和抽样方法。</p>
 <p>仅当测量的生产证据支持更改时，才会减少手动审核。该决定考虑了 NG 召回、OK 审核结果、新颖性、审查纠正率、样本代表性、最近的相机/产品/配置更改以及客户风险承受能力。没有固定的日历日期或未经验证的数字触发器。</p>
 <h2 id="2411-operational-exceptions">24.11 操作异常<a class="headerlink" href="#2411-operational-exceptions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>如果中央服务器不可用，边缘检查将继续并稍后同步审核项目。</li>
 <li>如果所需的证据缺失或损坏，则审查没有结论，并且会引发操作事件。</li>
-<li>如果队列增长超过人员配置能力，优先政策会保护最高风险的物品；它不会自动将 NG 转换为 OK。</li>
+<li>如果队列增长超过人员配置能力，优先政策将保护最高风险的物品；它不会自动将 NG 转换为 OK。</li>
 <li>如果审核者发现潜在的漏检 NG 模式，请遵循 <a href="../23-observability-and-support/">Observability and Support</a> 中的遏制运行手册。</li>
 <li>如果产品配置发生变化，请在激活之前和之后维护单独的审核指标。</li>
 </ul>
-<h2 id="2412-open-questions-and-validation-required">24.12 未解决的问题和需要验证<a class="headerlink" href="#2412-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="2412-open-questions-and-validation-required">24.12 Open Questions and Validation Required<a class="headerlink" href="#2412-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>内部<code>UNCERTAIN</code>如何显示为独特的评论类别，同时保留业务结果<code>NG</code>。</li>
 <li>谁有权定义基本事实、裁决分歧并在审查后发布产品。</li>

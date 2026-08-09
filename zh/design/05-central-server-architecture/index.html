@@ -631,7 +631,7 @@
   <a href="#1-responsibilities-and-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 职责与边界
+        1. Responsibilities and Boundary
       
     </span>
   </a>
@@ -753,7 +753,7 @@
   <a href="#7-api-and-web-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. API 和 Web 架构
+        7. API and Web Architecture
       
     </span>
   </a>
@@ -1930,7 +1930,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2788,7 +2788,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3246,7 +3246,7 @@
   <a href="#1-responsibilities-and-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 职责与边界
+        1. Responsibilities and Boundary
       
     </span>
   </a>
@@ -3368,7 +3368,7 @@
   <a href="#7-api-and-web-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. API 和 Web 架构
+        7. API and Web Architecture
       
     </span>
   </a>
@@ -3511,16 +3511,16 @@
   
 
 
-<h1 id="assemblyvision-central-server-architecture">AssemblyVision Central Server Architecture<a class="headerlink" href="#assemblyvision-central-server-architecture" title="Permanent link">&para;</a></h1>
-<h2 id="1-responsibilities-and-boundary">1. 职责与边界<a class="headerlink" href="#1-responsibilities-and-boundary" title="Permanent link">&para;</a></h2>
+<h1 id="assemblyvision-central-server-architecture">AssemblyVision 中央服务器架构<a class="headerlink" href="#assemblyvision-central-server-architecture" title="Permanent link">&para;</a></h1>
+<h2 id="1-responsibilities-and-boundary">1. Responsibilities and Boundary<a class="headerlink" href="#1-responsibilities-and-boundary" title="Permanent link">&para;</a></h2>
 <p>中央服务器接收延迟的检查结果和选定的证据，维护跨设备历史记录和报告，管理设备/产品/规则/模型/用户，支持手动审核，记录审核事件并分发批准的配置。它是一个管理和证据平面，从来不是生产检验的同步依赖。</p>
 <p>最初的自动化决策是来自边缘的仅附加事实。中央审查和更正是相互关联的事实；它们不会覆盖原始结果。请参阅<a href="../03-architecture-overview/">Architecture Overview</a>和<a href="../04-edge-client-architecture/">Edge Client Architecture</a>。</p>
 <h2 id="2-central-component-architecture">2. 中心组件架构<a class="headerlink" href="#2-central-component-architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
     Edge[边缘上传客户端] --&gt; Gateway[Nginx 和中央 FastAPI]
-    Admin[Vue administration application] --&gt; Gateway
+    Admin[Vue 管理应用程序] --&gt; Gateway
     Gateway --&gt; Auth[身份与授权]
-    Gateway --&gt; Ingest[Inspection ingestion]
+    Gateway --&gt; Ingest[检查摄取]
     Gateway --&gt; Query[历史记录和仪表板查询]
     Gateway --&gt; Config[设备产品规则和型号管理]
     Gateway --&gt; Review[人工审核]
@@ -3563,9 +3563,9 @@
 <p>包会经历草稿、验证、批准、分配、下载、边缘验证、激活和确认状态。不可变内容收到新版本而不是就地编辑。在更广泛的分配之前，推出支持较小的设备群。边缘保留最后一次已知良好的包裹，并仅在检查之间激活。中心地位将分配与实际确认区分开来；任何仪表板都不应暗示仅通过分配即可激活。</p>
 <p>模型和远程配置/规则交付是生产目标功能。一个月的演示者可以集中注册所需的版本，同时在边缘手动安装软件包；安装仍会在本地验证不可变内容、校验和、兼容性和最后一次正确的回滚。分配绝不能显示为激活。</p>
 <h2 id="6-manual-review-and-reporting">6. 人工审核和报告<a class="headerlink" href="#6-manual-review-and-reporting" title="Permanent link">&para;</a></h2>
-<p>审查呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
+<p>审核呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
 <p>报告将自动计数与经过审查的真实情况分开，并清楚地说明样本覆盖范围。所需的视图包括 OK/NG 趋势、缺失组件、条形码故障、产品/系列/设备故障、模型/规则版本性能、设备运行状况/上次查看、上传延迟、审核率和纠正率。估计的假阴性指标需要抽样 OK 审核或独立标记的验收数据；未经审查不能被解释为正确性。</p>
-<h2 id="7-api-and-web-architecture">7. API 和 Web 架构<a class="headerlink" href="#7-api-and-web-architecture" title="Permanent link">&para;</a></h2>
+<h2 id="7-api-and-web-architecture">7. API and Web Architecture<a class="headerlink" href="#7-api-and-web-architecture" title="Permanent link">&para;</a></h2>
 <p>建议的版本组为 <code>/api/v1/device-ingest</code>、<code>/devices</code>、<code>/lines</code>、<code>/inspections</code>、<code>/media</code>、<code>/reviews</code>、<code>/products</code>、<code>/rules</code>、<code>/models</code>、<code>/device-configurations</code>、<code>/dashboard</code>、<code>/reports</code>、<code>/events</code>、<code>/audit-logs</code> 和 <code>/auth</code>。集合 API 使用游标分页和有界过滤器。变异请求在客户端重试时使用乐观并发和幂等性。</p>
 <p>FastAPI生成OpenAPI； Vue 3 TypeScript 应用程序使用生成的客户端。 Pinia 保存会话/UI 状态而不是复制服务器事实。路由器级和组件级防护改善了用户体验，而服务器授权仍然具有权威性。 WebSocket 或 SSE 可以提供设备/仪表板更新，并在重新连接后通过 REST 重新同步。</p>
 <h2 id="8-authorization-audit-and-security">8. 授权、审计和安全<a class="headerlink" href="#8-authorization-audit-and-security" title="Permanent link">&para;</a></h2>

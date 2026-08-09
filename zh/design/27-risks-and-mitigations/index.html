@@ -1758,7 +1758,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2616,7 +2616,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3167,7 +3167,7 @@
   
 
 
-<h1 id="27-risks-and-mitigations">27. Risks and Mitigations<a class="headerlink" href="#27-risks-and-mitigations" title="Permanent link">&para;</a></h1>
+<h1 id="27-risks-and-mitigations">27. 风险和缓解措施<a class="headerlink" href="#27-risks-and-mitigations" title="Permanent link">&para;</a></h1>
 <h2 id="271-purpose-and-risk-method">27.1 目的和风险方法<a class="headerlink" href="#271-purpose-and-risk-method" title="Permanent link">&para;</a></h2>
 <p>该寄存器识别对检查完整性、可追溯性、可用性和操作的已知威胁。每个风险都说明了原因、影响、检测、预防、恢复和剩余风险。所有者和评级是在站点规划期间分配的，因为工厂拓扑、硬件、吞吐量和验收阈值尚不清楚。</p>
 <h2 id="272-scope-and-treatment-principles">27.2 范围和处理原则<a class="headerlink" href="#272-scope-and-treatment-principles" title="Permanent link">&para;</a></h2>
@@ -3266,14 +3266,14 @@
 </tr>
 </tbody>
 </table>
-<p>| R-09 Wrong product-type mapping | Stale/incorrect master data, reused code, manual error | Wrong required-component rule can produce false OK | Barcode/product/config consistency checks, visual product class comparison, audits | Versioned authoritative mapping, approval workflow, test vectors | Pause affected mapping, restore last approved version, review affected inspections | Correctly formatted but semantically wrong source data may evade checks |
-| R-10 Wrong rule configuration | Omitted component, wrong threshold/policy, editing error | Defective product may be classified OK or valid product NG | Schema/semantic validation, diff/approval, simulation on regression set, audit | Versioning, least privilege, two-person approval where feasible, staged activation | Roll back, identify affected version/time range, re-evaluate evidence | Regression set may not represent every production condition |
-| R-11 Model and rule version mismatch | Partial update, manual file replacement, compatibility error | Rule expects classes/evidence model cannot supply | Signed manifest compatibility matrix, startup/readiness validation, inspection record versions | Atomic release set, read-only model/rule mounts, no ad hoc replacement | Refuse readiness, activate last known-good compatible set, report failure | Compatibility metadata itself may be authored incorrectly without end-to-end tests |
-| R-12 Multiple products in one inspection window | Insufficient spacing, trigger overlap, tracking failure | Evidence combines products or misses one product | Product count/tracks, entry/exit events, window duration and geometry checks | Sensor/trigger design, spacing rules, explicit multi-product rejection | Abort as ambiguous/NG, clear zone, reinspect products individually | Occluded overlapping products may appear as one |
-| R-13 Duplicate inspection | Trigger bounce, restart, repeated barcode event, tracking re-entry | Duplicate records/disposition and distorted statistics | Window identity state machine, product/barcode/time correlation, duplicate event metric | Trigger debounce, stable inspection IDs, explicit lifecycle and idempotency | Mark/link duplicate without deleting audit history; reconcile downstream action | Identical consecutive products can make heuristic deduplication unsafe |
-| R-14 Frame mixing between products | Window overlap, stale buffers, async race, wrong timestamps | Components from another product can support false OK | Window/track IDs per frame, monotonic sequence checks, boundary tests, provenance audit | Single ownership of frames, flush/bound buffers, sensor/barcode boundaries, state-machine tests | Abort ambiguous windows, preserve evidence, fix boundary logic and retest | Weak physical separation can remain ambiguous without a sensor |
-| R-15 Network outage | Factory WAN/LAN, DNS, firewall, proxy failure | Central history/review delayed; queue and disk grow | Connectivity state, queue depth/bytes/oldest age, retry classes | Edge-first design, persistent queue, capacity planning, backoff/jitter | Continue locally, restore network, rate-limit drain, reconcile receipts | Outage longer than local capacity requires degraded recording or production pause |
-| R-16 Central-server outage | API/database/object storage/deployment failure | Upload/review/reporting unavailable across devices | Central health/alerts, edge 5xx/timeouts, backlog metrics | Decoupled edge, backups, tested central recovery, appropriate redundancy | Continue edge operation, recover service/data, drain queues idempotently | Extended outage delays human review and fleet-wide visibility |</p>
+<p>| R-09 产品类型映射错误 |陈旧/不正确的主数据、重复使用的代码、手动错误 |错误的必需组件规则可能会产生错误的 OK |条形码/产品/配置一致性检查、可视化产品类别比较、审核 |版本化权威映射、审批工作流程、测试向量 |暂停受影响的映射、恢复上次批准的版本、审查受影响的检查 |格式正确但语义错误的源数据可能会逃避检查 |
+| R-10 错误的规则配置 |遗漏的组件、错误的阈值/策略、编辑错误 |缺陷产品可能被分类为 OK 或有效产品 NG |模式/语义验证、差异/批准、回归集模拟、审计 |版本控制、最小权限、可行的情况下两人批准、分阶段激活 |回滚、识别受影响的版本/时间范围、重新评估证据 |回归集可能无法代表所有生产条件 |
+| R-11 模型和规则版本不匹配 |部分更新、手动文件替换、兼容性错误 |规则期望类/证据模型无法提供 |签署清单兼容性矩阵、启动/就绪验证、检查记录版本 |原子发布集、只读模型/规则安装、无临时替换 |拒绝就绪，激活最后一个已知良好的兼容集，报告失败|如果没有端到端测试，兼容性元数据本身可能会被错误地编写 |
+| R-12 一个检查窗口中的多种产品 |间距不足、触发重叠、跟踪失败 |证据结合了产品或遗漏了一种产品 |产品计数/轨迹、进入/退出事件、窗口持续时间和几何检查 |传感器/触发器设计、间距规则、明确的多产品拒绝 |因不明确/NG而中止，清除区域，单独重新检查产品 |被遮挡的重叠产品可能会显示为一个 |
+| R-13 重复检查 |触发弹跳、重启、重复条码事件、跟踪重入|重复记录/处置和扭曲的统计数据 |窗口身份状态机、产品/条形码/时间关联、重复事件度量 |触发去抖、稳定的检查 ID、明确的生命周期和幂等性 |标记/链接重复项而不删除审核历史记录；协调下游行动|相同的连续乘积会使启发式重复数据删除变得不安全 |
+| R-14 产品之间的框架混合 |窗口重叠、过时的缓冲区、异步竞争、错误的时间戳 |来自其他产品的组件可以支持 false OK |每帧窗口/轨道 ID、单调序列检查、边界测试、出处审计 |帧的单一所有权、刷新/绑定缓冲区、传感器/条形码边界、状态机测试 |中止不明确的窗口、保留证据、修复边界逻辑并重新测试 |如果没有传感器，弱物理分离可能会保持模糊性。
+| R-15 网络中断 |工厂 WAN/LAN、DNS、防火墙、代理故障 |中央历史记录/审查延迟；队列和磁盘增长|连接状态、队列深度/字节/最旧年龄、重试类 |边缘优先设计、持久队列、容量规划、退避/抖动 |本地继续、恢复网络、限制流量、核对收据 |中断时间超过本地容量需要降级录制或暂停制作 |
+| R-16 中央服务器中断 | API/数据库/对象存储/部署失败 |无法跨设备上传/审查/报告 |中央运行状况/警报、边缘 5xx/超时、积压指标 |解耦边缘、备份、经过测试的中央恢复、适当的冗余 |继续边缘操作，恢复服务/数据，幂等地排出队列 |长时间的停电延迟了人工审查和整个车队的可见性|</p>
 <p>| R-17 上传重复项 |提交后超时、重试、操作员重试、队列重播 |重复的中央记录/媒体和不正确的报告 |幂等性密钥、唯一源检查约束、收据查找、校验和 |幂等 API 和确认前的持久收据 |返回原始收据、通过校验和合并/拒绝重复媒体、审核冲突 |重用密钥下更改的有效负载需要显式冲突处理 |
 | R-18 本地磁盘已满 |停电积压、视频/日志增长、清理失败、规模过小 |无法存储证据/数据库；崩溃或可追溯性丢失|可用字节/索引节点、增长预测、媒体类/队列指标、写入错误 |配额、有界日志/视频、分层保留、容量保留、保护待处理文件 |安全清理上传的过期数据、禁用可选录制、扩展磁盘或暂停 |突然的突发/文件系统开销可能会在响应之前耗尽储备 |
 | R-19 本地数据库损坏 |断电、存储故障、不安全复制、软件缺陷 |丢失决策/队列状态并且无法协调证据 | SQLite 完整性检查、I/O 错误、备份/恢复测试、介质协调 |事务/WAL 已验证、原子写入、可靠存储、在线备份 |隔离数据库、恢复备份、从清单/媒体重建有限元数据、协调中央收据 |上次有效备份后的记录可能需要手动重建或仍然丢失 |

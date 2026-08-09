@@ -1813,7 +1813,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2671,7 +2671,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3328,7 +3328,7 @@
 <h2 id="105-temporal-aggregation-sequence">10.5 时间聚合序列<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Window as 产品展示
-    participant Quality as Frame Quality Gate
+    participant Quality as 框架质量门
     participant Detector as 元件检测器
     participant Aggregate as 每个组件聚合器
     participant Rules as 规则引擎
@@ -3336,7 +3336,7 @@
 loop 每个相关帧
         Window-&gt;&gt;Quality:验证框架
 alt 帧有效
-            Quality-&gt;&gt;Detector:产品投资回报率
+            Quality-&gt;&gt;Detector:Product ROI
             Detector--&gt;&gt;Aggregate:按组件键控的观察结果
             Aggregate-&gt;&gt;Aggregate:对每个组件进行重复数据删除和更新
 else 帧无效
@@ -3419,7 +3419,13 @@ loop 每个必需的组件
   <code>PRODUCT_IDENTITY_TRANSITION</code>, <code>MULTIPLE_PRODUCTS</code>) 永远无法释放
   <code>OK</code>。 <code>window_strategy: time</code> 仍然是一个明确的开发后备方案；它
   并不能证明相邻产品不能重叠，所以生产时间上
-  检查必须使用 <code>identity</code> 或其他经过验证的关联机制。</li>
+  检查必须使用 <code>identity</code> 或其他经过验证的关联机制。
+  配置拒绝带有时间策略的<code>inspection.enabled: true</code>。</li>
+<li><strong>最大持续时间</strong>：当身份密封窗口达到时
+  <code>maximum_window_ms</code> 当该身份保持连续时，它会关闭为
+  <code>NG</code> 与 <code>WINDOW_MAX_DURATION_EXCEEDED</code>。身份被隔离
+  无法开始另一个窗口，直到不同的经过验证的身份证明
+  产品转型。</li>
 <li><strong>框架质量</strong>：产品检测质量门报告的框架
   不可用不会造成任何检测，也没有有效的机会；它的质量
   原因被保留为帧诊断。</li>
@@ -3440,7 +3446,7 @@ loop 每个必需的组件
 <li><strong>计数证据</strong>：<code>detection_count</code>、方框区域和中心摘要包括
   仅检测到等于或高于计数证据阈值（策略
   <code>medium_confidence</code> 至少），因此低置信度误报不能
-  膨胀一个精确的 <code>expected_count</code>。</li>
+  膨胀一个精确的<code>expected_count</code>。</li>
 </ul>
 <h2 id="108-window-integrity-and-failure-handling">10.8 窗口完整性和故障处理<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3453,11 +3459,14 @@ loop 每个必需的组件
 <li>身份密封窗口在丢失身份、中间窗口身份时中止
   过渡或已确认的多产品框架；他们的框架从不混合
   另一种产品的证据。</li>
+<li>超过<code>maximum_window_ms</code>的身份被关闭
+  <code>WINDOW_MAX_DURATION_EXCEEDED</code> 并被隔离，直到经过不同的验证
+  身份到达；它不能被分割成独立可释放的窗口。</li>
 <li>窗外的框架或检查 ID 不匹配的框架将与证据隔离。</li>
 <li>多个产品或身份切换使窗口无效，除非经过验证的跟踪器证明连续性。</li>
 <li>Worker 重新启动会关闭恢复的打开窗口作为中断<code>NG</code>；它不会从部分记忆中重建证据，除非所有状态都被持久地记录下来。</li>
 <li>队列丢失或推理错误会减少有效机会，并且只能将证据移向<code>UNCERTAIN</code>或<code>UNVERIFIABLE</code>。</li>
-<li>默认情况下禁用早期<code>OK</code>最终确定，因为后面的帧可能会显示出歧义；可选的提前完成需要生产验证，并且仍然必须满足每个组件的要求。</li>
+<li>默认情况下禁用早期<code>OK</code>最终确定，因为后面的帧可能会显示歧义；可选的提前完成需要生产验证，并且仍然必须满足每个组件的要求。</li>
 </ul>
 <h2 id="109-persistence-and-observability">10.9 持久性和可观察性<a class="headerlink" href="#109-persistence-and-observability" title="Permanent link">&para;</a></h2>
 <p>保留帧机会、接受/拒绝状态、观察、重复数据删除决策、最终组件状态、阈值、命中帧 ID、置信度摘要和关闭原因。指标包括窗口打开/关闭/超时、帧混合尝试、每个组件状态计数、每个窗口的有效帧以及聚合延迟。</p>

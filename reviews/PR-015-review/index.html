@@ -3195,14 +3195,15 @@ that failed before the fix and pass after:</p>
   SHA-256 of the canonical temporal policy document, including format, window
   parameters, and component thresholds/hit rules. A regression test verifies
   that a policy change produces a distinct persisted identity.</li>
-<li>[ ] <strong>Production boundary enforcement</strong>: reject <code>window_strategy: time</code> for
-  enabled production inspection, or introduce an explicit, audited development
-  enablement guard. Time-only grouping remains a documented development
-  fallback and cannot prove physical-product isolation.</li>
-<li>[ ] <strong>Maximum-duration isolation</strong>: define and implement the fail-closed
-  behavior when the same validated identity exceeds <code>maximum_window_ms</code>.
-  The identity must not be split into independently releasable windows without
-  a validated end/transition signal.</li>
+<li>[x] <strong>Production boundary enforcement</strong>: configuration rejects
+  <code>inspection.enabled: true</code> with <code>window_strategy: time</code>; time-only grouping
+  remains usable only in disabled/local development configuration and cannot
+  prove physical-product isolation.</li>
+<li>[x] <strong>Maximum-duration isolation</strong>: an identity-sealed window that reaches
+  <code>maximum_window_ms</code> closes as <code>NG</code> with <code>WINDOW_MAX_DURATION_EXCEEDED</code>; the
+  identity is quarantined and cannot begin a new window until a different
+  validated identity proves a product transition. Regression tests cover both
+  the window-manager and end-to-end decision paths.</li>
 </ul>
 <p>Validation executed after the fixes (all green):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git diff --check origin/main...HEAD

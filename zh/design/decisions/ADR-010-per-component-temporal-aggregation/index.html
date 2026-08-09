@@ -1645,7 +1645,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        2. Context
       
     </span>
   </a>
@@ -1728,7 +1728,7 @@
   <a href="#7-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Open Questions and Validation Required
+        7. 开放式问题和需要验证
       
     </span>
   </a>
@@ -1797,7 +1797,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2655,7 +2655,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -3124,7 +3124,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        2. Context
       
     </span>
   </a>
@@ -3207,7 +3207,7 @@
   <a href="#7-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Open Questions and Validation Required
+        7. 开放式问题和需要验证
       
     </span>
   </a>
@@ -3248,10 +3248,10 @@
 <h1 id="adr-010-per-component-temporal-aggregation">ADR-010：每个组件的时间聚合<a class="headerlink" href="#adr-010-per-component-temporal-aggregation" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
 <p>已接受</p>
-<h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
+<h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
 <p>YOLO 产生每帧检测，而业务决策适用于一个物理产品。各个帧可能会模糊、被遮挡、曝光不良或显示不同的组件。整体产品多数投票可以将一贯缺失的组件隐藏在其他强大的框架后面，并且不表达每个所需规则项的证据。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>将框架分组到明确的物理产品检查窗口中，然后为每个所需组件独立地汇总证据。策略是版本化且可配置的，包括一个高置信度检测、多个中等置信度检测、相邻帧证据、最小可见区域、最低帧质量以及排除不可用帧。确定性规则引擎评估生成的每个组件状态。</p>
+<p>将框架分组到一个明确的物理产品检查窗口中，然后为每个所需组件独立地汇总证据。策略是版本化且可配置的，包括一个高置信度检测、多个中等置信度检测、相邻帧证据、最小可见区域、最低帧质量以及排除不可用帧。确定性规则引擎评估生成的每个组件状态。</p>
 <p>时间聚合不会提高底层 YOLO 模型的单帧精度。它通过跨框架结合证据来提高系统级的稳健性。不明确的产品边界、框架来源或多个产品会导致明确的不正常/中止路径，而不是混合证据。</p>
 <h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
 <p>这适用于实施实时/视频采集时。静态图像 MVP 无需时间聚合即可发出帧级证据。窗口机制可以使用硬件触发器、条形码事件、跟踪、进入/退出区域、时间限制或基于站点验证的传送带传感器集成。</p>
@@ -3278,7 +3278,7 @@
 <li><strong>存在的任何检测手段：</strong>仅允许作为具有足够高阈值的有意验证的每个组件策略，而不是作为通用规则。</li>
 <li><strong>跟踪模型作为最终决策：</strong> 可能支持窗口，但不会取代组件规则和证据聚合。</li>
 </ul>
-<h2 id="7-open-questions-and-validation-required">7. Open Questions and Validation Required<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>产品窗口信号、传送带速度、产品间距和最大重叠产品。</li>
 <li>来自验证数据的每个组件阈值、邻接/质量策略和延迟预算。</li>

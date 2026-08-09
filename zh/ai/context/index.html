@@ -1632,7 +1632,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012: Edge API M1 Viewer Auth
+    ADR-012：Edge API M1 查看器身份验证
   
 
     
@@ -2490,7 +2490,7 @@
   <span class="md-ellipsis">
     
   
-    Data Collection and Annotation
+    数据收集和注释
   
 
     
@@ -2997,7 +2997,7 @@
   <a href="#5-documentation-set" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Documentation Set
+        5. 文档集
       
     </span>
   </a>
@@ -3008,7 +3008,7 @@
   <a href="#6-bilingual-mkdocs-english-chinese" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.双语MkDocs（英文+中文）
+        6. Bilingual MkDocs (English + Chinese)
       
     </span>
   </a>
@@ -3193,7 +3193,7 @@
   <a href="#5-documentation-set" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Documentation Set
+        5. 文档集
       
     </span>
   </a>
@@ -3204,7 +3204,7 @@
   <a href="#6-bilingual-mkdocs-english-chinese" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.双语MkDocs（英文+中文）
+        6. Bilingual MkDocs (English + Chinese)
       
     </span>
   </a>
@@ -3449,7 +3449,7 @@
 <li><strong>上传策略</strong>：选择性（OK：元数据+一个关键帧；NG：完整元数据+多个关键帧
   框架+可选夹子）；持久队列、带有退避、幂等性、校验和的重试。</li>
 </ul>
-<h2 id="5-documentation-set">5. Documentation Set<a class="headerlink" href="#5-documentation-set" title="Permanent link">&para;</a></h2>
+<h2 id="5-documentation-set">5. 文档集<a class="headerlink" href="#5-documentation-set" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>docs/design/00</code> 至 <code>27</code> + <a href="../../design/appendices/">appendices.md</a>：封面/状态、介绍、要求、
   架构概述、边缘客户端、中央服务器、AI 检测管道、摄像头和图像
@@ -3473,7 +3473,7 @@
   运营场景，包括模型改进（运行手册 10）和数据
   收集和注释（运行手册 11）。</li>
 </ul>
-<h2 id="6-bilingual-mkdocs-english-chinese">6.双语MkDocs（英文+中文）<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
+<h2 id="6-bilingual-mkdocs-english-chinese">6. Bilingual MkDocs (English + Chinese)<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
 <li>主配置<code>mkdocs.yml</code>是唯一的事实来源（材质主题，美人鱼渲染通过
   <code>pymdownx.superfences</code> 自定义围栏，<code>extra.alternate</code> 语言切换器）。</li>
@@ -3627,65 +3627,65 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 阻塞结果 (F1-F14) 和 M1 条件项 (C1-C4)
 <code>docs/reviews/PR-008-review.md</code> 在 <code>dev</code> 上得到解决和验证。</p>
 <ul>
-<li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
-  将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
-  索引，并以幂等方式协调现有 CLI <code>inspection.json</code> 输出
-  启动。配置/规则/清单加载重用相同的验证
-  管道构建为 <code>inspect</code>。</li>
-<li><strong>持久性</strong>：SQLAlchemy 核心架构 + Alembic 迁移 0001/0002
-  (<code>apps/edge-service/migrations/</code>);检查表，组件
-  证据、媒体、上传任务、设备事件、活动包和持久的
-  <code>rule_identities</code> 具有合约 05 索引的注册表。非规格化过滤器
-  列（条形码、产品、结果）驱动历史查询。 SQLite 索引是
-  CLI <code>inspection.json</code> 包的 <strong>可重建读取投影</strong>（C1、
-  ADR-012)：可以从相同的捆绑包中删除和重建，而无需更改
-  他们，并且它不是权威的完成/发件箱商店。静态 MVP
-  <code>device_sequence</code> 是每个进程的，不是同步标识 (C3)。
-  <code>rule_identities</code> 表使规则身份在重新启动后不可变：
-  <code>(rule_id, rule_version)</code> 与不同内容重用导致管道加载失败
-  与<code>CONFIG_INVALID</code>。</li>
-<li><strong>端点</strong>：健康/设备/相机、检查状态、检查列表
-  （光标分页+过滤器）和详细信息，检查媒体，媒体内容
-  具有范围支持、上传（M1 中为空）、有效配置、日志
-  （内存环形缓冲区），以及派生的可追溯性/统计数据/图像。
-  统计信息 <code>from</code>/<code>to</code> 过滤器被验证为时区感知的 UTC 时间戳；
-  派生映像端点报告每个插槽可用/已清除/不可用
-  状态并返回 404 未知检查。 M1 API 是只读的
-  (ADR-012)：暂停/恢复、相机重新连接和上传重试不会暴露。</li>
-<li><strong>查看者身份验证</strong> (ADR-012)：除 <code>/health/live</code> 之外的所有路由
-  需要配置的 <code>AV_EDGE_API_TOKEN</code> 不记名令牌或短期的
-  HttpOnly、SameSite=严格、同源查看器会话。 <code>POST
-  /api/v1/auth/session</code> 为会话 cookie 交换有效的承载令牌；
-  仪表板 <code>/login</code> 页面提供一次性条目，因此 API JSON 都不是
-  请求和媒体 <code>&lt;img&gt;</code> 请求都需要浏览器存储中的令牌。</li>
-<li><strong>媒体隔离 (F2)</strong>：媒体内容仅在其内部解析
-  检查包目录；遍历、绝对、交叉捆绑和符号链接
-  转义路径在导入和服务时被拒绝，并且重复的媒体 ID
-  被拒绝，因此格式错误的捆绑包将被跳过，而不会中止启动。</li>
-<li><strong>合约边界 (F9)</strong>：带有承诺的类型化 Pydantic 响应模式
-  OpenAPI 文档 (<code>apps/edge-service/openapi/edge-openapi.json</code>) 和 CI 漂移
-  检查、生成的 TypeScript 类型
-  (<code>packages/typescript/api-client/src/edge/generated/api.ts</code>)，加上运行时
-  <code>HttpApiClient</code> (<code>validate.ts</code>) 中的响应验证拒绝漂移
-  或畸形的有效负载，而不是盲目地强制转换。</li>
-<li><strong>前端分割</strong>：只读视图在以下情况下通过 HTTP 客户端路由：
-  <code>VITE_API_MODE=http</code>；操作员工作流程操作（当前/确认/下一个/
-  手动）留在确定性模拟上，因为它们是演示
-  队列，不是设计 15.3 端点。</li>
-<li><strong>PR-003 强化合并</strong>：规则版本身份绑定到规范
-  规则内容并持久注册；输出作者发布检查
-  原子捆绑（暂存 + fsync + 重命名，拒绝重新发布）；探测器
-  显式传递清单 <code>imgsz</code>/<code>iou</code>/<code>conf</code> 并保留有效值
-  <code>InspectionRecord.inference_metadata</code>；管道验证检测
-  具有纯绝对坐标的出处（框架/模型/坐标空间）
-  边界处的公差。</li>
-<li><strong>包装</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
-  strict 在整个仓库范围内传递。</li>
-<li><strong>测试强化</strong>：共享门（ruff、format、mypy、pytest）通过
-  <code>557 passed</code> (2026-08-09); TypeScript 是 <code>37 passed</code> （api 客户端）、<code>13 passed</code>
-  (ui)、<code>28 passed</code>（边缘网络）、<code>3 passed</code>（桌面）以及 12 个 Playwright e2e
-  包括一个经过令牌验证的服务仪表板，断言真实一致
-  数据和清除媒体渲染。 <code>uv run mkdocs build --strict</code> 通过。</li>
+<li><strong><code>assemblyvision serve</code></strong>: starts the local API on <code>/api/v1</code> (design 15.3),
+  serves the built dashboard as static assets with SPA fallback, opens a SQLite
+  index, and reconciles existing CLI <code>inspection.json</code> output idempotently on
+  startup. Configuration/rule/manifest loading reuses the same verified
+  pipeline build as <code>inspect</code>.</li>
+<li><strong>Persistence</strong>: SQLAlchemy Core schema + Alembic migrations 0001/0002
+  (<code>apps/edge-service/migrations/</code>); tables for inspections, component
+  evidence, media, upload tasks, device events, active packages, and a durable
+  <code>rule_identities</code> registry with contract-05 indexes. Denormalized filter
+  columns (barcode, product, result) drive history queries. The SQLite index is
+  a <strong>rebuildable read projection</strong> of the CLI <code>inspection.json</code> bundles (C1,
+  ADR-012): it can be deleted and rebuilt from the same bundles without changing
+  them, and it is not the authoritative completion/outbox store. The static-MVP
+  <code>device_sequence</code> is per-process and is not a synchronization identity (C3).
+  The <code>rule_identities</code> table makes rule identity immutable across restarts: a
+  <code>(rule_id, rule_version)</code> reused with different content fails pipeline load
+  with <code>CONFIG_INVALID</code>.</li>
+<li><strong>Endpoints</strong>: health/device/camera, inspection state, inspections list
+  (cursor pagination + filters) and detail, inspection media, media content
+  with Range support, uploads (empty in M1), effective configuration, logs
+  (in-memory ring buffer), and derived traceability/statistics/images.
+  Statistics <code>from</code>/<code>to</code> filters are validated as timezone-aware UTC timestamps;
+  the derived images endpoint reports per-slot AVAILABLE/PURGED/UNAVAILABLE
+  status and returns 404 for unknown inspections. The M1 API is read-only
+  (ADR-012): pause/resume, camera reconnect, and upload retry are not exposed.</li>
+<li><strong>Viewer authentication</strong> (ADR-012): every route except <code>/health/live</code>
+  requires the configured <code>AV_EDGE_API_TOKEN</code> bearer token or a short-lived
+  HttpOnly, SameSite=strict, same-origin viewer session. <code>POST
+  /api/v1/auth/session</code> exchanges a valid bearer token for the session cookie;
+  the dashboard <code>/login</code> page provides the one-time entry so neither API JSON
+  requests nor media <code>&lt;img&gt;</code> requests need the token in browser storage.</li>
+<li><strong>Media isolation (F2)</strong>: media content is resolved only inside its
+  inspection bundle directory; traversal, absolute, cross-bundle, and symlink
+  escape paths are rejected at import and serve time, and duplicate media IDs
+  are rejected so malformed bundles are skipped without aborting startup.</li>
+<li><strong>Contract boundary (F9)</strong>: typed Pydantic response schemas with a committed
+  OpenAPI document (<code>apps/edge-service/openapi/edge-openapi.json</code>) and CI drift
+  checks, generated TypeScript types
+  (<code>packages/typescript/api-client/src/edge/generated/api.ts</code>), plus runtime
+  response validation in <code>HttpApiClient</code> (<code>validate.ts</code>) that rejects drifted
+  or malformed payloads instead of blindly casting.</li>
+<li><strong>Frontend split</strong>: read-only views route through the HTTP client when
+  <code>VITE_API_MODE=http</code>; operator workflow actions (current/confirm/next/
+  manual) stay on the deterministic mock because they are a demonstration
+  queue, not a design 15.3 endpoint.</li>
+<li><strong>PR-003 hardening folded in</strong>: rule version identity is bound to canonical
+  rule content and registered durably; the output writer publishes inspection
+  bundles atomically (staging + fsync + rename, rejects republish); detectors
+  pass manifest <code>imgsz</code>/<code>iou</code>/<code>conf</code> explicitly and persist effective values in
+  <code>InspectionRecord.inference_metadata</code>; the pipeline validates detection
+  provenance (frame/model/coordinate space) with an absolute-only coordinate
+  tolerance at the boundary.</li>
+<li><strong>Packaging</strong>: <code>py.typed</code> markers added to <code>domain</code> and <code>vision-core</code> so MyPy
+  strict passes repo-wide.</li>
+<li><strong>Test hardening</strong>: the shared gate (ruff, format, mypy, pytest) passes with
+  <code>557 passed</code> (2026-08-09); TypeScript is <code>37 passed</code> (api-client), <code>13 passed</code>
+  (ui), <code>28 passed</code> (edge-web), <code>3 passed</code> (desktop), plus 12 Playwright e2e
+  including a token-authenticated served dashboard that asserts real reconciled
+  data and purged-media rendering. <code>uv run mkdocs build --strict</code> passes.</li>
 </ul>
 <h2 id="84-audit-001-closure-and-review-fixes-pr-12">8.4 AUDIT-001 关闭和审查修复（PR #12）<a class="headerlink" href="#84-audit-001-closure-and-review-fixes-pr-12" title="Permanent link">&para;</a></h2>
 <p>只读系统审核 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 是
@@ -3704,7 +3704,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   包包含和类映射（<code>ConfigError</code>，绝不泄漏）。</li>
 <li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
   覆盖）；日志消息清理绝对路径；失败尝试节流
-  <code>Retry-After</code>；有界会话；光标绑定过滤指纹
+  <code>Retry-After</code>;有界会话；光标绑定过滤指纹
   (<code>400 INVALID_CURSOR</code>);始终清除介质 <code>410</code>；非 ASCII 承载 <code>401</code>；
   <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
 <li><strong>前端强化</strong>：生产构建失败，除非 <code>VITE_API_MODE=http</code>；
@@ -3745,7 +3745,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
   <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
   保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界的每个实例检查队列
+  实例使用显式的有界每个实例检查队列
   溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
   <code>EdgeRuntime.load_instances</code>开始独立的单帧检查
   当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
@@ -3768,7 +3768,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   默认的单帧模式不变。 <code>UNVERIFIABLE</code> 添加为
   汇总证据状态；有效帧产量不足
   <code>UNVERIFIABLE</code>/<code>INSUFFICIENT_VALID_FRAMES</code>，中断的窗口关闭
-  与 <code>INSPECTION_INTERRUPTED</code> 一样，OpenAPI/TypeScript 合约是 NG
+  与 <code>INSPECTION_INTERRUPTED</code> 一样为 NG，并且 OpenAPI/TypeScript 合约是
   为新状态重新生成。 PR-015 审查强化 (F1-F7) 是
   应用：帧上的窗口组捕获单调时钟和空闲窗口
   正常过期； <code>window_strategy: identity</code> 将每个窗口密封为一个
@@ -3792,9 +3792,9 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   具有二进制主体和问题响应的规范业务/内部枚举
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
-<p><code>assemblyvision_edge</code> now ships <code>py.typed</code> so the strict mypy gate passes
-  repo-wide; the current suite is 635 Python tests, 91 TypeScript unit tests
-  (api-client 45, ui 13, edge-web 30, desktop 3), and 12 Playwright e2e.</p>
+<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code> 因此严格的 mypy 门会通过
+  回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
+  （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>FastAPI + SQLite 后端层（<code>assemblyvision serve</code>，第 8.3 节）是
