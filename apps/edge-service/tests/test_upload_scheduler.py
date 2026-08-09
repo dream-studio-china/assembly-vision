@@ -365,6 +365,32 @@ class TestHttpSink:
         assert result.status == "RETRYABLE"
         assert result.error_code == "TRANSPORT_ERROR"
 
+    def test_binary_payload_survives_base64_roundtrip(self) -> None:
+        """F1: media bytes are Base64-encoded, never ASCII-lossy decoded."""
+        import base64
+        import json
+
+        import httpx
+
+        received: dict[str, object] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            received.update(json.loads(request.content))
+            return httpx.Response(200, text="receipt-ok")
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
+        task = _task()
+        raw = b"\x00\xffJPEG\x80\xfe"
+        result = sink.upload(task, raw)
+        assert result.status == "SUCCEEDED"
+        assert received["idempotency_key"] == task.idempotency_key
+        assert received["size_bytes"] == len(raw)
+        payload_b64 = received["payload_b64"]
+        assert isinstance(payload_b64, str)
+        assert base64.b64decode(payload_b64) == raw
+        assert received["checksum_sha256"] == task.checksum_sha256
+
 
 def _task() -> UploadTask:
     return UploadTask(

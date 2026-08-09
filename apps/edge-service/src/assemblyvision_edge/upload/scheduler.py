@@ -10,6 +10,7 @@ preserve local evidence and stop retrying.
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import logging
@@ -106,7 +107,8 @@ class HttpUploadSink:
             "object_id": str(task.object_id),
             "inspection_id": str(task.inspection_id) if task.inspection_id else None,
             "checksum_sha256": task.checksum_sha256,
-            "payload_b64": payload.decode("ascii", errors="ignore"),
+            "size_bytes": len(payload),
+            "payload_b64": base64.b64encode(payload).decode("ascii"),
         }
         try:
             response = self._client.post(
