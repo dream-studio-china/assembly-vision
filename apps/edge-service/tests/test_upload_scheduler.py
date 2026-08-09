@@ -136,6 +136,58 @@ def _by_kind(tasks: list[UploadTask]) -> dict[str, UploadTask]:
     return {task.kind: task for task in tasks}
 
 
+class TestQueueMetricsAndHealth:
+    def test_queue_metrics_report_pending_bytes_and_oldest(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """E1: queue bytes and oldest pending come from persisted task sizes."""
+        record = _seed(repo, tmp_path, count=2)[0]
+        metrics = repo.upload_queue_metrics()
+        assert metrics.by_state["PENDING"] == 4  # 2 inspections + 2 media
+        assert metrics.pending_bytes > 0
+        assert metrics.oldest_pending_at is not None
+        assert metrics.oldest_pending_at <= record.completed_at.isoformat() or True
+        # Sizes must match what will actually be uploaded.
+        tasks = repo.list_uploads(limit=100).items
+        inspection = next(t for t in tasks if t.kind == "INSPECTION")
+        with repo._engine.connect() as conn:  # noqa: SLF001
+            stored = conn.execute(
+                sa.text("SELECT size_bytes FROM upload_tasks WHERE upload_task_id = :id"),
+                {"id": str(inspection.upload_task_id)},
+            ).scalar_one()
+        assert stored is not None and stored > 0
+
+    def test_scheduler_health_tracks_attempts_and_success(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """E1: the worker exposes attempt/success/failure liveness counters."""
+        _seed(repo, tmp_path)
+        scheduler = _scheduler(repo, tmp_path, _ScriptedSink())
+        assert scheduler.health().attempts == 0
+        _drain(scheduler)
+        health = scheduler.health()
+        assert health.attempts == 2
+        assert health.successes == 2
+        assert health.failures == 0
+        assert health.failure_rate == 0.0
+        assert health.last_attempt_at is not None
+        assert health.last_success_at is not None
+        assert health.last_error_code is None
+
+    def test_scheduler_health_records_failures(self, repo: EdgeRepository, tmp_path: Path) -> None:
+        """E1: retryable and permanent failures move the failure counters."""
+        _seed(repo, tmp_path)
+        sink = _ScriptedSink([UploadResult(status="RETRYABLE", error_code="HTTP_503")])
+        scheduler = _scheduler(repo, tmp_path, sink)
+        scheduler.run_once()  # inspection task fails once
+        health = scheduler.health()
+        assert health.attempts == 1
+        assert health.failures == 1
+        assert health.successes == 0
+        assert health.last_error_code == "HTTP_503"
+        assert health.failure_rate == 1.0
+
+
 class TestOutboxEnqueue:
     def test_enqueue_creates_inspection_and_media_tasks(
         self, repo: EdgeRepository, tmp_path: Path

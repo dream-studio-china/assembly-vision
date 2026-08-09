@@ -491,8 +491,41 @@ export interface components {
             operational_state: string;
             /** Sync Ready */
             sync_ready: boolean;
+            /**
+             * Upload Attempts
+             * @default 0
+             */
+            upload_attempts: number;
+            /**
+             * Upload Failure Rate
+             * @default 0
+             */
+            upload_failure_rate: number;
+            /**
+             * Upload Failures
+             * @default 0
+             */
+            upload_failures: number;
+            /** Upload Last Attempt At */
+            upload_last_attempt_at?: string | null;
+            /** Upload Last Error Code */
+            upload_last_error_code?: string | null;
+            /** Upload Last Success At */
+            upload_last_success_at?: string | null;
+            /** Upload Oldest Pending At */
+            upload_oldest_pending_at?: string | null;
+            /**
+             * Upload Pending Bytes
+             * @default 0
+             */
+            upload_pending_bytes: number;
             /** Upload Pending Count */
             upload_pending_count: number;
+            /**
+             * Upload Successes
+             * @default 0
+             */
+            upload_successes: number;
         };
         /** EffectiveConfiguration */
         EffectiveConfiguration: {

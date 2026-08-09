@@ -193,6 +193,13 @@ The persistent upload outbox and its worker are implemented in
   restart with lease reclamation and fencing, missing file, checksum mismatch,
   server idempotency conflict, receipt validation, ordered metadata-before-media
   drain, synchronization states, and duplicate-free drain.
+- **Observability (E1)**: the uploads API reports task states; device status
+  exposes persistent queue facts (pending count/bytes, oldest pending age) from
+  the repository plus process-local worker liveness (attempt/success/failure
+  counters, failure rate, last attempt/success, last error) from the scheduler,
+  with `UPLOAD_BLOCKED` (queued work but no worker) and `UPLOAD_FAILING`
+  (attempts without any success while work is pending) alerts. Task payload
+  sizes are recorded at enqueue so queue bytes need no media reads.
 
 Remaining for the connected pilot: the central ingestion endpoint and its
 server-side receipt contract, media binding confirmations, bandwidth

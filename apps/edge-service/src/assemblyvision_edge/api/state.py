@@ -24,7 +24,12 @@ from assemblyvision_domain.errors import AssemblyVisionError, ConfigError
 from assemblyvision_edge.api.settings import ServerSettings
 from assemblyvision_edge.camera_manager import CameraSourceManager
 from assemblyvision_edge.config import InstanceConfig
-from assemblyvision_edge.persistence.repository import EdgeRepository, RepositoryError
+from assemblyvision_edge.persistence.repository import (
+    EdgeRepository,
+    RepositoryError,
+    UploadQueueMetrics,
+)
+from assemblyvision_edge.upload.scheduler import SchedulerHealth
 
 log = logging.getLogger("assemblyvision.runtime")
 
@@ -322,13 +327,54 @@ class EdgeRuntime:
         self.paused_by = None
         self.paused_at = None
 
-    def device_status(self, upload_pending: int) -> dict[str, Any]:
+    def device_status(
+        self,
+        upload_pending: int,
+        queue: UploadQueueMetrics | None = None,
+        health: SchedulerHealth | None = None,
+        scheduler_enabled: bool = False,
+    ) -> dict[str, Any]:
         """Assemble the DeviceStatus snapshot (design 15.3.1)."""
+        if queue is None:
+            queue = UploadQueueMetrics(by_state={}, pending_bytes=0, oldest_pending_at=None)
         if self.instances:
-            return self._device_status_instances(upload_pending)
-        return self._device_status_single(upload_pending)
+            return self._device_status_instances(upload_pending, queue, health, scheduler_enabled)
+        return self._device_status_single(upload_pending, queue, health, scheduler_enabled)
 
-    def _device_status_single(self, upload_pending: int) -> dict[str, Any]:
+    @staticmethod
+    def _upload_status_fields(
+        pending: int,
+        queue: UploadQueueMetrics,
+        health: SchedulerHealth | None,
+        enabled: bool,
+    ) -> tuple[dict[str, Any], list[str]]:
+        """Derive the upload observability fields and their alerts (E1)."""
+        fields: dict[str, Any] = {
+            "upload_pending_count": pending,
+            "upload_pending_bytes": queue.pending_bytes,
+            "upload_oldest_pending_at": queue.oldest_pending_at,
+            "upload_attempts": health.attempts if health else 0,
+            "upload_successes": health.successes if health else 0,
+            "upload_failures": health.failures if health else 0,
+            "upload_failure_rate": health.failure_rate if health else 0.0,
+            "upload_last_attempt_at": health.last_attempt_at if health else None,
+            "upload_last_success_at": health.last_success_at if health else None,
+            "upload_last_error_code": health.last_error_code if health else None,
+        }
+        alerts: list[str] = []
+        if pending > 0 and not enabled:
+            alerts.append("UPLOAD_BLOCKED")
+        elif pending > 0 and health is not None and health.attempts > 0 and health.successes == 0:
+            alerts.append("UPLOAD_FAILING")
+        return fields, alerts
+
+    def _device_status_single(
+        self,
+        upload_pending: int,
+        queue: UploadQueueMetrics,
+        health: SchedulerHealth | None,
+        scheduler_enabled: bool,
+    ) -> dict[str, Any]:
         if self.pipeline is None:
             operational = "FAULTED" if self.pipeline_error else "INITIALIZING"
             inspection_ready = False
@@ -341,6 +387,10 @@ class EdgeRuntime:
             alerts.append("NOT_READY")
         if disk_free < _LOW_DISK_WARNING_BYTES:
             alerts.append("DISK_LOW")
+        upload_fields, upload_alerts = self._upload_status_fields(
+            upload_pending, queue, health, scheduler_enabled
+        )
+        alerts.extend(upload_alerts)
         return {
             "device_id": str(self.device_id),
             "observed_at": datetime.now(UTC).isoformat(),
@@ -352,7 +402,7 @@ class EdgeRuntime:
             "model_loaded": self.pipeline is not None,
             "central_connected": False,
             "disk_free_bytes": disk_free,
-            "upload_pending_count": upload_pending,
+            **upload_fields,
             "current_product_model_version_id": self._model_version_id(self.pipeline, "product"),
             "current_component_model_version_id": self._model_version_id(
                 self.pipeline, "component"
@@ -361,7 +411,13 @@ class EdgeRuntime:
             "alerts": alerts,
         }
 
-    def _device_status_instances(self, upload_pending: int) -> dict[str, Any]:
+    def _device_status_instances(
+        self,
+        upload_pending: int,
+        queue: UploadQueueMetrics,
+        health: SchedulerHealth | None,
+        scheduler_enabled: bool,
+    ) -> dict[str, Any]:
         """Aggregate device status across configured instances (ADR-013)."""
         manager = self.camera_manager
         connected = [
@@ -398,6 +454,10 @@ class EdgeRuntime:
             alerts.append("DISK_LOW")
         first_ready = next((iid for iid in ready_pipelines if iid in connected), None)
         pipeline = self.instances[first_ready].pipeline if first_ready else None
+        upload_fields, upload_alerts = self._upload_status_fields(
+            upload_pending, queue, health, scheduler_enabled
+        )
+        alerts.extend(upload_alerts)
         return {
             "device_id": str(self.device_id),
             "observed_at": datetime.now(UTC).isoformat(),
@@ -409,7 +469,7 @@ class EdgeRuntime:
             "model_loaded": bool(ready_pipelines),
             "central_connected": False,
             "disk_free_bytes": disk_free,
-            "upload_pending_count": upload_pending,
+            **upload_fields,
             "current_product_model_version_id": self._model_version_id(pipeline, "product"),
             "current_component_model_version_id": self._model_version_id(pipeline, "component"),
             "current_rule_version_id": None,

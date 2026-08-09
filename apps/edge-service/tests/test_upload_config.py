@@ -103,6 +103,24 @@ class TestServeWiring:
             messages = [item["message"] for item in logs["items"]]
         assert any("upload scheduler is disabled" in message for message in messages)
 
+    def test_device_status_exposes_upload_observability(self, tmp_path: Path) -> None:
+        """E1: device status carries queue bytes/age and worker liveness."""
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-metric")
+        _write_media(tmp_path, record)
+        _write_bundle(tmp_path, record)
+        app = create_app(_settings(tmp_path, upload=None))
+        with TestClient(app) as client:
+            status = client.get("/api/v1/device/status").json()
+        assert status["upload_pending_count"] == 2
+        assert status["upload_pending_bytes"] > 0
+        assert status["upload_oldest_pending_at"] is not None
+        assert status["upload_attempts"] == 0
+        assert status["upload_successes"] == 0
+        assert status["upload_failure_rate"] == 0.0
+        assert status["upload_last_error_code"] is None
+        # Queued tasks with no worker are an explicit alert, not silent backlog.
+        assert "UPLOAD_BLOCKED" in status["alerts"]
+
     def test_invalid_upload_settings_fail_fast(self) -> None:
         """F6/F7: invalid configuration is rejected with actionable errors."""
         with pytest.raises(ConfigError, match="mutually exclusive"):
