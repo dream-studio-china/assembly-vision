@@ -12,6 +12,7 @@ from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
@@ -34,6 +35,7 @@ from assemblyvision_edge.api.routers import (
     logs,
     media,
     uploads,
+    ws,
 )
 from assemblyvision_edge.api.settings import ServerSettings
 from assemblyvision_edge.api.state import EdgeRuntime
@@ -82,6 +84,13 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         app.state.runtime = runtime
         app.state.settings = settings
         app.state.log_buffer = LogBuffer()
+        # E4a: the in-memory runtime event bus drives the WebSocket channel;
+        # REST remains authoritative and publishing never blocks the runtime.
+        from assemblyvision_edge.api.events import RuntimeEventBus
+
+        event_bus = RuntimeEventBus(source_id=str(runtime.device_id))
+        runtime.event_bus = event_bus
+        app.state.event_bus = event_bus
         _install_log_handler(app.state.log_buffer)
         if reconcile:
             imported = reconcile_output_root(repository, settings.output_root)
@@ -166,6 +175,7 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
                     maximum_bandwidth_mbps=upload.maximum_bandwidth_mbps,
                     circuit_failure_threshold=upload.circuit_failure_threshold,
                     circuit_open_seconds=upload.circuit_open_seconds,
+                    on_change=_upload_changed_notifier(event_bus),
                 )
         if scheduler is None:
             log.warning(
@@ -259,12 +269,24 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     # before any credential check while enabled endpoints keep auth (F8).
     app.include_router(dev.router, prefix="/api/v1")
     app.include_router(auth.router, prefix="/api/v1")
+    # The runtime event channel performs its own credential check before
+    # accepting the socket (E4a), consistent with the REST viewer model.
+    app.include_router(ws.router, prefix="/api/v1")
     # Health keeps /health/live deliberately unauthenticated (design 15.3.1);
     # /health/ready requires the viewer credential.
     app.include_router(health.router, prefix="/api/v1")
 
     _install_static_routes(app, settings.static_dir)
     return app
+
+
+def _upload_changed_notifier(event_bus: Any) -> Callable[[], None]:
+    """Return the scheduler change callback that pushes a transient event."""
+
+    def notify() -> None:
+        event_bus.publish("upload.changed", {"event": "batch_processed"})
+
+    return notify
 
 
 def _install_log_handler(buffer: LogBuffer) -> None:

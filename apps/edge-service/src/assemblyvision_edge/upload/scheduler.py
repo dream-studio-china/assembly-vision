@@ -421,6 +421,7 @@ class UploadScheduler:
         circuit_failure_threshold: int = 5,
         circuit_open_seconds: float = 60.0,
         now: Callable[[], datetime] | None = None,
+        on_change: Callable[[], None] | None = None,
     ) -> None:
         self._repository = repository
         self._sink = sink
@@ -442,6 +443,10 @@ class UploadScheduler:
         self._circuit_open_seconds = circuit_open_seconds
         # Injected clock for deterministic retry-deadline tests (PR-017 F8).
         self._now = now or (lambda: datetime.now(UTC))
+        # Optional change notification (E4a): invoked after a batch handled any
+        # task so the API can push a transient upload.changed event. It must
+        # never block or alter the worker loop.
+        self._on_change = on_change
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         # Process-local health counters for device status (E1).
@@ -541,6 +546,8 @@ class UploadScheduler:
                     (failure_time + timedelta(seconds=self._base_retry_seconds)).isoformat(),
                     failure_time.isoformat(),
                 )
+        if self._on_change is not None and claimed:
+            self._on_change()
         return len(claimed)
 
     def _effective_circuit_state(self, now_iso: str) -> str:

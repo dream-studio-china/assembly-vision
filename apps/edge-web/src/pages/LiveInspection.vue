@@ -3,14 +3,15 @@
 // overlay, inspection progress, and detailed inspection info + runtime logs
 // (docs/design/16-edge-dashboard.md 16.4).
 
-import type { InspectionImages, LogEvent } from "@assemblyvision/api-client";
+import type { InspectionImages, LogEvent, WSEventEnvelope } from "@assemblyvision/api-client";
 import { DetectionViewer, StatusBadge, formatBytes, formatIsoTime, formatLatency } from "@assemblyvision/ui";
 import type { ViewerBox } from "@assemblyvision/ui";
+import { ReconnectingWebSocket } from "@assemblyvision/api-client";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { mockCameraFrame } from "../mock/images";
 import { useInspectionStore } from "../stores/inspection";
 import { useRuntimeStore } from "../stores/runtime";
-import { isMockMode } from "../services/client";
+import { getApiBaseUrl, isMockMode } from "../services/client";
 import { inspectionService } from "../services/inspectionService";
 
 const store = useInspectionStore();
@@ -18,6 +19,7 @@ const runtime = useRuntimeStore();
 const images = ref<InspectionImages | null>(null);
 const logs = ref<LogEvent[]>([]);
 let timer: ReturnType<typeof setInterval> | null = null;
+let socket: ReconnectingWebSocket | null = null;
 
 // In real mode there is no live operator window (M1, ADR-012), so simulated
 // frames and the mock current inspection must never be shown alongside live
@@ -77,13 +79,45 @@ async function refresh(): Promise<void> {
   await Promise.all([loadImages(), loadLogs()]);
 }
 
+function onRuntimeEvent(event: WSEventEnvelope): void {
+  // REST remains the source of truth: an event only prompts a snapshot
+  // refresh (E4a, design 16 rule 3). Ignore unknown future event types.
+  if (
+    event.type === "inspection.started" ||
+    event.type === "inspection.completed" ||
+    event.type === "device.status_changed" ||
+    event.type === "upload.changed"
+  ) {
+    void refresh();
+  }
+}
+
+function runtimeWsUrl(): string {
+  const base = getApiBaseUrl();
+  if (base.startsWith("http")) {
+    const url = new URL(base);
+    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+    return `${url.href.replace(/\/$/, "")}/ws/runtime`;
+  }
+  const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+  return `${protocol}//${location.host}/api/v1/ws/runtime`;
+}
+
 onMounted(() => {
   void refresh();
-  timer = setInterval(() => void refresh(), 5000);
+  // Slow fallback poll; the WebSocket channel drives timely refreshes.
+  timer = setInterval(() => void refresh(), 30000);
+  if (!isMock) {
+    socket = new ReconnectingWebSocket();
+    socket.onGap(() => void refresh());
+    socket.subscribe(onRuntimeEvent);
+    socket.connect(runtimeWsUrl());
+  }
 });
 
 onBeforeUnmount(() => {
   if (timer !== null) clearInterval(timer);
+  socket?.disconnect();
 });
 </script>
 

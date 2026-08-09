@@ -83,6 +83,10 @@ class EdgeRuntime:
         self.instances: dict[str, InstanceRuntime] = {}
         self.camera_manager: Any = None
         self.repository: Any = None
+        # E4a: optional in-memory event bus; set by the API composition root so
+        # inspection/device/upload transitions can notify dashboards without
+        # the runtime ever depending on the channel (REST stays authoritative).
+        self.event_bus: Any = None
         self._stop = threading.Event()
         self._preview_cache: dict[str, tuple[float, bytes]] = {}
         # E2c disk-pressure state: refreshed by the inspection loop and by the
@@ -325,7 +329,20 @@ class EdgeRuntime:
                     observation = runtime.pipeline.frame_observations(frame)
                     # Group on the frame's acquisition time, not the time at
                     # which inference finished (PR-015 F3).
+                    was_open = window_manager.active_window is not None
                     closed = window_manager.feed(observation, frame.monotonic_ts_ns / 1e9)
+                    active = window_manager.active_window
+                    if active is not None and not was_open:
+                        # A new product window opened: notify dashboards with its
+                        # stable inspection id (E4a).
+                        self._publish(
+                            "inspection.started",
+                            {
+                                "inspection_id": str(active.inspection_id),
+                                "instance_id": instance_id,
+                            },
+                            correlation_id=str(active.inspection_id),
+                        )
                     if closed is not None:
                         record = runtime.pipeline.inspect_window(
                             closed, writer, suppress_optional_capture=optional
@@ -356,6 +373,22 @@ class EdgeRuntime:
             except Exception:  # noqa: BLE001 - interrupted close must not mask shutdown
                 log.exception("interrupted window close failed for instance %s", instance_id)
 
+    def _publish(
+        self,
+        event_type: str,
+        data: dict[str, object],
+        *,
+        correlation_id: str | None = None,
+    ) -> None:
+        """Publish one transient event when a bus is configured (E4a).
+
+        Publishing is non-blocking and never affects inspection or
+        persistence; without a bus this is a no-op.
+        """
+        bus = self.event_bus
+        if bus is not None:
+            bus.publish(event_type, data, correlation_id=correlation_id)
+
     def _note_storage_write_fault(self, exc: Exception) -> None:
         """Latch a storage write fault from any persistence/write failure (E2c).
 
@@ -383,7 +416,6 @@ class EdgeRuntime:
             repository.persist_inspection_and_enqueue_uploads(
                 record, retention=self._retention_policy()
             )
-            return True
         except Exception as exc:  # noqa: BLE001 - projection must not break the loop
             self.storage_write_fault = True
             log.warning(
@@ -392,6 +424,16 @@ class EdgeRuntime:
                 exc,
             )
             return False
+        self._publish(
+            "inspection.completed",
+            {
+                "inspection_id": str(record.inspection_id),
+                "business_result": record.decision.business_result,
+                "internal_decision": record.decision.internal_decision,
+            },
+            correlation_id=str(record.inspection_id),
+        )
+        return True
 
     def _retention_policy(self) -> RetentionPolicy | None:
         """Return the approved retention policy for new media, or None."""
@@ -452,12 +494,17 @@ class EdgeRuntime:
         self.paused_reason = reason
         self.paused_by = by
         self.paused_at = datetime.now(UTC).isoformat()
+        self._publish(
+            "device.status_changed",
+            {"paused": True, "paused_reason": reason, "paused_by": by},
+        )
 
     def resume(self) -> None:
         self.paused = False
         self.paused_reason = None
         self.paused_by = None
         self.paused_at = None
+        self._publish("device.status_changed", {"paused": False})
 
     def refresh_storage(self) -> StorageState | None:
         """Re-measure the output volume and update the pressure state (E2c).
