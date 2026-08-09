@@ -10,7 +10,11 @@ from sqlalchemy import create_engine, pool
 
 config = context.config
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # Keep pre-existing application loggers enabled: alembic.ini only names
+    # root/sqlalchemy/alembic, and the default disable_existing_loggers=True
+    # marks every assemblyvision.* logger disabled after the first migration,
+    # silently starving the app's LogBuffer (E1, PR-017 residual note).
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = None
 
