@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from assemblyvision_domain.errors import ConfigError
 
@@ -57,6 +58,27 @@ class UploadSettings:
             raise ConfigError("upload configuration: exponent_cap must not be negative")
         if self.maximum_bandwidth_mbps is not None and self.maximum_bandwidth_mbps <= 0:
             raise ConfigError("upload configuration: maximum_bandwidth_mbps must be positive")
+        if self.base_url is not None:
+            self._validate_base_url()
+
+    def _validate_base_url(self) -> None:
+        """Reject non-HTTPS or malformed central endpoints (design 13.8, PR-017 F7).
+
+        Inspection evidence and the upload credential must only travel over
+        TLS; plaintext is permitted solely through an explicit, test-only
+        ``allow_insecure_http`` development flag.
+        """
+        parts = urlsplit(self.base_url)
+        if parts.scheme != "https" and not self.allow_insecure_http:
+            raise ConfigError(
+                "upload configuration: base_url must use https; plaintext http "
+                "is only allowed with the explicit allow_insecure_http "
+                "development flag"
+            )
+        if not parts.hostname:
+            raise ConfigError("upload configuration: base_url must include a non-empty host")
+        if parts.username is not None or parts.password is not None:
+            raise ConfigError("upload configuration: base_url must not embed credentials")
 
 
 @dataclass(frozen=True)

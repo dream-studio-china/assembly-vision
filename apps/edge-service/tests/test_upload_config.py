@@ -87,7 +87,7 @@ class TestServeWiring:
             assert all(task.status == "PENDING" for task in tasks)
 
     def test_invalid_upload_settings_fail_fast(self) -> None:
-        """F6: invalid configuration is rejected with actionable errors."""
+        """F6/F7: invalid configuration is rejected with actionable errors."""
         with pytest.raises(ConfigError, match="mutually exclusive"):
             UploadSettings(
                 base_url="https://central.invalid", sink_dir=Path("local-sink")
@@ -106,3 +106,19 @@ class TestServeWiring:
             UploadSettings(maximum_bandwidth_mbps=-1.0).validate()
         # All-unset is a valid, explicitly disabled configuration.
         UploadSettings().validate()
+
+    def test_plaintext_upload_url_rejected_without_dev_flag(self) -> None:
+        """F7: inspection evidence must not travel over plaintext http."""
+        with pytest.raises(ConfigError, match="https"):
+            UploadSettings(base_url="http://central.invalid").validate()
+        # The explicit development flag permits http for local testing only.
+        UploadSettings(base_url="http://central.invalid", allow_insecure_http=True).validate()
+        # HTTPS is the supported production form.
+        UploadSettings(base_url="https://central.invalid").validate()
+
+    def test_malformed_upload_url_rejected(self) -> None:
+        """F7: endpoints without a host or with embedded credentials fail."""
+        with pytest.raises(ConfigError, match="non-empty host"):
+            UploadSettings(base_url="https:///missing-host").validate()
+        with pytest.raises(ConfigError, match="must not embed credentials"):
+            UploadSettings(base_url="https://user:pass@central.invalid").validate()

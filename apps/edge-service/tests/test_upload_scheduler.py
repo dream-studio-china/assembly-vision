@@ -668,6 +668,39 @@ class TestHttpSink:
             == "PERMANENT"
         )
 
+    def test_upload_token_is_separate_from_viewer_credential(self) -> None:
+        """F7: the sink uses its own credential; the viewer token never leaks."""
+        import json
+
+        import httpx
+
+        headers_seen: dict[str, str] = {}
+
+        def capture(request: httpx.Request) -> httpx.Response:
+            body = json.loads(request.content)
+            headers_seen["authorization"] = request.headers.get("authorization", "")
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                },
+            )
+
+        client = httpx.Client(transport=httpx.MockTransport(capture))
+        task = _task()
+        upload_token = "upload-secret"  # noqa: S105 - test-only credential
+        # A configured upload credential is sent as Bearer ...
+        sink = HttpUploadSink("https://central.invalid", token=upload_token, client=client)
+        sink.upload(task, b"{}")
+        assert headers_seen["authorization"] == "Bearer upload-secret"
+        # ... while a sink without one sends no Authorization header at all,
+        # proving the local viewer api_token is never reused for uploads.
+        anonymous = HttpUploadSink("https://central.invalid", client=client)
+        anonymous.upload(task, b"{}")
+        assert headers_seen["authorization"] == ""
+
     def test_receipt_is_persisted_with_task_success(
         self, repo: EdgeRepository, tmp_path: Path
     ) -> None:
