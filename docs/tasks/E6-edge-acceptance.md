@@ -90,9 +90,10 @@ report until the customer and supplier agree. They are not invented here
   20.6, contract 08).
 - Backup destination, schedule, retention, and restore RPO/RTO agreed with the
   customer; exact frequencies are acceptance decisions (design 20.10).
-- Hardware device mapping: camera vendor/SDK and device paths, GPU device(s),
-  and the trigger interface required at the customer site (design 20.2,
-  20.13).
+- Hardware device mapping: GigE Vision / GenICam camera serial, GenTL producer,
+  NIC/switch path and optional jumbo-frame configuration, or USB UVC driver and
+  device path; plus GPU device(s) and the hardware/software trigger interface
+  required at the customer site (design 20.2, 20.13).
 - Acceptance thresholds: primary NG recall target, allowed false negatives and
   the escalation/retest policy, false-positive and manual-review expectations,
   and the statistical confidence method and handling of `UNCERTAIN` and

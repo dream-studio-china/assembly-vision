@@ -19,7 +19,9 @@ Future apps (e.g. a central API or worker) add a numbered section here.
 
 - [uv](https://docs.astral.sh/uv/) — Python package manager (installs Python 3.12 automatically)
 - [pnpm](https://pnpm.io/) and Node.js 20+ — frontend workspace
-- macOS / Linux (the edge runtime targets Linux; development works on both)
+- macOS / Linux / Windows for development; Linux is the primary production
+  runtime. Windows production support requires the selected UVC driver or
+  GigE Vision / GenICam producer to pass the camera conformance suite.
 
 ## 2. One-time setup
 

@@ -36,10 +36,22 @@ reach the dashboard before the WebSocket runtime milestone exists.
 2. **Pluggable sources, all implementing the protocol**: `folder` (static image
    directory, optional loop), `video` (local video file), `opencv-device`
    (local camera index or `/dev/videoN`, including virtual cameras such as
-   Linux `v4l2loopback` or OBS Virtual Camera), `rtsp` (remote RTSP stream via
-   PyAV with an OpenCV fallback), and `http-image` (poll a remote JPEG URL at a
-   configured interval). Vendor SDK adapters can be added later behind the same
-   protocol without changing the pipeline.
+    Linux `v4l2loopback` or OBS Virtual Camera), `rtsp` (remote RTSP stream via
+    PyAV with an OpenCV fallback), `http-image` (poll a remote JPEG URL at a
+    configured interval), and `gige-vision` (GenICam/GenTL via Harvester and a
+    vendor GenTL producer). Vendor SDK adapters can be added later behind the
+    same protocol without changing the pipeline.
+   The production-preferred adapter is the `gige-vision` GenICam/GenTL
+   consumer, while `opencv-device` remains the UVC USB compatibility source.
+   Linux is the primary production runtime; Windows is supported only where the
+   selected camera's GenTL producer or UVC driver passes the same conformance
+   suite. The initial target profile is approximately 4 megapixels at 25-30
+   FPS. GigE Vision devices bind by serial number, support
+   continuous/software/hardware trigger modes, and record applied pixel format
+   and acquisition settings. Hardware trigger is preferred for production
+   boundaries. PTP is not required initially; monotonic time controls duration
+   and UTC remains traceability metadata. Jumbo frames are optional and require
+   validated camera/NIC/switch support.
 3. **Multi-instance configuration** (`pipeline.yaml`, `instances:` list): each
    instance is an independent inspection pipeline with its own `camera`,
    models, thresholds, ROI, and rule. The existing flat single-config form
