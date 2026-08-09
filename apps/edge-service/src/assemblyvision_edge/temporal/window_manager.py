@@ -8,6 +8,14 @@ are recorded as dropped and never mutate its decision; duplicate frame IDs and
 stale out-of-order timestamps are ignored and counted; a forced close on
 shutdown discards the partial window as interrupted NG rather than
 reconstructing evidence from un-journaled memory (design 10.8).
+
+With ``window_strategy == "identity"`` each frame must carry a validated
+product identity (tracker, trigger, or barcode correlation). Windows are
+sealed to one identity: a frame without an identity, a mid-window identity
+transition, or a confirmed multi-product frame closes the active window as a
+window-integrity violation that can never release ``OK`` (PR-015 F1). The
+time-only strategy remains a development fallback; it does not prove that two
+adjacent products cannot overlap.
 """
 
 from __future__ import annotations
@@ -18,6 +26,7 @@ from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID, uuid4
 
+from assemblyvision_domain import reason_codes as rc
 from assemblyvision_domain.models import ComponentDetection, ProductDetection, ROIResult
 from PIL import Image
 
@@ -27,7 +36,9 @@ from assemblyvision_edge.temporal.aggregator import (
     TemporalAggregationConfig,
 )
 
-CloseReason = Literal["GAP", "MAX_DURATION", "INTERRUPTED"]
+CloseReason = Literal[
+    "GAP", "MAX_DURATION", "INTERRUPTED", "IDENTITY_MISSING", "IDENTITY_TRANSITION", "MULTI_PRODUCT"
+]
 
 
 @dataclass(frozen=True)
@@ -49,6 +60,8 @@ class FrameObservation:
     component_latency_ms: float | None = None
     image: Image.Image | None = None
     roi_image: Image.Image | None = None
+    product_identity: str | None = None
+    multi_product: bool = False
 
     def to_frame_evidence(self) -> FrameEvidence:
         """Convert this frame into aggregator input with spatial summaries."""
@@ -85,8 +98,10 @@ class ProductWindow:
     frames: list[FrameObservation] = field(default_factory=list)
     duplicate_frame_ids: int = 0
     stale_frame_ids: int = 0
+    identity: str | None = None
     close_reason: CloseReason = "GAP"
     interrupted: bool = False
+    integrity_reason_codes: list[str] = field(default_factory=list)
 
     def frame_evidence_list(self) -> list[FrameEvidence]:
         """Aggregator input for all accepted frames, in capture order."""
@@ -125,9 +140,47 @@ class ProductWindowManager:
         clock (seconds); using post-inference processing time would let queue
         backlog or slow inference shift product boundaries.
         """
+        if observation.multi_product:
+            # A confirmed multi-product frame makes any active window
+            # ambiguous and aborts it (design 10.8, PR-015 F1).
+            active = self._active
+            if active is None:
+                return None
+            return self._close_integrity("MULTI_PRODUCT", rc.MULTIPLE_PRODUCTS)
+        if self._config.window_strategy == "identity":
+            return self._feed_identity(observation, now_monotonic)
+        return self._feed_active(observation, now_monotonic)
+
+    def _feed_identity(
+        self, observation: FrameObservation, now_monotonic: float
+    ) -> ProductWindow | None:
+        """Enforce one validated product identity per window (PR-015 F1)."""
+        active = self._active
+        identity = observation.product_identity
+        if active is None:
+            if identity is None:
+                # No boundary signal and nothing open: drop the frame; there is
+                # no product to decide.
+                return None
+            self._open(observation, now_monotonic, identity)
+            return None
+        if identity is None:
+            # A frame without identity while a window is open cannot be proven
+            # to belong to that product; abort the window fail-closed.
+            return self._close_integrity("IDENTITY_MISSING", rc.PRODUCT_IDENTITY_MISSING)
+        if identity != active.identity:
+            closed = self._close_integrity("IDENTITY_TRANSITION", rc.PRODUCT_IDENTITY_TRANSITION)
+            self._open(observation, now_monotonic, identity)
+            return closed
+        return self._feed_active(observation, now_monotonic)
+
+    def _feed_active(
+        self, observation: FrameObservation, now_monotonic: float
+    ) -> ProductWindow | None:
+        """Membership and duration checks for a continuing window."""
         active = self._active
         if active is None:
-            self._open(observation, now_monotonic)
+            self._open(observation, now_monotonic, observation.product_identity)
             return None
         if now_monotonic < active.last_frame_at_monotonic:
             # Out-of-order capture timestamp: stale frames are dropped and
@@ -142,11 +195,11 @@ class ProductWindowManager:
         gap_ms = self._config.maximum_window_ms
         if now_monotonic - active.last_frame_at_monotonic >= gap_ms / 1000.0:
             closed = self._close("GAP")
-            self._open(observation, now_monotonic)
+            self._open(observation, now_monotonic, observation.product_identity)
             return closed
         if now_monotonic - active.started_at_monotonic >= gap_ms / 1000.0:
             closed = self._close("MAX_DURATION")
-            self._open(observation, now_monotonic)
+            self._open(observation, now_monotonic, observation.product_identity)
             return closed
         active.frames.append(observation)
         active.last_frame_at_monotonic = now_monotonic
@@ -180,17 +233,21 @@ class ProductWindowManager:
             return None
         active.close_reason = "INTERRUPTED"
         active.interrupted = True
+        active.integrity_reason_codes.append(rc.INSPECTION_INTERRUPTED)
         active.frames = []
         self._active = None
         return active
 
-    def _open(self, observation: FrameObservation, now_monotonic: float) -> None:
+    def _open(
+        self, observation: FrameObservation, now_monotonic: float, identity: str | None = None
+    ) -> None:
         self._active = ProductWindow(
             inspection_id=self._window_id_factory(),
             device_id=self._device_id,
             started_at=self._wall_clock(),
             started_at_monotonic=now_monotonic,
             last_frame_at_monotonic=now_monotonic,
+            identity=identity,
             frames=[observation],
         )
 
@@ -199,5 +256,15 @@ class ProductWindowManager:
         if active is None:
             raise RuntimeError("cannot close a window that is not active")
         active.close_reason = reason
+        self._active = None
+        return active
+
+    def _close_integrity(self, reason: CloseReason, code: str) -> ProductWindow:
+        """Close the active window as a fail-closed integrity violation."""
+        active = self._active
+        if active is None:
+            raise RuntimeError("cannot close a window that is not active")
+        active.close_reason = reason
+        active.integrity_reason_codes.append(code)
         self._active = None
         return active

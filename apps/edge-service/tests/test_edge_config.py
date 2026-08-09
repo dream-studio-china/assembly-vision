@@ -230,6 +230,35 @@ def test_load_edge_config_rejects_medium_above_high(tmp_path: Path) -> None:
         load_edge_config(path)
 
 
+def test_load_edge_config_parses_window_strategy_identity(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [_instance_yaml("line-1", temporal={"window_strategy": "identity"})],
+    )
+    temporal = load_edge_config(path).instances[0].temporal
+    assert temporal is not None
+    assert temporal.window_strategy == "identity"
+
+
+def test_load_edge_config_defaults_window_strategy_to_time(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [_instance_yaml("line-1", temporal={"minimum_valid_frames": 1})],
+    )
+    temporal = load_edge_config(path).instances[0].temporal
+    assert temporal is not None
+    assert temporal.window_strategy == "time"
+
+
+def test_load_edge_config_rejects_unknown_window_strategy(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [_instance_yaml("line-1", temporal={"window_strategy": "trigger"})],
+    )
+    with pytest.raises(ConfigError, match="window_strategy"):
+        load_edge_config(path)
+
+
 def test_load_edge_config_rejects_medium_below_observation_threshold(tmp_path: Path) -> None:
     path = _write_edge_config(
         tmp_path,

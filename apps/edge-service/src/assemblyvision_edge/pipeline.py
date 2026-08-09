@@ -269,6 +269,8 @@ class InspectionPipeline:
             component_latency_ms=outcome.component_latency_ms,
             image=frame.image,
             roi_image=outcome.roi_image,
+            product_identity=frame.product_identity,
+            multi_product=frame.multi_product,
         )
 
     def inspect_window(

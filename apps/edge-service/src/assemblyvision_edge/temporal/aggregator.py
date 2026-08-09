@@ -10,6 +10,7 @@ improve a component's state through frames that belong elsewhere.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Literal
 from uuid import UUID
 
 from assemblyvision_domain import reason_codes as rc
@@ -45,11 +46,20 @@ class ComponentTemporalPolicy:
 
 @dataclass(frozen=True)
 class TemporalAggregationConfig:
-    """Window-level temporal aggregation policy (design 10.7)."""
+    """Window-level temporal aggregation policy (design 10.7).
+
+    ``window_strategy`` selects the product-boundary mechanism: ``"time"`` is a
+    development fallback that only separates windows by capture-time gap;
+    ``"identity"`` requires a validated per-frame product identity and seals
+    each window to one product, aborting on missing/transitioning identities or
+    confirmed multi-product frames (PR-015 F1). Production temporal inspection
+    must use ``"identity"`` or another validated correlation mechanism.
+    """
 
     minimum_valid_frames: int = 1
     maximum_window_ms: int = 2500
     reject_duplicate_frame_ids: bool = True
+    window_strategy: Literal["time", "identity"] = "time"
     components: dict[str, ComponentTemporalPolicy] = field(default_factory=dict)
 
     def __post_init__(self) -> None:

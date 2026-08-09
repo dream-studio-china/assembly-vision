@@ -564,7 +564,13 @@ def _parse_temporal(raw: Any, name: str) -> TemporalAggregationConfig | None:
     doc = _require_mapping(raw, name)
     _reject_unknown(
         doc,
-        {"minimum_valid_frames", "maximum_window_ms", "reject_duplicate_frame_ids", "components"},
+        {
+            "minimum_valid_frames",
+            "maximum_window_ms",
+            "reject_duplicate_frame_ids",
+            "window_strategy",
+            "components",
+        },
         name,
     )
     minimum_valid_frames = _as_positive_int(
@@ -576,6 +582,10 @@ def _parse_temporal(raw: Any, name: str) -> TemporalAggregationConfig | None:
     reject_duplicate = _as_bool(
         doc.get("reject_duplicate_frame_ids"), f"{name}.reject_duplicate_frame_ids", True
     )
+    window_strategy_raw = doc.get("window_strategy", "time")
+    if window_strategy_raw not in ("time", "identity"):
+        raise ConfigError(f"{name}.window_strategy must be one of {sorted(('time', 'identity'))}")
+    window_strategy: Literal["time", "identity"] = window_strategy_raw
     components: dict[str, ComponentTemporalPolicy] = {}
     comps_raw = doc.get("components")
     if comps_raw is not None:
@@ -618,6 +628,7 @@ def _parse_temporal(raw: Any, name: str) -> TemporalAggregationConfig | None:
         minimum_valid_frames=minimum_valid_frames,
         maximum_window_ms=maximum_window_ms,
         reject_duplicate_frame_ids=reject_duplicate,
+        window_strategy=window_strategy,
         components=components,
     )
 
