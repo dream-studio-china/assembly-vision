@@ -69,11 +69,14 @@ def observe_storage(path: Path, settings: StorageSettings | None) -> StorageStat
     stop = settings.stop_free_percent if settings is not None else defaults.stop_free_percent
 
     mode: PressureMode = "NORMAL"
-    if free_percent < stop or inode_percent < stop:
+    # "At or below" semantics (design 12.7, PR-020 F06): exactly the stop
+    # reserve is STOP, exactly the critical reserve is CRITICAL, and exactly
+    # the warning reserve is WARNING.
+    if free_percent <= stop or inode_percent <= stop:
         mode = "STOP"
-    elif free_percent < critical or inode_percent < critical:
+    elif free_percent <= critical or inode_percent <= critical:
         mode = "CRITICAL"
-    elif free_percent < warning or inode_percent < warning:
+    elif free_percent <= warning or inode_percent <= warning:
         mode = "WARNING"
     return StorageState(
         mode=mode,
