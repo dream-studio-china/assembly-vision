@@ -97,12 +97,35 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         # and stay visible in the API; they are never silently written to a
         # guessed local directory (design 13.8 requires site configuration).
         scheduler: UploadScheduler | None = None
-        if settings.upload_sink_dir is not None:
-            sink: UploadSink = DirectoryUploadSink(settings.upload_sink_dir)
-            scheduler = UploadScheduler(repository, sink, output_root=settings.output_root)
-        elif settings.upload_base_url:
-            sink = HttpUploadSink(settings.upload_base_url, token=settings.api_token)
-            scheduler = UploadScheduler(repository, sink, output_root=settings.output_root)
+        upload = settings.upload
+        sink: UploadSink | None = None
+        if upload is not None:
+            if upload.sink_dir is not None:
+                sink = DirectoryUploadSink(upload.sink_dir)
+            elif upload.base_url:
+                sink = HttpUploadSink(
+                    upload.base_url,
+                    token=upload.token,
+                    connect_timeout_seconds=upload.connect_timeout_seconds,
+                    request_timeout_seconds=upload.request_timeout_seconds,
+                )
+            if sink is not None:
+                scheduler = UploadScheduler(
+                    repository,
+                    sink,
+                    output_root=settings.output_root,
+                    interval_seconds=upload.interval_seconds,
+                    batch_size=upload.batch_size,
+                    lease_seconds=upload.lease_seconds,
+                    base_retry_seconds=upload.base_retry_seconds,
+                    maximum_retry_seconds=upload.maximum_retry_seconds,
+                    exponent_cap=upload.exponent_cap,
+                )
+        if scheduler is None:
+            log.warning(
+                "upload scheduler is disabled: configure an upload sink directory "
+                "or an HTTPS central endpoint (design 13.8)"
+            )
         app.state.upload_scheduler = scheduler
         if scheduler is not None:
             scheduler.start()
