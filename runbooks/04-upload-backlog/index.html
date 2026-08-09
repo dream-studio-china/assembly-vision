@@ -2460,6 +2460,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#circuit-open-diagnosis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Circuit-Open Diagnosis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#recovery" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3149,6 +3160,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#circuit-open-diagnosis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Circuit-Open Diagnosis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#recovery" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3192,7 +3214,8 @@
 
 <h1 id="runbook-04-upload-backlog">Runbook 04: Upload Backlog<a class="headerlink" href="#runbook-04-upload-backlog" title="Permanent link">&para;</a></h1>
 <h2 id="trigger">Trigger<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
-<p>Queue count/bytes, oldest pending age, retry rate, or permanent failures exceed approved thresholds.</p>
+<p>Queue count/bytes, oldest pending age, retry rate, or permanent failures exceed approved thresholds. The
+<code>UPLOAD_CIRCUIT_OPEN</code> alert also fires while the scheduler stops attempting uploads during an outage.</p>
 <h2 id="immediate-safety-action">Immediate Safety Action<a class="headerlink" href="#immediate-safety-action" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Confirm local inspection remains ready and protected capacity is sufficient
@@ -3201,18 +3224,35 @@
 <li>Do not delete queued evidence or increase worker concurrency enough to starve inference.</li>
 <li>Classify failures: connectivity, authentication, server capacity, schema, checksum, or content conflict.</li>
 </ol>
+<h2 id="circuit-open-diagnosis">Circuit-Open Diagnosis<a class="headerlink" href="#circuit-open-diagnosis" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>UPLOAD_CIRCUIT_OPEN</code> plus <code>upload_circuit_state=OPEN</code> in device status means the worker hit
+   <code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code> consecutive retryable failures (transport or
+   <code>408/429/5xx</code>); permanent local/content failures never open the circuit.</li>
+<li>The circuit is process-local liveness: it pauses new attempts, never mutates the queue, and the
+   durable queue truth remains in <code>/api/v1/uploads</code>. After <code>AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS</code> the
+   worker half-opens and probes one task; success closes it, failure reopens it.</li>
+<li>Fix the dependency or credential fault first; while the circuit is open, no retry traffic is
+   sent, so inspection capacity and queue growth are unaffected by the outage itself.</li>
+</ol>
 <h2 id="recovery">Recovery<a class="headerlink" href="#recovery" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Fix the dependency or credential fault; retain original idempotency keys and payload hashes.</li>
-<li>Resume with bounded concurrency, backoff, jitter, and bandwidth limits.</li>
+<li>Resume with bounded concurrency, backoff, jitter, and bandwidth limits
+   (<code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code> bounds the serialized request body the HTTP sink sends).</li>
 <li>Quarantine permanent content conflicts; do not overwrite immutable records.</li>
 <li>Reconcile central receipts before marking tasks <code>SUCCEEDED</code>.</li>
-<li>Watch <code>UPLOAD_FAILING</code>/<code>UPLOAD_BLOCKED</code> alerts and <code>upload_failure_rate</code> in
-   device status; a <code>PERMANENT_FAILURE</code> upload keeps local evidence protected
-   from retention deletion (<code>SYNCED</code> is required before media is eligible).</li>
+<li>Use <code>POST /api/v1/uploads/{upload_task_id}/retry</code> only for <code>RETRY_WAIT</code> or <code>PERMANENT_FAILURE</code>
+   tasks after the underlying cause is corrected. The transition is atomic (concurrent retries yield
+   one success and one conflict), increments <code>attempt_count</code>, and never authorizes retention cleanup:
+   media stays protected until a new verified central receipt makes the inspection <code>SYNCED</code>.</li>
+<li>Watch <code>UPLOAD_FAILING</code>/<code>UPLOAD_BLOCKED</code>/<code>UPLOAD_CIRCUIT_OPEN</code> alerts, <code>upload_failure_rate</code>, and
+   <code>upload_bytes_sent</code>/<code>upload_bandwidth_mbps</code>; a <code>PERMANENT_FAILURE</code> upload keeps local evidence
+   protected from retention deletion (<code>SYNCED</code> is required before media is eligible).</li>
 </ol>
 <h2 id="exit-criteria">Exit Criteria<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
-<p>Backlog drains without duplicates, oldest age returns below threshold, and permanent failures have owners.</p>
+<p>Backlog drains without duplicates, oldest age returns below threshold, the circuit closes and stays
+closed, and permanent failures have owners.</p>
 
 
 

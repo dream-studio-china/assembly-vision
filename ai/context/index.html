@@ -3204,6 +3204,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#88-upload-resilience-e3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.8 Upload Resilience (E3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3415,6 +3426,17 @@
     <span class="md-ellipsis">
       
         8.7 Observability (E1) and Retention and Disk Safety (E2) (PRs #18/#19, #20)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#88-upload-resilience-e3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.8 Upload Resilience (E3)
       
     </span>
   </a>
@@ -4019,15 +4041,39 @@ periods, disk sizing, holds, and stop-mode line behavior remain release
 blockers for production enablement (E2 task section 4). Current suite: 781
 Python tests, 91 TypeScript unit tests (api-client 45, ui 13, edge-web 30,
 desktop 3), and 12 Playwright e2e.</p>
+<h2 id="88-upload-resilience-e3">8.8 Upload Resilience (E3)<a class="headerlink" href="#88-upload-resilience-e3" title="Permanent link">&para;</a></h2>
+<p>Implemented on <code>feat/e3-upload-resilience</code> (delivery task
+<code>docs/tasks/E3-upload-resilience.md</code>, design 13.13/13.14):</p>
+<ul>
+<li><strong>Bandwidth throttling (E3a)</strong>: a token-bucket limiter bounds network
+  payload bytes per second from <code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code>
+  (<code>None</code> disables); burst is capped at one second of tokens and the limiter
+  never gates local persistence. Bytes sent and the ceiling are exposed in
+  device status.</li>
+<li><strong>Circuit breaker (E3b)</strong>: consecutive retryable failures
+  (<code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code>/<code>_OPEN_SECONDS</code>) open the
+  circuit; while open the scheduler claims nothing, and after the open window
+  a single half-open probe judges recovery. Permanent failures never count.
+  <code>UPLOAD_CIRCUIT_OPEN</code> alert; the durable queue is never mutated.</li>
+<li><strong>Controlled manual retry (E3c)</strong>: <code>POST /api/v1/uploads/{id}/retry</code>
+  resets only <code>RETRY_WAIT</code>/<code>PERMANENT_FAILURE</code> tasks with
+  <code>attempt_count + 1</code>; 404 unknown, 409 non-eligible without mutation.</li>
+<li><strong>Long-outage drain (E3d)</strong>: days of offline inspection, a restart, and a
+  restore drain the queue duplicate-free with ordered metadata-before-media
+  uploads and every inspection <code>SYNCED</code>.</li>
+<li><strong>Resumable large-media contract (E3e)</strong>: design 13.14 defines chunked
+  transfer (stable task identity, chunk idempotency, size/checksum completion
+  confirmation, object binding); <code>media_chunk_bytes</code> is a clearly-marked
+  reserved placeholder — the central endpoint is not implemented and chunked
+  transfer starts only after the Edge-to-central contract freezes.</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The <strong>upload queue scheduler</strong> gap is closed (PR #17, section 8.6); <strong>E1
-  observability</strong> (PRs #18/#19) and <strong>E2 retention and disk safety</strong> (PR #20,
-  PR-020 review resolved) are merged (section 8.7). The remaining Edge
-  production-candidate work is tracked as E3-E6:</li>
-<li><strong>E3 upload resilience</strong>: bandwidth throttling, circuit breaker,
-    controlled manual retry, long-outage drain tests, resumable large-media
-    client (central protocol contract only).</li>
+  observability</strong> (PRs #18/#19), <strong>E2 retention and disk safety</strong> (PR #20,
+  PR-020 review resolved), and <strong>E3 upload resilience</strong> (section 8.8) are
+  implemented. The remaining Edge production-candidate work is tracked as
+  E4-E6:</li>
 <li><strong>E4 runtime</strong>: WebSocket channel, hardware-agnostic trigger/barcode/
     identity seams with mock hardware validation, multi-instance resource
     sharing.</li>

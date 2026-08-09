@@ -1072,6 +1072,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1313-implementation-status-upload-resilience-e3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.13 Implementation Status (upload resilience, E3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1314-resumable-large-media-client-contract-e3e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.14 Resumable Large-Media Client Contract (E3e)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3346,6 +3368,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1313-implementation-status-upload-resilience-e3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.13 Implementation Status (upload resilience, E3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1314-resumable-large-media-client-contract-e3e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.14 Resumable Large-Media Client Contract (E3e)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3444,9 +3488,16 @@
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">exponent_cap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">task_lease_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="nt">maximum_bandwidth_mbps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">media_chunk_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8388608</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">circuit_failure_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span><span class="nt">circuit_open_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span><span class="nt">media_chunk_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8388608</span><span class="w">  </span><span class="c1"># reserved; single POST envelope until the</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">                              </span><span class="c1"># Edge-to-central resumable contract freezes</span>
 </code></pre></div>
-<p>The placeholder URL and <code>null</code> bandwidth require site configuration.</p>
+<p>The placeholder URL, <code>null</code> bandwidth, circuit threshold/open duration, and
+<code>media_chunk_bytes</code> require site configuration; the environment equivalents
+are <code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code>,
+<code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code>,
+<code>AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS</code>, and <code>AV_EDGE_UPLOAD_MEDIA_CHUNK_BYTES</code>.</p>
 <h2 id="139-failure-handling-and-operations">13.9 Failure Handling and Operations<a class="headerlink" href="#139-failure-handling-and-operations" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3567,9 +3618,59 @@
   media reads.</li>
 </ul>
 <p>Remaining for the connected pilot: the central ingestion endpoint and its
-server-side receipt contract, media binding confirmations, bandwidth
-throttling enforcement, a circuit breaker, and retention gating on verified
-receipts.</p>
+server-side receipt contract, media binding confirmations, and retention
+gating on verified receipts.</p>
+<h2 id="1313-implementation-status-upload-resilience-e3">13.13 Implementation Status (upload resilience, E3)<a class="headerlink" href="#1313-implementation-status-upload-resilience-e3" title="Permanent link">&para;</a></h2>
+<p>The upload-resilience milestone adds outage behavior on top of the outbox
+scheduler (design 13.5/13.9, E3 task):</p>
+<ul>
+<li><strong>Bandwidth throttling</strong>: a token-bucket limiter bounds the serialized
+  request-body bytes actually sent to the HTTP sink per second from
+  <code>UploadSettings.maximum_bandwidth_mbps</code> (<code>None</code> disables throttling). The
+  unit is the JSON envelope the transport writes (Base64 payload plus
+  metadata), not the raw media bytes; the local directory sink reports zero
+  network bytes. Burst is capped at one second of tokens and the limiter never
+  gates local persistence. Amounts above one burst are split into per-burst
+  waits that renew the fenced upload lease and abort on worker stop or lease
+  loss (PR-022 F01/F02). Cumulative bytes sent and the configured ceiling are
+  exposed through scheduler health and device status.</li>
+<li><strong>Circuit breaker</strong>: consecutive retryable failures
+  (<code>circuit_failure_threshold</code>) open the circuit; while open the scheduler
+  claims nothing, and after <code>circuit_open_seconds</code> a single half-open probe
+  judges recovery — success closes the circuit, failure reopens it.
+  Permanent failures never count toward the circuit. Circuit state and last
+  change are exposed with a stable <code>UPLOAD_CIRCUIT_OPEN</code> alert; the durable
+  queue is never mutated by the circuit.</li>
+<li><strong>Controlled manual retry</strong>: <code>POST /api/v1/uploads/{upload_task_id}/retry</code>
+  resets only <code>RETRY_WAIT</code> / <code>PERMANENT_FAILURE</code> tasks to <code>PENDING</code> with
+  <code>attempt_count + 1</code>; unknown tasks are 404 and non-eligible tasks are 409
+  without mutation.</li>
+<li><strong>Long-outage drain</strong>: fault-injection tests run days of offline
+  inspection, a process restart, and a restore that drains the whole queue
+  duplicate-free with ordered metadata-before-media uploads.</li>
+</ul>
+<h2 id="1314-resumable-large-media-client-contract-e3e">13.14 Resumable Large-Media Client Contract (E3e)<a class="headerlink" href="#1314-resumable-large-media-client-contract-e3e" title="Permanent link">&para;</a></h2>
+<p>Large media (NG clips, full video segments) may exceed a single upload
+envelope. The edge-side boundary and the central protocol contract are
+defined here; the central endpoint is not implemented and chunked transfer
+starts only after the Edge-to-central contract freezes:</p>
+<ul>
+<li>Each media upload task keeps its stable <code>upload_task_id</code> and idempotency
+  key; retries of any chunk or of the whole object reuse the same key, so
+  the central server can deduplicate every chunk and completion.</li>
+<li>Transfer is chunked with a configured <code>media_chunk_bytes</code> ceiling
+  (<code>UploadSettings.media_chunk_bytes</code>, default 8 MiB, reserved until the
+  contract freezes). Each chunk carries the task idempotency key, a
+  zero-based chunk index, the total object size and SHA-256, and the chunk
+  bytes; chunk writes are idempotent by <code>(task, chunk index)</code>.</li>
+<li>Completion is accepted only when the server confirms the expected total
+  size and SHA-256 and binds the object to the inspection; the persisted
+  media receipt then carries the central object identifier exactly as the
+  single-envelope path does today.</li>
+<li>Until the central protocol is available, every task uses the single POST
+  envelope; the chunk settings are placeholders and must not be assumed to
+  change transfer behavior.</li>
+</ul>
 
 
 

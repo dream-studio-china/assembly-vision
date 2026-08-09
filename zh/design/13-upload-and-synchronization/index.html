@@ -1072,6 +1072,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1313-implementation-status-upload-resilience-e3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.13 实施状态（上传弹性，E3）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1314-resumable-large-media-client-contract-e3e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.14 可恢复的大媒体客户端合同（E3e）
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3346,6 +3368,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#1313-implementation-status-upload-resilience-e3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.13 实施状态（上传弹性，E3）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1314-resumable-large-media-client-contract-e3e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.14 可恢复的大媒体客户端合同（E3e）
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3406,7 +3450,7 @@ else 永久验证或内容冲突
 <p>重试连接失败、超时、HTTP <code>408</code>、<code>429</code> 和 <code>5xx</code>，在配置的范围内遵守 <code>Retry-After</code>。不要无限期地自动重试身份验证/授权失败、架构不兼容、校验和冲突或无效内容。使用具有完全抖动的指数退避：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>delay = random(0, min(max_delay, base_delay * 2 ** min(attempt, exponent_cap)))
 </code></pre></div>
-<p>工作线程并发和带宽是有限的，因此上传不会导致推理不足或填满内存。工作线程崩溃后，租约会恢复任务。断路器可减少中断期间的重复流量，但会定期探测恢复情况。</p>
+<p>工作线程并发和带宽是有限的，因此上传不会导致推理不足或填满内存。租约在工作线程崩溃后恢复任务。断路器可减少中断期间的重复流量，但会定期探测恢复情况。</p>
 <h2 id="136-offline-operation-sequence">13.6 离线操作顺序<a class="headerlink" href="#136-offline-operation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Camera
@@ -3444,9 +3488,16 @@ loop 到期排队任务
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">exponent_cap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">task_lease_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="nt">maximum_bandwidth_mbps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">media_chunk_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8388608</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">circuit_failure_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span><span class="nt">circuit_open_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span><span class="nt">media_chunk_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8388608</span><span class="w">  </span><span class="c1"># reserved; single POST envelope until the</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">                              </span><span class="c1"># Edge-to-central resumable contract freezes</span>
 </code></pre></div>
-<p>占位符 URL 和 <code>null</code> 带宽需要站点配置。</p>
+<p>占位符 URL、<code>null</code> 带宽、电路阈值/开放持续时间以及
+<code>media_chunk_bytes</code> 需要站点配置；环境等价物
+是<code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code>，
+<code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code>,
+<code>AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS</code>和<code>AV_EDGE_UPLOAD_MEDIA_CHUNK_BYTES</code>。</p>
 <h2 id="139-failure-handling-and-operations">13.9 故障处理与操作<a class="headerlink" href="#139-failure-handling-and-operations" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3540,7 +3591,7 @@ loop 到期排队任务
   标识符。已验证的收据和中央对象标识符将被保留。
   检查同步是根据所有必需的任务重新计算的：
   <code>QUEUED</code> 未完成时， <code>PARTIAL</code> 在带有待处理媒体的元数据之后，
-  <code>SYNCED</code> 仅当每项必需的任务都有经过验证的收据时，并且 <code>FAILED</code>
+  <code>SYNCED</code> 仅当每个必需任务都有经过验证的收据时，并且 <code>FAILED</code>
   任何永久性故障。</li>
 <li><strong>接收器和配置</strong>：<code>DirectoryUploadSink</code>（本地/开发和
   测试，密钥幂等）和 <code>HttpUploadSink</code> （HTTPS POST 到
@@ -3567,9 +3618,59 @@ loop 到期排队任务
   媒体阅读。</li>
 </ul>
 <p>剩下的连接试点：中央摄取端点及其
-服务器端收据合同、媒体绑定确认、带宽
-已验证的节流执行、断路器和保留门控
-收据。</p>
+服务器端收据合同、媒体绑定确认和保留
+对经过验证的收据进行控制。</p>
+<h2 id="1313-implementation-status-upload-resilience-e3">13.13 实施状态（上传弹性，E3）<a class="headerlink" href="#1313-implementation-status-upload-resilience-e3" title="Permanent link">&para;</a></h2>
+<p>上传弹性里程碑在发件箱顶部添加了中断行为
+调度程序（设计13.5/13.9，E3任务）：</p>
+<ul>
+<li><strong>带宽限制</strong>：令牌桶限制器限制序列化
+  每秒实际发送到 HTTP 接收器的请求主体字节数
+  <code>UploadSettings.maximum_bandwidth_mbps</code>（<code>None</code> 禁用限制）。的
+  单位是传输写入的 JSON 信封（Base64 有效负载加上
+  元数据），而不是原始媒体字节；本地目录接收器报告零
+  网络字节。突发的上限为一秒的令牌，并且限制器从不
+  门本地持久性。超过一次突发的金额将拆分为每次突发
+  等待更新受保护的上传租约并在工作停止或租约时中止
+  损失（PR-022 F01/F02）。累计发送字节数和配置的上限为
+  通过调度程序运行状况和设备状态暴露。</li>
+<li><strong>断路器</strong>：连续可重试失败
+  (<code>circuit_failure_threshold</code>) 开路；打开调度程序时
+  没有声明任何内容，并且在 <code>circuit_open_seconds</code> 之后有一个半开探针
+  判断恢复情况——成功关闭电路，失败重新打开电路。
+  永久性故障永远不会计入电路中。电路状态和最后一次
+  通过稳定的 <code>UPLOAD_CIRCUIT_OPEN</code> 警报来暴露更改；耐用的
+  队列永远不会被电路改变。</li>
+<li><strong>受控手动重试</strong>：<code>POST /api/v1/uploads/{upload_task_id}/retry</code>
+  仅将 <code>RETRY_WAIT</code> / <code>PERMANENT_FAILURE</code> 任务重置为 <code>PENDING</code>
+  <code>attempt_count + 1</code>；未知任务为 404，不合格任务为 409
+  没有突变。</li>
+<li><strong>长时间停电消耗</strong>：故障注入测试离线运行数天
+  检查、进程重新启动以及耗尽整个队列的恢复
+  在媒体上传之前通过有序元数据实现无重复。</li>
+</ul>
+<h2 id="1314-resumable-large-media-client-contract-e3e">13.14 可恢复的大媒体客户端合同（E3e）<a class="headerlink" href="#1314-resumable-large-media-client-contract-e3e" title="Permanent link">&para;</a></h2>
+<p>大型媒体（NG 剪辑、完整视频片段）可能会超过单次上传
+信封。边缘侧边界和中央协议合约是
+此处定义；中央端点未实现且分块传输
+仅在边缘到中心合约冻结后才开始：</p>
+<ul>
+<li>每个媒体上传任务都保持稳定的<code>upload_task_id</code>和幂等性
+  钥匙；重试任何块或整个对象都会重用相同的密钥，因此
+  中央服务器可以对每个块和完成进行重复数据删除。</li>
+<li>传输按照配置的 <code>media_chunk_bytes</code> 上限进行分块
+  （<code>UploadSettings.media_chunk_bytes</code>，默认8 MiB，保留直到
+  合同冻结）。每个块都携带任务幂等键，
+  从零开始的块索引、总对象大小和 SHA-256 以及块
+  字节；块写入通过 <code>(task, chunk index)</code> 是幂等的。</li>
+<li>仅当服务器确认预期总数时才接受完成
+  大小和 SHA-256 并将对象绑定到检查；坚持的
+  然后媒体收据携带中央对象标识符，与
+  今天的单信封路径就是这样。</li>
+<li>在中央协议可用之前，每个任务都使用单个 POST
+  信封；块设置是占位符，不得假设为
+  改变转移行为。</li>
+</ul>
 
 
 

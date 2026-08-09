@@ -3914,7 +3914,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 架构版本。事件 <code>sequence</code> 对于 <code>(source_id, channel)</code> 是单调的，并且仅当
 源身份变更。</p>
 <h2 id="145-edge-schema">14.5 边缘模式<a class="headerlink" href="#145-edge-schema" title="Permanent link">&para;</a></h2>
-<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份简短的写入交易；媒体字节保留在文件系统中。</p>
+<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份短写交易；媒体字节保留在文件系统中。</p>
 <table>
 <thead>
 <tr>
@@ -4033,7 +4033,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>model_packages</code>、<code>model_versions</code></td>
 <td>稳定的模型身份；任务、语义版本、清单、工件 URI/校验和、生命周期状态</td>
-<td><code>UNIQUE(model_id, semantic_version)</code>；发布后不可更改。</td>
+<td><code>UNIQUE(model_id, semantic_version)</code>;发布后不可更改。</td>
 </tr>
 <tr>
 <td><code>inspections</code></td>
@@ -4080,7 +4080,7 @@ OpenAPI 中的模型。最小注册表是：</p>
     PRODUCTION_LINE ||--o{ DEVICE :运作
     ORGANIZATION ||--o{ USER :有
     USER ||--o{ USER_ROLE :收到
-    ROLE ||--o{ USER_ROLE :赠款
+    ROLE ||--o{ USER_ROLE :补助金
     ORGANIZATION ||--o{ PRODUCT :拥有
     PRODUCT ||--o{ PRODUCT_VERSION :版本
     PRODUCT_VERSION ||--o{ RULE_VERSION :检查者

@@ -2460,6 +2460,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#circuit-open-diagnosis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        断路诊断
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#recovery" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3149,6 +3160,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#circuit-open-diagnosis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        断路诊断
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#recovery" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3192,7 +3214,8 @@
 
 <h1 id="runbook-04-upload-backlog">运行手册 04：上传积压工作<a class="headerlink" href="#runbook-04-upload-backlog" title="Permanent link">&para;</a></h1>
 <h2 id="trigger">扳机<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
-<p>队列计数/字节、最早的挂起期限、重试率或永久故障超过批准的阈值。</p>
+<p>队列计数/字节、最早的挂起期限、重试率或永久故障超过批准的阈值。的
+当调度程序在中断期间停止尝试上传时，<code>UPLOAD_CIRCUIT_OPEN</code> 警报也会触发。</p>
 <h2 id="immediate-safety-action">立即采取安全行动<a class="headerlink" href="#immediate-safety-action" title="Permanent link">&para;</a></h2>
 <ol>
 <li>确认当地检查已准备就绪且保护能力充足
@@ -3201,16 +3224,33 @@
 <li>不要删除排队的证据或增加工作线程的并发性，以免导致推理不足。</li>
 <li>对故障进行分类：连接、身份验证、服务器容量、模式、校验和或内容冲突。</li>
 </ol>
+<h2 id="circuit-open-diagnosis">断路诊断<a class="headerlink" href="#circuit-open-diagnosis" title="Permanent link">&para;</a></h2>
+<ol>
+<li>设备状态中<code>UPLOAD_CIRCUIT_OPEN</code>加<code>upload_circuit_state=OPEN</code>表示worker命中
+   <code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code> 连续的可重试失败（传输或
+   <code>408/429/5xx</code>);永久的本地/内容故障永远不会断开电路。</li>
+<li>该电路是进程本地活跃的：它暂停新的尝试，从不改变队列，并且
+   持久队列真相保留在 <code>/api/v1/uploads</code> 中。在<code>AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS</code>之后
+   工人半开并探测一项任务；成功关闭它，失败重新打开它。</li>
+<li>首先修复依赖关系或凭证错误；当电路打开时，没有重试流量
+   已发送，因此检查容量和队列增长不会受到中断本身的影响。</li>
+</ol>
 <h2 id="recovery">恢复<a class="headerlink" href="#recovery" title="Permanent link">&para;</a></h2>
 <p>1.修复依赖或凭证错误；保留原始幂等性密钥和有效负载哈希。
-2. 在有界并发、退避、抖动和带宽限制的情况下恢复。
+2. 在有界并发、退避、抖动和带宽限制的情况下恢复
+   （<code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code> 限制 HTTP 接收器发送的序列化请求正文）。
 3. 隔离永久内容冲突；不要覆盖不可变的记录。
 4. 在标记任务<code>SUCCEEDED</code>之前核对中央收据。
-5. 观看 <code>UPLOAD_FAILING</code>/<code>UPLOAD_BLOCKED</code> 警报和 <code>upload_failure_rate</code>
-   设备状态； <code>PERMANENT_FAILURE</code> 上传可保护本地证据
-   从保留删除（媒体符合条件之前需要 <code>SYNCED</code>）。</p>
+5. 仅将<code>POST /api/v1/uploads/{upload_task_id}/retry</code>用于<code>RETRY_WAIT</code>或<code>PERMANENT_FAILURE</code>
+   纠正根本原因后的任务。转换是原子的（并发重试产生
+   一次成功，一次冲突），递增 <code>attempt_count</code>，并且从不授权保留清理：
+   媒体将一直受到保护，直到新的经过验证的中央收据进行检查<code>SYNCED</code>。
+6. 观看 <code>UPLOAD_FAILING</code>/<code>UPLOAD_BLOCKED</code>/<code>UPLOAD_CIRCUIT_OPEN</code> 警报、<code>upload_failure_rate</code> 和
+   <code>upload_bytes_sent</code>/<code>upload_bandwidth_mbps</code>； <code>PERMANENT_FAILURE</code>上传保留本地证据
+   防止保留删除（媒体符合条件之前需要 <code>SYNCED</code>）。</p>
 <h2 id="exit-criteria">退出标准<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
-<p>积压工作不会重复，最旧的年龄返回低于阈值，并且永久故障有所有者。</p>
+<p>积压的订单没有重复，最旧的年龄返回到阈值以下，电路关闭并保持
+关闭，永久失败有所有者。</p>
 
 
 

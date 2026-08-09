@@ -3204,6 +3204,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#88-upload-resilience-e3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.8 上传弹性（E3）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3415,6 +3426,17 @@
     <span class="md-ellipsis">
       
         8.7 可观察性 (E1) 以及保留和磁盘安全性 (E2)（PR #18/#19、#20）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#88-upload-resilience-e3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.8 上传弹性（E3）
       
     </span>
   </a>
@@ -3845,7 +3867,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   包包含和类映射（<code>ConfigError</code>，绝不泄漏）。</li>
 <li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
   覆盖）；日志消息清理绝对路径；失败尝试节流
-  <code>Retry-After</code>；有界会话；光标绑定过滤指纹
+  <code>Retry-After</code>;有界会话；光标绑定过滤指纹
   (<code>400 INVALID_CURSOR</code>);始终清除介质<code>410</code>；非 ASCII 承载 <code>401</code>；
   <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
 <li><strong>前端强化</strong>：生产构建失败，除非<code>VITE_API_MODE=http</code>；
@@ -3885,7 +3907,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
   <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
   保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界的每个实例检查队列
+  实例使用显式的有界每个实例检查队列
   溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
   <code>EdgeRuntime.load_instances</code>开始独立的单帧检查
   当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
@@ -3932,14 +3954,14 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   具有二进制主体和问题响应的规范业务/内部枚举
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
-<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code> 因此严格的 mypy 门会通过
+<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code>，因此严格的 mypy 门会通过
   回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
   （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
 <h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
 <p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
 ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
 项目。审查驱动的强化过程记录在
-<code>docs/reviews/PR-017-review.md</code>;结果 F1-F8 加上决议后通过
+<code>docs/reviews/PR-017-review.md</code>；结果 F1-F8 加上决议后通过
 通过回归测试解决：</p>
 <ul>
 <li><strong>原子投影和发件箱</strong>：<code>persist_inspection_and_enqueue_uploads</code>
@@ -4019,15 +4041,39 @@ PR-020 审查强化）。交付任务和强制性安全不变量是
 生产支持的阻碍因素（E2 任务第 4 节）。当前套房：781
 Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-web 30、
 桌面 3) 和 12 名剧作家 e2e。</p>
+<h2 id="88-upload-resilience-e3">8.8 上传弹性（E3）<a class="headerlink" href="#88-upload-resilience-e3" title="Permanent link">&para;</a></h2>
+<p>在<code>feat/e3-upload-resilience</code>上实现（投递任务
+<code>docs/tasks/E3-upload-resilience.md</code>，设计13.13/13.14):</p>
+<ul>
+<li><strong>带宽节流（E3a）</strong>：令牌桶限制器限制网络
+  来自 <code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code> 的每秒有效负载字节数
+  （<code>None</code> 禁用）；突发的上限为一秒的令牌和限制器
+  永远不会限制本地持久性。发送的字节数和上限暴露在
+  设备状态。</li>
+<li><strong>断路器 (E3b)</strong>：连续可重试失败
+  (<code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code>/<code>_OPEN_SECONDS</code>) 打开
+  电路；打开时调度程序不声明任何内容，而打开窗口后
+  单个半开探头判断恢复情况。永久的失败永远不算数。
+  <code>UPLOAD_CIRCUIT_OPEN</code> 警报；持久队列永远不会改变。</li>
+<li><strong>受控手动重试 (E3c)</strong>：<code>POST /api/v1/uploads/{id}/retry</code>
+  仅重置 <code>RETRY_WAIT</code>/<code>PERMANENT_FAILURE</code> 任务
+  <code>attempt_count + 1</code>； 404 未知，409 不合格，无突变。</li>
+<li><strong>长时间停电排水 (E3d)</strong>：离线检查、重新启动和恢复的天数
+  使用媒体之前的有序元数据恢复无重复的排空队列
+  上传和每次检查<code>SYNCED</code>。</li>
+<li><strong>可恢复大媒体合约 (E3e)</strong>：设计 13.14 定义分块
+  传输（稳定的任务身份、块幂等性、大小/校验和完成
+  确认、对象绑定）； <code>media_chunk_bytes</code> 是一个明确标记的
+  保留占位符 - 中央端点未实现和分块
+  仅在边缘到中心合约冻结后才开始传输。</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）； <strong>E1
-  可观察性</strong>（PR #18/#19）和 <strong>E2 保留和磁盘安全性</strong>（PR #20、
-  PR-020 审查已解决）被合并（第 8.7 节）。剩余边数
-  生产候选工作被跟踪为 E3-E6：</li>
-<li><strong>E3上传弹性</strong>：带宽限制、断路器、
-    受控手动重试、长时间断电排水测试、可恢复大介质
-    客户端（仅限中央协议合约）。</li>
+  可观察性</strong>（PR #18/#19），<strong>E2 保留和磁盘安全性</strong>（PR #20，
+  PR-020 审查已解决），以及 <strong>E3 上传弹性</strong>（第 8.8 节）
+  已实施。剩余的 Edge 生产候选工作被跟踪为
+  E4-E6：</li>
 <li><strong>E4 运行时</strong>：WebSocket 通道、与硬件无关的触发器/条形码/
     具有模拟硬件验证、多实例资源的身份接缝
     分享。</li>
@@ -4039,13 +4085,13 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   轮询预览）。</li>
 <li>AUDIT-001 <strong>已关闭</strong>，包括延迟的 4.4 权威持久性
   项目（现在由 PR #17 交付）。第 3 阶段每主机多边缘“共享”模型
-  权重共享仍然是开放式优化（ADR-013 每个实例管道
+  权重共享仍然是一个开放的优化（ADR-013 每个实例管道
   加载自己的模型）。</li>
 <li>基线仍然需要真实的客户数据：收集和注释
   与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
   <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
-  <code>scripts/adapt-xanylabeling.py</code>（书面形式；支持classes.txt/data.yaml，
+  <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
   图像优先和分割优先布局）到
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>
