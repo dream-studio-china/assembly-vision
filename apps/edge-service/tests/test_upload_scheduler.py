@@ -1142,6 +1142,60 @@ class TestCircuitBreaker:
         assert "UPLOAD_CIRCUIT_OPEN" in status["alerts"]
 
 
+class TestLongOutageDrain:
+    """E3d: a prolonged outage preserves the queue and drains duplicate-free."""
+
+    def test_prolonged_offline_inspection_restart_and_duplicate_free_drain(
+        self, tmp_path: Path
+    ) -> None:
+        db = tmp_path / "edge.sqlite3"
+        out = tmp_path / "out"
+        clock = _AdvancingClock(datetime.now(UTC))
+        repo = EdgeRepository.open(db)
+        try:
+            failing = _ScriptedSink(
+                [UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")]
+            )
+            scheduler = UploadScheduler(
+                repo,
+                failing,
+                output_root=out,
+                base_retry_seconds=2.0,
+                maximum_retry_seconds=900.0,
+                exponent_cap=8,
+                now=clock,
+            )
+            # Products keep being inspected while the network is down; the
+            # queue persists every task with retry/backoff.
+            _seed(repo, out, count=5)
+            for _ in range(3):
+                scheduler.run_once()
+            # The outage continues for days; new inspections still persist
+            # locally and enqueue their tasks.
+            clock.advance(3 * 86400)
+            _seed(repo, out, count=3)
+        finally:
+            repo.close()
+        # Process restart with the same database; connectivity is restored.
+        restarted = EdgeRepository.open(db)
+        try:
+            restored = DirectoryUploadSink(tmp_path / "sink")
+            scheduler2 = UploadScheduler(restarted, restored, output_root=out, now=clock)
+            _drain(scheduler2)
+            tasks = restarted.list_uploads(limit=1000).items
+            # 8 inspections x (INSPECTION + MEDIA): nothing lost, nothing duplicated.
+            assert len(tasks) == 16
+            assert all(t.status == "SUCCEEDED" for t in tasks)
+            keys = [t.idempotency_key for t in tasks]
+            assert len(keys) == len(set(keys))
+            # Metadata-before-media drain: every inspection is fully SYNCED.
+            summaries = restarted.list_inspections(limit=100).items
+            assert len(summaries) == 8
+            assert all(s.upload_state == "SYNCED" for s in summaries)
+        finally:
+            restarted.close()
+
+
 def _task() -> UploadTask:
     return UploadTask(
         upload_task_id=uuid4(),
