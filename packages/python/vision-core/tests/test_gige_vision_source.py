@@ -79,6 +79,7 @@ class FakeNodeMap:
             RejectingNode(pixel_format) if "PixelFormat" in rejects else FakeNode(pixel_format)
         )
         self.AcquisitionMode = FakeNode("Continuous")
+        self.TriggerSelector = FakeNode("AcquisitionStart")
         self.TriggerMode = FakeNode("Off")
         self.TriggerSource = FakeNode("Line0")
         self.TriggerActivation = FakeNode("RisingEdge")
@@ -86,6 +87,7 @@ class FakeNodeMap:
         self.ExposureTime = FakeNode(5000.0)
         self.Gain = FakeNode(1.0)
         self.GevSCPSPacketSize = FakeNode(1500)
+        self.DeviceFirmwareVersion = FakeNode("1.2.3")
         self.TriggerSoftware = FakeCommandNode()
         for name in missing or set():
             delattr(self, name)
@@ -111,6 +113,7 @@ class FakeAcquirer:
         frames: list[FakeBuffer] | None = None,
         *,
         timeout_fetches: int = 0,
+        start_error: Exception | None = None,
     ) -> None:
         self.remote_device = SimpleNamespace(node_map=node_map)
         self.frames = list(frames or [])
@@ -120,8 +123,11 @@ class FakeAcquirer:
         self.destroyed = False
         self.fetch_calls = 0
         self.timeouts_remaining = timeout_fetches
+        self.start_error = start_error
 
     def start(self) -> None:
+        if self.start_error is not None:
+            raise self.start_error
         self.started = True
 
     def stop(self) -> None:
@@ -141,8 +147,16 @@ class FakeAcquirer:
 
 
 class FakeDeviceInfo:
-    def __init__(self, serial_number: str) -> None:
+    def __init__(
+        self,
+        serial_number: str,
+        *,
+        model: str = "FakeCam-4MP",
+        parent: str = "eth0",
+    ) -> None:
         self.serial_number = serial_number
+        self.model = model
+        self.parent = parent
 
 
 class FakeHarvester:
@@ -270,6 +284,15 @@ def test_gige_open_reports_capabilities(install_fake_harvester: None) -> None:
     assert capabilities.source_width == 640
     assert capabilities.source_height == 480
     assert capabilities.pixel_format == "Mono8"
+    assert capabilities.camera_serial == _SERIAL
+    assert capabilities.camera_model == "FakeCam-4MP"
+    assert capabilities.firmware_version == "1.2.3"
+    assert capabilities.gentl_producer == _PRODUCER
+    assert capabilities.transport_parent == "eth0"
+    assert capabilities.trigger_mode == "continuous"
+    assert capabilities.exposure_us == 5000.0
+    assert capabilities.gain_db == 1.0
+    assert capabilities.packet_size == 1500
     # The session is closed after open: destroy + reset ran exactly once.
     assert acquirer.destroyed
     assert FakeHarvester.instances[0].resets == 1
@@ -367,6 +390,7 @@ def test_gige_software_trigger_configures_nodes(install_fake_harvester: None) ->
     node_map = FakeNodeMap()
     FakeHarvester.plan(device_infos=[FakeDeviceInfo(_SERIAL)], acquirers=[FakeAcquirer(node_map)])
     _source(trigger_mode="software").open()
+    assert node_map.TriggerSelector.value == "FrameStart"
     assert node_map.TriggerMode.value == "On"
     assert node_map.TriggerSource.value == "Software"
 
@@ -375,6 +399,7 @@ def test_gige_hardware_trigger_configures_nodes(install_fake_harvester: None) ->
     node_map = FakeNodeMap()
     FakeHarvester.plan(device_infos=[FakeDeviceInfo(_SERIAL)], acquirers=[FakeAcquirer(node_map)])
     _source(trigger_mode="hardware").open()
+    assert node_map.TriggerSelector.value == "FrameStart"
     assert node_map.TriggerMode.value == "On"
     assert node_map.TriggerSource.value == "Line0"
     assert node_map.TriggerActivation.value == "RisingEdge"
@@ -385,6 +410,13 @@ def test_gige_hardware_trigger_accepts_missing_activation(install_fake_harvester
     FakeHarvester.plan(device_infos=[FakeDeviceInfo(_SERIAL)], acquirers=[FakeAcquirer(node_map)])
     _source(trigger_mode="hardware").open()
     assert node_map.TriggerSource.value == "Line0"
+
+
+def test_gige_trigger_mode_requires_frame_start_selector(install_fake_harvester: None) -> None:
+    node_map = FakeNodeMap(missing={"TriggerSelector"})
+    FakeHarvester.plan(device_infos=[FakeDeviceInfo(_SERIAL)], acquirers=[FakeAcquirer(node_map)])
+    with pytest.raises(FrameStreamError, match="does not expose node 'TriggerSelector'"):
+        _source(trigger_mode="hardware").open()
 
 
 def test_gige_exposure_gain_packet_applied(install_fake_harvester: None) -> None:
@@ -398,6 +430,13 @@ def test_gige_exposure_gain_packet_applied(install_fake_harvester: None) -> None
     assert node_map.ExposureTime.value == 8000.0
     assert node_map.Gain.value == 2.5
     assert node_map.GevSCPSPacketSize.value == 9000
+
+
+def test_gige_zero_gain_applied(install_fake_harvester: None) -> None:
+    node_map = FakeNodeMap()
+    FakeHarvester.plan(device_infos=[FakeDeviceInfo(_SERIAL)], acquirers=[FakeAcquirer(node_map)])
+    _source(gain_db=0.0).open()
+    assert node_map.Gain.value == 0.0
 
 
 # -- frame streaming ---------------------------------------------------------
@@ -491,23 +530,54 @@ def test_gige_software_trigger_executes_before_fetch(install_fake_harvester: Non
     frames = _run(_source(trigger_mode="software"), 1)
     assert frames[0].sequence == 1
     assert trigger.executions == 1
-    assert isinstance(node_map.TriggerSoftware, FakeCommandNode)
+    assert node_map.TriggerSelector.value == "FrameStart"
 
 
-def test_gige_software_trigger_timeout_waits_without_reconnect(
-    install_fake_harvester: None,
-) -> None:
+def test_gige_software_trigger_timeout_is_stream_error(install_fake_harvester: None) -> None:
     node_map = FakeNodeMap()
     acquirer = FakeAcquirer(node_map, frames=[_mono8_frame()], timeout_fetches=1)
     FakeHarvester.plan(device_infos=[FakeDeviceInfo(_SERIAL)], acquirers=[acquirer])
-    # One timeout (no trigger yet), then the trigger produces a frame.
-    frames = _run(_source(trigger_mode="software"), 1)
-    assert frames[0].sequence == 1
-    assert acquirer.fetch_calls == 2
+    stop = Event()
+    with pytest.raises(FrameStreamError, match="software trigger timed out"):
+        next(_source(trigger_mode="software").frames(stop))
+    assert acquirer.fetch_calls == 1
     assert acquirer.stopped
-    assert FakeHarvester.instances[0].resets >= 1
-    # No reconnect happened: exactly one Harvester was created.
-    assert len(FakeHarvester.instances) == 1
+
+
+def test_gige_hardware_trigger_does_not_pace_frames(
+    install_fake_harvester: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from assemblyvision_vision.sources import gige_vision_source
+
+    calls: list[float | None] = []
+    monkeypatch.setattr(gige_vision_source, "pace", lambda stop, fps: calls.append(fps))
+    FakeHarvester.plan(
+        device_infos=[FakeDeviceInfo(_SERIAL)],
+        acquirers=[FakeAcquirer(FakeNodeMap(), frames=[_mono8_frame(), _mono8_frame()])],
+    )
+    _run(_source(trigger_mode="hardware", fps=25.0), 2)
+    assert calls == []
+
+
+def test_gige_start_failure_is_frame_stream_error(install_fake_harvester: None) -> None:
+    acquirer = FakeAcquirer(FakeNodeMap(), start_error=RuntimeError("camera busy"))
+    FakeHarvester.plan(device_infos=[FakeDeviceInfo(_SERIAL)], acquirers=[acquirer])
+    stop = Event()
+    with pytest.raises(FrameStreamError, match="cannot start GigE Vision acquisition"):
+        next(_source().frames(stop))
+
+
+def test_gige_payload_failure_is_frame_stream_error(install_fake_harvester: None) -> None:
+    buffer = FakeBuffer(np.zeros(4, np.uint8), "Mono8", 2, 2)
+    buffer.payload.components = []
+    FakeHarvester.plan(
+        device_infos=[FakeDeviceInfo(_SERIAL)],
+        acquirers=[FakeAcquirer(FakeNodeMap(), frames=[buffer])],
+    )
+    stop = Event()
+    with pytest.raises(FrameStreamError, match="cannot decode GigE Vision frame"):
+        next(_source().frames(stop))
+    assert buffer.queued
 
 
 def test_gige_continuous_timeout_reconnects(install_fake_harvester: None) -> None:

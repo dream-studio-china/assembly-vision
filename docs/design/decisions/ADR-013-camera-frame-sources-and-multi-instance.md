@@ -47,8 +47,8 @@ reach the dashboard before the WebSocket runtime milestone exists.
    selected camera's GenTL producer or UVC driver passes the same conformance
    suite. The initial target profile is approximately 4 megapixels at 25-30
    FPS. GigE Vision devices bind by serial number, support
-   continuous/software/hardware trigger modes, and record applied pixel format
-   and acquisition settings. Hardware trigger is preferred for production
+   continuous/software/hardware trigger modes, and expose applied pixel format
+   and acquisition settings through typed camera state. Hardware trigger is preferred for production
    boundaries. PTP is not required initially; monotonic time controls duration
    and UTC remains traceability metadata. Jumbo frames are optional and require
    validated camera/NIC/switch support.

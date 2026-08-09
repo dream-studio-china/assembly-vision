@@ -51,8 +51,9 @@ are never silently skipped.
 
 The production `gige-vision` source is a GenICam/GenTL consumer behind
 the same protocol. It binds a camera by stable serial number rather than an IP
-address and records the model, firmware, GenTL producer, network interface,
-pixel format, and applied acquisition settings. It supports continuous,
+address and exposes the serial, model, firmware, GenTL producer, transport
+parent, pixel format, and applied acquisition settings through typed camera
+state at startup and after configuration. It supports continuous,
 software-triggered, and hardware-triggered acquisition; hardware trigger is
 preferred for a production product boundary. Configured pixel format, exposure,
 gain, and packet size are applied to the GenICam node map and verified by
@@ -164,7 +165,7 @@ Source-specific requirements:
 | `http-image` | `url` | Polled at `fps`/interval with a bounded HTTP timeout |
 | `gige-vision` | `serial` | GenICam/GenTL via Harvester + vendor `.cti`; continuous, software, or hardware trigger; `gentl_producer` deployment-provided |
 
-`null` exposure and gain mean site calibration is required, not an automatic default. Applied camera settings and serial number are recorded at startup and on change.
+`null` exposure and gain mean site calibration is required, not an automatic default. The current typed camera state exposes applied settings and serial number at startup and on change; acceptance evidence records the approved site configuration separately.
 
 GigE packet size is negotiated only when both the camera and selected network
 interface support it. Jumbo frames are an optional optimization, not a

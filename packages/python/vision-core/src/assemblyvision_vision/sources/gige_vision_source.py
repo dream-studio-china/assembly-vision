@@ -47,6 +47,7 @@ TriggerMode = Literal["continuous", "software", "hardware"]
 #: stay unsupported rather than guessed.
 SUPPORTED_PIXEL_FORMATS: frozenset[str] = frozenset({"Mono8", "RGB8", "BGR8"})
 
+_TRIGGER_SELECTOR = "FrameStart"
 _HARDWARE_TRIGGER_SOURCE = "Line0"
 _HARDWARE_TRIGGER_ACTIVATION = "RisingEdge"
 
@@ -62,15 +63,19 @@ class GigeReconnectPolicy:
 class _AcquisitionSession:
     """Owns one Harvester + ImageAcquirer pair for a single acquisition run."""
 
-    def __init__(self, harvester: Any, acquirer: Any, node_map: Any) -> None:
+    def __init__(self, harvester: Any, acquirer: Any, node_map: Any, device_info: Any) -> None:
         self.harvester = harvester
         self.acquirer = acquirer
         self.node_map = node_map
+        self.device_info = device_info
         self._closed = False
         self._running = False
 
     def start(self) -> None:
-        self.acquirer.start()
+        try:
+            self.acquirer.start()
+        except Exception as exc:
+            raise FrameStreamError("cannot start GigE Vision acquisition") from exc
         self._running = True
 
     def close(self) -> None:
@@ -136,12 +141,23 @@ class GigEVisionFrameSource:
             width = self._read_int_node(session.node_map, "Width")
             height = self._read_int_node(session.node_map, "Height")
             pixel_format = self._reported_pixel_format(session.node_map)
-        return CameraCapabilities(
-            source_width=width,
-            source_height=height,
-            fps=self._fps,
-            pixel_format=pixel_format,
-        )
+            return CameraCapabilities(
+                source_width=width,
+                source_height=height,
+                fps=self._fps,
+                pixel_format=pixel_format,
+                camera_serial=self._serial,
+                camera_model=self._device_field(session.device_info, "model"),
+                firmware_version=self._optional_node_value(
+                    session.node_map, "DeviceFirmwareVersion"
+                ),
+                gentl_producer=self._gentl_producer,
+                transport_parent=self._device_field(session.device_info, "parent"),
+                trigger_mode=self._trigger_mode,
+                exposure_us=self._optional_float_node_value(session.node_map, "ExposureTime"),
+                gain_db=self._optional_float_node_value(session.node_map, "Gain"),
+                packet_size=self._optional_int_node_value(session.node_map, "GevSCPSPacketSize"),
+            )
 
     def configure(self, settings: CameraSettings) -> AppliedSettings:
         if settings.fps is not None:
@@ -160,9 +176,9 @@ class GigEVisionFrameSource:
     def frames(self, stop: Event) -> Iterator[CapturedFrame]:
         """Yield frames, reconnecting with bounded backoff on disconnect.
 
-        In trigger modes a fetch timeout simply means no trigger arrived yet, so
-        the loop keeps waiting; in continuous mode a timeout is a stream drop and
-        triggers a reconnect. Deterministic configuration errors propagate as
+        A hardware-trigger timeout means no external trigger arrived yet, so the
+        loop keeps waiting; a software-trigger timeout or continuous-mode timeout
+        is an acquisition failure. Deterministic configuration errors propagate as
         :class:`FrameStreamError` instead of being masked by backoff.
         """
         while not stop.is_set():
@@ -180,7 +196,8 @@ class GigEVisionFrameSource:
                             break
                         continue
                     yield frame
-                    pace(stop, self._fps)
+                    if self._trigger_mode == "continuous":
+                        pace(stop, self._fps)
             finally:
                 session.close()
             self._backoff(stop)
@@ -209,7 +226,7 @@ class GigEVisionFrameSource:
         try:
             harvester.add_file(self._gentl_producer)
             harvester.update()
-            index = self._find_device(harvester)
+            index, device_info = self._find_device(harvester)
             acquirer = harvester.create(index)
         except FrameStreamError:
             harvester.reset()
@@ -233,9 +250,14 @@ class GigEVisionFrameSource:
             raise FrameStreamError(
                 f"cannot configure GigE Vision camera {self._serial!r}: {exc}"
             ) from exc
-        return _AcquisitionSession(harvester=harvester, acquirer=acquirer, node_map=node_map)
+        return _AcquisitionSession(
+            harvester=harvester,
+            acquirer=acquirer,
+            node_map=node_map,
+            device_info=device_info,
+        )
 
-    def _find_device(self, harvester: Any) -> int:
+    def _find_device(self, harvester: Any) -> tuple[int, Any]:
         matches = [
             index
             for index, info in enumerate(harvester.device_info_list)
@@ -251,7 +273,8 @@ class GigEVisionFrameSource:
                 f"multiple GigE Vision cameras with serial number {self._serial!r}; "
                 "bind each instance to a distinct serial"
             )
-        return matches[0]
+        index = matches[0]
+        return index, harvester.device_info_list[index]
 
     @staticmethod
     def _device_field(info: Any, key: str) -> str | None:
@@ -277,6 +300,7 @@ class GigEVisionFrameSource:
         if self._trigger_mode == "continuous":
             self._set_node(node_map, "TriggerMode", "Off")
         else:
+            self._set_node(node_map, "TriggerSelector", _TRIGGER_SELECTOR)
             self._set_node(node_map, "TriggerMode", "On")
             source = "Software" if self._trigger_mode == "software" else _HARDWARE_TRIGGER_SOURCE
             self._set_node(node_map, "TriggerSource", source)
@@ -298,7 +322,11 @@ class GigEVisionFrameSource:
             self._software_trigger(session.node_map)
         try:
             buffer = session.acquirer.fetch(timeout=self.fetch_timeout_s)
-        except TimeoutError:
+        except TimeoutError as exc:
+            if self._trigger_mode == "software":
+                raise FrameStreamError(
+                    f"software trigger timed out for camera {self._serial!r}"
+                ) from exc
             return None
         except FrameStreamError:
             raise
@@ -307,16 +335,23 @@ class GigEVisionFrameSource:
                 f"cannot fetch frame from camera {self._serial!r}: {exc}"
             ) from exc
         try:
-            payload = buffer.payload.components[0]
-            # Copy before the SDK buffer is requeued: downstream code must never
-            # hold a view into the acquisition ring.
-            data = self._copy_buffer(payload.data)
-            width = int(payload.width)
-            height = int(payload.height)
-            data_format = str(payload.data_format)
-        finally:
-            buffer.queue()
-        return self._frame(data, data_format, width, height)
+            try:
+                payload = buffer.payload.components[0]
+                # Copy before the SDK buffer is requeued: downstream code must
+                # never hold a view into the acquisition ring.
+                data = self._copy_buffer(payload.data)
+                width = int(payload.width)
+                height = int(payload.height)
+                data_format = str(payload.data_format)
+            finally:
+                buffer.queue()
+            return self._frame(data, data_format, width, height)
+        except FrameStreamError:
+            raise
+        except Exception as exc:
+            raise FrameStreamError(
+                f"cannot decode GigE Vision frame from camera {self._serial!r}: {exc}"
+            ) from exc
 
     @staticmethod
     def _copy_buffer(data: Any) -> Any:
@@ -424,6 +459,28 @@ class GigEVisionFrameSource:
             return str(node_map.PixelFormat.value)
         except Exception:
             return "unknown"
+
+    @staticmethod
+    def _optional_node_value(node_map: Any, name: str) -> str | None:
+        try:
+            value = getattr(node_map, name).value
+        except Exception:
+            return None
+        return str(value) if value is not None else None
+
+    @staticmethod
+    def _optional_float_node_value(node_map: Any, name: str) -> float | None:
+        try:
+            return float(getattr(node_map, name).value)
+        except Exception:
+            return None
+
+    @staticmethod
+    def _optional_int_node_value(node_map: Any, name: str) -> int | None:
+        try:
+            return int(getattr(node_map, name).value)
+        except Exception:
+            return None
 
     # -- reconnect helpers ---------------------------------------------------
 

@@ -651,8 +651,8 @@ def _parse_camera_source(raw: dict[str, Any], base: Path, name: str) -> CameraSo
     gain_db = raw.get("gain_db")
     if gain_db is not None:
         gain_db = _as_number(gain_db, f"{name}.gain_db")
-        if gain_db <= 0:
-            raise ConfigError(f"{name}.gain_db must be positive")
+        if gain_db < 0:
+            raise ConfigError(f"{name}.gain_db must be non-negative")
     packet_size = raw.get("packet_size")
     if packet_size is not None:
         packet_size = _as_positive_int(packet_size, f"{name}.packet_size", 1500)

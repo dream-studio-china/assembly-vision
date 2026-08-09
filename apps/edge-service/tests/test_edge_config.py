@@ -190,7 +190,7 @@ def test_load_edge_config_rejects_invalid_gige_camera(tmp_path: Path) -> None:
                 "gentl_producer": "producer.cti",
                 "gain_db": -1,
             },
-            "gain_db must be positive",
+            "gain_db must be non-negative",
         ),
         (
             {
@@ -235,6 +235,25 @@ def test_load_edge_config_resolves_missing_gentl_producer(tmp_path: Path) -> Non
     )
     config = load_edge_config(path)
     assert config.instances[0].camera.gentl_producer == tmp_path / "producer.cti"
+
+
+def test_load_edge_config_accepts_zero_gige_gain(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-gige",
+                camera={
+                    "source": "gige-vision",
+                    "serial": "SN-1",
+                    "gentl_producer": "producer.cti",
+                    "gain_db": 0,
+                },
+            )
+        ],
+    )
+    config = load_edge_config(path)
+    assert config.instances[0].camera.gain_db == 0.0
 
 
 def test_load_edge_config_rejects_invalid_fps(tmp_path: Path) -> None:
