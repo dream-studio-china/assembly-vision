@@ -13,6 +13,7 @@ import threading
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 from assemblyvision_domain.models import BusinessResult
@@ -248,3 +249,68 @@ class TestEventSources:
             assert calls  # one metadata task handled -> notification fired
         finally:
             repo.close()
+
+    def test_per_frame_inspection_publishes_started_then_completed(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """PR-023 F03: default per-frame mode emits one matching lifecycle pair."""
+        import time as time_module
+
+        from assemblyvision_edge.api import state as state_module
+
+        from tests.test_instances import _make_images, _write_edge_config
+
+        published: list[tuple[str, dict[str, object]]] = []
+
+        class RecordingBus:
+            def publish(
+                self, event_type: str, data: dict[str, object], *, correlation_id: str | None = None
+            ) -> object:
+                published.append((event_type, data))
+                return None
+
+        class FakePipeline:
+            def inspect_frame(
+                self,
+                frame: object,
+                writer: object,
+                *,
+                suppress_optional_capture: bool = False,
+                inspection_id: UUID | None = None,
+            ) -> object:
+                record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-frame")
+                return record.model_copy(update={"inspection_id": inspection_id})
+
+        monkeypatch.setattr(
+            state_module,
+            "_build_instance_pipeline",
+            lambda instance, rule_registry=None, model_registry=None: FakePipeline(),
+        )
+        (tmp_path / "out").mkdir(parents=True, exist_ok=True)
+        settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
+        runtime = EdgeRuntime(settings)
+        runtime.event_bus = RecordingBus()  # type: ignore[assignment]
+        repository = EdgeRepository.open(settings.db_path)
+        config_path = _write_edge_config(tmp_path, _make_images(tmp_path))
+        runtime.load_instances(config_path, repository)
+        try:
+            deadline = time_module.monotonic() + 10.0
+            while time_module.monotonic() < deadline:
+                if any(t == "inspection.started" for t, _ in published) and any(
+                    t == "inspection.completed" for t, _ in published
+                ):
+                    break
+                time_module.sleep(0.05)
+            started = [e for t, e in published if t == "inspection.started"]
+            completed = [e for t, e in published if t == "inspection.completed"]
+            assert started and completed
+            # Every started/completed pair shares its inspection_id and the
+            # instance identity, and a completed never precedes its start.
+            started_ids = [e["inspection_id"] for e in started]
+            for event in started + completed:
+                assert event["instance_id"] == "line-1"
+            for event in completed:
+                assert event["inspection_id"] in started_ids
+        finally:
+            runtime.shutdown()
+            repository.close()

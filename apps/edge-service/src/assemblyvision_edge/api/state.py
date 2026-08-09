@@ -344,7 +344,7 @@ class EdgeRuntime:
                             record = runtime.pipeline.inspect_window(
                                 expired, writer, suppress_optional_capture=optional
                             )
-                            if self._persist_projection(record):
+                            if self._persist_projection(record, instance_id):
                                 runtime.last_result = record.decision.business_result
                     except Exception as exc:  # noqa: BLE001 - idle expiry must not kill the loop
                         self._note_storage_write_fault(exc)
@@ -382,13 +382,27 @@ class EdgeRuntime:
                         record = runtime.pipeline.inspect_window(
                             closed, writer, suppress_optional_capture=optional
                         )
-                        if self._persist_projection(record):
+                        if self._persist_projection(record, instance_id):
                             runtime.last_result = record.decision.business_result
                 else:
-                    record = runtime.pipeline.inspect_frame(
-                        frame, writer, suppress_optional_capture=optional
+                    # Default per-frame mode (ADR-013): publish one start event
+                    # before inference so the lifecycle matches the temporal
+                    # branch. A failed inference/persistence never publishes a
+                    # matching completed event (PR-023 F03); REST stays
+                    # authoritative.
+                    inspection_id = uuid4()
+                    self._publish(
+                        "inspection.started",
+                        {"inspection_id": str(inspection_id), "instance_id": instance_id},
+                        correlation_id=str(inspection_id),
                     )
-                    if self._persist_projection(record):
+                    record = runtime.pipeline.inspect_frame(
+                        frame,
+                        writer,
+                        suppress_optional_capture=optional,
+                        inspection_id=inspection_id,
+                    )
+                    if self._persist_projection(record, instance_id):
                         runtime.last_result = record.decision.business_result
             except Exception as exc:  # noqa: BLE001 - loop must survive frame errors
                 self._note_storage_write_fault(exc)
@@ -403,7 +417,7 @@ class EdgeRuntime:
                     # An interrupted close is still a published bundle; mirror
                     # it so shutdown never loses the record or its outbox tasks
                     # (PR-017 F2 residual note).
-                    if self._persist_projection(record):
+                    if self._persist_projection(record, instance_id):
                         runtime.last_result = record.decision.business_result
             except Exception:  # noqa: BLE001 - interrupted close must not mask shutdown
                 log.exception("interrupted window close failed for instance %s", instance_id)
@@ -435,7 +449,7 @@ class EdgeRuntime:
         """
         self.storage_write_fault = True
 
-    def _persist_projection(self, record: Any) -> bool:
+    def _persist_projection(self, record: Any, instance_id: str | None = None) -> bool:
         """Mirror a published bundle into the SQLite projection and outbox.
 
         Returns True only after the projection and its upload tasks committed.
@@ -463,6 +477,7 @@ class EdgeRuntime:
             "inspection.completed",
             {
                 "inspection_id": str(record.inspection_id),
+                "instance_id": instance_id,
                 "business_result": record.decision.business_result,
                 "internal_decision": record.decision.internal_decision,
             },

@@ -149,7 +149,12 @@ def test_load_instances_runs_inspection_loop(
             self.count = 0
 
         def inspect_frame(
-            self, frame: object, writer: object, *, suppress_optional_capture: bool = False
+            self,
+            frame: object,
+            writer: object,
+            *,
+            suppress_optional_capture: bool = False,
+            inspection_id: UUID | None = None,
         ) -> object:
             self.count += 1
 
@@ -252,7 +257,12 @@ def test_inspection_loop_no_silent_frame_loss(
 
     class SlowPipeline:
         def inspect_frame(
-            self, frame: CapturedFrame, writer: object, *, suppress_optional_capture: bool = False
+            self,
+            frame: CapturedFrame,
+            writer: object,
+            *,
+            suppress_optional_capture: bool = False,
+            inspection_id: UUID | None = None,
         ) -> object:
             inspected.append(frame.sequence)
             time.sleep(0.05)
@@ -306,7 +316,12 @@ def test_pause_stops_inspection_and_status_reports_paused(
         )
 
         def inspect_frame(
-            self, frame: CapturedFrame, writer: object, *, suppress_optional_capture: bool = False
+            self,
+            frame: CapturedFrame,
+            writer: object,
+            *,
+            suppress_optional_capture: bool = False,
+            inspection_id: UUID | None = None,
         ) -> object:
             inspected.append(frame.sequence)
             return _fake_record()
