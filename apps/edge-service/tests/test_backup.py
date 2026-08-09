@@ -82,6 +82,10 @@ def test_backup_restore_round_trip_preserves_pending_evidence(tmp_path: Path) ->
             if task.kind == "MEDIA" and task.status != "SUCCEEDED"
         ]
         assert pending
+        for path in _pending_media_paths(repository, fresh):
+            assert path.is_file()
+            assert (path.parent / "inspection.json").is_file()
+        assert not (fresh / "quarantine").exists()
     finally:
         repository.close()
 
@@ -140,6 +144,81 @@ def test_restore_never_overwrites_conflicting_media(tmp_path: Path) -> None:
     conflict.write_bytes(b"conflicting-bytes")
     with pytest.raises(ConfigError, match="overwrite conflicting"):
         restore_edge(backup=bundle, output_root=fresh, db_path=restored_db)
+
+
+def test_restore_conflict_leaves_active_database_unchanged(tmp_path: Path) -> None:
+    """A media conflict must fail before the active database is replaced."""
+    output = tmp_path / "out"
+    output.mkdir()
+    db_path = output / "edge.sqlite3"
+    _seed_store(db_path, output)
+    bundle = tmp_path / "backup.tar.gz"
+    backup_edge(output_root=output, db_path=db_path, dest=bundle)
+
+    existing = tmp_path / "existing"
+    existing.mkdir()
+    existing_db = existing / "edge.sqlite3"
+    _seed_store(existing_db, existing)
+    before = existing_db.read_bytes()
+
+    repository = EdgeRepository.open(str(db_path))
+    try:
+        pending = _pending_media_paths(repository, output)
+        assert pending
+        relative = pending[0].relative_to(output)
+    finally:
+        repository.close()
+
+    conflict = existing / relative
+    conflict.parent.mkdir(parents=True, exist_ok=True)
+    conflict.write_bytes(b"conflicting-bytes")
+    with pytest.raises(ConfigError, match="overwrite conflicting"):
+        restore_edge(backup=bundle, output_root=existing, db_path=existing_db)
+    assert existing_db.read_bytes() == before
+    assert not (existing / "edge.sqlite3.pre-restore").exists()
+    assert conflict.read_bytes() == b"conflicting-bytes"
+
+
+def test_restore_governed_files_into_destination(tmp_path: Path) -> None:
+    """Governed config/rule/manifests are restored only into an explicit dest."""
+    from tests.conftest import (
+        COMPONENT_MANIFEST,
+        EXAMPLE_PIPELINE,
+        EXAMPLE_RULE,
+        PRODUCT_MANIFEST,
+    )
+
+    output = tmp_path / "out"
+    output.mkdir()
+    db_path = output / "edge.sqlite3"
+    _seed_store(db_path, output)
+    bundle = tmp_path / "backup.tar.gz"
+    report = backup_edge(
+        output_root=output,
+        db_path=db_path,
+        dest=bundle,
+        config_path=EXAMPLE_PIPELINE,
+        rule_path=EXAMPLE_RULE,
+    )
+    assert report.governed_files == 4
+
+    governed_dest = tmp_path / "governed"
+    restored = restore_edge(
+        backup=bundle,
+        output_root=tmp_path / "restored",
+        db_path=tmp_path / "restored" / "edge.sqlite3",
+        governed_dest=governed_dest,
+    )
+    assert restored.restored_governed == 4
+    expected_names = {
+        EXAMPLE_PIPELINE.name,
+        EXAMPLE_RULE.name,
+        PRODUCT_MANIFEST.name,
+        COMPONENT_MANIFEST.name,
+    }
+    assert {path.name for path in governed_dest.iterdir()} == expected_names
+    for source in (EXAMPLE_PIPELINE, EXAMPLE_RULE, PRODUCT_MANIFEST, COMPONENT_MANIFEST):
+        assert (governed_dest / source.name).read_bytes() == source.read_bytes()
 
 
 def test_backup_snapshot_is_consistent_while_writing(tmp_path: Path) -> None:

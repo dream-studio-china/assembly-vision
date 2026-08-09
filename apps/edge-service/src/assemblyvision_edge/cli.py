@@ -162,6 +162,13 @@ def build_parser() -> argparse.ArgumentParser:
     restore.add_argument("--backup", required=True, type=Path, help="Backup .tar.gz bundle")
     restore.add_argument("--output", required=True, type=Path, help="Inspection output root")
     restore.add_argument("--db", type=Path, default=None, help="SQLite database path")
+    restore.add_argument(
+        "--governed-dest",
+        type=Path,
+        default=None,
+        help="Restore governed config/rule/manifest files into this directory "
+        "(the approved release location; never an arbitrary path)",
+    )
     return parser
 
 
@@ -627,12 +634,14 @@ def _run_restore(args: argparse.Namespace) -> int:
             backup=args.backup,
             output_root=args.output,
             db_path=args.db or (args.output / "edge.sqlite3"),
+            governed_dest=args.governed_dest,
         )
         log.info(
-            "restore from %s: db=%s, media=%d, reconciled=%d",
+            "restore from %s: db=%s, media=%d, governed=%d, reconciled=%d",
             report.backup_path,
             report.restored_db,
             report.restored_media,
+            report.restored_governed,
             report.reconciled,
         )
         return 0

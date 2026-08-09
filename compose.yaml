@@ -12,8 +12,23 @@
 # first creation. Bind mounts must be pre-owned by 10001:10001, e.g.
 # `chown -R 10001:10001 <host-path>`, or the service fails closed on startup.
 #
-# Secrets (E5b): prefer `AV_EDGE_API_TOKEN` from the environment or a Docker
-# secret mounted at /run/secrets/edge_api_token. Never commit secret values.
+# Secrets (E5b): `AV_EDGE_API_TOKEN` from the environment is the default.
+# To use a Docker secret instead, uncomment the `secrets:` entries below and
+# the service mount, create ./secrets/edge_api_token, and remove the token
+# from the environment. Never commit secret values.
+#
+# Optional local TLS (E5b, runbook 13): uncomment the `secrets:` entries and
+# the matching environment lines, place the certificate and private key in
+# ./secrets/, and the service validates the pair at startup:
+#   environment:
+#     AV_EDGE_TLS_CERT: /run/secrets/edge_tls_cert
+#     AV_EDGE_TLS_KEY: /run/secrets/edge_tls_key
+#   secrets:
+#     - edge_api_token
+#     - edge_tls_cert
+#     - edge_tls_key
+# Do not enable TLS until the certificate and key files exist, or the service
+# fails closed on startup.
 
 services:
   edge-service:
@@ -30,6 +45,13 @@ services:
       - "127.0.0.1:8000:8000"
     environment:
       AV_EDGE_API_TOKEN: ${AV_EDGE_API_TOKEN:-}
+    # Optional Docker secrets (E5b): uncomment when the secret files exist.
+    #   AV_EDGE_TLS_CERT: /run/secrets/edge_tls_cert
+    #   AV_EDGE_TLS_KEY: /run/secrets/edge_tls_key
+    # secrets:
+    #   - edge_api_token
+    #   - edge_tls_cert
+    #   - edge_tls_key
     volumes:
       - edge-db:/var/lib/assemblyvision/db
       - edge-media:/var/lib/assemblyvision/media
@@ -72,3 +94,12 @@ volumes:
   edge-models: {}
   edge-web: {}
   edge-tmp: {}
+
+# Optional Docker secrets (E5b): uncomment and create the referenced files.
+# secrets:
+#   edge_api_token:
+#     file: ./secrets/edge_api_token
+#   edge_tls_cert:
+#     file: ./secrets/edge_tls_cert
+#   edge_tls_key:
+#     file: ./secrets/edge_tls_key

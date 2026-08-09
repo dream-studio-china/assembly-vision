@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -135,3 +136,87 @@ class TestServeTlsPairing:
         )
         assert args.tls_cert == Path("/run/secrets/cert.pem")
         assert args.tls_key == Path("/run/secrets/key.pem")
+
+
+class TestTlsServeIntegration:
+    @pytest.mark.skipif(not shutil.which("openssl"), reason="openssl is required")
+    def test_tls_serve_accepts_https_requests(self, tmp_path: Path) -> None:
+        """A TLS-enabled serve must accept real HTTPS requests (E5b)."""
+        import socket
+        import ssl
+        import threading
+        import time
+        import urllib.request
+
+        import uvicorn
+        from assemblyvision_edge.api.app import create_app
+        from assemblyvision_edge.api.settings import ServerSettings
+
+        cert = tmp_path / "cert.pem"
+        key = tmp_path / "key.pem"
+        subprocess.run(
+            [
+                "openssl",
+                "req",
+                "-new",
+                "-newkey",
+                "rsa:2048",
+                "-nodes",
+                "-x509",
+                "-days",
+                "1",
+                "-subj",
+                "/CN=edge-test",
+                "-keyout",
+                str(key),
+                "-out",
+                str(cert),
+            ],
+            check=True,
+            capture_output=True,
+        )
+        key.chmod(0o600)
+
+        output = tmp_path / "out"
+        output.mkdir()
+        settings = ServerSettings(
+            output_root=output,
+            db_path=output / "edge.sqlite3",
+            api_token="dev-token",  # noqa: S106 - test fixture credential
+        )
+        app = create_app(settings)
+        with socket.socket() as probe:
+            probe.bind(("127.0.0.1", 0))
+            port = int(probe.getsockname()[1])
+
+        config = uvicorn.Config(
+            app,
+            host="127.0.0.1",
+            port=port,
+            log_level="error",
+            ssl_certfile=str(cert),
+            ssl_keyfile=str(key),
+        )
+        server = uvicorn.Server(config)
+        thread = threading.Thread(target=server.run, daemon=True)
+        thread.start()
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        try:
+            deadline = time.monotonic() + 20
+            while time.monotonic() < deadline and not server.started:
+                time.sleep(0.05)
+            assert server.started, "TLS-enabled serve did not start"
+            with urllib.request.urlopen(
+                f"https://127.0.0.1:{port}/api/v1/health/live",
+                timeout=5,
+                context=context,
+            ) as response:
+                assert response.status == 200
+            # The TLS port must not answer plaintext HTTP.
+            with pytest.raises((OSError, ValueError)):
+                urllib.request.urlopen(f"http://127.0.0.1:{port}/api/v1/health/live", timeout=2)
+        finally:
+            server.should_exit = True
+            thread.join(timeout=10)

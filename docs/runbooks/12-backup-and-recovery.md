@@ -47,16 +47,22 @@ pre-change snapshot before an upgrade or configuration change.
    assemblyvision restore \
      --backup /backup/edge-2026-08-10.tar.gz \
      --output /var/lib/assemblyvision/media \
-     --db /var/lib/assemblyvision/db/edge.sqlite3
+     --db /var/lib/assemblyvision/db/edge.sqlite3 \
+     --governed-dest /etc/assemblyvision
    ```
 
-   Restore verifies every bundle checksum before applying anything, keeps a
-   `.pre-restore` copy of the current database, restores pending media without
-   overwriting conflicting files, and reconciles the store against the output
-   root so pending upload tasks survive.
-3. Start the service and confirm `/api/v1/health/ready` reports ready, history
+   Restore verifies every bundle checksum before applying anything, preflights
+   every media target so a conflicting file fails with the current database
+   unchanged, keeps a `.pre-restore` copy of the current database, restores
+   pending media without overwriting conflicting files, restores the governed
+   configuration/rule/manifest files into `--governed-dest` (never an
+   arbitrary path), and reconciles the store against the output root so
+   pending upload tasks survive.
+3. Validate the restored governed files (config parses, rule/model versions
+   match) before starting the service; see runbook 14 for activation checks.
+4. Start the service and confirm `/api/v1/health/ready` reports ready, history
    is visible, and the upload queue resumes.
-4. Run a smoke inspection against a known sample and verify NG behavior before
+5. Run a smoke inspection against a known sample and verify NG behavior before
    returning to production.
 
 ## Exit Criteria
