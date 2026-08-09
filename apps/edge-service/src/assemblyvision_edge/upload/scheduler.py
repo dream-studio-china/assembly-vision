@@ -44,7 +44,9 @@ class _TokenBucket:
 
     A ``None`` rate disables throttling entirely. ``acquire`` blocks until
     ``amount`` bytes may be sent at the configured rate; tokens refill
-    continuously and burst is capped at one second of tokens.
+    continuously and burst is capped at one second of tokens. Amounts larger
+    than one burst are split into per-burst waits so a large media object can
+    never deadlock against the burst cap (PR-022 F01).
     """
 
     def __init__(self, rate_bytes_per_second: float | None) -> None:
@@ -52,23 +54,39 @@ class _TokenBucket:
         self._tokens = 0.0
         self._last = time.monotonic()
 
-    def acquire(self, amount: int) -> None:
-        """Block until ``amount`` bytes may be sent at the configured rate."""
-        if self._rate is None or amount <= 0:
+    def acquire(self, amount: int, *, on_wait: Callable[[], None] | None = None) -> None:
+        """Block until ``amount`` bytes may be sent at the configured rate.
+
+        ``on_wait`` runs on every refill wake-up; raising from it aborts the
+        wait (e.g. worker stop or a lost upload lease, PR-022 F01).
+        """
+        rate = self._rate
+        if rate is None or amount <= 0:
             return
+        remaining = float(amount)
+        while remaining > 0:
+            chunk = min(remaining, rate * _BUCKET_BURST_SECONDS)
+            self._wait_for(chunk, rate, on_wait)
+            remaining -= chunk
+
+    def _wait_for(self, amount: float, rate: float, on_wait: Callable[[], None] | None) -> None:
+        """Sleep until ``amount`` tokens are available, honoring ``on_wait``."""
         while True:
             now = time.monotonic()
             self._tokens = min(
-                self._tokens + (now - self._last) * self._rate,
-                self._rate * _BUCKET_BURST_SECONDS,
+                self._tokens + (now - self._last) * rate,
+                rate * _BUCKET_BURST_SECONDS,
             )
             self._last = now
             if self._tokens >= amount:
                 self._tokens -= amount
                 return
             deficit = amount - self._tokens
-            # Wake frequently to refill and stay responsive to stop signals.
-            time.sleep(min(deficit / self._rate, 0.25))
+            # Wake frequently to refill, renew the lease, and stay responsive
+            # to stop signals.
+            time.sleep(min(deficit / rate, 0.25))
+            if on_wait is not None:
+                on_wait()
 
 
 @dataclass(frozen=True)
@@ -259,6 +277,15 @@ class _PermanentPayloadError(Exception):
     def __init__(self, code: str) -> None:
         super().__init__(code)
         self.code = code
+
+
+class _ThrottleAborted(Exception):
+    """Throttle wait interrupted by worker stop or a lost upload lease.
+
+    The task stays leased (or is reclaimed by the lease-recovery path) and no
+    terminal transition is written, so recovery never loses the task
+    (PR-022 F01).
+    """
 
 
 def _full_jitter_backoff(
@@ -484,6 +511,25 @@ class UploadScheduler:
                 self._circuit_last_change_at = now_iso
                 self._circuit_opened_at = now_iso
 
+    def _lease_guard(self, task_id: str, lease_owner: str) -> Callable[[], None]:
+        """Return a throttle-wait callback that aborts on stop or lease loss.
+
+        While a throttled transfer waits, the active upload lease is renewed
+        so the claim cannot expire mid-transfer; if the worker stopped or the
+        lease was lost (reclaimed by another worker), the wait aborts without
+        a terminal transition (PR-022 F01).
+        """
+
+        def guard() -> None:
+            if self._stop.is_set():
+                raise _ThrottleAborted()
+            if not self._repository.renew_upload_lease(
+                task_id, lease_owner, self._lease_seconds, self._now().isoformat()
+            ):
+                raise _ThrottleAborted()
+
+        return guard
+
     def _process(self, claimed: ClaimedUploadTask) -> None:
         task = claimed.task
         lease_owner = claimed.lease_owner
@@ -498,8 +544,15 @@ class UploadScheduler:
             )
             return
         # Throttle to the configured ceiling before any network attempt
-        # (E3a); local persistence is never gated by the limiter.
-        self._bucket.acquire(len(payload))
+        # (E3a); local persistence is never gated by the limiter. The wait
+        # renews the active lease so a slow transfer cannot lose its claim,
+        # and aborts if the worker stopped or the lease was lost (PR-022 F01).
+        try:
+            self._bucket.acquire(
+                len(payload), on_wait=self._lease_guard(str(task.upload_task_id), lease_owner)
+            )
+        except _ThrottleAborted:
+            return
         result = self._sink.upload(task, payload)
         self._record_bytes(len(payload))
         # Anchor the transition to the response/failure time, not the batch

@@ -955,6 +955,132 @@ class TestBandwidthThrottling:
         elapsed = time.monotonic() - started
         assert elapsed >= 0.4
 
+    def test_token_bucket_splits_large_amounts_across_bursts(self) -> None:
+        """PR-022 F01: an amount above one burst capacity must not deadlock."""
+        from assemblyvision_edge.upload.scheduler import _TokenBucket
+
+        # Burst capacity is one second of tokens (200_000 B); a 500_000 B
+        # acquire must be split into per-burst waits and complete.
+        bucket = _TokenBucket(200_000.0)
+        started = time.monotonic()
+        bucket.acquire(500_000)
+        elapsed = time.monotonic() - started
+        assert elapsed >= 1.9
+
+    def test_token_bucket_on_wait_runs_and_can_abort(self) -> None:
+        """PR-022 F01: an on_wait callback runs during refill and can abort."""
+        from assemblyvision_edge.upload.scheduler import _TokenBucket
+
+        bucket = _TokenBucket(100.0)
+        calls = {"n": 0}
+
+        def on_wait() -> None:
+            calls["n"] += 1
+            raise RuntimeError("abort")
+
+        with pytest.raises(RuntimeError, match="abort"):
+            bucket.acquire(1_000, on_wait=on_wait)
+        assert calls["n"] >= 1
+
+    def test_large_media_throttle_completes_and_renews_lease(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """PR-022 F01: a payload above one burst capacity drains and renews its lease."""
+        out = tmp_path / "out"
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-big")
+        data = b"x" * (1024 * 1024)
+        item = record.media[0]
+        item.size_bytes = len(data)
+        item.checksum_sha256 = hashlib.sha256(data).hexdigest()
+        path = out / item.relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        repo.persist_inspection_and_enqueue_uploads(record)
+
+        class _RenewSpy:
+            """Counts lease renewals while delegating to the real repository."""
+
+            def __init__(self, underlying: EdgeRepository) -> None:
+                self.repo = underlying
+                self.renews = 0
+
+            def renew_upload_lease(
+                self, upload_task_id: str, lease_owner: str, lease_seconds: int, now_iso: str
+            ) -> bool:
+                self.renews += 1
+                return self.repo.renew_upload_lease(
+                    upload_task_id, lease_owner, lease_seconds, now_iso
+                )
+
+            def __getattr__(self, name: str) -> object:
+                return getattr(self.repo, name)
+
+        spy = _RenewSpy(repo)
+        sink = _ScriptedSink()
+        # 4 Mbps -> 500_000 B/s, burst 500_000 B < 1 MiB payload, so the media
+        # upload must wait across multiple refills (real-time waits ~3 s).
+        scheduler = UploadScheduler(
+            spy,  # type: ignore[arg-type]
+            sink,
+            output_root=out,
+            maximum_bandwidth_mbps=4.0,
+            interval_seconds=0.0,
+            base_retry_seconds=0.0,
+        )
+        _drain(scheduler)
+        tasks = repo.list_uploads(limit=10).items
+        assert all(t.status == "SUCCEEDED" for t in tasks)
+        assert spy.renews > 0
+
+    def test_throttle_aborts_on_stop_without_terminal_transition(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """PR-022 F01: a stopped worker aborts the throttle wait, never the sink."""
+        out = tmp_path / "out"
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-stop")
+        data = b"y" * (1024 * 1024)
+        item = record.media[0]
+        item.size_bytes = len(data)
+        item.checksum_sha256 = hashlib.sha256(data).hexdigest()
+        path = out / item.relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        repo.persist_inspection_and_enqueue_uploads(record)
+
+        sink = _ScriptedSink()
+        scheduler = UploadScheduler(
+            repo,
+            sink,
+            output_root=out,
+            maximum_bandwidth_mbps=0.1,
+            interval_seconds=0.0,
+        )
+        scheduler._stop.set()  # noqa: SLF001 - simulate a worker stop
+        assert scheduler.run_once() == 1  # a task is claimed
+        # The wait aborted: nothing reached the sink and no terminal transition
+        # was written for the claimed task; the lease-recovery path reclaims it
+        # later. Media stays pending behind its unverified inspection receipt.
+        assert sink.keys == []
+        tasks = repo.list_uploads(limit=10).items
+        assert all(t.status == "IN_PROGRESS" for t in tasks if t.kind == "INSPECTION")
+        assert all(t.status == "PENDING" for t in tasks if t.kind == "MEDIA")
+
+    def test_renew_upload_lease_is_compare_and_set(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """PR-022 F01: only the current lease owner can renew the lease."""
+        _seed(repo, tmp_path / "out")
+        now = datetime.now(UTC)
+        claimed = repo.claim_upload_tasks(10, lease_seconds=120, now_iso=now.isoformat())
+        assert len(claimed) == 1
+        task_id = str(claimed[0].task.upload_task_id)
+        owner = claimed[0].lease_owner
+        assert repo.renew_upload_lease(task_id, owner, 120, now.isoformat()) is True
+        # A foreign owner cannot renew; the lease belongs to the worker.
+        assert repo.renew_upload_lease(task_id, "other-owner", 120, now.isoformat()) is False
+        # An unknown task cannot renew.
+        assert repo.renew_upload_lease(str(uuid4()), owner, 120, now.isoformat()) is False
+
     def test_scheduler_exposes_bytes_sent_and_bandwidth_ceiling(
         self, repo: EdgeRepository, tmp_path: Path
     ) -> None:

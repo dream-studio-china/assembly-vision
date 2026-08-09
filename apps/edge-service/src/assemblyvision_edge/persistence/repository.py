@@ -990,6 +990,38 @@ class EdgeRepository:
             }
         )
 
+    def renew_upload_lease(
+        self, upload_task_id: str, lease_owner: str, lease_seconds: int, now_iso: str
+    ) -> bool:
+        """CAS-renew an active upload lease; False when the lease was lost.
+
+        Used by the scheduler while a throttled upload waits (PR-022 F01): a
+        renewed lease keeps the worker's claim valid, and a False result means
+        the task was reclaimed by another worker or its lease expired, so the
+        caller must abort without writing a terminal transition.
+        """
+        lease_expires = (
+            datetime.fromisoformat(now_iso) + timedelta(seconds=lease_seconds)
+        ).isoformat()
+        with self._engine.begin() as conn:
+            result = conn.execute(
+                text(
+                    f"""
+                    UPDATE {upload_tasks.name}
+                    SET lease_expires_at = :lease, updated_at = :now
+                    WHERE upload_task_id = :id AND status = 'IN_PROGRESS'
+                      AND lease_owner = :owner
+                    """
+                ),
+                {
+                    "lease": lease_expires,
+                    "now": now_iso,
+                    "owner": lease_owner,
+                    "id": upload_task_id,
+                },
+            )
+            return result.rowcount == 1
+
     def retry_upload(self, upload_task_id: str, reason: str) -> UploadTask | None:
         with self._engine.begin() as conn:
             row = (
