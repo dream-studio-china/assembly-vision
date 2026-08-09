@@ -242,6 +242,30 @@ class TestIdentityContinuity:
         assert rc.MULTIPLE_PRODUCTS in closed.integrity_reason_codes
         assert manager.active_window is None
 
+    def test_max_duration_aborts_and_quarantines_same_identity(self) -> None:
+        manager = ProductWindowManager(
+            _config(maximum_window_ms=1000, window_strategy="identity"), uuid4()
+        )
+        now = 1000.0
+        manager.feed(_observation(1, product_identity="prod-a"), now)
+        manager.feed(_observation(2, product_identity="prod-a"), now + 0.9)
+        closed = manager.feed(_observation(3, product_identity="prod-a"), now + 1.0)
+        assert closed is not None
+        assert closed.close_reason == "MAX_DURATION"
+        assert rc.WINDOW_MAX_DURATION_EXCEEDED in closed.integrity_reason_codes
+        assert [frame.sequence for frame in closed.frames] == [1, 2]
+        assert manager.active_window is None
+
+        # The same identity remains ambiguous after its bounded window ends;
+        # it cannot form a fresh decision until a different identity arrives.
+        assert manager.feed(_observation(4, product_identity="prod-a"), now + 1.1) is None
+        assert manager.active_window is None
+        assert manager.quarantined_frame_count == 1
+
+        assert manager.feed(_observation(5, product_identity="prod-b"), now + 1.2) is None
+        assert manager.active_window is not None
+        assert manager.active_window.identity == "prod-b"
+
     def test_time_strategy_ignores_identity_transitions(self) -> None:
         manager = ProductWindowManager(_config(maximum_window_ms=1000), uuid4())
         now = 1000.0

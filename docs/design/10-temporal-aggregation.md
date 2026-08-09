@@ -141,6 +141,11 @@ Window grouping, quality, and policy behavior enforced by the review fixes
   does not prove that adjacent products cannot overlap, so production temporal
   inspection must use `identity` or another validated correlation mechanism.
   Configuration rejects `inspection.enabled: true` with the time strategy.
+- **Maximum duration**: when an identity-sealed window reaches
+  `maximum_window_ms` while that identity remains continuous, it closes as
+  `NG` with `WINDOW_MAX_DURATION_EXCEEDED`. The identity is quarantined and
+  cannot begin another window until a different validated identity proves a
+  product transition.
 - **Frame quality**: a frame whose product-detection quality gate reports
   unusable contributes no detections and no valid opportunity; its quality
   reasons are preserved as frame diagnostics.
@@ -174,6 +179,9 @@ Window grouping, quality, and policy behavior enforced by the review fixes
 - Identity-sealed windows abort on a missing identity, a mid-window identity
   transition, or a confirmed multi-product frame; their frames never mix with
   another product's evidence.
+- An identity that exceeds `maximum_window_ms` is closed with
+  `WINDOW_MAX_DURATION_EXCEEDED` and quarantined until a different validated
+  identity arrives; it cannot be split into independently releasable windows.
 - Frames outside the window or with mismatched inspection IDs are quarantined from evidence.
 - Multiple products or identity switches invalidate the window unless a validated tracker proves continuity.
 - Worker restart closes recovered open windows as interrupted `NG`; it does not reconstruct evidence from partial memory unless all state was durably journaled.
