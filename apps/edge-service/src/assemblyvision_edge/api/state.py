@@ -8,6 +8,7 @@ reporting ``inspection_ready`` false (design 16.11).
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import logging
 import threading
@@ -27,13 +28,20 @@ from assemblyvision_edge.config import InstanceConfig
 from assemblyvision_edge.persistence.repository import (
     EdgeRepository,
     RepositoryError,
+    RetentionMetrics,
     UploadQueueMetrics,
 )
+from assemblyvision_edge.retention.policy import RetentionPolicy
+from assemblyvision_edge.retention.storage import (
+    StorageObservationError,
+    StorageState,
+    observe_storage,
+)
+from assemblyvision_edge.retention.worker import CleanupHealth
 from assemblyvision_edge.upload.scheduler import SchedulerHealth
 
 log = logging.getLogger("assemblyvision.runtime")
 
-_LOW_DISK_WARNING_BYTES = 5 * 1024**3
 _INSTANCE_NAMESPACE = UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8")
 _PREVIEW_MIN_INTERVAL_S = 0.5
 
@@ -78,6 +86,11 @@ class EdgeRuntime:
         self.repository: Any = None
         self._stop = threading.Event()
         self._preview_cache: dict[str, tuple[float, bytes]] = {}
+        # E2c disk-pressure state: refreshed by the inspection loop and by the
+        # device-status routes; a measurement/write failure fails closed.
+        self._storage_settings = settings.storage
+        self.storage_state: StorageState | None = None
+        self.storage_write_fault = False
 
     @staticmethod
     def _resolve_device_id(configured: str | None) -> UUID:
@@ -246,6 +259,21 @@ class EdgeRuntime:
                 was_paused = True
                 time.sleep(0.05)
                 continue
+            self.refresh_storage()
+            if self.storage_state is not None and self.storage_state.mode == "STOP":
+                # Stop pressure: durable mandatory persistence cannot be
+                # guaranteed, so no new product is accepted (E2 task invariant
+                # 7). Frames are drained and never evaluated as evidence.
+                if not was_paused:
+                    log.warning(
+                        "inspection intake stopped for instance %s: storage at stop "
+                        "threshold (design 12.7, E2c)",
+                        instance_id,
+                    )
+                self.camera_manager.drain_inspection(instance_id)
+                was_paused = True
+                time.sleep(0.5)
+                continue
             if was_paused:
                 # Resuming: drop stale frames captured during the pause window.
                 self.camera_manager.drain_inspection(instance_id)
@@ -262,7 +290,8 @@ class EdgeRuntime:
                             record = runtime.pipeline.inspect_window(expired, writer)
                             runtime.last_result = record.decision.business_result
                             self._persist_projection(record)
-                    except Exception:  # noqa: BLE001 - idle expiry must not kill the loop
+                    except Exception as exc:  # noqa: BLE001 - idle expiry must not kill the loop
+                        self._note_storage_write_fault(exc)
                         log.exception("idle window expiry failed for instance %s", instance_id)
                 continue
             try:
@@ -279,7 +308,8 @@ class EdgeRuntime:
                     record = runtime.pipeline.inspect_frame(frame, writer)
                     runtime.last_result = record.decision.business_result
                     self._persist_projection(record)
-            except Exception:  # noqa: BLE001 - loop must survive frame errors
+            except Exception as exc:  # noqa: BLE001 - loop must survive frame errors
+                self._note_storage_write_fault(exc)
                 log.exception("inspection failed for instance %s", instance_id)
         if window_manager is not None:
             try:
@@ -294,6 +324,16 @@ class EdgeRuntime:
             except Exception:  # noqa: BLE001 - interrupted close must not mask shutdown
                 log.exception("interrupted window close failed for instance %s", instance_id)
 
+    def _note_storage_write_fault(self, exc: Exception) -> None:
+        """Flag a storage write fault from ENOSPC/EROFS/I/O failures (E2c).
+
+        A write-time failure means durable persistence cannot be guaranteed;
+        the runtime fails closed (inspection_ready false, STORAGE_WRITE_FAULT)
+        instead of treating the volume as healthy (E2 task invariant 8).
+        """
+        if isinstance(exc, OSError) and exc.errno in (errno.ENOSPC, errno.EROFS, errno.EIO):
+            self.storage_write_fault = True
+
     def _persist_projection(self, record: Any) -> None:
         """Mirror a published bundle into the SQLite projection and outbox.
 
@@ -307,13 +347,23 @@ class EdgeRuntime:
         if repository is None:
             return
         try:
-            repository.persist_inspection_and_enqueue_uploads(record)
+            repository.persist_inspection_and_enqueue_uploads(
+                record, retention=self._retention_policy()
+            )
         except Exception as exc:  # noqa: BLE001 - projection must not break the loop
+            self._note_storage_write_fault(exc)
             log.warning(
                 "inspection %s was published but the projection/outbox could not be updated: %s",
                 record.inspection_id,
                 exc,
             )
+
+    def _retention_policy(self) -> RetentionPolicy | None:
+        """Return the approved retention policy for new media, or None."""
+        retention = self._settings.retention
+        if retention is None:
+            return None
+        return retention.to_policy()
 
     def pause(self, reason: str, by: str = "operator") -> None:
         self.paused = True
@@ -327,19 +377,103 @@ class EdgeRuntime:
         self.paused_by = None
         self.paused_at = None
 
+    def refresh_storage(self) -> StorageState | None:
+        """Re-measure the output volume and update the pressure state (E2c).
+
+        A measurement failure sets a write fault so the service fails closed
+        instead of assuming healthy storage (E2 task invariant 8).
+        """
+        try:
+            state = observe_storage(self._settings.output_root, self._storage_settings)
+            self.storage_state = state
+            self.storage_write_fault = False
+        except StorageObservationError:
+            self.storage_state = None
+            self.storage_write_fault = True
+        return self.storage_state
+
     def device_status(
         self,
         upload_pending: int,
         queue: UploadQueueMetrics | None = None,
         health: SchedulerHealth | None = None,
         scheduler_enabled: bool = False,
+        storage: StorageState | None = None,
+        write_fault: bool | None = None,
+        cleanup: CleanupHealth | None = None,
+        cleanup_metrics: RetentionMetrics | None = None,
+        cleanup_enabled: bool = False,
     ) -> dict[str, Any]:
         """Assemble the DeviceStatus snapshot (design 15.3.1)."""
         if queue is None:
             queue = UploadQueueMetrics(by_state={}, pending_bytes=0, oldest_pending_at=None)
+        if storage is None and write_fault is None:
+            storage = self.refresh_storage()
+        if write_fault is None:
+            write_fault = self.storage_write_fault
         if self.instances:
-            return self._device_status_instances(upload_pending, queue, health, scheduler_enabled)
-        return self._device_status_single(upload_pending, queue, health, scheduler_enabled)
+            return self._device_status_instances(
+                upload_pending,
+                queue,
+                health,
+                scheduler_enabled,
+                storage,
+                write_fault,
+                cleanup,
+                cleanup_metrics,
+                cleanup_enabled,
+            )
+        return self._device_status_single(
+            upload_pending,
+            queue,
+            health,
+            scheduler_enabled,
+            storage,
+            write_fault,
+            cleanup,
+            cleanup_metrics,
+            cleanup_enabled,
+        )
+
+    @staticmethod
+    def _storage_status_fields(
+        storage: StorageState | None,
+        write_fault: bool,
+        cleanup: CleanupHealth | None,
+        metrics: RetentionMetrics | None,
+        enabled: bool,
+    ) -> tuple[dict[str, Any], list[str]]:
+        """Derive the storage/cleanup observability fields and alerts (E2c)."""
+        mode = storage.mode if storage is not None else ("STOP" if write_fault else "NORMAL")
+        fields: dict[str, Any] = {
+            "storage_mode": mode,
+            "storage_free_bytes": storage.free_bytes if storage else 0,
+            "storage_free_percent": storage.free_percent if storage else 0.0,
+            "storage_free_inodes": storage.free_inodes if storage else 0,
+            "storage_inode_percent": storage.inode_free_percent if storage else 0.0,
+            "storage_write_fault": write_fault,
+            "cleanup_enabled": enabled,
+            "cleanup_eligible_count": metrics.eligible_count if metrics else 0,
+            "cleanup_eligible_bytes": metrics.eligible_bytes if metrics else 0,
+            "cleanup_deleting_count": metrics.deleting_count if metrics else 0,
+            "cleanup_delete_error_count": metrics.delete_error_count if metrics else 0,
+            "cleanup_purged_count": metrics.purged_count if metrics else 0,
+            "cleanup_integrity_fault_count": metrics.integrity_fault_count if metrics else 0,
+            "cleanup_last_run_at": cleanup.last_run_at if cleanup else None,
+            "cleanup_last_error_code": cleanup.last_error_code if cleanup else None,
+        }
+        alerts: list[str] = []
+        if write_fault:
+            alerts.append("STORAGE_WRITE_FAULT")
+        elif mode == "STOP":
+            alerts.append("DISK_STOP")
+        elif mode == "CRITICAL":
+            alerts.append("DISK_CRITICAL")
+        elif mode == "WARNING":
+            alerts.append("DISK_WARNING")
+        if metrics is not None and metrics.delete_error_count > 0:
+            alerts.append("CLEANUP_FAULT")
+        return fields, alerts
 
     @staticmethod
     def _upload_status_fields(
@@ -377,6 +511,11 @@ class EdgeRuntime:
         queue: UploadQueueMetrics,
         health: SchedulerHealth | None,
         scheduler_enabled: bool,
+        storage: StorageState | None,
+        write_fault: bool,
+        cleanup: CleanupHealth | None,
+        cleanup_metrics: RetentionMetrics | None,
+        cleanup_enabled: bool,
     ) -> dict[str, Any]:
         if self.pipeline is None:
             operational = "FAULTED" if self.pipeline_error else "INITIALIZING"
@@ -384,12 +523,18 @@ class EdgeRuntime:
         else:
             operational = "PAUSED" if self.paused else "READY"
             inspection_ready = not self.paused
-        disk_free = self._disk_free_bytes()
         alerts: list[str] = []
+        storage_fields, storage_alerts = self._storage_status_fields(
+            storage, write_fault, cleanup, cleanup_metrics, cleanup_enabled
+        )
+        alerts.extend(storage_alerts)
+        # Stop pressure or a write fault means mandatory persistence cannot be
+        # guaranteed: the runtime must not advertise inspection readiness (E2
+        # task invariant 7/8, E2c exit criteria).
+        if write_fault or (storage is not None and storage.mode == "STOP"):
+            inspection_ready = False
         if not inspection_ready:
             alerts.append("NOT_READY")
-        if disk_free < _LOW_DISK_WARNING_BYTES:
-            alerts.append("DISK_LOW")
         upload_fields, upload_alerts = self._upload_status_fields(
             upload_pending, queue, health, scheduler_enabled
         )
@@ -404,7 +549,8 @@ class EdgeRuntime:
             "camera_connected": True,
             "model_loaded": self.pipeline is not None,
             "central_connected": False,
-            "disk_free_bytes": disk_free,
+            "disk_free_bytes": storage.free_bytes if storage else 0,
+            **storage_fields,
             **upload_fields,
             "current_product_model_version_id": self._model_version_id(self.pipeline, "product"),
             "current_component_model_version_id": self._model_version_id(
@@ -420,6 +566,11 @@ class EdgeRuntime:
         queue: UploadQueueMetrics,
         health: SchedulerHealth | None,
         scheduler_enabled: bool,
+        storage: StorageState | None,
+        write_fault: bool,
+        cleanup: CleanupHealth | None,
+        cleanup_metrics: RetentionMetrics | None,
+        cleanup_enabled: bool,
     ) -> dict[str, Any]:
         """Aggregate device status across configured instances (ADR-013)."""
         manager = self.camera_manager
@@ -441,8 +592,13 @@ class EdgeRuntime:
         else:
             inspection_ready = bool(ready_pipelines) and bool(connected)
             operational = "READY" if inspection_ready else "DEGRADED"
-        disk_free = self._disk_free_bytes()
         alerts: list[str] = []
+        storage_fields, storage_alerts = self._storage_status_fields(
+            storage, write_fault, cleanup, cleanup_metrics, cleanup_enabled
+        )
+        alerts.extend(storage_alerts)
+        if write_fault or (storage is not None and storage.mode == "STOP"):
+            inspection_ready = False
         if not inspection_ready:
             alerts.append("NOT_READY")
         degraded = any(
@@ -453,8 +609,6 @@ class EdgeRuntime:
         )
         if degraded:
             alerts.append("FRAME_OVERFLOW")
-        if disk_free < _LOW_DISK_WARNING_BYTES:
-            alerts.append("DISK_LOW")
         first_ready = next((iid for iid in ready_pipelines if iid in connected), None)
         pipeline = self.instances[first_ready].pipeline if first_ready else None
         upload_fields, upload_alerts = self._upload_status_fields(
@@ -471,7 +625,8 @@ class EdgeRuntime:
             "camera_connected": bool(connected),
             "model_loaded": bool(ready_pipelines),
             "central_connected": False,
-            "disk_free_bytes": disk_free,
+            "disk_free_bytes": storage.free_bytes if storage else 0,
+            **storage_fields,
             **upload_fields,
             "current_product_model_version_id": self._model_version_id(pipeline, "product"),
             "current_component_model_version_id": self._model_version_id(pipeline, "component"),

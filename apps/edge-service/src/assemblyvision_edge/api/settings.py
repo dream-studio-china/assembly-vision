@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import timedelta
 from ipaddress import ip_address
 from pathlib import Path
 from urllib.parse import urlsplit
 
 from assemblyvision_domain.errors import ConfigError
+
+from assemblyvision_edge.retention.policy import RetentionPolicy
 
 
 @dataclass(frozen=True)
@@ -101,6 +104,60 @@ def _is_loopback_host(host: str) -> bool:
 
 
 @dataclass(frozen=True)
+class RetentionSettings:
+    """Approved media retention durations (design 12.7, E2c).
+
+    Cleanup is disabled unless ``enabled`` is true. Every configured duration
+    must be positive; media kinds absent from the map are protected forever
+    (the production-safe default, E2 task sections 3/4).
+    """
+
+    enabled: bool = False
+    durations: dict[str, timedelta] = field(default_factory=dict)
+
+    def validate(self) -> None:
+        if not self.enabled:
+            return
+        if not self.durations:
+            raise ConfigError("retention: enabled retention requires at least one duration")
+        for kind, duration in self.durations.items():
+            if duration.total_seconds() <= 0:
+                raise ConfigError(f"retention: {kind} duration must be positive")
+
+    def to_policy(self) -> RetentionPolicy | None:
+        """Return the approved policy, or None when cleanup must stay disabled."""
+        if not self.enabled:
+            return None
+        return RetentionPolicy(durations=dict(self.durations))
+
+
+@dataclass(frozen=True)
+class StorageSettings:
+    """Disk-pressure policy (design 12.7, E2c).
+
+    Free-percent thresholds are strictly ordered ``stop < critical < warning``.
+    At or below each threshold the runtime enters the matching pressure mode;
+    the same ordering applies to free inode percent.
+    """
+
+    warning_free_percent: float = 20.0
+    critical_free_percent: float = 10.0
+    stop_free_percent: float = 5.0
+
+    def validate(self) -> None:
+        if not (
+            0.0
+            <= self.stop_free_percent
+            < self.critical_free_percent
+            < self.warning_free_percent
+            <= 100.0
+        ):
+            raise ConfigError(
+                "storage: thresholds must satisfy stop < critical < warning within [0, 100]"
+            )
+
+
+@dataclass(frozen=True)
 class ServerSettings:
     """Runtime configuration for the local edge API (design 15.3)."""
 
@@ -117,3 +174,13 @@ class ServerSettings:
     cors_allow_loopback: bool = True
     enable_web_test: bool = False
     upload: UploadSettings | None = None
+    storage: StorageSettings | None = None
+    retention: RetentionSettings | None = None
+
+    def validate(self) -> None:
+        if self.upload is not None:
+            self.upload.validate()
+        if self.storage is not None:
+            self.storage.validate()
+        if self.retention is not None:
+            self.retention.validate()

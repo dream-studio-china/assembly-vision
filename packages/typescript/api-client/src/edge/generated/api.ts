@@ -469,6 +469,45 @@ export interface components {
             camera_connected: boolean;
             /** Central Connected */
             central_connected: boolean;
+            /**
+             * Cleanup Delete Error Count
+             * @default 0
+             */
+            cleanup_delete_error_count: number;
+            /**
+             * Cleanup Deleting Count
+             * @default 0
+             */
+            cleanup_deleting_count: number;
+            /**
+             * Cleanup Eligible Bytes
+             * @default 0
+             */
+            cleanup_eligible_bytes: number;
+            /**
+             * Cleanup Eligible Count
+             * @default 0
+             */
+            cleanup_eligible_count: number;
+            /**
+             * Cleanup Enabled
+             * @default false
+             */
+            cleanup_enabled: boolean;
+            /**
+             * Cleanup Integrity Fault Count
+             * @default 0
+             */
+            cleanup_integrity_fault_count: number;
+            /** Cleanup Last Error Code */
+            cleanup_last_error_code?: string | null;
+            /** Cleanup Last Run At */
+            cleanup_last_run_at?: string | null;
+            /**
+             * Cleanup Purged Count
+             * @default 0
+             */
+            cleanup_purged_count: number;
             /** Current Component Model Version Id */
             current_component_model_version_id?: string | null;
             /** Current Product Model Version Id */
@@ -489,6 +528,36 @@ export interface components {
             observed_at: string;
             /** Operational State */
             operational_state: string;
+            /**
+             * Storage Free Bytes
+             * @default 0
+             */
+            storage_free_bytes: number;
+            /**
+             * Storage Free Inodes
+             * @default 0
+             */
+            storage_free_inodes: number;
+            /**
+             * Storage Free Percent
+             * @default 0
+             */
+            storage_free_percent: number;
+            /**
+             * Storage Inode Percent
+             * @default 0
+             */
+            storage_inode_percent: number;
+            /**
+             * Storage Mode
+             * @default NORMAL
+             */
+            storage_mode: string;
+            /**
+             * Storage Write Fault
+             * @default false
+             */
+            storage_write_fault: boolean;
             /** Sync Ready */
             sync_ready: boolean;
             /**

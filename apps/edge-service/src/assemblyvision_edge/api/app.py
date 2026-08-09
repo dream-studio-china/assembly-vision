@@ -69,9 +69,9 @@ _CSP = (
 
 def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     # Validate at the composition root as well as the CLI path: programmatic
-    # callers must not bypass the TLS/credential policy (PR-017 F7 follow-up).
-    if settings.upload is not None:
-        settings.upload.validate()
+    # callers must not bypass the TLS/credential/storage policy (PR-017 F7
+    # follow-up, E2c).
+    settings.validate()
     runtime = EdgeRuntime(settings)
 
     @asynccontextmanager
@@ -133,7 +133,25 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         app.state.upload_scheduler = scheduler
         if scheduler is not None:
             scheduler.start()
+        # Retention cleanup worker (design 12.7, E2b): only an explicitly
+        # enabled, approved retention policy can ever delete local media. With
+        # no policy the worker is inert and never touches the filesystem.
+        from assemblyvision_edge.retention.worker import RetentionCleanupWorker
+
+        cleanup_worker: RetentionCleanupWorker | None = None
+        if settings.retention is not None and settings.retention.enabled:
+            cleanup_worker = RetentionCleanupWorker(
+                repository,
+                settings.output_root,
+                settings.retention.to_policy(),
+                lease_seconds=300,
+                batch_size=16,
+            )
+            cleanup_worker.start()
+        app.state.cleanup_worker = cleanup_worker
         yield
+        if cleanup_worker is not None:
+            cleanup_worker.stop()
         if scheduler is not None:
             scheduler.stop()
         runtime.shutdown()

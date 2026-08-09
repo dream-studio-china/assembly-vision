@@ -60,6 +60,24 @@ class DeviceStatus(BaseModel):
     upload_last_attempt_at: str | None = None
     upload_last_success_at: str | None = None
     upload_last_error_code: str | None = None
+    # Storage pressure and cleanup observability (design 12.7, E2c): the
+    # server is the single authority for thresholds and mode; the dashboard
+    # renders these instead of duplicating a fixed warning threshold.
+    storage_mode: str = "NORMAL"
+    storage_free_bytes: int = 0
+    storage_free_percent: float = 0.0
+    storage_free_inodes: int = 0
+    storage_inode_percent: float = 0.0
+    storage_write_fault: bool = False
+    cleanup_enabled: bool = False
+    cleanup_eligible_count: int = 0
+    cleanup_eligible_bytes: int = 0
+    cleanup_deleting_count: int = 0
+    cleanup_delete_error_count: int = 0
+    cleanup_purged_count: int = 0
+    cleanup_integrity_fault_count: int = 0
+    cleanup_last_run_at: str | None = None
+    cleanup_last_error_code: str | None = None
     current_product_model_version_id: str | None = None
     current_component_model_version_id: str | None = None
     current_rule_version_id: str | None = None

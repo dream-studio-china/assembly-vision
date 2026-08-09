@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
+import re
 import sqlite3
 import sys
+from datetime import timedelta
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -17,7 +20,11 @@ from assemblyvision_vision.roi.roi_engine import ROIEngine
 from assemblyvision_vision.sources.folder_source import FolderSource
 
 from assemblyvision_edge import __version__
-from assemblyvision_edge.api.settings import UploadSettings
+from assemblyvision_edge.api.settings import (
+    RetentionSettings,
+    StorageSettings,
+    UploadSettings,
+)
 from assemblyvision_edge.config import (
     RuleIdentityRegistry,
     load_pipeline_config,
@@ -341,6 +348,61 @@ def _build_upload_settings(args: argparse.Namespace) -> UploadSettings | None:
     return settings
 
 
+_DURATION_UNIT_SECONDS = {"s": 1, "m": 60, "h": 3600, "d": 86400}
+
+
+def _parse_duration(raw: str) -> timedelta:
+    """Parse a compact duration such as ``1d``, ``12h``, ``30m``, or ``90s``."""
+    match = re.fullmatch(r"\s*(\d+)\s*([smhd])\s*", raw)
+    if match is None:
+        raise ConfigError(f"invalid duration {raw!r}; use e.g. 1d, 12h, 30m, 90s")
+    value = int(match.group(1))
+    return timedelta(seconds=value * _DURATION_UNIT_SECONDS[match.group(2)])
+
+
+def _build_storage_settings() -> StorageSettings | None:
+    """Assemble disk-pressure settings from AV_EDGE_STORAGE_* env (E2c)."""
+    names = (
+        "AV_EDGE_STORAGE_WARNING_FREE_PERCENT",
+        "AV_EDGE_STORAGE_CRITICAL_FREE_PERCENT",
+        "AV_EDGE_STORAGE_STOP_FREE_PERCENT",
+    )
+    if not any(os.environ.get(name) is not None for name in names):
+        return None
+    settings = StorageSettings(
+        warning_free_percent=_float_env("AV_EDGE_STORAGE_WARNING_FREE_PERCENT", 20.0),
+        critical_free_percent=_float_env("AV_EDGE_STORAGE_CRITICAL_FREE_PERCENT", 10.0),
+        stop_free_percent=_float_env("AV_EDGE_STORAGE_STOP_FREE_PERCENT", 5.0),
+    )
+    settings.validate()
+    return settings
+
+
+def _build_retention_settings() -> RetentionSettings | None:
+    """Assemble retention policy from AV_EDGE_RETENTION_* env (E2c).
+
+    Cleanup is enabled only when ``AV_EDGE_RETENTION_ENABLED`` is true.
+    ``AV_EDGE_RETENTION_DURATIONS`` maps media kinds to compact durations, e.g.
+    ``{"KEY_FRAME": "1d", "NG_CLIP": "30d"}``; missing kinds are protected.
+    """
+    enabled = _bool_env("AV_EDGE_RETENTION_ENABLED", False)
+    raw = os.environ.get("AV_EDGE_RETENTION_DURATIONS")
+    if not enabled and raw is None:
+        return None
+    durations: dict[str, timedelta] = {}
+    if raw is not None:
+        try:
+            parsed = json.loads(raw)
+        except ValueError as exc:
+            raise ConfigError("AV_EDGE_RETENTION_DURATIONS must be a JSON object") from exc
+        if not isinstance(parsed, dict):
+            raise ConfigError("AV_EDGE_RETENTION_DURATIONS must be a JSON object")
+        durations = {str(kind): _parse_duration(str(value)) for kind, value in parsed.items()}
+    settings = RetentionSettings(enabled=enabled, durations=durations)
+    settings.validate()
+    return settings
+
+
 def _validate_serve_bind(host: str, api_token: str | None, allow_dev_auth: bool) -> None:
     """Reject a non-loopback bind without authentication.
 
@@ -380,6 +442,8 @@ def _run_serve(args: argparse.Namespace) -> int:
             api_token=api_token,
             enable_web_test=args.enable_web_test,
             upload=_build_upload_settings(args),
+            storage=_build_storage_settings(),
+            retention=_build_retention_settings(),
         )
         app = create_app(settings)
         uvicorn.run(app, host=args.host, port=args.port, log_level="info")

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, Request
 
 from assemblyvision_edge.api.deps import get_repository, get_runtime
@@ -21,8 +23,18 @@ def device_status(
     queue = repository.upload_queue_metrics()
     scheduler = request.app.state.upload_scheduler
     health = scheduler.health() if scheduler is not None else None
+    cleanup = request.app.state.cleanup_worker
+    now_iso = datetime.now(UTC).isoformat()
+    cleanup_health = cleanup.health() if cleanup is not None else None
+    cleanup_metrics = repository.retention_metrics(now_iso)
     return DeviceStatus.model_validate(
         runtime.device_status(
-            repository.count_pending_uploads(), queue, health, scheduler is not None
+            repository.count_pending_uploads(),
+            queue,
+            health,
+            scheduler is not None,
+            cleanup=cleanup_health,
+            cleanup_metrics=cleanup_metrics,
+            cleanup_enabled=cleanup is not None and cleanup.enabled,
         )
     )

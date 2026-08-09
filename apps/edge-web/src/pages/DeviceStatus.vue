@@ -69,8 +69,9 @@ onMounted(async () => {
     </el-table>
 
     <p class="device__meta">
-      Observed at {{ formatIsoTime(status?.observed_at) }} · Disk free
-      {{ ((status?.disk_free_bytes ?? 0) / 1024 ** 3).toFixed(1) }} GB ·
+      Observed at {{ formatIsoTime(status?.observed_at) }} · Storage
+      {{ status?.storage_mode ?? "NORMAL" }} ·
+      {{ ((status?.storage_free_bytes ?? 0) / 1024 ** 3).toFixed(1) }} GB free ·
       Pending uploads {{ status?.upload_pending_count ?? "-" }}
     </p>
   </div>

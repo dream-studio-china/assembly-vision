@@ -113,7 +113,7 @@ onBeforeUnmount(() => {
           <span class="status-chip" :class="runtime.status?.inspection_ready ? 'status-chip--ready' : 'status-chip--critical'">Engine {{ runtime.status?.inspection_ready ? "ready" : "not ready" }}</span>
           <span class="status-chip" :class="runtime.status?.camera_connected ? 'status-chip--ready' : 'status-chip--critical'">Camera {{ runtime.status?.camera_connected ? "connected" : "offline" }}</span>
           <span class="status-chip" :class="runtime.status?.model_loaded ? 'status-chip--ready' : 'status-chip--critical'">Model {{ runtime.status?.model_loaded ? "loaded" : "unavailable" }}</span>
-          <span class="status-chip" :class="(runtime.status?.disk_free_bytes ?? 0) >= 5 * 1024 ** 3 ? 'status-chip--ready' : 'status-chip--warning'">Disk {{ runtime.status ? formatBytes(runtime.status.disk_free_bytes) + " free" : "unknown" }}</span>
+          <span class="status-chip" :class="(runtime.status?.storage_mode ?? 'NORMAL') !== 'NORMAL' ? 'status-chip--warning' : 'status-chip--ready'">Disk {{ runtime.status ? formatBytes(runtime.status.disk_free_bytes) + " free · " + (runtime.status.storage_mode ?? "NORMAL") : "unknown" }}</span>
         </div>
       </section>
       <section class="status-strip">
