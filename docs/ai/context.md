@@ -34,20 +34,25 @@ and verifies that all required assembly components are present.
   updates. Read-only dashboard views display real CLI results through the HTTP
   client, while the operator workflow actions remain on the mock client.
   PR #12 (dev -> main) closed the AUDIT-001 findings with acceptance tests
-  (merged 2026-08-09); see section 8.4. PR #14 (`feat/camera-frame-sources`,
-  open) adds camera frame sources, multi-instance `serve`, and the gated web
-  dev test harness (ADR-013/014); see section 8.5.
+  (merged 2026-08-09); see section 8.4. PR #14 added camera frame sources,
+  multi-instance `serve`, and the gated web dev test harness (ADR-013/014);
+  PR #15/#16 merged the product-window/temporal aggregation milestone
+  (ADR-010) with production safety; and PR #17 merged the durable upload
+  outbox and scheduler (ADR-005); see sections 8.5/8.6. The next milestones
+  complete the Edge production candidate: observability (E1), retention and
+  disk safety (E2), upload resilience (E3), runtime/WebSocket (E4),
+  deployment and security (E5), and acceptance (E6); the central server is
+  not implemented and stays out of scope until those Edge gates pass.
 
 ## 2. Repository State
 
 - Remote: `https://github.com/dream-studio-china/assembly-vision`. PRs #3, #6,
-  #8, #9, #10, #11, #12 (and docs PR #13) are merged to `main`; PR #12 merged
-  the completed AUDIT-001 closure on 2026-08-09. PR #14
-  (`feat/camera-frame-sources`, open) carries the camera frame sources,
-  multi-instance serve, web dev test harness (ADR-013/014), and the
-  product-window/temporal aggregation milestone (ADR-010). The next
-  milestones are the upload scheduler + authoritative persistence (AUDIT-001
-  4.4) and collecting real customer data.
+  #8, #9, #10, #11, #12, #14 (camera/multi-instance/dev harness),
+  #15/#16 (temporal aggregation + production safety), and #17 (durable upload
+  outbox/scheduler, ADR-005) are merged to `main`. The next milestones are the
+  Edge production-candidate completion (E1-E6); the central server is not
+  implemented yet and is intentionally out of scope until those Edge gates
+  pass.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -415,8 +420,7 @@ verified and its findings closed with acceptance tests, merged via PR #12
 
 ## 8.5 Camera Frame Sources, Multi-Instance Edge, and Web Dev Test Harness (ADR-013/014, PR #14)
 
-Implemented on `feat/camera-frame-sources` and carried by PR #14 (open; all
-gates green). The review-driven hardening pass is recorded in
+Merged via PR #14 (dev -> main). The review-driven hardening pass is recorded in
 `docs/reviews/PR-014-review.md`; findings F1-F14 are resolved with regression
 tests. The design:
 
@@ -485,71 +489,80 @@ tests. The design:
   repo-wide; the current suite is 635 Python tests, 91 TypeScript unit tests
   (api-client 45, ui 13, edge-web 30, desktop 3), and 12 Playwright e2e.
 
+## 8.6 Durable Upload Outbox and Scheduler (PR #17, ADR-005)
+
+Merged via PR #17 (dev -> main, 10 commits). Implements the persistent upload
+queue required by ADR-005 and closes the deferred AUDIT-001 4.4 persistence
+item. The review-driven hardening pass is recorded in
+`docs/reviews/PR-017-review.md`; findings F1-F8 plus a post-resolution pass
+are resolved with regression tests:
+
+- **Atomic projection and outbox**: `persist_inspection_and_enqueue_uploads`
+  commits the immutable inspection, media, evidence, and one `INSPECTION` task
+  plus one `MEDIA` task per artifact in a single SQLite transaction; startup
+  reconciliation repairs stranded `LOCAL_ONLY` records.
+- **Ordered, leased worker**: `UploadScheduler` claims due tasks in an
+  immediate transaction; `MEDIA` tasks become due only after their inspection
+  task has a verified receipt; each claim carries a per-task fencing token
+  (`lease_owner`), stale `IN_PROGRESS` tasks are reclaimed after lease expiry,
+  and terminal updates require the matching token.
+- **Failure classification**: transport errors and `408/429/5xx` schedule
+  full-jitter backoff honoring `Retry-After` from the response time; missing/
+  corrupt evidence, checksum/size mismatch, and server conflicts become
+  permanent failures while local evidence is preserved.
+- **Verified receipts**: a 2xx is success only when the bounded typed receipt
+  echoes idempotency key, object, kind, size, and checksum; media receipts
+  require a central object ID; receipts are persisted and inspection
+  synchronization is `QUEUED`/`PARTIAL`/`SYNCED`/`FAILED` from all tasks.
+- **Configuration and security**: `UploadSettings` + `AV_EDGE_UPLOAD_*` wiring
+  through `serve` (endpoint or local sink, separate credential, tunables);
+  central endpoints require HTTPS (development HTTP loopback-only), and the
+  viewer `api_token` is never reused for uploads.
+
 ## 9. Open Items / Next Steps
 
-- The FastAPI + SQLite backend layer (`assemblyvision serve`, section 8.3) is
-  merged; the **upload queue scheduler** (real `upload_tasks` rows, retry
-  backoff, idempotency) and the **WebSocket runtime channel** are the next
-  backend gaps. Read-only dashboard views already route through the HTTP
-  client (`VITE_API_MODE=http`).
-- AUDIT-001 (`docs/reviews/AUDIT-001-system-audit.md`) is **closed**: all
-  findings fixed and committed on `dev` (section 8.4), merged to `main` via
-  PR #12 on 2026-08-09. The only deferred item is 4.4 authoritative
-  persistence, gated on the upload-scheduler milestone. Phase 3 still needs a
-  decision on the multi-edge-per-host "shared" model before the upload
-  scheduler, WebSocket, camera/barcode, and hardware-trigger windowing work;
-  ADR-013
-  partially addresses it with per-instance pipelines (each instance loads its
-  own models, so weight sharing remains an open optimization).
-- Resilience documentation (2026-08-09, new docs PR): design 22 adds
-  Accelerator/GPU failure and Repeated network disconnect to the resilience
-  fault matrix, design 09 and contracts 06 are aligned, and README gained a
-  Testing and Resilience section.
-- PR-003 follow-up items are all resolved (see `docs/reviews/PR-003-review.md`):
-  model-manifest publication now compares full decision-critical content
-  (task, class order, input size, artifact, provenance), the Roboflow adapter
-  validates every source label strictly and keeps explicit background
-  negatives (component-only images without an independent product box are
-  rejected), image/label pairing is required by default with a recorded
-  `--allow-missing-labels` opt-in, verification uses source-relative sample
-  identities, and dataset adaptation/component preparation reject stale output
-  directories and write file manifests. Component preparation now loads a
-  verified product manifest and mirrors the runtime exactly-one-product
-  selection policy, recording ambiguous samples in `exclusions.json`.
-- The two remaining M1 medium gaps are resolved:
-  - **Token-protected Vite development across origins** now works. Loopback
-    dev origins may use `GET`/`POST`/`OPTIONS` with `Authorization` and
-    `Content-Type` headers, and the dashboard keeps the viewer token in memory
-    (never persisted) when it runs cross-origin, attaching it to API and media
-    requests; same-origin deployments keep the HttpOnly-cookie flow.
-  - **CLI rule-identity registry is durable**: `assemblyvision inspect`/`verify`
-    now register the loaded rule identity in the same SQLite `rule_identities`
-    registry that `serve` uses (`<output>/edge.sqlite3`), so a published
-    `(rule_id, rule_version)` stays immutable across CLI invocations and
-    service restarts.
-- Roadmap scope remaining after the merged M1 layer: upload queue scheduler,
-  WebSocket channel, camera/barcode adapters, hardware trigger window
-  boundaries, Docker packaging, and authoritative SQLite persistence/outbox.
-- Real customer data is still required for the one-month baseline: collect and
-  annotate with X-AnyLabeling per
+- The **upload queue scheduler** gap is closed (PR #17, section 8.6). The
+  remaining Edge production-candidate work is tracked as E1-E6:
+  - **E1 observability**: fix the Alembic `fileConfig` side effect that
+    disables `assemblyvision.*` loggers after migration (so `/api/v1/logs`
+    captures application records), then add scheduler health, queue
+    bytes/oldest age, failure rate, last successful contact, and alerts.
+  - **E2 retention and disk safety**: cleanup worker with inter-process lease,
+    deletion only after verified receipts + retention, disk-pressure
+    warning/critical/stop policy, startup integrity scan.
+  - **E3 upload resilience**: bandwidth throttling, circuit breaker,
+    controlled manual retry, long-outage drain tests, resumable large-media
+    client (central protocol contract only).
+  - **E4 runtime**: WebSocket channel, hardware-agnostic trigger/barcode/
+    identity seams with mock hardware validation, multi-instance resource
+    sharing.
+  - **E5 deployment and security**: Docker packaging, secret/TLS provisioning,
+    backup/restore, runbooks.
+  - **E6 acceptance**: resilience matrix, soak, held-out model validation,
+    Edge acceptance report with hardware prerequisites.
+- The **WebSocket runtime channel** remains the main backend gap (replaces the
+  polling preview).
+- AUDIT-001 is **closed** including the deferred 4.4 authoritative persistence
+  item (now delivered by PR #17). Phase 3 multi-edge-per-host "shared" model
+  weight sharing remains an open optimization (ADR-013 per-instance pipelines
+  load their own models).
+- Real customer data is still required for the baseline: collect and annotate
+  with X-AnyLabeling per
   `docs/design/19-training-and-evaluation.md` §19.17 and
   `docs/runbooks/11-data-collection-and-annotation.md`, convert the export with
   `scripts/adapt-xanylabeling.py` (written; supports classes.txt/data.yaml,
   images-first and split-first layouts) into
   `dataset_product`/`dataset_components` + `test-expected.json`, then run
   `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
-- Camera acquisition milestone (ADR-013/014) is **implemented** and carried by
-  PR #14 (open), including the product-window/temporal aggregation milestone
-  (ADR-010). Remaining in the milestone: vendor SDK camera adapters,
-  per-instance model weight sharing, folding the REST preview into the
-  WebSocket runtime channel, and hardware trigger / barcode window boundaries
-  to replace the time-only fallback.
-- Camera/hardware integration (vendor SDK), barcode decoding, hardware-trigger
-  product-window boundaries, authoritative SQLite persistence (the current
-  index is a rebuildable read projection), the upload queue scheduler, and
-  Docker deployment remain as the roadmap 25.5 one-month scope; only the
-  vendor-SDK, barcode, and site-coupling parts are blocked on hardware and
-  customer-site decisions.
+- Camera acquisition (ADR-013/014) is merged (PR #14) including temporal
+  aggregation (PR #15/#16). Remaining hardware-dependent items: vendor SDK
+  camera adapters, barcode decoding, and hardware-trigger product-window
+  boundaries to replace the time-only fallback (which is a development mode,
+  not a production product boundary).
+- The central server (ingestion API, PostgreSQL model, object storage,
+  idempotent receipts, manual review) is **not implemented**; only the
+  edge-side request/receipt contract exists. Central work starts after E1-E6
+  pass and the Edge-to-central contract is frozen.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.

@@ -454,9 +454,10 @@ design 13.5.
 - `EdgeRuntime._run_instance_loop()` now persists interrupted `force_close`
   records through the atomic projection (`53a6385`), closing the earlier gap.
 - Pre-existing latent issue observed during validation (not introduced by this
-  PR and out of scope): `migrations/env.py` calls `fileConfig` on
-  `alembic.ini`, whose default `disable_existing_loggers=True` marks every
-  `assemblyvision.*` logger `disabled` after the first migration runs, so the
-  application's own `LogBuffer` captures no application log records. A
-  follow-up should pass `disable_existing_loggers=False` and add a log-endpoint
-  content test.
+  PR): `migrations/env.py` called `fileConfig` on `alembic.ini` with the
+  default `disable_existing_loggers=True`, marking every `assemblyvision.*`
+  logger disabled after the first migration so the application's own `LogBuffer`
+  captured no application log records. **Resolved in the E1 edge-observability
+  milestone**: `fileConfig(..., disable_existing_loggers=False)` keeps the app
+  loggers enabled, with a regression test proving `/api/v1/logs` returns
+  application records on a freshly migrated database.

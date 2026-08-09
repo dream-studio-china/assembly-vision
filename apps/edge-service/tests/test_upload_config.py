@@ -88,6 +88,21 @@ class TestServeWiring:
             assert len(tasks) == 2
             assert all(task.status == "PENDING" for task in tasks)
 
+    def test_logs_endpoint_captures_application_records(self, tmp_path: Path) -> None:
+        """E1: after a fresh migration the LogBuffer captures application logs.
+
+        Alembic's fileConfig used to disable every assemblyvision.* logger, so
+        the app's own warnings never reached /api/v1/logs on a new database.
+        """
+        record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-log")
+        _write_media(tmp_path, record)
+        _write_bundle(tmp_path, record)
+        app = create_app(_settings(tmp_path, upload=None))
+        with TestClient(app) as client:
+            logs = client.get("/api/v1/logs").json()
+            messages = [item["message"] for item in logs["items"]]
+        assert any("upload scheduler is disabled" in message for message in messages)
+
     def test_invalid_upload_settings_fail_fast(self) -> None:
         """F6/F7: invalid configuration is rejected with actionable errors."""
         with pytest.raises(ConfigError, match="mutually exclusive"):
