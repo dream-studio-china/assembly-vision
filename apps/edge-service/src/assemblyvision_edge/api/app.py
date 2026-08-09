@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -86,6 +87,20 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
             imported = reconcile_output_root(repository, settings.output_root)
             if imported:
                 log.info("reconciled %d inspection records from output root", imported)
+            # Startup integrity (design 12.8, E2d): verify projected media
+            # against the filesystem and recover abandoned cleanup claims
+            # before any worker starts. Faults durably protect the artifact.
+            from assemblyvision_edge.persistence.reconcile import scan_storage_integrity
+
+            report = scan_storage_integrity(repository, settings.output_root)
+            if report.faults:
+                log.warning(
+                    "storage integrity scan found %d fault(s) of %d media: %s",
+                    report.faults,
+                    report.checked,
+                    report.fault_codes,
+                )
+            repository.recover_expired_retention_claims(datetime.now(UTC).isoformat())
         runtime.load_config(repository)
         if runtime.pipeline is None and not runtime.instances:
             log.warning("inspection engine is not ready: %s", runtime.pipeline_error)

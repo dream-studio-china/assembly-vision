@@ -7,12 +7,18 @@ the dashboard can display real results produced before the API existed.
 
 from __future__ import annotations
 
+import hashlib
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 
 from assemblyvision_domain.models import InspectionRecord
 
-from assemblyvision_edge.persistence.repository import EdgeRepository, RepositoryError
+from assemblyvision_edge.persistence.repository import (
+    EdgeRepository,
+    MediaIdentity,
+    RepositoryError,
+)
 
 log = logging.getLogger("assemblyvision.reconcile")
 
@@ -72,14 +78,84 @@ def quarantine_stale_staging(output_root: Path) -> int:
     return quarantined
 
 
+def quarantine_bundle(output_root: Path, directory: Path, reason: str) -> bool:
+    """Move a malformed/ambiguous final bundle into ``quarantine/`` (E2d).
+
+    Ambiguous evidence is preserved in the quarantine directory, never
+    re-imported, overwritten, or deleted (E2 task invariant 8/9). Returns True
+    when the bundle was moved.
+    """
+    if not directory.is_dir():
+        return False
+    quarantine_dir = output_root / "quarantine"
+    quarantine_dir.mkdir(exist_ok=True)
+    try:
+        directory.rename(quarantine_dir / directory.name)
+    except OSError as exc:
+        log.warning("cannot quarantine %s bundle %s: %s", reason, directory.name, exc)
+        return False
+    log.warning("quarantined %s bundle %s", reason, directory.name)
+    return True
+
+
+@dataclass(frozen=True)
+class IntegrityScanReport:
+    """Result of the startup media/filesystem integrity scan (E2d)."""
+
+    checked: int
+    faults: int
+    fault_codes: dict[str, int]
+
+
+def _verify_media(output_root: Path, identity: MediaIdentity, verify_checksums: bool) -> str | None:
+    """Return a fault code when a projected media artifact is inconsistent."""
+    if not media_path_is_safe(output_root, str(identity.inspection_id), identity.relative_path):
+        return "MEDIA_PATH_UNSAFE"
+    path = output_root / identity.relative_path
+    if not path.is_file():
+        return "MEDIA_EVIDENCE_MISSING"
+    if path.stat().st_size != identity.size_bytes:
+        return "MEDIA_SIZE_MISMATCH"
+    if verify_checksums:
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if digest != identity.checksum_sha256:
+            return "MEDIA_CHECKSUM_MISMATCH"
+    return None
+
+
+def scan_storage_integrity(
+    repository: EdgeRepository,
+    output_root: Path,
+    *,
+    verify_checksums: bool = False,
+) -> IntegrityScanReport:
+    """Verify projected media against the filesystem and mark faults (E2d).
+
+    Runs at startup before any worker: missing files, size mismatches, unsafe
+    paths, and (optionally) checksum mismatches durably mark the artifact
+    ``integrity_status='FAULT'`` so it is protected from retention deletion
+    until an operator reconciles it (design 12.8).
+    """
+    faults = 0
+    codes: dict[str, int] = {}
+    identities = repository.list_media_for_integrity()
+    for identity in identities:
+        code = _verify_media(output_root, identity, verify_checksums)
+        if code is None:
+            continue
+        repository.mark_media_integrity_fault_direct(str(identity.media_id), code)
+        faults += 1
+        codes[code] = codes.get(code, 0) + 1
+    return IntegrityScanReport(checked=len(identities), faults=faults, fault_codes=codes)
+
+
 def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
     """Import all inspection.json files found in the output root.
 
-    Returns the number of newly imported inspections. Corrupt files are logged
-    and skipped without aborting the scan. Records whose media paths escape the
-    output root, or whose immutable content conflicts with an existing
-    inspection ID, are skipped whole so no partially validated record is
-    imported. Crash-left ``.staging-*`` bundles are quarantined first.
+    Returns the number of newly imported inspections. Corrupt, unsafe, or
+    conflicting bundles are moved to ``quarantine/`` (durably preserved,
+    never silently re-imported or deleted, E2d) without aborting the scan.
+    Crash-left ``.staging-*`` bundles are quarantined first.
 
     The atomic persist-and-enqueue operation is applied to every valid bundle,
     not just newly inserted ones, so a stranded ``LOCAL_ONLY`` record whose
@@ -91,12 +167,13 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
     quarantine_stale_staging(output_root)
     imported = 0
     for path in sorted(output_root.glob("*/inspection.json")):
-        if path.parent.name.startswith(".staging"):
+        if path.parent.name.startswith((".staging", "quarantine")):
             continue
         try:
             record = InspectionRecord.model_validate_json(path.read_text(encoding="utf-8"))
         except (OSError, ValueError) as exc:
             log.warning("skipping invalid inspection record %s: %s", path, exc)
+            quarantine_bundle(output_root, path.parent, "invalid")
             continue
         unsafe = [
             item.relative_path
@@ -107,11 +184,13 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
             log.warning(
                 "skipping inspection %s with unsafe media paths: %s", record.inspection_id, unsafe
             )
+            quarantine_bundle(output_root, path.parent, "unsafe-media")
             continue
         try:
             status = repository.persist_inspection_and_enqueue_uploads(record)
         except RepositoryError as exc:
             log.warning("skipping conflicting inspection %s: %s", record.inspection_id, exc)
+            quarantine_bundle(output_root, path.parent, "content-conflict")
             continue
         if status == "inserted":
             imported += 1

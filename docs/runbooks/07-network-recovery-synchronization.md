@@ -14,5 +14,7 @@ Connectivity returns after an edge-to-central outage.
 
 ## Exit Criteria
 
-All eligible tasks are `SUCCEEDED`, remaining permanent failures are assigned, no duplicates exist,
-and local cleanup becomes eligible only after verified receipts and retention checks.
+All eligible tasks are `SUCCEEDED`, remaining permanent failures are assigned,
+no duplicates exist, and local cleanup becomes eligible only after verified
+receipts and retention checks. Integrity-faulted or held media remains
+protected; reconcile it through runbook 05 before any manual action.

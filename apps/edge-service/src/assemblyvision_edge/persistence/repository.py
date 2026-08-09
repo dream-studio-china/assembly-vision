@@ -147,6 +147,18 @@ class RetentionMetrics:
     integrity_fault_count: int = 0
 
 
+@dataclass(frozen=True)
+class MediaIdentity:
+    """One projected media row used by the startup integrity scan (E2d)."""
+
+    media_id: UUID
+    inspection_id: UUID
+    kind: str
+    relative_path: str
+    size_bytes: int
+    checksum_sha256: str
+
+
 def _retention_eligible_where() -> str:
     """SQL predicate for receipt-gated retention eligibility (design 12.7).
 
@@ -261,6 +273,22 @@ def _install_sqlite_pragmas(engine: Engine) -> None:
         cursor.close()
 
 
+def _verify_database_integrity(engine: Engine) -> None:
+    """Fail closed when SQLite reports database corruption (design 12.8, E2d).
+
+    ``quick_check`` is a fast bounded check run at every open. Corruption must
+    enter storage-not-ready mode and require a documented restore; the service
+    must never silently rebuild over corrupted evidence.
+    """
+    with engine.connect() as conn:
+        result = conn.execute(text("PRAGMA quick_check")).scalar()
+    if result != "ok":
+        raise RuntimeError(
+            f"edge database integrity check failed: {result}; restore from a "
+            "validated backup (runbook 05) before serving"
+        )
+
+
 def _content_hash(record: InspectionRecord) -> str:
     """Canonical SHA-256 of the immutable inspection projection.
 
@@ -316,6 +344,7 @@ class EdgeRepository:
             migrate_to_head(str(db_path))
             with engine.begin() as conn:
                 conn.execute(text("PRAGMA journal_mode=WAL"))
+            _verify_database_integrity(engine)
         return cls(engine)
 
     def close(self) -> None:
@@ -1228,13 +1257,63 @@ class EdgeRepository:
             purged = conn.execute(
                 text(f"SELECT COUNT(*) FROM {media.name} WHERE lifecycle = 'PURGED'")
             ).scalar()
+            integrity_faults = conn.execute(
+                text(f"SELECT COUNT(*) FROM {media.name} WHERE integrity_status = 'FAULT'")
+            ).scalar()
         return RetentionMetrics(
             eligible_count=int(eligible["n"]),
             eligible_bytes=int(eligible["bytes"]),
             deleting_count=int(deleting or 0),
             delete_error_count=int(delete_errors or 0),
             purged_count=int(purged or 0),
+            integrity_fault_count=int(integrity_faults or 0),
         )
+
+    def list_media_for_integrity(self) -> list[MediaIdentity]:
+        """Return projected, non-purged media rows for the startup scan (E2d)."""
+        with self._engine.connect() as conn:
+            rows = (
+                conn.execute(
+                    text(
+                        f"SELECT media_id, inspection_id, kind, relative_path, "
+                        f"size_bytes, checksum_sha256 FROM {media.name} "
+                        "WHERE lifecycle = 'AVAILABLE'"
+                    )
+                )
+                .mappings()
+                .all()
+            )
+        return [
+            MediaIdentity(
+                media_id=UUID(str(row["media_id"])),
+                inspection_id=UUID(str(row["inspection_id"])),
+                kind=str(row["kind"]),
+                relative_path=str(row["relative_path"]),
+                size_bytes=int(row["size_bytes"]),
+                checksum_sha256=str(row["checksum_sha256"]),
+            )
+            for row in rows
+        ]
+
+    def mark_media_integrity_fault_direct(self, media_id: str, error_code: str) -> int:
+        """Mark media as integrity-faulted without a lease (startup scan, E2d).
+
+        The startup scan runs before any worker starts, so no fencing is
+        needed; a faulted artifact is protected from deletion forever.
+        """
+        with self._engine.begin() as conn:
+            result = conn.execute(
+                text(
+                    f"""
+                    UPDATE {media.name}
+                    SET integrity_status = 'FAULT', last_delete_error = NULL
+                    WHERE media_id = :id
+                      AND (integrity_status IS NULL OR integrity_status <> 'FAULT')
+                    """
+                ),
+                {"id": media_id},
+            )
+        return int(result.rowcount or 0)
 
     def enqueue_inspection_uploads(self, record: InspectionRecord) -> int:
         """Insert one inspection task plus one media task per artifact.
