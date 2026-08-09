@@ -159,6 +159,25 @@ class MediaIdentity:
     checksum_sha256: str
 
 
+def _verified_media_receipt_exists() -> str:
+    """SQL fragment: the media task holds a receipt with a central object ID.
+
+    A receipt is only trusted for retention when the media task is SUCCEEDED
+    with a persisted receipt that includes the central object identifier; the
+    repository validates receipt content at the ``mark_upload_succeeded``
+    boundary (PR-020 F12), so presence here implies verification.
+    """
+    return f"""
+        EXISTS (
+            SELECT 1 FROM {upload_tasks.name} t
+            WHERE t.kind = 'MEDIA' AND t.object_id = m.media_id
+              AND t.status = 'SUCCEEDED'
+              AND t.receipt_json IS NOT NULL
+              AND t.central_object_id IS NOT NULL
+        )
+    """
+
+
 def _retention_eligible_where() -> str:
     """SQL predicate for receipt-gated retention eligibility (design 12.7).
 
@@ -177,13 +196,7 @@ def _retention_eligible_where() -> str:
         AND m.retention_eligible_at IS NOT NULL
         AND m.retention_eligible_at <= :now
         AND i.synchronization_status = 'SYNCED'
-        AND EXISTS (
-            SELECT 1 FROM {upload_tasks.name} t
-            WHERE t.kind = 'MEDIA' AND t.object_id = m.media_id
-              AND t.status = 'SUCCEEDED'
-              AND t.receipt_json IS NOT NULL
-              AND t.central_object_id IS NOT NULL
-        )
+        AND {_verified_media_receipt_exists()}
     """
 
 
@@ -1156,6 +1169,99 @@ class EdgeRepository:
                 )
         return claimed
 
+    def confirm_retention_claim(
+        self, media_id: str, lease_owner: str, now_iso: str, lease_seconds: int
+    ) -> ClaimedRetentionTarget | None:
+        """Fenced pre-unlink confirmation and lease renewal (PR-020 F02/F03).
+
+        Re-validates the full eligibility predicate atomically: the caller must
+        still hold an unexpired lease, the artifact must still be ``AVAILABLE``
+        with no hold/fault, the deadline must still be elapsed, and the
+        inspection must still be ``SYNCED`` with a verified media receipt. A
+        hold or integrity fault applied after the claim therefore invalidates
+        it. On success the lease is renewed so the worker can unlink safely;
+        returns None when the claim is no longer valid.
+        """
+        new_lease = (datetime.fromisoformat(now_iso) + timedelta(seconds=lease_seconds)).isoformat()
+        with self._engine.begin() as conn:
+            row = (
+                conn.execute(
+                    text(
+                        f"""
+                        SELECT m.media_id, m.inspection_id, m.kind, m.relative_path,
+                               m.size_bytes, m.retention_eligible_at,
+                               m.delete_lease_expires_at
+                        FROM {media.name} m
+                        JOIN {inspections.name} i ON i.inspection_id = m.inspection_id
+                        WHERE m.media_id = :media_id
+                          AND m.delete_lease_owner = :owner
+                          AND m.deleting_at IS NOT NULL
+                          AND m.delete_lease_expires_at IS NOT NULL
+                          AND m.delete_lease_expires_at >= :now
+                          AND m.lifecycle = 'AVAILABLE'
+                          AND m.purged_at IS NULL
+                          AND (m.integrity_status IS NULL OR m.integrity_status <> 'FAULT')
+                          AND m.hold_reason IS NULL
+                          AND m.retention_eligible_at IS NOT NULL
+                          AND m.retention_eligible_at <= :now
+                          AND i.synchronization_status = 'SYNCED'
+                          AND {_verified_media_receipt_exists()}
+                        """
+                    ),
+                    {"media_id": media_id, "owner": lease_owner, "now": now_iso},
+                )
+                .mappings()
+                .first()
+            )
+            if row is None:
+                return None
+            updated = conn.execute(
+                text(
+                    f"""
+                    UPDATE {media.name}
+                    SET delete_lease_expires_at = :lease
+                    WHERE media_id = :media_id AND delete_lease_owner = :owner
+                      AND deleting_at IS NOT NULL
+                      AND delete_lease_expires_at >= :now
+                    """
+                ),
+                {"lease": new_lease, "media_id": media_id, "owner": lease_owner, "now": now_iso},
+            )
+            if updated.rowcount == 0:
+                return None
+        target = self._retention_target(row)
+        return ClaimedRetentionTarget(
+            media_id=target.media_id,
+            inspection_id=target.inspection_id,
+            kind=target.kind,
+            relative_path=target.relative_path,
+            size_bytes=target.size_bytes,
+            retention_eligible_at=target.retention_eligible_at,
+            lease_owner=lease_owner,
+            lease_expires_at=new_lease,
+        )
+
+    def apply_media_hold(self, media_id: str, reason: str) -> int:
+        """Apply a hold and atomically invalidate any active deletion claim.
+
+        A hold protects the artifact from retention deletion even if a cleanup
+        worker already claimed it (PR-020 F03): the claim is cleared so the
+        worker's fenced pre-unlink confirmation fails.
+        """
+        with self._engine.begin() as conn:
+            result = conn.execute(
+                text(
+                    f"""
+                    UPDATE {media.name}
+                    SET hold_reason = :reason, deleting_at = NULL,
+                        delete_lease_owner = NULL, delete_lease_expires_at = NULL
+                    WHERE media_id = :id
+                    """
+                ),
+                {"reason": reason, "id": media_id},
+            )
+        return int(result.rowcount or 0)
+
     def finalize_media_purge(
         self, media_id: str, lease_owner: str, now_iso: str, reason: str
     ) -> int:
@@ -1163,8 +1269,9 @@ class EdgeRepository:
 
         The row becomes an audit tombstone (``PURGED`` + timestamp/reason); the
         file must already be absent on disk. Returns 0 when the lease was
-        reclaimed or expired, so a stale worker can never purge a newer
-        holder's artifact.
+        reclaimed or expired, or when the artifact became held/faulted after
+        the claim, so a stale worker can never purge a newer holder's artifact
+        (PR-020 F03).
         """
         with self._engine.begin() as conn:
             result = conn.execute(
@@ -1178,9 +1285,33 @@ class EdgeRepository:
                       AND deleting_at IS NOT NULL
                       AND delete_lease_expires_at IS NOT NULL
                       AND delete_lease_expires_at >= :now
+                      AND lifecycle = 'AVAILABLE'
+                      AND purged_at IS NULL
+                      AND hold_reason IS NULL
+                      AND (integrity_status IS NULL OR integrity_status <> 'FAULT')
+                      AND retention_eligible_at IS NOT NULL
+                      AND retention_eligible_at <= :now
+                      AND EXISTS (
+                          SELECT 1 FROM {inspections.name} i
+                          WHERE i.inspection_id = {media.name}.inspection_id
+                            AND i.synchronization_status = 'SYNCED'
+                      )
+                      AND EXISTS (
+                          SELECT 1 FROM {upload_tasks.name} t
+                          WHERE t.kind = 'MEDIA' AND t.object_id = :media_id
+                            AND t.status = 'SUCCEEDED'
+                            AND t.receipt_json IS NOT NULL
+                            AND t.central_object_id IS NOT NULL
+                      )
                     """
                 ),
-                {"now": now_iso, "reason": reason, "owner": lease_owner, "id": media_id},
+                {
+                    "now": now_iso,
+                    "reason": reason,
+                    "owner": lease_owner,
+                    "id": media_id,
+                    "media_id": media_id,
+                },
             )
         return int(result.rowcount or 0)
 
@@ -1326,14 +1457,18 @@ class EdgeRepository:
         """Mark media as integrity-faulted without a lease (startup scan, E2d).
 
         The startup scan runs before any worker starts, so no fencing is
-        needed; a faulted artifact is protected from deletion forever.
+        needed; a faulted artifact is protected from deletion forever. Any
+        active deletion claim is cleared so the cleanup worker's fenced
+        pre-unlink confirmation fails (PR-020 F03).
         """
         with self._engine.begin() as conn:
             result = conn.execute(
                 text(
                     f"""
                     UPDATE {media.name}
-                    SET integrity_status = 'FAULT', last_delete_error = NULL
+                    SET integrity_status = 'FAULT', last_delete_error = NULL,
+                        deleting_at = NULL, delete_lease_owner = NULL,
+                        delete_lease_expires_at = NULL
                     WHERE media_id = :id
                       AND (integrity_status IS NULL OR integrity_status <> 'FAULT')
                     """

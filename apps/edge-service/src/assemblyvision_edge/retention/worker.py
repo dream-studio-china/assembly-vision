@@ -12,8 +12,11 @@ filesystem mutation at all.
 
 from __future__ import annotations
 
+import contextlib
 import errno
 import logging
+import os
+import stat
 import threading
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -142,43 +145,32 @@ class RetentionCleanupWorker:
         return handled
 
     def _process(self, target: ClaimedRetentionTarget, now_iso: str) -> bool:
-        """Unlink one claimed artifact and finalize it; False on retryable failure."""
-        path = self._resolve_path(target)
-        if path is None:
-            self._record_failure("MEDIA_PATH_UNSAFE")
-            # An unsafe path is an integrity anomaly, not a retryable unlink.
-            self._repository.mark_media_integrity_fault(
-                str(target.media_id), target.lease_owner, "MEDIA_PATH_UNSAFE", now_iso
-            )
+        """Unlink one claimed artifact and finalize it; False on retryable failure.
+
+        The fenced pre-unlink confirmation (PR-020 F02/F03) re-validates the
+        full eligibility predicate and renews the lease immediately before any
+        destructive I/O, so an expired holder or a hold/fault applied after the
+        claim cannot delete evidence. Unlink runs through trusted directory
+        file descriptors with no-follow semantics (PR-020 F04).
+        """
+        confirmed = self._repository.confirm_retention_claim(
+            str(target.media_id), target.lease_owner, now_iso, self._lease_seconds
+        )
+        if confirmed is None:
+            self._record_failure("CLAIM_INVALID")
             return False
-        if not path.is_file():
-            # Missing evidence is an integrity fault, never a successful purge
-            # (E2 task invariant 4/8, E2b exit criteria).
-            self._record_failure("MEDIA_EVIDENCE_MISSING")
-            self._repository.mark_media_integrity_fault(
-                str(target.media_id), target.lease_owner, "MEDIA_EVIDENCE_MISSING", now_iso
-            )
-            return False
-        try:
-            path.unlink()
-        except FileNotFoundError:
-            self._record_failure("MEDIA_EVIDENCE_MISSING")
-            self._repository.mark_media_integrity_fault(
-                str(target.media_id), target.lease_owner, "MEDIA_EVIDENCE_MISSING", now_iso
-            )
-            return False
-        except OSError as exc:
-            code = _unlink_error_code(exc)
+        target = confirmed
+        code, is_fault = unlink_media_safely(self._output_root, target)
+        if code is not None:
             self._record_failure(code)
-            self._repository.record_media_delete_failure(
-                str(target.media_id), target.lease_owner, code, now_iso
-            )
-            return False
-        if path.exists():
-            self._record_failure("UNLINK_VERIFY_FAILED")
-            self._repository.record_media_delete_failure(
-                str(target.media_id), target.lease_owner, "UNLINK_VERIFY_FAILED", now_iso
-            )
+            if is_fault:
+                self._repository.mark_media_integrity_fault(
+                    str(target.media_id), target.lease_owner, code, now_iso
+                )
+            else:
+                self._repository.record_media_delete_failure(
+                    str(target.media_id), target.lease_owner, code, now_iso
+                )
             return False
         # The file is gone: finalize the audit tombstone. A lost lease here
         # means another worker owns the artifact; we must not overwrite it.
@@ -198,31 +190,77 @@ class RetentionCleanupWorker:
         )
         return True
 
-    def _resolve_path(self, target: ClaimedRetentionTarget) -> Path | None:
-        """Return the trusted media path or None when it escapes its bundle.
-
-        SQLite metadata is never authorization to remove an arbitrary path; the
-        path must resolve inside the artifact's own inspection bundle inside the
-        configured output root (E2 task invariant 9).
-        """
-        if not media_path_is_safe(
-            self._output_root, str(target.inspection_id), target.relative_path
-        ):
-            return None
-        path = self._output_root / target.relative_path
-        try:
-            resolved = path.resolve()
-        except OSError:
-            return None
-        root = self._output_root.resolve()
-        if not resolved.is_relative_to(root):
-            return None
-        return path
-
     def _record_failure(self, code: str) -> None:
         with self._health_lock:
             self._failures += 1
             self._last_error_code = code
+
+
+def unlink_media_safely(
+    output_root: Path, target: ClaimedRetentionTarget
+) -> tuple[str | None, bool]:
+    """Unlink one media file through trusted directory fds (PR-020 F04).
+
+    Returns ``(None, False)`` on success, ``(code, is_fault)`` on failure
+    where ``is_fault`` marks a non-retryable integrity anomaly (unsafe path,
+    missing evidence) and False marks a retryable unlink failure.
+
+    Traversal and the final unlink are performed relative to directory file
+    descriptors opened with ``O_NOFOLLOW``, so a concurrent symlink swap of an
+    intermediate bundle directory cannot redirect deletion outside the trusted
+    inspection bundle (E2 task invariant 9).
+    """
+    if not media_path_is_safe(output_root, str(target.inspection_id), target.relative_path):
+        return "MEDIA_PATH_UNSAFE", True
+    parts = Path(target.relative_path).parts
+    if len(parts) < 2 or parts[0] != str(target.inspection_id):
+        return "MEDIA_PATH_UNSAFE", True
+    fds: list[int] = []
+    try:
+        try:
+            fds.append(os.open(output_root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW))
+        except OSError:
+            return "MEDIA_PATH_UNSAFE", True
+        try:
+            fds.append(
+                os.open(parts[0], os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fds[-1])
+            )
+        except OSError:
+            # The inspection bundle directory is missing: evidence is gone.
+            return "MEDIA_EVIDENCE_MISSING", True
+        for component in parts[1:-1]:
+            try:
+                fds.append(
+                    os.open(component, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fds[-1])
+                )
+            except OSError:
+                return "MEDIA_PATH_UNSAFE", True
+        parent_fd = fds[-1]
+        name = parts[-1]
+        try:
+            st = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            return "MEDIA_EVIDENCE_MISSING", True
+        except OSError:
+            return "MEDIA_PATH_UNSAFE", True
+        if not stat.S_ISREG(st.st_mode):
+            # A directory or symlink at the final component is unsafe.
+            return "MEDIA_PATH_UNSAFE", True
+        try:
+            os.unlink(name, dir_fd=parent_fd)
+        except FileNotFoundError:
+            return "MEDIA_EVIDENCE_MISSING", True
+        except OSError as exc:
+            return _unlink_error_code(exc), False
+        try:
+            os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+            return "UNLINK_VERIFY_FAILED", False
+        except FileNotFoundError:
+            return None, False
+    finally:
+        for fd in reversed(fds):
+            with contextlib.suppress(OSError):
+                os.close(fd)
 
 
 def _unlink_error_code(exc: OSError) -> str:
