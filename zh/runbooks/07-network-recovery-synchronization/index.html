@@ -1634,7 +1634,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2572,7 +2572,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -3081,16 +3081,18 @@
 
 <h1 id="runbook-07-network-recovery-synchronization">Runbook 07：网络恢复同步<a class="headerlink" href="#runbook-07-network-recovery-synchronization" title="Permanent link">&para;</a></h1>
 <h2 id="trigger">扳机<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
-<p>从边缘到中心的中断后，连接会恢复。</p>
+<p>Connectivity returns after an edge-to-central outage.</p>
 <h2 id="recovery">恢复<a class="headerlink" href="#recovery" title="Permanent link">&para;</a></h2>
-<p>1、保持检验独立；验证受保护的本地容量和队列完整性。
-2. 探测中央身份验证和运行状况，而无需立即释放整个待办事项。
-3. 通过有界并发、稳定幂等键、退避和校验和来排出到期任务。
-4. 核对相同收据、内容冲突、缺失介质和无序检查。
-5. 将本地排队/成功总数与中央收据和媒体可用性进行比较。</p>
+<ol>
+<li>Keep inspection independent; verify protected local capacity and queue integrity.</li>
+<li>Probe central authentication and health without releasing the entire backlog at once.</li>
+<li>Drain due tasks with bounded concurrency, stable idempotency keys, backoff, and checksums.</li>
+<li>Reconcile identical receipts, content conflicts, missing media, and out-of-order inspections.</li>
+<li>Compare local queued/succeeded totals with central receipts and media availability.</li>
+</ol>
 <h2 id="exit-criteria">退出标准<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
-<p>所有符合条件的任务都是<code>SUCCEEDED</code>，分配剩余的永久失败，不存在重复，
-只有在经过验证的收据和保留检查后，本地清理才符合资格。</p>
+<p>All eligible tasks are <code>SUCCEEDED</code>, remaining permanent failures are assigned, no duplicates exist,
+and local cleanup becomes eligible only after verified receipts and retention checks.</p>
 
 
 

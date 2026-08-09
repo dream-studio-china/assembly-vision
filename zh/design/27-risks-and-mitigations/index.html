@@ -1758,7 +1758,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2616,7 +2616,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -3167,7 +3167,7 @@
   
 
 
-<h1 id="27-risks-and-mitigations">27. 风险和缓解措施<a class="headerlink" href="#27-risks-and-mitigations" title="Permanent link">&para;</a></h1>
+<h1 id="27-risks-and-mitigations">27. Risks and Mitigations<a class="headerlink" href="#27-risks-and-mitigations" title="Permanent link">&para;</a></h1>
 <h2 id="271-purpose-and-risk-method">27.1 目的和风险方法<a class="headerlink" href="#271-purpose-and-risk-method" title="Permanent link">&para;</a></h2>
 <p>该寄存器识别对检查完整性、可追溯性、可用性和操作的已知威胁。每个风险都说明了原因、影响、检测、预防、恢复和剩余风险。所有者和评级是在站点规划期间分配的，因为工厂拓扑、硬件、吞吐量和验收阈值尚不清楚。</p>
 <h2 id="272-scope-and-treatment-principles">27.2 范围和处理原则<a class="headerlink" href="#272-scope-and-treatment-principles" title="Permanent link">&para;</a></h2>
@@ -3177,92 +3177,92 @@
 <li><strong>生产目标：</strong>验证客户硬件和独立数据的缓解措施，分配所有者并明确接受剩余风险。</li>
 <li><strong>未来范围：</strong> 硬件互锁、PLC/MES 集成、冗余基础设施和先进的漂移自动化（如果合理）。</li>
 </ul>
-<p>默认的安全行为是在产品身份、所需证据、配置兼容性或持久记录不确定时避免发出 <code>OK</code>。在推出过程中，人工审查和物理生产线程序仍然是必要的控制。</p>
+<p>默认的安全行为是在产品身份、所需证据、配置兼容性或持久记录不确定时避免发出 <code>OK</code>。人工审查和物理生产线程序在推出过程中仍然是必要的控制。</p>
 <h2 id="273-comprehensive-risk-register">27.3 综合风险登记册<a class="headerlink" href="#273-comprehensive-risk-register" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>ID and risk</th>
-<th>Cause</th>
-<th>Impact</th>
-<th>Detection method</th>
-<th>Prevention</th>
-<th>Recovery</th>
-<th>Residual risk</th>
+<th>身份与风险</th>
+<th>原因</th>
+<th>影响</th>
+<th>检测方法</th>
+<th>预防</th>
+<th>恢复</th>
+<th>剩余风险</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>R-01 Camera shift</td>
-<td>Loose mount, vibration, maintenance, impact</td>
-<td>ROI/domain shift can miss required components and create false OK or false NG</td>
-<td>Reference-scene geometry, product-box distribution, calibration image, operator check, quality trend</td>
-<td>Rigid/tamper-evident mount, startup checklist, detected product ROI, approved camera envelope</td>
-<td>Pause, restore/alignment check, capture validation set, revalidate before resume</td>
-<td>Small shifts may evade geometric alarms while changing appearance</td>
+<td>R-01 相机移位</td>
+<td>松动安装、振动、维护、冲击</td>
+<td>ROI/域转移可能会错过所需的组件并造成错误的 OK 或错误的 NG</td>
+<td>参考场景几何、产品盒分布、校准图像、操作员检查、质量趋势</td>
+<td>刚性/防篡改安装、启动清单、检测到的产品投资回报率、经批准的相机外壳</td>
+<td>暂停、恢复/对齐检查、捕获验证集、恢复前重新验证</td>
+<td>小的转变可能会在改变外观的同时逃避几何警报</td>
 </tr>
 <tr>
-<td>R-02 Camera disconnection</td>
-<td>Cable/power/driver/SDK/device failure</td>
-<td>No inspectable frames; production may pass without a decision if external controls are weak</td>
-<td>Frame-age watchdog, adapter errors, link state, reconnect count</td>
-<td>Industrial cabling/power, strain relief, conformance tests, supervised adapter</td>
-<td>Stop windows, alarm, reconnect adapter, verify framing with test product</td>
-<td>Intermittent faults may recover before diagnosis; line interlock depends on customer integration</td>
+<td>R-02 相机断线</td>
+<td>电缆/电源/驱动/SDK/设备故障</td>
+<td>没有可检查的框架；如果外部控制薄弱，生产可能会在没有决定的情况下通过</td>
+<td>帧年龄看门狗、适配器错误、链接状态、重新连接计数</td>
+<td>工业布线/电源、应力消除、一致性测试、受监控适配器</td>
+<td>停止窗户、警报、重新连接适配器、使用测试产品验证框架</td>
+<td>间歇性故障可能在诊断前恢复；线路联锁取决于客户集成</td>
 </tr>
 <tr>
-<td>R-03 Incorrect exposure</td>
-<td>Lighting/camera setting change, auto-exposure, contamination</td>
-<td>Lost detail or confidence; false NG and possible false OK</td>
-<td>Histogram/saturation/brightness metrics, config checksum, reference images</td>
-<td>Lock validated exposure/gain, fixed lighting, change control, cleaning procedure</td>
-<td>Correct settings/lighting, clean optics, rerun known samples</td>
-<td>Local glare or gradual lamp aging may pass global metrics</td>
+<td>R-03 曝光不正确</td>
+<td>照明/相机设置更改、自动曝光、污染</td>
+<td>失去细节或信心；假 NG 和可能假 OK</td>
+<td>直方图/饱和度/亮度指标、配置校验和、参考图像</td>
+<td>锁定经过验证的曝光/增益、固定照明、变更控制、清洁程序</td>
+<td>正确的设置/照明、清洁光学器件、重新运行已知样品</td>
+<td>局部眩光或逐渐老化的灯可能会通过全球指标</td>
 </tr>
 <tr>
-<td>R-04 Motion blur</td>
-<td>Conveyor speed, exposure time, vibration, trigger timing</td>
-<td>Components/barcodes become unreadable and detections fail</td>
-<td>Blur score, frame-quality rejection, latency/timing logs, image review</td>
-<td>Adequate lighting, short exposure, stable mount, trigger/window tuning, multiple usable frames</td>
-<td>Route NG/uncertain, adjust optics/timing, recapture/reinspect</td>
-<td>Blur metrics are imperfect; all frames may be blurred at some operating points</td>
+<td>R-04 运动模糊</td>
+<td>传送带速度、曝光时间、振动、触发时机</td>
+<td>组件/条形码变得不可读且检测失败</td>
+<td>模糊分数、帧质量拒绝、延迟/计时日志、图像审查</td>
+<td>充足的照明、短曝光、稳定的安装、触发器/窗口调整、多个可用框架</td>
+<td>路线NG/不确定，调整光学/定时，重新捕获/重新检查</td>
+<td>模糊指标不完善；所有帧在某些操作点可能会变得模糊</td>
 </tr>
 <tr>
-<td>R-05 Reflection</td>
-<td>Glossy surfaces, light/camera angle, environmental change</td>
-<td>Occluded visual features and unstable confidence</td>
-<td>Saturation/specular metrics, heatmaps/evidence review, scenario tests</td>
-<td>Diffuse/polarized controlled lighting where validated, representative training data</td>
-<td>Adjust lighting/angle under change control, collect data, revalidate</td>
-<td>Reflection can vary by material batch and position</td>
+<td>R-05 反射</td>
+<td>光泽表面、光线/摄像机角度、环境变化</td>
+<td>视觉特征被遮挡，信心不稳定</td>
+<td>饱和度/镜面反射指标、热图/证据审查、场景测试</td>
+<td>漫射/偏振控制照明，其中经过验证的、具有代表性的训练数据</td>
+<td>在变更控制下调整照明/角度、收集数据、重新验证</td>
+<td>反射可能因材料批次和位置而异</td>
 </tr>
 <tr>
-<td>R-06 Product occlusion</td>
-<td>Packaging, hands/tools, overlapping parts, incomplete field of view</td>
-<td>Required component hidden; incorrect presence decision or excess NG</td>
-<td>Visible-area/box checks, quality reasons, temporal consistency, review</td>
-<td>Physical inspection zone, operator procedure, multiple frames, minimum visibility rules</td>
-<td>Mark NG/uncertain and reinspect after clearing occlusion</td>
-<td>Occlusion can resemble true absence and may not be separable from one view</td>
+<td>R-06 产品遮挡</td>
+<td>包装、手/工具、重叠部件、不完整的视野</td>
+<td>所需组件隐藏；错误的存在决策或过多的 NG</td>
+<td>可见区域/方框检查、质量原因、时间一致性、审查</td>
+<td>物理检查区域、操作员程序、多个框架、最低能见度规则</td>
+<td>标记 NG/不确定并在清除遮挡后重新检查</td>
+<td>遮挡可能类似于真正的缺席，并且可能无法与一种视图分开</td>
 </tr>
 <tr>
-<td>R-07 Product-position variation</td>
-<td>Conveyor guides/tolerances, product placement</td>
-<td>Product crop truncation or unfamiliar viewpoint</td>
-<td>Product-box position/size trends, ROI clipping flags, acceptance shift cases</td>
-<td>Stage-one product detection, ROI margins, capture-zone guides, representative data</td>
-<td>Reposition/reinspect, tune validated margins, collect/revalidate shifted cases</td>
-<td>Movement beyond trained envelope can occur without a hard boundary</td>
+<td>R-07 产品位置变化</td>
+<td>输送机导轨/公差、产品放置</td>
+<td>产品裁剪截断或观点陌生</td>
+<td>产品盒位置/尺寸趋势、ROI 剪裁标志、验收转移案例</td>
+<td>第一阶段产品检测、投资回报率、捕获区域指南、代表性数据</td>
+<td>重新定位/重新检查、调整验证的边距、收集/重新验证转移的案例</td>
+<td>超出训练范围的运动可以在没有硬性边界的情况下发生</td>
 </tr>
 <tr>
-<td>R-08 Barcode-read failure</td>
-<td>Blur, damage, glare, unsupported symbology, decoder fault</td>
-<td>Unknown product type/rule; loss of traceability</td>
-<td>Decoder status, repeated attempts, checksum/format validation, mismatch rate</td>
-<td>Dedicated decoder/ROI, multiple frames, validated standards, label quality process</td>
-<td>Do not infer unverified OK; retry/reinspect or authorized manual resolution</td>
-<td>Some labels remain unreadable; manual entry can introduce error</td>
+<td>R-08 条码读取失败</td>
+<td>模糊、损坏、眩光、不支持的符号系统、解码器故障</td>
+<td>未知的产品类型/规则；失去可追溯性</td>
+<td>解码器状态、重复尝试、校验和/格式验证、不匹配率</td>
+<td>专用解码器/ROI、多帧、经过验证的标准、标签质量流程</td>
+<td>未经验证请勿推断OK；重试/重新检查或授权手动解决</td>
+<td>有些标签仍然无法辨认；手动输入可能会引入错误</td>
 </tr>
 </tbody>
 </table>
@@ -3290,7 +3290,7 @@
 <li>确定性状态机将每一帧和决策绑定到一个产品窗口。</li>
 <li>产品检测产生ROI；硬编码的全帧区域仅是后备/粗略区域。</li>
 <li>每个组件的时间聚合排除了不可用的帧，并且从未声称可以提高单帧模型的准确性。</li>
-<li>每个决策都会保留产品身份、模型、规则、配置和证据版本。</li>
+<li>每个决策都会保留产品标识、模型、规则、配置和证据版本。</li>
 <li>边缘以事务方式存储决策和上传任务，并且无需中央服务器即可继续。</li>
 <li>签名的、兼容的版本集在窗口之间自动激活并支持回滚。</li>
 <li>人工审核、OK 审核和客户验收使用独立证据来检测质量故障。</li>

@@ -31,7 +31,7 @@
     
     
       
-        <title>ADR-012：Edge API M1 查看器身份验证 - AssemblyVision</title>
+        <title>ADR-012: Edge API M1 Viewer Auth - AssemblyVision</title>
       
     
     
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-012：Edge API M1 查看器身份验证
+              ADR-012: Edge API M1 Viewer Auth
             
           </span>
         </div>
@@ -1643,7 +1643,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -1661,7 +1661,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -1712,7 +1712,7 @@
   <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Decision
+        3. 决定
       
     </span>
   </a>
@@ -2633,7 +2633,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -3113,7 +3113,7 @@
   <a href="#3-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Decision
+        3. 决定
       
     </span>
   </a>
@@ -3203,76 +3203,76 @@
 
 <h1 id="adr-012-edge-api-m1-viewer-authentication-and-read-only-boundary">ADR-012：Edge API M1 查看器身份验证和只读边界<a class="headerlink" href="#adr-012-edge-api-m1-viewer-authentication-and-read-only-boundary" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
-<p>已接受</p>
+<p>Accepted</p>
 <h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
-<p>只读M1边缘API（<code>assemblyvision serve</code>，<code>/api/v1</code>）用于检查
-历史记录、媒体、配置和日志到本地服务的仪表板。
-设计 15.2.1 要求改变路由需要 <code>operator</code> 或 <code>edge_admin</code>
-角色并明确指出本地主机绑定不是身份验证。
-合约 08 要求后端执行并禁止处理隐藏的 UI 按钮
-作为授权边界。</p>
-<p>完整的离线边缘会话实施（凭证颁发、验证、
-过期、刷新、角色模型、CSRF 保护）是一个生产里程碑，并且
-M1 只读集成演示器不需要。然而，运送
-带有通配符 CORS 策略的未经身份验证的 API 违反了已接受的合同
-并让任何可以联系到的客户读取检查数据和任何网站问题
-跨域请求。</p>
-<h2 id="3-decision">3. Decision<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>对于 M1 只读边缘 API：</p>
+<p>The read-only M1 edge API (<code>assemblyvision serve</code>, <code>/api/v1</code>) serves inspection
+history, media, configuration, and logs to the locally served dashboard.
+Design 15.2.1 requires that mutating routes need <code>operator</code> or <code>edge_admin</code>
+roles and explicitly states that localhost binding is not authentication.
+Contract 08 requires backend enforcement and forbids treating hidden UI buttons
+as an authorization boundary.</p>
+<p>A full offline edge-session implementation (credential issuance, validation,
+expiry, refresh, role model, CSRF protection) is a production milestone and is
+not required for the M1 read-only integration demonstrator. However, shipping an
+unauthenticated API with a wildcard CORS policy violates the accepted contracts
+and lets any reachable client read inspection data and any website issue
+cross-origin requests.</p>
+<h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
+<p>For the M1 read-only edge API:</p>
 <ol>
-<li><strong>没有暴露变异路线。</strong> 暂停/恢复、相机重新连接以及
-   上传重试端点被删除并返回<code>404</code>。这些的 UI 控件
-   命令被删除或禁用。检查协调员和操作员
-   命令是稍后的里程碑，需要有记录的操作员/管理员
-   激活前的角色模型。</li>
-<li><strong>查看者身份验证从共享秘密不记名令牌开始</strong>，通过配置
-   <code>AV_EDGE_API_TOKEN</code> （或 <code>serve --api-token</code> 参数）。配置时，
-   除了刻意最小化的 <code>GET /api/v1/health/live</code> 之外的每条路线
-   需要 <code>Authorization: Bearer &lt;token&gt;</code> 或短暂的 HttpOnly，
-   同源查看者会话 cookie 并返回 <code>401 UNAUTHENTICATED</code>
-   否则。 <code>POST /api/v1/auth/session</code> 将有效的不记名令牌交换为
-   那个饼干；所提供的仪表板为该一次性条目提供 <code>/login</code>，
-   因此 API JSON 请求和媒体 <code>&lt;img&gt;</code> 请求都不需要令牌
-   浏览器可访问的存储。当没有配置令牌时，服务运行在
-   明确的M1开发模式；这绝不能作为生产呈现
-   认证。</li>
-<li><strong>CORS 从不使用 <code>*</code>。</strong> 仅允许锚定的跨源请求
-   环回开发起源（任何端口上的 <code>localhost</code> / <code>127.0.0.1</code>）
-   Vite开发服务器正常运行；所提供的仪表板是同源的，不需要 CORS。
-   环回绑定、CORS 和源允许列表不是身份验证。</li>
-<li><strong>会话机制记录在此处</strong>；完整的基于角色的边缘会话
-   （查看器/操作员/边缘管理员、过期、CSRF 保护、审核归因）是
-   路线图中记录的生产要求。</li>
+<li><strong>No mutating routes are exposed.</strong> Pause/resume, camera reconnect, and
+   upload retry endpoints are removed and return <code>404</code>. UI controls for these
+   commands are removed or disabled. An inspection coordinator and operator
+   commands are a later milestone and will require the documented operator/admin
+   role model before activation.</li>
+<li><strong>Viewer authentication starts with a shared-secret bearer token</strong> configured via
+   <code>AV_EDGE_API_TOKEN</code> (or the <code>serve --api-token</code> argument). When configured,
+   every route except the deliberately minimal <code>GET /api/v1/health/live</code>
+   requires <code>Authorization: Bearer &lt;token&gt;</code> or a short-lived HttpOnly,
+   same-origin viewer-session cookie and returns <code>401 UNAUTHENTICATED</code>
+   otherwise. <code>POST /api/v1/auth/session</code> exchanges a valid bearer token for
+   that cookie; the served dashboard provides <code>/login</code> for this one-time entry,
+   so neither API JSON requests nor media <code>&lt;img&gt;</code> requests need the token in
+   browser-accessible storage. When no token is configured the service runs in
+   an explicit M1 development mode; this must never be presented as production
+   authentication.</li>
+<li><strong>CORS never uses <code>*</code>.</strong> Cross-origin requests are allowed only for anchored
+   loopback development origins (<code>localhost</code> / <code>127.0.0.1</code> on any port) so the
+   Vite dev server works; the served dashboard is same-origin and needs no CORS.
+   Loopback binding, CORS, and origin allowlists are not authentication.</li>
+<li><strong>The session mechanism is documented here</strong>; a full role-based edge session
+   (viewer/operator/edge-admin, expiry, CSRF protection, audit attribution) is
+   the production requirement recorded in the roadmap.</li>
 </ol>
 <h2 id="4-consequences">4. 后果<a class="headerlink" href="#4-consequences" title="Permanent link">&para;</a></h2>
 <h3 id="41-positive">4.1 正面<a class="headerlink" href="#41-positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>只读M1 API满足合约08后端执行和设计
-  15.2.1 中的“不要将 localhost 视为身份验证”要求
-  范围。</li>
-<li>删除 M1 突变端点消除了未经身份验证的控制面和
-  错误的 <code>paused_by = "operator"</code> 属性。</li>
-<li>通配符 CORS 消失，因此管理网络上的浏览器无法读取
-  检查数据跨域。</li>
-<li>代币机制小、确定性、可直接测试。</li>
+<li>The read-only M1 API satisfies contract 08 backend enforcement and design
+  15.2.1's "do not treat localhost as authentication" requirement within its
+  scope.</li>
+<li>Removing M1 mutation endpoints eliminates unauthenticated control surface and
+  the false <code>paused_by = "operator"</code> attribution.</li>
+<li>Wildcard CORS is gone, so a browser on the management network cannot read
+  inspection data cross-origin.</li>
+<li>The token mechanism is small, deterministic, and directly testable.</li>
 </ul>
 <h3 id="42-negative-and-trade-offs">4.2 负面和权衡<a class="headerlink" href="#42-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
-<li>如果没有配置令牌，M1 API 仍然对网络客户端开放，这些客户端可以
-  到达服务中心；这是记录的开发模式边界，而不是
-  生产认证。</li>
-<li>共享令牌是粗糙的：它提供观众访问但不提供每个演员
-  归因或操作员/管理员分离。这是有意推迟的
-  生产边缘会话里程碑。</li>
-<li>所服务的仪表板需要一次交互式不记名令牌交换，当
-  令牌已配置。生成的会话随着边缘进程或
-  在其有限的生命周期之后；前端资产中没有秘密船只。</li>
-<li>支持针对受代币保护的主机进行跨域 Vite 开发：
-  环回开发源可以使用 <code>GET</code>/<code>POST</code>/<code>OPTIONS</code> 和 <code>Authorization</code> 以及
-  <code>Content-Type</code> 标头，仪表板将输入的令牌保留在内存中
-  （从未持久化）页面生命周期，将其附加到 API 和媒体
-  请求。内存中的令牌只是为了开发方便；它不是一个
-  替换生产部署中的同源 HttpOnly 会话。</li>
+<li>Without a configured token the M1 API remains open to network clients that can
+  reach the service; this is a documented development-mode boundary, not
+  production authentication.</li>
+<li>A shared token is coarse: it provides viewer access but no per-actor
+  attribution or operator/admin separation. This is intentionally deferred to
+  the production edge-session milestone.</li>
+<li>The served dashboard requires one interactive bearer-token exchange when a
+  token is configured. The resulting session expires with the edge process or
+  after its bounded lifetime; no secret ships in frontend assets.</li>
+<li>Cross-origin Vite development against a token-protected host is supported:
+  loopback dev origins may use <code>GET</code>/<code>POST</code>/<code>OPTIONS</code> with <code>Authorization</code> and
+  <code>Content-Type</code> headers, and the dashboard retains the entered token in memory
+  (never persisted) for the page lifetime, attaching it to API and media
+  requests. The in-memory token is a development convenience only; it is not a
+  replacement for the same-origin HttpOnly session in production deployments.</li>
 </ul>
 <h2 id="5-open-questions-and-validation-required">5. 开放式问题和需要验证<a class="headerlink" href="#5-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>

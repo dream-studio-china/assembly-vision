@@ -1644,7 +1644,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2502,7 +2502,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -3024,7 +3024,7 @@
 <li>谨慎推出人工验证</li>
 </ul>
 <hr />
-<h1 id="2-confirmed-production-conditions">2. 确认的生产条件<a class="headerlink" href="#2-confirmed-production-conditions" title="Permanent link">&para;</a></h1>
+<h1 id="2-confirmed-production-conditions">2. Confirmed Production Conditions<a class="headerlink" href="#2-confirmed-production-conditions" title="Permanent link">&para;</a></h1>
 <p>当前的物理环境具有以下特点：</p>
 <ul>
 <li>约四百万像素的工业相机</li>
@@ -3098,7 +3098,7 @@
 </ul>
 <h2 id="33-upload-strategy">3.3 上传策略<a class="headerlink" href="#33-upload-strategy" title="Permanent link">&para;</a></h2>
 <p>不要将每个视频帧上传到中央服务器。</p>
-<p>边缘客户端应根据需要保留完整或滚动的本地视频。</p>
+<p>边缘客户端应在需要时保留完整或滚动的本地视频。</p>
 <p>推荐的上传策略：</p>
 <h3 id="for-ok-inspections">用于 OK 检查<a class="headerlink" href="#for-ok-inspections" title="Permanent link">&para;</a></h3>
 <p>上传：</p>
@@ -3149,8 +3149,8 @@
 <li>本地保留政策</li>
 </ul>
 <hr />
-<h1 id="4-technology-decisions">4. 技术决策<a class="headerlink" href="#4-technology-decisions" title="Permanent link">&para;</a></h1>
-<h2 id="41-edge-backend">4.1 边缘后端<a class="headerlink" href="#41-edge-backend" title="Permanent link">&para;</a></h2>
+<h1 id="4-technology-decisions">4. Technology Decisions<a class="headerlink" href="#4-technology-decisions" title="Permanent link">&para;</a></h1>
+<h2 id="41-edge-backend">4.1 Edge Backend<a class="headerlink" href="#41-edge-backend" title="Permanent link">&para;</a></h2>
 <p>用途：</p>
 <p>-Python 3.12
 - 快速API
@@ -3239,7 +3239,7 @@
 <hr />
 <h1 id="5-detection-architecture">5. 检测架构<a class="headerlink" href="#5-detection-architecture" title="Permanent link">&para;</a></h1>
 <p>使用两级检测管道。</p>
-<h2 id="51-stage-one-product-detection">5.1 第一阶段：产品检测<a class="headerlink" href="#51-stage-one-product-detection" title="Permanent link">&para;</a></h2>
+<h2 id="51-stage-one-product-detection">5.1 Stage One: Product Detection<a class="headerlink" href="#51-stage-one-product-detection" title="Permanent link">&para;</a></h2>
 <p>第一个检测器定位完整的产品。</p>
 <p>输入：</p>
 <ul>
@@ -3370,7 +3370,7 @@
 <p>时间聚合不会提高底层 YOLO 模型的单帧精度。它通过跨框架结合证据来提高系统级的稳健性。</p>
 </blockquote>
 <hr />
-<h1 id="7-local-storage-architecture">7. 本地存储架构<a class="headerlink" href="#7-local-storage-architecture" title="Permanent link">&para;</a></h1>
+<h1 id="7-local-storage-architecture">7. Local Storage Architecture<a class="headerlink" href="#7-local-storage-architecture" title="Permanent link">&para;</a></h1>
 <p>边缘客户端必须维护本地持久存储。</p>
 <p>商店：</p>
 <ul>
@@ -3481,7 +3481,7 @@
 </ul>
 <p>明确区分边缘 Web 应用程序和中央管理 Web 应用程序。</p>
 <hr />
-<h1 id="9-monorepo-architecture">9. Monorepo架构<a class="headerlink" href="#9-monorepo-architecture" title="Permanent link">&para;</a></h1>
+<h1 id="9-monorepo-architecture">9. Monorepo Architecture<a class="headerlink" href="#9-monorepo-architecture" title="Permanent link">&para;</a></h1>
 <p>使用支持 Python 和 TypeScript 的 Monorepo。</p>
 <p>使用基于以下原则的结构：</p>
 <ul>
@@ -3598,7 +3598,7 @@
 <p>不要在 MVP 中过度设计许可或混淆。</p>
 <hr />
 <h1 id="11-training-strategy">11. 培训策略<a class="headerlink" href="#11-training-strategy" title="Permanent link">&para;</a></h1>
-<h2 id="111-product-detector">11.1 产品检测器<a class="headerlink" href="#111-product-detector" title="Permanent link">&para;</a></h2>
+<h2 id="111-product-detector">11.1 Product Detector<a class="headerlink" href="#111-product-detector" title="Permanent link">&para;</a></h2>
 <p>初始目标：</p>
 <ul>
 <li>大约 300 至 800 张真实生产图像</li>
@@ -3619,7 +3619,7 @@
 </ul>
 <p>不要假设这些数字保证了目标准确性。</p>
 <p>将它们描述为必须根据测量的验证性能进行调整的起点。</p>
-<h2 id="113-data-splitting">11.3 数据分割<a class="headerlink" href="#113-data-splitting" title="Permanent link">&para;</a></h2>
+<h2 id="113-data-splitting">11.3 Data Splitting<a class="headerlink" href="#113-data-splitting" title="Permanent link">&para;</a></h2>
 <p>避免相邻视频帧泄漏。</p>
 <p>通过以下方式分割数据集：</p>
 <ul>
@@ -3715,7 +3715,7 @@
 <li>制造执行系统集成</li>
 <li>自动再培训</li>
 </ul>
-<h2 id="132-one-month-target">13.2 一个月目标<a class="headerlink" href="#132-one-month-target" title="Permanent link">&para;</a></h2>
+<h2 id="132-one-month-target">13.2 One-Month Target<a class="headerlink" href="#132-one-month-target" title="Permanent link">&para;</a></h2>
 <p>第一周：</p>
 <ul>
 <li>静态图像管道</li>
@@ -3835,7 +3835,7 @@
 <p>确保 Mermaid 语法有效。</p>
 <p>不要将不受支持的语法放入图表中。</p>
 <hr />
-<h1 id="16-required-data-models">16. 所需的数据模型<a class="headerlink" href="#16-required-data-models" title="Permanent link">&para;</a></h1>
+<h1 id="16-required-data-models">16. Required Data Models<a class="headerlink" href="#16-required-data-models" title="Permanent link">&para;</a></h1>
 <p>提供具体的 Pydantic 示例：</p>
 <ul>
 <li>边界框</li>
@@ -4066,7 +4066,7 @@
 </ul>
 <p>主要的验收指标是真实的 NG 召回率。</p>
 <p>不要定义未经验证的数字保证。</p>
-<p>相反，应提供一个框架，以便在基线评估后与客户就目标值达成一致。</p>
+<p>相反，应提供一个框架，用于在基线评估后与客户就目标值达成一致。</p>
 <hr />
 <h1 id="22-writing-and-quality-requirements">22. 写作和质量要求<a class="headerlink" href="#22-writing-and-quality-requirements" title="Permanent link">&para;</a></h1>
 <p>生成的文档必须：</p>
@@ -4164,7 +4164,7 @@
 <h1 id="25-final-deliverables">25. 最终交付成果<a class="headerlink" href="#25-final-deliverables" title="Permanent link">&para;</a></h1>
 <p>最终存储库必须包含：</p>
 <ul>
-<li>有用的根 <code>README.md</code></li>
+<li>有用的根<code>README.md</code></li>
 <li><code>docs/README.md</code> 文档索引</li>
 <li>上面列出的所有架构文档</li>
 <li>所有必需的 ADR 文件</li>

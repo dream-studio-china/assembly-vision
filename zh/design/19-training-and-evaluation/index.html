@@ -1134,12 +1134,12 @@
   <a href="#196-leakage-safe-data-splits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.6 防泄漏数据分割
+        19.6 Leakage-Safe Data Splits
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="19.6 防泄漏数据分割">
+    <nav class="md-nav" aria-label="19.6 Leakage-Safe Data Splits">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1206,7 +1206,7 @@
   <a href="#199-detector-level-metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.9 检测器级指标
+        19.9 Detector-Level Metrics
       
     </span>
   </a>
@@ -1239,7 +1239,7 @@
   <a href="#1912-error-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.12 误差分析
+        19.12 Error Analysis
       
     </span>
   </a>
@@ -1328,7 +1328,7 @@
   <a href="#19173-hard-annotation-rules-enforced-by-the-adapters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.17.3 硬注释规则（由适配器强制执行）
+        19.17.3 Hard Annotation Rules (Enforced by the Adapters)
       
     </span>
   </a>
@@ -2013,7 +2013,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2871,7 +2871,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -3440,12 +3440,12 @@
   <a href="#196-leakage-safe-data-splits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.6 防泄漏数据分割
+        19.6 Leakage-Safe Data Splits
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="19.6 防泄漏数据分割">
+    <nav class="md-nav" aria-label="19.6 Leakage-Safe Data Splits">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3512,7 +3512,7 @@
   <a href="#199-detector-level-metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.9 检测器级指标
+        19.9 Detector-Level Metrics
       
     </span>
   </a>
@@ -3545,7 +3545,7 @@
   <a href="#1912-error-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.12 误差分析
+        19.12 Error Analysis
       
     </span>
   </a>
@@ -3634,7 +3634,7 @@
   <a href="#19173-hard-annotation-rules-enforced-by-the-adapters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.17.3 硬注释规则（由适配器强制执行）
+        19.17.3 Hard Annotation Rules (Enforced by the Adapters)
       
     </span>
   </a>
@@ -3677,14 +3677,14 @@
   
 
 
-<h1 id="19-training-and-evaluation">19. 培训与评估<a class="headerlink" href="#19-training-and-evaluation" title="Permanent link">&para;</a></h1>
+<h1 id="19-training-and-evaluation">19. Training and Evaluation<a class="headerlink" href="#19-training-and-evaluation" title="Permanent link">&para;</a></h1>
 <h2 id="191-objective-and-scope">19.1 目标和范围<a class="headerlink" href="#191-objective-and-scope" title="Permanent link">&para;</a></h2>
 <p>训练生成用于全帧的产品检测器和用于产品 ROI 的组件检测器。评估可衡量探测器行为和完整的产品级检测系统。主要的安全目标是极高的 NG 召回率和相应的低假阴性率，这在保留的生产数据中得到了证明；没有数据集大小或模型指标可以保证完美的性能。</p>
 <p>模型元数据遵循<a href="../14-data-model-and-database/">Data Model and Database</a>。模型注册和审查表面在 <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a> 中描述，代码所有权在 <a href="../18-monorepo-and-code-organization/">Monorepo and Code Organization</a> 中描述。</p>
 <h3 id="1911-static-train-and-inspect-mvp">19.1.1 静态训练和检查 MVP<a class="headerlink" href="#1911-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
 <p>MVP 在相机集成之前实现了开发人员控制的训练到检查循环。 X-AnyLabeling 是选定的注释工具，并导出标准 YOLO 文本标签。产品和组件盒以全框坐标进行注释。训练 CLI 验证导出的数据集，从全帧图像训练产品检测器，然后使用产品 ROI 变换来裁剪组件训练图像，并在组件训练之前将组件框重新映射到 ROI 坐标。</p>
 <p>运行时检查 CLI 仅使用生成的不可变权重工件和清单。训练代码位于单独的 <code>training/</code> 工作区中，永远不会由运行时导入，并且被排除在运行时发行版之外。配置的文件名约定为保留验证提供了预期的 <code>OK</code> 或 <code>NG</code> 标签；它不能替代检测器训练期间的边界框标签。</p>
-<p>第一个 MVP 在开发人员具有 16 GB 内存的 Apple Silicon Mac 上运行小型模型并测量图像大小。它记录再现性元数据并报告保留的静态设置结果，但不声明生产精度、生产吞吐量或生产验收。具有 SHA-256 清单的普通模型工件对于此 MVP 来说已经足够了；模型加密和仅限 <code>.pyc</code> 的分发打包被推迟。</p>
+<p>第一个 MVP 在开发人员具有 16 GB 内存的 Apple Silicon Mac 上运行小型模型并测量图像尺寸。它记录再现性元数据并报告保留的静态设置结果，但不声明生产精度、生产吞吐量或生产验收。具有 SHA-256 清单的普通模型工件对于此 MVP 来说已经足够了；模型加密和仅限 <code>.pyc</code> 的分发打包被推迟。</p>
 <p>最小 YOLO 数据集布局为：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>dataset/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── images/{train,val}/
@@ -3703,109 +3703,109 @@
 <h2 id="193-data-inventory-and-provenance">19.3 数据清单和来源<a class="headerlink" href="#193-data-inventory-and-provenance" title="Permanent link">&para;</a></h2>
 <p>每个源图像/帧都与一个清单相关联，其中包含：</p>
 <ul>
-<li>数据集/源记录 ID 和不可变文件校验和。</li>
-<li>站点、线路、摄像机和捕捉设置标识符（如果允许）。</li>
-<li>捕获会话 ID、生产日期、产品批次和物理产品实例 ID。</li>
-<li>视频/检查窗口 ID、帧索引和时间戳。</li>
-<li>在允许的情况下，受保护元数据中的产品代码/类型和条形码。</li>
-<li>故意的缺陷场景和已知的缺失组件。</li>
-<li>相机角度/设置修订、照明/曝光修订和软件捕获版本。</li>
-<li>注释版本、注释者、审阅状态和排除原因。</li>
-<li>同意、保留和允许使用分类。</li>
+<li>Dataset/source record ID and immutable file checksum.</li>
+<li>Site, line, camera, and capture setup identifiers where permitted.</li>
+<li>Capture session ID, production date, product batch, and physical product instance ID.</li>
+<li>Video/inspection window ID, frame index, and timestamp.</li>
+<li>Product code/type and barcode in protected metadata where permitted.</li>
+<li>Deliberate defect scenario and known missing components.</li>
+<li>Camera angle/setup revision, lighting/exposure revision, and software capture version.</li>
+<li>Annotation version, annotator, review state, and exclusion reason.</li>
+<li>Consent, retention, and permitted-use classification.</li>
 </ul>
-<p>原始数据是不可变的。更正创建新的注释/数据集版本。对个人或商业敏感的标识符进行假名化以进行培训，同时保留受控的可追溯性地图。</p>
+<p>Raw data is immutable. Corrections create a new annotation/dataset version. Personally or commercially sensitive identifiers are pseudonymized for training while retaining a controlled traceability map.</p>
 <h2 id="194-collection-design">19.4 集合设计<a class="headerlink" href="#194-collection-design" title="Permanent link">&para;</a></h2>
-<p>使用实际生产的相机、光学器件、安装、照明、传送带背景、捕获软件和图像编码进行收集。初始模型针对一个固定的生产角度进行优化。显着的角度变化（包括接近 45 度的变化）是需要评估、额外收集/微调和完全重新验证的域变化。</p>
-<p>集合必须代表：</p>
+<p>Collect with the actual production camera, optics, mounting, lighting, conveyor background, capture software, and image encoding. The initial model optimizes for one fixed production angle. A substantial angle change, including a change near 45 degrees, is a domain change requiring evaluation, additional collection/fine-tuning, and complete revalidation.</p>
+<p>Collection must represent:</p>
 <ul>
-<li>每个受支持的产品和所需的组件。</li>
-<li>跨批次/日期和普通位置变化的真正 OK 产品。</li>
-<li>针对每个缺失的组件和缺失的手册，物理构建了 NG 产品。</li>
-<li>条码成功、损坏/遮挡/无法读取的条码以及未知的映射情况。</li>
-<li>空帧、部分产品、多产品异常、模糊、反射、遮挡、曝光变化和安全相机位置公差。</li>
-<li>用于窗口/聚合测试的连续 OK、连续 NG 和混合产品序列。</li>
+<li>Each supported product and required component.</li>
+<li>Real OK products across batches/dates and ordinary position variation.</li>
+<li>Physically constructed NG products for each missing component and missing manual.</li>
+<li>Barcode success, damaged/occluded/unreadable barcode, and unknown mapping cases.</li>
+<li>Empty frames, partial products, multiple-product anomalies, blur, reflection, occlusion, exposure variation, and safe camera-position tolerances.</li>
+<li>Consecutive OK, consecutive NG, and mixed-product sequences for window/aggregation testing.</li>
 </ul>
-<p>不要通过数字擦除组件来合成所有 NG 示例。合成编辑可能会增加罕见的变化，但物理捕获的缺陷是必要的，因为阴影、包装变形和显示的背景有所不同。</p>
+<p>Do not synthesize all NG examples by digitally erasing components. Synthetic editing may augment rare variation, but physically captured defects are necessary because shadows, packaging deformation, and revealed backgrounds differ.</p>
 <h2 id="195-annotation-protocol">19.5 注释协议<a class="headerlink" href="#195-annotation-protocol" title="Permanent link">&para;</a></h2>
-<p>使用稳定的组件代码、包含/排除规则、最小可见性、遮挡/截断标志和困难情况示例定义版本化的类本体。产品盒一致地封装可见的产品。组件框使用 ROI 坐标，但保留源帧变换元数据。</p>
-<p>工作流程：</p>
+<p>Define a versioned class ontology with stable component codes, inclusion/exclusion rules, minimum visibility, occlusion/truncation flags, and difficult-case examples. Product boxes enclose the visible product consistently. Component boxes use ROI coordinates but retain source-frame transform metadata.</p>
+<p>Workflow:</p>
 <ol>
-<li>注释器从锁定的本体中进行标记，并标记不明确/不可用的图像，而不是猜测。</li>
-<li>自动检查拒绝无效框、未知类别、不可能的图像尺寸、重复项和缺少所需元数据。</li>
-<li>第二位审核员检查所有 NG 场景、所有模糊标签以及具有统计意义的普通标签样本。</li>
-<li>在批量重新标记之前对分歧进行裁决并更新本体指南。</li>
-<li>数据集发布冻结文件校验和、注释哈希、本体版本和出处清单。</li>
+<li>Annotator labels from the locked ontology and marks ambiguous/unusable images rather than guessing.</li>
+<li>Automated checks reject invalid boxes, unknown classes, impossible image dimensions, duplicates, and missing required metadata.</li>
+<li>A second reviewer examines all NG scenarios, all ambiguous labels, and a statistically meaningful sample of ordinary labels.</li>
+<li>Disagreements are adjudicated and ontology guidance updated before bulk relabeling.</li>
+<li>Dataset release freezes file checksums, annotation hashes, ontology version, and provenance manifest.</li>
 </ol>
-<p>跟踪每类盒子计数、产品实例计数、会话、批次和缺陷场景。当许多帧来自一个产品通道时，仅帧数就夸大了多样性。</p>
-<h2 id="196-leakage-safe-data-splits">19.6 防泄漏数据分割<a class="headerlink" href="#196-leakage-safe-data-splits" title="Permanent link">&para;</a></h2>
+<p>Track per-class box counts, product-instance counts, sessions, batches, and defect scenarios. Frame count alone overstates diversity when many frames come from one product pass.</p>
+<h2 id="196-leakage-safe-data-splits">19.6 Leakage-Safe Data Splits<a class="headerlink" href="#196-leakage-safe-data-splits" title="Permanent link">&para;</a></h2>
 <h3 id="1961-split-unit">19.6.1 分割单元<a class="headerlink" href="#1961-split-unit" title="Permanent link">&para;</a></h3>
-<p>最小拆分组是整个检查/视频窗口中的物理产品实例。首选结合捕获会话、产品批次、生产日期和设置修订的更高级别组。从一个源组派生的所有相邻帧、裁剪、增强、重新编码和注释都保留在一个分割中。</p>
-<p>切勿随机分割单个视频帧。训练和验证过程中几乎相同的帧会产生误导性的指标，并根据重复的证据调整时间聚合。</p>
+<p>The minimum split group is a physical product instance across its entire inspection/video window. Prefer a higher-level group that combines capture session, product batch, production date, and setup revision. All adjacent frames, crops, augmentations, re-encodings, and annotations derived from one source group stay in one split.</p>
+<p>Never randomly split individual video frames. Nearly identical frames across train and validation produce misleading metrics and tune temporal aggregation on repeated evidence.</p>
 <h3 id="1962-recommended-sets">19.6.2 推荐设置<a class="headerlink" href="#1962-recommended-sets" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Set</th>
-<th>Purpose</th>
-<th>Access and reuse rule</th>
+<th>设置</th>
+<th>目的</th>
+<th>访问和重用规则</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Training</td>
-<td>Fit model weights</td>
-<td>May be repeatedly sampled and augmented</td>
+<td>培训</td>
+<td>拟合模型重量</td>
+<td>可重复采样和增强</td>
 </tr>
 <tr>
-<td>Validation</td>
-<td>Select architecture, hyperparameters, thresholds, and aggregation policy</td>
-<td>Repeated use allowed; not a final unbiased estimate</td>
+<td>验证</td>
+<td>选择架构、超参数、阈值和聚合策略</td>
+<td>允许重复使用；不是最终的无偏估计</td>
 </tr>
 <tr>
-<td>Internal test</td>
-<td>Locked engineering comparison before release</td>
-<td>Limited evaluations; never train/tune on failures without creating a new test version</td>
+<td>内部测试</td>
+<td>发布前锁定工程对比</td>
+<td>有限的评估；在没有创建新的测试版本的情况下，切勿对故障进行训练/调整</td>
 </tr>
 <tr>
-<td>Customer acceptance</td>
-<td>Final site-specific validation with production data</td>
-<td>Not used for training or model selection; customer-agreed protocol</td>
+<td>客户验收</td>
+<td>使用生产数据进行最终的特定地点验证</td>
+<td>不用于训练或模型选择；客户同意的协议</td>
 </tr>
 <tr>
-<td>Production audit</td>
-<td>Ongoing drift and sampled OK/NG review</td>
-<td>Time-forward; promoted to training only after evaluation snapshot is frozen</td>
+<td>生产审核</td>
+<td>持续漂移和抽样 OK/NG 审查</td>
+<td>时间向前；仅在评估快照冻结后才晋升为培训</td>
 </tr>
 </tbody>
 </table>
-<p>Percentages depend on available independent groups. A reasonable planning start is 70/15/15 by grouped instances for train/validation/internal test, but sufficient NG examples per component and product take precedence. The customer acceptance set remains separate, not carved out after tuning.</p>
+<p>百分比取决于可用的独立组。合理的计划开始时间为 2015 年 70 月 15 日，按分组实例进行训练/验证/内部测试，但优先考虑每个组件和产品足够的 NG 示例。客户接受集仍然是独立的，不是在调整后雕刻出来的。</p>
 <h3 id="1963-split-construction">19.6.3 分体结构<a class="headerlink" href="#1963-split-construction" title="Permanent link">&para;</a></h3>
-<p>Use deterministic, versioned group assignment with a fixed seed and manifest. Stratify at group level by product, missing-component scenario, site/setup, and relevant operating condition where sample size permits. Report any stratum too small for independent evaluation rather than moving duplicate-like frames across splits.</p>
-<p>Before release, run leakage checks:</p>
+<p>使用具有固定种子和清单的确定性、版本化组分配。在样本量允许的情况下，按产品、缺少组件的情况、站点/设置以及相关操作条件在组级别进行分层。报告任何对于独立评估来说太小的层，而不是跨分割移动类似重复的帧。</p>
+<p>在发布之前，运行泄漏检查：</p>
 <ul>
-<li>Exact SHA-256 duplicate detection across splits.</li>
-<li>Perceptual-hash/embedding nearest-neighbor review for near duplicates and extracted video frames.</li>
-<li>Group-ID overlap checks for physical product, window, session, batch, and date.</li>
-<li>Derived-file lineage checks ensuring crops and augmentations follow their source split.</li>
-<li>Barcode/product-instance identifier overlap check where identifiers are permitted.</li>
-<li>Manual review of the closest cross-split image pairs.</li>
+<li>跨分割的精确 SHA-256 重复检测。</li>
+<li>感知哈希/嵌入最近邻审查，以检查近似重复项和提取的视频帧。</li>
+<li>物理产品、窗口、会话、批次和日期的组 ID 重叠检查。</li>
+<li>派生文件沿袭检查，确保作物和增强遵循其源拆分。</li>
+<li>条形码/产品实例标识符在允许标识符的情况下重叠检查。</li>
+<li>手动检查最接近的交叉分割图像对。</li>
 </ul>
 <h2 id="197-preprocessing-and-augmentation">19.7 预处理和增强<a class="headerlink" href="#197-preprocessing-and-augmentation" title="Permanent link">&para;</a></h2>
-<p>Training and evaluation use the same color conversion, resize/letterbox, ROI expansion/clipping, orientation logic, and image normalization as production. Store these parameters in the model manifest.</p>
-<p>Augmentation may include bounded translation, scale, mild perspective, exposure/contrast, blur, sensor noise, compression, and partial occlusion if each represents plausible production variation. Avoid large rotations or backgrounds not physically possible under the fixed camera. Do not augment validation, test, or acceptance images except deterministic production preprocessing. Audit class-box transformations visually.</p>
+<p>训练和评估使用与生产相同的颜色转换、调整大小/信箱、ROI 扩展/剪切、方向逻辑和图像标准化。将这些参数存储在模型清单中。</p>
+<p>增强可能包括有界平移、缩放、温和透视、曝光/对比度、模糊、传感器噪声、压缩和部分遮挡（如果每个都代表合理的生产变化）。避免在固定相机下物理上不可能出现的大旋转或背景。除确定性生产预处理外，请勿增强验证、测试或验收图像。直观地审核类框转换。</p>
 <h2 id="198-training-reproducibility">19.8 训练再现性<a class="headerlink" href="#198-training-reproducibility" title="Permanent link">&para;</a></h2>
-<p>Each run records source revision, environment/container digest, Python/CUDA/framework versions, random seeds, dataset/ontology version, split manifest, base weights, architecture, image size, epochs, optimizer/schedule, augmentations, thresholds used for reporting, and output artifact checksums. Store human-readable configuration and machine-readable run metadata.</p>
-<p>Training code must support a dry run on synthetic fixtures in CI. Full runs execute on controlled GPU infrastructure, not edge devices. Model artifacts are immutable and linked to evaluation reports; retraining does not overwrite a published semantic version.</p>
-<h2 id="199-detector-level-metrics">19.9 检测器级指标<a class="headerlink" href="#199-detector-level-metrics" title="Permanent link">&para;</a></h2>
-<p>For product and component detectors report:</p>
+<p>每次运行都会记录源修订、环境/容器摘要、Python/CUDA/框架版本、随机种子、数据集/本体版本、拆分清单、基本权重、架构、图像大小、纪元、优化器/计划、增强、用于报告的阈值以及输出工件校验和。存储人类可读的配置和机器可读的运行元数据。</p>
+<p>训练代码必须支持 CI 中合成装置的试运行。完整运行在受控 GPU 基础设施上执行，而不是在边缘设备上执行。模型工件是不可变的并链接到评估报告；重新训练不会覆盖已发布的语义版本。</p>
+<h2 id="199-detector-level-metrics">19.9 Detector-Level Metrics<a class="headerlink" href="#199-detector-level-metrics" title="Permanent link">&para;</a></h2>
+<p>对于产品和组件检测器报告：</p>
 <ul>
-<li>Precision-recall curves and average precision at documented IoU thresholds, including mAP50 and mAP50-95 where appropriate.</li>
-<li>Per-class precision, recall, AP, support, and confidence distribution.</li>
-<li>Product-detection success at the operational confidence/IoU criteria.</li>
-<li>False detections on empty/background frames.</li>
-<li>Localization/ROI containment failures that cause component loss.</li>
-<li>Metrics by product, component, batch/session, position band, image-quality band, and setup revision when sample counts permit.</li>
-<li>Inference preprocessing, model, and postprocessing latency separately on representative edge hardware.</li>
+<li>记录的 IoU 阈值的精确率-召回率曲线和平均精度，包括 mAP50 和 mAP50-95（如果适用）。</li>
+<li>每类精度、召回率、AP、支持度和置信度分布。</li>
+<li>在操作置信度/IoU 标准下产品检测成功。</li>
+<li>空/背景帧的错误检测。</li>
+<li>导致组件丢失的本地化/ROI 遏制失败。</li>
+<li>按产品、组件、批次/会话、位置范围、图像质量范围以及样本数量允许时的设置修订进行衡量。</li>
+<li>在代表性边缘硬件上分别进行推理预处理、模型和后处理延迟。</li>
 </ul>
 <p>mAP 对于模型开发很有用，但不是生产验收指标。根据验证数据选择阈值，将更高的成本分配给错过的 NG 结果，然后在测试/验收评估之前冻结。</p>
 <h2 id="1910-product-level-system-metrics">19.10 产品级系统指标<a class="headerlink" href="#1910-product-level-system-metrics" title="Permanent link">&para;</a></h2>
@@ -3830,7 +3830,7 @@
 <h2 id="1911-temporal-and-video-evaluation">19.11 时间和视频评估<a class="headerlink" href="#1911-temporal-and-video-evaluation" title="Permanent link">&para;</a></h2>
 <p>评估完整、有序的检查窗口，而不是打乱的帧。该工具可重现生产帧采样、质量排除、窗口边界、ROI 转换、聚合和规则。场景包括相邻产品、连续缺陷、混合产品类型、延迟条形码事件、丢帧、部分窗口、重复触发器和多个产品。</p>
 <p>比较单帧基线和配置的时间策略以量化系统的稳健性。报告每个组件检测运行的分布以及由帧混合引起的故障。阈值和策略优化仅使用验证窗口。</p>
-<h2 id="1912-error-analysis">19.12 误差分析<a class="headerlink" href="#1912-error-analysis" title="Permanent link">&para;</a></h2>
+<h2 id="1912-error-analysis">19.12 Error Analysis<a class="headerlink" href="#1912-error-analysis" title="Permanent link">&para;</a></h2>
 <p>每个误报都会受到原始帧/窗口、标签、检测器输出、质量过滤器、条形码/产品分辨率、ROI 映射、聚合证据、规则和精确版本的优先审查。分配一个或多个受控根本原因：</p>
 <ul>
 <li>注释/真实错误。</li>
@@ -3861,7 +3861,7 @@
 <li>根据需要完成现场/客户验收。</li>
 <li>确定推出和回滚版本。</li>
 </ol>
-<p>mAP 较好但产品级 NG 召回率较差的挑战者不会仅在 mAP 上得到推广。</p>
+<p>mAP 更好但产品级 NG 召回率更差的挑战者不会仅在 mAP 上得到推广。</p>
 <h2 id="1916-open-questions-and-validation-required">19.16 未决问题和需要验证<a class="headerlink" href="#1916-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>确认支持的产品/组件、预期缺陷发生率以及每个场景实际创建的 NG 产品的可行数量。</li>
@@ -3876,7 +3876,7 @@
 <h2 id="1917-single-product-data-acquisition-and-annotation-checklist">19.17 单产品数据采集和注释清单<a class="headerlink" href="#1917-single-product-data-acquisition-and-annotation-checklist" title="Permanent link">&para;</a></h2>
 <p>本节是常见情况的权威数据质量规范：<strong>一个
 产品位于一台固定摄像机/照明/定位站</strong>。它转换了
-将 19.2 中的规划范围纳入具体的采购计划，指出了硬性规定
+19.2 中的规划范围成为具体的采购计划，指出了硬性规定
 数据集适配器强制执行的注释规则，并定义切换
 为培训渠道提供支持。对于操作步骤
 参见<a href="../../runbooks/11-data-collection-and-annotation/">Runbook 11</a>；的
@@ -3957,7 +3957,7 @@
 <p><strong>最小闭环</strong>（让管道运行并测量趋势）可以
 从 40-60 个 OK 图像开始，每个缺失位置加上 10-20 个样本，然后扩展到
 上表；展开 <code>verify</code> 暴露遗漏 NG 的位置。</p>
-<h3 id="19173-hard-annotation-rules-enforced-by-the-adapters">19.17.3 硬注释规则（由适配器强制执行）<a class="headerlink" href="#19173-hard-annotation-rules-enforced-by-the-adapters" title="Permanent link">&para;</a></h3>
+<h3 id="19173-hard-annotation-rules-enforced-by-the-adapters">19.17.3 Hard Annotation Rules (Enforced by the Adapters)<a class="headerlink" href="#19173-hard-annotation-rules-enforced-by-the-adapters" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>两个数据集，两阶段语义。</strong> <code>dataset_product</code> 承载一个类
   <code>product</code> = 独立注释的全板框。 <code>dataset_components</code>

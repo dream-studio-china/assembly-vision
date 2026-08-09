@@ -1634,7 +1634,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2492,7 +2492,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -2793,7 +2793,7 @@
   <a href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 参考数据集和基准（环境、大小、地面实况）
+        2. Reference Datasets and Benchmarks (Environment, Size, Ground Truth)
       
     </span>
   </a>
@@ -2909,7 +2909,7 @@
   <a href="#5-what-real-world-success-rates-look-like-good-vs-constrained-conditions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 现实世界的成功率是怎样的：良好条件与受限条件
+        5. What Real-World Success Rates Look Like: Good vs. Constrained Conditions
       
     </span>
   </a>
@@ -3168,7 +3168,7 @@
   <a href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 参考数据集和基准（环境、大小、地面实况）
+        2. Reference Datasets and Benchmarks (Environment, Size, Ground Truth)
       
     </span>
   </a>
@@ -3284,7 +3284,7 @@
   <a href="#5-what-real-world-success-rates-look-like-good-vs-constrained-conditions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 现实世界的成功率是怎样的：良好条件与受限条件
+        5. What Real-World Success Rates Look Like: Good vs. Constrained Conditions
       
     </span>
   </a>
@@ -3333,28 +3333,28 @@
   
 
 
-<h1 id="research-1-achieved-detection-success-rates-in-industrial-inspection-horizontal-comparison">Research 1: Achieved Detection Success Rates in Industrial Inspection (Horizontal Comparison)<a class="headerlink" href="#research-1-achieved-detection-success-rates-in-industrial-inspection-horizontal-comparison" title="Permanent link">&para;</a></h1>
+<h1 id="research-1-achieved-detection-success-rates-in-industrial-inspection-horizontal-comparison">研究1：工业检测中的检测成功率（横向比较）<a class="headerlink" href="#research-1-achieved-detection-success-rates-in-industrial-inspection-horizontal-comparison" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>状态：AssemblyVision 项目的研究综合（边缘优先、两阶段工业装配检测）。
-编译日期：2026-08-04
-目的：跨行业、方法和条件，对与 AssemblyVision 相当的工业检测任务报告的检测成功率（召回率、精确度、准确度、F1、mAP）进行横向比较。
-始终遵循诚实惯例：<strong>实验室/基准数据与生产线报告明确分开</strong>；供应商或数据集报告的数字被标记为此类；估计值和有争议的数字已被标记。当某个号码不可用时，它被明确声明为不可用，而不是发明的。</p>
+<p>Status: Research synthesis for the AssemblyVision project (edge-first, two-stage industrial assembly inspection).
+Date compiled: 2026-08-04
+Purpose: Horizontal comparison of reported detection success rates (recall, precision, accuracy, F1, mAP) for industrial inspection tasks comparable to AssemblyVision, across industries, methods, and conditions.
+Honesty convention used throughout: <strong>lab/benchmark numbers are clearly separated from production-line reports</strong>; vendor- or dataset-reported numbers are flagged as such; estimates and contested figures are marked. When a number is not available, it is explicitly stated as unavailable rather than invented.</p>
 </blockquote>
 <hr />
 <h2 id="1-scope-and-definitions">1. 范围和定义<a class="headerlink" href="#1-scope-and-definitions" title="Permanent link">&para;</a></h2>
-<p>本文档比较了与 AssemblyVision 任务类似的检查任务的<strong>实现的检测成功率</strong>：<strong>组装产品上组件的存在/完整性验证，由固定工业相机在受控照明下成像</strong>。</p>
-<p>最具可比性的已发表证据来自：</p>
+<p>This document compares <strong>achieved detection success rates</strong> for inspection tasks similar to AssemblyVision's task: <strong>presence / completeness verification of components on an assembled product, imaged by a fixed industrial camera under controlled lighting</strong>.</p>
+<p>The most comparable published evidence comes from:</p>
 <ul>
-<li><strong>PCB/电子产品缺陷检测</strong>（密集、细小的特征；固定摄像头）</li>
-<li><strong>钢材、金属、玻璃、木材和纺织品的表面缺陷检测</strong>（固定线扫描）</li>
-<li><strong>装配验证和状态检测</strong>（汽车和工业手动装配）</li>
-<li><strong>包装/食品检验</strong>（计数和完整性检查）</li>
-<li><strong>金属铸造/焊接检查</strong>（孔隙、裂纹、夹杂物）</li>
-<li><strong>药品检验</strong>（直接公布的数字很少；仅邻近证据）</li>
+<li><strong>PCB / electronics defect detection</strong> (dense, small features; fixed cameras)</li>
+<li><strong>Surface defect detection</strong> on steel, metal, glass, wood, and textile (fixed-line scanning)</li>
+<li><strong>Assembly verification and state detection</strong> (automotive and industrial manual assembly)</li>
+<li><strong>Packaging / food inspection</strong> (counting and completeness checks)</li>
+<li><strong>Metal casting / welding inspection</strong> (porosity, cracks, inclusions)</li>
+<li><strong>Pharmaceutical inspection</strong> (direct published numbers are scarce; adjacent evidence only)</li>
 </ul>
-<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回率）在 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
+<p><strong>Metric notes.</strong> Industrial papers overwhelmingly report <strong>mAP (mean Average Precision)</strong> on a held-out test set, not production recall/precision at an operating threshold. mAP is an average over confidence thresholds and is <strong>not</strong> the same as the operational recall a production line achieves after a confidence threshold is fixed. Where papers report precision/recall/F1 at a threshold, this is stated. AssemblyVision's own safety metric (NG recall) is defined in <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>; no public benchmark measures exactly that quantity for assembly completeness, so AssemblyVision must establish its own baseline.</p>
 <hr />
-<h2 id="2-reference-datasets-and-benchmarks-environment-size-ground-truth">2. 参考数据集和基准（环境、大小、地面实况）<a class="headerlink" href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" title="Permanent link">&para;</a></h2>
+<h2 id="2-reference-datasets-and-benchmarks-environment-size-ground-truth">2. Reference Datasets and Benchmarks (Environment, Size, Ground Truth)<a class="headerlink" href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3760,7 +3760,7 @@
 </tbody>
 </table>
 <hr />
-<h2 id="5-what-real-world-success-rates-look-like-good-vs-constrained-conditions">5. 现实世界的成功率是怎样的：良好条件与受限条件<a class="headerlink" href="#5-what-real-world-success-rates-look-like-good-vs-constrained-conditions" title="Permanent link">&para;</a></h2>
+<h2 id="5-what-real-world-success-rates-look-like-good-vs-constrained-conditions">5. What Real-World Success Rates Look Like: Good vs. Constrained Conditions<a class="headerlink" href="#5-what-real-world-success-rates-look-like-good-vs-constrained-conditions" title="Permanent link">&para;</a></h2>
 <p><strong>良好的条件（典型的实验室到中试结果）：</strong></p>
 <ul>
 <li>固定相机、固定照明、一种产品类型、受控姿势、丰富的标记良好的数据、视觉上清晰的类别。</li>
@@ -3788,12 +3788,12 @@
 <hr />
 <h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>没有公共基准测量 <strong>NG 召回/组件存在（装配完整性）检查的误报率</strong>。 AssemblyVision 必须定义自己的接受数据集和置信界限（根据 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>，观察到的零失误的二项式界限）。</li>
-<li>Kaggle 选角数据集数据（7,348 张图像；5,198 张正常/2,150 张有缺陷）是数据集页面报告的，如果用作参考，应重新验证。</li>
-<li>已发布的 PCB mAP 数字来自特定的公共数据集（分割有所不同）； VR-YOLO 和多尺度 PCB 论文使用的确切数据集和分割在引用它们作为锚点之前应该得到确认。</li>
-<li>药品目视检查不存在可靠的公众号；将该行业视为数据缺口。</li>
-<li>Industrial-YOLO 2026 预印本（mAP 98.5%，在 Jetson Orin 上 &gt;120 FPS）未经同行评审；在依赖其吞吐量声明进行边缘硬件预算之前确认或放弃。</li>
-<li>通过与 Ultralytics (https://docs.ultralytics.com/guides/data-collection-and-annotation/) 指南中的“每个类几百个对象就足以启动，每个类约 1,500 个图像/10,000 个实例来实现可靠的实际性能”进行比较，验证 AssemblyVision 自己的目标（300-800 个产品图像；300-500 个实例/组件）是否足够。</li>
+<li>No public benchmark measures <strong>NG recall / false-negative rate for component-presence (assembly completeness) inspection</strong>. AssemblyVision must define its own acceptance dataset and confidence bounds (binomial bound for zero observed misses, per <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>).</li>
+<li>The Kaggle casting dataset figures (7,348 images; 5,198 OK / 2,150 defective) are dataset-page-reported and should be re-verified if used as a reference.</li>
+<li>Published PCB mAP numbers come from specific public datasets (splits vary); the exact dataset and split used by VR-YOLO and the multi-scale PCB papers should be confirmed before citing them as anchors.</li>
+<li>No reliable public numbers exist for pharmaceutical visual inspection; treat that industry as a data gap.</li>
+<li>The Industrial-YOLO 2026 preprint (mAP 98.5%, &gt;120 FPS on Jetson Orin) is non-peer-reviewed; confirm or discard before relying on its throughput claims for edge hardware budgeting.</li>
+<li>Validate whether AssemblyVision's own target (300-800 product images; 300-500 instances/component) is sufficient by comparing against the "few hundred objects per class is enough to start, ~1,500 images / 10,000 instances per class for reliable real-world performance" guidance from Ultralytics (https://docs.ultralytics.com/guides/data-collection-and-annotation/).</li>
 </ul>
 
 

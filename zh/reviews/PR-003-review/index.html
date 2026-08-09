@@ -1634,7 +1634,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2492,7 +2492,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -2665,7 +2665,7 @@
   <a href="#scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scope
+        范围
       
     </span>
   </a>
@@ -2732,7 +2732,7 @@
   <a href="#pipeline-does-not-validate-detection-provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pipeline does not validate detection provenance
+        Pipeline 不验证检测来源
       
     </span>
   </a>
@@ -2848,7 +2848,7 @@
   <a href="#component-dataset-preparation-does-not-share-the-production-selection-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Component dataset preparation does not share the production selection policy
+        组件数据集准备不共享生产选择策略
       
     </span>
   </a>
@@ -3196,7 +3196,7 @@
   <a href="#scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scope
+        范围
       
     </span>
   </a>
@@ -3263,7 +3263,7 @@
   <a href="#pipeline-does-not-validate-detection-provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pipeline does not validate detection provenance
+        Pipeline 不验证检测来源
       
     </span>
   </a>
@@ -3379,7 +3379,7 @@
   <a href="#component-dataset-preparation-does-not-share-the-production-selection-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Component dataset preparation does not share the production selection policy
+        组件数据集准备不共享生产选择策略
       
     </span>
   </a>
@@ -3412,7 +3412,7 @@
 
 
 <h1 id="pr-003-follow-up-review">PR-003 后续审查<a class="headerlink" href="#pr-003-follow-up-review" title="Permanent link">&para;</a></h1>
-<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
 <p>本文件记录了可操作的 P1 和 P2 发现后剩余的
 P0 修复已提交为 <code>677c094</code>、<code>c23d831</code> 和 <code>1618efb</code>。</p>
 <h2 id="resolution-status">解决状态<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
@@ -3465,7 +3465,7 @@ NMS 可以在精确计数规则之前抑制重叠的产品或组件
 组件配置和清单。</p>
 <p>相关参考：<code>docs/contracts/03-ai-rule-and-safety-contracts.md</code>和
 <code>docs/contracts/05-data-api-and-versioning-contracts.md</code>。</p>
-<h3 id="pipeline-does-not-validate-detection-provenance">Pipeline does not validate detection provenance<a class="headerlink" href="#pipeline-does-not-validate-detection-provenance" title="Permanent link">&para;</a></h3>
+<h3 id="pipeline-does-not-validate-detection-provenance">Pipeline 不验证检测来源<a class="headerlink" href="#pipeline-does-not-validate-detection-provenance" title="Permanent link">&para;</a></h3>
 <p><code>apps/edge-service/src/assemblyvision_edge/pipeline.py</code> 不验证
 产品和组件检测属于当前框架、加载的模型、
 或证据聚合之前的预期坐标空间。目前的
@@ -3553,7 +3553,7 @@ JSON独立在最终检查目录中。失败可以离开
 数据集成员资格和沿袭是可审计的。</p>
 <p>相关参考：<code>docs/design/19-training-and-evaluation.md</code>和
 <code>docs/design/25-roadmap.md</code>。</p>
-<h3 id="component-dataset-preparation-does-not-share-the-production-selection-policy">Component dataset preparation does not share the production selection policy<a class="headerlink" href="#component-dataset-preparation-does-not-share-the-production-selection-policy" title="Permanent link">&para;</a></h3>
+<h3 id="component-dataset-preparation-does-not-share-the-production-selection-policy">组件数据集准备不共享生产选择策略<a class="headerlink" href="#component-dataset-preparation-does-not-share-the-production-selection-policy" title="Permanent link">&para;</a></h3>
 <p><code>training/src/assemblyvision_training/prepare_components.py</code> 加载未经验证的
 权重，使用固定置信度设置，并选择最大的产品框
 当检测到多个产品时。这可以根据不同的标签裁剪标签

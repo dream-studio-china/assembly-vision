@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/reviews/AUDIT-001-system-audit/">
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/reviews/PR-015-review/">
       
       
-        <link rel="prev" href="../../runbooks/11-data-collection-and-annotation/">
-      
-      
-        <link rel="next" href="../PR-003-review/">
       
       
         
@@ -31,7 +27,7 @@
     
     
       
-        <title>系统审核 (AUDIT-001) - AssemblyVision</title>
+        <title>PR-015 Review: Per-Component Temporal Aggregation and Product Windows - AssemblyVision</title>
       
     
     
@@ -82,8 +78,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#audit-001-system-and-documentation-consistency-audit" class="md-skip">
-          跳转至
+        <a href="#pr-015-review-per-component-temporal-aggregation-and-product-windows" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -97,7 +93,7 @@
   
 
 <header class="md-header md-header--shadow" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
+  <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
   
@@ -118,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              系统审核 (AUDIT-001)
+              PR-015 Review: Per-Component Temporal Aggregation and Product Windows
             
           </span>
         </div>
@@ -158,7 +154,7 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
@@ -192,16 +188,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -214,7 +210,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -226,7 +222,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -260,7 +256,7 @@
 
 
 
-<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
@@ -272,7 +268,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -299,7 +295,7 @@
   <span class="md-ellipsis">
     
   
-    首页
+    Home
   
 
     
@@ -326,7 +322,7 @@
   <span class="md-ellipsis">
     
   
-    原始需求
+    Source Brief
   
 
     
@@ -371,7 +367,7 @@
   <span class="md-ellipsis">
     
   
-    架构设计
+    Architecture Design
   
 
     
@@ -387,7 +383,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    架构设计
+    Architecture Design
   
 
           </label>
@@ -407,7 +403,7 @@
   <span class="md-ellipsis">
     
   
-    设计索引
+    Design Index
   
 
     
@@ -435,7 +431,7 @@
   <span class="md-ellipsis">
     
   
-    封面与状态
+    Cover and Status
   
 
     
@@ -463,7 +459,7 @@
   <span class="md-ellipsis">
     
   
-    简介
+    Introduction
   
 
     
@@ -491,7 +487,7 @@
   <span class="md-ellipsis">
     
   
-    需求
+    Requirements
   
 
     
@@ -519,7 +515,7 @@
   <span class="md-ellipsis">
     
   
-    架构概览
+    Architecture Overview
   
 
     
@@ -547,7 +543,7 @@
   <span class="md-ellipsis">
     
   
-    边缘端架构
+    Edge Client Architecture
   
 
     
@@ -575,7 +571,7 @@
   <span class="md-ellipsis">
     
   
-    中心端架构
+    Central Server Architecture
   
 
     
@@ -603,7 +599,7 @@
   <span class="md-ellipsis">
     
   
-    AI 检测流水线
+    AI Detection Pipeline
   
 
     
@@ -631,7 +627,7 @@
   <span class="md-ellipsis">
     
   
-    相机与图像采集
+    Camera and Image Acquisition
   
 
     
@@ -659,7 +655,7 @@
   <span class="md-ellipsis">
     
   
-    产品检测与 ROI
+    Product Detection and ROI
   
 
     
@@ -687,7 +683,7 @@
   <span class="md-ellipsis">
     
   
-    组件检测
+    Component Detection
   
 
     
@@ -715,7 +711,7 @@
   <span class="md-ellipsis">
     
   
-    时序聚合
+    Temporal Aggregation
   
 
     
@@ -743,7 +739,7 @@
   <span class="md-ellipsis">
     
   
-    规则引擎
+    Rule Engine
   
 
     
@@ -771,7 +767,7 @@
   <span class="md-ellipsis">
     
   
-    本地存储与保留
+    Local Storage and Retention
   
 
     
@@ -799,7 +795,7 @@
   <span class="md-ellipsis">
     
   
-    上传与同步
+    Upload and Synchronization
   
 
     
@@ -827,7 +823,7 @@
   <span class="md-ellipsis">
     
   
-    数据模型与数据库
+    Data Model and Database
   
 
     
@@ -855,7 +851,7 @@
   <span class="md-ellipsis">
     
   
-    REST API 与事件
+    REST API and Events
   
 
     
@@ -883,7 +879,7 @@
   <span class="md-ellipsis">
     
   
-    边缘端看板
+    Edge Dashboard
   
 
     
@@ -911,7 +907,7 @@
   <span class="md-ellipsis">
     
   
-    中心管理看板
+    Central Admin Dashboard
   
 
     
@@ -939,7 +935,7 @@
   <span class="md-ellipsis">
     
   
-    Monorepo 与代码组织
+    Monorepo and Code Organization
   
 
     
@@ -967,7 +963,7 @@
   <span class="md-ellipsis">
     
   
-    训练与评估
+    Training and Evaluation
   
 
     
@@ -995,7 +991,7 @@
   <span class="md-ellipsis">
     
   
-    部署与运维
+    Deployment and Operations
   
 
     
@@ -1023,7 +1019,7 @@
   <span class="md-ellipsis">
     
   
-    安全与源码分发
+    Security and Source Distribution
   
 
     
@@ -1051,7 +1047,7 @@
   <span class="md-ellipsis">
     
   
-    测试与质量保证
+    Testing and Quality Assurance
   
 
     
@@ -1079,7 +1075,7 @@
   <span class="md-ellipsis">
     
   
-    可观测性与支持
+    Observability and Support
   
 
     
@@ -1107,7 +1103,7 @@
   <span class="md-ellipsis">
     
   
-    人在回路
+    Human in the Loop
   
 
     
@@ -1135,7 +1131,7 @@
   <span class="md-ellipsis">
     
   
-    路线图
+    Roadmap
   
 
     
@@ -1163,7 +1159,7 @@
   <span class="md-ellipsis">
     
   
-    客户验收
+    Customer Acceptance
   
 
     
@@ -1191,7 +1187,7 @@
   <span class="md-ellipsis">
     
   
-    风险与缓解
+    Risks and Mitigations
   
 
     
@@ -1219,7 +1215,7 @@
   <span class="md-ellipsis">
     
   
-    附录
+    Appendices
   
 
     
@@ -1262,7 +1258,7 @@
   <span class="md-ellipsis">
     
   
-    架构决策
+    Architecture Decisions
   
 
     
@@ -1278,7 +1274,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    架构决策
+    Architecture Decisions
   
 
           </label>
@@ -1298,7 +1294,7 @@
   <span class="md-ellipsis">
     
   
-    ADR 索引
+    ADR Index
   
 
     
@@ -1326,7 +1322,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-001：边缘优先检测
+    ADR-001: Edge-First Inspection
   
 
     
@@ -1354,7 +1350,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-002：Python 后端
+    ADR-002: Python Backend
   
 
     
@@ -1382,7 +1378,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-003：Vue 3 与 TypeScript 前端
+    ADR-003: Vue 3 and TypeScript Frontend
   
 
     
@@ -1410,7 +1406,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-004：两阶段检测
+    ADR-004: Two-Stage Detection
   
 
     
@@ -1438,7 +1434,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-005：本地优先存储与延迟上传
+    ADR-005: Local-First Storage and Delayed Upload
   
 
     
@@ -1466,7 +1462,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-006：REST 与 WebSocket
+    ADR-006: REST Plus WebSocket
   
 
     
@@ -1494,7 +1490,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-007：Monorepo
+    ADR-007: Monorepo
   
 
     
@@ -1522,7 +1518,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-008：Docker 部署
+    ADR-008: Docker Deployment
   
 
     
@@ -1550,7 +1546,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-009：静态图像优先 MVP
+    ADR-009: Static-Image-First MVP
   
 
     
@@ -1578,7 +1574,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-010：按组件时序聚合
+    ADR-010: Per-Component Temporal Aggregation
   
 
     
@@ -1606,7 +1602,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-011：标记为训练和检查 MVP
+    ADR-011: Labeled Train-and-Inspect MVP
   
 
     
@@ -1662,7 +1658,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-013：相机帧源和多实例边缘
+    ADR-013: Camera Frame Sources and Multi-Instance Edge
   
 
     
@@ -1690,7 +1686,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-014：Web 开发测试工具
+    ADR-014: Web Dev Test Harness
   
 
     
@@ -1751,7 +1747,7 @@
   <span class="md-ellipsis">
     
   
-    工程合同
+    Engineering Contracts
   
 
     
@@ -1767,7 +1763,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    工程合同
+    Engineering Contracts
   
 
           </label>
@@ -1787,7 +1783,7 @@
   <span class="md-ellipsis">
     
   
-    合同索引
+    Contract Index
   
 
     
@@ -1815,7 +1811,7 @@
   <span class="md-ellipsis">
     
   
-    架构边界
+    Architecture Boundaries
   
 
     
@@ -1843,7 +1839,7 @@
   <span class="md-ellipsis">
     
   
-    代码与接口合同
+    Code and Interface Contracts
   
 
     
@@ -1871,7 +1867,7 @@
   <span class="md-ellipsis">
     
   
-    AI、规则引擎与故障安全合同
+    AI, Rule Engine, and Fail-Safe Contracts
   
 
     
@@ -1899,7 +1895,7 @@
   <span class="md-ellipsis">
     
   
-    边缘端、存储与上传合同
+    Edge, Storage, and Upload Contracts
   
 
     
@@ -1927,7 +1923,7 @@
   <span class="md-ellipsis">
     
   
-    数据、API 与版本合同
+    Data, API, and Versioning Contracts
   
 
     
@@ -1955,7 +1951,7 @@
   <span class="md-ellipsis">
     
   
-    测试、质量与 CI 合同
+    Testing, Quality, and CI Contracts
   
 
     
@@ -1983,7 +1979,7 @@
   <span class="md-ellipsis">
     
   
-    部署、可观测性与运维
+    Deployment, Observability, and Operations
   
 
     
@@ -2011,7 +2007,7 @@
   <span class="md-ellipsis">
     
   
-    安全、权限与审计
+    Security, Permissions, and Audit
   
 
     
@@ -2039,7 +2035,7 @@
   <span class="md-ellipsis">
     
   
-    工业现场与变更控制
+    Industrial Site and Change Control
   
 
     
@@ -2067,7 +2063,7 @@
   <span class="md-ellipsis">
     
   
-    模型、规则、发布与验收
+    Model, Rule, Release, and Acceptance
   
 
     
@@ -2095,7 +2091,7 @@
   <span class="md-ellipsis">
     
   
-    最低强制合同
+    Minimum Mandatory Contracts
   
 
     
@@ -2148,7 +2144,7 @@
   <span class="md-ellipsis">
     
   
-    运维手册
+    Operational Runbooks
   
 
     
@@ -2164,7 +2160,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    运维手册
+    Operational Runbooks
   
 
           </label>
@@ -2184,7 +2180,7 @@
   <span class="md-ellipsis">
     
   
-    运行手册索引
+    Runbook Index
   
 
     
@@ -2212,7 +2208,7 @@
   <span class="md-ellipsis">
     
   
-    相机断开
+    Camera Disconnection
   
 
     
@@ -2240,7 +2236,7 @@
   <span class="md-ellipsis">
     
   
-    模型加载失败
+    Model-Loading Failure
   
 
     
@@ -2268,7 +2264,7 @@
   <span class="md-ellipsis">
     
   
-    磁盘空间不足
+    Low Disk Space
   
 
     
@@ -2296,7 +2292,7 @@
   <span class="md-ellipsis">
     
   
-    上传积压
+    Upload Backlog
   
 
     
@@ -2324,7 +2320,7 @@
   <span class="md-ellipsis">
     
   
-    数据库恢复
+    Database Recovery
   
 
     
@@ -2352,7 +2348,7 @@
   <span class="md-ellipsis">
     
   
-    容器反复重启
+    Repeated Container Restart
   
 
     
@@ -2380,7 +2376,7 @@
   <span class="md-ellipsis">
     
   
-    网络恢复同步
+    Network Recovery Synchronization
   
 
     
@@ -2408,7 +2404,7 @@
   <span class="md-ellipsis">
     
   
-    模型回滚
+    Model Rollback
   
 
     
@@ -2436,7 +2432,7 @@
   <span class="md-ellipsis">
     
   
-    规则回滚
+    Rule Rollback
   
 
     
@@ -2464,7 +2460,7 @@
   <span class="md-ellipsis">
     
   
-    模型改进
+    Model Improvement
   
 
     
@@ -2517,8 +2513,6 @@
       
   
   
-    
-  
   
   
     
@@ -2531,11 +2525,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
@@ -2556,7 +2552,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2571,44 +2567,17 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    系统审核 (AUDIT-001)
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../AUDIT-001-system-audit/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    系统审核 (AUDIT-001)
+    System Audit (AUDIT-001)
   
 
     
@@ -2617,247 +2586,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        范围
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#method" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        方法
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#resolution-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        解决状态
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#overall-verdict" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        总体判断
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-high-findings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 高发现
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 高发现">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#h1-missing-label-files-fabricate-ground-truth" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        H1。丢失的标签文件伪造了真实情况
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#h2-published-references-the-removed-staging-directory" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        H2。发布的 data.yaml 引用已删除的暂存目录
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#h3-relative-can-select-the-wrong-ultralytics-run-path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        H3。相对--out-weights可以选择错误的Ultralytics运行路径
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#h4-states-pr-11-is-open" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        H4。 context.md 表示 PR #11 已开放
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-med-findings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. MED Findings
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. MED Findings">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#41-reproduced-robustness-and-concurrency-defects" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.1 再现健壮性和并发性缺陷
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#42-rule-engine-fail-safe-gaps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.2 Rule engine fail-safe gaps
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#43-manifest-validation-gaps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.3 明显的验证差距
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#44-persistence-and-contract-boundary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.4 Persistence and contract boundary
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#45-api-and-frontend-hardening" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.5 API and frontend hardening
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-stress-test-record" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Stress-Test Record
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-documentation-and-tooling-consistency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 文档和工具的一致性
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-closure-order" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. 关闭令
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-resolution-log-2026-08-09" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 解决日志 (2026-08-09)
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2877,7 +2605,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -2905,7 +2633,7 @@
   <span class="md-ellipsis">
     
   
-    PR-008 评论
+    PR-008 Review
   
 
     
@@ -2958,7 +2686,7 @@
   <span class="md-ellipsis">
     
   
-    调研
+    Research
   
 
     
@@ -2974,7 +2702,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    调研
+    Research
   
 
           </label>
@@ -2994,7 +2722,7 @@
   <span class="md-ellipsis">
     
   
-    工业检测成功率
+    Industrial Inspection Success Rates
   
 
     
@@ -3022,7 +2750,7 @@
   <span class="md-ellipsis">
     
   
-    YOLO 能力与成功率
+    YOLO Capabilities and Success Rates
   
 
     
@@ -3050,7 +2778,7 @@
   <span class="md-ellipsis">
     
   
-    成像流程与训练成本
+    Imaging Workflow and Training Cost
   
 
     
@@ -3103,7 +2831,7 @@
   <span class="md-ellipsis">
     
   
-    贡献者文档
+    Contributor Documentation
   
 
     
@@ -3119,7 +2847,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    贡献者文档
+    Contributor Documentation
   
 
           </label>
@@ -3139,7 +2867,7 @@
   <span class="md-ellipsis">
     
   
-    贡献指南
+    Contributing
   
 
     
@@ -3167,7 +2895,7 @@
   <span class="md-ellipsis">
     
   
-    AI 上下文快照
+    AI Context Snapshot
   
 
     
@@ -3201,7 +2929,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -3210,7 +2938,7 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -3218,7 +2946,7 @@
   <a href="#scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        范围
+        Scope
       
     </span>
   </a>
@@ -3226,10 +2954,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#method" class="md-nav__link">
+  <a href="#merge-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        方法
+        Merge Decision
       
     </span>
   </a>
@@ -3240,7 +2968,7 @@
   <a href="#resolution-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        解决状态
+        Resolution Status
       
     </span>
   </a>
@@ -3248,10 +2976,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#overall-verdict" class="md-nav__link">
+  <a href="#follow-up-todos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        总体判断
+        Follow-up TODOs
       
     </span>
   </a>
@@ -3259,22 +2987,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-high-findings" class="md-nav__link">
+  <a href="#validation-performed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 高发现
+        Validation Performed
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 高发现">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#blocking-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blocking Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Blocking Findings">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#h1-missing-label-files-fabricate-ground-truth" class="md-nav__link">
+  <a href="#f1-time-only-grouping-can-merge-different-products-and-return-ok" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H1。丢失的标签文件伪造了真实情况
+        F1. Time-only grouping can merge different products and return OK
       
     </span>
   </a>
@@ -3282,10 +3021,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#h2-published-references-the-removed-staging-directory" class="md-nav__link">
+  <a href="#f2-a-final-idle-window-is-never-normally-finalized" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H2。发布的 data.yaml 引用已删除的暂存目录
+        F2. A final idle window is never normally finalized
       
     </span>
   </a>
@@ -3293,10 +3032,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#h3-relative-can-select-the-wrong-ultralytics-run-path" class="md-nav__link">
+  <a href="#f3-window-membership-is-determined-by-post-inference-time-not-capture-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H3。相对--out-weights可以选择错误的Ultralytics运行路径
+        F3. Window membership is determined by post-inference time, not capture time
       
     </span>
   </a>
@@ -3304,10 +3043,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#h4-states-pr-11-is-open" class="md-nav__link">
+  <a href="#f4-the-temporal-path-marks-every-detected-product-frame-as-quality-usable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        H4。 context.md 表示 PR #11 已开放
+        F4. The temporal path marks every detected-product frame as quality-usable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f5-any-rejected-frame-forces-ng-despite-sufficient-valid-temporal-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F5. Any rejected frame forces NG despite sufficient valid temporal evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f6-missing-policies-and-equal-thresholds-are-not-fail-closed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F6. Missing policies and equal thresholds are not fail-closed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f7-below-threshold-detections-can-satisfy-exact-component-counts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F7. Below-threshold detections can satisfy exact component counts
       
     </span>
   </a>
@@ -3320,115 +3092,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-med-findings" class="md-nav__link">
+  <a href="#residual-review-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. MED Findings
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. MED Findings">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#41-reproduced-robustness-and-concurrency-defects" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.1 再现健壮性和并发性缺陷
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#42-rule-engine-fail-safe-gaps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.2 Rule engine fail-safe gaps
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#43-manifest-validation-gaps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.3 明显的验证差距
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#44-persistence-and-contract-boundary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.4 Persistence and contract boundary
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#45-api-and-frontend-hardening" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.5 API and frontend hardening
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-stress-test-record" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Stress-Test Record
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-documentation-and-tooling-consistency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 文档和工具的一致性
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-closure-order" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. 关闭令
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-resolution-log-2026-08-09" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 解决日志 (2026-08-09)
+        Residual Review Notes
       
     </span>
   </a>
@@ -3455,493 +3122,352 @@
   
 
 
-<h1 id="audit-001-system-and-documentation-consistency-audit">AUDIT-001：系统和文档一致性审核<a class="headerlink" href="#audit-001-system-and-documentation-consistency-audit" title="Permanent link">&para;</a></h1>
-<h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision 存储库的只读审核（边缘运行时、持久性、
-API、前端、培训、脚本和文档），于 2026 年 8 月 8 日执行。
-此验证更新是针对当前工作树执行的
-2026年8月9日。此更新没有更改生产代码。</p>
-<h2 id="method">方法<a class="headerlink" href="#method" title="Permanent link">&para;</a></h2>
+<h1 id="pr-015-review-per-component-temporal-aggregation-and-product-windows">PR-015 Review: Per-Component Temporal Aggregation and Product Windows<a class="headerlink" href="#pr-015-review-per-component-temporal-aggregation-and-product-windows" title="Permanent link">&para;</a></h1>
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>Code review of <code>feat/temporal-aggregation</code> against <code>main</code> (PR #15). The
+review covers the ADR-010 product-window and per-component aggregation
+implementation, its edge-runtime integration, configuration, generated API
+contracts, documentation, and focused tests.</p>
+<p>Relevant requirements reviewed:</p>
 <ul>
-<li>审查了管理安全、存储、数据/API、安全性和模型发布
-  合同；设计11、14和19；以及 ADR-011 和 ADR-012。</li>
-<li>检查每个引用的当前实施及其相关测试。</li>
-<li>仅当当前代码演示了所述情况时才保留结果
-  行为或当前文档明显冲突的地方。被击中的物品
-  不是一个开放的发现；其原始证据是陈旧的、虚假的或基于
-  不受支持的要求。</li>
+<li><code>docs/design/10-temporal-aggregation.md</code></li>
+<li><code>docs/design/decisions/ADR-010-per-component-temporal-aggregation.md</code></li>
+<li><code>docs/contracts/03-ai-rule-and-safety-contracts.md</code></li>
+<li><code>docs/contracts/06-testing-quality-and-ci-contracts.md</code></li>
 </ul>
-<h2 id="resolution-status">解决状态<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
-<p>所有 HIGH 结果和复制的 MED 结果、规则引擎和清单
-缺陷、API/前端强化项目以及文档对齐
-截至 2026 年 8 月 9 日，项目已<strong>关闭</strong>。每次关闭都记录在
-<a href="#8-resolution-log-2026-08-09">Section 8</a> 提交和验证
-满足其验收标准。唯一剩下的工作是
-权威持久化模式（4.4），明确推迟到
-上传调度程序已构建； M1边界文件现在将其命名为未来
-工作。</p>
-<p>每个行为改变的共享关闭门是：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv run ruff check .
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv run ruff format --check .
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv run mypy .
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv run pytest
+<h2 id="merge-decision">Merge Decision<a class="headerlink" href="#merge-decision" title="Permanent link">&para;</a></h2>
+<p><strong>Do not merge until F1-F7 are resolved.</strong></p>
+<p>The PR introduces the correct high-level separation of frame observations,
+temporal aggregation, and rule evaluation. However, its current time-only
+window implementation can merge evidence from different physical products and
+return <code>OK</code>. It also fails to finalize idle windows, uses processing time rather
+than acquisition time, accepts unusable frames as evidence, and permits
+unconfigured or insufficiently qualified evidence to satisfy rules. These are
+product-decision safety defects, not cosmetic follow-up work.</p>
+<h2 id="resolution-status">Resolution Status<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
+<p>All findings in this review (F1-F7) have been fixed and validated on
+<code>feat/temporal-aggregation</code> by focused commits, each carrying regression tests
+that failed before the fix and pass after:</p>
+<ul>
+<li><strong>F1</strong> - <code>window_strategy: identity</code> seals each product window to one
+  validated per-frame product identity carried on <code>CapturedFrame</code>; a missing
+  identity, a mid-window identity transition, or a confirmed multi-product
+  frame closes the window as an integrity violation
+  (<code>PRODUCT_IDENTITY_MISSING</code> / <code>PRODUCT_IDENTITY_TRANSITION</code> /
+  <code>MULTIPLE_PRODUCTS</code>) that can never release <code>OK</code>. The time-only strategy is
+  an explicit development fallback. Integration tests prove complementary
+  components from two identities inside one interval never produce <code>OK</code>, a
+  same-identity complete window still produces exactly one <code>OK</code>, and a missing
+  identity mid-window aborts as <code>NG</code>. A detector-confirmed
+  <code>MULTIPLE_PRODUCTS</code> outcome is propagated to this integrity path rather than
+  retained as a diagnostic-only frame reason.</li>
+<li><strong>F2</strong> - <code>ProductWindowManager.expire()</code> finalizes an idle window as <code>GAP</code>;
+  the inspection loop calls it on every empty capture poll. A final product
+  with no further frames is decided normally, and shutdown after normal expiry
+  adds no second record.</li>
+<li><strong>F3</strong> - the runtime feeds windows with <code>CapturedFrame.monotonic_ts_ns</code>
+  (acquisition time) instead of post-inference <code>time.monotonic()</code>; stale
+  out-of-order timestamps are dropped and counted. Idle expiry retains a
+  capture-time cutoff, preventing a queued pre-expiry frame from reopening a
+  finalized product window. Fast vs. delayed inference therefore cannot change
+  window membership.</li>
+<li><strong>F4</strong> - <code>frame_observations()</code> derives <code>quality_usable</code> from the
+  product-detection quality gate and preserves its reason codes; unusable
+  frames contribute no detections, no valid opportunities, and no count
+  evidence.</li>
+<li><strong>F5</strong> - per-frame rejection reasons are frame diagnostics in
+  <code>FrameQualitySummary</code> only; the rule engine decides from aggregated evidence,
+  and only window-integrity violations (interruption, identity mixing, missing
+  identity, rule-evaluation failure) independently force <code>NG</code>.</li>
+<li><strong>F6</strong> - an enabled temporal configuration must provide exactly one policy
+  for every rule-required component (validated after the rule loads at
+  instance pipeline build) and rejects policies for unrequired components; a
+  missing policy resolves defensively to <code>UNVERIFIABLE</code> with
+  <code>COMPONENT_POLICY_MISSING</code>; <code>medium_confidence &lt; high_confidence</code> is strict
+  in both the dataclass and the YAML parser.</li>
+<li><strong>F7</strong> - <code>detection_count</code>, box-area, and center summaries include only
+  detections at or above the policy <code>medium_confidence</code> count-evidence
+  threshold; a low-confidence box cannot inflate an exact <code>expected_count</code>.</li>
+</ul>
+<h2 id="follow-up-todos">Follow-up TODOs<a class="headerlink" href="#follow-up-todos" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[x] <strong>Policy identity</strong>: <code>aggregation_policy_version</code> stores the full
+  SHA-256 of the canonical temporal policy document, including format, window
+  parameters, and component thresholds/hit rules. A regression test verifies
+  that a policy change produces a distinct persisted identity.</li>
+<li>[ ] <strong>Production boundary enforcement</strong>: reject <code>window_strategy: time</code> for
+  enabled production inspection, or introduce an explicit, audited development
+  enablement guard. Time-only grouping remains a documented development
+  fallback and cannot prove physical-product isolation.</li>
+<li>[ ] <strong>Maximum-duration isolation</strong>: define and implement the fail-closed
+  behavior when the same validated identity exceeds <code>maximum_window_ms</code>.
+  The identity must not be split into independently releasable windows without
+  a validated end/transition signal.</li>
+</ul>
+<p>Validation executed after the fixes (all green):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git diff --check origin/main...HEAD
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv run ruff check .
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv run ruff format --check .
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv run mypy .
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>uv run pytest            # full repo suite, exit 0
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>pnpm -r build            # exit 0
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>pnpm -r lint             # exit 0
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>pnpm -r test             # TS unit suites
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>cd apps/edge-web &amp;&amp; pnpm test:e2e
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>uv run mkdocs build --strict
 </code></pre></div>
-<p>仅文档更改也必须通过 <code>uv run mkdocs build --strict</code> 时
-文档环境已安装。调查结果仅在以下情况下结束：
-CI 中的具体验收标准和适用的共享门通行证。</p>
-<h2 id="overall-verdict">总体判断<a class="headerlink" href="#overall-verdict" title="Permanent link">&para;</a></h2>
-<p>本次审查中没有任何证据与先前的结论相矛盾，即当前的
-对于普通无效管道状态，单帧管道无法关闭。的
-最高的具体风险是数据集标签伪造、无法发布
-训练数据集，以及记录的训练命令，可以选择错误的
-Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
-留下来。 M1 SQLite 数据库是可重建的读投影，而不是
-合同要求的权威检验/发箱店；未来的调度程序和
-权威持久性工作不得将其当前模式视为令人满意的
-那个生产合同。</p>
-<hr />
-<h2 id="3-high-findings">3. 高发现<a class="headerlink" href="#3-high-findings" title="Permanent link">&para;</a></h2>
-<h3 id="h1-missing-label-files-fabricate-ground-truth">H1。丢失的标签文件伪造了真实情况<a class="headerlink" href="#h1-missing-label-files-fabricate-ground-truth" title="Permanent link">&para;</a></h3>
+<h2 id="validation-performed">Validation Performed<a class="headerlink" href="#validation-performed" title="Permanent link">&para;</a></h2>
+<p>Executed on <code>feat/temporal-aggregation</code> without modifying implementation
+files:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git diff --check origin/main...HEAD
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv run pytest apps/edge-service/tests/test_temporal_aggregator.py apps/edge-service/tests/test_product_window.py apps/edge-service/tests/test_temporal_pipeline.py apps/edge-service/tests/test_edge_config.py apps/edge-service/tests/test_instances.py apps/edge-service/tests/test_rule_engine.py -q
+</code></pre></div>
+<p>Results:</p>
 <ul>
-<li><strong>状态：</strong> 关闭 (3ce3147)。</li>
-<li><strong>证据：</strong> 当 <code>&lt;image-stem&gt;.txt</code> 不存在时，两个适配器都使用 <code>[]</code>
-  （<code>adapt-roboflow-dataset.py:191</code>、<code>adapt-xanylabeling.py:231</code>）。结果是
-  解释为明确的阴性或预期的缺失成分测试
-  样品。这与设计 19.17.3 相矛盾，设计 19.17.3 需要显式的空标签
-  文件和图像/标签配对。</li>
-<li><strong>所需的更改：</strong> 拒绝每个受支持的拆分中每个丢失的标签文件。
-  不要添加适配器选择加入，除非其语义、出处和下游
-  设计并记录验证行为；最小的安全修复是
-  拒绝。在输出之前还拒绝分割内重复的图像主干
-  写入，并将 Roboflow 的 <code>valid</code> 拆分标准化为 <code>val</code>（如果支持）。</li>
-<li><strong>接受：</strong> 为两个适配器添加参数化测试，证明
-  缺少训练、验证或测试标签会引发 <code>ValueError</code>，不留下任何输出
-  或暂存目录，并且不写入<code>test-expected.json</code>。添加测试
-  显式空标签（接受）、同干碰撞（拒绝）和
-  记录的 <code>valid</code> 布局（仅在规范化为 <code>val</code> 时接受）。</li>
+<li>The diff check passed.</li>
+<li>The focused temporal, runtime, configuration, and rule-engine tests passed.</li>
+<li>The passing tests do not exercise the safety cases described below.</li>
 </ul>
-<h3 id="h2-published-references-the-removed-staging-directory">H2。发布的 <code>data.yaml</code> 引用已删除的暂存目录<a class="headerlink" href="#h2-published-references-the-removed-staging-directory" title="Permanent link">&para;</a></h3>
+<h2 id="blocking-findings">Blocking Findings<a class="headerlink" href="#blocking-findings" title="Permanent link">&para;</a></h2>
+<h3 id="f1-time-only-grouping-can-merge-different-products-and-return-ok">F1. Time-only grouping can merge different products and return <code>OK</code><a class="headerlink" href="#f1-time-only-grouping-can-merge-different-products-and-return-ok" title="Permanent link">&para;</a></h3>
+<p><strong>Severity:</strong> P0 / Critical</p>
+<p><strong>Locations:</strong></p>
 <ul>
-<li><strong>状态：</strong> 关闭 (7af307b)。</li>
-<li><strong>证据：</strong> 两个适配器和 <code>prepare_components.py:181-189</code> 序列化
-  从其暂存输出派生的绝对路径，然后自动重命名
-  暂存目录。因此，发布的 YAML 指向不存在的
-  目录。</li>
-<li><strong>需要更改：</strong> 编写相对于数据集 YAML 的可移植路径（对于
-  例如 <code>images/train</code> 和 <code>images/val</code>)，或仅写入最终绝对路径
-  出版后。在适配器、准备、
-  和合成发电机。</li>
-<li><strong>验收：</strong> 对于每个适配器和组件准备，创建一个数据集，
-  发布它，解析它的<code>data.yaml</code>，根据以下内容解析<code>train</code>和<code>val</code>
-  选择约定，并断言最终输出下两个目录都存在
-  root 并包含预期的图像。断言序列化值不包含
-  <code>.staging-</code>。</li>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/window_manager.py:117-139</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:250-255</code></li>
 </ul>
-<h3 id="h3-relative-can-select-the-wrong-ultralytics-run-path">H3。相对<code>--out-weights</code>可以选择错误的Ultralytics运行路径<a class="headerlink" href="#h3-relative-can-select-the-wrong-ultralytics-run-path" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> 关闭 (fcfcf7c)。</li>
-<li><strong>证据：</strong> <code>cli.py:226,313</code> 通过了潜在的亲属
-  <code>weights_path.parent / ".train-runs"</code>； <code>train.py:71-77</code> 然后假设
-  固定返回路径。这与记录的相对路径命令不同
-  并且可能与 Ultralytics 对相关项目的处理发生冲突。</li>
-<li><strong>需要更改：</strong> 在调用 Ultralytics 之前解析项目目录。
-  从解析的项目目录中导出返回的权重路径，验证
-  它存在并且是 <code>place_weights</code> 之前的常规文件，并提出明确的
-  否则训练错误。</li>
-<li><strong>接受：</strong> 使用相对路径对产品和组件 CLI 路径进行单元测试
-  <code>--out-weights</code>，使用 <code>train_detector</code>/YOLO 进行模拟，并断言该项目是
-  绝对并且选择了预期的 <code>best.pt</code>。添加回归测试
-  丢失返回的神器。运行一个记录的相对路径烟雾命令
-  仅当其受控训练装置可用时才进行 CI。</li>
-</ul>
-<h3 id="h4-states-pr-11-is-open">H4。 <code>context.md</code> 表示 PR #11 已开放<a class="headerlink" href="#h4-states-pr-11-is-open" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> ~~无效/过时的审计证据~~。</li>
-<li><strong>原因：</strong> <code>docs/ai/context.md:24,31,40</code> 现在声明 PR #11 已合并，
-  没有开放的 PR，并且 <code>dev</code> 与 <code>main</code> 同步。没有变化
-  此项目需要。</li>
-</ul>
-<hr />
-<h2 id="4-med-findings">4. MED Findings<a class="headerlink" href="#4-med-findings" title="Permanent link">&para;</a></h2>
-<h3 id="41-reproduced-robustness-and-concurrency-defects">4.1 再现健壮性和并发性缺陷<a class="headerlink" href="#41-reproduced-robustness-and-concurrency-defects" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>身份证</th>
-<th>现状和证据</th>
-<th>需要改变</th>
-<th>严格验收</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>M1</td>
-<td>已关闭 (7d987e7)。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
-<td>将路径构建/解析期间引发的 <code>ValueError</code> 视为格式错误的媒体并跳过该记录。隔离单个包中的错误。</td>
-<td>包含 NUL 字节媒体路径的协调测试会导入有效的同级包，跳过格式错误的包，返回正确的导入计数，并发出警告而不引发警告。</td>
-</tr>
-<tr>
-<td>M2</td>
-<td>已关闭 (5f70071)。 <code>register_rule_identity</code> 是选择然后插入，没有 <code>IntegrityError</code> 翻译或重试 (<code>repository.py:688-715</code>)。</td>
-<td>在 unique-race 中，重新读取新事务中存储的哈希值：相等时成功返回，不同时引发 <code>RepositoryError</code>。翻译意外的数据库错误。</td>
-<td>基于屏障的多线程测试同时注册相同的身份/散列，没有原始的 <code>IntegrityError</code>；并发的不同哈希确定性地引发 <code>RepositoryError</code> 并保持原始哈希不变。</td>
-</tr>
-<tr>
-<td>M3</td>
-<td>已关闭 (84e5fd5)。 <code>EdgeRepository.open()</code> 始终为同一新路径（<code>repository.py:155-167</code>、<code>migrate.py:17-29</code>）调用进程不安全的 Alembic 运行器。</td>
-<td>使用进程间锁序列化首次打开迁移，或者在创建引擎之前显式拒绝并发首次打开。在 M1 边界文档中定义行为。</td>
-<td>打开同一个新数据库的多进程测试无需 Alembic <code>KeyError</code> 即可完成，完全保留头部修订版本，启用所需的 SQLite 编译指示，并且两个存储库都可以执行读/写投影操作。</td>
-</tr>
-</tbody>
-</table>
-<h3 id="42-rule-engine-fail-safe-gaps">4.2 Rule engine fail-safe gaps<a class="headerlink" href="#42-rule-engine-fail-safe-gaps" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> 关闭 (653a850)。</li>
-<li><strong>证据：</strong> <code>_spatial_violation</code>不拒绝非有限比率或
-  中心（<code>rule_engine.py:110-123</code>）；与 <code>NaN</code> 的比较是错误的。另外，
-  <code>PRESENT</code> 证据在没有可用框架、置信度或
-  支撑框架（<code>147-168</code>）。这违反了合同03.5的禁令
-  <code>OK</code>来自不完整的结果数据/没有可用的框架和设计11.2的证据
-  要求。</li>
-<li><strong>需要更改：</strong> 明确拒绝非有限几何。礼物之前
-  组件可以满足一个要求，需要<code>usable_frame_count &gt;= 1</code>，a
-  有限<code>best_confidence</code>，非空支撑框架列表，并且一致
-  检测/支持帧计数。决定并记录是否每个
-  当没有声明空间约束时，检测需要几何形状。</li>
-<li><strong>接受：</strong> 表驱动测试注入 <code>NaN</code>、<code>inf</code>、零可用帧、
-  缺乏/非有限置信度，并将支持 ID 清空为其他有效的 ID
-  证据。每个案例都会返回带有稳定原因码的业务<code>NG</code>；没有测试
-  可以从不完整的证据中获得<code>OK</code>。现有有效证据仍须
-  返回<code>OK</code>。</li>
-</ul>
-<h3 id="43-manifest-validation-gaps">4.3 明显的验证差距<a class="headerlink" href="#43-manifest-validation-gaps" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> 关闭 (16448b5)。</li>
-<li><strong>证据：</strong> <code>runtime</code>在探测器构造之前不受约束；
-  <code>verify_manifest_artifact</code> 仅拒绝前导斜杠/反斜杠并允许
-  遍历或类似 URI 的工件路径； <code>verify_model_class_map</code> 假设
-  连续的映射键并且可能泄漏<code>KeyError</code>。</li>
-<li><strong>需要更改：</strong> 清单中需要 <code>runtime == "ultralytics"</code>
-  加载边界、拒绝非文件 URI 方案、解析工件并
-  需要包含在模型束根以下（这允许
-  记录了 <code>models/manifests</code> 和同级 <code>models/weights</code> 布局），以及
-  将格式错误/不连续的类映射转换为 <code>ConfigError</code>。</li>
-<li><strong>接受：</strong> 测试拒绝 <code>runtime="other"</code>，逃离模型的路径
-  路径解析器、符号链接接受的包、编码或方案 URI 形式
-  escape，以及与 <code>ConfigError</code> 不连续的 <code>{1: "component"}</code> 映射。一个
-  有效的相对工件，包括记录的同级权重，以及
-  连续映射继续加载并进行校验和验证。</li>
-</ul>
-<h3 id="44-persistence-and-contract-boundary">4.4 Persistence and contract boundary<a class="headerlink" href="#44-persistence-and-contract-boundary" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>状态：</strong> 部分。 M1 边界已记录 (5488804)；的
-  权威模式、产品配置版本和并发
-  等内容更新插入行为仍然是上传的未来工作
-  调度程序。并不是说 M1 已经实现了生产发件箱。</li>
-<li><strong>证据：</strong> 当前的投影模式缺乏唯一性约束，
-  产品配置列，并上传设计14指定的租约和
-  合同 04/05。 <code>pipeline.py:303-305</code> 创建一个 <code>ProductResolution</code> 没有
-  <code>product_version_id</code>。 <code>upsert_inspection</code> 仍然是先检查后插入，尽管
-  其外部 <code>IntegrityError</code> 翻译可防止原始 SQLAlchemy 泄漏。</li>
-<li><strong>需要更改：</strong> 首先更新设计 14 以区分 M1 可重建
-  来自未来权威商店的投影。在任何上传调度程序之前
-  或多写入器部署，为权威添加 Alembic 迁移
-  模式，保留一个非空的受控产品配置版本，并制作
-  等内容并发检查更新插入幂等返回<code>unchanged</code>。</li>
-<li><strong>接受：</strong> 边界文件指出投影的非权威性
-  限制。权威商店测试验证所有合同 04/05 约束，
-  租赁字段、产品版本追溯、并发等内容
-  更新插入返回<code>unchanged</code>；不同的内容必须在没有突变的情况下失败。</li>
-</ul>
-<h3 id="45-api-and-frontend-hardening">4.5 API and frontend hardening<a class="headerlink" href="#45-api-and-frontend-hardening" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>寻找</th>
-<th>状态</th>
-<th>所需变更和接受</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>无token非环回服务</td>
-<td>已关闭 (056e712)。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
-<td>没有令牌的非环回绑定启动失败，或者需要记录高严重性警告的显式开发覆盖。测试环回/dev、非环回/拒绝和非环回/显式覆盖路径。</td>
-</tr>
-<tr>
-<td>经过身份验证的日志端点公开异常消息/路径</td>
-<td>已关闭 (056e712)。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
-<td>从查看器记录中排除回溯/绝对路径或将端点限制为更高的特权角色。测试引发的异常是否不会在 <code>/logs</code> 中产生回溯或绝对路径。</td>
-</tr>
-<tr>
-<td>会话交换缺乏限制，会话存储没有扫描/上限</td>
-<td>已关闭 (056e712)。</td>
-<td>添加有界的每个源失败尝试限制和有界会话存储以及到期清除；文件 M1 限制。测试重复失败、冷却后成功交换、过期清理和容量行为。</td>
-</tr>
-<tr>
-<td>光标错误和过滤器绑定</td>
-<td>已关闭 (056e712)。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
-<td>将格式错误的光标映射到 <code>400 INVALID_CURSOR</code>；将游标绑定到规范过滤器哈希。测试必须拒绝没有 500 的格式错误/不匹配的游标，并为匹配的过滤器保留稳定的分页。</td>
-</tr>
-<tr>
-<td>如果文件仍然存在，则可以对已清除的媒体进行流式传输</td>
-<td>已关闭 (056e712)。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
-<td>首先检查 <code>PURGED</code> 并始终返回 <code>410 MEDIA_PURGED</code>。使用幸存的文件添加测试。</td>
-</tr>
-<tr>
-<td>非 ASCII 承载标头可以从 <code>compare_digest</code></td>
-<td>引发已关闭 (056e712)。</td>
-<td>将比较类型/编码失败视为无效凭证并返回 <code>401</code>。添加具有非 ASCII 授权输入的 API 测试。</td>
-</tr>
-<tr>
-<td><code>/api</code> 可能会落入 SPA</td>
-<td>已关闭 (056e712)。守卫仅匹配<code>api/</code>。</td>
-<td>在 SPA 回退之前保留 <code>api</code> 和 <code>api/</code>。测试 <code>/api</code>、<code>/api/unknown</code> 和正常的客户端路由。</td>
-</tr>
-<tr>
-<td>不记名令牌可以发送到任意媒体 URL</td>
-<td>已关闭 (4aa7254)。 <code>loadMediaBlobUrl</code> 接受任何 URL。</td>
-<td>在附加令牌之前，要求媒体 URL 的来源等于配置的 HTTP API 来源。允许测试同源/API 源，并且在没有请求的情况下拒绝外国源。</td>
-</tr>
-<tr>
-<td>生产包可以默默选择模拟模式</td>
-<td>已关闭 (4aa7254)。 <code>VITE_API_MODE</code> 默认为模拟并且不存在构建时强制。</td>
-<td>除非模式恰好是<code>http</code>，否则使生产构建失败；保留显式的模拟开发模式。添加针对未设置、无效、模拟开发和 http 生产模式的构建/配置测试。</td>
-</tr>
-<tr>
-<td>缺少 CSP</td>
-<td>已关闭 (056e712)。</td>
-<td>添加与本地服务的仪表板兼容的最低权限 CSP 并测试响应标头。</td>
-</tr>
-<tr>
-<td>实时视图、WebSocket 间隙、线路过滤器、浅记录验证</td>
-<td>已关闭 (4aa7254)。未路由的<code>LiveView.vue</code>被移除；路由的<code>LiveInspection.vue</code>是真正的只读实时页面（由served-dashboard e2e验证）。 WebSocket 服务现在发出序列间隙信号，统计服务在 HTTP 模式下删除不支持的行过滤器，并记录验证检查嵌套使用的字段。</td>
-<td>路由真实的实时页面或明确删除/推迟它；删除 HTTP 模式下不支持的线路控制或保留线路标识；在 <code>sequence &gt; previous + 1</code> 上发出/重新获取；验证嵌套的消费字段。为每个选定的行为添加组件/API 测试。</td>
-</tr>
-<tr>
-<td>~~通过反射的<code>X-Request-ID</code>注入CRLF~~</td>
-<td>~~如上所述无效。~~在此应用程序收到值之前，HTTP 服务器会拒绝请求标头中的 CR/LF；审计没有建立可利用的 CRLF 路径。</td>
-<td>不需要特定于 CRLF 的修复。为了可观察性，仍可采用单独的相关ID格式/长度策略。</td>
-</tr>
-<tr>
-<td>~~WebSocket 序列必须在重新连接时重置~~</td>
-<td>~~无效。~~ 设计 14.4.1 仅在源身份更改时才需要序列重置，而不是在重新连接时重置。</td>
-<td>保留上面单独的缺失间隙信号发现。</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="5-stress-test-record">5. Stress-Test Record<a class="headerlink" href="#5-stress-test-record" title="Permanent link">&para;</a></h2>
-<p>最初的动态观察仍然是历史证据，而不是证明
-当前工作树已修复：</p>
-<table>
-<thead>
-<tr>
-<th>测试</th>
-<th>记录结果</th>
-<th>当前审核状态</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>协调 3000 个捆绑包</td>
-<td>7.6 秒，4.8 MB 数据库</td>
-<td>信息性；协调更改后重新运行。</td>
-</tr>
-<tr>
-<td>200 个并发 HTTP GET</td>
-<td>200/200 成功</td>
-<td>信息性；不进行并发迁移或写入竞争。</td>
-</tr>
-<tr>
-<td>NUL 字节媒体路径</td>
-<td>启动崩溃</td>
-<td>保留为 M1。</td>
-</tr>
-<tr>
-<td>并发规则注册</td>
-<td>原始 <code>IntegrityError</code></td>
-<td>保留为 M2。</td>
-</tr>
-<tr>
-<td>并发首次迁移</td>
-<td>蒸馏器 <code>KeyError</code></td>
-<td>保留为 M3。</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="6-documentation-and-tooling-consistency">6. 文档和工具的一致性<a class="headerlink" href="#6-documentation-and-tooling-consistency" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>寻找</th>
-<th>状态</th>
-<th>所需变更和接受</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Design 14 描述了一个权威的可操作 SQLite 存储，而不是 M1 可重建投影</td>
-<td>已关闭 (5488804)。</td>
-<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
-</tr>
-<tr>
-<td>附录原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
-<td>已关闭 (5488804)。</td>
-<td>使 <code>reason_codes.py</code> 成为显式规范列表或从中生成术语表。测试必须比较所有声明的静态代码和记录的参数化前缀。</td>
-</tr>
-<tr>
-<td>承保范围索赔</td>
-<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍然需要基于来源的验证。</td>
-<td>将数字声明替换为带日期的命令/输出参考，或更新来自一个 CI 工件的所有源。</td>
-</tr>
-<tr>
-<td><code>context.md</code> 中的访问次数</td>
-<td>~~无效/陈旧~~。 <code>context.md:295-297</code> 已记录 63 次测试 (30 + 13 + 17 + 3)。</td>
-<td>此项目无需更改。</td>
-</tr>
-<tr>
-<td>README/QUICKSTART 分支注释和 SECURITY 支持的版本</td>
-<td>已关闭 (5488804)。</td>
-<td>从当前 Git 状态更新合并分支/发布语句。在发布之前根据 <code>git branch -a</code> 和 GitHub 验证所有分支/PR 断言。</td>
-</tr>
-<tr>
-<td>Runbook 10 需要 <code>feat/mvp</code></td>
-<td>已关闭 (5488804)。</td>
-<td>替换为受支持的 <code>main</code>/当前开发工作流程，并在干净的检查中测试每个记录的命令。</td>
-</tr>
-<tr>
-<td>Design 19.17.4/runbook 11/QUICKSTART 声明严格配对和可用适配器 YAML</td>
-<td>H1/H2 后已关闭 (5488804)。</td>
-<td>仅在H1/H2验收通过后更新；文档必须准确描述最终行为。</td>
-</tr>
-<tr>
-<td>合成生成器具有旋转绘图/标签不匹配和无法到达的芯片/二极管丢失情况</td>
-<td>已关闭 (237f96d)。</td>
-<td>更正旋转变换和场景时间表。添加确定性图像/标签几何测试，并断言代表性训练计数中出现的每个缺失场景。</td>
-</tr>
-<tr>
-<td>记录的管道密钥被配置加载器拒绝</td>
-<td>已关闭 (5488804)：2009 年 6 月 8 日设计现在将其标记为推迟。</td>
-<td>要么使用故障安全语义实施和测试每个记录的密钥，要么从设计中删除/推迟它 06/08/09。没有记录的接受密钥可能会因未知而被拒绝。</td>
-</tr>
-<tr>
-<td>清单出处忽略了设计所需的再现性数据 19.8</td>
-<td>已关闭 (99de074)。</td>
-<td>使用不可变数据集/分割引用、种子、纪元、增强、框架/环境版本和校验和扩展清单/运行元数据。测试训练调用会产生所有必需的值。</td>
-</tr>
-<tr>
-<td>合约 10 示例与 <code>ModelManifest</code></td>
-<td>不匹配~~作为架构违规而无效。~~合同 10 表示清单“类似于”示例；它不是一个精确的模式声明。</td>
-<td>改进示例或将其链接到规范模式作为文档质量工作，而不是违反合同。</td>
-</tr>
-<tr>
-<td><code>--allow-missing-labels</code> 标记在以后的运行中不会被读取</td>
-<td>~~不是一个既定的缺陷~~。该标志是每次调用的遗留选择加入；记录它是出处，而不是记录在案的持久授权。</td>
-<td>如果需要持久授权，请创建单独的 ADR/合同和验证设计；否则澄清帮助文本。</td>
-</tr>
-<tr>
-<td>QUICKSTART 调用实时配置/日志视图占位符并将派生端点与设计 15.3 合并在一起</td>
-<td>已关闭 (5488804)。</td>
-<td>更正端点描述和范围标签。添加与已发布端点表匹配的文档链接检查和 API 冒烟测试。</td>
-</tr>
-</tbody>
-</table>
-<h2 id="7-closure-order">7. 关闭令<a class="headerlink" href="#7-closure-order" title="Permanent link">&para;</a></h2>
+<p><code>ProductWindowManager.feed()</code> accepts every non-duplicate frame that arrives
+within <code>maximum_window_ms</code>. No product identity, trigger boundary, barcode,
+entry/exit event, validated tracker continuity, or multiple-product check
+separates its evidence. Therefore a first product that supplies only
+<code>component_a</code> and a second product that supplies only <code>component_b</code> and
+<code>manual</code> can form one all-<code>PRESENT</code> window and be evaluated as <code>OK</code>.</p>
+<p>This violates the physical-product evidence-isolation invariant in design 10
+sections 10.2 and 10.3, the mixed-window exclusion requirement in section
+10.8, ADR-010 section 3, and contract 06 section 5's required mixed-product
+test.</p>
+<p><strong>Resolution:</strong></p>
 <ol>
-<li>H1、H2 和 H3：它们阻止了可靠的记录训练和检查循环。</li>
-<li>M1、M2、M3、规则引擎证据验证和清单遏制：
-   它们是直接的鲁棒性或故障安全缺陷。</li>
-<li>解决之前的M1投影与权威持久性边界
-   实现上传调度程序、WebSocket 运行时或多边缘托管。</li>
-<li>仅在行为发生后才完成文档和工具更正
-   描述已通过其特定的验收标准。</li>
+<li>Make a validated correlation/boundary mechanism an explicit requirement for
+   enabled temporal inspection: for example, a hardware trigger, barcode event,
+   validated tracker identity, or site-validated entry/exit-zone protocol.</li>
+<li>Carry the correlation identity and capture-time provenance in
+   <code>FrameObservation</code> and enforce continuity in <code>ProductWindowManager</code>.</li>
+<li>If continuity cannot be proven, close/abort the window with a durable
+   window-integrity reason and produce <code>NG</code>/<code>UNVERIFIABLE</code>; never aggregate its
+   observations with another product.</li>
+<li>Do not present a plain time-only gap as a production-safe product boundary
+   unless the site-validation constraints that prove no overlap are encoded and
+   enforced.</li>
 </ol>
-<h2 id="8-resolution-log-2026-08-09">8. 解决日志 (2026-08-09)<a class="headerlink" href="#8-resolution-log-2026-08-09" title="Permanent link">&para;</a></h2>
-<p>每个条目都会列出审核项目、关闭该项目的提交以及
-验证满足验收标准。所有关闭都运行了
-共享门（Ruff、format、MyPy、Pytest）；前端关闭还运行
-<code>pnpm -r build/lint/test</code> 和 Playwright 套件以及文档
-关闭已通过<code>uv run mkdocs build --strict</code>。</p>
-<table>
-<thead>
-<tr>
-<th>项目</th>
-<th>提交</th>
-<th>验证</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>H1</td>
-<td>3CE3147</td>
-<td>适配器测试缺失标签（train/val/test）、显式空标签、词干冲突和 <code>valid</code> 别名；失败时没有暂存工件。</td>
-</tr>
-<tr>
-<td>H2</td>
-<td>7af307b</td>
-<td>7af307b测试重新加载每个已发布的 <code>data.yaml</code>，在输出根下解析 <code>images/train</code>/<code>images/val</code>，并断言没有 <code>.staging-</code> 引用。</td>
-</tr>
-<tr>
-<td>H3</td>
-<td>fcfcf7c</td>
-<td>fcfcf7c</td>
-</tr>
-<tr>
-<td>M1</td>
-<td>7d987e7</td>
-<td>7d987e7当导入有效的同级捆绑包时，会跳过 NUL 字节媒体路径； <code>media_path_is_safe</code> 的单元测试。</td>
-</tr>
-<tr>
-<td>M2</td>
-<td>5f70071</td>
-<td>基于屏障的 8 线程相同内容竞赛不会产生原始 <code>IntegrityError</code>；不同内容竞赛引发 <code>RepositoryError</code> 并保留原始哈希值。</td>
-</tr>
-<tr>
-<td>M3</td>
-<td>84e5fd5</td>
-<td>84e5fd5两个子进程打开同一个新数据库并且都成功；规则标识保持一致（flock + 线程锁）。</td>
-</tr>
-<tr>
-<td>4.2</td>
-<td>653a850</td>
-<td>653a850 NaN/inf 比率和中心、零可用框架、缺乏置信度和空支撑框架都会返回业务 <code>NG</code>；有效证据仍然返回<code>OK</code>。</td>
-</tr>
-<tr>
-<td>4.3</td>
-<td>16448b5</td>
-<td>16448b5测试拒绝非 Ultralytics 运行时、转义模型包的路径、方案 URI、驱动器段、符号链接转义以及带有 <code>ConfigError</code> 的非连续类映射；记录的兄弟姐妹体重仍然有效。</td>
-</tr>
-<tr>
-<td>4.5 后端</td>
-<td>056e712</td>
-<td>测试非环回绑定拒绝、日志路径清理、身份验证限制 (429)、会话上限、<code>400 INVALID_CURSOR</code> + 过滤器绑定、<code>410</code>（用于幸存的清除文件）、非 ASCII 承载 <code>401</code>、<code>/api</code> SPA 防护。</td>
-</tr>
-<tr>
-<td>4.5 前端</td>
-<td>4aa7254</td>
-<td><code>VITE_API_MODE</code> 生产执行（在模拟下构建失败）、外国来源媒体拒绝、HTTP 模式行过滤器条带、WebSocket 间隙信号、嵌套记录验证、CSP 标头；通过了 12 项剧作家测试，包括所提供的仪表板。</td>
-</tr>
-<tr>
-<td>6 发电机</td>
-<td>237f96d</td>
-<td>237f96d几何测试（旋转 0 标签与矩形匹配；旋转的 AABB 包含旋转角）和断言每个缺失组件的场景覆盖测试在训练中发生。</td>
-</tr>
-<tr>
-<td>6 出处</td>
-<td>99de074</td>
-<td><code>write_run_metadata</code> 测试断言所有可重复性密钥；幂等重新运行和不同内容拒绝已验证。</td>
-</tr>
-<tr>
-<td>6 个文档</td>
-<td>5488804</td>
-<td>设计 14 M1 边界、原因代码同步测试（模块 == 文档集）、延迟配置密钥、适配器声明、分支/版本文档； <code>mkdocs build --strict</code> 通过。</td>
-</tr>
-</tbody>
-</table>
-<p>唯一没有闭包提交的是 4.4 的权威模式，即
-故意推迟到上传调度程序里程碑。</p>
+<p><strong>Acceptance criteria:</strong></p>
+<ul>
+<li>An integration test puts complementary required-component detections from two
+  different product identities inside one duration/gap interval and verifies
+  that neither product produces <code>OK</code>.</li>
+<li>An identity transition, missing boundary signal, and confirmed multi-product
+  frame each result in an aborted or unverified <code>NG</code> record with a stable reason
+  code.</li>
+<li>A same-identity window with all required component evidence can still produce
+  exactly one <code>OK</code> record.</li>
+<li>The contract-required mixed-product test is retained in the normal test suite.</li>
+</ul>
+<h3 id="f2-a-final-idle-window-is-never-normally-finalized">F2. A final idle window is never normally finalized<a class="headerlink" href="#f2-a-final-idle-window-is-never-normally-finalized" title="Permanent link">&para;</a></h3>
+<p><strong>Severity:</strong> P1 / High</p>
+<p><strong>Locations:</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:246-255</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/window_manager.py:117-139</code></li>
+</ul>
+<p>Gap expiration is checked only by <code>feed()</code> when a later frame arrives. When
+<code>next_frame()</code> times out, the runtime immediately continues. A product at the
+end of a stream therefore remains open until process shutdown, at which point
+<code>force_close()</code> discards the collected evidence and emits an interrupted <code>NG</code>.
+This fails design 10 section 10.8's timeout-close behavior and loses otherwise
+complete decisions.</p>
+<p><strong>Resolution:</strong></p>
+<ol>
+<li>Add a non-interrupted <code>expire(now_monotonic)</code> operation to
+   <code>ProductWindowManager</code>; it should close the active window as <code>GAP</code> once its
+   idle duration reaches the configured limit.</li>
+<li>Call <code>expire(time.monotonic())</code> on every empty <code>next_frame()</code> poll and send
+   a returned window through <code>inspect_window()</code>.</li>
+<li>Keep <code>force_close()</code> exclusively for shutdown/restart interruption.</li>
+</ol>
+<p><strong>Acceptance criteria:</strong></p>
+<ul>
+<li>A complete window followed by no frames for <code>maximum_window_ms</code> persists one
+  normal decision without receiving a trigger frame.</li>
+<li>Shutting down after normal expiry does not create a second, interrupted
+  record.</li>
+<li>Shutting down before expiry creates one <code>NG</code> record containing
+  <code>INSPECTION_INTERRUPTED</code> and no reconstructed partial evidence.</li>
+</ul>
+<h3 id="f3-window-membership-is-determined-by-post-inference-time-not-capture-time">F3. Window membership is determined by post-inference time, not capture time<a class="headerlink" href="#f3-window-membership-is-determined-by-post-inference-time-not-capture-time" title="Permanent link">&para;</a></h3>
+<p><strong>Severity:</strong> P1 / High</p>
+<p><strong>Locations:</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:251-252</code></li>
+<li><code>packages/python/vision-core/src/assemblyvision_vision/sources/frame_source.py:33-38</code></li>
+</ul>
+<p>The runtime supplies <code>time.monotonic()</code> after <code>frame_observations()</code> completes.
+Inference latency, queue backlog, or scheduler delay can consequently split
+contiguous captured frames or merge separately captured products. Each
+<code>CapturedFrame</code> already contains its acquisition monotonic timestamp in
+<code>monotonic_ts_ns</code>, but it is not used by the window manager.</p>
+<p><strong>Resolution:</strong></p>
+<ol>
+<li>Convert <code>CapturedFrame.monotonic_ts_ns</code> to seconds and pass it to
+   <code>ProductWindowManager.feed()</code> for all membership and duration comparisons.</li>
+<li>Use the runtime monotonic clock only for idle-expiration polling.</li>
+<li>Reject stale/out-of-order capture timestamps deterministically as unusable
+   evidence or a window-integrity failure; do not silently reorder them.</li>
+</ol>
+<p><strong>Acceptance criteria:</strong></p>
+<ul>
+<li>Given identical capture timestamps, a fast detector and an intentionally
+  delayed detector produce identical window membership and final decisions.</li>
+<li>Queued frames from different capture-time windows cannot merge merely because
+  they are drained quickly after a stall.</li>
+<li>Out-of-order timestamps have documented <code>NG</code>/discard behavior and regression
+  coverage.</li>
+</ul>
+<h3 id="f4-the-temporal-path-marks-every-detected-product-frame-as-quality-usable">F4. The temporal path marks every detected-product frame as quality-usable<a class="headerlink" href="#f4-the-temporal-path-marks-every-detected-product-frame-as-quality-usable" title="Permanent link">&para;</a></h3>
+<p><strong>Severity:</strong> P1 / High</p>
+<p><strong>Locations:</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/pipeline.py:254-272</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/window_manager.py:65-70</code></li>
+</ul>
+<p><code>frame_observations()</code> sets <code>quality_usable=True</code> unconditionally, although the
+available <code>ProductDetection.quality.usable</code> carries the actual quality-gate
+result. A blurred or otherwise unusable frame with a high-confidence component
+detection can count toward <code>minimum_valid_frames</code> and establish <code>PRESENT</code>.
+This violates contract 03 section 5 and design 10 sections 10.3 and 10.6.</p>
+<p><strong>Resolution:</strong></p>
+<ol>
+<li>Set <code>FrameObservation.quality_usable</code> from the evaluated frame-quality gate
+   (<code>outcome.product_detection.quality.usable</code> when a product is detected).</li>
+<li>Preserve frame-quality rejection reason codes in the observation and
+   <code>FrameQualitySummary</code>.</li>
+<li>Ensure an unusable frame cannot contribute detections, valid opportunities,
+   or count evidence to the temporal aggregator.</li>
+</ol>
+<p><strong>Acceptance criteria:</strong></p>
+<ul>
+<li>A <code>quality.usable=False</code> frame with high-confidence component boxes does not
+  establish <code>PRESENT</code> and does not increment <code>usable_frame_count</code>.</li>
+<li>A window whose remaining usable frames are below <code>minimum_valid_frames</code>
+  resolves every required component to <code>UNVERIFIABLE</code> and produces <code>NG</code>.</li>
+<li>The persisted frame-quality summary counts the rejected frame and includes
+  its quality reason code.</li>
+</ul>
+<h3 id="f5-any-rejected-frame-forces-ng-despite-sufficient-valid-temporal-evidence">F5. Any rejected frame forces <code>NG</code> despite sufficient valid temporal evidence<a class="headerlink" href="#f5-any-rejected-frame-forces-ng-despite-sufficient-valid-temporal-evidence" title="Permanent link">&para;</a></h3>
+<p><strong>Severity:</strong> P1 / High</p>
+<p><strong>Locations:</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/pipeline.py:289-328</code></li>
+</ul>
+<p>All per-frame failure reasons are copied into <code>window_reasons</code>, unioned into
+the final decision reasons, and <code>final_reasons</code> unconditionally changes an
+otherwise successful rule decision to internal <code>NG</code>. Thus a window with the
+required valid high-confidence evidence plus one transient <code>NO_PRODUCT</code>, ROI
+failure, or detector error cannot be <code>OK</code>.</p>
+<p>This contradicts design 10 sections 10.3 and 10.8: rejected frames do not
+contribute, while queue loss and inference errors reduce valid opportunities and
+can only move evidence toward <code>UNCERTAIN</code> or <code>UNVERIFIABLE</code>. It also makes the
+new aggregation robustness ineffective for intermittent rejected frames.</p>
+<p><strong>Resolution:</strong></p>
+<ol>
+<li>Persist rejected-frame reasons as frame diagnostics and in
+   <code>FrameQualitySummary</code>, rather than treating all of them as window-level
+   decision reasons.</li>
+<li>Let the rule engine decide from aggregated evidence and mandatory gates.</li>
+<li>Independently force <code>NG</code> only for documented window-integrity failures, such
+   as interruption, identity mixing, or mandatory barcode/product-resolution
+   failure.</li>
+</ol>
+<p><strong>Acceptance criteria:</strong></p>
+<ul>
+<li>A window meeting all component policies and <code>minimum_valid_frames</code> remains
+  <code>OK</code> when it also contains one rejected non-integrity frame.</li>
+<li>That frame's reason remains persisted and its usable-opportunity count is
+  zero.</li>
+<li>An interrupted or mixed-identity window remains <code>NG</code> even if other frames
+  satisfy every component policy.</li>
+</ul>
+<h3 id="f6-missing-policies-and-equal-thresholds-are-not-fail-closed">F6. Missing policies and equal thresholds are not fail-closed<a class="headerlink" href="#f6-missing-policies-and-equal-thresholds-are-not-fail-closed" title="Permanent link">&para;</a></h3>
+<p><strong>Severity:</strong> P1 / High</p>
+<p><strong>Locations:</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:127-164</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/config.py:599-622</code></li>
+</ul>
+<p>Required components need not have a temporal policy. The aggregator substitutes
+<code>1.0</code> for both thresholds when a policy is absent, and uses inclusive <code>&gt;=</code>, so
+an exact-confidence <code>1.0</code> detection can become <code>PRESENT</code> without a configured,
+versioned policy. The configuration parser also allows
+<code>medium_confidence == high_confidence</code>, despite the design 10 requirement
+<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>.</p>
+<p><strong>Resolution:</strong></p>
+<ol>
+<li>After loading the rule, reject an enabled temporal configuration unless it
+   supplies exactly one policy for every required component and no unknown
+   component keys.</li>
+<li>Enforce <code>medium_confidence &lt; high_confidence</code> in both
+   <code>ComponentTemporalPolicy</code> and configuration parsing.</li>
+<li>Defensively resolve missing policies to <code>UNVERIFIABLE</code> with an explicit
+   configuration reason if invalid configuration reaches the aggregator.</li>
+</ol>
+<p><strong>Acceptance criteria:</strong></p>
+<ul>
+<li>Configuration loading rejects missing required policies, extra policy keys,
+  and equal medium/high thresholds.</li>
+<li>An aggregation unit test proves that an absent policy cannot yield <code>PRESENT</code>,
+  including for confidence <code>1.0</code>.</li>
+<li>A valid complete policy retains the documented high-hit and medium-hit paths.</li>
+</ul>
+<h3 id="f7-below-threshold-detections-can-satisfy-exact-component-counts">F7. Below-threshold detections can satisfy exact component counts<a class="headerlink" href="#f7-below-threshold-detections-can-satisfy-exact-component-counts" title="Permanent link">&para;</a></h3>
+<p><strong>Severity:</strong> P1 / High</p>
+<p><strong>Locations:</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:159-164</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:201-240</code></li>
+</ul>
+<p>Once a high-confidence or qualifying medium hit establishes <code>PRESENT</code>,
+<code>_present()</code> computes <code>detection_count</code>, boxes, and centers from every raw
+detection for that component in the selected frame. A low-confidence false
+positive can therefore inflate a frame from one qualifying detection to the
+rule's exact expected count. For example, with <code>expected_count=2</code>, detections
+at <code>0.95</code> and <code>0.50</code> in one frame can report <code>detection_count=2</code> after the
+<code>0.95</code> detection establishes presence.</p>
+<p><strong>Resolution:</strong></p>
+<ol>
+<li>Define and document a count-evidence confidence threshold; at minimum it
+   must be <code>medium_confidence</code>.</li>
+<li>Pass only qualifying detections to the count, area-ratio, and center summary
+   used by count/spatial rules.</li>
+<li>Keep below-threshold observations available in diagnostics if needed, but
+   never use them to satisfy a business rule.</li>
+</ol>
+<p><strong>Acceptance criteria:</strong></p>
+<ul>
+<li>One high-confidence detection plus one below-medium detection reports a
+  count of one and fails an <code>expected_count=2</code> rule as <code>NG</code>.</li>
+<li>Two qualifying detections in one valid frame satisfy an <code>expected_count=2</code>
+  rule.</li>
+<li>Area and spatial evidence used for count-based rules comes only from the same
+  qualifying set as the count.</li>
+</ul>
+<h2 id="residual-review-notes">Residual Review Notes<a class="headerlink" href="#residual-review-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The OpenAPI enum, generated TypeScript type, and runtime validator correctly
+  include <code>UNVERIFIABLE</code>.</li>
+<li>The aggregation unit tests cover many threshold, duplicate, adjacency, and
+  component-isolation cases. They need the product-isolation, idle-expiry,
+  acquisition-time, quality-gate, missing-policy, and count-confidence cases
+  specified above before the implementation is safe to merge.</li>
+</ul>
 
 
 
@@ -3967,7 +3493,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -3999,7 +3525,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

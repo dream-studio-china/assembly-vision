@@ -965,7 +965,7 @@
   <a href="#1311-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.11 Open Questions and Validation Required
+        13.11 未解决的问题和需要验证
       
     </span>
   </a>
@@ -1802,7 +1802,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2660,7 +2660,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -3228,7 +3228,7 @@
   <a href="#1311-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.11 Open Questions and Validation Required
+        13.11 未解决的问题和需要验证
       
     </span>
   </a>
@@ -3277,7 +3277,7 @@
     Worker-&gt;&gt;Server:使用幂等密钥 POST /api/v1/inspection-uploads
 alt 服务器接受或返回相同的收据
         Server--&gt;&gt;Worker:收据和所需媒体列表
-loop Required media
+loop 所需媒体
             Worker-&gt;&gt;Objects:上传带有校验和的字节
             Objects--&gt;&gt;Worker:对象收据
             Worker-&gt;&gt;Server:确认物品收货
@@ -3307,7 +3307,7 @@ else 永久验证或内容冲突
 loop 停电期间的每个实物产品
         Camera-&gt;&gt;Edge:本地帧和触发器
         Edge-&gt;&gt;Edge:本地检测、聚合和决策
-        Edge-&gt;&gt;Store:Atomically commit decision, evidence, and upload tasks
+        Edge-&gt;&gt;Store:原子提交决策、证据和上传任务
         Queue-&gt;&gt;Queue:保留任务并安排退避
     end
     Note over Edge,Queue:在没有服务器的情况下继续检查
@@ -3382,7 +3382,7 @@ loop 到期排队任务
 <p>按状态显示队列计数和字节数、最早的挂起时间、尝试率、成功/失败率、上传延迟、吞吐量、电路状态和上次成功联系。手动重试仅重置符合条件的任务并保留尝试历史记录。</p>
 <h2 id="1310-verification">13.10 验证<a class="headerlink" href="#1310-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>在每个服务器提交边界超时后集成测试幂等重放。</li>
+<li>在每个服务器提交边界超时后集成测试幂等重播。</li>
 <li>测试重复的任务交付、无序检查、重复的介质以及冲突的校验和。</li>
 <li>故障注入 DNS 失败、连接重置、响应缓慢、<code>429</code>、<code>5xx</code>、<code>401</code>、<code>409</code> 和工作线程终止。</li>
 <li>运行长时间的离线测试，继续检查，重新启动边缘，恢复网络，并验证完全耗尽而没有重复。</li>
@@ -3390,7 +3390,7 @@ loop 到期排队任务
 <li>验证保留不会在验证收据之前删除所需的工件。</li>
 <li>合同测试客户端/服务器模式兼容性和不支持的版本处理。</li>
 </ul>
-<h2 id="1311-open-questions-and-validation-required">13.11 Open Questions and Validation Required<a class="headerlink" href="#1311-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="1311-open-questions-and-validation-required">13.11 未解决的问题和需要验证<a class="headerlink" href="#1311-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>确认中央服务器位置、API 所有权、身份验证方法和证书配置过程。</li>
 <li>定义最大预期中断持续时间和积压，以调整本地存储和服务器摄取容量。</li>

@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/design/decisions/ADR-010-per-component-temporal-aggregation/">
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/reviews/PR-015-review/">
       
       
-        <link rel="prev" href="../ADR-009-static-image-first-mvp/">
-      
-      
-        <link rel="next" href="../ADR-011-labeled-train-and-inspect-mvp/">
       
       
         
@@ -26,19 +22,19 @@
         
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>ADR-010：按组件时序聚合 - AssemblyVision</title>
+        <title>PR-015 评论：每个组件的时间聚合和产品窗口 - AssemblyVision</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -57,7 +53,7 @@
       
     
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#adr-010-per-component-temporal-aggregation" class="md-skip">
+        <a href="#pr-015-review-per-component-temporal-aggregation-and-product-windows" class="md-skip">
           跳转至
         </a>
       
@@ -98,7 +94,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -118,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-010：按组件时序聚合
+              PR-015 评论：每个组件的时间聚合和产品窗口
             
           </span>
         </div>
@@ -262,7 +258,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -292,7 +288,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -319,7 +315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../source-brief/" class="md-nav__link">
+      <a href="../../source-brief/" class="md-nav__link">
         
   
   
@@ -343,8 +339,6 @@
       
   
   
-    
-  
   
   
     
@@ -357,11 +351,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
@@ -382,7 +378,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -400,7 +396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../" class="md-nav__link">
+      <a href="../../design/" class="md-nav__link">
         
   
   
@@ -428,7 +424,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../00-cover-and-status/" class="md-nav__link">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
         
   
   
@@ -456,7 +452,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../01-introduction/" class="md-nav__link">
+      <a href="../../design/01-introduction/" class="md-nav__link">
         
   
   
@@ -484,7 +480,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../02-requirements/" class="md-nav__link">
+      <a href="../../design/02-requirements/" class="md-nav__link">
         
   
   
@@ -512,7 +508,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../03-architecture-overview/" class="md-nav__link">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
         
   
   
@@ -540,7 +536,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../04-edge-client-architecture/" class="md-nav__link">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
         
   
   
@@ -568,7 +564,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../05-central-server-architecture/" class="md-nav__link">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
         
   
   
@@ -596,7 +592,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../06-ai-detection-pipeline/" class="md-nav__link">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
         
   
   
@@ -624,7 +620,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../07-camera-and-image-acquisition/" class="md-nav__link">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
         
   
   
@@ -652,7 +648,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../08-product-detection-and-roi/" class="md-nav__link">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
         
   
   
@@ -680,7 +676,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../09-component-detection/" class="md-nav__link">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
         
   
   
@@ -708,7 +704,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../10-temporal-aggregation/" class="md-nav__link">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
         
   
   
@@ -736,7 +732,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../11-rule-engine/" class="md-nav__link">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
         
   
   
@@ -764,7 +760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../12-local-storage-and-retention/" class="md-nav__link">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
         
   
   
@@ -792,7 +788,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../13-upload-and-synchronization/" class="md-nav__link">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
         
   
   
@@ -820,7 +816,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../14-data-model-and-database/" class="md-nav__link">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
         
   
   
@@ -848,7 +844,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../15-rest-api-and-events/" class="md-nav__link">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
         
   
   
@@ -876,7 +872,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../16-edge-dashboard/" class="md-nav__link">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
         
   
   
@@ -904,7 +900,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../17-central-admin-dashboard/" class="md-nav__link">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
         
   
   
@@ -932,7 +928,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../18-monorepo-and-code-organization/" class="md-nav__link">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
         
   
   
@@ -960,7 +956,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../19-training-and-evaluation/" class="md-nav__link">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
         
   
   
@@ -988,7 +984,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../20-deployment-and-operations/" class="md-nav__link">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
         
   
   
@@ -1016,7 +1012,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../21-security-and-source-distribution/" class="md-nav__link">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
         
   
   
@@ -1044,7 +1040,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../22-testing-and-quality-assurance/" class="md-nav__link">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
         
   
   
@@ -1072,7 +1068,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../23-observability-and-support/" class="md-nav__link">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
         
   
   
@@ -1100,7 +1096,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../24-human-in-the-loop/" class="md-nav__link">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
         
   
   
@@ -1128,7 +1124,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../25-roadmap/" class="md-nav__link">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
         
   
   
@@ -1156,7 +1152,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../26-customer-acceptance/" class="md-nav__link">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
         
   
   
@@ -1184,7 +1180,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../27-risks-and-mitigations/" class="md-nav__link">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
         
   
   
@@ -1212,7 +1208,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../appendices/" class="md-nav__link">
+      <a href="../../design/appendices/" class="md-nav__link">
         
   
   
@@ -1237,8 +1233,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1248,11 +1242,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_31" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_31" >
         
           
           <label class="md-nav__link" for="__nav_3_31" id="__nav_3_31_label" tabindex="0">
@@ -1273,7 +1269,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_31_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_31">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1291,7 +1287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../design/decisions/" class="md-nav__link">
         
   
   
@@ -1319,7 +1315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-001-edge-first-inspection/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
         
   
   
@@ -1347,7 +1343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-002-python-backend/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
         
   
   
@@ -1375,7 +1371,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
         
   
   
@@ -1403,7 +1399,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-004-two-stage-detection/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
         
   
   
@@ -1431,7 +1427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
         
   
   
@@ -1459,7 +1455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-006-rest-plus-websocket/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
         
   
   
@@ -1487,7 +1483,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-007-monorepo/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
         
   
   
@@ -1515,7 +1511,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-008-docker-deployment/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
         
   
   
@@ -1543,7 +1539,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-009-static-image-first-mvp/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
         
   
   
@@ -1568,37 +1564,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-010：按组件时序聚合
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
         
   
   
@@ -1614,142 +1583,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. 现状
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-context" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. 背景
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 决定
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4.范围
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. 后果
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. 后果">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#51-positive" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.1 正面
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#52-negative-and-trade-offs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.2 负面和权衡
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-alternatives" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6.替代方案
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-open-questions-and-validation-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Open Questions and Validation Required
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-links" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 链接
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1762,7 +1595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
         
   
   
@@ -1790,7 +1623,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
         
   
   
@@ -1818,7 +1651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
         
   
   
@@ -1846,7 +1679,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-014-web-dev-test-harness/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
         
   
   
@@ -1943,7 +1776,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/" class="md-nav__link">
+      <a href="../../contracts/" class="md-nav__link">
         
   
   
@@ -1971,7 +1804,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/01-architecture-boundaries/" class="md-nav__link">
+      <a href="../../contracts/01-architecture-boundaries/" class="md-nav__link">
         
   
   
@@ -1999,7 +1832,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
+      <a href="../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
         
   
   
@@ -2027,7 +1860,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
+      <a href="../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
         
   
   
@@ -2055,7 +1888,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
+      <a href="../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
         
   
   
@@ -2083,7 +1916,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
+      <a href="../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
         
   
   
@@ -2111,7 +1944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
+      <a href="../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
         
   
   
@@ -2139,7 +1972,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
+      <a href="../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
         
   
   
@@ -2167,7 +2000,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
+      <a href="../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
         
   
   
@@ -2195,7 +2028,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
+      <a href="../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
         
   
   
@@ -2223,7 +2056,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
+      <a href="../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
         
   
   
@@ -2251,7 +2084,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
+      <a href="../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
         
   
   
@@ -2340,7 +2173,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/" class="md-nav__link">
+      <a href="../../runbooks/" class="md-nav__link">
         
   
   
@@ -2368,7 +2201,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/01-camera-disconnection/" class="md-nav__link">
+      <a href="../../runbooks/01-camera-disconnection/" class="md-nav__link">
         
   
   
@@ -2396,7 +2229,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/02-model-loading-failure/" class="md-nav__link">
+      <a href="../../runbooks/02-model-loading-failure/" class="md-nav__link">
         
   
   
@@ -2424,7 +2257,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/03-low-disk-space/" class="md-nav__link">
+      <a href="../../runbooks/03-low-disk-space/" class="md-nav__link">
         
   
   
@@ -2452,7 +2285,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/04-upload-backlog/" class="md-nav__link">
+      <a href="../../runbooks/04-upload-backlog/" class="md-nav__link">
         
   
   
@@ -2480,7 +2313,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/05-database-recovery/" class="md-nav__link">
+      <a href="../../runbooks/05-database-recovery/" class="md-nav__link">
         
   
   
@@ -2508,7 +2341,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/06-repeated-container-restart/" class="md-nav__link">
+      <a href="../../runbooks/06-repeated-container-restart/" class="md-nav__link">
         
   
   
@@ -2536,7 +2369,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/07-network-recovery-synchronization/" class="md-nav__link">
+      <a href="../../runbooks/07-network-recovery-synchronization/" class="md-nav__link">
         
   
   
@@ -2564,7 +2397,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/08-model-rollback/" class="md-nav__link">
+      <a href="../../runbooks/08-model-rollback/" class="md-nav__link">
         
   
   
@@ -2592,7 +2425,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/09-rule-rollback/" class="md-nav__link">
+      <a href="../../runbooks/09-rule-rollback/" class="md-nav__link">
         
   
   
@@ -2620,7 +2453,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/10-model-improvement/" class="md-nav__link">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
         
   
   
@@ -2648,7 +2481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
         
   
   
@@ -2737,7 +2570,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../reviews/AUDIT-001-system-audit/" class="md-nav__link">
+      <a href="../AUDIT-001-system-audit/" class="md-nav__link">
         
   
   
@@ -2765,7 +2598,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../reviews/PR-003-review/" class="md-nav__link">
+      <a href="../PR-003-review/" class="md-nav__link">
         
   
   
@@ -2793,7 +2626,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../reviews/PR-008-review/" class="md-nav__link">
+      <a href="../PR-008-review/" class="md-nav__link">
         
   
   
@@ -2882,7 +2715,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
         
   
   
@@ -2910,7 +2743,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
         
   
   
@@ -2938,7 +2771,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
         
   
   
@@ -3027,7 +2860,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../contributing/" class="md-nav__link">
+      <a href="../../contributing/" class="md-nav__link">
         
   
   
@@ -3055,7 +2888,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ai/context/" class="md-nav__link">
+      <a href="../../ai/context/" class="md-nav__link">
         
   
   
@@ -3110,10 +2943,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-status" class="md-nav__link">
+  <a href="#scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 现状
+        范围
       
     </span>
   </a>
@@ -3121,10 +2954,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-context" class="md-nav__link">
+  <a href="#merge-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        合并决策
       
     </span>
   </a>
@@ -3132,10 +2965,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-decision" class="md-nav__link">
+  <a href="#resolution-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 决定
+        解决状态
       
     </span>
   </a>
@@ -3143,10 +2976,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-scope" class="md-nav__link">
+  <a href="#follow-up-todos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.范围
+        后续 TODO
       
     </span>
   </a>
@@ -3154,22 +2987,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-consequences" class="md-nav__link">
+  <a href="#validation-performed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 后果
+        已执行验证
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. 后果">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#blocking-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        阻塞结果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="阻塞结果">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51-positive" class="md-nav__link">
+  <a href="#f1-time-only-grouping-can-merge-different-products-and-return" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1 正面
+        F1。仅时间分组可以合并不同的产品并返回OK
       
     </span>
   </a>
@@ -3177,10 +3021,65 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52-negative-and-trade-offs" class="md-nav__link">
+  <a href="#f2-a-final-idle-window-is-never-normally-finalized" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 负面和权衡
+        F2。最终空闲窗口通常不会最终确定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f3-window-membership-is-determined-by-post-inference-time-not-capture-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F3。窗口成员资格由推理后时间决定，而不是捕获时间
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f4-the-temporal-path-marks-every-detected-product-frame-as-quality-usable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F4。时间路径将每个检测到的产品框架标记为质量可用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f5-any-rejected-frame-forces-despite-sufficient-valid-temporal-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F5。尽管有足够的有效时间证据，任何被拒绝的帧都会强制 NG
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f6-missing-policies-and-equal-thresholds-are-not-fail-closed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F6。缺失的策略和相同的阈值不会失败关闭
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f7-below-threshold-detections-can-satisfy-exact-component-counts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F7。低于阈值的检测可以满足精确的元件计数
       
     </span>
   </a>
@@ -3193,32 +3092,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-alternatives" class="md-nav__link">
+  <a href="#residual-review-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.替代方案
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-open-questions-and-validation-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Open Questions and Validation Required
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-links" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 链接
+        剩余审查说明
       
     </span>
   </a>
@@ -3245,51 +3122,349 @@
   
 
 
-<h1 id="adr-010-per-component-temporal-aggregation">ADR-010：每个组件的时间聚合<a class="headerlink" href="#adr-010-per-component-temporal-aggregation" title="Permanent link">&para;</a></h1>
-<h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
-<p>已接受</p>
-<h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
-<p>YOLO 产生每帧检测，而业务决策适用于一个物理产品。各个帧可能会模糊、被遮挡、曝光不良或显示不同的组件。整体产品多数投票可以将一贯缺失的组件隐藏在其他强大的框架后面，并且不表达每个所需规则项的证据。</p>
-<h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>将框架分组到明确的物理产品检查窗口中，然后为每个所需组件独立地汇总证据。策略是版本化且可配置的，包括一个高置信度检测、多个中等置信度检测、相邻帧证据、最小可见区域、最低帧质量以及排除不可用帧。确定性规则引擎评估生成的每个组件状态。</p>
-<p>时间聚合不会提高底层 YOLO 模型的单帧精度。它通过跨框架结合证据来提高系统级的稳健性。不明确的产品边界、框架来源或多个产品会导致明确的不正常/中止路径，而不是混合证据。</p>
-<h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
-<p>这适用于实施实时/视频采集时。静态图像 MVP 无需时间聚合即可发出帧级证据。窗口机制可以使用硬件触发器、条形码事件、跟踪、进入/退出区域、时间限制或基于站点验证的传送带传感器集成。</p>
-<h2 id="5-consequences">5. 后果<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
-<h3 id="51-positive">5.1 正面<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
+<h1 id="pr-015-review-per-component-temporal-aggregation-and-product-windows">PR-015 评论：每个组件的时间聚合和产品窗口<a class="headerlink" href="#pr-015-review-per-component-temporal-aggregation-and-product-windows" title="Permanent link">&para;</a></h1>
+<h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>针对 <code>main</code> 对 <code>feat/temporal-aggregation</code> 进行代码审查（PR #15）。的
+审查涵盖 ADR-010 产品窗口和每个组件的聚合
+实现、其边缘运行时集成、配置、生成的 API
+合同、文档和重点测试。</p>
+<p>审查的相关要求：</p>
 <ul>
-<li>保留特定于组件的缺席证据和原因代码。</li>
-<li>降低对一帧不可用或短暂遮挡的敏感度。</li>
-<li>支持特定于产品的关键性和阈值。</li>
-<li>提供每个最终组件状态背后的可检查证据。</li>
+<li><code>docs/design/10-temporal-aggregation.md</code></li>
+<li><code>docs/design/decisions/ADR-010-per-component-temporal-aggregation.md</code></li>
+<li><code>docs/contracts/03-ai-rule-and-safety-contracts.md</code></li>
+<li><code>docs/contracts/06-testing-quality-and-ci-contracts.md</code></li>
 </ul>
-<h3 id="52-negative-and-trade-offs">5.2 负面和权衡<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
+<h2 id="merge-decision">合并决策<a class="headerlink" href="#merge-decision" title="Permanent link">&para;</a></h2>
+<p><strong>在 F1-F7 解决之前不要合并。</strong></p>
+<p>PR 引入了帧观测的正确高级分离，
+时间聚合和规则评估。然而，目前仅限时间
+窗口实施可以合并来自不同物理产品的证据，
+返回<code>OK</code>。它也无法完成空闲窗口，而是使用处理时间
+比采集时间，接受不可用的帧作为证据，并允许
+未配置或资格不足的证据无法满足规则。这些是
+产品决定安全缺陷，而非化妆品后续工作。</p>
+<h2 id="resolution-status">解决状态<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
+<p>本次审查 (F1-F7) 中的所有发现均已在
+<code>feat/temporal-aggregation</code> 通过集中提交，每个提交都进行回归测试
+在修复之前失败并在修复之后通过：</p>
 <ul>
-<li>正确的产品窗口边界对于防止框架混合至关重要。</li>
-<li>需要更多配置、状态、延迟和测试用例。</li>
-<li>宽松的证据规则可以将一次错误检测转变为错误的 OK。</li>
-<li>相关的相邻帧不提供独立的统计证据。</li>
+<li><strong>F1</strong> - <code>window_strategy: identity</code> 将每个产品窗口密封为一个
+  <code>CapturedFrame</code> 上携带的经过验证的每帧产品标识；失踪的
+  身份、中间窗口身份转换或已确认的多产品
+  框架关闭窗口作为完整性违规
+  (<code>PRODUCT_IDENTITY_MISSING</code> / <code>PRODUCT_IDENTITY_TRANSITION</code> /
+  <code>MULTIPLE_PRODUCTS</code>）永远无法释放<code>OK</code>。仅限时间的策略是
+  明确的发展后备。集成测试证明是互补的
+  来自一个区间内的两个身份的组件永远不会产生 <code>OK</code>，a
+  相同身份完整窗口仍然准确地生成一个<code>OK</code>，并且缺少一个
+  身份中间窗口中止为 <code>NG</code>。经探测器确认
+  <code>MULTIPLE_PRODUCTS</code> 结果被传播到这条完整性路径而不是
+  保留作为仅诊断框架原因。</li>
+<li><strong>F2</strong> - <code>ProductWindowManager.expire()</code> 将空闲窗口最终确定为 <code>GAP</code>；
+  检查循环在每个空捕获轮询时调用它。最终产品
+  正常判定不再有帧，正常到期后关闭
+  不添加第二条记录。</li>
+<li><strong>F3</strong> - 运行时为窗口提供 <code>CapturedFrame.monotonic_ts_ns</code>
+  （获取时间）而不是推理后<code>time.monotonic()</code>；陈旧的
+  无序时间戳将被丢弃并计数。空闲期满保留
+  捕获时间截止，防止排队的到期前帧重新打开
+  最终产品窗口。因此，快速推理与延迟推理不能改变
+  窗口会员资格。</li>
+<li><strong>F4</strong> - <code>frame_observations()</code> 源自 <code>quality_usable</code>
+  产品检测质量门并保留其原因代码；无法使用的
+  帧没有贡献任何检测，没有有效机会，也没有计数
+  证据。</li>
+<li><strong>F5</strong> - 每帧拒绝原因是帧诊断
+  仅<code>FrameQualitySummary</code>；规则引擎根据汇总的证据做出决定，
+  并且只有窗口完整性违规（中断、身份混合、丢失
+  身份，规则评估失败）独立强制<code>NG</code>。</li>
+<li><strong>F6</strong> - 启用的临时配置必须提供一个策略
+  对于每个规则所需的组件（在规则加载后验证
+  实例管道构建）并拒绝不需要的组件的策略；一个
+  缺失的策略防御性地解析为 <code>UNVERIFIABLE</code>
+  <code>COMPONENT_POLICY_MISSING</code>； <code>medium_confidence &lt; high_confidence</code> 是严格的
+  在数据类和 YAML 解析器中。</li>
+<li><strong>F7</strong> - <code>detection_count</code>，框区域和中心摘要仅包括
+  等于或高于策略 <code>medium_confidence</code> 计数证据的检测
+  阈值；低置信度框无法夸大精确的 <code>expected_count</code>。</li>
 </ul>
-<h2 id="6-alternatives">6.替代方案<a class="headerlink" href="#6-alternatives" title="Permanent link">&para;</a></h2>
+<h2 id="follow-up-todos">后续 TODO<a class="headerlink" href="#follow-up-todos" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>单个最佳帧：</strong> 由于对模糊、遮挡和计时不必要地敏感而被拒绝。</li>
-<li><strong>整个产品多数投票：</strong> 被拒绝，因为它没有评估每个必需的组件。</li>
-<li><strong>平均所有置信值：</strong> 被拒绝，因为缺少检测、不可用的帧、可见性和相关帧需要显式语义。</li>
-<li><strong>存在的任何检测手段：</strong>仅允许作为具有足够高阈值的有意验证的每个组件策略，而不是作为通用规则。</li>
-<li><strong>跟踪模型作为最终决策：</strong> 可能支持窗口，但不会取代组件规则和证据聚合。</li>
+<li>[x] <strong>策略身份</strong>：<code>aggregation_policy_version</code>存储完整的
+  规范时态策略文档的 SHA-256，包括格式、窗口
+  参数和组件阈值/命中规则。回归测试验证
+  政策变化会产生独特的持久身份。</li>
+<li>[ ] <strong>生产边界执行</strong>：拒绝 <code>window_strategy: time</code>
+  启用生产检查，或引入明确的、经过审计的开发
+  赋能守卫。仅时间分组仍然是有记录的开发
+  回退并且无法证明物理产品隔离。</li>
+<li>[ ] <strong>最大持续时间隔离</strong>：定义并实现故障关闭
+  当相同的经过验证的身份超过 <code>maximum_window_ms</code> 时的行为。
+  身份不得被分割成可独立发布的窗口，除非
+  经过验证的结束/转换信号。</li>
 </ul>
-<h2 id="7-open-questions-and-validation-required">7. Open Questions and Validation Required<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<p>修复后执行的验证（全绿色）：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git diff --check origin/main...HEAD
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv run ruff check .
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv run ruff format --check .
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv run mypy .
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>uv run pytest            # full repo suite, exit 0
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>pnpm -r build            # exit 0
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>pnpm -r lint             # exit 0
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>pnpm -r test             # TS unit suites
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>cd apps/edge-web &amp;&amp; pnpm test:e2e
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>uv run mkdocs build --strict
+</code></pre></div>
+<h2 id="validation-performed">已执行验证<a class="headerlink" href="#validation-performed" title="Permanent link">&para;</a></h2>
+<p>在 <code>feat/temporal-aggregation</code> 上执行，无需修改实现
+文件：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git diff --check origin/main...HEAD
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv run pytest apps/edge-service/tests/test_temporal_aggregator.py apps/edge-service/tests/test_product_window.py apps/edge-service/tests/test_temporal_pipeline.py apps/edge-service/tests/test_edge_config.py apps/edge-service/tests/test_instances.py apps/edge-service/tests/test_rule_engine.py -q
+</code></pre></div>
+<p>结果：</p>
 <ul>
-<li>产品窗口信号、传送带速度、产品间距和最大重叠产品。</li>
-<li>来自验证数据的每个组件阈值、邻接/质量策略和延迟预算。</li>
-<li>内部<code>UNCERTAIN</code>细节是否暴露给操作员和API；其业务成果仍为<code>NG</code>。</li>
+<li>差异检查通过。</li>
+<li>通过了重点时间、运行时、配置和规则引擎测试。</li>
+<li>通过的测试不执行下述安全案例。</li>
 </ul>
-<h2 id="8-links">8. 链接<a class="headerlink" href="#8-links" title="Permanent link">&para;</a></h2>
+<h2 id="blocking-findings">阻塞结果<a class="headerlink" href="#blocking-findings" title="Permanent link">&para;</a></h2>
+<h3 id="f1-time-only-grouping-can-merge-different-products-and-return">F1。仅时间分组可以合并不同的产品并返回<code>OK</code><a class="headerlink" href="#f1-time-only-grouping-can-merge-different-products-and-return" title="Permanent link">&para;</a></h3>
+<p><strong>严重性：</strong> P0 / 严重</p>
+<p><strong>地点：</strong></p>
 <ul>
-<li><a href="../../22-testing-and-quality-assurance/">Testing and Quality Assurance</a></li>
-<li><a href="../../27-risks-and-mitigations/">Risks and Mitigations</a></li>
-<li><a href="../ADR-004-two-stage-detection/">ADR-004: Two-stage detection</a></li>
-<li><a href="../ADR-005-local-first-storage-and-delayed-upload/">ADR-005: Local-first storage and delayed upload</a></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/window_manager.py:117-139</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:250-255</code></li>
+</ul>
+<p><code>ProductWindowManager.feed()</code> 接受到达的每个非重复帧
+在 <code>maximum_window_ms</code> 内。无产品标识、触发边界、条形码、
+进入/退出事件、经过验证的跟踪器连续性或多产品检查
+分离其证据。因此第一个产品只提供
+<code>component_a</code> 和仅提供 <code>component_b</code> 的第二种产品以及
+<code>manual</code>可以形成一个全<code>PRESENT</code>窗口并被评估为<code>OK</code>。</p>
+<p>这违反了设计 10 中的物理产品证据隔离不变量
+第 10.2 和 10.3 节，混合窗口排除要求
+10.8、ADR-010 第 3 节和合同 06 第 5 节要求的混合产品
+测试。</p>
+<p><strong>分辨率：</strong></p>
+<ol>
+<li>将经过验证的相关性/边界机制作为明确的要求
+   启用时间检查：例如，硬件触发、条形码事件、
+   经过验证的跟踪器身份，或经过站点验证的进入/退出区域协议。</li>
+<li>携带相关身份和捕获时间来源
+   <code>FrameObservation</code> 并强制 <code>ProductWindowManager</code> 中的连续性。</li>
+<li>如果无法证明连续性，请使用耐用的按钮关闭/中止窗口
+   窗口完整性原因并产生 <code>NG</code>/<code>UNVERIFIABLE</code>；从不聚合其
+   对另一种产品的观察。</li>
+<li>不要将简单的时间间隔作为生产安全的产品边界
+   除非证明没有重叠的站点验证约束被编码并且
+   强制执行。</li>
+</ol>
+<p><strong>验收标准：</strong></p>
+<ul>
+<li>集成测试从两个方面进行互补的所需组件检测
+  一个持续时间/间隙间隔内的不同产品标识并进行验证
+  两种产品都不产生<code>OK</code>。</li>
+<li>身份转换、边界信号缺失和已确认的多产品
+  将每个结果框入具有稳定原因的中止或未经验证的 <code>NG</code> 记录中
+  代码。</li>
+<li>具有所有必需组件证据的相同身份窗口仍然可以产生
+  恰好有一个 <code>OK</code> 记录。</li>
+<li>合同要求的混合产品测试保留在正常测试套件中。</li>
+</ul>
+<h3 id="f2-a-final-idle-window-is-never-normally-finalized">F2。最终空闲窗口通常不会最终确定<a class="headerlink" href="#f2-a-final-idle-window-is-never-normally-finalized" title="Permanent link">&para;</a></h3>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:246-255</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/window_manager.py:117-139</code></li>
+</ul>
+<p>当较晚的帧到达时，间隙过期仅由 <code>feed()</code> 检查。当
+<code>next_frame()</code>超时，运行时立即继续。一款产品位于
+因此，流的末尾保持打开状态，直到进程关闭，此时
+<code>force_close()</code>丢弃收集到的证据并发出中断的<code>NG</code>。
+这导致设计 10 第 10.8 节的超时关闭行为失败，否则会失败
+完整的决定。</p>
+<p><strong>分辨率：</strong></p>
+<p>1.添加不中断的<code>expire(now_monotonic)</code>操作
+   <code>ProductWindowManager</code>；它应该将活动窗口关闭为 <code>GAP</code> 一旦
+   空闲时间达到配置的限制。
+2. 在每个空的 <code>next_frame()</code> 轮询中调用 <code>expire(time.monotonic())</code> 并发送
+   通过 <code>inspect_window()</code> 返回的窗口。
+3. 保留<code>force_close()</code>专用于关机/重启中断。</p>
+<p><strong>验收标准：</strong></p>
+<ul>
+<li>一个完整的窗口，后面没有 <code>maximum_window_ms</code> 的框架，仍然存在
+  没有收到触发帧的正常决策。</li>
+<li>正常到期后关闭不会产生第二次中断
+  记录。</li>
+<li>到期前关闭会创建一条 <code>NG</code> 记录，其中包含
+  <code>INSPECTION_INTERRUPTED</code>并且没有重建部分证据。</li>
+</ul>
+<h3 id="f3-window-membership-is-determined-by-post-inference-time-not-capture-time">F3。窗口成员资格由推理后时间决定，而不是捕获时间<a class="headerlink" href="#f3-window-membership-is-determined-by-post-inference-time-not-capture-time" title="Permanent link">&para;</a></h3>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:251-252</code></li>
+<li><code>packages/python/vision-core/src/assemblyvision_vision/sources/frame_source.py:33-38</code></li>
+</ul>
+<p>运行时在 <code>frame_observations()</code> 完成后提供 <code>time.monotonic()</code>。
+推理延迟、队列积压或调度程序延迟可能会因此而分裂
+连续捕获的帧或合并单独捕获的产品。每个
+<code>CapturedFrame</code> 已包含其获取单调时间戳
+<code>monotonic_ts_ns</code>，但窗口管理器不使用它。</p>
+<p><strong>分辨率：</strong></p>
+<ol>
+<li>将 <code>CapturedFrame.monotonic_ts_ns</code> 转换为秒并传递给
+   <code>ProductWindowManager.feed()</code> 用于所有成员资格和持续时间比较。</li>
+<li>仅将运行时单调时钟用于空闲到期轮询。</li>
+<li>明确拒绝陈旧/无序的捕获时间戳，因为它们不可用
+   证据或窗口完整性故障；不要默默地重新排序它们。</li>
+</ol>
+<p><strong>验收标准：</strong></p>
+<ul>
+<li>给定相同的捕获时间戳、快速检测器和有意的
+  延迟检测器产生相同的窗口成员资格和最终决策。</li>
+<li>来自不同捕获时间窗口的排队帧不能仅仅因为合并
+  摊位后它们很快就会被排干。</li>
+<li>无序时间戳记录了<code>NG</code>/丢弃行为和回归
+  覆盖范围。</li>
+</ul>
+<h3 id="f4-the-temporal-path-marks-every-detected-product-frame-as-quality-usable">F4。时间路径将每个检测到的产品框架标记为质量可用<a class="headerlink" href="#f4-the-temporal-path-marks-every-detected-product-frame-as-quality-usable" title="Permanent link">&para;</a></h3>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/pipeline.py:254-272</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/window_manager.py:65-70</code></li>
+</ul>
+<p><code>frame_observations()</code> 无条件设置 <code>quality_usable=True</code>，尽管
+available <code>ProductDetection.quality.usable</code> 携带实际的质量门
+结果。具有高置信度组件的模糊或无法使用的框架
+检测可以计入<code>minimum_valid_frames</code>并建立<code>PRESENT</code>。
+这违反了合同 03 第 5 节和设计 10 第 10.3 节和 10.6 节。</p>
+<p><strong>分辨率：</strong></p>
+<ol>
+<li>从评估的帧质量门设置<code>FrameObservation.quality_usable</code>
+   （<code>outcome.product_detection.quality.usable</code> 当检测到产品时）。</li>
+<li>在观察中保留帧质量拒绝原因代码
+   <code>FrameQualitySummary</code>。</li>
+<li>确保不可用的框架无法提供检测、有效机会、
+   或将证据计数到时间聚合器。</li>
+</ol>
+<p><strong>验收标准：</strong></p>
+<ul>
+<li>具有高置信度组件盒的 <code>quality.usable=False</code> 框架不会
+  建立<code>PRESENT</code>并且不增加<code>usable_frame_count</code>。</li>
+<li>剩余可用帧低于<code>minimum_valid_frames</code>的窗口
+  将每个必需的组件解析为 <code>UNVERIFIABLE</code> 并生成 <code>NG</code>。</li>
+<li>持续的帧质量摘要对被拒绝的帧进行计数并包括
+  其质量原因代码。</li>
+</ul>
+<h3 id="f5-any-rejected-frame-forces-despite-sufficient-valid-temporal-evidence">F5。尽管有足够的有效时间证据，任何被拒绝的帧都会强制 <code>NG</code><a class="headerlink" href="#f5-any-rejected-frame-forces-despite-sufficient-valid-temporal-evidence" title="Permanent link">&para;</a></h3>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/pipeline.py:289-328</code></li>
+</ul>
+<p>所有每帧失败原因都复制到 <code>window_reasons</code> 中，并合并到
+最终决定理由，并且<code>final_reasons</code>无条件改变
+否则成功的规则决策将由内部 <code>NG</code> 决定。因此，一个窗口
+需要有效的高置信度证据加上一个瞬态<code>NO_PRODUCT</code>，ROI
+失败，或检测器错误不能为<code>OK</code>。</p>
+<p>这与设计 10 第 10.3 和 10.8 节相矛盾：被拒绝的帧不
+贡献，而队列丢失和推理错误减少了有效机会，
+只能将证据移向<code>UNCERTAIN</code>或<code>UNVERIFIABLE</code>。这也使得
+新的聚合鲁棒性对于间歇性拒绝的帧无效。</p>
+<p><strong>分辨率：</strong></p>
+<ol>
+<li>保留拒绝帧的原因作为帧诊断并在
+   <code>FrameQualitySummary</code>，而不是将它们全部视为窗口级
+   决定原因。</li>
+<li>让规则引擎根据聚合证据和强制门做出决定。</li>
+<li>仅针对记录的窗口完整性故障独立强制 <code>NG</code>，例如
+   作为中断、身份混合或强制条形码/产品解析
+   失败。</li>
+</ol>
+<p><strong>验收标准：</strong></p>
+<ul>
+<li>满足所有组件策略且<code>minimum_valid_frames</code>的窗口仍然存在
+  <code>OK</code> 当它还包含一个被拒绝的非完整性帧时。</li>
+<li>该框架的原因仍然存在，其可用机会计数为
+  零。</li>
+<li>即使其他帧仍然存在，中断的或混合身份的窗口仍保持<code>NG</code>
+  满足每个组件的策略。</li>
+</ul>
+<h3 id="f6-missing-policies-and-equal-thresholds-are-not-fail-closed">F6。缺失的策略和相同的阈值不会失败关闭<a class="headerlink" href="#f6-missing-policies-and-equal-thresholds-are-not-fail-closed" title="Permanent link">&para;</a></h3>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:127-164</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/config.py:599-622</code></li>
+</ul>
+<p>必需的组件不需要有临时策略。聚合器替代
+当策略不存在时，<code>1.0</code> 用于两个阈值，并使用包容性 <code>&gt;=</code>，因此
+精确置信度 <code>1.0</code> 检测可以变为 <code>PRESENT</code>，无需配置，
+版本化策略。配置解析器还允许
+<code>medium_confidence == high_confidence</code>，尽管有设计 10 的要求
+<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>。</p>
+<p><strong>分辨率：</strong></p>
+<ol>
+<li>加载规则后，拒绝启用的临时配置，除非
+   为每个必需的组件提供准确的策略，并且没有未知的组件
+   组件键。</li>
+<li>在两者中强制执行 <code>medium_confidence &lt; high_confidence</code>
+   <code>ComponentTemporalPolicy</code>和配置解析。</li>
+<li>通过明确的方式防御性地解决 <code>UNVERIFIABLE</code> 缺失的策略
+   如果无效配置到达聚合器，则配置原因。</li>
+</ol>
+<p><strong>验收标准：</strong></p>
+<ul>
+<li>配置加载拒绝缺少所需的策略、额外的策略密钥、
+  和相同的中/高阈值。</li>
+<li>聚合单元测试证明不存在的策略不能产生<code>PRESENT</code>，
+  包括信心<code>1.0</code>。</li>
+<li>有效的完整策略保留记录的高命中和中命中路径。</li>
+</ul>
+<h3 id="f7-below-threshold-detections-can-satisfy-exact-component-counts">F7。低于阈值的检测可以满足精确的元件计数<a class="headerlink" href="#f7-below-threshold-detections-can-satisfy-exact-component-counts" title="Permanent link">&para;</a></h3>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
+<ul>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:159-164</code></li>
+<li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:201-240</code></li>
+</ul>
+<p>一旦建立了高置信度或合格的中等命中<code>PRESENT</code>，
+<code>_present()</code> 从每个原始数据中计算 <code>detection_count</code>、框和中心
+检测所选帧中的该组件。低置信度错误
+因此，阳性可以将一个帧从一个合格的检测膨胀到
+规则的确切预期计数。例如，对于 <code>expected_count=2</code>，检测
+在一帧中的<code>0.95</code>和<code>0.50</code>可以在之后报告<code>detection_count=2</code>
+<code>0.95</code> 检测确定存在。</p>
+<p><strong>分辨率：</strong></p>
+<ol>
+<li>定义并记录计数证据置信度阈值；至少它
+   必须是<code>medium_confidence</code>。</li>
+<li>仅将合格检测传递给计数、面积比和中心摘要
+   由计数/空间规则使用。</li>
+<li>如果需要，在诊断中保留低于阈值的观察结果，但是
+   切勿使用它们来满足业务规则。</li>
+</ol>
+<p><strong>验收标准：</strong></p>
+<ul>
+<li>一项高置信度检测加上一项低于中等的检测报告
+  计数为 1 并且未通过 <code>expected_count=2</code> 规则，如 <code>NG</code>。</li>
+<li>一个有效帧中的两个合格检测满足 <code>expected_count=2</code>
+  规则。</li>
+<li>用于基于计数的规则的面积和空间证据仅来自相同的
+  排位赛设为计数。</li>
+</ul>
+<h2 id="residual-review-notes">剩余审查说明<a class="headerlink" href="#residual-review-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>OpenAPI 枚举、生成的 TypeScript 类型和运行时验证器正确
+  包括<code>UNVERIFIABLE</code>。</li>
+<li>聚合单元测试涵盖许多阈值、重复、邻接和
+  组件隔离案例。他们需要产品隔离、闲置到期、
+  采集时间、质量门、缺失策略和计数置信度案例
+  上面指定的实现之前可以安全地合并。</li>
 </ul>
 
 
@@ -3348,10 +3523,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

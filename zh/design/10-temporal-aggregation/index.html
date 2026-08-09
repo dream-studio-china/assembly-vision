@@ -837,7 +837,18 @@
   <a href="#107-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.7 Configuration
+        10.7 配置
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1071-implementation-status-adr-010-product-window-milestone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.7.1 实施状态（ADR-010，产品窗口里程碑）
       
     </span>
   </a>
@@ -1802,7 +1813,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2660,7 +2671,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -3184,7 +3195,18 @@
   <a href="#107-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.7 Configuration
+        10.7 配置
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1071-implementation-status-adr-010-product-window-milestone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.7.1 实施状态（ADR-010，产品窗口里程碑）
       
     </span>
   </a>
@@ -3306,10 +3328,10 @@
 <h2 id="105-temporal-aggregation-sequence">10.5 时间聚合序列<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Window as 产品展示
-    participant Quality as 框架质量门
+    participant Quality as Frame Quality Gate
     participant Detector as 元件检测器
-    participant Aggregate as Per-Component Aggregator
-    participant Rules as Rule Engine
+    participant Aggregate as 每个组件聚合器
+    participant Rules as 规则引擎
     Window-&gt;&gt;Aggregate:打开检查所需的组件
 loop 每个相关帧
         Window-&gt;&gt;Quality:验证框架
@@ -3343,35 +3365,99 @@ loop 每个必需的组件
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">return</span> <span class="n">MISSING</span>
 </code></pre></div>
 <p>帧邻接使用捕获序列和最大经过时间限制。除非规则明确基于计数，否则一帧中的多个框将计为一次临时命中。</p>
-<h2 id="107-configuration">10.7 Configuration<a class="headerlink" href="#107-configuration" title="Permanent link">&para;</a></h2>
+<h2 id="107-configuration">10.7 配置<a class="headerlink" href="#107-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">temporal</span><span class="p">:</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">minimum_valid_frames</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">maximum_window_ms</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2500</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">reject_duplicate_frame_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">components</span><span class="p">:</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">manual</span><span class="p">:</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.85</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.65</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="nt">component_a</span><span class="p">:</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.90</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.70</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">window_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">identity</span><span class="w">   </span><span class="c1"># identity (validated correlation) or time (dev fallback)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">minimum_valid_frames</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">maximum_window_ms</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2500</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">reject_duplicate_frame_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">components</span><span class="p">:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">manual</span><span class="p">:</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.85</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.65</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="nt">component_a</span><span class="p">:</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.90</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.70</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </code></pre></div>
-<p>策略按型号和产品类型进行版本控制和验证。配置的阈值必须遵守<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>。</p>
+<p>策略按型号和产品类型进行版本控制和验证。配置的阈值必须遵循严格不等式的<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>，并且启用的时间配置必须为每个规则所需的组件声明一个策略。 <code>medium_confidence</code> 以下的检测永远不会满足计数或空间规则。</p>
+<h2 id="1071-implementation-status-adr-010-product-window-milestone">10.7.1 实施状态（ADR-010，产品窗口里程碑）<a class="headerlink" href="#1071-implementation-status-adr-010-product-window-milestone" title="Permanent link">&para;</a></h2>
+<p>每个组件的时间聚合器和边缘产品窗口管理器是
+为实时摄像机路径实现。每个声明一个实例
+其管道配置中的 <code>temporal:</code> 块运行一个产品窗口：frames
+分组直到帧间间隙或配置的 <code>maximum_window_ms</code>
+关闭窗口，聚合器解析每个组件的一个证据集
+规则引擎只计算一次。因关机而关闭的窗口是
+记录为中断 NG，未从未记录的日志中重建证据
+记忆（10.8）。对于基于计数的规则，<code>detection_count</code> 是最大数量
+在单个有效帧中观察到的实例数；实例跨帧分割
+不满足没有共现的精确<code>expected_count</code>。</p>
+<p>审查修复强制执行的窗口分组、质量和策略行为
+(PR-015 F1-F7)：</p>
+<ul>
+<li><strong>捕获时间分组</strong>：窗口成员资格和持续时间使用帧的
+  获取单调时间戳（<code>CapturedFrame.monotonic_ts_ns</code>），从不
+  推理后处理时间，因此队列积压或推理缓慢无法
+  改变产品边界。无序时间戳被删除并计为
+  陈旧（10.8）。空闲到期后，管理器保留捕获时间
+  边界，因此排队的到期前帧无法重新打开最终产品
+  窗口。</li>
+<li><strong>空闲到期</strong>：运行时将活动窗口最终确定为 <code>GAP</code>
+  空闲时间过去了，因此决定了流结束时的最终产品
+  通常，而不是等待稍后的帧或关闭（10.8）。</li>
+<li><strong>窗口策略</strong>：<code>window_strategy: identity</code>需要经过验证
+  每帧产品标识（跟踪器、触发器或条形码关联）和
+  将每个窗口密封到一种产品。缺失的身份，窗口中的身份
+  过渡，或已确认的多产品框架（包括
+  <code>ProductDetector</code> <code>MULTIPLE_PRODUCTS</code> 结果）关闭窗口
+  完整性违规 (<code>PRODUCT_IDENTITY_MISSING</code>,
+  <code>PRODUCT_IDENTITY_TRANSITION</code>, <code>MULTIPLE_PRODUCTS</code>) 永远无法释放
+  <code>OK</code>。 <code>window_strategy: time</code> 仍然是一个明确的开发后备方案；它
+  并不能证明相邻产品不能重叠，所以生产时间上
+  检查必须使用 <code>identity</code> 或其他经过验证的关联机制。</li>
+<li><strong>框架质量</strong>：产品检测质量门报告的框架
+  不可用不会造成任何检测，也没有有效的机会；它的质量
+  原因被保留为帧诊断。</li>
+<li><strong>决定原因</strong>：每帧拒绝原因仅用于诊断，并且
+  不能否决一个其汇总证据满足所有规则的窗口。仅
+  窗口完整性违规（中断、身份混合、身份丢失、
+  规则评估失败）独立强制<code>NG</code>。</li>
+<li><strong>故障关闭策略</strong>：启用的临时配置必须提供
+  对于每个规则所需的组件只有一个策略（在
+  规则加载）；缺失的策略防御性地解析为 <code>UNVERIFIABLE</code>
+  <code>COMPONENT_POLICY_MISSING</code>。 <code>medium_confidence</code> 必须严格小于
+  <code>high_confidence</code>。</li>
+<li><strong>策略身份</strong>：每个临时记录都保留完整的 SHA-256
+  <code>aggregation_policy_version</code> 中的规范政策文件。该文件
+  包括聚合格式、窗口策略、窗口参数等
+  每个组件阈值/命中规则，因此历史决策仍然存在
+  配置更改后可重现。</li>
+<li><strong>计数证据</strong>：<code>detection_count</code>、方框区域和中心摘要包括
+  仅检测到等于或高于计数证据阈值（策略
+  <code>medium_confidence</code> 至少），因此低置信度误报不能
+  膨胀一个精确的 <code>expected_count</code>。</li>
+</ul>
 <h2 id="108-window-integrity-and-failure-handling">10.8 窗口完整性和故障处理<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
 <li>触发超时将窗口视为不完整而关闭；未解析的组件变为 <code>UNVERIFIABLE</code>。</li>
 <li>重复的帧 ID 将被忽略并进行计数。</li>
+<li>过时的无序捕获时间戳被忽略并计数；他们从不
+  改变窗口。</li>
+<li>空闲窗口在捕获时间后由运行时最终确定为 <code>GAP</code>
+  间隙过去了，无需等待后面的帧。</li>
+<li>身份密封窗口在丢失身份、中间窗口身份时中止
+  过渡或已确认的多产品框架；他们的框架从不混合
+  另一种产品的证据。</li>
 <li>窗外的框架或检查 ID 不匹配的框架将与证据隔离。</li>
 <li>多个产品或身份切换使窗口无效，除非经过验证的跟踪器证明连续性。</li>
 <li>Worker 重新启动会关闭恢复的打开窗口作为中断<code>NG</code>；它不会从部分记忆中重建证据，除非所有状态都被持久地记录下来。</li>
 <li>队列丢失或推理错误会减少有效机会，并且只能将证据移向<code>UNCERTAIN</code>或<code>UNVERIFIABLE</code>。</li>
-<li>默认情况下禁用早期<code>OK</code>终结，因为后面的帧可能会显示出歧义；可选的提前完成需要生产验证，并且仍然必须满足每个组件的要求。</li>
+<li>默认情况下禁用早期<code>OK</code>最终确定，因为后面的帧可能会显示出歧义；可选的提前完成需要生产验证，并且仍然必须满足每个组件的要求。</li>
 </ul>
 <h2 id="109-persistence-and-observability">10.9 持久性和可观察性<a class="headerlink" href="#109-persistence-and-observability" title="Permanent link">&para;</a></h2>
 <p>保留帧机会、接受/拒绝状态、观察、重复数据删除决策、最终组件状态、阈值、命中帧 ID、置信度摘要和关闭原因。指标包括窗口打开/关闭/超时、帧混合尝试、每个组件状态计数、每个窗口的有效帧以及聚合延迟。</p>

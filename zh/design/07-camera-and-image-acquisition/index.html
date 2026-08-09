@@ -753,7 +753,7 @@
   <a href="#77-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.7 配置
+        7.7 Configuration
       
     </span>
   </a>
@@ -1791,7 +1791,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2649,7 +2649,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -3173,7 +3173,7 @@
   <a href="#77-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.7 配置
+        7.7 Configuration
       
     </span>
   </a>
@@ -3292,14 +3292,14 @@
 <h2 id="75-real-time-inspection-sequence">7.5 实时检查顺序<a class="headerlink" href="#75-real-time-inspection-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Sensor as 触发器或传感器
-    participant Capture as Camera Adapter
+    participant Capture as 相机适配器
     participant Window as 产品窗口管理器
-    participant Vision as 愿景管道
-    participant Aggregate as 时间聚合器
+    participant Vision as Vision Pipeline
+    participant Aggregate as Temporal Aggregator
     participant Rules as 规则引擎
     participant Store as 本地存储
     participant Upload as 上传队列
-    Sensor-&gt;&gt;Window:产品入驻活动
+    Sensor-&gt;&gt;Window:Product entry event
     Window-&gt;&gt;Window:创建检查和引脚版本
 loop 直到退出或超时
         Capture-&gt;&gt;Window:带时间戳的帧
@@ -3320,7 +3320,7 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <h2 id="76-frame-quality-and-color-handling">7.6 帧质量和颜色处理<a class="headerlink" href="#76-frame-quality-and-color-handling" title="Permanent link">&para;</a></h2>
 <p>解码为记录的规范格式，通常是 OpenCV 的 BGR8，同时保留原始尺寸。模型预处理执行其自己的 RGB 转换。质量检查应包括模糊、亮度范围、损坏、帧年龄以及可选的饱和度或眩光。阈值是特定于相机的，必须根据生产捕获进行校准。</p>
 <p>被拒绝的框架仍然可以追踪拒绝原因，但不会提供任何积极的证据。如果剩余的有效帧太少，则乘积为<code>NG</code>；由于没有矛盾的证据，不可用的输入不能成为 <code>OK</code>。</p>
-<h2 id="77-configuration">7.7 配置<a class="headerlink" href="#77-configuration" title="Permanent link">&para;</a></h2>
+<h2 id="77-configuration">7.7 Configuration<a class="headerlink" href="#77-configuration" title="Permanent link">&para;</a></h2>
 <p>一台边缘主机运行一个或多个独立的检查实例，每个实例都具有
 它自己的相机源和它自己的模型/规则/产品（ADR-013）。配置
 位于共享管道配置中的 <code>instances:</code> 列表下：</p>
@@ -3397,7 +3397,7 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <li>在序列间隙或缓冲区溢出时，增加指标并将受影响的窗口标记为降级；证据不足产生<code>NG</code>。</li>
 <li>对于陈旧或重复的帧，拒绝这些帧并报告相机运行状况恶化。</li>
 <li>在时钟调整时，继续使用单调时钟计算持续时间并记录挂钟的不连续性。</li>
-<li>捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断的<code>NG</code>。</li>
+<li>在捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断的<code>NG</code>。</li>
 <li>服务器中断时，不要进行采集更改。在储存能力允许的情况下，当地捕获和检查将继续进行。</li>
 </ul>
 <p>滚动视频写入分段文件以限制断电后的损坏。媒体持久化和删除规则在<a href="../12-local-storage-and-retention/">local storage and retention</a>中定义。</p>
@@ -3405,7 +3405,7 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 <ul>
 <li>根据记录和模拟的 SDK 行为对每个供应商适配器进行合同测试。</li>
 <li>测试断开、重新连接、丢帧、重复序列号、损坏的缓冲区和延迟帧。</li>
-<li>验证触发去抖、相邻产品、超时以及每个窗口阶段的重新启动。</li>
+<li>在每个窗口阶段验证触发去抖、相邻产品、超时和重新启动。</li>
 <li>使用正常、模糊、黑暗、明亮、反射和空的生产场景校准质量阈值。</li>
 <li>浸泡测试捕获时间比正常生产班次长，同时监控内存和缓冲区增长。</li>
 <li>验证文件源排序和输出 ID 是否可重复。</li>

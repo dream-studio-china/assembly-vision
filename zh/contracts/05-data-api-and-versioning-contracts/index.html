@@ -1634,7 +1634,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2016,7 +2016,7 @@
   <a href="#4-required-indexes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 所需索引
+        4. Required Indexes
       
     </span>
   </a>
@@ -2649,7 +2649,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -3140,7 +3140,7 @@
   <a href="#4-required-indexes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 所需索引
+        4. Required Indexes
       
     </span>
   </a>
@@ -3235,55 +3235,55 @@
 
 <h1 id="05-data-api-and-versioning-contracts">05. 数据、API 和版本控制合约<a class="headerlink" href="#05-data-api-and-versioning-contracts" title="Permanent link">&para;</a></h1>
 <h2 id="1-immutable-inspection-fields">1. 不可变的检查字段<a class="headerlink" href="#1-immutable-inspection-fields" title="Permanent link">&para;</a></h2>
-<p>以下字段创建后不得修改：</p>
+<p>The following fields must not be modified after creation:</p>
 <ul>
 <li><code>inspection_id</code></li>
 <li><code>device_id</code></li>
 <li><code>captured_at</code></li>
 <li><code>original_internal_decision</code></li>
 <li><code>original_business_result</code></li>
-<li>产品检测器型号版本和校验和</li>
-<li>组件检测器模型版本和校验和</li>
+<li>Product-detector model version and checksum</li>
+<li>Component-detector model version and checksum</li>
 <li><code>rule_version</code></li>
 <li><code>product_config_version</code></li>
-<li>原始媒体参考</li>
+<li>Original media references</li>
 </ul>
-<p>人工审核必须单独存储。</p>
+<p>Human review must be stored separately.</p>
 <h2 id="2-required-version-traceability">2. 所需的版本可追溯性<a class="headerlink" href="#2-required-version-traceability" title="Permanent link">&para;</a></h2>
-<p>每次检查必须记录：</p>
+<p>Each inspection must record:</p>
 <ul>
-<li>应用程序版本</li>
-<li>产品检测器型号版本和校验和</li>
-<li>组件检测器模型版本和校验和</li>
-<li>规则版本</li>
-<li>产品配置版本</li>
-<li>设备ID</li>
+<li>Application version</li>
+<li>Product-detector model version and checksum</li>
+<li>Component-detector model version and checksum</li>
+<li>Rule version</li>
+<li>Product-configuration version</li>
+<li>Device ID</li>
 </ul>
 <h2 id="3-database-migration-rules">3. 数据库迁移规则<a class="headerlink" href="#3-database-migration-rules" title="Permanent link">&para;</a></h2>
 <ul>
-<li>所有架构更改都必须使用 Alembic。</li>
-<li>生产模式不得手动更改。</li>
-<li>有风险的迁移必须包含迁移注释。</li>
-<li>在没有兼容期的情况下不得删除字段。</li>
-<li>迁移历史必须保持可审计。</li>
+<li>All schema changes must use Alembic.</li>
+<li>Production schemas must not be changed manually.</li>
+<li>Risky migrations must include migration notes.</li>
+<li>Fields must not be removed without a compatibility period.</li>
+<li>Migration history must remain auditable.</li>
 </ul>
-<h2 id="4-required-indexes">4. 所需索引<a class="headerlink" href="#4-required-indexes" title="Permanent link">&para;</a></h2>
-<p>至少，索引：</p>
+<h2 id="4-required-indexes">4. Required Indexes<a class="headerlink" href="#4-required-indexes" title="Permanent link">&para;</a></h2>
+<p>At minimum, index:</p>
 <ul>
-<li>条形码</li>
-<li>检查时间戳</li>
-<li>决定</li>
-<li>产品类型</li>
-<li>设备ID</li>
-<li>型号版本</li>
-<li>上传状态</li>
+<li>Barcode</li>
+<li>Inspection timestamp</li>
+<li>Decision</li>
+<li>Product type</li>
+<li>Device ID</li>
+<li>Model version</li>
+<li>Upload status</li>
 </ul>
 <h2 id="5-api-versioning">5.API版本控制<a class="headerlink" href="#5-api-versioning" title="Permanent link">&para;</a></h2>
-<p>所有公共 API 必须使用版本化路径：</p>
+<p>All public APIs must use versioned paths:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>/api/v1/...
 </code></pre></div>
 <h2 id="6-standard-error-response">6. 标准错误响应<a class="headerlink" href="#6-standard-error-response" title="Permanent link">&para;</a></h2>
-<p>使用<code>application/problem+json</code>：</p>
+<p>Use <code>application/problem+json</code>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://assemblyvision.example/problems/product-not-found&quot;</span><span class="p">,</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Product not found&quot;</span><span class="p">,</span>
@@ -3294,33 +3294,33 @@
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">}</span>
 </code></pre></div>
-<p>API 不得公开：</p>
+<p>The API must not expose:</p>
 <ul>
-<li>Python 堆栈跟踪</li>
-<li>SQL语句</li>
-<li>绝对文件系统路径</li>
-<li>内部模型路径</li>
-<li>代币</li>
-<li>秘密</li>
+<li>Python stack traces</li>
+<li>SQL statements</li>
+<li>Absolute filesystem paths</li>
+<li>Internal model paths</li>
+<li>Tokens</li>
+<li>Secrets</li>
 </ul>
 <h2 id="7-configuration-rules">七、配置规则<a class="headerlink" href="#7-configuration-rules" title="Permanent link">&para;</a></h2>
-<p>不要硬编码：</p>
+<p>Do not hardcode:</p>
 <ul>
-<li>模型路径</li>
-<li>组件列表</li>
-<li>产品规则</li>
-<li>置信度阈值</li>
-<li>上传网址</li>
-<li>保留期限</li>
-<li>相机 ID</li>
+<li>Model paths</li>
+<li>Component lists</li>
+<li>Product rules</li>
+<li>Confidence thresholds</li>
+<li>Upload URLs</li>
+<li>Retention periods</li>
+<li>Camera IDs</li>
 </ul>
-<p>使用经过验证的运行时配置，最好通过 Pydantic 设置。</p>
-<p>无效的决策关键本地配置会阻止 <code>inspection_ready</code>。缺少上传网址，
-中央凭证或中央连接会阻止 <code>sync_ready</code> 但不会阻止其他情况
-有效的离线检查。产品映射、所需组件、阈值、模型/规则绑定、
-并且签名的包字段不能被环境变量或本地 UI 覆盖覆盖。</p>
+<p>Use validated runtime configuration, preferably through Pydantic Settings.</p>
+<p>Invalid decision-critical local configuration prevents <code>inspection_ready</code>. Missing upload URLs,
+central credentials, or central connectivity prevents <code>sync_ready</code> but does not block otherwise
+valid offline inspection. Product mapping, required components, thresholds, model/rule bindings,
+and signed package fields cannot be overridden by environment variables or local UI overrides.</p>
 <h2 id="8-version-binding">8. 版本绑定<a class="headerlink" href="#8-version-binding" title="Permanent link">&para;</a></h2>
-<p>每次生产检验必须遵守：</p>
+<p>Every production inspection must bind to:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Application Version
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Product-Detector Model Version and Checksum
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Component-Detector Model Version and Checksum
@@ -3331,36 +3331,36 @@
 <table>
 <thead>
 <tr>
-<th>配置类</th>
-<th>业主</th>
-<th>本地/环境覆盖</th>
+<th>Configuration class</th>
+<th>Owner</th>
+<th>Local/environment override</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>产品映射、所需组件、阈值、模型/规则兼容性</td>
-<td>受版本控制的包</td>
-<td>禁止</td>
+<td>Product mapping, required components, thresholds, model/rule compatibility</td>
+<td>Versioned governed package</td>
+<td>Forbidden</td>
 </tr>
 <tr>
-<td>相机特性、曝光、几何</td>
-<td>批准的站点配置</td>
-<td>仅允许审核和重新验证</td>
+<td>Camera identity, exposure, geometry</td>
+<td>Approved site configuration</td>
+<td>Allowed only with audit and revalidation</td>
 </tr>
 <tr>
-<td>上传 URL、代理、超时、带宽</td>
-<td>部署/站点运营</td>
-<td>允许；影响<code>sync_ready</code>，而不影响决策规则</td>
+<td>Upload URL, proxy, timeouts, bandwidth</td>
+<td>Deployment/site operations</td>
+<td>Allowed; affects <code>sync_ready</code>, not decision rules</td>
 </tr>
 <tr>
-<td>秘密和设备凭证</td>
-<td>部署秘密库</td>
-<td>仅运行时注入；从来没有坚持过包裹</td>
+<td>Secrets and device credentials</td>
+<td>Deployment secret store</td>
+<td>Runtime injection only; never persisted in packages</td>
 </tr>
 <tr>
-<td>UI 首选项和非安全显示选项</td>
-<td>本地用户/设备</td>
-<td>允许</td>
+<td>UI preferences and non-safety display options</td>
+<td>Local user/device</td>
+<td>Allowed</td>
 </tr>
 </tbody>
 </table>

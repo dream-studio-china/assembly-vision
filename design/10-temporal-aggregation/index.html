@@ -845,6 +845,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#1071-implementation-status-adr-010-product-window-milestone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.7.1 Implementation Status (ADR-010, product-window milestone)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#108-window-integrity-and-failure-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3192,6 +3203,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#1071-implementation-status-adr-010-product-window-milestone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.7.1 Implementation Status (ADR-010, product-window milestone)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#108-window-integrity-and-failure-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3345,28 +3367,92 @@
 <p>Frame adjacency uses capture sequence and a maximum elapsed-time bound. Multiple boxes in one frame count as one temporal hit unless the rule is explicitly count-based.</p>
 <h2 id="107-configuration">10.7 Configuration<a class="headerlink" href="#107-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">temporal</span><span class="p">:</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">minimum_valid_frames</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">maximum_window_ms</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2500</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">reject_duplicate_frame_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">components</span><span class="p">:</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">manual</span><span class="p">:</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.85</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.65</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="nt">component_a</span><span class="p">:</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.90</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.70</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">window_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">identity</span><span class="w">   </span><span class="c1"># identity (validated correlation) or time (dev fallback)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">minimum_valid_frames</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">maximum_window_ms</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2500</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">reject_duplicate_frame_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">components</span><span class="p">:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">manual</span><span class="p">:</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.85</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.65</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="nt">component_a</span><span class="p">:</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.90</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.70</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </code></pre></div>
-<p>Policies are versioned and validated per model and product type. Configured thresholds must obey <code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>.</p>
+<p>Policies are versioned and validated per model and product type. Configured thresholds must obey <code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code> with a strict inequality, and an enabled temporal configuration must declare exactly one policy for every rule-required component. Detections below <code>medium_confidence</code> never satisfy a count or spatial rule.</p>
+<h2 id="1071-implementation-status-adr-010-product-window-milestone">10.7.1 Implementation Status (ADR-010, product-window milestone)<a class="headerlink" href="#1071-implementation-status-adr-010-product-window-milestone" title="Permanent link">&para;</a></h2>
+<p>The per-component temporal aggregator and an edge product-window manager are
+implemented for the live camera path. Each instance that declares a
+<code>temporal:</code> block in its pipeline configuration runs a product window: frames
+are grouped until an inter-frame gap or the configured <code>maximum_window_ms</code>
+closes the window, and the aggregator resolves one per-component evidence set
+that the rule engine evaluates exactly once. A window closed by a shutdown is
+recorded as interrupted NG without reconstructing evidence from un-journaled
+memory (10.8). For count-based rules, <code>detection_count</code> is the maximum number
+of instances observed in a single valid frame; instances split across frames
+do not satisfy an exact <code>expected_count</code> without co-occurrence.</p>
+<p>Window grouping, quality, and policy behavior enforced by the review fixes
+(PR-015 F1-F7):</p>
+<ul>
+<li><strong>Capture-time grouping</strong>: window membership and duration use the frame's
+  acquisition monotonic timestamp (<code>CapturedFrame.monotonic_ts_ns</code>), never the
+  post-inference processing time, so queue backlog or slow inference cannot
+  shift product boundaries. Out-of-order timestamps are dropped and counted as
+  stale (10.8). After idle expiry, the manager retains the capture-time
+  boundary so a queued pre-expiry frame cannot reopen a finalized product
+  window.</li>
+<li><strong>Idle expiry</strong>: the runtime finalizes an active window as <code>GAP</code> once its
+  idle duration elapses, so a final product at the end of a stream is decided
+  normally instead of waiting for a later frame or shutdown (10.8).</li>
+<li><strong>Window strategy</strong>: <code>window_strategy: identity</code> requires a validated
+  per-frame product identity (tracker, trigger, or barcode correlation) and
+  seals each window to one product. A missing identity, a mid-window identity
+  transition, or a confirmed multi-product frame (including a
+  <code>ProductDetector</code> <code>MULTIPLE_PRODUCTS</code> outcome) closes the window as an
+  integrity violation (<code>PRODUCT_IDENTITY_MISSING</code>,
+  <code>PRODUCT_IDENTITY_TRANSITION</code>, <code>MULTIPLE_PRODUCTS</code>) that can never release
+  <code>OK</code>. <code>window_strategy: time</code> remains an explicit development fallback; it
+  does not prove that adjacent products cannot overlap, so production temporal
+  inspection must use <code>identity</code> or another validated correlation mechanism.</li>
+<li><strong>Frame quality</strong>: a frame whose product-detection quality gate reports
+  unusable contributes no detections and no valid opportunity; its quality
+  reasons are preserved as frame diagnostics.</li>
+<li><strong>Decision reasons</strong>: per-frame rejection reasons are diagnostic only and
+  cannot veto a window whose aggregated evidence satisfies every rule. Only
+  window-integrity violations (interruption, identity mixing, missing identity,
+  rule-evaluation failure) independently force <code>NG</code>.</li>
+<li><strong>Fail-closed policies</strong>: an enabled temporal configuration must provide
+  exactly one policy for every rule-required component (validated after the
+  rule loads); a missing policy resolves defensively to <code>UNVERIFIABLE</code> with
+  <code>COMPONENT_POLICY_MISSING</code>. <code>medium_confidence</code> must be strictly less than
+  <code>high_confidence</code>.</li>
+<li><strong>Policy identity</strong>: every temporal record persists the complete SHA-256 of
+  a canonical policy document in <code>aggregation_policy_version</code>. The document
+  includes the aggregation format, window strategy, window parameters, and
+  every component threshold/hit rule, so historical decisions remain
+  reproducible after configuration changes.</li>
+<li><strong>Count evidence</strong>: <code>detection_count</code>, box-area, and center summaries include
+  only detections at or above the count-evidence threshold (the policy
+  <code>medium_confidence</code> at minimum), so low-confidence false positives cannot
+  inflate an exact <code>expected_count</code>.</li>
+</ul>
 <h2 id="108-window-integrity-and-failure-handling">10.8 Window Integrity and Failure Handling<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
 <li>A trigger timeout closes the window as incomplete; unresolved components become <code>UNVERIFIABLE</code>.</li>
 <li>Duplicate frame IDs are ignored and counted.</li>
+<li>Stale out-of-order capture timestamps are ignored and counted; they never
+  mutate the window.</li>
+<li>An idle window is finalized as <code>GAP</code> by the runtime once its capture-time
+  gap elapses, without waiting for a later frame.</li>
+<li>Identity-sealed windows abort on a missing identity, a mid-window identity
+  transition, or a confirmed multi-product frame; their frames never mix with
+  another product's evidence.</li>
 <li>Frames outside the window or with mismatched inspection IDs are quarantined from evidence.</li>
 <li>Multiple products or identity switches invalidate the window unless a validated tracker proves continuity.</li>
 <li>Worker restart closes recovered open windows as interrupted <code>NG</code>; it does not reconstruct evidence from partial memory unless all state was durably journaled.</li>
