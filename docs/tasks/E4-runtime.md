@@ -179,5 +179,5 @@ Each gate is independently reviewable.
   reconciliation rules.
 - [Camera and Image Acquisition](../design/07-camera-and-image-acquisition.md):
   trigger and product-window strategy.
-- [ADR-013: Camera Frame Sources and Multi-Instance Edge](../design/decisions/ADR-013-camera-frame-sources-and-multi-instance-edge.md).
+- [ADR-013: Camera Frame Sources and Multi-Instance Edge](../design/decisions/ADR-013-camera-frame-sources-and-multi-instance.md).
 - [PR-015 review](../reviews/PR-015-review.md): identity-sealed window contract.

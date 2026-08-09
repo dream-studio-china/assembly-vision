@@ -359,12 +359,17 @@ class EdgeRuntime:
                     observation = runtime.pipeline.frame_observations(frame)
                     # Group on the frame's acquisition time, not the time at
                     # which inference finished (PR-015 F3).
-                    was_open = window_manager.active_window is not None
+                    previous_id = (
+                        window_manager.active_window.inspection_id
+                        if window_manager.active_window is not None
+                        else None
+                    )
                     closed = window_manager.feed(observation, frame.monotonic_ts_ns / 1e9)
                     active = window_manager.active_window
-                    if active is not None and not was_open:
-                        # A new product window opened: notify dashboards with its
-                        # stable inspection id (E4a).
+                    if active is not None and active.inspection_id != previous_id:
+                        # A new product window opened (including after a gap or
+                        # identity transition closed the previous one): notify
+                        # dashboards with its stable inspection id (E4a).
                         self._publish(
                             "inspection.started",
                             {

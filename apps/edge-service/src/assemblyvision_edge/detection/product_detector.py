@@ -41,6 +41,7 @@ class ProductDetector:
         settings: DetectionSettings,
         model: Any,
         device: str | None = None,
+        model_lock: Any = None,
     ) -> None:
         if manifest.task != "PRODUCT_DETECTION":
             raise ConfigError(f"manifest task {manifest.task!r} is not PRODUCT_DETECTION")
@@ -53,6 +54,10 @@ class ProductDetector:
         self._settings = settings
         self._model = model
         self._device = device
+        # Shared-model inference lock (E4c): holders of the same cached YOLO
+        # handle serialize inference because ultralytics keeps mutable
+        # predictor state; models loaded without a registry stay lock-free.
+        self._model_lock = model_lock
 
     @classmethod
     def from_manifest(
@@ -70,12 +75,16 @@ class ProductDetector:
         weights = verify_manifest_artifact(manifest, manifest_path)
         if registry is not None:
             # E4c: share one read-only model handle per artifact across
-            # instances that reference the same manifest.
-            model = registry.load(model_weight_key(manifest, device), lambda: YOLO(str(weights)))
+            # instances that reference the same manifest; the registry lock
+            # serializes inference on the shared predictor state.
+            model, model_lock = registry.load(
+                model_weight_key(manifest, device), lambda: YOLO(str(weights))
+            )
         else:
             model = YOLO(str(weights))
+            model_lock = None
         verify_model_class_map(model.names, manifest)
-        return cls(manifest, settings, model, device)
+        return cls(manifest, settings, model, device, model_lock)
 
     @property
     def effective_settings(self) -> dict[str, object]:
@@ -92,6 +101,12 @@ class ProductDetector:
         }
 
     def detect(self, frame: Image.Image, frame_id: UUID) -> ProductDetectionOutcome:
+        if self._model_lock is not None:
+            with self._model_lock:
+                return self._detect_unlocked(frame, frame_id)
+        return self._detect_unlocked(frame, frame_id)
+
+    def _detect_unlocked(self, frame: Image.Image, frame_id: UUID) -> ProductDetectionOutcome:
         try:
             results: Any = self._model(
                 frame,

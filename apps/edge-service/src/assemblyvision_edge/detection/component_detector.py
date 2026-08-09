@@ -27,6 +27,7 @@ class ComponentDetector:
         components: dict[str, ComponentDetectionSettings],
         model: Any,
         device: str | None = None,
+        model_lock: Any = None,
     ) -> None:
         if manifest.task != "COMPONENT_DETECTION":
             raise ConfigError(f"manifest task {manifest.task!r} is not COMPONENT_DETECTION")
@@ -40,6 +41,10 @@ class ComponentDetector:
         self._components = components
         self._model = model
         self._device = device
+        # Shared-model inference lock (E4c): holders of the same cached YOLO
+        # handle serialize inference because ultralytics keeps mutable
+        # predictor state; models loaded without a registry stay lock-free.
+        self._model_lock = model_lock
 
     @classmethod
     def from_manifest(
@@ -58,12 +63,16 @@ class ComponentDetector:
         weights = verify_manifest_artifact(manifest, manifest_path)
         if registry is not None:
             # E4c: share one read-only model handle per artifact across
-            # instances that reference the same manifest.
-            model = registry.load(model_weight_key(manifest, device), lambda: YOLO(str(weights)))
+            # instances that reference the same manifest; the registry lock
+            # serializes inference on the shared predictor state.
+            model, model_lock = registry.load(
+                model_weight_key(manifest, device), lambda: YOLO(str(weights))
+            )
         else:
             model = YOLO(str(weights))
+            model_lock = None
         verify_model_class_map(model.names, manifest)
-        return cls(manifest, settings, components, model, device)
+        return cls(manifest, settings, components, model, device, model_lock)
 
     @property
     def effective_settings(self) -> dict[str, object]:
@@ -92,6 +101,19 @@ class ComponentDetector:
         ``transform`` maps full-frame to ROI coordinates; observations are
         mapped back to full-frame for evidence and annotation.
         """
+        if self._model_lock is not None:
+            with self._model_lock:
+                return self._detect_unlocked(roi, frame_id, required, transform, frame_size)
+        return self._detect_unlocked(roi, frame_id, required, transform, frame_size)
+
+    def _detect_unlocked(
+        self,
+        roi: Image.Image,
+        frame_id: UUID,
+        required: Sequence[str],
+        transform: tuple[float, float, float, float, float, float],
+        frame_size: tuple[int, int],
+    ) -> list[ComponentDetection]:
         try:
             results: Any = self._model(
                 roi,

@@ -117,11 +117,9 @@ class TestWebSocketChannel:
         app = create_app(settings)
         # pytest.raises must wrap the websocket session context, so the
         # contexts cannot be flattened.
-        with (
+        with (  # noqa: SIM117
             TestClient(app) as client,
-            pytest.raises(  # noqa: SIM117
-                WebSocketDisconnect
-            ) as excinfo,
+            pytest.raises(WebSocketDisconnect) as excinfo,
         ):
             with client.websocket_connect("/api/v1/ws/runtime"):
                 pass

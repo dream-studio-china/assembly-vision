@@ -8,6 +8,7 @@ registry reuse the cached handle instead of reloading YOLO weights.
 from __future__ import annotations
 
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from assemblyvision_edge.detection.product_detector import ProductDetector
@@ -37,17 +38,18 @@ class TestModelRegistry:
             calls.append(1)
             return object()
 
-        first = registry.load("k", factory)
-        second = registry.load("k", factory)
-        assert first is second
+        first_model, first_lock = registry.load("k", factory)
+        second_model, second_lock = registry.load("k", factory)
+        assert first_model is second_model
+        assert first_lock is second_lock
         assert len(calls) == 1
         assert registry.size() == 1
 
     def test_distinct_keys_load_separately(self) -> None:
         registry = ModelRegistry()
-        a = registry.load("a", lambda: object())
-        b = registry.load("b", lambda: object())
-        assert a is not b
+        a_model, _ = registry.load("a", lambda: object())
+        b_model, _ = registry.load("b", lambda: object())
+        assert a_model is not b_model
         assert registry.size() == 2
 
     def test_clear_resets(self) -> None:
@@ -71,9 +73,9 @@ class TestModelRegistry:
 
         def worker() -> None:
             barrier.wait()
-            handle = registry.load("shared", factory)
+            model, _ = registry.load("shared", factory)
             with lock:
-                handles.append(handle)
+                handles.append(model)
 
         threads = [threading.Thread(target=worker) for _ in range(8)]
         for thread in threads:
@@ -82,6 +84,70 @@ class TestModelRegistry:
             thread.join()
         assert len({id(handle) for handle in handles}) == 1
         assert len(calls) == 1
+
+    def test_shared_model_serializes_concurrent_inference(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """E4 invariant 6: holders of one cached model never infer concurrently."""
+        import threading
+        import time
+
+        from PIL import Image
+
+        from tests.test_detectors import _component_settings, _components  # noqa: F401
+
+        weights = tmp_path / "model.pt"
+        weights.write_bytes(b"weights")
+        manifest = load_model_manifest(PRODUCT_MANIFEST)
+        registry = ModelRegistry()
+        active = {"n": 0, "max": 0}
+        guard = threading.Lock()
+
+        def slow_call(*args: object, **kwargs: object) -> list[object]:
+            with guard:
+                active["n"] += 1
+                active["max"] = max(active["max"], active["n"])
+            time.sleep(0.05)
+            with guard:
+                active["n"] -= 1
+            return []
+
+        class _CallModel:
+            names = {0: "product"}
+
+            def __call__(self, *args: object, **kwargs: object) -> list[object]:
+                return slow_call(*args, **kwargs)
+
+        monkeypatch.setattr(
+            "assemblyvision_edge.detection.product_detector.verify_manifest_artifact",
+            lambda manifest, path: weights,
+        )
+        monkeypatch.setattr(
+            "assemblyvision_edge.detection.product_detector.verify_model_class_map",
+            lambda names, manifest: None,
+        )
+        monkeypatch.setattr("ultralytics.YOLO", lambda path: _CallModel())
+        first = ProductDetector.from_manifest(
+            manifest, _product_settings(), tmp_path / "m.json", registry=registry
+        )
+        second = ProductDetector.from_manifest(
+            manifest, _product_settings(), tmp_path / "m.json", registry=registry
+        )
+        frame = Image.new("RGB", (64, 64))
+
+        def run(detector: ProductDetector) -> None:
+            detector.detect(frame, uuid4())
+
+        threads = [
+            threading.Thread(target=run, args=(first,)),
+            threading.Thread(target=run, args=(second,)),
+        ]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        # Inference on the shared predictor never overlapped.
+        assert active["max"] == 1
 
 
 class TestModelWeightKey:

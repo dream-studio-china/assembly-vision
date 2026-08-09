@@ -17,20 +17,27 @@ from assemblyvision_domain.models import ModelManifest
 
 
 class ModelRegistry:
-    """Thread-safe cache of loaded model weights keyed by artifact + device."""
+    """Thread-safe cache of loaded model weights keyed by artifact + device.
+
+    ``load`` returns the cached model together with the inference lock shared
+    by every holder of that handle. Ultralytics YOLO instances keep mutable
+    predictor state during ``predict``, so concurrent inference threads must
+    serialize per shared model; distinct models remain parallel (E4 invariant
+    6: the cache never shares mutable inference state across instances).
+    """
 
     def __init__(self) -> None:
-        self._models: dict[str, Any] = {}
+        self._models: dict[str, tuple[Any, threading.Lock]] = {}
         self._lock = threading.Lock()
 
-    def load(self, key: str, factory: Callable[[], Any]) -> Any:
-        """Return the cached model for ``key``, loading it once on a miss."""
+    def load(self, key: str, factory: Callable[[], Any]) -> tuple[Any, threading.Lock]:
+        """Return the cached (model, inference lock) for ``key``, loading once."""
         with self._lock:
-            model = self._models.get(key)
-            if model is None:
-                model = factory()
-                self._models[key] = model
-            return model
+            entry = self._models.get(key)
+            if entry is None:
+                entry = (factory(), threading.Lock())
+                self._models[key] = entry
+            return entry
 
     def size(self) -> int:
         with self._lock:
