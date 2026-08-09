@@ -9,6 +9,7 @@ completion, pause/resume, upload-scheduler changes).
 from __future__ import annotations
 
 import asyncio
+import threading
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -16,7 +17,7 @@ from pathlib import Path
 import pytest
 from assemblyvision_domain.models import BusinessResult
 from assemblyvision_edge.api.app import create_app
-from assemblyvision_edge.api.events import RuntimeEventBus, _Disconnect
+from assemblyvision_edge.api.events import EventEnvelope, RuntimeEventBus, _Disconnect
 from assemblyvision_edge.api.settings import ServerSettings
 from assemblyvision_edge.api.state import EdgeRuntime
 from assemblyvision_edge.persistence.repository import EdgeRepository
@@ -71,6 +72,61 @@ class TestRuntimeEventBus:
         bus = RuntimeEventBus(source_id="dev-1")
         bus.publish("alert.raised", {"code": "TEST"})
         assert bus.last_sequence == 1
+        assert bus.connection_count == 0
+
+    def test_cross_thread_publish_disconnects_slow_consumer_without_queuefull(
+        self,
+    ) -> None:
+        """PR23-F02: worker-thread publishes never raise QueueFull on the loop."""
+
+        async def scenario() -> None:
+            bus = RuntimeEventBus(source_id="dev-1", max_buffer=2)
+            loop = asyncio.get_running_loop()
+            queue = bus.subscribe(loop)
+            raised: list[BaseException] = []
+
+            def handle_exception(
+                _loop: asyncio.AbstractEventLoop, context: dict[str, object]
+            ) -> None:
+                exc = context.get("exception")
+                if exc is not None:
+                    raised.append(exc if isinstance(exc, BaseException) else RuntimeError(str(exc)))
+
+            loop.set_exception_handler(handle_exception)
+
+            def worker() -> None:
+                for _ in range(8):
+                    bus.publish("inspection.started", {"inspection_id": "i-1"})
+
+            thread = threading.Thread(target=worker)
+            thread.start()
+            thread.join()
+            # Let the scheduled deliveries run on the owning loop.
+            await asyncio.sleep(0.05)
+            items: list[EventEnvelope | _Disconnect] = []
+            while not queue.empty():
+                items.append(queue.get_nowait())
+            # The buffer filled, so the consumer was disconnected exactly once
+            # and no normal envelope followed the sentinel.
+            disconnects = [item for item in items if isinstance(item, _Disconnect)]
+            normals = [item for item in items if not isinstance(item, _Disconnect)]
+            assert len(disconnects) == 1
+            assert len(items) == 1
+            assert normals == []
+            assert raised == []
+
+        asyncio.run(scenario())
+
+    def test_publish_after_loop_close_is_a_noop(self) -> None:
+        """PR23-F02: a closing loop drops the subscription without raising."""
+
+        loop = asyncio.new_event_loop()
+        bus = RuntimeEventBus(source_id="dev-1")
+        bus.subscribe(loop)
+        loop.close()
+        # Publishing from a worker thread after the loop closed must never
+        # raise into the inspection/upload caller.
+        bus.publish("upload.changed", {"event": "batch_processed"})
         assert bus.connection_count == 0
 
 

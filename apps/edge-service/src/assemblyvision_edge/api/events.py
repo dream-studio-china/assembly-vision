@@ -48,17 +48,25 @@ class RuntimeEventBus:
     each subscribed connection's asyncio queue via ``call_soon_threadsafe``,
     so callers on inspection/worker threads never wait on consumers. A
     consumer whose queue is full is drained and handed the disconnect sentinel
-    instead of growing without bound.
+    instead of growing without bound. ``asyncio.Queue`` is not a cross-thread
+    primitive, so the fullness decision happens only on the owning event loop
+    (E4 review PR23-F02); the producer thread never touches the queue.
     """
 
     def __init__(self, source_id: str, *, max_buffer: int = 100) -> None:
         self._source_id = source_id
         self._max_buffer = max_buffer
         self._sequence = 0
-        self._lock = threading.Lock()
+        # Reentrant: publish() holds the lock while delivering synchronously
+        # from the event-loop thread, and _deliver() re-acquires it to keep
+        # the dead-queue marker consistent with the subscription map.
+        self._lock = threading.RLock()
         self._subscriptions: dict[
             asyncio.Queue[EventEnvelope | _Disconnect], asyncio.AbstractEventLoop
         ] = {}
+        # Queues that were handed the disconnect sentinel: they must never
+        # receive a normal envelope again (PR23-F02).
+        self._dead: set[asyncio.Queue[EventEnvelope | _Disconnect]] = set()
 
     def subscribe(
         self, loop: asyncio.AbstractEventLoop
@@ -72,6 +80,7 @@ class RuntimeEventBus:
     def unsubscribe(self, queue: asyncio.Queue[EventEnvelope | _Disconnect]) -> None:
         with self._lock:
             self._subscriptions.pop(queue, None)
+            self._dead.discard(queue)
 
     @property
     def connection_count(self) -> int:
@@ -108,25 +117,37 @@ class RuntimeEventBus:
                 data=data,
             )
             for queue, loop in list(self._subscriptions.items()):
+                if queue in self._dead:
+                    continue
                 if running_loop is loop:
                     # Publishing from the loop thread: deliver synchronously so
-                    # the bounded-buffer check sees current queue state.
+                    # the bounded-buffer decision sees current queue state.
                     self._deliver(queue, envelope)
-                elif queue.full():
-                    loop.call_soon_threadsafe(self._drop_slow_consumer, queue)
                 else:
-                    loop.call_soon_threadsafe(queue.put_nowait, envelope)
+                    # Cross-thread publish: schedule one callback that performs
+                    # the fullness decision on the owning loop. Never inspect
+                    # or mutate the queue here; the loop may fill between the
+                    # check and the write (PR23-F02). A closing loop drops the
+                    # subscription instead of raising into the publisher.
+                    try:
+                        loop.call_soon_threadsafe(self._deliver, queue, envelope)
+                    except RuntimeError:
+                        self._dead.add(queue)
+                        self._subscriptions.pop(queue, None)
         return envelope
 
-    @classmethod
     def _deliver(
-        cls,
+        self,
         queue: asyncio.Queue[EventEnvelope | _Disconnect],
         envelope: EventEnvelope,
     ) -> None:
-        """Deliver one envelope, disconnecting the consumer when the buffer is full."""
+        """Deliver one envelope on the owning loop, disconnecting full consumers."""
+        if queue in self._dead:
+            return
         if queue.full():
-            cls._drop_slow_consumer(queue)
+            with self._lock:
+                self._dead.add(queue)
+            self._drop_slow_consumer(queue)
         else:
             queue.put_nowait(envelope)
 
