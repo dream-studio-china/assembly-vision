@@ -1745,7 +1745,12 @@ class EdgeRepository:
             )
             if row is None:
                 return 0
-            if receipt_json is None or (row["kind"] == "MEDIA" and central_object_id is None):
+            if receipt_json is None or (row["kind"] == "MEDIA" and not central_object_id):
+                return 0
+            if not _receipt_matches_task(receipt_json, row, central_object_id):
+                # A receipt whose immutable fields do not match the task cannot
+                # authorize success or retention eligibility (PR-020 F12). The
+                # task stays leased and will be retried after lease expiry.
                 return 0
             result = conn.execute(
                 text(
