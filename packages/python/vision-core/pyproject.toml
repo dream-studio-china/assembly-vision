@@ -13,6 +13,12 @@ dependencies = [
 video = ["opencv-python-headless>=4.9"]
 rtsp = ["av>=12,<16"]
 http = ["httpx>=0.27,<1"]
+# The GenTL bindings (genicam) only publish manylinux and win_amd64 wheels;
+# macOS resolves this extra to nothing, matching the Linux/Windows-only
+# production scope of the GigE Vision path (ADR-013).
+gige = [
+    "harvesters>=1.4,<2; sys_platform == 'linux' or sys_platform == 'win32'",
+]
 
 [tool.uv.sources]
 assemblyvision-domain = { workspace = true }

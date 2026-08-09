@@ -56,6 +56,15 @@ class CameraCapabilities:
     source_height: int
     fps: float | None
     pixel_format: str
+    camera_serial: str | None = None
+    camera_model: str | None = None
+    firmware_version: str | None = None
+    gentl_producer: str | None = None
+    transport_parent: str | None = None
+    trigger_mode: str | None = None
+    exposure_us: float | None = None
+    gain_db: float | None = None
+    packet_size: int | None = None
 
 
 @dataclass(frozen=True)

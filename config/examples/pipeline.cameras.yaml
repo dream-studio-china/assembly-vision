@@ -80,6 +80,50 @@ instances:
       normalize_perspective: false
     rule: ../../config/examples/product-rule.yaml
 
+  - instance_id: line-3
+    camera:
+      # Production-preferred industrial path: Harvester + vendor GenTL producer.
+      # The camera is bound by stable serial number; the .cti is deployment-
+      # provided. Pixel format, exposure, gain, packet size, and trigger mode
+      # are applied to the GenICam node map and verified by read-back; an
+      # unsupported or rejected value fails before inspection (fail-safe).
+      source: gige-vision
+      serial: SN-CAM-0001
+      gentl_producer: /opt/assembly-vision/gentl/vendor_producer.cti
+      trigger_mode: hardware          # continuous | software | hardware
+      pixel_format: Mono8             # only supported formats convert
+      exposure_us: 5000
+      gain_db: 1.0
+      packet_size: 9000               # jumbo frame; validate camera/NIC/switch MTU
+      fps: 25
+      reconnect:
+        initial_delay_ms: 250
+        maximum_delay_ms: 10000
+    inspection:
+      enabled: false
+    models:
+      product_manifest: ../../models/manifests/product-manifest.json
+      component_manifest: ../../models/manifests/component-manifest.json
+    product_detection:
+      model_version: product-yolo-1.0.0
+      confidence_threshold: 0.70
+      iou_threshold: 0.50
+    component_detection:
+      model_version: component-yolo-1.0.0
+      iou_threshold: 0.50
+      components:
+        manual:
+          observation_threshold: 0.45
+        component_a:
+          observation_threshold: 0.50
+    roi:
+      margin_x_ratio: 0.05
+      margin_y_ratio: 0.05
+      min_area_pixels: 250000
+      min_expanded_area_retained: 0.90
+      normalize_perspective: false
+    rule: ../../config/examples/product-rule.yaml
+
   - instance_id: bench
     camera:
       source: folder

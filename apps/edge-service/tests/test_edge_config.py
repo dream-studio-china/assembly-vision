@@ -109,6 +109,8 @@ def test_load_edge_config_rejects_unknown_source(tmp_path: Path) -> None:
         ({"source": "opencv-device"}, "requires a device"),
         ({"source": "video"}, "requires a path"),
         ({"source": "http-image"}, "requires a url"),
+        ({"source": "gige-vision"}, "requires a serial"),
+        ({"source": "gige-vision", "serial": "SN-1"}, "requires a gentl_producer"),
     ],
 )
 def test_load_edge_config_requires_fields(
@@ -117,6 +119,141 @@ def test_load_edge_config_requires_fields(
     path = _write_edge_config(tmp_path, [_instance_yaml("line-1", camera=camera)])
     with pytest.raises(ConfigError, match=message):
         load_edge_config(path)
+
+
+def test_load_edge_config_parses_gige_vision_camera(tmp_path: Path) -> None:
+    cti = tmp_path / "producer.cti"
+    cti.write_bytes(b"fake")
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-gige",
+                camera={
+                    "source": "gige-vision",
+                    "serial": "SN-1",
+                    "gentl_producer": "producer.cti",
+                    "trigger_mode": "hardware",
+                    "pixel_format": "Mono8",
+                    "exposure_us": 5000,
+                    "gain_db": 1.5,
+                    "packet_size": 9000,
+                    "fps": 25,
+                },
+            )
+        ],
+    )
+    config = load_edge_config(path)
+    camera = config.instances[0].camera
+    assert camera.source == "gige-vision"
+    assert camera.serial == "SN-1"
+    assert camera.gentl_producer == tmp_path / "producer.cti"
+    assert camera.trigger_mode == "hardware"
+    assert camera.pixel_format == "Mono8"
+    assert camera.exposure_us == 5000.0
+    assert camera.gain_db == 1.5
+    assert camera.packet_size == 9000
+    assert camera.fps == 25.0
+    frame_config = camera.as_frame_source_config()
+    assert frame_config.serial == "SN-1"
+    assert frame_config.gentl_producer == tmp_path / "producer.cti"
+    assert frame_config.trigger_mode == "hardware"
+    assert frame_config.pixel_format == "Mono8"
+
+
+def test_load_edge_config_rejects_invalid_gige_camera(tmp_path: Path) -> None:
+    cti = tmp_path / "producer.cti"
+    cti.write_bytes(b"fake")
+    cases = [
+        (
+            {
+                "source": "gige-vision",
+                "serial": "SN-1",
+                "gentl_producer": "producer.cti",
+                "trigger_mode": "floppy",
+            },
+            "not one of",
+        ),
+        (
+            {
+                "source": "gige-vision",
+                "serial": "SN-1",
+                "gentl_producer": "producer.cti",
+                "exposure_us": 0,
+            },
+            "exposure_us must be positive",
+        ),
+        (
+            {
+                "source": "gige-vision",
+                "serial": "SN-1",
+                "gentl_producer": "producer.cti",
+                "gain_db": -1,
+            },
+            "gain_db must be non-negative",
+        ),
+        (
+            {
+                "source": "gige-vision",
+                "serial": "SN-1",
+                "gentl_producer": "producer.cti",
+                "packet_size": 0,
+            },
+            "must be a positive integer",
+        ),
+        (
+            {
+                "source": "gige-vision",
+                "serial": "SN-1",
+                "gentl_producer": "producer.cti",
+                "pixel_format": "",
+            },
+            "must be a non-empty string",
+        ),
+    ]
+    for camera, message in cases:
+        path = _write_edge_config(tmp_path, [_instance_yaml("line-gige", camera=camera)])
+        with pytest.raises(ConfigError, match=message):
+            load_edge_config(path)
+
+
+def test_load_edge_config_resolves_missing_gentl_producer(tmp_path: Path) -> None:
+    # The .cti is deployment-provided like folder/video paths; a missing file
+    # still loads and is verified by the source at open time.
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-gige",
+                camera={
+                    "source": "gige-vision",
+                    "serial": "SN-1",
+                    "gentl_producer": "producer.cti",
+                },
+            )
+        ],
+    )
+    config = load_edge_config(path)
+    assert config.instances[0].camera.gentl_producer == tmp_path / "producer.cti"
+
+
+def test_load_edge_config_accepts_zero_gige_gain(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-gige",
+                camera={
+                    "source": "gige-vision",
+                    "serial": "SN-1",
+                    "gentl_producer": "producer.cti",
+                    "gain_db": 0,
+                },
+            )
+        ],
+    )
+    config = load_edge_config(path)
+    assert config.instances[0].camera.gain_db == 0.0
 
 
 def test_load_edge_config_rejects_invalid_fps(tmp_path: Path) -> None:
@@ -396,8 +533,15 @@ def test_legacy_flat_config_still_loads(tmp_path: Path) -> None:
 def test_committed_camera_example_loads() -> None:
     example = Path(__file__).resolve().parents[3] / "config" / "examples" / "pipeline.cameras.yaml"
     config = load_edge_config(example)
-    assert [instance.instance_id for instance in config.instances] == ["line-1", "line-2", "bench"]
+    assert [instance.instance_id for instance in config.instances] == [
+        "line-1",
+        "line-2",
+        "line-3",
+        "bench",
+    ]
     assert config.instances[0].camera.source == "rtsp"
     assert config.instances[1].camera.source == "video"
-    assert config.instances[2].camera.source == "folder"
-    assert config.instances[2].inspection.enabled is False
+    assert config.instances[2].camera.source == "gige-vision"
+    assert config.instances[2].camera.trigger_mode == "hardware"
+    assert config.instances[3].camera.source == "folder"
+    assert config.instances[3].inspection.enabled is False

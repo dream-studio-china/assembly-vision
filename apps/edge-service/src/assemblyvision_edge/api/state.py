@@ -941,6 +941,16 @@ class EdgeRuntime:
             "fps": capabilities.fps if capabilities else None,
             "last_frame_at": state.last_frame_at,
             "error_code": state.error_code,
+            "camera_serial": capabilities.camera_serial if capabilities else None,
+            "camera_model": capabilities.camera_model if capabilities else None,
+            "firmware_version": capabilities.firmware_version if capabilities else None,
+            "gentl_producer": capabilities.gentl_producer if capabilities else None,
+            "transport_parent": capabilities.transport_parent if capabilities else None,
+            "pixel_format": capabilities.pixel_format if capabilities else None,
+            "trigger_mode": capabilities.trigger_mode if capabilities else None,
+            "exposure_us": capabilities.exposure_us if capabilities else None,
+            "gain_db": capabilities.gain_db if capabilities else None,
+            "packet_size": capabilities.packet_size if capabilities else None,
         }
 
     def preview_jpeg(self, instance_id: str) -> tuple[bytes, str] | None:

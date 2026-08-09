@@ -10,10 +10,21 @@ The acquisition subsystem owns industrial-camera integration, trigger handling, 
 |---|---|
 | Static-image MVP | Deterministically ordered files from an input directory |
 | Camera mock / simulated | Folder (looped), local video file, OpenCV local/virtual device, remote RTSP stream, or remote HTTP-image polling — all through the same `FrameSource` seam (ADR-013) |
-| Production target | One fixed industrial camera with fixed lighting, reconnect handling, product-window correlation, optional rolling video |
+| Production target | GigE Vision / GenICam industrial camera as the primary path, with fixed lighting, reconnect handling, product-window correlation, and optional rolling video; UVC USB remains a compatibility path |
 | Future | Additional camera vendors, multiple synchronized cameras, PLC or encoder triggers |
 
-The camera vendor, SDK, operating system, trigger electrical interface, frame rate, exposure, and conveyor speed remain deployment decisions.
+Linux is the primary production runtime. Windows compatibility is supported only
+when the selected camera's GenTL producer or UVC driver is available and passes
+the same adapter conformance suite; Windows is not assumed to be production
+ready before that validation. The camera vendor, SDK/GenTL producer, trigger
+electrical interface, exposure, and conveyor speed remain deployment decisions.
+
+The initial target profile is approximately 4 megapixels at 25-30 FPS. It does
+not imply that every camera format is accepted: the adapter must explicitly
+report supported formats and either convert an approved format deterministically
+or fail before inspection. At minimum, the production validation covers the
+selected camera's Mono8, Bayer8, RGB8, BGR8, or YUV format as applicable; raw
+buffers are never silently reinterpreted.
 
 ## 7.3 Adapter Interface
 
@@ -33,10 +44,26 @@ Implemented sources (ADR-013), all behind this protocol: `folder` (static
 image directory, optional loop), `video` (local video file), `opencv-device`
 (local camera index or `/dev/videoN`, including virtual cameras such as Linux
 `v4l2loopback` or OBS Virtual Camera), `rtsp` (remote RTSP stream via PyAV
-with an OpenCV fallback), and `http-image` (poll a remote JPEG URL at a
-configured interval). Vendor SDK adapters are future implementations of the
-same protocol. Read/decode failures raise a frame-stream error and are never
-silently skipped.
+with an OpenCV fallback), `http-image` (poll a remote JPEG URL at a
+configured interval), and `gige-vision` (GenICam/GenTL via Harvester and a
+vendor GenTL producer). Read/decode failures raise a frame-stream error and
+are never silently skipped.
+
+The production `gige-vision` source is a GenICam/GenTL consumer behind
+the same protocol. It binds a camera by stable serial number rather than an IP
+address and exposes the serial, model, firmware, GenTL producer, transport
+parent, pixel format, and applied acquisition settings through typed camera
+state at startup and after configuration. It supports continuous,
+software-triggered, and hardware-triggered acquisition; hardware trigger is
+preferred for a production product boundary. Configured pixel format, exposure,
+gain, and packet size are applied to the GenICam node map and verified by
+read-back; only the supported formats (`Mono8`, `RGB8`, `BGR8`) convert
+deterministically to RGB and anything else fails before inspection (fail-safe).
+The GenTL bindings ship only manylinux and Windows wheels, so the GigE Vision
+path is Linux/Windows-only; macOS resolves the extra to nothing. PTP is not
+required for the initial deployment: process-monotonic time controls windows
+and UTC remains traceability metadata. PTP may be enabled later only after a
+site requirement and validation.
 
 Static files receive stable IDs derived from relative path plus content checksum. Unsupported, partially written, or undecodable files are recorded as failed inputs rather than silently skipped.
 
@@ -136,8 +163,26 @@ Source-specific requirements:
 | `opencv-device` | `device` (index or `/dev/videoN`) | Virtual cameras are plain devices here |
 | `rtsp` | `url` | PyAV primary, OpenCV fallback; bounded reconnect |
 | `http-image` | `url` | Polled at `fps`/interval with a bounded HTTP timeout |
+| `gige-vision` | `serial` | GenICam/GenTL via Harvester + vendor `.cti`; continuous, software, or hardware trigger; `gentl_producer` deployment-provided |
 
-`null` exposure and gain mean site calibration is required, not an automatic default. Applied camera settings and serial number are recorded at startup and on change.
+`null` exposure and gain mean site calibration is required, not an automatic default. The current typed camera state exposes applied settings and serial number at startup and on change; acceptance evidence records the approved site configuration separately.
+
+GigE packet size is negotiated only when both the camera and selected network
+interface support it. Jumbo frames are an optional optimization, not a
+requirement: the deployment validates NIC MTU, switch path, packet loss, and
+camera packet size before applying a value. A path that does not support jumbo
+frames remains valid at standard MTU if it meets the measured frame-loss and
+latency budget.
+
+USB UVC cameras use `opencv-device` and are appropriate for compatibility,
+development, and any validated low-risk deployment. USB3 Vision cameras that
+expose GenICam use the `gige-vision`/GenTL-style adapter rather than being
+silently downgraded to OpenCV. Phone cameras and low-cost Ethernet cameras are
+not classified by price or connector: a phone may be used through a validated
+UVC, RTSP, or HTTP source for development, while an Ethernet camera must prove
+GigE Vision / GenICam support before it can use the production adapter. A
+camera exposing only RTSP/ONVIF remains an RTSP compatibility source and does
+not gain industrial trigger guarantees.
 
 ## 7.8 Recovery and Failure Handling
 

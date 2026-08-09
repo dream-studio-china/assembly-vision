@@ -10,6 +10,7 @@ from assemblyvision_edge.api.settings import ServerSettings
 from assemblyvision_edge.api.state import EdgeRuntime
 from assemblyvision_edge.camera_manager import CameraSourceManager
 from assemblyvision_vision.sources.folder_source import FolderSource
+from assemblyvision_vision.sources.frame_source import CameraCapabilities
 from PIL import Image
 
 
@@ -52,6 +53,43 @@ def test_instance_camera_state_reports_connected(tmp_path: Path) -> None:
         assert state["source_height"] == 48
         assert state["last_frame_at"] is not None
         assert runtime.instance_camera_state("missing") is None
+    finally:
+        runtime.shutdown()
+
+
+def test_instance_camera_state_exposes_acquisition_metadata(tmp_path: Path) -> None:
+    runtime = _runtime_with_source(tmp_path, _make_folder(tmp_path))
+    try:
+        assert _wait_until(lambda: runtime.camera_manager.latest_frame("cam") is not None)
+        source_state = runtime.camera_manager.state("cam")
+        assert source_state is not None and source_state.capabilities is not None
+        source_state.capabilities = CameraCapabilities(
+            source_width=64,
+            source_height=48,
+            fps=25.0,
+            pixel_format="Mono8",
+            camera_serial="SN-1",
+            camera_model="Camera-4MP",
+            firmware_version="1.2.3",
+            gentl_producer="/opt/vendor.cti",
+            transport_parent="eth0",
+            trigger_mode="hardware",
+            exposure_us=5000.0,
+            gain_db=0.0,
+            packet_size=9000,
+        )
+        state = runtime.instance_camera_state("cam")
+        assert state is not None
+        assert state["camera_serial"] == "SN-1"
+        assert state["camera_model"] == "Camera-4MP"
+        assert state["firmware_version"] == "1.2.3"
+        assert state["gentl_producer"] == "/opt/vendor.cti"
+        assert state["transport_parent"] == "eth0"
+        assert state["pixel_format"] == "Mono8"
+        assert state["trigger_mode"] == "hardware"
+        assert state["exposure_us"] == 5000.0
+        assert state["gain_db"] == 0.0
+        assert state["packet_size"] == 9000
     finally:
         runtime.shutdown()
 

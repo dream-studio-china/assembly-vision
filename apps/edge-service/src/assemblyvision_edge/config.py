@@ -8,7 +8,7 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 from uuid import UUID
 
 import yaml
@@ -333,14 +333,16 @@ def _register_rule_identity(rule: RuleDefinition) -> None:
 
 # -- Multi-instance edge configuration (ADR-013) -------------------------------
 
-_SOURCE_TYPES = {"folder", "video", "opencv-device", "rtsp", "http-image"}
+_SOURCE_TYPES = {"folder", "video", "opencv-device", "rtsp", "http-image", "gige-vision"}
+
+_TRIGGER_MODES = {"continuous", "software", "hardware"}
 
 
 @dataclass(frozen=True)
 class CameraSourceConfig:
     """Per-instance camera source configuration (design 07.7)."""
 
-    source: Literal["folder", "video", "opencv-device", "rtsp", "http-image"]
+    source: Literal["folder", "video", "opencv-device", "rtsp", "http-image", "gige-vision"]
     path: Path | None = None
     url: str | None = None
     device: int | str | None = None
@@ -348,6 +350,13 @@ class CameraSourceConfig:
     loop: bool = False
     reconnect_initial_delay_ms: int = 250
     reconnect_maximum_delay_ms: int = 10000
+    serial: str | None = None
+    gentl_producer: Path | None = None
+    trigger_mode: Literal["continuous", "software", "hardware"] | None = None
+    pixel_format: str | None = None
+    exposure_us: float | None = None
+    gain_db: float | None = None
+    packet_size: int | None = None
 
     def as_frame_source_config(self) -> FrameSourceConfig:
         """Convert to the neutral vision-core factory configuration."""
@@ -360,6 +369,13 @@ class CameraSourceConfig:
             loop=self.loop,
             reconnect_initial_delay_ms=self.reconnect_initial_delay_ms,
             reconnect_maximum_delay_ms=self.reconnect_maximum_delay_ms,
+            serial=self.serial,
+            gentl_producer=self.gentl_producer,
+            trigger_mode=self.trigger_mode,
+            pixel_format=self.pixel_format,
+            exposure_us=self.exposure_us,
+            gain_db=self.gain_db,
+            packet_size=self.packet_size,
         )
 
 
@@ -546,6 +562,13 @@ def _parse_camera_source(raw: dict[str, Any], base: Path, name: str) -> CameraSo
             "fps",
             "loop",
             "reconnect",
+            "serial",
+            "gentl_producer",
+            "trigger_mode",
+            "pixel_format",
+            "exposure_us",
+            "gain_db",
+            "packet_size",
         },
         name,
     )
@@ -602,6 +625,42 @@ def _parse_camera_source(raw: dict[str, Any], base: Path, name: str) -> CameraSo
                 f"{name}.reconnect.maximum_delay_ms ({reconnect_maximum}) must be >= "
                 f"initial_delay_ms ({reconnect_initial})"
             )
+    serial = _require_optional_str(raw.get("serial"), f"{name}.serial")
+    gentl_producer: Path | None = None
+    if "gentl_producer" in raw and raw["gentl_producer"] is not None:
+        # Like folder/video paths, the .cti is deployment-provided; existence
+        # is verified by the source at open time, not at config load.
+        gentl_producer = _resolve_path(base, raw["gentl_producer"], f"{name}.gentl_producer")
+    trigger_mode_raw = raw.get("trigger_mode")
+    trigger_mode: Literal["continuous", "software", "hardware"] | None = None
+    if trigger_mode_raw is not None:
+        trigger_mode_raw = _require_str(trigger_mode_raw, f"{name}.trigger_mode")
+        if trigger_mode_raw not in _TRIGGER_MODES:
+            raise ConfigError(
+                f"{name}.trigger_mode {trigger_mode_raw!r} is not one of {sorted(_TRIGGER_MODES)}"
+            )
+        trigger_mode = cast(Literal["continuous", "software", "hardware"], trigger_mode_raw)
+    pixel_format = _require_optional_str(raw.get("pixel_format"), f"{name}.pixel_format")
+    if pixel_format is not None and not pixel_format.strip():
+        raise ConfigError(f"{name}.pixel_format must be a non-empty string")
+    exposure_us = raw.get("exposure_us")
+    if exposure_us is not None:
+        exposure_us = _as_number(exposure_us, f"{name}.exposure_us")
+        if exposure_us <= 0:
+            raise ConfigError(f"{name}.exposure_us must be positive")
+    gain_db = raw.get("gain_db")
+    if gain_db is not None:
+        gain_db = _as_number(gain_db, f"{name}.gain_db")
+        if gain_db < 0:
+            raise ConfigError(f"{name}.gain_db must be non-negative")
+    packet_size = raw.get("packet_size")
+    if packet_size is not None:
+        packet_size = _as_positive_int(packet_size, f"{name}.packet_size", 1500)
+    if source == "gige-vision":
+        if serial is None:
+            raise ConfigError(f"{name}: source 'gige-vision' requires a serial")
+        if gentl_producer is None:
+            raise ConfigError(f"{name}: source 'gige-vision' requires a gentl_producer")
     return CameraSourceConfig(
         source=source,  # type: ignore[arg-type]
         path=path,
@@ -611,6 +670,13 @@ def _parse_camera_source(raw: dict[str, Any], base: Path, name: str) -> CameraSo
         loop=_as_bool(raw.get("loop"), f"{name}.loop", False),
         reconnect_initial_delay_ms=reconnect_initial,
         reconnect_maximum_delay_ms=reconnect_maximum,
+        serial=serial,
+        gentl_producer=gentl_producer,
+        trigger_mode=trigger_mode,
+        pixel_format=pixel_format,
+        exposure_us=exposure_us,
+        gain_db=gain_db,
+        packet_size=packet_size,
     )
 
 
