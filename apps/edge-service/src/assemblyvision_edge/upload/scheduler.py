@@ -112,12 +112,18 @@ class UploadReceipt:
 
 @dataclass(frozen=True)
 class UploadResult:
-    """Outcome of one sink attempt, classified for the scheduler."""
+    """Outcome of one sink attempt, classified for the scheduler.
+
+    ``payload_bytes_sent`` is the serialized request-body bytes actually
+    handed to the transport (PR-022 F02); None means no network body was sent
+    (transport failure before sending, or a non-network sink).
+    """
 
     status: Literal["SUCCEEDED", "RETRYABLE", "PERMANENT"]
     receipt: UploadReceipt | None = None
     error_code: str | None = None
     retry_after_seconds: float | None = None
+    payload_bytes_sent: int | None = None
 
 
 class UploadSink(Protocol):
@@ -193,19 +199,11 @@ class HttpUploadSink:
         headers = {"Content-Type": "application/json"}
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
-        body = {
-            "idempotency_key": task.idempotency_key,
-            "kind": task.kind,
-            "object_id": str(task.object_id),
-            "inspection_id": str(task.inspection_id) if task.inspection_id else None,
-            "checksum_sha256": task.checksum_sha256,
-            "size_bytes": len(payload),
-            "payload_b64": base64.b64encode(payload).decode("ascii"),
-        }
+        body = self._build_body(task, payload)
         try:
             response = self._client.post(
                 f"{self._base_url}/inspection-uploads",
-                json=body,
+                content=body,
                 headers=headers,
             )
         except Exception:  # noqa: BLE001 - any transport failure is retryable
@@ -216,7 +214,7 @@ class HttpUploadSink:
             receipt = self._parse_receipt(response, task, len(payload))
             if receipt is None:
                 return UploadResult(status="PERMANENT", error_code="INVALID_RECEIPT")
-            return UploadResult(status="SUCCEEDED", receipt=receipt)
+            return UploadResult(status="SUCCEEDED", receipt=receipt, payload_bytes_sent=len(body))
         retry_after: float | None = None
         raw = response.headers.get("Retry-After")
         if raw is not None and raw.isdigit():
@@ -226,8 +224,36 @@ class HttpUploadSink:
                 status="RETRYABLE",
                 error_code=f"HTTP_{response.status_code}",
                 retry_after_seconds=retry_after,
+                payload_bytes_sent=len(body),
             )
-        return UploadResult(status="PERMANENT", error_code=f"HTTP_{response.status_code}")
+        return UploadResult(
+            status="PERMANENT",
+            error_code=f"HTTP_{response.status_code}",
+            payload_bytes_sent=len(body),
+        )
+
+    def wire_size(self, task: UploadTask, payload: bytes) -> int:
+        """Serialized request-body bytes for one payload (PR-022 F02).
+
+        The scheduler throttles this count, not the raw source bytes: the
+        JSON envelope carries a Base64 payload, so its wire size exceeds the
+        media bytes by roughly one third plus metadata.
+        """
+        return len(self._build_body(task, payload))
+
+    @staticmethod
+    def _build_body(task: UploadTask, payload: bytes) -> bytes:
+        """Serialize the JSON upload envelope once (PR-022 F02)."""
+        body = {
+            "idempotency_key": task.idempotency_key,
+            "kind": task.kind,
+            "object_id": str(task.object_id),
+            "inspection_id": str(task.inspection_id) if task.inspection_id else None,
+            "checksum_sha256": task.checksum_sha256,
+            "size_bytes": len(payload),
+            "payload_b64": base64.b64encode(payload).decode("ascii"),
+        }
+        return json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
     @staticmethod
     def _parse_receipt(response: Any, task: UploadTask, size_bytes: int) -> UploadReceipt | None:
@@ -543,18 +569,25 @@ class UploadScheduler:
                 str(task.upload_task_id), lease_owner, exc.code, self._now().isoformat()
             )
             return
-        # Throttle to the configured ceiling before any network attempt
-        # (E3a); local persistence is never gated by the limiter. The wait
-        # renews the active lease so a slow transfer cannot lose its claim,
-        # and aborts if the worker stopped or the lease was lost (PR-022 F01).
-        try:
-            self._bucket.acquire(
-                len(payload), on_wait=self._lease_guard(str(task.upload_task_id), lease_owner)
-            )
-        except _ThrottleAborted:
-            return
+        # Throttle to the configured ceiling before any network attempt (E3a).
+        # The budget covers the serialized request body the HTTP sink will
+        # send, not the raw source bytes, and the wait renews the active lease
+        # or aborts on stop/lease loss; local persistence is never gated
+        # (PR-022 F01/F02).
+        wire = (
+            self._sink.wire_size(task, payload) if isinstance(self._sink, HttpUploadSink) else None
+        )
+        if wire is not None:
+            try:
+                self._bucket.acquire(
+                    wire, on_wait=self._lease_guard(str(task.upload_task_id), lease_owner)
+                )
+            except _ThrottleAborted:
+                return
         result = self._sink.upload(task, payload)
-        self._record_bytes(len(payload))
+        self._record_bytes(
+            result.payload_bytes_sent if result.payload_bytes_sent is not None else 0
+        )
         # Anchor the transition to the response/failure time, not the batch
         # start, so a slow request cannot erode Retry-After (PR-017 F8).
         outcome_time = self._now()

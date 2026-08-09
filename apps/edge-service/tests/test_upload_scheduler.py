@@ -107,7 +107,8 @@ class _ScriptedSink:
         result = self._outcomes[self._index % len(self._outcomes)]
         self._index += 1
         if result.status == "SUCCEEDED":
-            # F5: success must carry a verified receipt matching the task.
+            # F5: success must carry a verified receipt matching the task;
+            # the reported bytes are the request body sent (PR-022 F02).
             return UploadResult(
                 status="SUCCEEDED",
                 receipt=UploadReceipt(
@@ -118,6 +119,7 @@ class _ScriptedSink:
                     size_bytes=len(payload),
                     central_object_id=f"central-{task.idempotency_key}",
                 ),
+                payload_bytes_sent=len(payload),
             )
         return result
 
@@ -648,6 +650,49 @@ class TestRestartRecovery:
 
 
 class TestHttpSink:
+    def test_wire_size_counts_serialized_body_not_raw_bytes(self) -> None:
+        """PR-022 F02: the throttled unit is the Base64 JSON envelope."""
+        import httpx
+
+        task = _task()
+        raw = b"\x00" * 1000
+        sink = HttpUploadSink("https://central.invalid", client=httpx.Client())
+        wire = sink.wire_size(task, raw)
+        # Base64 expansion (4/3) plus JSON metadata exceeds the raw payload.
+        assert wire > len(raw) * 1.3
+
+    def test_payload_bytes_sent_matches_the_transport_body(self) -> None:
+        """PR-022 F02: the reported bytes equal the body the sink actually sent."""
+        import json
+
+        import httpx
+
+        received = {"body_len": 0}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            received["body_len"] = len(request.content)
+            body = json.loads(request.content)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": "obj-wire",
+                },
+            )
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
+        task = _task()
+        raw = b"\x01\x02" * 100
+        result = sink.upload(task, raw)
+        assert result.status == "SUCCEEDED"
+        assert result.payload_bytes_sent == received["body_len"]
+        assert result.payload_bytes_sent == sink.wire_size(task, raw)
+
     def test_classifies_statuses(self) -> None:
         import json
 
@@ -986,6 +1031,10 @@ class TestBandwidthThrottling:
         self, repo: EdgeRepository, tmp_path: Path
     ) -> None:
         """PR-022 F01: a payload above one burst capacity drains and renews its lease."""
+        import json
+
+        import httpx
+
         out = tmp_path / "out"
         record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-big")
         data = b"x" * (1024 * 1024)
@@ -996,6 +1045,23 @@ class TestBandwidthThrottling:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
         repo.persist_inspection_and_enqueue_uploads(record)
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            body = json.loads(request.content)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": f"obj-{body['kind']}",
+                },
+            )
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
 
         class _RenewSpy:
             """Counts lease renewals while delegating to the real repository."""
@@ -1016,7 +1082,6 @@ class TestBandwidthThrottling:
                 return getattr(self.repo, name)
 
         spy = _RenewSpy(repo)
-        sink = _ScriptedSink()
         # 4 Mbps -> 500_000 B/s, burst 500_000 B < 1 MiB payload, so the media
         # upload must wait across multiple refills (real-time waits ~3 s).
         scheduler = UploadScheduler(
@@ -1036,6 +1101,10 @@ class TestBandwidthThrottling:
         self, repo: EdgeRepository, tmp_path: Path
     ) -> None:
         """PR-022 F01: a stopped worker aborts the throttle wait, never the sink."""
+        import json
+
+        import httpx
+
         out = tmp_path / "out"
         record = _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-stop")
         data = b"y" * (1024 * 1024)
@@ -1047,7 +1116,25 @@ class TestBandwidthThrottling:
         path.write_bytes(data)
         repo.persist_inspection_and_enqueue_uploads(record)
 
-        sink = _ScriptedSink()
+        calls = {"n": 0}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls["n"] += 1
+            body = json.loads(request.content)
+            return httpx.Response(
+                200,
+                json={
+                    "idempotency_key": body["idempotency_key"],
+                    "object_id": body["object_id"],
+                    "kind": body["kind"],
+                    "checksum_sha256": body["checksum_sha256"],
+                    "size_bytes": body["size_bytes"],
+                    "central_object_id": f"obj-{body['kind']}",
+                },
+            )
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        sink = HttpUploadSink("https://central.invalid", client=client)
         scheduler = UploadScheduler(
             repo,
             sink,
@@ -1060,7 +1147,7 @@ class TestBandwidthThrottling:
         # The wait aborted: nothing reached the sink and no terminal transition
         # was written for the claimed task; the lease-recovery path reclaims it
         # later. Media stays pending behind its unverified inspection receipt.
-        assert sink.keys == []
+        assert calls["n"] == 0
         tasks = repo.list_uploads(limit=10).items
         assert all(t.status == "IN_PROGRESS" for t in tasks if t.kind == "INSPECTION")
         assert all(t.status == "PENDING" for t in tasks if t.kind == "MEDIA")
@@ -1099,6 +1186,15 @@ class TestBandwidthThrottling:
         assert health.bytes_sent > 0
         assert health.bandwidth_mbps == 10.0
         assert health.successes >= 2
+
+    def test_directory_sink_reports_zero_network_bytes(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """PR-022 F02: a local sink is not network traffic and counts 0 bytes."""
+        _seed(repo, tmp_path)
+        scheduler = _scheduler(repo, tmp_path, DirectoryUploadSink(tmp_path / "sink"))
+        _drain(scheduler)
+        assert scheduler.health().bytes_sent == 0
 
     def test_device_status_reports_bytes_sent_and_bandwidth(
         self, repo: EdgeRepository, tmp_path: Path
@@ -1146,6 +1242,7 @@ class _FlipSink:
                 size_bytes=len(payload),
                 central_object_id=f"central-{task.idempotency_key}",
             ),
+            payload_bytes_sent=len(payload),
         )
 
 

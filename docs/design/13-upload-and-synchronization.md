@@ -211,11 +211,16 @@ gating on verified receipts.
 The upload-resilience milestone adds outage behavior on top of the outbox
 scheduler (design 13.5/13.9, E3 task):
 
-- **Bandwidth throttling**: a token-bucket limiter bounds network payload
-  bytes per second from `UploadSettings.maximum_bandwidth_mbps` (`None`
-  disables throttling); burst is capped at one second of tokens and the
-  limiter never gates local persistence. Cumulative bytes sent and the
-  configured ceiling are exposed through scheduler health and device status.
+- **Bandwidth throttling**: a token-bucket limiter bounds the serialized
+  request-body bytes actually sent to the HTTP sink per second from
+  `UploadSettings.maximum_bandwidth_mbps` (`None` disables throttling). The
+  unit is the JSON envelope the transport writes (Base64 payload plus
+  metadata), not the raw media bytes; the local directory sink reports zero
+  network bytes. Burst is capped at one second of tokens and the limiter never
+  gates local persistence. Amounts above one burst are split into per-burst
+  waits that renew the fenced upload lease and abort on worker stop or lease
+  loss (PR-022 F01/F02). Cumulative bytes sent and the configured ceiling are
+  exposed through scheduler health and device status.
 - **Circuit breaker**: consecutive retryable failures
   (`circuit_failure_threshold`) open the circuit; while open the scheduler
   claims nothing, and after `circuit_open_seconds` a single half-open probe
