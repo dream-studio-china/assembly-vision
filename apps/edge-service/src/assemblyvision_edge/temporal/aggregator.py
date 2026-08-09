@@ -234,24 +234,36 @@ class TemporalAggregator:
         # Count-based rules use the maximum number of instances observed in any
         # single valid frame; instances split across frames do not satisfy an
         # exact expected_count without co-occurrence (documented limitation).
+        # Only detections meeting the count-evidence threshold (the policy
+        # medium threshold at minimum) may count or supply spatial summaries,
+        # so a low-confidence false positive cannot inflate an exact count
+        # after a separate high-confidence hit establishes presence
+        # (PR-015 F7).
+        policy = self._config.policy_for(component_code)
+        count_threshold = policy.medium_confidence if policy is not None else 0.0
+        qualifying = [
+            (frame, detection)
+            for frame, detection in hits
+            if detection.confidence >= count_threshold
+        ]
         by_frame: dict[UUID, int] = {}
-        for frame, _detection in hits:
+        for frame, _detection in qualifying:
             by_frame[frame.frame_id] = by_frame.get(frame.frame_id, 0) + 1
         count_frame_id = max(
             by_frame,
             key=lambda frame_id: (
                 by_frame[frame_id],
-                self._frame_confidence(frame_id, hits),
+                self._frame_confidence(frame_id, qualifying),
             ),
         )
         detection_count = by_frame[count_frame_id]
         ratios = [
             detection.roi_area_ratio
-            for frame, detection in hits
+            for frame, detection in qualifying
             if frame.frame_id == count_frame_id
         ]
         centers = [
-            detection.center for frame, detection in hits if frame.frame_id == count_frame_id
+            detection.center for frame, detection in qualifying if frame.frame_id == count_frame_id
         ]
         return AggregatedComponentEvidence(
             component_code=component_code,
@@ -259,8 +271,8 @@ class TemporalAggregator:
             best_confidence=best_confidence,
             usable_frame_count=opportunities,
             detection_count=detection_count,
-            adjacent_detection_run=self._adjacent_run(hits),
-            supporting_frame_ids=self._supporting_frame_ids(hits),
+            adjacent_detection_run=self._adjacent_run(qualifying),
+            supporting_frame_ids=self._supporting_frame_ids(qualifying),
             box_area_ratios=ratios,
             box_centers=centers,
         )

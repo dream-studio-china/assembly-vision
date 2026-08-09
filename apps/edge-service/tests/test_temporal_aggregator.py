@@ -272,6 +272,23 @@ class TestDetectionCountSemantics:
         assert evidence.state == "PRESENT"
         assert evidence.detection_count == 1
 
+    def test_low_confidence_detection_does_not_inflate_count(self) -> None:
+        # PR-015 F7: one 0.95 hit establishes presence, but the 0.5 box is
+        # below the count-evidence threshold and must not raise the count.
+        frames = [_frame(1, detections=[_det("component_a", 0.95), _det("component_a", 0.5)])]
+        evidence = _aggregate(frames, _config())["component_a"]
+        assert evidence.state == "PRESENT"
+        assert evidence.detection_count == 1
+
+    def test_qualifying_detections_in_one_frame_satisfy_count(self) -> None:
+        frames = [_frame(1, detections=[_det("component_a", 0.95), _det("component_a", 0.9)])]
+        evidence = _aggregate(frames, _config())["component_a"]
+        assert evidence.state == "PRESENT"
+        assert evidence.detection_count == 2
+        # Spatial summaries come from the same qualifying set as the count.
+        assert len(evidence.box_area_ratios) == 2
+        assert len(evidence.box_centers) == 2
+
     def test_present_evidence_records_supporting_frames_and_spatials(self) -> None:
         first = uuid4()
         second = uuid4()

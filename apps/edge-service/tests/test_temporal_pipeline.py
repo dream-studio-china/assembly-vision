@@ -173,9 +173,10 @@ def _build_pipeline(
     per_frame: list[list[tuple[str, float]]],
     temporal_config: TemporalAggregationConfig,
     qualities: list[FrameQuality] | None = None,
+    rule: object | None = None,
 ) -> InspectionPipeline:
     config = load_pipeline_config(EXAMPLE_PIPELINE)
-    rule = load_rule_definition(EXAMPLE_RULE)
+    loaded_rule = load_rule_definition(EXAMPLE_RULE) if rule is None else rule
     component_manifest = load_model_manifest(COMPONENT_MANIFEST)
     return InspectionPipeline(
         product_detector=ProductDetector(qualities),  # type: ignore[arg-type]
@@ -184,7 +185,7 @@ def _build_pipeline(
         ),  # type: ignore[arg-type]
         roi_engine=ROIEngine(config.roi),
         rule_engine=RuleEngine(),
-        rule=rule,
+        rule=loaded_rule,  # type: ignore[arg-type]
         product_manifest=load_model_manifest(PRODUCT_MANIFEST),
         component_manifest=component_manifest,
         config=config,
@@ -421,3 +422,47 @@ class TestProductIsolation:
         record = pipeline.inspect_window(closed)
         assert record.decision.business_result == "NG"
         assert rc.PRODUCT_IDENTITY_MISSING in record.decision.reason_codes
+
+
+def _count_rule() -> object:
+    """Rule requiring exactly two component_a instances per product."""
+    from assemblyvision_edge.rules.rule_engine import ComponentRequirement, RuleDefinition
+
+    return RuleDefinition(
+        schema_version=1,
+        rule_id="count-rule",
+        rule_version=1,
+        product_type="model_a",
+        compatible_component_model_versions=["component-yolo-1.0.0"],
+        barcode_required=False,
+        required_components={"component_a": ComponentRequirement(expected_count=2)},
+        mandatory_gates={
+            "product_detected": True,
+            "roi_valid": True,
+            "minimum_valid_frames_met": True,
+        },
+    )
+
+
+class TestCountEvidenceThreshold:
+    """PR-015 F7: below-threshold detections cannot satisfy exact counts."""
+
+    def test_low_confidence_box_cannot_satisfy_exact_count_rule(self) -> None:
+        frames = [[("component_a", 0.95), ("component_a", 0.5)]]
+        pipeline = _build_pipeline(frames, _temporal_config(), rule=_count_rule())
+        closed, _ = _run_window(pipeline, _temporal_config(), 1)
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "NG"
+        assert "COMPONENT_COUNT_INVALID:component_a" in record.decision.reason_codes
+        evidence = next(e for e in record.evidence if e.component_code == "component_a")
+        assert evidence.detection_count == 1
+
+    def test_qualifying_boxes_satisfy_exact_count_rule(self) -> None:
+        frames = [[("component_a", 0.95), ("component_a", 0.9)]]
+        pipeline = _build_pipeline(frames, _temporal_config(), rule=_count_rule())
+        closed, _ = _run_window(pipeline, _temporal_config(), 1)
+        record = pipeline.inspect_window(closed)
+        assert record.decision.business_result == "OK"
+        assert record.decision.internal_decision == "OK"
+        evidence = next(e for e in record.evidence if e.component_code == "component_a")
+        assert evidence.detection_count == 2
