@@ -9,6 +9,7 @@ tasks (design 13.5/13.9, ADR-005).
 from __future__ import annotations
 
 import hashlib
+import json
 from collections.abc import Callable, Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -27,6 +28,7 @@ from assemblyvision_edge.upload.scheduler import (
     UploadScheduler,
     _full_jitter_backoff,
 )
+from sqlalchemy import text
 
 from tests.test_api import _record
 
@@ -565,12 +567,45 @@ class TestRestartRecovery:
             repo.mark_upload_succeeded(str(current.task.upload_task_id), current.lease_owner, later)
             == 0
         )
+        # F12: an opaque/mismatched receipt is rejected by the repository.
         assert (
             repo.mark_upload_succeeded(
                 str(current.task.upload_task_id),
                 current.lease_owner,
                 later,
                 receipt_json='{"verified":true}',
+            )
+            == 0
+        )
+        # A receipt matching the task's immutable fields authorizes success.
+        with repo._engine.connect() as conn:  # noqa: SLF001
+            row = (
+                conn.execute(
+                    text(
+                        "SELECT idempotency_key, object_id, kind, checksum_sha256, size_bytes "
+                        "FROM upload_tasks WHERE upload_task_id = :id"
+                    ),
+                    {"id": str(current.task.upload_task_id)},
+                )
+                .mappings()
+                .one()
+            )
+        receipt = json.dumps(
+            {
+                "idempotency_key": row["idempotency_key"],
+                "object_id": row["object_id"],
+                "kind": row["kind"],
+                "checksum_sha256": row["checksum_sha256"],
+                "size_bytes": row["size_bytes"],
+                "central_object_id": f"central-{current.task.idempotency_key}",
+            }
+        )
+        assert (
+            repo.mark_upload_succeeded(
+                str(current.task.upload_task_id),
+                current.lease_owner,
+                later,
+                receipt_json=receipt,
             )
             == 1
         )

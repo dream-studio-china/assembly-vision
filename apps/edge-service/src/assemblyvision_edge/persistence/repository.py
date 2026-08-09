@@ -318,11 +318,14 @@ def _content_hash(record: InspectionRecord) -> str:
 def _canonical_record_json(record: InspectionRecord) -> str:
     """Canonical JSON of the full projection, matching the upload payload.
 
-    The scheduler serializes the persisted record the same way when building
-    the inspection payload, so the recorded task size matches the bytes that
-    will be uploaded (E1).
+    ``synchronization_status`` is mutable synchronization state, not immutable
+    evidence, so it is excluded exactly like :func:`_content_hash`; the
+    scheduler serializes the same way, so the recorded task size matches the
+    bytes that will be uploaded (E1, PR-020 F12).
     """
-    return json.dumps(record.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+    payload = record.model_dump(mode="json")
+    payload.pop("synchronization_status", None)
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
 def _has_verified_receipt(row: Any) -> bool:
@@ -336,6 +339,39 @@ def _has_verified_receipt(row: Any) -> bool:
         row["status"] == "SUCCEEDED"
         and bool(row["receipt_json"])
         and (row["kind"] != "MEDIA" or bool(row["central_object_id"]))
+    )
+
+
+def _receipt_matches_task(receipt_json: str, task: Any, central_object_id: str | None) -> bool:
+    """Return whether a persisted receipt matches the task's immutable fields.
+
+    Retention authorizes deletion only from receipts whose idempotency key,
+    object identity, kind, checksum, and byte size match the task actually
+    sent (PR-020 F12, contract 04 section 6). The sink validates first; this
+    repository check is the durable safety boundary so a faulty in-process
+    caller cannot fabricate a verified upload.
+    """
+    try:
+        receipt = json.loads(receipt_json)
+    except (ValueError, TypeError):
+        return False
+    if not isinstance(receipt, dict):
+        return False
+    if receipt.get("idempotency_key") != task["idempotency_key"]:
+        return False
+    if receipt.get("object_id") != task["object_id"]:
+        return False
+    if receipt.get("kind") != task["kind"]:
+        return False
+    if (
+        task["checksum_sha256"] is not None
+        and receipt.get("checksum_sha256") != task["checksum_sha256"]
+    ):
+        return False
+    if task["size_bytes"] is not None and receipt.get("size_bytes") != task["size_bytes"]:
+        return False
+    return task["kind"] != "MEDIA" or (
+        bool(central_object_id) and receipt.get("central_object_id") == central_object_id
     )
 
 
@@ -1698,7 +1734,8 @@ class EdgeRepository:
             row = (
                 conn.execute(
                     text(
-                        f"SELECT kind, inspection_id FROM {upload_tasks.name} "
+                        f"SELECT kind, inspection_id, idempotency_key, object_id, "
+                        f"checksum_sha256, size_bytes FROM {upload_tasks.name} "
                         "WHERE upload_task_id = :id"
                     ),
                     {"id": upload_task_id},
