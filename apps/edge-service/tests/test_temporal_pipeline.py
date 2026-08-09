@@ -358,7 +358,7 @@ def _identity_config() -> TemporalAggregationConfig:
         minimum_valid_frames=1,
         maximum_window_ms=1000,
         reject_duplicate_frame_ids=True,
-        window_strategy="identity",  # type: ignore[arg-type]
+        window_strategy="identity",
         components=dict.fromkeys(_REQUIRED, ComponentTemporalPolicy(0.9, 0.7)),
     )
 

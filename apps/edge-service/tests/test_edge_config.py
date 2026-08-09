@@ -280,7 +280,8 @@ def test_validate_temporal_against_rule_requires_every_required_component() -> N
     with pytest.raises(ConfigError, match="does not require"):
         validate_temporal_against_rule(extra, rule, "temporal")
 
-    assert validate_temporal_against_rule(None, rule, "temporal") is None
+    # Temporal is optional per instance; no policies means no constraints.
+    validate_temporal_against_rule(None, rule, "temporal")
 
 
 def test_load_edge_config_parses_window_strategy_identity(tmp_path: Path) -> None:
