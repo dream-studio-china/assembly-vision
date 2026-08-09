@@ -1,0 +1,33 @@
+# Build context exclusions for the edge-service image (E5a).
+# The builder needs the uv workspace (lockfile + workspace members); everything
+# else is developer or runtime-host material that must not enter image layers.
+
+.git
+.gitignore
+.gitattributes
+.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/.coverage
+**/*.egg-info
+node_modules
+dist
+site
+docs
+docs-zh
+mkdocs-en.yml
+mkdocs-zh.yml
+data
+training/.cache
+models/weights
+**/*.pt
+**/*.onnx
+**/*.sqlite3
+**/*.db
+*.log
+.DS_Store
+.obsidian
+.idea
+.vscode
