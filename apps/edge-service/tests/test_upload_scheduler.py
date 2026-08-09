@@ -998,6 +998,150 @@ class TestBandwidthThrottling:
         assert status["upload_bandwidth_mbps"] == 5.0
 
 
+class _FlipSink:
+    """Sink that fails the first ``fail_count`` attempts, then succeeds."""
+
+    def __init__(self, fail_count: int) -> None:
+        self._remaining = fail_count
+        self.keys: list[str] = []
+
+    def upload(self, task: UploadTask, payload: bytes) -> UploadResult:
+        self.keys.append(task.idempotency_key)
+        if self._remaining > 0:
+            self._remaining -= 1
+            return UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")
+        return UploadResult(
+            status="SUCCEEDED",
+            receipt=UploadReceipt(
+                idempotency_key=task.idempotency_key,
+                object_id=str(task.object_id),
+                kind=task.kind,
+                checksum_sha256=task.checksum_sha256,
+                size_bytes=len(payload),
+                central_object_id=f"central-{task.idempotency_key}",
+            ),
+        )
+
+
+class TestCircuitBreaker:
+    """E3b: consecutive retryable failures open the circuit and stop traffic."""
+
+    @staticmethod
+    def _scheduler(
+        repo: EdgeRepository,
+        output_root: Path,
+        sink: object,
+        clock: _AdvancingClock,
+        *,
+        threshold: int = 3,
+        open_seconds: float = 60.0,
+    ) -> UploadScheduler:
+        return UploadScheduler(
+            repo,
+            sink,  # type: ignore[arg-type]
+            output_root=output_root,
+            base_retry_seconds=0.0,
+            maximum_retry_seconds=60.0,
+            exponent_cap=3,
+            circuit_failure_threshold=threshold,
+            circuit_open_seconds=open_seconds,
+            now=clock,
+        )
+
+    def test_retryable_failures_open_circuit_and_stop_attempts(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        clock = _AdvancingClock(datetime.now(UTC))
+        sink = _ScriptedSink([UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")])
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=3)  # 6 tasks
+        attempts_after_open = len(sink.keys)
+        for _ in range(30):
+            if scheduler.health().circuit_state == "OPEN":
+                break
+            scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+        attempts_after_open = len(sink.keys)
+        # An open circuit produces zero further attempts.
+        for _ in range(5):
+            assert scheduler.run_once() == 0
+        assert len(sink.keys) == attempts_after_open
+        # The queue is untouched: tasks are still present, not lost.
+        assert repo.count_pending_uploads() >= 6
+
+    def test_half_open_probe_success_closes_circuit_and_resumes_drain(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        clock = _AdvancingClock(datetime.now(UTC))
+        # Three INSPECTION tasks fail first (metadata-before-media ordering), so
+        # exactly the threshold of retryable failures opens the circuit and the
+        # sink recovers in time for the half-open probe.
+        sink = _FlipSink(fail_count=3)
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=3)
+        for _ in range(30):
+            if scheduler.health().circuit_state == "OPEN":
+                break
+            scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+        clock.advance(61)
+        # Half-open probe succeeds and closes the circuit.
+        scheduler.run_once()
+        assert scheduler.health().circuit_state == "CLOSED"
+        # Drain completes after recovery.
+        _drain(scheduler)
+        assert repo.count_pending_uploads() == 0
+        assert len(sink.keys) >= 6
+
+    def test_half_open_probe_failure_reopens_circuit(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        clock = _AdvancingClock(datetime.now(UTC))
+        sink = _ScriptedSink([UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")])
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=1)
+        for _ in range(30):
+            if scheduler.health().circuit_state == "OPEN":
+                break
+            scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+        clock.advance(61)
+        scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+
+    def test_permanent_failures_never_open_circuit(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        clock = _AdvancingClock(datetime.now(UTC))
+        sink = _ScriptedSink([UploadResult(status="PERMANENT", error_code="HTTP_409")])
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=2)
+        _drain(scheduler)
+        assert scheduler.health().circuit_state == "CLOSED"
+
+    def test_device_status_exposes_circuit_state_and_alert(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        from assemblyvision_edge.api.settings import ServerSettings
+        from assemblyvision_edge.api.state import EdgeRuntime
+
+        clock = _AdvancingClock(datetime.now(UTC))
+        sink = _ScriptedSink([UploadResult(status="RETRYABLE", error_code="TRANSPORT_ERROR")])
+        scheduler = self._scheduler(repo, tmp_path / "out", sink, clock)
+        _seed(repo, tmp_path / "out", count=3)
+        for _ in range(30):
+            if scheduler.health().circuit_state == "OPEN":
+                break
+            scheduler.run_once()
+        assert scheduler.health().circuit_state == "OPEN"
+        runtime = EdgeRuntime(
+            ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
+        )
+        status = runtime.device_status(0, health=scheduler.health())
+        assert status["upload_circuit_state"] == "OPEN"
+        assert "UPLOAD_CIRCUIT_OPEN" in status["alerts"]
+
+
 def _task() -> UploadTask:
     return UploadTask(
         upload_task_id=uuid4(),

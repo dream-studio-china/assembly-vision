@@ -295,6 +295,9 @@ class SchedulerHealth:
     last_error_code: str | None = None
     bytes_sent: int = 0
     bandwidth_mbps: float | None = None
+    # Circuit-breaker liveness (design 13.5, E3b): CLOSED / OPEN / HALF_OPEN.
+    circuit_state: str = "CLOSED"
+    circuit_last_change_at: str | None = None
 
     @property
     def failure_rate(self) -> float:
@@ -317,6 +320,8 @@ class UploadScheduler:
         maximum_retry_seconds: float = 900.0,
         exponent_cap: int = 8,
         maximum_bandwidth_mbps: float | None = None,
+        circuit_failure_threshold: int = 5,
+        circuit_open_seconds: float = 60.0,
         now: Callable[[], datetime] | None = None,
     ) -> None:
         self._repository = repository
@@ -335,6 +340,8 @@ class UploadScheduler:
             else None
         )
         self._bucket = _TokenBucket(rate)
+        self._circuit_failure_threshold = circuit_failure_threshold
+        self._circuit_open_seconds = circuit_open_seconds
         # Injected clock for deterministic retry-deadline tests (PR-017 F8).
         self._now = now or (lambda: datetime.now(UTC))
         self._stop = threading.Event()
@@ -348,6 +355,11 @@ class UploadScheduler:
         self._last_attempt_at: str | None = None
         self._last_success_at: str | None = None
         self._last_error_code: str | None = None
+        # Circuit-breaker state (E3b).
+        self._circuit_state = "CLOSED"
+        self._circuit_last_change_at: str | None = None
+        self._circuit_opened_at: str | None = None
+        self._consecutive_failures = 0
 
     def health(self) -> SchedulerHealth:
         with self._health_lock:
@@ -360,6 +372,8 @@ class UploadScheduler:
                 last_error_code=self._last_error_code,
                 bytes_sent=self._bytes_sent,
                 bandwidth_mbps=self._bandwidth_mbps,
+                circuit_state=self._circuit_state,
+                circuit_last_change_at=self._circuit_last_change_at,
             )
 
     def _record_attempt(self, when: str) -> None:
@@ -404,10 +418,17 @@ class UploadScheduler:
             self._stop.wait(self._interval_seconds)
 
     def run_once(self) -> int:
-        """Process one batch; returns the number of tasks handled."""
-        claimed = self._repository.claim_upload_tasks(
-            self._batch_size, self._lease_seconds, self._now().isoformat()
-        )
+        """Process one batch; returns the number of tasks handled.
+
+        An open circuit stops all attempts (no hot-looping, E3b); a half-open
+        circuit allows exactly one probe task before judging recovery.
+        """
+        now_iso = self._now().isoformat()
+        state = self._effective_circuit_state(now_iso)
+        if state == "OPEN":
+            return 0
+        limit = 1 if state == "HALF_OPEN" else self._batch_size
+        claimed = self._repository.claim_upload_tasks(limit, self._lease_seconds, now_iso)
         for item in claimed:
             try:
                 self._process(item)
@@ -423,6 +444,45 @@ class UploadScheduler:
                     failure_time.isoformat(),
                 )
         return len(claimed)
+
+    def _effective_circuit_state(self, now_iso: str) -> str:
+        """Return the effective circuit state, advancing OPEN -> HALF_OPEN."""
+        with self._health_lock:
+            if self._circuit_state != "OPEN" or self._circuit_opened_at is None:
+                return self._circuit_state
+            opened = datetime.fromisoformat(self._circuit_opened_at)
+            elapsed = (datetime.fromisoformat(now_iso) - opened).total_seconds()
+            if elapsed >= self._circuit_open_seconds:
+                self._circuit_state = "HALF_OPEN"
+                self._circuit_last_change_at = now_iso
+            return self._circuit_state
+
+    def _on_transient_outcome(self, failed: bool, now_iso: str) -> None:
+        """Update the circuit from a retryable outcome (E3b).
+
+        Consecutive retryable failures open the circuit; a half-open probe
+        success closes it and a probe failure reopens it. Permanent failures
+        never count toward the circuit because they are not outage traffic.
+        """
+        with self._health_lock:
+            if not failed:
+                self._consecutive_failures = 0
+                self._circuit_opened_at = None
+                if self._circuit_state == "HALF_OPEN":
+                    self._circuit_state = "CLOSED"
+                    self._circuit_last_change_at = now_iso
+                return
+            if self._circuit_state == "CLOSED":
+                self._consecutive_failures += 1
+                if self._consecutive_failures >= self._circuit_failure_threshold:
+                    self._circuit_state = "OPEN"
+                    self._circuit_last_change_at = now_iso
+                    self._circuit_opened_at = now_iso
+                return
+            if self._circuit_state == "HALF_OPEN":
+                self._circuit_state = "OPEN"
+                self._circuit_last_change_at = now_iso
+                self._circuit_opened_at = now_iso
 
     def _process(self, claimed: ClaimedUploadTask) -> None:
         task = claimed.task
@@ -457,6 +517,7 @@ class UploadScheduler:
                 )
                 return
             self._record_success(now_iso)
+            self._on_transient_outcome(False, now_iso)
             self._repository.mark_upload_succeeded(
                 str(task.upload_task_id),
                 lease_owner,
@@ -472,6 +533,7 @@ class UploadScheduler:
             )
             return
         self._record_failure(now_iso, result.error_code or "RETRYABLE")
+        self._on_transient_outcome(True, now_iso)
         backoff = _full_jitter_backoff(
             task.attempt_count,
             base_seconds=self._base_retry_seconds,

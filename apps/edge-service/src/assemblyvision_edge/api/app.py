@@ -164,6 +164,8 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
                     maximum_retry_seconds=upload.maximum_retry_seconds,
                     exponent_cap=upload.exponent_cap,
                     maximum_bandwidth_mbps=upload.maximum_bandwidth_mbps,
+                    circuit_failure_threshold=upload.circuit_failure_threshold,
+                    circuit_open_seconds=upload.circuit_open_seconds,
                 )
         if scheduler is None:
             log.warning(

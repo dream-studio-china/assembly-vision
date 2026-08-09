@@ -344,6 +344,8 @@ def _build_upload_settings(args: argparse.Namespace) -> UploadSettings | None:
         maximum_bandwidth_mbps=_optional_float_env("AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS"),
         allow_insecure_http=getattr(args, "upload_insecure_http", False)
         or _bool_env("AV_EDGE_UPLOAD_INSECURE_HTTP", False),
+        circuit_failure_threshold=_int_env("AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD", 5),
+        circuit_open_seconds=_float_env("AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS", 60.0),
     )
     settings.validate()
     return settings

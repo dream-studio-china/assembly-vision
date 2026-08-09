@@ -64,6 +64,9 @@ class DeviceStatus(BaseModel):
     # to the sink and the configured bandwidth ceiling (None = unthrottled).
     upload_bytes_sent: int = 0
     upload_bandwidth_mbps: float | None = None
+    # Circuit-breaker liveness (design 13.5, E3b): CLOSED / OPEN / HALF_OPEN.
+    upload_circuit_state: str = "CLOSED"
+    upload_circuit_last_change_at: str | None = None
     # Storage pressure and cleanup observability (design 12.7, E2c): the
     # server is the single authority for thresholds and mode; the dashboard
     # renders these instead of duplicating a fixed warning threshold.

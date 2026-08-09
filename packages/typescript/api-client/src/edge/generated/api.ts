@@ -618,6 +618,13 @@ export interface components {
              * @default 0
              */
             upload_bytes_sent: number;
+            /** Upload Circuit Last Change At */
+            upload_circuit_last_change_at?: string | null;
+            /**
+             * Upload Circuit State
+             * @default CLOSED
+             */
+            upload_circuit_state: string;
             /**
              * Upload Failure Rate
              * @default 0
