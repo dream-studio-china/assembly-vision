@@ -150,33 +150,48 @@ Expose queue count and bytes by state, oldest pending age, attempt rate, success
 The persistent upload outbox and its worker are implemented in
 `assemblyvision_edge`:
 
-- **Transactional outbox**: `EdgeRepository.enqueue_inspection_uploads` inserts
-  one `INSPECTION` task plus one `MEDIA` task per artifact inside the same
-  transaction that records the inspection. Idempotency keys
-  (`inspection:{device}:{inspection_id}` / `media:{device}:{media_id}`) make
-  duplicate enqueue and restart reconciliation no-ops; the inspection moves
-  `LOCAL_ONLY -> QUEUED` on first enqueue and `-> SYNCED` when its metadata
-  task succeeds.
-- **Leased worker**: `UploadScheduler` claims due tasks in an immediate
-  transaction with a lease column; stale `IN_PROGRESS` tasks are reclaimed
-  after lease expiry (worker-crash recovery). Processing is bounded per batch
-  so uploads cannot starve inspection.
+- **Atomic projection and outbox**: `persist_inspection_and_enqueue_uploads`
+  inserts the immutable projection, media, evidence, and one `INSPECTION` task
+  plus one `MEDIA` task per artifact in a single SQLite transaction, so a crash
+  cannot leave a completed inspection without its required upload tasks
+  (design 12.4 step 3+4). Startup reconciliation applies the same operation to
+  every valid bundle, repairing stranded `LOCAL_ONLY` records instead of
+  skipping them.
+- **Ordered, leased worker**: `UploadScheduler` claims due tasks in an
+  immediate transaction; `MEDIA` tasks become due only after their inspection
+  task holds a verified success receipt, so metadata always precedes media.
+  Each claim carries a per-task fencing token (`lease_owner`), and stale
+  `IN_PROGRESS` tasks are reclaimed after lease expiry; every terminal or retry
+  update requires the matching token, so a late worker cannot overwrite a
+  newer holder.
 - **Failure classification** (design 13.9): transport errors and
   `408/429/5xx` schedule exponential backoff with full jitter, honoring a
-  numeric `Retry-After`; missing/corrupt local evidence
-  (`MEDIA_EVIDENCE_MISSING`, `MEDIA_CHECKSUM_MISMATCH`,
-  `INSPECTION_EVIDENCE_MISSING`) and server conflicts (`409`) become
-  permanent failures while local evidence is preserved.
-- **Sinks**: `DirectoryUploadSink` (local/development and tests, idempotent by
-  key) and `HttpUploadSink` (POSTs to `{base_url}/inspection-uploads` with the
-  idempotency key and payload). The worker only drains when a sink destination
-  is explicitly configured; otherwise tasks accumulate and stay visible in the
-  uploads API.
+  numeric `Retry-After` measured from the response time; missing/corrupt local
+  evidence (`MEDIA_EVIDENCE_MISSING`, `MEDIA_CHECKSUM_MISMATCH`,
+  `INSPECTION_EVIDENCE_MISSING`) and server conflicts (`409`) become permanent
+  failures while local evidence is preserved.
+- **Verified receipts**: a 2xx is only success when the bounded typed receipt
+  echoes the idempotency key, object, kind, byte size, and checksum of the
+  payload actually sent; verified receipts and central object identifiers are
+  persisted. Inspection synchronization is recomputed from all required tasks:
+  `QUEUED` while outstanding, `PARTIAL` after metadata with pending media,
+  `SYNCED` only when every required task has a verified receipt, and `FAILED`
+  on any permanent failure.
+- **Sinks and configuration**: `DirectoryUploadSink` (local/development and
+  tests, idempotent by key) and `HttpUploadSink` (HTTPS POST to
+  `{base_url}/inspection-uploads` with the idempotency key and payload). The
+  worker is enabled through the supported `serve` path via `UploadSettings`
+  and `AV_EDGE_UPLOAD_*` environment variables (endpoint or local sink,
+  separate `AV_EDGE_UPLOAD_TOKEN` credential, timeouts, retry/lease/batch
+  tunables, bandwidth bound); without a configured destination it stays
+  explicitly disabled and tasks remain visible in the uploads API.
 - **Contract 06 coverage**: tests cover successful upload, network
-  interruption, retry/backoff, `Retry-After`, duplicate enqueue, process
-  restart with lease reclamation, missing file, checksum mismatch, server
-  idempotency conflict, and duplicate-free drain.
+  interruption, retry/backoff, `Retry-After` timing, duplicate enqueue, process
+  restart with lease reclamation and fencing, missing file, checksum mismatch,
+  server idempotency conflict, receipt validation, ordered metadata-before-media
+  drain, synchronization states, and duplicate-free drain.
 
-Remaining for the connected pilot: the central ingestion endpoint, media
-binding confirmations, bandwidth throttling, circuit breaker, and retention
-gating on verified receipts.
+Remaining for the connected pilot: the central ingestion endpoint and its
+server-side receipt contract, media binding confirmations, bandwidth
+throttling enforcement, a circuit breaker, and retention gating on verified
+receipts.
