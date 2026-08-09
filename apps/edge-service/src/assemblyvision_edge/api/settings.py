@@ -22,3 +22,5 @@ class ServerSettings:
     api_token: str | None = None
     cors_allow_loopback: bool = True
     enable_web_test: bool = False
+    upload_base_url: str | None = None
+    upload_sink_dir: Path | None = None

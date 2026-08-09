@@ -110,5 +110,15 @@ def reconcile_output_root(repository: EdgeRepository, output_root: Path) -> int:
             continue
         if status == "inserted":
             imported += 1
+            try:
+                # Outbox: any record not yet queued gets inspection+media tasks
+                # (design 12.4 step 4); idempotent per idempotency key.
+                repository.enqueue_inspection_uploads(record)
+            except RepositoryError as exc:
+                log.warning(
+                    "inspection %s imported but upload tasks could not be queued: %s",
+                    record.inspection_id,
+                    exc,
+                )
             log.info("imported inspection %s from %s", record.inspection_id, path)
     return imported

@@ -123,6 +123,7 @@ upload_tasks = Table(
     Column("checksum_sha256", String(64), nullable=True),
     Column("attempt_count", Integer, nullable=False),
     Column("next_attempt_at", Text, nullable=True),
+    Column("lease_expires_at", Text, nullable=True),
     Column("last_error_code", String(64), nullable=True),
     Column("created_at", Text, nullable=False),
     Column("updated_at", Text, nullable=False),
@@ -131,6 +132,7 @@ upload_tasks = Table(
 
 Index("ix_upload_tasks_status", upload_tasks.c.status)
 Index("ix_upload_tasks_inspection", upload_tasks.c.inspection_id)
+Index("ix_upload_tasks_due", upload_tasks.c.status, upload_tasks.c.next_attempt_at)
 
 device_events = Table(
     "device_events",

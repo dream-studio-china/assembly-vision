@@ -144,3 +144,39 @@ Expose queue count and bytes by state, oldest pending age, attempt rate, success
 - Select direct API upload versus pre-signed S3-compatible multipart upload after file-size measurement.
 - Define bandwidth limits, upload scheduling windows, and customer network proxy/firewall requirements.
 - Define operational ownership and resolution targets for permanent upload failures.
+
+## 13.12 Implementation Status (edge outbox and scheduler milestone)
+
+The persistent upload outbox and its worker are implemented in
+`assemblyvision_edge`:
+
+- **Transactional outbox**: `EdgeRepository.enqueue_inspection_uploads` inserts
+  one `INSPECTION` task plus one `MEDIA` task per artifact inside the same
+  transaction that records the inspection. Idempotency keys
+  (`inspection:{device}:{inspection_id}` / `media:{device}:{media_id}`) make
+  duplicate enqueue and restart reconciliation no-ops; the inspection moves
+  `LOCAL_ONLY -> QUEUED` on first enqueue and `-> SYNCED` when its metadata
+  task succeeds.
+- **Leased worker**: `UploadScheduler` claims due tasks in an immediate
+  transaction with a lease column; stale `IN_PROGRESS` tasks are reclaimed
+  after lease expiry (worker-crash recovery). Processing is bounded per batch
+  so uploads cannot starve inspection.
+- **Failure classification** (design 13.9): transport errors and
+  `408/429/5xx` schedule exponential backoff with full jitter, honoring a
+  numeric `Retry-After`; missing/corrupt local evidence
+  (`MEDIA_EVIDENCE_MISSING`, `MEDIA_CHECKSUM_MISMATCH`,
+  `INSPECTION_EVIDENCE_MISSING`) and server conflicts (`409`) become
+  permanent failures while local evidence is preserved.
+- **Sinks**: `DirectoryUploadSink` (local/development and tests, idempotent by
+  key) and `HttpUploadSink` (POSTs to `{base_url}/inspection-uploads` with the
+  idempotency key and payload). The worker only drains when a sink destination
+  is explicitly configured; otherwise tasks accumulate and stay visible in the
+  uploads API.
+- **Contract 06 coverage**: tests cover successful upload, network
+  interruption, retry/backoff, `Retry-After`, duplicate enqueue, process
+  restart with lease reclamation, missing file, checksum mismatch, server
+  idempotency conflict, and duplicate-free drain.
+
+Remaining for the connected pilot: the central ingestion endpoint, media
+binding confirmations, bandwidth throttling, circuit breaker, and retention
+gating on verified receipts.

@@ -70,6 +70,7 @@ class EdgeRuntime:
         self.rule_snapshot: dict[str, Any] | None = None
         self.instances: dict[str, InstanceRuntime] = {}
         self.camera_manager: Any = None
+        self.repository: Any = None
         self._stop = threading.Event()
         self._preview_cache: dict[str, tuple[float, bytes]] = {}
 
@@ -108,6 +109,7 @@ class EdgeRuntime:
         An ``instances:`` document starts per-instance camera sources; a
         legacy flat pipeline document builds the single pipeline (ADR-013).
         """
+        self.repository = repository
         config_path = self._settings.config_path
         if config_path is None:
             self.load_pipeline(repository)
@@ -254,6 +256,7 @@ class EdgeRuntime:
                         if expired is not None:
                             record = runtime.pipeline.inspect_window(expired, writer)
                             runtime.last_result = record.decision.business_result
+                            self._persist_projection(record)
                     except Exception:  # noqa: BLE001 - idle expiry must not kill the loop
                         log.exception("idle window expiry failed for instance %s", instance_id)
                 continue
@@ -266,9 +269,11 @@ class EdgeRuntime:
                     if closed is not None:
                         record = runtime.pipeline.inspect_window(closed, writer)
                         runtime.last_result = record.decision.business_result
+                        self._persist_projection(record)
                 else:
                     record = runtime.pipeline.inspect_frame(frame, writer)
                     runtime.last_result = record.decision.business_result
+                    self._persist_projection(record)
             except Exception:  # noqa: BLE001 - loop must survive frame errors
                 log.exception("inspection failed for instance %s", instance_id)
         if window_manager is not None:
@@ -279,6 +284,27 @@ class EdgeRuntime:
                     runtime.last_result = record.decision.business_result
             except Exception:  # noqa: BLE001 - interrupted close must not mask shutdown
                 log.exception("interrupted window close failed for instance %s", instance_id)
+
+    def _persist_projection(self, record: Any) -> None:
+        """Mirror a published bundle into the SQLite projection and outbox.
+
+        The writer already fsynced the bundle, so a projection failure is
+        logged and never turns a completed inspection into a failure. The
+        outbox enqueue is idempotent and only applies to ``LOCAL_ONLY``
+        records, so restart reconciliation cannot duplicate tasks (ADR-005).
+        """
+        repository = self.repository
+        if repository is None:
+            return
+        try:
+            repository.upsert_inspection(record)
+            repository.enqueue_inspection_uploads(record)
+        except Exception as exc:  # noqa: BLE001 - projection must not break the loop
+            log.warning(
+                "inspection %s was published but the projection/outbox could not be updated: %s",
+                record.inspection_id,
+                exc,
+            )
 
     def pause(self, reason: str, by: str = "operator") -> None:
         self.paused = True

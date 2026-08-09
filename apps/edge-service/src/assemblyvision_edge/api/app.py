@@ -85,7 +85,30 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         runtime.load_config(repository)
         if runtime.pipeline is None and not runtime.instances:
             log.warning("inspection engine is not ready: %s", runtime.pipeline_error)
+        from assemblyvision_edge.upload.scheduler import (
+            DirectoryUploadSink,
+            HttpUploadSink,
+            UploadScheduler,
+            UploadSink,
+        )
+
+        # The outbox always enqueues tasks, but the worker only drains them to
+        # an explicitly configured destination. Without one, tasks accumulate
+        # and stay visible in the API; they are never silently written to a
+        # guessed local directory (design 13.8 requires site configuration).
+        scheduler: UploadScheduler | None = None
+        if settings.upload_sink_dir is not None:
+            sink: UploadSink = DirectoryUploadSink(settings.upload_sink_dir)
+            scheduler = UploadScheduler(repository, sink, output_root=settings.output_root)
+        elif settings.upload_base_url:
+            sink = HttpUploadSink(settings.upload_base_url, token=settings.api_token)
+            scheduler = UploadScheduler(repository, sink, output_root=settings.output_root)
+        app.state.upload_scheduler = scheduler
+        if scheduler is not None:
+            scheduler.start()
         yield
+        if scheduler is not None:
+            scheduler.stop()
         runtime.shutdown()
         repository.close()
         logging.getLogger().removeHandler(app.state.log_buffer)

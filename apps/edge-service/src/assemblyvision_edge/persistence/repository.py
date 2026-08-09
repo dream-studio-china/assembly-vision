@@ -11,9 +11,9 @@ import base64
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from assemblyvision_domain.errors import AssemblyVisionError
 from assemblyvision_domain.models import (
@@ -711,6 +711,249 @@ class EdgeRepository:
                 .where(upload_tasks.c.status.in_(["PENDING", "IN_PROGRESS", "RETRY_WAIT"]))
             ).scalar()
         return int(result or 0)
+
+    def enqueue_inspection_uploads(self, record: InspectionRecord) -> int:
+        """Insert one inspection task plus one media task per artifact.
+
+        Transactional outbox (design 12.4 step 4, ADR-005): tasks are inserted
+        with stable idempotency keys so duplicate calls, restart reconciliation,
+        and concurrent writers can never create a duplicate task. Enqueue only
+        applies while the inspection is still ``LOCAL_ONLY``; once any task was
+        created the projection moves to ``QUEUED`` and re-imports are no-ops.
+        Returns the number of newly inserted tasks.
+        """
+        now = datetime.now(UTC).isoformat()
+        inspection_task = {
+            "kind": "INSPECTION",
+            "object_id": str(record.inspection_id),
+            "payload_hash": _content_hash(record),
+            "idempotency_key": f"inspection:{record.device_id}:{record.inspection_id}",
+            "checksum_sha256": _content_hash(record),
+        }
+        media_tasks = [
+            {
+                "kind": "MEDIA",
+                "object_id": str(item.media_id),
+                "payload_hash": item.checksum_sha256,
+                "idempotency_key": f"media:{record.device_id}:{item.media_id}",
+                "checksum_sha256": item.checksum_sha256,
+            }
+            for item in record.media
+        ]
+        tasks = [inspection_task, *media_tasks]
+        inserted = 0
+        try:
+            with self._engine.begin() as conn:
+                status_row = conn.execute(
+                    text(
+                        f"SELECT synchronization_status FROM {inspections.name} "
+                        "WHERE inspection_id = :id"
+                    ),
+                    {"id": str(record.inspection_id)},
+                ).scalar_one_or_none()
+                if status_row not in (None, "LOCAL_ONLY"):
+                    return 0
+                for task in tasks:
+                    exists = conn.execute(
+                        text(f"SELECT 1 FROM {upload_tasks.name} WHERE idempotency_key = :key"),
+                        {"key": task["idempotency_key"]},
+                    ).scalar_one_or_none()
+                    if exists is not None:
+                        continue
+                    conn.execute(
+                        text(
+                            f"""
+                            INSERT INTO {upload_tasks.name} (
+                                upload_task_id, device_id, inspection_id, kind, object_id,
+                                payload_hash, status, idempotency_key, checksum_sha256,
+                                attempt_count, next_attempt_at, last_error_code,
+                                created_at, updated_at, completed_at
+                            ) VALUES (
+                                :upload_task_id, :device_id, :inspection_id, :kind, :object_id,
+                                :payload_hash, 'PENDING', :idempotency_key, :checksum_sha256,
+                                0, NULL, NULL, :created_at, :created_at, NULL
+                            )
+                            """
+                        ),
+                        {
+                            "upload_task_id": str(uuid4()),
+                            "device_id": str(record.device_id),
+                            "inspection_id": str(record.inspection_id),
+                            "kind": task["kind"],
+                            "object_id": task["object_id"],
+                            "payload_hash": task["payload_hash"],
+                            "idempotency_key": task["idempotency_key"],
+                            "checksum_sha256": task["checksum_sha256"],
+                            "created_at": now,
+                        },
+                    )
+                    inserted += 1
+                if status_row == "LOCAL_ONLY":
+                    conn.execute(
+                        text(
+                            f"UPDATE {inspections.name} SET synchronization_status = 'QUEUED' "
+                            "WHERE inspection_id = :id"
+                        ),
+                        {"id": str(record.inspection_id)},
+                    )
+        except IntegrityError as exc:
+            raise RepositoryError(
+                f"cannot enqueue uploads for inspection {record.inspection_id}: "
+                "upload tasks violate uniqueness constraints"
+            ) from exc
+        return inserted
+
+    def claim_upload_tasks(self, limit: int, lease_seconds: int, now_iso: str) -> list[UploadTask]:
+        """Lease up to ``limit`` due upload tasks to this worker.
+
+        Runs in an immediate transaction so one writer claims each task.
+        Tasks whose lease already expired return to ``PENDING`` first, then due
+        ``PENDING``/``RETRY_WAIT`` tasks are claimed and marked ``IN_PROGRESS``
+        with a lease (design 13.3/13.5 worker-crash recovery).
+        """
+        lease_expires = (
+            datetime.fromisoformat(now_iso) + timedelta(seconds=lease_seconds)
+        ).isoformat()
+        with self._engine.begin() as conn:
+            conn.execute(
+                text(
+                    f"""
+                    UPDATE {upload_tasks.name}
+                    SET status = 'PENDING', lease_expires_at = NULL, updated_at = :now
+                    WHERE status = 'IN_PROGRESS' AND lease_expires_at IS NOT NULL
+                      AND lease_expires_at < :now
+                    """
+                ),
+                {"now": now_iso},
+            )
+            rows = (
+                conn.execute(
+                    text(
+                        f"""
+                        SELECT * FROM {upload_tasks.name}
+                        WHERE status IN ('PENDING', 'RETRY_WAIT')
+                          AND (next_attempt_at IS NULL OR next_attempt_at <= :now)
+                        ORDER BY created_at ASC, upload_task_id ASC
+                        LIMIT :limit
+                        """
+                    ),
+                    {"now": now_iso, "limit": limit},
+                )
+                .mappings()
+                .all()
+            )
+            task_ids = [str(row["upload_task_id"]) for row in rows]
+            if task_ids:
+                conn.execute(
+                    text(
+                        f"""
+                        UPDATE {upload_tasks.name}
+                        SET status = 'IN_PROGRESS', lease_expires_at = :lease, updated_at = :now
+                        WHERE upload_task_id IN :task_ids
+                        """
+                    ).bindparams(bindparam("task_ids", expanding=True)),
+                    {"lease": lease_expires, "now": now_iso, "task_ids": task_ids},
+                )
+                rows = (
+                    conn.execute(
+                        text(
+                            f"SELECT * FROM {upload_tasks.name} WHERE upload_task_id IN :task_ids"
+                        ).bindparams(bindparam("task_ids", expanding=True)),
+                        {"task_ids": task_ids},
+                    )
+                    .mappings()
+                    .all()
+                )
+        return [self._upload_task(row) for row in rows]
+
+    def mark_upload_succeeded(self, upload_task_id: str, now_iso: str) -> None:
+        """Mark one task succeeded; a successful inspection also syncs its projection."""
+        with self._engine.begin() as conn:
+            row = (
+                conn.execute(
+                    text(
+                        f"SELECT kind, inspection_id FROM {upload_tasks.name} "
+                        "WHERE upload_task_id = :id"
+                    ),
+                    {"id": upload_task_id},
+                )
+                .mappings()
+                .first()
+            )
+            if row is None:
+                return
+            conn.execute(
+                text(
+                    f"""
+                    UPDATE {upload_tasks.name}
+                    SET status = 'SUCCEEDED', completed_at = :now, updated_at = :now,
+                        lease_expires_at = NULL, last_error_code = NULL
+                    WHERE upload_task_id = :id
+                    """
+                ),
+                {"now": now_iso, "id": upload_task_id},
+            )
+            if row["kind"] == "INSPECTION" and row["inspection_id"] is not None:
+                conn.execute(
+                    text(
+                        f"UPDATE {inspections.name} SET synchronization_status = 'SYNCED' "
+                        "WHERE inspection_id = :id"
+                    ),
+                    {"id": row["inspection_id"]},
+                )
+
+    def mark_upload_retry(
+        self, upload_task_id: str, error_code: str, next_attempt_at_iso: str, now_iso: str
+    ) -> None:
+        """Schedule a retry with the computed next-attempt time."""
+        with self._engine.begin() as conn:
+            conn.execute(
+                text(
+                    f"""
+                    UPDATE {upload_tasks.name}
+                    SET status = 'RETRY_WAIT', attempt_count = attempt_count + 1,
+                        next_attempt_at = :next, last_error_code = :error,
+                        lease_expires_at = NULL, updated_at = :now
+                    WHERE upload_task_id = :id
+                    """
+                ),
+                {
+                    "next": next_attempt_at_iso,
+                    "error": error_code,
+                    "now": now_iso,
+                    "id": upload_task_id,
+                },
+            )
+
+    def mark_upload_permanent_failure(
+        self, upload_task_id: str, error_code: str, now_iso: str
+    ) -> None:
+        """Mark one task permanently failed; the local evidence is preserved."""
+        with self._engine.begin() as conn:
+            conn.execute(
+                text(
+                    f"""
+                    UPDATE {upload_tasks.name}
+                    SET status = 'PERMANENT_FAILURE', attempt_count = attempt_count + 1,
+                        completed_at = :now, last_error_code = :error,
+                        lease_expires_at = NULL, updated_at = :now
+                    WHERE upload_task_id = :id
+                    """
+                ),
+                {"now": now_iso, "error": error_code, "id": upload_task_id},
+            )
+
+    def get_upload_task(self, upload_task_id: str) -> UploadTask | None:
+        with self._engine.connect() as conn:
+            row = (
+                conn.execute(
+                    text(f"SELECT * FROM {upload_tasks.name} WHERE upload_task_id = :id"),
+                    {"id": upload_task_id},
+                )
+                .mappings()
+                .first()
+            )
+            return self._upload_task(row) if row is not None else None
 
     def register_rule_identity(self, rule_id: str, rule_version: int, content_hash: str) -> None:
         """Record a rule identity durably and reject conflicting content.

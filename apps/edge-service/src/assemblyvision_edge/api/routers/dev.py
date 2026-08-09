@@ -177,6 +177,7 @@ def _import_projection(request: Request, record: InspectionRecord) -> None:
         return
     try:
         repository.upsert_inspection(record)
+        repository.enqueue_inspection_uploads(record)
     except RepositoryError as exc:
         log.warning(
             "inspection %s was published but the read projection could not be updated: %s",
