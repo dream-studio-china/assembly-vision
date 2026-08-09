@@ -618,11 +618,20 @@ Implemented on `feat/e4-runtime` (delivery task
   `WS /api/v1/ws/runtime` authenticates with the same viewer bearer/session
   model as REST and streams design 15.6 envelopes (`inspection.started`,
   `inspection.completed`, `device.status_changed`, `upload.changed`). Events
-  come from real transitions: the inspection loop (started on each new window,
-  completed after the projection/outbox commit), pause/resume, and the upload
-  scheduler worker. The dashboard live view consumes the feed and refetches
-  REST on reconnect or sequence gaps, with the poll reduced to a slow
-  fallback. Publishing never blocks inspection, persistence, or the worker.
+  come from real transitions: the inspection loop (started on each new window
+  or per-frame inspection, completed after the projection/outbox commit),
+  pause/resume, and the upload scheduler worker. Cross-origin browser sockets
+  cannot set an `Authorization` header, so the dashboard exchanges its viewer
+  credential for a short-lived, single-use ticket over REST
+  (`POST /api/v1/ws/runtime/ticket`) and sends it as the negotiated
+  `Sec-WebSocket-Protocol` value, never in the URL (PR-023 F01). The dashboard
+  live view consumes the feed and refetches REST on reconnect or sequence
+  gaps, with the poll reduced to a slow fallback. Publishing never blocks
+  inspection, persistence, or the worker: cross-thread deliveries perform the
+  bounded-buffer decision on the owning event loop, so a slow consumer is
+  disconnected rather than raising `QueueFull` (PR-023 F02), and the channel
+  counters are exposed through the authenticated
+  `GET /api/v1/ws/runtime/stats` endpoint (PR-023 F05).
 - **Trigger/barcode/identity seam (E4b)**: a `TriggerSource` protocol plus a
   deterministic `MockTriggerSource` (frame-ordered identities with barcode
   correlation metadata and validity spans) feed an `IdentityCorrelator` that

@@ -55,8 +55,10 @@ The following invariants are mandatory in every E4 change and test:
    worker: the bus is non-blocking, buffers are bounded, and a slow consumer
    is disconnected rather than throttling the publisher.
 3. WebSocket authentication uses the same viewer credential/session model as
-   REST; tokens never appear in URL query logs, and unauthenticated sockets
-   are rejected before any event is sent.
+   REST; cross-origin browser sockets use a short-lived, single-use ticket
+   issued over authenticated REST and sent as the negotiated subprotocol.
+   Tokens and tickets never appear in URL query logs, and unauthenticated,
+   expired, or replayed tickets are rejected before any event is sent.
 4. The sequence is monotonic per `(source_id, channel)`; a gap always means
    events were lost and clients must refetch REST. Reconnects preserve
    continuity and do not signal a gap (design 14.4.1).
@@ -92,26 +94,41 @@ Each gate is independently reviewable.
   per `(source_id, channel)`, keeps a bounded per-connection buffer, and
   disconnects consumers that fall behind instead of blocking publishers.
 - Add `WS /api/v1/ws/runtime` authenticated with the existing viewer bearer
-  token or session cookie; emit the design 15.6 envelope (`event_id`, `type`,
-  `schema_version`, `occurred_at`, `source_id`, `sequence`, `correlation_id`,
-  `data`).
+  token or session cookie for non-browser/same-origin clients, plus a
+  short-lived, single-use ticket issued over authenticated REST
+  (`POST /api/v1/ws/runtime/ticket`) and sent as the negotiated
+  `Sec-WebSocket-Protocol` value for cross-origin browser sockets; emit the
+  design 15.6 envelope (`event_id`, `type`, `schema_version`, `occurred_at`,
+  `source_id`, `sequence`, `correlation_id`, `data`). The ticket is consumed
+  atomically during acceptance, expires quickly, and never appears in a URL.
 - Publish events from real runtime transitions: inspection started/completed
-  from the inspection loop, device status changes from pause/resume and
-  storage fault transitions, and upload changes from the scheduler worker.
+  from the inspection loop (including the default per-frame mode, which emits
+  one started before inference and the matching completed after durable
+  persistence), device status changes from pause/resume and storage fault
+  transitions, and upload changes from the scheduler worker.
 - Wire the dashboard live view to the event feed; on reconnect or a sequence
   gap the UI refetches REST state (existing `ReconnectingWebSocket`
   contract).
+- Expose the channel counters (active connections, published events by type,
+  slow-consumer disconnects, delivery failures) through the authenticated
+  `GET /api/v1/ws/runtime/stats` endpoint so an operator can distinguish an
+  idle dashboard from a failed event feed.
 
 **Exit criteria**
 
 - Tests prove: unauthenticated sockets are rejected; envelopes carry the
   documented fields with monotonic per-source sequence; a bounded buffer
-  disconnects a slow consumer without blocking the publisher; events are
-  emitted from real inspection completion, pause/resume, and upload-scheduler
-  transitions.
+  disconnects a slow consumer without blocking the publisher (including a
+  cross-thread publish that must never raise `QueueFull` on the event loop);
+  events are emitted from real inspection completion (both temporal-window and
+  default per-frame modes), pause/resume, and upload-scheduler transitions;
+  tickets are single-use and expired/replayed tickets are rejected before any
+  event is sent; channel counters are observable and deterministic.
 - The frontend test proves the live view updates from a typed event and
-  refetches REST after a sequence gap, and the preview polling is not required
-  for correctness.
+  refetches REST after a sequence gap, the preview polling is not required
+  for correctness, the WebSocket URL preserves the `/api/v1` prefix, and a
+  cross-origin connection authenticates via a REST-issued ticket without any
+  credential in the URL.
 
 ### E4b: Trigger/Barcode/Identity Seam
 
@@ -154,8 +171,8 @@ Each gate is independently reviewable.
 
 | Area | Required cases |
 |---|---|
-| WebSocket | auth reject; envelope fields; monotonic per-source sequence; bounded buffer + slow-consumer disconnect without publisher block; gap semantics |
-| Event sources | inspection completed; pause/resume device status; upload change from the scheduler |
+| WebSocket | auth reject (bearer/session/ticket); envelope fields; monotonic per-source sequence; bounded buffer + slow-consumer disconnect without publisher block (including cross-thread `QueueFull`); single-use/expired ticket rejection; gap semantics |
+| Event sources | inspection started+completed (temporal-window and default per-frame modes); pause/resume device status; upload change from the scheduler |
 | Identity seam | mock trigger deterministic sequence; identity window open/seal/transition/fail-closed; one OK per identity; no fabricated evidence |
 | Shared weights | same-manifest reuse (one load); distinct manifests separate; read-only sharing |
 | Frontend | event-driven live refresh; REST refetch on gap/reconnect |
