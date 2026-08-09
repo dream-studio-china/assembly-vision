@@ -598,6 +598,8 @@ class EdgeRuntime:
             "upload_last_attempt_at": health.last_attempt_at if health else None,
             "upload_last_success_at": health.last_success_at if health else None,
             "upload_last_error_code": health.last_error_code if health else None,
+            "upload_bytes_sent": health.bytes_sent if health else 0,
+            "upload_bandwidth_mbps": health.bandwidth_mbps if health else None,
         }
         alerts: list[str] = []
         if pending > 0 and not enabled:

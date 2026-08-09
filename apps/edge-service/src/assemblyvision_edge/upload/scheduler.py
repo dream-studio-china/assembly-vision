@@ -16,6 +16,7 @@ import json
 import logging
 import random
 import threading
+import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
@@ -31,6 +32,43 @@ log = logging.getLogger("assemblyvision.upload")
 # Bound for parsed receipt bodies; a central response larger than this is an
 # integrity anomaly and never accepted as a receipt (PR-017 F5).
 _MAX_RECEIPT_BYTES = 65536
+
+# Token-bucket burst is capped at one second of tokens so a large backlog
+# cannot burst past the configured ceiling (E3a).
+_BUCKET_BURST_SECONDS = 1.0
+_MBPS_TO_BYTES_PER_SECOND = 1_000_000 / 8
+
+
+class _TokenBucket:
+    """Bounds network upload bytes per second for the scheduler (E3a).
+
+    A ``None`` rate disables throttling entirely. ``acquire`` blocks until
+    ``amount`` bytes may be sent at the configured rate; tokens refill
+    continuously and burst is capped at one second of tokens.
+    """
+
+    def __init__(self, rate_bytes_per_second: float | None) -> None:
+        self._rate = rate_bytes_per_second
+        self._tokens = 0.0
+        self._last = time.monotonic()
+
+    def acquire(self, amount: int) -> None:
+        """Block until ``amount`` bytes may be sent at the configured rate."""
+        if self._rate is None or amount <= 0:
+            return
+        while True:
+            now = time.monotonic()
+            self._tokens = min(
+                self._tokens + (now - self._last) * self._rate,
+                self._rate * _BUCKET_BURST_SECONDS,
+            )
+            self._last = now
+            if self._tokens >= amount:
+                self._tokens -= amount
+                return
+            deficit = amount - self._tokens
+            # Wake frequently to refill and stay responsive to stop signals.
+            time.sleep(min(deficit / self._rate, 0.25))
 
 
 @dataclass(frozen=True)
@@ -245,6 +283,8 @@ class SchedulerHealth:
     """Process-local worker health counters (design 13.9, E1).
 
     Counters reset on scheduler start; queue truth lives in the repository.
+    ``bytes_sent`` and ``bandwidth_mbps`` expose the enforced upload ceiling
+    and actual volume for operators (E3a).
     """
 
     attempts: int
@@ -253,6 +293,8 @@ class SchedulerHealth:
     last_attempt_at: str | None = None
     last_success_at: str | None = None
     last_error_code: str | None = None
+    bytes_sent: int = 0
+    bandwidth_mbps: float | None = None
 
     @property
     def failure_rate(self) -> float:
@@ -274,6 +316,7 @@ class UploadScheduler:
         base_retry_seconds: float = 2.0,
         maximum_retry_seconds: float = 900.0,
         exponent_cap: int = 8,
+        maximum_bandwidth_mbps: float | None = None,
         now: Callable[[], datetime] | None = None,
     ) -> None:
         self._repository = repository
@@ -285,6 +328,13 @@ class UploadScheduler:
         self._base_retry_seconds = base_retry_seconds
         self._maximum_retry_seconds = maximum_retry_seconds
         self._exponent_cap = exponent_cap
+        self._bandwidth_mbps = maximum_bandwidth_mbps
+        rate = (
+            maximum_bandwidth_mbps * _MBPS_TO_BYTES_PER_SECOND
+            if maximum_bandwidth_mbps is not None
+            else None
+        )
+        self._bucket = _TokenBucket(rate)
         # Injected clock for deterministic retry-deadline tests (PR-017 F8).
         self._now = now or (lambda: datetime.now(UTC))
         self._stop = threading.Event()
@@ -294,6 +344,7 @@ class UploadScheduler:
         self._attempts = 0
         self._successes = 0
         self._failures = 0
+        self._bytes_sent = 0
         self._last_attempt_at: str | None = None
         self._last_success_at: str | None = None
         self._last_error_code: str | None = None
@@ -307,12 +358,19 @@ class UploadScheduler:
                 last_attempt_at=self._last_attempt_at,
                 last_success_at=self._last_success_at,
                 last_error_code=self._last_error_code,
+                bytes_sent=self._bytes_sent,
+                bandwidth_mbps=self._bandwidth_mbps,
             )
 
     def _record_attempt(self, when: str) -> None:
         with self._health_lock:
             self._attempts += 1
             self._last_attempt_at = when
+
+    def _record_bytes(self, amount: int) -> None:
+        """Count payload bytes handed to the sink (E3a)."""
+        with self._health_lock:
+            self._bytes_sent += amount
 
     def _record_success(self, when: str) -> None:
         with self._health_lock:
@@ -379,7 +437,11 @@ class UploadScheduler:
                 str(task.upload_task_id), lease_owner, exc.code, self._now().isoformat()
             )
             return
+        # Throttle to the configured ceiling before any network attempt
+        # (E3a); local persistence is never gated by the limiter.
+        self._bucket.acquire(len(payload))
         result = self._sink.upload(task, payload)
+        self._record_bytes(len(payload))
         # Anchor the transition to the response/failure time, not the batch
         # start, so a slow request cannot erode Retry-After (PR-017 F8).
         outcome_time = self._now()

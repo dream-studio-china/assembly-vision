@@ -611,6 +611,13 @@ export interface components {
              * @default 0
              */
             upload_attempts: number;
+            /** Upload Bandwidth Mbps */
+            upload_bandwidth_mbps?: number | null;
+            /**
+             * Upload Bytes Sent
+             * @default 0
+             */
+            upload_bytes_sent: number;
             /**
              * Upload Failure Rate
              * @default 0

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 from collections.abc import Callable, Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -929,6 +930,72 @@ class TestHttpSink:
         fetched = repo.get_inspection(str(record.inspection_id))
         assert fetched is not None
         assert fetched.synchronization_status == "FAILED"
+
+
+class TestBandwidthThrottling:
+    """E3a: the scheduler bounds network bytes per second when configured."""
+
+    def test_token_bucket_never_delays_without_a_ceiling(self) -> None:
+        from assemblyvision_edge.upload.scheduler import _TokenBucket
+
+        bucket = _TokenBucket(None)
+        started = time.monotonic()
+        bucket.acquire(1_000_000)
+        assert time.monotonic() - started < 0.1
+
+    def test_token_bucket_enforces_the_rate_ceiling(self) -> None:
+        from assemblyvision_edge.upload.scheduler import _TokenBucket
+
+        # 200_000 bytes/s; the first acquire fits the one-second burst, the
+        # second needs 0.5 s of refill.
+        bucket = _TokenBucket(200_000.0)
+        started = time.monotonic()
+        bucket.acquire(100_000)
+        bucket.acquire(100_000)
+        elapsed = time.monotonic() - started
+        assert elapsed >= 0.4
+
+    def test_scheduler_exposes_bytes_sent_and_bandwidth_ceiling(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        sink = _ScriptedSink()
+        scheduler = UploadScheduler(
+            repo,
+            sink,
+            output_root=tmp_path / "out",
+            maximum_bandwidth_mbps=10.0,
+            interval_seconds=0.0,
+        )
+        _seed(repo, tmp_path / "out", count=2)
+        handled = scheduler.run_once()
+        assert handled >= 2
+        health = scheduler.health()
+        assert health.bytes_sent > 0
+        assert health.bandwidth_mbps == 10.0
+        assert health.successes >= 2
+
+    def test_device_status_reports_bytes_sent_and_bandwidth(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        from assemblyvision_edge.api.settings import ServerSettings
+        from assemblyvision_edge.api.state import EdgeRuntime
+
+        sink = _ScriptedSink()
+        scheduler = UploadScheduler(
+            repo,
+            sink,
+            output_root=tmp_path / "out",
+            maximum_bandwidth_mbps=5.0,
+            interval_seconds=0.0,
+        )
+        _seed(repo, tmp_path / "out", count=1)
+        scheduler.run_once()
+        runtime = EdgeRuntime(
+            ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
+        )
+        status = runtime.device_status(0, health=scheduler.health())
+        assert status["upload_bytes_sent"] > 0
+        assert status["upload_bandwidth_mbps"] == 5.0
 
 
 def _task() -> UploadTask:
