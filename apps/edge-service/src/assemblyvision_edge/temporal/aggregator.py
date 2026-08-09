@@ -40,8 +40,10 @@ class ComponentTemporalPolicy:
             raise ValueError("medium_hits must be >= 1")
         if self.max_frame_gap < 0:
             raise ValueError("max_frame_gap must be >= 0")
-        if self.medium_confidence > self.high_confidence:
-            raise ValueError("medium_confidence cannot exceed high_confidence")
+        # Strict ordering keeps the high-vs-repeated-medium distinction real;
+        # equality would collapse the two evidence paths (design 10.7).
+        if self.medium_confidence >= self.high_confidence:
+            raise ValueError("medium_confidence must be strictly less than high_confidence")
 
 
 @dataclass(frozen=True)
@@ -146,6 +148,19 @@ class TemporalAggregator:
                 supporting_frame_ids=[],
                 policy_reason_codes=[rc.INSUFFICIENT_VALID_FRAMES],
             )
+        if policy is None:
+            # Fail closed: an enabled temporal inspection must carry a versioned
+            # policy for every required component (PR-015 F6). Reaching here
+            # means invalid configuration slipped past validation.
+            return AggregatedComponentEvidence(
+                component_code=component_code,
+                state="UNVERIFIABLE",
+                best_confidence=None,
+                usable_frame_count=opportunities,
+                detection_count=0,
+                supporting_frame_ids=[],
+                policy_reason_codes=[rc.COMPONENT_POLICY_MISSING],
+            )
 
         hits: list[tuple[FrameEvidence, FrameDetection]] = []
         for frame in valid:
@@ -164,8 +179,8 @@ class TemporalAggregator:
             )
 
         best = max((detection.confidence for _frame, detection in hits), default=0.0)
-        high = policy.high_confidence if policy is not None else 1.0
-        medium = policy.medium_confidence if policy is not None else 1.0
+        high = policy.high_confidence
+        medium = policy.medium_confidence
         if any(detection.confidence >= high for _frame, detection in hits):
             return self._present(component_code, valid, hits, opportunities)
 

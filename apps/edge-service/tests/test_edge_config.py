@@ -13,6 +13,8 @@ from assemblyvision_edge.config import (
     load_pipeline_config,
 )
 
+from tests.conftest import EXAMPLE_RULE
+
 
 def _instance_yaml(instance_id: str = "line-1", **overrides: object) -> dict[str, object]:
     instance: dict[str, object] = {
@@ -228,6 +230,57 @@ def test_load_edge_config_rejects_medium_above_high(tmp_path: Path) -> None:
     )
     with pytest.raises(ConfigError):
         load_edge_config(path)
+
+
+def test_load_edge_config_rejects_equal_medium_high(tmp_path: Path) -> None:
+    # PR-015 F6: equality collapses the high-hit and repeated-medium paths.
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                temporal={
+                    "components": {
+                        "component_a": {"high_confidence": 0.7, "medium_confidence": 0.7}
+                    }
+                },
+            )
+        ],
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
+
+
+def test_validate_temporal_against_rule_requires_every_required_component() -> None:
+    # PR-015 F6: an enabled temporal config must cover every rule-required
+    # component and reject unknown component keys.
+    from assemblyvision_edge.config import (
+        load_rule_definition,
+        validate_temporal_against_rule,
+    )
+    from assemblyvision_edge.temporal.aggregator import (
+        ComponentTemporalPolicy,
+        TemporalAggregationConfig,
+    )
+
+    rule = load_rule_definition(EXAMPLE_RULE)  # requires a, b, manual
+    policy = ComponentTemporalPolicy(high_confidence=0.9, medium_confidence=0.7)
+    complete = TemporalAggregationConfig(
+        components=dict.fromkeys(("component_a", "component_b", "manual"), policy)
+    )
+    validate_temporal_against_rule(complete, rule, "temporal")  # no error
+
+    missing = TemporalAggregationConfig(components={"component_a": policy})
+    with pytest.raises(ConfigError, match="missing for rule-required"):
+        validate_temporal_against_rule(missing, rule, "temporal")
+
+    extra = TemporalAggregationConfig(
+        components=dict.fromkeys(("component_a", "component_b", "manual", "ghost"), policy)
+    )
+    with pytest.raises(ConfigError, match="does not require"):
+        validate_temporal_against_rule(extra, rule, "temporal")
+
+    assert validate_temporal_against_rule(None, rule, "temporal") is None
 
 
 def test_load_edge_config_parses_window_strategy_identity(tmp_path: Path) -> None:

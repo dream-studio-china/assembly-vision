@@ -219,6 +219,20 @@ class TestUnverifiableVsMissing:
         assert evidence.state == "MISSING"
         assert rc.COMPONENT_MISSING in evidence.policy_reason_codes
 
+    def test_missing_policy_is_unverifiable_even_at_confidence_one(self) -> None:
+        # PR-015 F6: without a configured, versioned policy a required
+        # component must fail closed; an exact 1.0 detection must not PRESENT.
+        frames = [_frame(1, detections=[_det("component_a", 1.0)])]
+        config = TemporalAggregationConfig(
+            minimum_valid_frames=1,
+            maximum_window_ms=2500,
+            reject_duplicate_frame_ids=True,
+            components={},
+        )
+        evidence = _aggregate(frames, config)["component_a"]
+        assert evidence.state == "UNVERIFIABLE"
+        assert rc.COMPONENT_POLICY_MISSING in evidence.policy_reason_codes
+
 
 class TestDuplicateHandling:
     def test_duplicate_frame_ids_ignored_by_default(self) -> None:
@@ -304,6 +318,8 @@ class TestFailSafeProperties:
     def test_config_validation(self) -> None:
         with pytest.raises(ValueError):
             ComponentTemporalPolicy(high_confidence=0.7, medium_confidence=0.9)
+        with pytest.raises(ValueError):
+            ComponentTemporalPolicy(high_confidence=0.7, medium_confidence=0.7)
         with pytest.raises(ValueError):
             TemporalAggregationConfig(minimum_valid_frames=0)
         with pytest.raises(ValueError):

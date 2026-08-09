@@ -605,6 +605,7 @@ def _build_instance_pipeline(
         load_rule_definition,
         validate_model_version_declaration,
         validate_rule_component_compatibility,
+        validate_temporal_against_rule,
     )
     from assemblyvision_edge.detection import ComponentDetector, ProductDetector
     from assemblyvision_edge.pipeline import InspectionPipeline
@@ -613,6 +614,9 @@ def _build_instance_pipeline(
     config = instance.pipeline
     registry: RuleIdentityRegistry | None = rule_registry
     rule = load_rule_definition(instance.rule, registry=registry)
+    validate_temporal_against_rule(
+        instance.temporal, rule, f"instance {instance.instance_id} temporal"
+    )
     product_manifest: ModelManifest = load_model_manifest(config.product_manifest)
     component_manifest: ModelManifest = load_model_manifest(config.component_manifest)
     validate_model_version_declaration(

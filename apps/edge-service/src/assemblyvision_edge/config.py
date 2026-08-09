@@ -608,9 +608,12 @@ def _parse_temporal(raw: Any, name: str) -> TemporalAggregationConfig | None:
             )
             high = _as_threshold(pmap.get("high_confidence"), f"{pname}.high_confidence", 0.9)
             medium = _as_threshold(pmap.get("medium_confidence"), f"{pname}.medium_confidence", 0.7)
-            if medium > high:
+            # Strict ordering is required by design 10.7; equality would
+            # collapse the high-hit and repeated-medium evidence paths.
+            if medium >= high:
                 raise ConfigError(
-                    f"{pname}: medium_confidence ({medium}) must be <= high_confidence ({high})"
+                    f"{pname}: medium_confidence ({medium}) must be strictly less than "
+                    f"high_confidence ({high})"
                 )
             hits = _as_positive_int(pmap.get("medium_hits"), f"{pname}.medium_hits", 2)
             require_adjacent = _as_bool(
@@ -646,6 +649,32 @@ def _validate_temporal_against_pipeline(
                 f"{name}.components.{code}: medium_confidence ({policy.medium_confidence}) must be "
                 f">= observation_threshold ({observation.observation_threshold})"
             )
+
+
+def validate_temporal_against_rule(
+    temporal: TemporalAggregationConfig | None, rule: RuleDefinition, name: str
+) -> None:
+    """Require exactly one temporal policy per rule-required component (PR-015 F6).
+
+    Enabled temporal inspection must be fail-closed: a required component with
+    no validated, versioned policy can never be released as OK. Policies for
+    components the active rule does not require are configuration errors.
+    """
+    if temporal is None:
+        return
+    required = set(rule.required_components)
+    configured = set(temporal.components)
+    missing = sorted(required - configured)
+    if missing:
+        raise ConfigError(
+            f"{name}: temporal policies missing for rule-required components: " + ", ".join(missing)
+        )
+    extra = sorted(configured - required)
+    if extra:
+        raise ConfigError(
+            f"{name}: temporal policies for components the rule does not require: "
+            + ", ".join(extra)
+        )
 
 
 def _as_non_negative_int(raw: Any, name: str, default: int) -> int:
