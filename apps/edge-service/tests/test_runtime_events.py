@@ -130,6 +130,40 @@ class TestRuntimeEventBus:
         bus.publish("upload.changed", {"event": "batch_processed"})
         assert bus.connection_count == 0
 
+    def test_stats_count_events_and_slow_consumers(self) -> None:
+        """PR-023 F05: published and disconnect counters change deterministically."""
+
+        async def scenario() -> None:
+            bus = RuntimeEventBus(source_id="dev-1", max_buffer=2)
+            loop = asyncio.get_running_loop()
+            queue = bus.subscribe(loop)
+            bus.publish("inspection.started", {"inspection_id": "i-1"})
+            bus.publish("inspection.completed", {"inspection_id": "i-1"})
+            bus.publish("inspection.started", {"inspection_id": "i-2"})
+            # The buffer filled; the consumer is disconnected.
+            stats = bus.stats()
+            assert stats.active_connections == 1
+            assert stats.published_total == 3
+            assert stats.published_by_type == {"inspection.started": 2, "inspection.completed": 1}
+            assert stats.slow_consumer_disconnects == 1
+            assert stats.delivery_failures == 0
+            item = queue.get_nowait()
+            assert isinstance(item, _Disconnect)
+
+        asyncio.run(scenario())
+
+    def test_delivery_failures_are_counted(self) -> None:
+        """PR-023 F05: a closing loop counts one failed delivery, not a crash."""
+
+        loop = asyncio.new_event_loop()
+        bus = RuntimeEventBus(source_id="dev-1")
+        bus.subscribe(loop)
+        loop.close()
+        bus.publish("a", {})
+        stats = bus.stats()
+        assert stats.active_connections == 0
+        assert stats.delivery_failures == 1
+
 
 class TestWebSocketChannel:
     @pytest.fixture
@@ -265,6 +299,28 @@ class TestWebSocketChannel:
             ):
                 pass
             assert excinfo.value.code == 4401
+
+    def test_runtime_stats_endpoint_requires_viewer(self, tmp_path: Path) -> None:
+        settings = ServerSettings(
+            output_root=tmp_path / "out",
+            db_path=tmp_path / "edge.sqlite3",
+            api_token="viewer-secret",  # noqa: S106 - test fixture credential
+        )
+        app = create_app(settings)
+        with TestClient(app) as client:
+            denied = client.get("/api/v1/ws/runtime/stats")
+            assert denied.status_code == 401
+            granted = client.get(
+                "/api/v1/ws/runtime/stats",
+                headers={"Authorization": "Bearer viewer-secret"},
+            )
+            assert granted.status_code == 200
+            body = granted.json()
+            assert body["active_connections"] == 0
+            assert body["published_total"] == 0
+            assert body["published_by_type"] == {}
+            assert body["slow_consumer_disconnects"] == 0
+            assert body["delivery_failures"] == 0
 
 
 class TestEventSources:

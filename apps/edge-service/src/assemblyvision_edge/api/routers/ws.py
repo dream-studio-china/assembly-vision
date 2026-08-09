@@ -26,7 +26,7 @@ from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
 from assemblyvision_edge.api.deps import _bearer_valid, _session_valid, require_viewer
-from assemblyvision_edge.api.events import RuntimeEventBus, _Disconnect
+from assemblyvision_edge.api.events import RuntimeEventBus, RuntimeEventStats, _Disconnect
 from assemblyvision_edge.api.settings import ServerSettings
 
 router = APIRouter(tags=["runtime-events"])
@@ -41,6 +41,21 @@ class WsTicket(BaseModel):
     ticket: str
     expires_at: str
     channel: str = "runtime"
+
+
+@router.get(
+    "/ws/runtime/stats",
+    dependencies=[Depends(require_viewer)],
+    response_model=RuntimeEventStats,
+)
+def runtime_event_stats(request: Request) -> RuntimeEventStats:
+    """Return authenticated runtime event channel observability (PR-023 F05).
+
+    Lets an operator distinguish an idle dashboard from a failed event feed.
+    Counters are process-local and never expose credentials or payloads.
+    """
+    bus = cast(RuntimeEventBus, request.app.state.event_bus)
+    return bus.stats()
 
 
 @router.post("/ws/runtime/ticket", dependencies=[Depends(require_viewer)])

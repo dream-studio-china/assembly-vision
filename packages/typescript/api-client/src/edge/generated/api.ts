@@ -381,6 +381,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ws/runtime/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Runtime Event Stats
+         * @description Return authenticated runtime event channel observability (PR-023 F05).
+         *
+         *     Lets an operator distinguish an idle dashboard from a failed event feed.
+         *     Counters are process-local and never expose credentials or payloads.
+         */
+        get: operations["runtime_event_stats_api_v1_ws_runtime_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ws/runtime/ticket": {
         parameters: {
             query?: never;
@@ -1197,6 +1220,29 @@ export interface components {
             rule_id: string;
             /** Rule Version */
             rule_version: number;
+        };
+        /**
+         * RuntimeEventStats
+         * @description Operational counters for the runtime event channel (PR-023 F05).
+         *
+         *     Exposed through the authenticated status surface so operators can
+         *     distinguish an idle dashboard from a failed event feed. Counters are
+         *     process-local and reset on restart; they never carry credentials,
+         *     identities, or payload contents.
+         */
+        RuntimeEventStats: {
+            /** Active Connections */
+            active_connections: number;
+            /** Delivery Failures */
+            delivery_failures: number;
+            /** Published By Type */
+            published_by_type: {
+                [key: string]: number;
+            };
+            /** Published Total */
+            published_total: number;
+            /** Slow Consumer Disconnects */
+            slow_consumer_disconnects: number;
         };
         /** StatisticsSummary */
         StatisticsSummary: {
@@ -2016,6 +2062,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    runtime_event_stats_api_v1_ws_runtime_stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuntimeEventStats"];
                 };
             };
         };

@@ -17,11 +17,29 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
+from pydantic import BaseModel
+
 _SCHEMA_VERSION = 1
 
 
 class _Disconnect:
     """Queue sentinel that tells one slow consumer to close its socket."""
+
+
+class RuntimeEventStats(BaseModel):
+    """Operational counters for the runtime event channel (PR-023 F05).
+
+    Exposed through the authenticated status surface so operators can
+    distinguish an idle dashboard from a failed event feed. Counters are
+    process-local and reset on restart; they never carry credentials,
+    identities, or payload contents.
+    """
+
+    active_connections: int
+    published_total: int
+    published_by_type: dict[str, int]
+    slow_consumer_disconnects: int
+    delivery_failures: int
 
 
 @dataclass(frozen=True)
@@ -67,6 +85,11 @@ class RuntimeEventBus:
         # Queues that were handed the disconnect sentinel: they must never
         # receive a normal envelope again (PR23-F02).
         self._dead: set[asyncio.Queue[EventEnvelope | _Disconnect]] = set()
+        # Observable counters (PR-023 F05), all updated under the lock.
+        self._published_total = 0
+        self._published_by_type: dict[str, int] = {}
+        self._slow_consumer_disconnects = 0
+        self._delivery_failures = 0
 
     def subscribe(
         self, loop: asyncio.AbstractEventLoop
@@ -106,6 +129,8 @@ class RuntimeEventBus:
             running_loop = None
         with self._lock:
             self._sequence += 1
+            self._published_total += 1
+            self._published_by_type[event_type] = self._published_by_type.get(event_type, 0) + 1
             envelope = EventEnvelope(
                 event_id=str(uuid4()),
                 type=event_type,
@@ -132,6 +157,7 @@ class RuntimeEventBus:
                     try:
                         loop.call_soon_threadsafe(self._deliver, queue, envelope)
                     except RuntimeError:
+                        self._delivery_failures += 1
                         self._dead.add(queue)
                         self._subscriptions.pop(queue, None)
         return envelope
@@ -147,6 +173,7 @@ class RuntimeEventBus:
         if queue.full():
             with self._lock:
                 self._dead.add(queue)
+                self._slow_consumer_disconnects += 1
             self._drop_slow_consumer(queue)
         else:
             queue.put_nowait(envelope)
@@ -162,3 +189,14 @@ class RuntimeEventBus:
             except asyncio.QueueEmpty:
                 break
         queue.put_nowait(_Disconnect())
+
+    def stats(self) -> RuntimeEventStats:
+        """Snapshot the process-local channel counters (PR-023 F05)."""
+        with self._lock:
+            return RuntimeEventStats(
+                active_connections=len(self._subscriptions),
+                published_total=self._published_total,
+                published_by_type=dict(self._published_by_type),
+                slow_consumer_disconnects=self._slow_consumer_disconnects,
+                delivery_failures=self._delivery_failures,
+            )
