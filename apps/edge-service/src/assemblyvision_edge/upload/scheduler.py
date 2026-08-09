@@ -16,6 +16,7 @@ import json
 import logging
 import random
 import threading
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -256,6 +257,7 @@ class UploadScheduler:
         base_retry_seconds: float = 2.0,
         maximum_retry_seconds: float = 900.0,
         exponent_cap: int = 8,
+        now: Callable[[], datetime] | None = None,
     ) -> None:
         self._repository = repository
         self._sink = sink
@@ -266,6 +268,8 @@ class UploadScheduler:
         self._base_retry_seconds = base_retry_seconds
         self._maximum_retry_seconds = maximum_retry_seconds
         self._exponent_cap = exponent_cap
+        # Injected clock for deterministic retry-deadline tests (PR-017 F8).
+        self._now = now or (lambda: datetime.now(UTC))
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
 
@@ -291,36 +295,39 @@ class UploadScheduler:
 
     def run_once(self) -> int:
         """Process one batch; returns the number of tasks handled."""
-        now = datetime.now(UTC)
         claimed = self._repository.claim_upload_tasks(
-            self._batch_size, self._lease_seconds, now.isoformat()
+            self._batch_size, self._lease_seconds, self._now().isoformat()
         )
         for item in claimed:
             try:
-                self._process(item, now)
+                self._process(item)
             except Exception:  # noqa: BLE001 - never lose the task over a bug
                 log.exception("upload task %s failed unexpectedly", item.task.upload_task_id)
+                failure_time = self._now()
                 self._repository.mark_upload_retry(
                     str(item.task.upload_task_id),
                     item.lease_owner,
                     "SCHEDULER_ERROR",
-                    (now + timedelta(seconds=self._base_retry_seconds)).isoformat(),
-                    datetime.now(UTC).isoformat(),
+                    (failure_time + timedelta(seconds=self._base_retry_seconds)).isoformat(),
+                    failure_time.isoformat(),
                 )
         return len(claimed)
 
-    def _process(self, claimed: ClaimedUploadTask, now: datetime) -> None:
+    def _process(self, claimed: ClaimedUploadTask) -> None:
         task = claimed.task
         lease_owner = claimed.lease_owner
         try:
             payload = self._load_payload(task)
         except _PermanentPayloadError as exc:
             self._repository.mark_upload_permanent_failure(
-                str(task.upload_task_id), lease_owner, exc.code, datetime.now(UTC).isoformat()
+                str(task.upload_task_id), lease_owner, exc.code, self._now().isoformat()
             )
             return
         result = self._sink.upload(task, payload)
-        now_iso = datetime.now(UTC).isoformat()
+        # Anchor the transition to the response/failure time, not the batch
+        # start, so a slow request cannot erode Retry-After (PR-017 F8).
+        outcome_time = self._now()
+        now_iso = outcome_time.isoformat()
         if result.status == "SUCCEEDED":
             if result.receipt is None:
                 # A sink claiming success without a verified receipt is an
@@ -350,7 +357,7 @@ class UploadScheduler:
             exponent_cap=self._exponent_cap,
         )
         retry_after = result.retry_after_seconds or 0.0
-        next_attempt = now + timedelta(seconds=max(backoff, retry_after))
+        next_attempt = outcome_time + timedelta(seconds=max(backoff, retry_after))
         self._repository.mark_upload_retry(
             str(task.upload_task_id),
             lease_owner,

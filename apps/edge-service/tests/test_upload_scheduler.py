@@ -77,6 +77,19 @@ def _seed(
     return records
 
 
+class _AdvancingClock:
+    """Deterministic clock controllable by the sink for F8 timing tests."""
+
+    def __init__(self, start: datetime) -> None:
+        self._now_value = start
+
+    def __call__(self) -> datetime:
+        return self._now_value
+
+    def advance(self, seconds: float) -> None:
+        self._now_value += timedelta(seconds=seconds)
+
+
 class _ScriptedSink:
     """Sink whose outcomes are scripted, cycling per call for fault injection."""
 
@@ -292,6 +305,36 @@ class TestMetadataBeforeMedia:
 
 
 class TestRetryBehavior:
+    def test_retry_deadline_is_anchored_to_response_time(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """F8: Retry-After is measured from the response, not the batch start."""
+        start = datetime.now(UTC)
+        clock = _AdvancingClock(start)
+
+        class _SlowRetrySink:
+            def upload(self, task: UploadTask, payload: bytes) -> UploadResult:
+                clock.advance(5.0)
+                return UploadResult(
+                    status="RETRYABLE", error_code="HTTP_429", retry_after_seconds=60.0
+                )
+
+        _seed(repo, tmp_path)
+        scheduler = UploadScheduler(
+            repo,
+            _SlowRetrySink(),
+            output_root=tmp_path,
+            base_retry_seconds=2.0,
+            now=clock,
+        )
+        scheduler.run_once()
+        by_kind = _by_kind(repo.list_uploads(limit=100).items)
+        inspection = by_kind["INSPECTION"]
+        # Claim at t0, the sink advanced the clock by 5s before returning, so
+        # the next attempt must be t0 + 5 + 60, never t0 + 60.
+        assert inspection.next_attempt_at is not None
+        assert inspection.next_attempt_at == start + timedelta(seconds=65)
+
     def test_network_interruption_schedules_retry(
         self, repo: EdgeRepository, tmp_path: Path
     ) -> None:
