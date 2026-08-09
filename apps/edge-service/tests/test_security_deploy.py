@@ -118,3 +118,20 @@ class TestServeTlsPairing:
         args = argparse.Namespace(tls_cert=tmp_path / "cert.pem", tls_key=None)
         with pytest.raises(ConfigError, match="provided together"):
             cli._resolve_tls_files(args)
+
+    def test_serve_parser_declares_both_tls_flags(self, tmp_path: Path) -> None:
+        """The serve subparser must accept both --tls-cert and --tls-key."""
+        parser = cli.build_parser()
+        args = parser.parse_args(
+            [
+                "serve",
+                "--output",
+                str(tmp_path / "out"),
+                "--tls-cert",
+                "/run/secrets/cert.pem",
+                "--tls-key",
+                "/run/secrets/key.pem",
+            ]
+        )
+        assert args.tls_cert == Path("/run/secrets/cert.pem")
+        assert args.tls_key == Path("/run/secrets/key.pem")

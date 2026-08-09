@@ -136,6 +136,12 @@ def build_parser() -> argparse.ArgumentParser:
         "requires TLS in production)",
     )
     serve.add_argument(
+        "--tls-cert",
+        type=Path,
+        default=None,
+        help="PEM certificate for local TLS on the edge API (or AV_EDGE_TLS_CERT)",
+    )
+    serve.add_argument(
         "--tls-key",
         type=Path,
         default=None,

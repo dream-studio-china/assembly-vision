@@ -8,6 +8,10 @@
 # Static dashboard assets: build with `pnpm --filter edge-web build` and copy
 # the `dist/` output into the `edge-web` volume (served via --static).
 #
+# Volumes: named volumes inherit the image's av (10001:10001) ownership on
+# first creation. Bind mounts must be pre-owned by 10001:10001, e.g.
+# `chown -R 10001:10001 <host-path>`, or the service fails closed on startup.
+#
 # Secrets (E5b): prefer `AV_EDGE_API_TOKEN` from the environment or a Docker
 # secret mounted at /run/secrets/edge_api_token. Never commit secret values.
 
@@ -50,7 +54,7 @@ services:
       - --port
       - "8000"
     healthcheck:
-      test: ["CMD", "python", "-m", "assemblyvision.healthcheck", "http://127.0.0.1:8000/api/v1/health/live"]
+      test: ["CMD", "python", "-m", "assemblyvision_edge.healthcheck", "http://127.0.0.1:8000/api/v1/health/live"]
       interval: 15s
       timeout: 3s
       retries: 4

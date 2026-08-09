@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # AssemblyVision edge-service image (design 20.3/20.4, E5a).
 #
 # Multi-stage build:
@@ -27,10 +26,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN groupadd --gid 10001 av \
     && useradd --uid 10001 --gid 10001 --no-create-home --home-dir /opt/assemblyvision av \
-    && mkdir -p /opt/assemblyvision /var/lib/assemblyvision \
+    && mkdir -p /opt/assemblyvision \
+    && mkdir -p /var/lib/assemblyvision/db /var/lib/assemblyvision/media /var/lib/assemblyvision/tmp \
     && chown -R av:av /opt/assemblyvision /var/lib/assemblyvision
 
 COPY --from=builder --chown=av:av /app/.venv /opt/assemblyvision/venv
+# Alembic migrations and config are outside the Python package; point the
+# packaged runtime at their copied location (E5a).
+ENV AV_EDGE_ROOT=/opt/assemblyvision
+COPY --from=builder --chown=av:av /app/apps/edge-service/alembic.ini /opt/assemblyvision/alembic.ini
+COPY --from=builder --chown=av:av /app/apps/edge-service/migrations /opt/assemblyvision/migrations
 
 USER av
 WORKDIR /opt/assemblyvision
@@ -38,7 +43,9 @@ WORKDIR /opt/assemblyvision
 EXPOSE 8000
 
 HEALTHCHECK --interval=15s --timeout=3s --start-period=30s --retries=4 \
-  CMD python -m assemblyvision.healthcheck http://127.0.0.1:8000/api/v1/health/live
+  CMD python -m assemblyvision_edge.healthcheck http://127.0.0.1:8000/api/v1/health/live
 
-ENTRYPOINT ["assemblyvision"]
+# The virtualenv is moved from the builder path, so console-script shebangs
+# are stale; invoke the package module instead (E5a).
+ENTRYPOINT ["python", "-m", "assemblyvision_edge"]
 CMD ["serve", "--output", "/var/lib/assemblyvision/media", "--db", "/var/lib/assemblyvision/db/edge.sqlite3", "--host", "0.0.0.0"]

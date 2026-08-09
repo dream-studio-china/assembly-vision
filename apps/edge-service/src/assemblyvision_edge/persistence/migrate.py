@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fcntl
+import os
 import sqlite3
 import threading
 from pathlib import Path
@@ -11,7 +12,10 @@ from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
 
-_EDGE_ROOT = Path(__file__).resolve().parents[3]
+# ``AV_EDGE_ROOT`` lets a packaged deployment point at the directory that
+# carries ``alembic.ini`` and ``migrations/`` when the package is installed
+# non-editable (E5a); the source-tree default keeps local runs unchanged.
+_EDGE_ROOT = Path(os.environ.get("AV_EDGE_ROOT", str(Path(__file__).resolve().parents[3])))
 _ALEMBIC_INI = _EDGE_ROOT / "alembic.ini"
 _MIGRATIONS_DIR = _EDGE_ROOT / "migrations"
 

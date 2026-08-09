@@ -82,7 +82,7 @@ class TestComposeTemplate:
         # Loopback binding and a token are the safe defaults.
         assert service["ports"] == ["127.0.0.1:8000:8000"]
         health = service["healthcheck"]["test"]
-        assert any("assemblyvision.healthcheck" in item for item in health)
+        assert any("assemblyvision_edge.healthcheck" in item for item in health)
         volumes = {volume.split(":")[0] for volume in service["volumes"]}
         assert {
             "edge-db",

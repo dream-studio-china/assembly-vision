@@ -51,7 +51,6 @@ class BackupReport:
     """Summary of one backup bundle."""
 
     bundle_path: Path
-    db_rows: int
     governed_files: int
     pending_media: int
     bundle_sha256: str
@@ -199,7 +198,6 @@ def backup_edge(
                 archive.add(governed_dir, arcname=_GOVERNED_ROOT)
         return BackupReport(
             bundle_path=dest,
-            db_rows=0,
             governed_files=len(governed),
             pending_media=pending_copied,
             bundle_sha256=_sha256_file(dest),
