@@ -42,6 +42,7 @@ class InstanceRuntime:
     pipeline: Any
     pipeline_error: str | None
     inspection_enabled: bool
+    temporal: Any = None
     last_result: str | None = None
     thread: threading.Thread | None = None
 
@@ -164,6 +165,7 @@ class EdgeRuntime:
                 pipeline=pipeline,
                 pipeline_error=pipeline_error,
                 inspection_enabled=instance.inspection.enabled,
+                temporal=instance.temporal,
             )
             try:
                 sources[instance.instance_id] = build_frame_source(
@@ -203,19 +205,31 @@ class EdgeRuntime:
         self._stop.set()
         if self.camera_manager is not None:
             self.camera_manager.stop()
+        for runtime in self.instances.values():
+            if runtime.thread is not None:
+                runtime.thread.join(timeout=5)
 
     def _inspection_loop(self, instance_id: str) -> None:
-        """Consume the per-instance inspection queue (one inspection per frame).
+        """Consume the per-instance frame queue and finalize inspections.
 
-        Each queued frame is inspected exactly once; frames captured while
-        paused are drained and never processed as evidence (PR-014 F1/F2).
+        Instances with a temporal policy group frames into product windows and
+        emit one record per window (design 10); the default single-frame mode
+        emits one record per captured frame (ADR-013). Each queued frame is
+        consumed exactly once; frames captured while paused are drained and
+        never processed as evidence (PR-014 F1/F2).
         """
         from assemblyvision_edge.output.writer import OutputWriter
+        from assemblyvision_edge.temporal.window_manager import ProductWindowManager
 
         runtime = self.instances.get(instance_id)
         if runtime is None or runtime.pipeline is None or self.camera_manager is None:
             return
         writer = OutputWriter(self._settings.output_root)
+        window_manager = (
+            ProductWindowManager(runtime.temporal, runtime.device_id)
+            if runtime.temporal is not None
+            else None
+        )
         was_paused = self.paused
         while not self._stop.is_set():
             if self.paused:
@@ -231,12 +245,40 @@ class EdgeRuntime:
                 was_paused = False
             frame = self.camera_manager.next_frame(instance_id, timeout=0.1)
             if frame is None:
+                # No new frame: finalize an idle window by its capture-time gap
+                # so a product at the end of a stream is decided normally
+                # (PR-015 F2), then keep polling.
+                if window_manager is not None:
+                    try:
+                        expired = window_manager.expire(time.monotonic())
+                        if expired is not None:
+                            record = runtime.pipeline.inspect_window(expired, writer)
+                            runtime.last_result = record.decision.business_result
+                    except Exception:  # noqa: BLE001 - idle expiry must not kill the loop
+                        log.exception("idle window expiry failed for instance %s", instance_id)
                 continue
             try:
-                record = runtime.pipeline.inspect_frame(frame, writer)
-                runtime.last_result = record.decision.business_result
+                if window_manager is not None:
+                    observation = runtime.pipeline.frame_observations(frame)
+                    # Group on the frame's acquisition time, not the time at
+                    # which inference finished (PR-015 F3).
+                    closed = window_manager.feed(observation, frame.monotonic_ts_ns / 1e9)
+                    if closed is not None:
+                        record = runtime.pipeline.inspect_window(closed, writer)
+                        runtime.last_result = record.decision.business_result
+                else:
+                    record = runtime.pipeline.inspect_frame(frame, writer)
+                    runtime.last_result = record.decision.business_result
             except Exception:  # noqa: BLE001 - loop must survive frame errors
                 log.exception("inspection failed for instance %s", instance_id)
+        if window_manager is not None:
+            try:
+                closed = window_manager.force_close()
+                if closed is not None:
+                    record = runtime.pipeline.inspect_window(closed, writer)
+                    runtime.last_result = record.decision.business_result
+            except Exception:  # noqa: BLE001 - interrupted close must not mask shutdown
+                log.exception("interrupted window close failed for instance %s", instance_id)
 
     def pause(self, reason: str, by: str = "operator") -> None:
         self.paused = True
@@ -563,6 +605,7 @@ def _build_instance_pipeline(
         load_rule_definition,
         validate_model_version_declaration,
         validate_rule_component_compatibility,
+        validate_temporal_against_rule,
     )
     from assemblyvision_edge.detection import ComponentDetector, ProductDetector
     from assemblyvision_edge.pipeline import InspectionPipeline
@@ -571,6 +614,9 @@ def _build_instance_pipeline(
     config = instance.pipeline
     registry: RuleIdentityRegistry | None = rule_registry
     rule = load_rule_definition(instance.rule, registry=registry)
+    validate_temporal_against_rule(
+        instance.temporal, rule, f"instance {instance.instance_id} temporal"
+    )
     product_manifest: ModelManifest = load_model_manifest(config.product_manifest)
     component_manifest: ModelManifest = load_model_manifest(config.component_manifest)
     validate_model_version_declaration(
@@ -598,4 +644,5 @@ def _build_instance_pipeline(
         component_manifest=component_manifest,
         config=config,
         device_id=_instance_device_id(instance),
+        temporal_config=instance.temporal,
     )

@@ -36,6 +36,8 @@ class CapturedFrame:
     pixel_format: str
     status: str
     image: Image.Image
+    product_identity: str | None = None
+    multi_product: bool = False
 
     @property
     def width(self) -> int:

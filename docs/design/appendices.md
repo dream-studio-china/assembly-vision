@@ -135,6 +135,9 @@ Python module is the enforceable source of truth (AUDIT-001).
 | `UNCERTAIN_INSUFFICIENT_VALID_FRAMES` | Too few usable frames were available for the aggregation policy. | `UNCERTAIN` | Business `NG`; inspect acquisition/quality |
 | `UNCERTAIN_PRODUCT_NOT_DETECTED` | No valid product detection supports ROI generation. | `UNCERTAIN` | Business `NG`; inspect frame and product model |
 | `UNCERTAIN_MULTIPLE_PRODUCTS` | More than one product candidate makes attribution ambiguous. | `UNCERTAIN` | Business `NG`; inspect window/spacing |
+| `NG_PRODUCT_IDENTITY_MISSING` | A frame arrived without a product identity while an identity-sealed window was open. | `NG` | Business `NG`; inspect tracker/trigger correlation |
+| `NG_PRODUCT_IDENTITY_TRANSITION` | A window sealed to one product received a frame of a different product identity. | `NG` | Business `NG`; inspect product spacing/transition |
+| `NG_COMPONENT_POLICY_MISSING` | Temporal aggregation has no validated policy for a required component. | `NG` | Business `NG`; fix configuration, keep previous version |
 | `UNCERTAIN_ROI_INVALID` | Product ROI geometry is empty, excessively clipped, or otherwise invalid. | `UNCERTAIN` | Business `NG`; inspect product detection/ROI config |
 | `UNCERTAIN_BARCODE_NOT_READ` | Required barcode decoding did not produce an accepted value. | `UNCERTAIN` | Business `NG`; inspect reader/image |
 | `UNCERTAIN_BARCODE_CONFLICT` | Multiple identity observations conflict. | `UNCERTAIN` | Business `NG`; review identity events |

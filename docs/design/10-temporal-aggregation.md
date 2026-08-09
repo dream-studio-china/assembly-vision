@@ -83,6 +83,7 @@ Frame adjacency uses capture sequence and a maximum elapsed-time bound. Multiple
 
 ```yaml
 temporal:
+  window_strategy: identity   # identity (validated correlation) or time (dev fallback)
   minimum_valid_frames: 3
   maximum_window_ms: 2500
   reject_duplicate_frame_ids: true
@@ -101,12 +102,77 @@ temporal:
       max_frame_gap: 1
 ```
 
-Policies are versioned and validated per model and product type. Configured thresholds must obey `observation_threshold <= medium_confidence < high_confidence`.
+Policies are versioned and validated per model and product type. Configured thresholds must obey `observation_threshold <= medium_confidence < high_confidence` with a strict inequality, and an enabled temporal configuration must declare exactly one policy for every rule-required component. Detections below `medium_confidence` never satisfy a count or spatial rule.
+
+## 10.7.1 Implementation Status (ADR-010, product-window milestone)
+
+The per-component temporal aggregator and an edge product-window manager are
+implemented for the live camera path. Each instance that declares a
+`temporal:` block in its pipeline configuration runs a product window: frames
+are grouped until an inter-frame gap or the configured `maximum_window_ms`
+closes the window, and the aggregator resolves one per-component evidence set
+that the rule engine evaluates exactly once. A window closed by a shutdown is
+recorded as interrupted NG without reconstructing evidence from un-journaled
+memory (10.8). For count-based rules, `detection_count` is the maximum number
+of instances observed in a single valid frame; instances split across frames
+do not satisfy an exact `expected_count` without co-occurrence.
+
+Window grouping, quality, and policy behavior enforced by the review fixes
+(PR-015 F1-F7):
+
+- **Capture-time grouping**: window membership and duration use the frame's
+  acquisition monotonic timestamp (`CapturedFrame.monotonic_ts_ns`), never the
+  post-inference processing time, so queue backlog or slow inference cannot
+  shift product boundaries. Out-of-order timestamps are dropped and counted as
+  stale (10.8). After idle expiry, the manager retains the capture-time
+  boundary so a queued pre-expiry frame cannot reopen a finalized product
+  window.
+- **Idle expiry**: the runtime finalizes an active window as `GAP` once its
+  idle duration elapses, so a final product at the end of a stream is decided
+  normally instead of waiting for a later frame or shutdown (10.8).
+- **Window strategy**: `window_strategy: identity` requires a validated
+  per-frame product identity (tracker, trigger, or barcode correlation) and
+  seals each window to one product. A missing identity, a mid-window identity
+  transition, or a confirmed multi-product frame (including a
+  `ProductDetector` `MULTIPLE_PRODUCTS` outcome) closes the window as an
+  integrity violation (`PRODUCT_IDENTITY_MISSING`,
+  `PRODUCT_IDENTITY_TRANSITION`, `MULTIPLE_PRODUCTS`) that can never release
+  `OK`. `window_strategy: time` remains an explicit development fallback; it
+  does not prove that adjacent products cannot overlap, so production temporal
+  inspection must use `identity` or another validated correlation mechanism.
+- **Frame quality**: a frame whose product-detection quality gate reports
+  unusable contributes no detections and no valid opportunity; its quality
+  reasons are preserved as frame diagnostics.
+- **Decision reasons**: per-frame rejection reasons are diagnostic only and
+  cannot veto a window whose aggregated evidence satisfies every rule. Only
+  window-integrity violations (interruption, identity mixing, missing identity,
+  rule-evaluation failure) independently force `NG`.
+- **Fail-closed policies**: an enabled temporal configuration must provide
+  exactly one policy for every rule-required component (validated after the
+  rule loads); a missing policy resolves defensively to `UNVERIFIABLE` with
+  `COMPONENT_POLICY_MISSING`. `medium_confidence` must be strictly less than
+  `high_confidence`.
+- **Policy identity**: every temporal record persists the complete SHA-256 of
+  a canonical policy document in `aggregation_policy_version`. The document
+  includes the aggregation format, window strategy, window parameters, and
+  every component threshold/hit rule, so historical decisions remain
+  reproducible after configuration changes.
+- **Count evidence**: `detection_count`, box-area, and center summaries include
+  only detections at or above the count-evidence threshold (the policy
+  `medium_confidence` at minimum), so low-confidence false positives cannot
+  inflate an exact `expected_count`.
 
 ## 10.8 Window Integrity and Failure Handling
 
 - A trigger timeout closes the window as incomplete; unresolved components become `UNVERIFIABLE`.
 - Duplicate frame IDs are ignored and counted.
+- Stale out-of-order capture timestamps are ignored and counted; they never
+  mutate the window.
+- An idle window is finalized as `GAP` by the runtime once its capture-time
+  gap elapses, without waiting for a later frame.
+- Identity-sealed windows abort on a missing identity, a mid-window identity
+  transition, or a confirmed multi-product frame; their frames never mix with
+  another product's evidence.
 - Frames outside the window or with mismatched inspection IDs are quarantined from evidence.
 - Multiple products or identity switches invalidate the window unless a validated tracker proves continuity.
 - Worker restart closes recovered open windows as interrupted `NG`; it does not reconstruct evidence from partial memory unless all state was durably journaled.

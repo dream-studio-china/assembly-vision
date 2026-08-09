@@ -13,6 +13,8 @@ from assemblyvision_edge.config import (
     load_pipeline_config,
 )
 
+from tests.conftest import EXAMPLE_RULE
+
 
 def _instance_yaml(instance_id: str = "line-1", **overrides: object) -> dict[str, object]:
     instance: dict[str, object] = {
@@ -169,6 +171,181 @@ def test_camera_source_config_maps_to_frame_source_config(tmp_path: Path) -> Non
     assert frame_config.source == "folder"
     assert frame_config.path == camera.path
     assert frame_config.reconnect_initial_delay_ms == 250
+
+
+def test_load_edge_config_parses_temporal_policy(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                temporal={
+                    "minimum_valid_frames": 3,
+                    "maximum_window_ms": 2500,
+                    "reject_duplicate_frame_ids": True,
+                    "components": {
+                        "component_a": {
+                            "high_confidence": 0.9,
+                            "medium_confidence": 0.7,
+                            "medium_hits": 2,
+                            "require_adjacent_hits": True,
+                            "max_frame_gap": 1,
+                        }
+                    },
+                },
+            )
+        ],
+    )
+    config = load_edge_config(path)
+    temporal = config.instances[0].temporal
+    assert temporal is not None
+    assert temporal.minimum_valid_frames == 3
+    assert temporal.maximum_window_ms == 2500
+    assert temporal.reject_duplicate_frame_ids is True
+    policy = temporal.policy_for("component_a")
+    assert policy is not None
+    assert policy.high_confidence == 0.9
+    assert policy.medium_confidence == 0.7
+
+
+def test_load_edge_config_temporal_defaults_when_absent(tmp_path: Path) -> None:
+    path = _write_edge_config(tmp_path, [_instance_yaml("line-1")])
+    config = load_edge_config(path)
+    assert config.instances[0].temporal is None
+
+
+def test_load_edge_config_rejects_medium_above_high(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                temporal={
+                    "components": {
+                        "component_a": {"high_confidence": 0.7, "medium_confidence": 0.9}
+                    }
+                },
+            )
+        ],
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
+
+
+def test_load_edge_config_rejects_equal_medium_high(tmp_path: Path) -> None:
+    # PR-015 F6: equality collapses the high-hit and repeated-medium paths.
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                temporal={
+                    "components": {
+                        "component_a": {"high_confidence": 0.7, "medium_confidence": 0.7}
+                    }
+                },
+            )
+        ],
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
+
+
+def test_validate_temporal_against_rule_requires_every_required_component() -> None:
+    # PR-015 F6: an enabled temporal config must cover every rule-required
+    # component and reject unknown component keys.
+    from assemblyvision_edge.config import (
+        load_rule_definition,
+        validate_temporal_against_rule,
+    )
+    from assemblyvision_edge.temporal.aggregator import (
+        ComponentTemporalPolicy,
+        TemporalAggregationConfig,
+    )
+
+    rule = load_rule_definition(EXAMPLE_RULE)  # requires a, b, manual
+    policy = ComponentTemporalPolicy(high_confidence=0.9, medium_confidence=0.7)
+    complete = TemporalAggregationConfig(
+        components=dict.fromkeys(("component_a", "component_b", "manual"), policy)
+    )
+    validate_temporal_against_rule(complete, rule, "temporal")  # no error
+
+    missing = TemporalAggregationConfig(components={"component_a": policy})
+    with pytest.raises(ConfigError, match="missing for rule-required"):
+        validate_temporal_against_rule(missing, rule, "temporal")
+
+    extra = TemporalAggregationConfig(
+        components=dict.fromkeys(("component_a", "component_b", "manual", "ghost"), policy)
+    )
+    with pytest.raises(ConfigError, match="does not require"):
+        validate_temporal_against_rule(extra, rule, "temporal")
+
+    # Temporal is optional per instance; no policies means no constraints.
+    validate_temporal_against_rule(None, rule, "temporal")
+
+
+def test_load_edge_config_parses_window_strategy_identity(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [_instance_yaml("line-1", temporal={"window_strategy": "identity"})],
+    )
+    temporal = load_edge_config(path).instances[0].temporal
+    assert temporal is not None
+    assert temporal.window_strategy == "identity"
+
+
+def test_load_edge_config_defaults_window_strategy_to_time(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [_instance_yaml("line-1", temporal={"minimum_valid_frames": 1})],
+    )
+    temporal = load_edge_config(path).instances[0].temporal
+    assert temporal is not None
+    assert temporal.window_strategy == "time"
+
+
+def test_load_edge_config_rejects_unknown_window_strategy(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [_instance_yaml("line-1", temporal={"window_strategy": "trigger"})],
+    )
+    with pytest.raises(ConfigError, match="window_strategy"):
+        load_edge_config(path)
+
+
+def test_load_edge_config_rejects_medium_below_observation_threshold(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                "line-1",
+                temporal={
+                    "components": {
+                        "component_a": {"high_confidence": 0.9, "medium_confidence": 0.4}
+                    }
+                },
+            )
+        ],
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
+
+
+def test_load_edge_config_rejects_unknown_temporal_keys(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path,
+        [_instance_yaml("line-1", temporal={"minimum_valid_frames": 1, "nope": 1})],
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
+
+
+def test_load_edge_config_rejects_invalid_temporal_values(tmp_path: Path) -> None:
+    path = _write_edge_config(
+        tmp_path, [_instance_yaml("line-1", temporal={"minimum_valid_frames": 0})]
+    )
+    with pytest.raises(ConfigError):
+        load_edge_config(path)
 
 
 def test_legacy_flat_config_still_loads(tmp_path: Path) -> None:

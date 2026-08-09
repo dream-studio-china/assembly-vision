@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import math
 import time
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from itertools import count
 from pathlib import Path
@@ -59,6 +60,12 @@ from assemblyvision_edge.rules.rule_engine import (
     RuleEngine,
     rule_version_id,
 )
+from assemblyvision_edge.temporal.aggregator import (
+    TemporalAggregationConfig,
+    TemporalAggregator,
+    temporal_policy_version,
+)
+from assemblyvision_edge.temporal.window_manager import FrameObservation, ProductWindow
 
 log = logging.getLogger("assemblyvision.pipeline")
 
@@ -85,6 +92,57 @@ def _validate_product_provenance(
 
 
 _COORD_TOLERANCE = 1e-6
+
+
+@dataclass
+class _DetectionOutcome:
+    """Result of one frame's product/ROI/component detection pass."""
+
+    product_detection: ProductDetection | None = None
+    roi_result: ROIResult | None = None
+    roi_image: Image.Image | None = None
+    observations: list[ComponentDetection] = field(default_factory=list)
+    gates: dict[str, bool] = field(
+        default_factory=lambda: {
+            "product_detected": False,
+            "roi_valid": False,
+            "component_inference_valid": False,
+            "minimum_valid_frames_met": True,
+        }
+    )
+    reasons: list[str] = field(default_factory=list)
+    product_latency_ms: float | None = None
+    component_latency_ms: float | None = None
+
+    @classmethod
+    def empty(cls) -> _DetectionOutcome:
+        return cls()
+
+
+def _reason_counts(reasons: list[str]) -> list[ReasonCount]:
+    """Aggregate a flat reason list into stable, count-ordered ReasonCounts."""
+    counts: dict[str, int] = {}
+    for reason in reasons:
+        counts[reason] = counts.get(reason, 0) + 1
+    return [ReasonCount(reason_code=code, count=count) for code, count in sorted(counts.items())]
+
+
+def _representative_frame(frames: list[FrameObservation]) -> FrameObservation | None:
+    """Pick the frame that best represents the window for media persistence.
+
+    Prefers the frame with the most component observations, breaking ties by
+    the highest observation confidence; the first such frame wins so the choice
+    is deterministic for equal evidence.
+    """
+    if not frames:
+        return None
+    return max(
+        frames,
+        key=lambda frame: (
+            len(frame.observations),
+            max((obs.confidence for obs in frame.observations), default=0.0),
+        ),
+    )
 
 
 def _is_translation_transform(transform: tuple[float, float, float, float, float, float]) -> bool:
@@ -151,6 +209,7 @@ class InspectionPipeline:
         component_manifest: ModelManifest,
         config: PipelineConfig,
         device_id: UUID,
+        temporal_config: TemporalAggregationConfig | None = None,
     ) -> None:
         self._product_detector = product_detector
         self._component_detector = component_detector
@@ -161,6 +220,9 @@ class InspectionPipeline:
         self._component_manifest = component_manifest
         self._config = config
         self._device_id = device_id
+        self._temporal = (
+            TemporalAggregator(temporal_config) if temporal_config is not None else None
+        )
         self._sequence = count(1)
 
     def inspect_image(
@@ -184,6 +246,240 @@ class InspectionPipeline:
         """
         return self._inspect_impl(image=frame.image, image_read_error=False, writer=writer)
 
+    def frame_observations(self, frame: CapturedFrame) -> FrameObservation:
+        """Run one frame's detection pass for temporal window aggregation.
+
+        Returns a frame observation carrying per-component detections, gate
+        validity, and the images needed to persist a representative key frame.
+        A frame whose product-detection quality gate reports unusable is marked
+        unusable and cannot contribute evidence or valid opportunities
+        (PR-015 F4); its quality reasons are preserved for diagnostics.
+        """
+        frame_id = uuid4()
+        outcome = self._detect_frame(frame.image, frame_id)
+        product_detection = outcome.product_detection
+        quality_usable = (
+            product_detection.quality.usable if product_detection is not None else False
+        )
+        if product_detection is not None and not product_detection.quality.usable:
+            outcome.reasons.extend(product_detection.quality.reason_codes)
+        return FrameObservation(
+            frame_id=frame_id,
+            sequence=frame.sequence,
+            captured_at=frame.wall_clock_utc,
+            quality_usable=quality_usable,
+            product_detected=outcome.gates["product_detected"],
+            roi_valid=outcome.gates["roi_valid"],
+            inference_valid=outcome.gates["component_inference_valid"],
+            product_detection=outcome.product_detection,
+            roi_result=outcome.roi_result,
+            observations=outcome.observations,
+            reasons=outcome.reasons,
+            product_latency_ms=outcome.product_latency_ms,
+            component_latency_ms=outcome.component_latency_ms,
+            image=frame.image,
+            roi_image=outcome.roi_image,
+            product_identity=frame.product_identity,
+            # ProductDetector reports this as a failed selection with no
+            # ProductDetection, so preserve the detector's explicit ambiguity
+            # signal for ProductWindowManager instead of treating it as a
+            # diagnostic-only rejected frame (PR-015 F1).
+            multi_product=frame.multi_product or rc.MULTIPLE_PRODUCTS in outcome.reasons,
+        )
+
+    def inspect_window(
+        self, window: ProductWindow, writer: OutputWriter | None = None
+    ) -> InspectionRecord:
+        """Finalize one product window into a single inspection record.
+
+        The per-component temporal aggregator resolves frame evidence, the rule
+        engine evaluates the aggregated evidence exactly once, and the record
+        stores a canonical SHA-256 identity for the exact temporal policy
+        (design 10, ADR-010).
+        """
+        if self._temporal is None:
+            raise AssertionError("temporal aggregation is not configured for this pipeline")
+        evidence_map = self._temporal.aggregate(
+            window.frame_evidence_list(), tuple(self._rule.required_components)
+        )
+        # Window-integrity violations (interruption, identity mixing, missing
+        # identity) are the only frame-independent reasons that force NG.
+        # Per-frame rejection reasons stay diagnostic and cannot veto a window
+        # whose aggregated evidence satisfies every rule (PR-015 F5).
+        integrity_reasons = list(window.integrity_reason_codes)
+        total_frames = len(window.frames)
+        usable_frames = sum(
+            1 for frame in window.frames if frame.quality_usable and frame.inference_valid
+        )
+        frame_reasons: list[str] = []
+        for frame in window.frames:
+            frame_reasons.extend(frame.reasons)
+        reason_counts = _reason_counts(frame_reasons)
+        gates = {
+            "product_detected": any(frame.product_detected for frame in window.frames),
+            "roi_valid": any(frame.roi_valid for frame in window.frames),
+            "component_inference_valid": any(frame.inference_valid for frame in window.frames),
+            "minimum_valid_frames_met": usable_frames >= self._temporal.config.minimum_valid_frames,
+        }
+        context = RuleContext(
+            product_identity_verified=not self._rule.barcode_required,
+            component_model_version=manifest_model_version(self._component_manifest),
+            gates=gates,
+            components=evidence_map,
+        )
+        decided = None
+        try:
+            decided = self._rule_engine.evaluate(context, self._rule)
+        except RuleEvaluationError as exc:
+            integrity_reasons.append(rc.RULE_EVALUATION_ERROR)
+            log.error("rule evaluation failed for window %s: %s", window.inspection_id, exc)
+
+        if decided is None:
+            missing = sorted(set(self._rule.required_components))
+            low: list[str] = []
+            final_reasons = sorted(set(integrity_reasons))
+            internal = InternalDecision.NG
+        else:
+            missing = decided.missing_components
+            low = decided.low_confidence_components
+            final_reasons = sorted(set(decided.reason_codes) | set(integrity_reasons))
+            internal = InternalDecision.NG if final_reasons else InternalDecision.OK
+        decision = InspectionDecision(
+            internal_decision=internal,
+            business_result=BusinessResult.NG
+            if internal is not InternalDecision.OK
+            else BusinessResult.OK,
+            missing_components=missing,
+            low_confidence_components=low,
+            reason_codes=final_reasons,
+            decided_at=datetime.now(UTC),
+        )
+
+        representative = _representative_frame(window.frames)
+        product_detection = representative.product_detection if representative else None
+        roi_result = representative.roi_result if representative else None
+        completed_at = datetime.now(UTC)
+        record = InspectionRecord(
+            inspection_id=window.inspection_id,
+            device_id=self._device_id,
+            device_sequence=next(self._sequence),
+            lifecycle_status=InspectionLifecycle.COMPLETED,
+            started_at=window.started_at,
+            completed_at=completed_at,
+            barcode_result=BarcodeResult(status="NOT_REQUIRED"),
+            product_resolution=ProductResolution(
+                status="RESOLVED", source="CONFIGURED_DEFAULT", product_code=self._rule.product_type
+            ),
+            product_detection=product_detection,
+            roi_result=roi_result,
+            frame_quality_summary=FrameQualitySummary(
+                total_frame_count=total_frames,
+                usable_frame_count=usable_frames,
+                rejected_frame_count=total_frames - usable_frames,
+                reasons=reason_counts,
+            ),
+            application_version=self._config.application_version,
+            product_model_version_id=self._product_manifest.model_version_id,
+            product_model_checksum_sha256=_artifact_checksum(self._product_manifest),
+            component_model_version_id=self._component_manifest.model_version_id,
+            component_model_checksum_sha256=_artifact_checksum(self._component_manifest),
+            rule_version_id=rule_version_id(self._rule),
+            aggregation_policy_version=temporal_policy_version(self._temporal.config),
+            evidence=[evidence_map[key] for key in self._rule.required_components],
+            decision=decision,
+            synchronization_status="LOCAL_ONLY",
+            processing_ms=max(0, int((completed_at - window.started_at).total_seconds() * 1000)),
+            inference_metadata=self._window_inference_metadata(window.frames),
+        )
+
+        annotated = None
+        if representative is not None and representative.image is not None:
+            product_box = product_detection.bbox if product_detection is not None else None
+            annotated = annotate_full_frame(
+                representative.image,
+                product_box,
+                [(obs.component_code, obs.full_frame_bbox) for obs in representative.observations],
+            )
+        if writer is None:
+            return record
+        return writer.save(
+            record,
+            full_frame=representative.image if representative else None,
+            roi_image=representative.roi_image if representative else None,
+            annotated=annotated,
+        )
+
+    def _detect_frame(self, frame: Image.Image, frame_id: UUID) -> _DetectionOutcome:
+        """Run product/ROI/component detection for one frame with provenance checks."""
+        outcome = _DetectionOutcome()
+        product_started = time.monotonic()
+        try:
+            result = self._product_detector.detect(frame, frame_id)
+        except DetectionError as exc:
+            outcome.reasons.append(exc.reason_code)
+            log.warning("product detection failed: %s", exc)
+            return outcome
+        outcome.product_latency_ms = (time.monotonic() - product_started) * 1000
+        if result.selected is None:
+            outcome.reasons.append(result.reason_code or rc.NO_PRODUCT)
+            return outcome
+        if not _validate_product_provenance(
+            result.selected, frame_id, self._product_manifest, frame
+        ):
+            outcome.reasons.append(rc.INFERENCE_ERROR)
+            log.warning("product detection provenance mismatch for frame %s", frame_id)
+            return outcome
+        outcome.product_detection = result.selected
+        outcome.gates["product_detected"] = True
+        try:
+            generated = self._roi_engine.generate(frame, frame_id, result.selected.bbox)
+        except ROIGenerationError as exc:
+            outcome.reasons.append(rc.ROI_INVALID)
+            log.warning("ROI generation failed: %s", exc)
+            return outcome
+        outcome.roi_image = generated.roi_image
+        outcome.roi_result = generated.result
+        outcome.gates["roi_valid"] = True
+        component_started = time.monotonic()
+        try:
+            observations = self._component_detector.detect(
+                generated.roi_image,
+                frame_id,
+                tuple(self._rule.required_components),
+                generated.result.transform_full_to_roi,
+                (frame.width, frame.height),
+            )
+            outcome.component_latency_ms = (time.monotonic() - component_started) * 1000
+            if not _validate_component_provenance(
+                observations,
+                frame_id,
+                self._component_manifest,
+                generated.roi_image,
+                frame,
+                generated.result.transform_full_to_roi,
+            ):
+                observations = []
+                outcome.reasons.append(rc.INFERENCE_ERROR)
+                log.warning("component detection provenance mismatch for frame %s", frame_id)
+            else:
+                outcome.observations = observations
+                outcome.gates["component_inference_valid"] = True
+        except DetectionError as exc:
+            outcome.reasons.append(exc.reason_code)
+            log.warning("component detection failed: %s", exc)
+        return outcome
+
+    def _window_inference_metadata(
+        self, frames: list[FrameObservation]
+    ) -> InferenceMetadata | None:
+        """Snapshot inference traceability from the window's last valid frame."""
+        for frame in reversed(frames):
+            if frame.component_latency_ms is not None or frame.product_latency_ms is not None:
+                return self._collect_inference_metadata(
+                    frame.product_latency_ms, frame.component_latency_ms, frame.captured_at
+                )
+        return None
+
     def _inspect_impl(
         self,
         *,
@@ -200,78 +496,17 @@ class InspectionPipeline:
         frame = image
         if image_read_error:
             extra_reasons.append(rc.IMAGE_READ_ERROR)
-
-        product_detection: ProductDetection | None = None
-        roi_result: ROIResult | None = None
-        roi_image: Image.Image | None = None
-        observations: list[ComponentDetection] = []
-        gates = {
-            "product_detected": False,
-            "roi_valid": False,
-            "component_inference_valid": False,
-            "minimum_valid_frames_met": True,
-        }
-        product_latency_ms: float | None = None
-        component_latency_ms: float | None = None
-
-        if frame is not None:
-            product_started = time.monotonic()
-            try:
-                outcome = self._product_detector.detect(frame, frame_id)
-            except DetectionError as exc:
-                extra_reasons.append(exc.reason_code)
-                log.warning("product detection failed: %s", exc)
-            else:
-                product_latency_ms = (time.monotonic() - product_started) * 1000
-                if outcome.selected is None:
-                    extra_reasons.append(outcome.reason_code or rc.NO_PRODUCT)
-                elif not _validate_product_provenance(
-                    outcome.selected, frame_id, self._product_manifest, frame
-                ):
-                    extra_reasons.append(rc.INFERENCE_ERROR)
-                    log.warning("product detection provenance mismatch for frame %s", frame_id)
-                else:
-                    product_detection = outcome.selected
-                    gates["product_detected"] = True
-                    try:
-                        generated = self._roi_engine.generate(
-                            frame, frame_id, product_detection.bbox
-                        )
-                    except ROIGenerationError as exc:
-                        extra_reasons.append(rc.ROI_INVALID)
-                        log.warning("ROI generation failed: %s", exc)
-                    else:
-                        roi_image = generated.roi_image
-                        roi_result = generated.result
-                        gates["roi_valid"] = True
-                        component_started = time.monotonic()
-                        try:
-                            observations = self._component_detector.detect(
-                                generated.roi_image,
-                                frame_id,
-                                tuple(self._rule.required_components),
-                                generated.result.transform_full_to_roi,
-                                (frame.width, frame.height),
-                            )
-                            component_latency_ms = (time.monotonic() - component_started) * 1000
-                            if not _validate_component_provenance(
-                                observations,
-                                frame_id,
-                                self._component_manifest,
-                                generated.roi_image,
-                                frame,
-                                generated.result.transform_full_to_roi,
-                            ):
-                                observations = []
-                                extra_reasons.append(rc.INFERENCE_ERROR)
-                                log.warning(
-                                    "component detection provenance mismatch for frame %s", frame_id
-                                )
-                            else:
-                                gates["component_inference_valid"] = True
-                        except DetectionError as exc:
-                            extra_reasons.append(exc.reason_code)
-                            log.warning("component detection failed: %s", exc)
+        outcome = (
+            self._detect_frame(frame, frame_id) if frame is not None else _DetectionOutcome.empty()
+        )
+        product_detection = outcome.product_detection
+        roi_result = outcome.roi_result
+        roi_image = outcome.roi_image
+        observations = outcome.observations
+        gates = outcome.gates
+        product_latency_ms = outcome.product_latency_ms
+        component_latency_ms = outcome.component_latency_ms
+        extra_reasons.extend(outcome.reasons)
 
         evidence_map = self._build_evidence(observations, gates, frame is not None, frame_id)
         context = RuleContext(
