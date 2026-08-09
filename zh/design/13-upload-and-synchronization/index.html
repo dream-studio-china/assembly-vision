@@ -943,7 +943,7 @@
   <a href="#139-failure-handling-and-operations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.9 Failure Handling and Operations
+        13.9 故障处理与操作
       
     </span>
   </a>
@@ -2788,7 +2788,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 Review
+    PR-003 评论
   
 
     
@@ -3217,7 +3217,7 @@
   <a href="#139-failure-handling-and-operations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.9 Failure Handling and Operations
+        13.9 故障处理与操作
       
     </span>
   </a>
@@ -3308,7 +3308,7 @@ loop 所需媒体
         Worker-&gt;&gt;DB:标记成功并存储收据
 else 短暂的网络或服务器故障
         Server--xWorker:超时或可重试状态
-        Worker-&gt;&gt;DB:Schedule backoff with attempt details
+        Worker-&gt;&gt;DB:安排回退并包含尝试详细信息
 else 永久验证或内容冲突
         Server--&gt;&gt;Worker:不可重试的错误
         Worker-&gt;&gt;DB:标记永久性故障并发出警报
@@ -3321,7 +3321,7 @@ else 永久验证或内容冲突
 <h2 id="136-offline-operation-sequence">13.6 离线操作顺序<a class="headerlink" href="#136-offline-operation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Camera
-    participant Edge as Edge Inspection
+    participant Edge as 边缘检测
     participant Store as 本地存储
     participant Queue as 持久上传队列
     participant Server as 中央服务器
@@ -3333,11 +3333,11 @@ loop 停电期间的每个实物产品
         Queue-&gt;&gt;Queue:保留任务并安排退避
     end
     Note over Edge,Queue:在没有服务器的情况下继续检查
-    Server--&gt;&gt;Queue:Connectivity restored
+    Server--&gt;&gt;Queue:连接已恢复
 loop 到期排队任务
         Queue-&gt;&gt;Server:幂等元数据和选定媒体
         Server--&gt;&gt;Queue:已验证收据
-        Queue-&gt;&gt;Store:Mark upload confirmed
+        Queue-&gt;&gt;Store:标记上传已确认
     end</code></pre>
 <p>脱机持续时间受本地受保护存储容量的限制，而不是受服务器上软件依赖性的限制。如果容量达到停止阈值，边缘必须停止接受检查，而不是删除受保护的证据或发出不可审计的<code>OK</code>决策。</p>
 <h2 id="137-ordering-and-synchronization">13.7 排序和同步<a class="headerlink" href="#137-ordering-and-synchronization" title="Permanent link">&para;</a></h2>
@@ -3358,7 +3358,7 @@ loop 到期排队任务
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">media_chunk_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8388608</span>
 </code></pre></div>
 <p>占位符 URL 和 <code>null</code> 带宽需要站点配置。</p>
-<h2 id="139-failure-handling-and-operations">13.9 Failure Handling and Operations<a class="headerlink" href="#139-failure-handling-and-operations" title="Permanent link">&para;</a></h2>
+<h2 id="139-failure-handling-and-operations">13.9 故障处理与操作<a class="headerlink" href="#139-failure-handling-and-operations" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3468,6 +3468,14 @@ loop 到期排队任务
   重新启动租约回收和防护、丢失文件、校验和不匹配、
   服务器幂等性冲突、收据验证、媒体之前的有序元数据
   消耗、同步状态和无重复消耗。</li>
+<li><strong>可观察性 (E1)</strong>：上传 API 报告任务状态；设备状态
+  公开持久队列事实（挂起计数/字节、最旧的挂起年龄）
+  存储库加上进程本地工作人员活跃度（尝试/成功/失败
+  来自调度程序的计数器、失败率、上次尝试/成功、上次错误），
+  与 <code>UPLOAD_BLOCKED</code> （排队工作但没有工作人员）和 <code>UPLOAD_FAILING</code>
+  （可重试积压或在工作待处理时未成功的尝试）
+  警报。任务负载大小记录在队列中，因此队列字节不需要
+  媒体阅读。</li>
 </ul>
 <p>剩下的连接试点：中央摄取端点及其
 服务器端收据合同、媒体绑定确认、带宽

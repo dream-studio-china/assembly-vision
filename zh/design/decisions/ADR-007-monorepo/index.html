@@ -2772,7 +2772,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 Review
+    PR-003 评论
   
 
     
@@ -3247,40 +3247,40 @@
 
 <h1 id="adr-007-monorepo">ADR-007：单一仓库<a class="headerlink" href="#adr-007-monorepo" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
-<p>Accepted</p>
+<p>已接受</p>
 <h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision includes edge and central Python services, two Vue applications, reusable vision/domain packages, generated API clients, training/evaluation code, deployment definitions, and cross-system tests. These parts evolve through shared schemas and coordinated releases, especially during a small-team MVP.</p>
+<p>AssemblyVision 包括边缘和中央 Python 服务、两个 Vue 应用程序、可重用的视觉/域包、生成的 API 客户端、培训/评估代码、部署定义和跨系统测试。这些部分通过共享模式和协调发布来发展，特别是在小团队 MVP 期间。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>Keep application, package, training, deployment, test, configuration, and documentation source in one repository. Runnable units live under <code>apps/</code>; reusable Python and TypeScript code under <code>packages/python/</code> and <code>packages/typescript/</code>; training/evaluation under <code>training/</code>; development model metadata under <code>models/</code>; deployment under <code>deploy/</code>; cross-application tests under <code>tests/</code>; architecture under <code>docs/</code>.</p>
-<p>Runtime production data, customer evidence, secrets, deployed databases, and production model weights are not stored in Git. Packages are created only for real reuse or boundary value; the MVP does not mirror every conceptual component with a separate package.</p>
+<p>将应用程序、包、培训、部署、测试、配置和文档源保存在一个存储库中。可运行单元位于 <code>apps/</code> 下； <code>packages/python/</code> 和 <code>packages/typescript/</code> 下可重用的 Python 和 TypeScript 代码； <code>training/</code>下的培训/评估； <code>models/</code>下的开发模型元数据； <code>deploy/</code>下部署； <code>tests/</code>下的跨应用测试； <code>docs/</code>下的架构。</p>
+<p>运行时生产数据、客户证据、秘密、部署的数据库和生产模型权重不存储在 Git 中。包的创建只是为了真正的重用或边界价值； MVP 并不用单独的包来反映每个概念组件。</p>
 <h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
-<p>The decision governs source organization and CI change coordination. It does not require all applications to be deployed together, share one runtime image, or release at the same version.</p>
+<p>该决策管理源组织和 CI 变更协调。它不需要将所有应用程序部署在一起、共享一个运行时映像或以同一版本发布。</p>
 <h2 id="5-consequences">5. 后果<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
 <h3 id="51-positive">5.1 正面<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Atomic changes across schemas, generated clients, services, UI, tests, and documentation.</li>
-<li>Easier code reuse and consistent quality tooling for a small team.</li>
-<li>Cross-application integration tests run against one revision.</li>
-<li>Architecture decisions and deployment definitions remain close to implementation.</li>
+<li>跨架构、生成的客户端、服务、UI、测试和文档的原子更改。</li>
+<li>为小团队提供更轻松的代码重用和一致的质量工具。</li>
+<li>针对一个修订版运行跨应用程序集成测试。</li>
+<li>架构决策和部署定义仍接近实施。</li>
 </ul>
 <h3 id="52-negative-and-trade-offs">5.2 负面和权衡<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
-<li>CI must detect affected projects and avoid unnecessary full rebuilds.</li>
-<li>Ownership and dependency boundaries need enforcement.</li>
-<li>Repository access grants visibility across multiple applications.</li>
-<li>Large model/data artifacts require external storage and manifest discipline.</li>
+<li>CI 必须检测受影响的项目并避免不必要的全面重建。</li>
+<li>所有权和依赖关系边界需要强制执行。</li>
+<li>存储库访问授予跨多个应用程序的可见性。</li>
+<li>大型模型/数据工件需要外部存储和清单规则。</li>
 </ul>
 <h2 id="6-alternatives">6.替代方案<a class="headerlink" href="#6-alternatives" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Repository per service/application:</strong> rejected initially because coordinated contracts and small-team changes would incur version/review overhead.</li>
-<li><strong>Backend and frontend repositories:</strong> viable later but weakens atomic OpenAPI/client updates.</li>
-<li><strong>Store models and datasets in Git/LFS:</strong> rejected for production data, scale, privacy, and release-governance reasons; manifests reference controlled artifact stores.</li>
+<li><strong>每个服务/应用程序的存储库：</strong> 最初被拒绝，因为协调合同和小团队更改会产生版本/审核开销。</li>
+<li><strong>后端和前端存储库：</strong> 稍后可行，但会削弱原子 OpenAPI/客户端更新。</li>
+<li><strong>将模型和数据集存储在 Git/LFS 中：</strong> 由于生产数据、规模、隐私和发布管理原因而被拒绝；清单引用控制的工件存储。</li>
 </ul>
 <h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Package/build tools and affected-project CI strategy.</li>
-<li>Code ownership and release versioning by application/model/rule.</li>
-<li>Controlled artifact registry for models, datasets, and generated packages.</li>
+<li>打包/构建工具和受影响的项目 CI 策略。</li>
+<li>按应用程序/模型/规则进行代码所有权和发布版本控制。</li>
+<li>模型、数据集和生成的包的受控工件注册表。</li>
 </ul>
 <h2 id="8-links">8. 链接<a class="headerlink" href="#8-links" title="Permanent link">&para;</a></h2>
 <ul>

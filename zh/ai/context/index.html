@@ -2607,7 +2607,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 Review
+    PR-003 评论
   
 
     
@@ -3818,46 +3818,47 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   具有二进制主体和问题响应的规范业务/内部枚举
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
-<p><code>assemblyvision_edge</code> now ships <code>py.typed</code> so the strict mypy gate passes
-  repo-wide; the current suite is 635 Python tests, 91 TypeScript unit tests
-  (api-client 45, ui 13, edge-web 30, desktop 3), and 12 Playwright e2e.</p>
+<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code>，因此严格的 mypy 门会通过
+  回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
+  （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
 <h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
-<p>Merged via PR #17 (dev -&gt; main, 10 commits). Implements the persistent upload
-queue required by ADR-005 and closes the deferred AUDIT-001 4.4 persistence
-item. The review-driven hardening pass is recorded in
-<code>docs/reviews/PR-017-review.md</code>; findings F1-F8 plus a post-resolution pass
-are resolved with regression tests:</p>
+<p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
+ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
+项目。审查驱动的强化过程记录在
+<code>docs/reviews/PR-017-review.md</code>；结果 F1-F8 加上决议后通过
+通过回归测试解决：</p>
 <ul>
-<li><strong>Atomic projection and outbox</strong>: <code>persist_inspection_and_enqueue_uploads</code>
-  commits the immutable inspection, media, evidence, and one <code>INSPECTION</code> task
-  plus one <code>MEDIA</code> task per artifact in a single SQLite transaction; startup
-  reconciliation repairs stranded <code>LOCAL_ONLY</code> records.</li>
-<li><strong>Ordered, leased worker</strong>: <code>UploadScheduler</code> claims due tasks in an
-  immediate transaction; <code>MEDIA</code> tasks become due only after their inspection
-  task has a verified receipt; each claim carries a per-task fencing token
-  (<code>lease_owner</code>), stale <code>IN_PROGRESS</code> tasks are reclaimed after lease expiry,
-  and terminal updates require the matching token.</li>
-<li><strong>Failure classification</strong>: transport errors and <code>408/429/5xx</code> schedule
-  full-jitter backoff honoring <code>Retry-After</code> from the response time; missing/
-  corrupt evidence, checksum/size mismatch, and server conflicts become
-  permanent failures while local evidence is preserved.</li>
-<li><strong>Verified receipts</strong>: a 2xx is success only when the bounded typed receipt
-  echoes idempotency key, object, kind, size, and checksum; media receipts
-  require a central object ID; receipts are persisted and inspection
-  synchronization is <code>QUEUED</code>/<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code> from all tasks.</li>
-<li><strong>Configuration and security</strong>: <code>UploadSettings</code> + <code>AV_EDGE_UPLOAD_*</code> wiring
-  through <code>serve</code> (endpoint or local sink, separate credential, tunables);
-  central endpoints require HTTPS (development HTTP loopback-only), and the
-  viewer <code>api_token</code> is never reused for uploads.</li>
+<li><strong>原子投影和发件箱</strong>：<code>persist_inspection_and_enqueue_uploads</code>
+  提交不可变的检查、媒体、证据和一项 <code>INSPECTION</code> 任务
+  在单个 SQLite 事务中为每个工件加上一个 <code>MEDIA</code> 任务；启动
+  调节修复搁浅的<code>LOCAL_ONLY</code>记录。</li>
+<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code> 在一个任务中声明到期任务
+  即时交易； <code>MEDIA</code> 任务只有在检查后才到期
+  任务有经过验证的收据；每个声明都带有每个任务的防护令牌
+  (<code>lease_owner</code>)，陈旧的<code>IN_PROGRESS</code>任务在租约到期后被回收，
+  终端更新需要匹配的令牌。</li>
+<li><strong>故障分类</strong>：传输错误和<code>408/429/5xx</code>时间表
+  从响应时间起遵守 <code>Retry-After</code> 的全抖动退避；失踪/
+  证据损坏、校验和/大小不匹配以及服务器冲突变得
+  永久性故障，同时保留本地证据。</li>
+<li><strong>验证收据</strong>：仅当有界打字收据时，2xx 才是成功
+  回显幂等键、对象、种类、大小和校验和；媒体收据
+  需要一个中心对象 ID；保留收据并进行检查
+  所有任务的同步为 <code>QUEUED</code>/<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>。</li>
+<li><strong>配置和安全</strong>：<code>UploadSettings</code> + <code>AV_EDGE_UPLOAD_*</code>接线
+  通过 <code>serve</code> （端点或本地接收器、单独的凭据、可调参数）；
+  中央端点需要 HTTPS（仅开发 HTTP 环回），并且
+  查看器 <code>api_token</code> 永远不会重复用于上传。</li>
 </ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）。的
   剩余的 Edge 生产候选工作被跟踪为 E1-E6：</li>
-<li><strong>E1 可观测性</strong>：修复 Alembic <code>fileConfig</code> 的副作用
-    迁移后禁用 <code>assemblyvision.*</code> 记录器（因此 <code>/api/v1/logs</code>
-    捕获应用程序记录），然后添加调度程序运行状况、队列
-    字节/最旧年龄、失败率、上次成功联系和警报。</li>
+<li><strong>E1 可观察性</strong>：禁用的 Alembic <code>fileConfig</code> 副作用
+    <code>assemblyvision.*</code> 迁移后的记录器已修复，因此 <code>/api/v1/logs</code>
+    捕获应用程序记录，设备状态现在公开上传队列
+    字节、最早的挂起年龄、尝试/成功/失败计数器、失败率、
+    最后一次联系以及 <code>UPLOAD_BLOCKED</code>/<code>UPLOAD_FAILING</code> 提醒。</li>
 <li><strong>E2 保留和磁盘安全</strong>：具有进程间租赁的清理工作人员，
     仅在验证收据+保留、磁盘压力后删除
     警告/严重/停止策略，启动完整性扫描。</li>
@@ -3881,7 +3882,7 @@ are resolved with regression tests:</p>
   与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
   <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
-  <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
+  <code>scripts/adapt-xanylabeling.py</code>（书面形式；支持classes.txt/data.yaml，
   图像优先和分割优先布局）到
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>
@@ -3897,7 +3898,7 @@ are resolved with regression tests:</p>
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。</li>
-<li><code>.obsidian/</code> 根据选择保持不被跟踪；在更改该决定之前通知用户。</li>
+<li><code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
 
 

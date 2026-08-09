@@ -955,7 +955,7 @@
   <a href="#146-central-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.6 Central Schema
+        14.6 中心模式
       
     </span>
   </a>
@@ -1010,7 +1010,7 @@
   <a href="#1411-audit-and-mutation-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.11 Audit and Mutation Rules
+        14.11 审计和变更规则
       
     </span>
   </a>
@@ -1021,7 +1021,7 @@
   <a href="#1412-migration-and-recovery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.12 Migration and Recovery
+        14.12 迁移和恢复
       
     </span>
   </a>
@@ -2827,7 +2827,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 Review
+    PR-003 评论
   
 
     
@@ -3240,7 +3240,7 @@
   <a href="#146-central-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.6 Central Schema
+        14.6 中心模式
       
     </span>
   </a>
@@ -3295,7 +3295,7 @@
   <a href="#1411-audit-and-mutation-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.11 Audit and Mutation Rules
+        14.11 审计和变更规则
       
     </span>
   </a>
@@ -3306,7 +3306,7 @@
   <a href="#1412-migration-and-recovery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.12 Migration and Recovery
+        14.12 迁移和恢复
       
     </span>
   </a>
@@ -3890,7 +3890,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_media_inspection_kind</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">local_media_files</span><span class="p">(</span><span class="n">inspection_id</span><span class="p">,</span><span class="w"> </span><span class="n">kind</span><span class="p">);</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_device_events_time</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">device_events</span><span class="p">(</span><span class="n">occurred_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
 </code></pre></div>
-<h2 id="146-central-schema">14.6 Central Schema<a class="headerlink" href="#146-central-schema" title="Permanent link">&para;</a></h2>
+<h2 id="146-central-schema">14.6 中心模式<a class="headerlink" href="#146-central-schema" title="Permanent link">&para;</a></h2>
 <p>PostgreSQL 拥有租户隔离和全局历史记录。每个租户拥有的行都带有 <code>organization_id</code>；即使稍后启用行级安全性，存储库查询也必须对其进行范围限制。</p>
 <table>
 <thead>
@@ -3988,7 +3988,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <pre class="mermaid"><code>erDiagram
     ORGANIZATION ||--o{ SITE :包含
     SITE ||--o{ PRODUCTION_LINE :包含
-    PRODUCTION_LINE ||--o{ DEVICE :operates
+    PRODUCTION_LINE ||--o{ DEVICE :运作
     ORGANIZATION ||--o{ USER :有
     USER ||--o{ USER_ROLE :收到
     ROLE ||--o{ USER_ROLE :补助金
@@ -3997,7 +3997,7 @@ OpenAPI 中的模型。最小注册表是：</p>
     PRODUCT_VERSION ||--o{ RULE_VERSION :检查者
     RULE ||--o{ RULE_VERSION :版本
     MODEL_PACKAGE ||--o{ MODEL_VERSION :版本
-    DEVICE ||--o{ INSPECTION :produces
+    DEVICE ||--o{ INSPECTION :产生
     PRODUCT_VERSION ||--o{ INSPECTION :分类
     RULE_VERSION ||--o{ INSPECTION :评估
     MODEL_VERSION ||--o{ INSPECTION :运行
@@ -4005,8 +4005,8 @@ OpenAPI 中的模型。最小注册表是：</p>
     INSPECTION ||--o{ INSPECTION_MEDIA :有
     INSPECTION ||--o{ REVIEW_RECORD :评论者
     DEVICE ||--o{ DEVICE_EVENT :发出
-    DEVICE ||--o{ UPLOAD_RECEIPT :uploads
-    ORGANIZATION ||--o{ AUDIT_LOG :records</code></pre>
+    DEVICE ||--o{ UPLOAD_RECEIPT :上传
+    ORGANIZATION ||--o{ AUDIT_LOG :记录</code></pre>
 <p><code>INSPECTION</code>、<code>INSPECTION_COMPONENT</code> 和媒体的边缘等效项保留相同的 ID，允许集中摄取而无需身份转换。</p>
 <h2 id="148-keys-indexes-and-query-paths">14.8 键、索引和查询路径<a class="headerlink" href="#148-keys-indexes-and-query-paths" title="Permanent link">&para;</a></h2>
 <ul>
@@ -4032,7 +4032,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>通过记录的保留作业删除中心对象和数据库详细信息；如果需要进行审计核对，请保留墓碑。</li>
 </ol>
 <p>建议的策略类别（待客户批准）包括滚动视频（小时/天）、帧详细信息（天）、OK 关键帧（短）、NG 证据（较长）、检查元数据（长）、操作日志（有界）和审核日志（安全/合规术语）。请参阅<a href="../../source-brief/#7-local-storage-architecture">the source brief</a>中的任务要求。</p>
-<h2 id="1411-audit-and-mutation-rules">14.11 Audit and Mutation Rules<a class="headerlink" href="#1411-audit-and-mutation-rules" title="Permanent link">&para;</a></h2>
+<h2 id="1411-audit-and-mutation-rules">14.11 审计和变更规则<a class="headerlink" href="#1411-audit-and-mutation-rules" title="Permanent link">&para;</a></h2>
 <ul>
 <li>审核登录、角色分配、设备注册、配置草稿/发布/激活、模型生命周期更改、手动审核、导出、保留和打破玻璃操作。</li>
 <li>存储参与者类型（<code>USER</code>、<code>DEVICE</code>、<code>SYSTEM</code>）、参与者 ID、操作、目标、删除机密的前后值、UTC 时间、请求 ID 和原因（如果需要）。</li>
@@ -4041,7 +4041,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>审核行仅附加到应用程序角色。行政变更需要单独记录的操作程序。</li>
 <li>根据客户政策，敏感条形码和身份数据必须在一般日志和导出中进行屏蔽。</li>
 </ul>
-<h2 id="1412-migration-and-recovery">14.12 Migration and Recovery<a class="headerlink" href="#1412-migration-and-recovery" title="Permanent link">&para;</a></h2>
+<h2 id="1412-migration-and-recovery">14.12 迁移和恢复<a class="headerlink" href="#1412-migration-and-recovery" title="Permanent link">&para;</a></h2>
 <p>Alembic 通过单独的迁移分支/配置拥有这两种模式。边缘升级进行数据库备份、停止新的检查窗口、应用前向迁移、验证架构修订并恢复。长 SQLite 重写需要磁盘空间预检。集中迁移使用扩展/迁移/收缩更改，因此可以在部署期间运行混合 API 版本。</p>
 <p>边缘恢复可协调媒体路径、过期的上传租约以及启动时不完整的检查窗口。中断的窗口以生命周期状态 <code>ABORTED</code> 持久化；如果需要业务结果，则为 <code>NG</code>，并且记录永远不能变为 <code>OK</code>。数据库备份不会取代介质备份策略。</p>
 <h2 id="1413-openapi-synchronization-strategy">14.13 OpenAPI同步策略<a class="headerlink" href="#1413-openapi-synchronization-strategy" title="Permanent link">&para;</a></h2>

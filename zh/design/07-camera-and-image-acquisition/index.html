@@ -2766,7 +2766,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 Review
+    PR-003 评论
   
 
     
@@ -3293,7 +3293,7 @@
 <pre class="mermaid"><code>sequenceDiagram
     participant Sensor as 触发器或传感器
     participant Capture as 相机适配器
-    participant Window as Product Window Manager
+    participant Window as 产品窗口管理器
     participant Vision as 愿景管道
     participant Aggregate as 时间聚合器
     participant Rules as 规则引擎
@@ -3311,7 +3311,7 @@ loop 直到退出或超时
     Aggregate--&gt;&gt;Rules:每个所需组件的证据
     Rules--&gt;&gt;Store:OK 或 NG 以及原因代码
     Store--&gt;&gt;Upload:将持久结果和媒体入队
-    Note over Store,Upload:Upload is asynchronous and cannot block inspection</code></pre>
+    Note over Store,Upload:上传是异步的，不能阻塞检查</code></pre>
 <p>每个实例独立地将其最新捕获的帧公开为
 速率受限的 JPEG 预览 (<code>GET /api/v1/camera/{instance_id}/preview</code>,
 ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket

@@ -3854,10 +3854,11 @@ are resolved with regression tests:</p>
 <ul>
 <li>The <strong>upload queue scheduler</strong> gap is closed (PR #17, section 8.6). The
   remaining Edge production-candidate work is tracked as E1-E6:</li>
-<li><strong>E1 observability</strong>: fix the Alembic <code>fileConfig</code> side effect that
-    disables <code>assemblyvision.*</code> loggers after migration (so <code>/api/v1/logs</code>
-    captures application records), then add scheduler health, queue
-    bytes/oldest age, failure rate, last successful contact, and alerts.</li>
+<li><strong>E1 observability</strong>: the Alembic <code>fileConfig</code> side effect that disabled
+    <code>assemblyvision.*</code> loggers after migration is fixed so <code>/api/v1/logs</code>
+    captures application records, and device status now exposes upload queue
+    bytes, oldest pending age, attempt/success/failure counters, failure rate,
+    last contact, and <code>UPLOAD_BLOCKED</code>/<code>UPLOAD_FAILING</code> alerts.</li>
 <li><strong>E2 retention and disk safety</strong>: cleanup worker with inter-process lease,
     deletion only after verified receipts + retention, disk-pressure
     warning/critical/stop policy, startup integrity scan.</li>

@@ -2766,7 +2766,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 Review
+    PR-003 评论
   
 
     
@@ -3302,7 +3302,7 @@ alt 恰好一件有效产品
             Rules--&gt;&gt;CLI:OK 或 NG 并说明原因
 else 产品无法验证
             CLI-&gt;&gt;Rules:评估管道故障
-            Rules--&gt;&gt;CLI:NG with reason
+            Rules--&gt;&gt;CLI:有理由不合格
         end
         CLI-&gt;&gt;Storage:原子保存 JSON 和媒体
         Storage--&gt;&gt;CLI:持续存在或存储错误
@@ -3350,60 +3350,60 @@ deferred：M1静态单帧CLI仅接受<code>product_detection</code>，
 <table>
 <thead>
 <tr>
-<th>Failure</th>
-<th>Required behavior</th>
+<th>失败</th>
+<th>所需行为</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Image unreadable or camera frame corrupt</td>
-<td>Exclude frame; return <code>NG</code> if evidence becomes insufficient</td>
+<td>图像无法读取或相机帧损坏</td>
+<td>排除框架；如果证据不足，则返回 <code>NG</code></td>
 </tr>
 <tr>
-<td>Barcode absent, ambiguous, or unmapped when required</td>
-<td><code>NG</code>; use no inferred product type</td>
+<td>条形码缺失、不明确或在需要时未映射</td>
+<td><code>NG</code>；不使用推断的产品类型</td>
 </tr>
 <tr>
-<td>No product, multiple products, or invalid ROI</td>
-<td><code>NG</code>; skip component inference when its input is invalid</td>
+<td>没有产品、有多个产品或无效的投资回报率</td>
+<td><code>NG</code>；当输入无效时跳过组件推理</td>
 </tr>
 <tr>
-<td>Model load/inference error</td>
-<td>Mark subsystem unhealthy and inspection <code>NG</code>; never reuse a previous detection</td>
+<td>模型加载/推理错误</td>
+<td>标记子系统不健康并检查<code>NG</code>；永远不要重复使用以前的检测</td>
 </tr>
 <tr>
-<td>Timeout or queue overflow</td>
-<td>Close affected window as <code>NG</code>; preserve diagnostics</td>
+<td>超时或队列溢出</td>
+<td>以 <code>NG</code> 方式关闭受影响的窗口；保留诊断</td>
 </tr>
 <tr>
-<td>Local result cannot be durably persisted</td>
-<td>Do not announce <code>OK</code>; raise a blocking local storage fault</td>
+<td>本地结果无法持久保存</td>
+<td>不要公布<code>OK</code>；引发阻塞本地存储故障</td>
 </tr>
 <tr>
-<td>Server/network unavailable</td>
-<td>Continue local inspection and queue upload</td>
+<td>服务器/网络不可用</td>
+<td>继续本地检查并排队上传</td>
 </tr>
 </tbody>
 </table>
-<p>Exceptions are converted at subsystem boundaries into explicit reason codes. Raw exceptions and stack traces belong in structured logs, while inspection records contain stable business reason codes.</p>
+<p>异常在子系统边界处转换为显式原因代码。原始异常和堆栈跟踪属于结构化日志，而检查记录包含稳定的业务原因代码。</p>
 <h2 id="68-observability">6.8 可观测性<a class="headerlink" href="#68-observability" title="Permanent link">&para;</a></h2>
-<p>Record stage latency, valid/rejected frame counts, product-detection success, ROI failures, barcode-read success, per-component confidence distributions, decision counts by reason, queue depth, inference device, and active versions. Logs include <code>inspection_id</code>, <code>frame_id</code>, and <code>device_id</code>; they must not contain credentials or unbounded image data.</p>
+<p>记录阶段延迟、有效/拒绝帧计数、产品检测成功、ROI 失败、条形码读取成功、每个组件的置信度分布、按原因的决策计数、队列深度、推理设备和活动版本。日志包括<code>inspection_id</code>、<code>frame_id</code>、<code>device_id</code>；它们不得包含凭据或无限制的图像数据。</p>
 <h2 id="69-verification">6.9 验证<a class="headerlink" href="#69-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Unit-test stage contracts, threshold boundaries, coordinate transforms, and reason-code mapping.</li>
-<li>Run golden-image tests with expected detections and decisions pinned to model manifests.</li>
-<li>Verify that every injected stage exception produces <code>NG</code> or blocks readiness, never <code>OK</code>.</li>
-<li>Test mixed product types and version changes at window boundaries.</li>
-<li>Measure average and P95 latency, throughput, NG recall, product-detection success, and per-component recall.</li>
-<li>Reproduce results from persisted input, configuration, and version metadata where deterministic inference support permits.</li>
+<li>单元测试阶段契约、阈值边界、坐标变换和原因代码映射。</li>
+<li>运行黄金图像测试，并将预期检测和决策固定到模型清单上。</li>
+<li>验证每个注入的阶段异常是否都会生成 <code>NG</code> 或阻止就绪，而不是 <code>OK</code>。</li>
+<li>在窗口边界测试混合产品类型和版本变化。</li>
+<li>测量平均和 P95 延迟、吞吐量、NG 召回、产品检测成功和每个组件召回。</li>
+<li>在确定性推理支持允许的情况下，从持久输入、配置和版本元数据中再现结果。</li>
 </ul>
 <h2 id="610-open-questions-and-validation-required">6.10 未解决的问题和需要验证<a class="headerlink" href="#610-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Confirm the production latency and throughput budgets after conveyor-speed measurement.</li>
-<li>Select and validate the edge inference hardware and execution provider.</li>
-<li>Confirm whether barcode resolution is mandatory for every product type.</li>
-<li>Determine the approved behavior for multiple products in one frame with customer operations.</li>
-<li>Establish measured acceptance thresholds using production data not used for training.</li>
+<li>测量传送带速度后确认生产延迟和吞吐量预算。</li>
+<li>选择并验证边缘推理硬件和执行提供商。</li>
+<li>确认条形码解析是否对每种产品类型都是强制的。</li>
+<li>通过客户操作确定一个框架中多个产品的批准行为。</li>
+<li>使用未用于培训的生产数据建立测量的验收阈值。</li>
 </ul>
 
 

@@ -1129,7 +1129,7 @@
   <a href="#223-test-levels" class="md-nav__link">
     <span class="md-ellipsis">
       
-        22.3 Test Levels
+        22.3 测试级别
       
     </span>
   </a>
@@ -2810,7 +2810,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 Review
+    PR-003 评论
   
 
     
@@ -3173,7 +3173,7 @@
   <a href="#223-test-levels" class="md-nav__link">
     <span class="md-ellipsis">
       
-        22.3 Test Levels
+        22.3 测试级别
       
     </span>
   </a>
@@ -3323,79 +3323,79 @@
 
 <h1 id="22-testing-and-quality-assurance">22. 测试和质量保证<a class="headerlink" href="#22-testing-and-quality-assurance" title="Permanent link">&para;</a></h1>
 <h2 id="221-purpose-and-quality-objective">22.1 目的和质量目标<a class="headerlink" href="#221-purpose-and-quality-objective" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision testing demonstrates measured behavior under representative production conditions. The primary quality objective is high recall of real NG products and an extremely low false-negative rate, supported by traceable evidence and cautious human verification. No test plan or model is represented as guaranteeing 100% accuracy.</p>
+<p>AssemblyVision 测试展示了在代表性生产条件下测量的行为。主要质量目标是真实 NG 产品的高召回率和极低的假阴性率，并有可追溯的证据和谨慎的人工验证支持。没有任何测试计划或模型能够保证 100% 的准确性。</p>
 <h2 id="222-scope-by-delivery-stage">22.2 按交付阶段划分的范围<a class="headerlink" href="#222-scope-by-delivery-stage" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Static train-and-inspect MVP:</strong> YOLO dataset-layout and label validation, product/ROI/component coordinate-remapping tests, training dry run on synthetic fixtures, static pipeline integration tests, deterministic fixtures, CLI smoke tests, held-out filename-ground-truth verification, and baseline model evaluation.</li>
-<li><strong>One-month target:</strong> camera/barcode adapters, local persistence, temporal aggregation, edge API/dashboard, one central ingestion/history/review path, targeted synchronization/restart/idempotency tests, deployment smoke tests, and a controlled customer-site baseline where access permits.</li>
-<li><strong>Production target:</strong> independent acceptance data, long-running tests, power-loss and disk-full recovery, security/contract testing, release regression suites, and model/rule promotion gates.</li>
-<li><strong>Future scope:</strong> multi-line load simulation, hardware-in-the-loop rigs, automated fleet canaries, and additional camera-domain test sets.</li>
+<li><strong>静态训练和检查 MVP：</strong> YOLO 数据集布局和标签验证、产品/ROI/组件坐标重新映射测试、合成夹具训练试运行、静态管道集成测试、确定性夹具、CLI 冒烟测试、保留文件名真实验证和基线模型评估。</li>
+<li><strong>一个月目标：</strong> 相机/条形码适配器、本地持久性、时间聚合、边缘 API/仪表板、一个中央摄取/历史/审核路径、有针对性的同步/重启/幂等性测试、部署冒烟测试以及访问允许的受控客户站点基线。</li>
+<li><strong>生产目标：</strong>独立验收数据、长时间运行测试、断电和磁盘满恢复、安全/合约测试、发布回归套件以及模型/规则升级门。</li>
+<li><strong>未来范围：</strong> 多线负载模拟、硬件在环装置、自动化车队金丝雀和其他相机域测试集。</li>
 </ul>
-<h2 id="223-test-levels">22.3 Test Levels<a class="headerlink" href="#223-test-levels" title="Permanent link">&para;</a></h2>
+<h2 id="223-test-levels">22.3 测试级别<a class="headerlink" href="#223-test-levels" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Level</th>
-<th>Focus</th>
-<th>Representative examples</th>
+<th>水平</th>
+<th>焦点</th>
+<th>代表性事例</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Unit</td>
-<td>Pure behavior and boundary conditions</td>
-<td>ROI clipping, confidence aggregation, rule reason codes, retention eligibility</td>
+<td>单位</td>
+<td>纯行为和边界条件</td>
+<td>ROI 裁剪、置信度聚合、规则原因代码、保留资格</td>
 </tr>
 <tr>
-<td>Component</td>
-<td>One service with controlled dependencies</td>
-<td>camera adapter reconnect, SQLite repository, upload state machine</td>
+<td>组件</td>
+<td>具有受控依赖性的一项服务</td>
+<td>相机适配器重新连接、SQLite 存储库、上传状态机</td>
 </tr>
 <tr>
-<td>Integration</td>
-<td>Real boundaries</td>
-<td>API plus database, object storage checksum, model runtime plus ROI mapping</td>
+<td>整合</td>
+<td>真正的边界</td>
+<td>API 加数据库、对象存储校验和、模型运行时加 ROI 映射</td>
 </tr>
 <tr>
-<td>End-to-end</td>
-<td>User/product workflow</td>
-<td>capture through local decision; upload through central review</td>
+<td>端到端</td>
+<td>用户/产品工作流程</td>
+<td>通过当地决策捕获；通过中央审核上传</td>
 </tr>
 <tr>
-<td>Model evaluation</td>
-<td>Statistical performance on held-out groups</td>
-<td>NG recall by component/product and confidence distributions</td>
+<td>模型评估</td>
+<td>坚持小组的统计表现</td>
+<td>按组件/产品和置信度分布进行的 NG 召回</td>
 </tr>
 <tr>
-<td>Resilience</td>
-<td>Recovery and safe degradation</td>
-<td>network outage, repeated network flap, power loss, disk full, accelerator/inference failure, corruption, restart</td>
+<td>韧性</td>
+<td>恢复和安全降解</td>
+<td>网络中断、重复网络抖动、断电、磁盘已满、加速器/推理故障、损坏、重新启动</td>
 </tr>
 <tr>
-<td>Acceptance</td>
-<td>Customer production behavior</td>
-<td>agreed matrix in document 26 using unseen production data</td>
+<td>验收</td>
+<td>客户生产行为</td>
+<td>使用未见过的生产数据在文件 26 中商定矩阵</td>
 </tr>
 </tbody>
 </table>
-<p>Tests use the same versioned model, rule, application, and configuration artifacts intended for release.</p>
+<p>测试使用与发布时相同的版本化模型、规则、应用程序和配置工件。</p>
 <h2 id="224-unit-and-component-testing">22.4 单元和组件测试<a class="headerlink" href="#224-unit-and-component-testing" title="Permanent link">&para;</a></h2>
-<p>Python tests use Pytest and cover valid, invalid, and boundary data. Property-based testing is appropriate for bounding-box clipping, coordinate transforms, idempotency, and state transitions. Time, UUID generation, camera input, and network behavior are injectable.</p>
-<p>Required unit subjects include:</p>
+<p>Python 测试使用 Pytest 并涵盖有效、无效和边界数据。基于属性的测试适用于边界框裁剪、坐标变换、幂等性和状态转换。时间、UUID 生成、摄像头输入和网络行为都是可注入的。</p>
+<p>所需的单元科目包括：</p>
 <ul>
-<li>Product-window opening/closing and ambiguous identity handling.</li>
-<li>ROI margin expansion, boundary clipping, coordinate round trips, and no-product behavior.</li>
-<li>Frame-quality rejection and per-component temporal evidence policies.</li>
-<li>Deterministic rule evaluation, including missing and low-confidence reason codes.</li>
-<li>Product/barcode mapping and fail-closed behavior.</li>
-<li>Upload retry/backoff, idempotency key stability, checksum mismatch, and terminal errors.</li>
-<li>Retention rules that protect pending media.</li>
-<li>Configuration/model manifest validation and compatibility checks.</li>
-<li>Database transaction behavior and incomplete-record recovery.</li>
+<li>产品窗口打开/关闭和不明确的身份处理。</li>
+<li>ROI 边际扩展、边界裁剪、协调往返和无产品行为。</li>
+<li>帧质量拒绝和每个组件的时间证据策略。</li>
+<li>确定性规则评估，包括缺失和低置信度原因代码。</li>
+<li>产品/条形码映射和故障关闭行为。</li>
+<li>上传重试/退避、幂等密钥稳定性、校验和不匹配以及终端错误。</li>
+<li>保护待处理媒体的保留规则。</li>
+<li>配置/模型清单验证和兼容性检查。</li>
+<li>数据库事务行为和不完整记录恢复。</li>
 </ul>
-<p>Vue component tests use Vitest for status states, tables, detection overlays, review controls, form validation, permission behavior, and offline/error presentation. Browser end-to-end tests verify critical workflows without substituting for actual camera testing.</p>
+<p>Vue 组件测试使用 Vitest 进行状态状态、表格、检测覆盖、审查控件、表单验证、权限行为和离线/错误呈现。浏览器端到端测试可验证关键工作流程，而无需替代实际的相机测试。</p>
 <h2 id="225-integration-and-contract-testing">22.5 集成和契约测试<a class="headerlink" href="#225-integration-and-contract-testing" title="Permanent link">&para;</a></h2>
-<p>Integration tests run against supported database and object-storage versions. SQLite edge tests include write contention and unclean process termination. PostgreSQL migration tests cover upgrade from every supported release and rollback constraints.</p>
+<p>针对支持的数据库和对象存储版本运行集成测试。 SQLite 边缘测试包括写入争用和不干净的进程终止。 PostgreSQL 迁移测试涵盖每个受支持版本的升级和回滚约束。</p>
 <p>OpenAPI 是生成的 TypeScript 客户端的合约源。合约测试验证状态代码、模式、分页、授权、幂等上传重放、WebSocket 事件信封、媒体范围/下载行为以及前向兼容的未知字段。边缘/中心兼容性在明确支持的版本矩阵中进行了测试。</p>
 <p>相机适配器有一个通用的一致性套件：</p>
 <ol>

@@ -1101,7 +1101,7 @@
   <a href="#193-data-inventory-and-provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.3 Data Inventory and Provenance
+        19.3 数据清单和来源
       
     </span>
   </a>
@@ -2988,7 +2988,7 @@
   <span class="md-ellipsis">
     
   
-    PR-003 Review
+    PR-003 评论
   
 
     
@@ -3407,7 +3407,7 @@
   <a href="#193-data-inventory-and-provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.3 Data Inventory and Provenance
+        19.3 数据清单和来源
       
     </span>
   </a>
@@ -3700,47 +3700,47 @@
 <p>输入是由生产 ROI 代码生成的产品 ROI。输出类是具体的必需组件，包括适用的手册。训练可见的所需组件；不要训练通用的 <code>missing_component</code> 类。初始规划是每个组件类大约 300 到 500 个标记实例，加上有意创建的缺失组件场景，在可行的情况下，每个缺失场景开始近 100 个产品实例。</p>
 <h3 id="1923-system-decision">19.2.3 系统决策<a class="headerlink" href="#1923-system-decision" title="Permanent link">&para;</a></h3>
 <p>该系统结合了框架质量、产品检测、ROI 生成、跨框架的组件证据、条形码/产品分辨率和确定性规则。组件模型的失误可以通过时间证据来恢复；时间聚合不会提高检测器的单帧精度。最终产品级指标必须执行精确的生产预处理、阈值、聚合和规则版本。</p>
-<h2 id="193-data-inventory-and-provenance">19.3 Data Inventory and Provenance<a class="headerlink" href="#193-data-inventory-and-provenance" title="Permanent link">&para;</a></h2>
+<h2 id="193-data-inventory-and-provenance">19.3 数据清单和来源<a class="headerlink" href="#193-data-inventory-and-provenance" title="Permanent link">&para;</a></h2>
 <p>每个源图像/帧都与一个清单相关联，其中包含：</p>
 <ul>
-<li>Dataset/source record ID and immutable file checksum.</li>
-<li>Site, line, camera, and capture setup identifiers where permitted.</li>
-<li>Capture session ID, production date, product batch, and physical product instance ID.</li>
-<li>Video/inspection window ID, frame index, and timestamp.</li>
-<li>Product code/type and barcode in protected metadata where permitted.</li>
-<li>Deliberate defect scenario and known missing components.</li>
-<li>Camera angle/setup revision, lighting/exposure revision, and software capture version.</li>
-<li>Annotation version, annotator, review state, and exclusion reason.</li>
-<li>Consent, retention, and permitted-use classification.</li>
+<li>数据集/源记录 ID 和不可变文件校验和。</li>
+<li>站点、线路、摄像机和捕捉设置标识符（如果允许）。</li>
+<li>捕获会话 ID、生产日期、产品批次和物理产品实例 ID。</li>
+<li>视频/检查窗口 ID、帧索引和时间戳。</li>
+<li>在允许的情况下，受保护元数据中的产品代码/类型和条形码。</li>
+<li>故意的缺陷场景和已知的缺失组件。</li>
+<li>相机角度/设置修订、照明/曝光修订和软件捕获版本。</li>
+<li>注释版本、注释者、审阅状态和排除原因。</li>
+<li>同意、保留和允许使用分类。</li>
 </ul>
-<p>Raw data is immutable. Corrections create a new annotation/dataset version. Personally or commercially sensitive identifiers are pseudonymized for training while retaining a controlled traceability map.</p>
+<p>原始数据是不可变的。更正创建新的注释/数据集版本。对个人或商业敏感的标识符进行假名化以进行培训，同时保留受控的可追溯性地图。</p>
 <h2 id="194-collection-design">19.4 集合设计<a class="headerlink" href="#194-collection-design" title="Permanent link">&para;</a></h2>
-<p>Collect with the actual production camera, optics, mounting, lighting, conveyor background, capture software, and image encoding. The initial model optimizes for one fixed production angle. A substantial angle change, including a change near 45 degrees, is a domain change requiring evaluation, additional collection/fine-tuning, and complete revalidation.</p>
-<p>Collection must represent:</p>
+<p>使用实际生产的相机、光学器件、安装、照明、传送带背景、捕获软件和图像编码进行收集。初始模型针对一个固定的生产角度进行优化。显着的角度变化（包括接近 45 度的变化）是需要评估、额外收集/微调和完全重新验证的域变化。</p>
+<p>集合必须代表：</p>
 <ul>
-<li>Each supported product and required component.</li>
-<li>Real OK products across batches/dates and ordinary position variation.</li>
-<li>Physically constructed NG products for each missing component and missing manual.</li>
-<li>Barcode success, damaged/occluded/unreadable barcode, and unknown mapping cases.</li>
-<li>Empty frames, partial products, multiple-product anomalies, blur, reflection, occlusion, exposure variation, and safe camera-position tolerances.</li>
-<li>Consecutive OK, consecutive NG, and mixed-product sequences for window/aggregation testing.</li>
+<li>每个受支持的产品和所需的组件。</li>
+<li>跨批次/日期和普通位置变化的真正 OK 产品。</li>
+<li>针对每个缺失的组件和缺失的手册，物理构建了 NG 产品。</li>
+<li>条码成功、损坏/遮挡/无法读取的条码以及未知的映射情况。</li>
+<li>空帧、部分产品、多产品异常、模糊、反射、遮挡、曝光变化和安全相机位置公差。</li>
+<li>用于窗口/聚合测试的连续 OK、连续 NG 和混合产品序列。</li>
 </ul>
-<p>Do not synthesize all NG examples by digitally erasing components. Synthetic editing may augment rare variation, but physically captured defects are necessary because shadows, packaging deformation, and revealed backgrounds differ.</p>
+<p>不要通过数字擦除组件来合成所有 NG 示例。合成编辑可能会增加罕见的变化，但物理捕获的缺陷是必要的，因为阴影、包装变形和显示的背景有所不同。</p>
 <h2 id="195-annotation-protocol">19.5 注释协议<a class="headerlink" href="#195-annotation-protocol" title="Permanent link">&para;</a></h2>
-<p>Define a versioned class ontology with stable component codes, inclusion/exclusion rules, minimum visibility, occlusion/truncation flags, and difficult-case examples. Product boxes enclose the visible product consistently. Component boxes use ROI coordinates but retain source-frame transform metadata.</p>
-<p>Workflow:</p>
+<p>使用稳定的组件代码、包含/排除规则、最小可见性、遮挡/截断标志和困难情况示例定义版本化的类本体。产品盒一致地封装可见的产品。组件框使用 ROI 坐标，但保留源帧变换元数据。</p>
+<p>工作流程：</p>
 <ol>
-<li>Annotator labels from the locked ontology and marks ambiguous/unusable images rather than guessing.</li>
-<li>Automated checks reject invalid boxes, unknown classes, impossible image dimensions, duplicates, and missing required metadata.</li>
-<li>A second reviewer examines all NG scenarios, all ambiguous labels, and a statistically meaningful sample of ordinary labels.</li>
-<li>Disagreements are adjudicated and ontology guidance updated before bulk relabeling.</li>
-<li>Dataset release freezes file checksums, annotation hashes, ontology version, and provenance manifest.</li>
+<li>注释器从锁定的本体中进行标记，并标记不明确/不可用的图像，而不是猜测。</li>
+<li>自动检查拒绝无效框、未知类别、不可能的图像尺寸、重复项和缺少所需元数据。</li>
+<li>第二位审核员检查所有 NG 场景、所有模糊标签以及具有统计意义的普通标签样本。</li>
+<li>在批量重新标记之前对分歧进行裁决并更新本体指南。</li>
+<li>数据集发布冻结文件校验和、注释哈希、本体版本和出处清单。</li>
 </ol>
-<p>Track per-class box counts, product-instance counts, sessions, batches, and defect scenarios. Frame count alone overstates diversity when many frames come from one product pass.</p>
+<p>跟踪每类盒子计数、产品实例计数、会话、批次和缺陷场景。当许多帧来自一个产品通道时，仅帧数就夸大了多样性。</p>
 <h2 id="196-leakage-safe-data-splits">19.6 防泄漏数据分割<a class="headerlink" href="#196-leakage-safe-data-splits" title="Permanent link">&para;</a></h2>
 <h3 id="1961-split-unit">19.6.1 分割单元<a class="headerlink" href="#1961-split-unit" title="Permanent link">&para;</a></h3>
-<p>The minimum split group is a physical product instance across its entire inspection/video window. Prefer a higher-level group that combines capture session, product batch, production date, and setup revision. All adjacent frames, crops, augmentations, re-encodings, and annotations derived from one source group stay in one split.</p>
-<p>Never randomly split individual video frames. Nearly identical frames across train and validation produce misleading metrics and tune temporal aggregation on repeated evidence.</p>
+<p>最小拆分组是整个检查/视频窗口中的物理产品实例。首选结合捕获会话、产品批次、生产日期和设置修订的更高级别组。从一个源组派生的所有相邻帧、裁剪、增强、重新编码和注释都保留在一个分割中。</p>
+<p>切勿随机分割单个视频帧。训练和验证过程中几乎相同的帧会产生误导性的指标，并根据重复的证据调整时间聚合。</p>
 <h3 id="1962-recommended-sets">19.6.2 推荐设置<a class="headerlink" href="#1962-recommended-sets" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
