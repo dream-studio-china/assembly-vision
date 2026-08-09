@@ -522,12 +522,46 @@ export interface components {
             inspection_error_code?: string | null;
             /** Inspection Ready */
             inspection_ready: boolean;
+            /**
+             * Integrity Scan Checked
+             * @default 0
+             */
+            integrity_scan_checked: number;
+            /**
+             * Integrity Scan Checksummed
+             * @default 0
+             */
+            integrity_scan_checksummed: number;
+            /**
+             * Integrity Scan Faults
+             * @default 0
+             */
+            integrity_scan_faults: number;
+            /** Integrity Scan Last Run At */
+            integrity_scan_last_run_at?: string | null;
+            /**
+             * Integrity Scan Skipped
+             * @default 0
+             */
+            integrity_scan_skipped: number;
+            /** Integrity Scan Skipped Reason */
+            integrity_scan_skipped_reason?: string | null;
+            /**
+             * Integrity Verify Checksums
+             * @default false
+             */
+            integrity_verify_checksums: boolean;
             /** Model Loaded */
             model_loaded: boolean;
             /** Observed At */
             observed_at: string;
             /** Operational State */
             operational_state: string;
+            /**
+             * Storage Critical Free Percent
+             * @default 0
+             */
+            storage_critical_free_percent: number;
             /**
              * Storage Free Bytes
              * @default 0
@@ -553,6 +587,18 @@ export interface components {
              * @default NORMAL
              */
             storage_mode: string;
+            /** Storage Observed At */
+            storage_observed_at?: string | null;
+            /**
+             * Storage Stop Free Percent
+             * @default 0
+             */
+            storage_stop_free_percent: number;
+            /**
+             * Storage Warning Free Percent
+             * @default 0
+             */
+            storage_warning_free_percent: number;
             /**
              * Storage Write Fault
              * @default false

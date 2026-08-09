@@ -408,6 +408,53 @@
             "title": "Inspection Ready",
             "type": "boolean"
           },
+          "integrity_scan_checked": {
+            "default": 0,
+            "title": "Integrity Scan Checked",
+            "type": "integer"
+          },
+          "integrity_scan_checksummed": {
+            "default": 0,
+            "title": "Integrity Scan Checksummed",
+            "type": "integer"
+          },
+          "integrity_scan_faults": {
+            "default": 0,
+            "title": "Integrity Scan Faults",
+            "type": "integer"
+          },
+          "integrity_scan_last_run_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Integrity Scan Last Run At"
+          },
+          "integrity_scan_skipped": {
+            "default": 0,
+            "title": "Integrity Scan Skipped",
+            "type": "integer"
+          },
+          "integrity_scan_skipped_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Integrity Scan Skipped Reason"
+          },
+          "integrity_verify_checksums": {
+            "default": false,
+            "title": "Integrity Verify Checksums",
+            "type": "boolean"
+          },
           "model_loaded": {
             "title": "Model Loaded",
             "type": "boolean"
@@ -419,6 +466,11 @@
           "operational_state": {
             "title": "Operational State",
             "type": "string"
+          },
+          "storage_critical_free_percent": {
+            "default": 0.0,
+            "title": "Storage Critical Free Percent",
+            "type": "number"
           },
           "storage_free_bytes": {
             "default": 0,
@@ -444,6 +496,27 @@
             "default": "NORMAL",
             "title": "Storage Mode",
             "type": "string"
+          },
+          "storage_observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Observed At"
+          },
+          "storage_stop_free_percent": {
+            "default": 0.0,
+            "title": "Storage Stop Free Percent",
+            "type": "number"
+          },
+          "storage_warning_free_percent": {
+            "default": 0.0,
+            "title": "Storage Warning Free Percent",
+            "type": "number"
           },
           "storage_write_fault": {
             "default": false,

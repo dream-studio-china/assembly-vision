@@ -68,6 +68,10 @@ class DeviceStatus(BaseModel):
     storage_free_percent: float = 0.0
     storage_free_inodes: int = 0
     storage_inode_percent: float = 0.0
+    storage_warning_free_percent: float = 0.0
+    storage_critical_free_percent: float = 0.0
+    storage_stop_free_percent: float = 0.0
+    storage_observed_at: str | None = None
     storage_write_fault: bool = False
     cleanup_enabled: bool = False
     cleanup_eligible_count: int = 0
@@ -78,6 +82,13 @@ class DeviceStatus(BaseModel):
     cleanup_integrity_fault_count: int = 0
     cleanup_last_run_at: str | None = None
     cleanup_last_error_code: str | None = None
+    integrity_scan_last_run_at: str | None = None
+    integrity_scan_checked: int = 0
+    integrity_scan_faults: int = 0
+    integrity_scan_checksummed: int = 0
+    integrity_scan_skipped: int = 0
+    integrity_scan_skipped_reason: str | None = None
+    integrity_verify_checksums: bool = False
     current_product_model_version_id: str | None = None
     current_component_model_version_id: str | None = None
     current_rule_version_id: str | None = None

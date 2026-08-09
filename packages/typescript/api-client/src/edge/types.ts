@@ -266,6 +266,10 @@ export type DeviceStatus = {
   storage_free_percent: number;
   storage_free_inodes: number;
   storage_inode_percent: number;
+  storage_warning_free_percent: number;
+  storage_critical_free_percent: number;
+  storage_stop_free_percent: number;
+  storage_observed_at: ISODateTime | null;
   storage_write_fault: boolean;
   cleanup_enabled: boolean;
   cleanup_eligible_count: number;
@@ -276,6 +280,13 @@ export type DeviceStatus = {
   cleanup_integrity_fault_count: number;
   cleanup_last_run_at: ISODateTime | null;
   cleanup_last_error_code: string | null;
+  integrity_scan_last_run_at: ISODateTime | null;
+  integrity_scan_checked: number;
+  integrity_scan_faults: number;
+  integrity_scan_checksummed: number;
+  integrity_scan_skipped: number;
+  integrity_scan_skipped_reason: string | null;
+  integrity_verify_checksums: boolean;
   current_product_model_version_id: UUID | null;
   current_component_model_version_id: UUID | null;
   current_rule_version_id: UUID | null;
