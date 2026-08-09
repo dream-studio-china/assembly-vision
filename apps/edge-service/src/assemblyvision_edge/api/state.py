@@ -8,7 +8,6 @@ reporting ``inspection_ready`` false (design 16.11).
 
 from __future__ import annotations
 
-import errno
 import hashlib
 import logging
 import threading
@@ -91,6 +90,12 @@ class EdgeRuntime:
         self._storage_settings = settings.storage
         self.storage_state: StorageState | None = None
         self.storage_write_fault = False
+        # Latched at startup when the integrity scan finds faults (PR-020 F08);
+        # gates intake and readiness until documented reconciliation.
+        self.storage_integrity_fault = False
+        self.integrity_scan: Any = None
+        self.integrity_scan_at: str | None = None
+        self.integrity_scan_settings: Any = None
 
     @staticmethod
     def _resolve_device_id(configured: str | None) -> UUID:
@@ -159,6 +164,7 @@ class EdgeRuntime:
 
         from assemblyvision_edge.config import load_edge_config
 
+        self.repository = repository
         try:
             edge_config = load_edge_config(Path(config_path))
         except ConfigError as exc:
@@ -251,6 +257,7 @@ class EdgeRuntime:
             else None
         )
         was_paused = self.paused
+        optional = False
         while not self._stop.is_set():
             if self.paused:
                 if not was_paused:
@@ -260,20 +267,37 @@ class EdgeRuntime:
                 time.sleep(0.05)
                 continue
             self.refresh_storage()
-            if self.storage_state is not None and self.storage_state.mode == "STOP":
-                # Stop pressure: durable mandatory persistence cannot be
-                # guaranteed, so no new product is accepted (E2 task invariant
-                # 7). Frames are drained and never evaluated as evidence.
+            # A latched write fault recovers only through a mandatory
+            # persistence probe, never from a successful volume observation
+            # (PR-020 F05). An integrity fault gates intake until documented
+            # reconciliation restarts the service (PR-020 F08).
+            if self.storage_write_fault:
+                self.probe_persistence()
+            blocked = (
+                self.storage_write_fault
+                or self.storage_integrity_fault
+                or (self.storage_state is not None and self.storage_state.mode == "STOP")
+            )
+            if blocked:
+                # Stop pressure / write fault / integrity fault: durable
+                # mandatory persistence cannot be guaranteed, so no new product
+                # is accepted (E2 task invariant 7). Frames are drained and
+                # never evaluated as evidence.
                 if not was_paused:
                     log.warning(
-                        "inspection intake stopped for instance %s: storage at stop "
-                        "threshold (design 12.7, E2c)",
+                        "inspection intake stopped for instance %s: %s",
                         instance_id,
+                        "integrity fault"
+                        if self.storage_integrity_fault
+                        else "storage write fault"
+                        if self.storage_write_fault
+                        else "storage at stop threshold (design 12.7, E2c)",
                     )
                 self.camera_manager.drain_inspection(instance_id)
                 was_paused = True
                 time.sleep(0.5)
                 continue
+            optional = self._optional_capture_suppressed()
             if was_paused:
                 # Resuming: drop stale frames captured during the pause window.
                 self.camera_manager.drain_inspection(instance_id)
@@ -287,9 +311,11 @@ class EdgeRuntime:
                     try:
                         expired = window_manager.expire(time.monotonic())
                         if expired is not None:
-                            record = runtime.pipeline.inspect_window(expired, writer)
-                            runtime.last_result = record.decision.business_result
-                            self._persist_projection(record)
+                            record = runtime.pipeline.inspect_window(
+                                expired, writer, suppress_optional_capture=optional
+                            )
+                            if self._persist_projection(record):
+                                runtime.last_result = record.decision.business_result
                     except Exception as exc:  # noqa: BLE001 - idle expiry must not kill the loop
                         self._note_storage_write_fault(exc)
                         log.exception("idle window expiry failed for instance %s", instance_id)
@@ -301,13 +327,17 @@ class EdgeRuntime:
                     # which inference finished (PR-015 F3).
                     closed = window_manager.feed(observation, frame.monotonic_ts_ns / 1e9)
                     if closed is not None:
-                        record = runtime.pipeline.inspect_window(closed, writer)
-                        runtime.last_result = record.decision.business_result
-                        self._persist_projection(record)
+                        record = runtime.pipeline.inspect_window(
+                            closed, writer, suppress_optional_capture=optional
+                        )
+                        if self._persist_projection(record):
+                            runtime.last_result = record.decision.business_result
                 else:
-                    record = runtime.pipeline.inspect_frame(frame, writer)
-                    runtime.last_result = record.decision.business_result
-                    self._persist_projection(record)
+                    record = runtime.pipeline.inspect_frame(
+                        frame, writer, suppress_optional_capture=optional
+                    )
+                    if self._persist_projection(record):
+                        runtime.last_result = record.decision.business_result
             except Exception as exc:  # noqa: BLE001 - loop must survive frame errors
                 self._note_storage_write_fault(exc)
                 log.exception("inspection failed for instance %s", instance_id)
@@ -315,48 +345,53 @@ class EdgeRuntime:
             try:
                 closed = window_manager.force_close()
                 if closed is not None:
-                    record = runtime.pipeline.inspect_window(closed, writer)
-                    runtime.last_result = record.decision.business_result
+                    record = runtime.pipeline.inspect_window(
+                        closed, writer, suppress_optional_capture=optional
+                    )
                     # An interrupted close is still a published bundle; mirror
                     # it so shutdown never loses the record or its outbox tasks
                     # (PR-017 F2 residual note).
-                    self._persist_projection(record)
+                    if self._persist_projection(record):
+                        runtime.last_result = record.decision.business_result
             except Exception:  # noqa: BLE001 - interrupted close must not mask shutdown
                 log.exception("interrupted window close failed for instance %s", instance_id)
 
     def _note_storage_write_fault(self, exc: Exception) -> None:
-        """Flag a storage write fault from ENOSPC/EROFS/I/O failures (E2c).
+        """Latch a storage write fault from any persistence/write failure (E2c).
 
         A write-time failure means durable persistence cannot be guaranteed;
         the runtime fails closed (inspection_ready false, STORAGE_WRITE_FAULT)
-        instead of treating the volume as healthy (E2 task invariant 8).
+        instead of treating the volume as healthy. Every repository/projection
+        failure is treated as a persistence fault, including SQLAlchemy-wrapped
+        database errors (PR-020 F01/F05).
         """
-        if isinstance(exc, OSError) and exc.errno in (errno.ENOSPC, errno.EROFS, errno.EIO):
-            self.storage_write_fault = True
+        self.storage_write_fault = True
 
-    def _persist_projection(self, record: Any) -> None:
+    def _persist_projection(self, record: Any) -> bool:
         """Mirror a published bundle into the SQLite projection and outbox.
 
-        The writer already fsynced the bundle, so a projection failure is
-        logged and never turns a completed inspection into a failure. The
-        projection and its upload tasks commit in one transaction, so a crash
-        between them cannot strand a record without its outbox tasks
-        (PR-017 F2, design 12.4).
+        Returns True only after the projection and its upload tasks committed.
+        A failure is logged and latches a storage/admission fault; the caller
+        must not publish the inspection result when this returns False
+        (PR-020 F01, E2 task invariant 7).
         """
         repository = self.repository
         if repository is None:
-            return
+            self.storage_write_fault = True
+            return False
         try:
             repository.persist_inspection_and_enqueue_uploads(
                 record, retention=self._retention_policy()
             )
+            return True
         except Exception as exc:  # noqa: BLE001 - projection must not break the loop
-            self._note_storage_write_fault(exc)
+            self.storage_write_fault = True
             log.warning(
                 "inspection %s was published but the projection/outbox could not be updated: %s",
                 record.inspection_id,
                 exc,
             )
+            return False
 
     def _retention_policy(self) -> RetentionPolicy | None:
         """Return the approved retention policy for new media, or None."""
@@ -364,6 +399,53 @@ class EdgeRuntime:
         if retention is None:
             return None
         return retention.to_policy()
+
+    def _probe_output_writable(self) -> bool:
+        """Probe mandatory media output by writing and fsyncing a probe file."""
+        import os
+
+        path = self._settings.output_root / ".storage-probe"
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600)
+            try:
+                os.write(fd, b"probe")
+                os.fsync(fd)
+            finally:
+                os.close(fd)
+            path.unlink()
+            return True
+        except OSError:
+            return False
+
+    def probe_persistence(self) -> bool:
+        """Mandatory-persistence recovery probe (PR-020 F05).
+
+        Clears a latched write fault only when both the media output volume is
+        writable (probe file + fsync) and the SQLite/outbox store accepts a
+        write transaction. A successful volume observation alone never clears
+        the latch.
+        """
+        from assemblyvision_edge.persistence.repository import RepositoryError
+
+        try:
+            repository_ok = self.repository is not None and self.repository.probe_writability()
+        except RepositoryError:
+            repository_ok = False
+        if repository_ok and self._probe_output_writable():
+            self.storage_write_fault = False
+            return True
+        return False
+
+    def _optional_capture_suppressed(self) -> bool:
+        """Return whether optional capture must be suppressed (PR-020 F07).
+
+        At critical pressure (or worse) only explicitly optional artifacts are
+        suppressed; mandatory metadata and NG evidence are always preserved.
+        """
+        return self.storage_state is not None and self.storage_state.mode in (
+            "CRITICAL",
+            "STOP",
+        )
 
     def pause(self, reason: str, by: str = "operator") -> None:
         self.paused = True
@@ -381,12 +463,13 @@ class EdgeRuntime:
         """Re-measure the output volume and update the pressure state (E2c).
 
         A measurement failure sets a write fault so the service fails closed
-        instead of assuming healthy storage (E2 task invariant 8).
+        instead of assuming healthy storage. A successful observation never
+        clears a latched write fault; only :meth:`probe_persistence` may
+        (PR-020 F05).
         """
         try:
             state = observe_storage(self._settings.output_root, self._storage_settings)
             self.storage_state = state
-            self.storage_write_fault = False
         except StorageObservationError:
             self.storage_state = None
             self.storage_write_fault = True

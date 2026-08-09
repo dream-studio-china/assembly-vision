@@ -100,13 +100,15 @@ class OutputWriter:
         full_frame: Image.Image | None,
         roi_image: Image.Image | None,
         annotated: Image.Image | None,
+        suppress_optional: bool = False,
     ) -> InspectionRecord:
         """Persist an inspection bundle atomically and return it updated.
 
-        Media and the record JSON are written into a staging directory, fsynced,
-        then the whole directory is renamed into place. A publish is rejected for
-        an inspection ID that already exists so a retry can never combine newer
-        media with an older record (PR-003 P2 bundle-atomic output).
+        When ``suppress_optional`` is set (critical storage pressure, PR-020
+        F07), optional OK-sample media is not written; mandatory metadata and
+        NG evidence are always preserved. The inspection JSON is written with
+        the media list actually persisted, so no omitted artifact is
+        misrepresented as captured.
         """
         final_dir = self._output_root / str(record.inspection_id)
         if final_dir.exists():
@@ -116,19 +118,20 @@ class OutputWriter:
             staging.mkdir(parents=True)
             final_rel_dir = str(record.inspection_id)
             media: list[MediaMetadata] = []
-            if full_frame is not None:
+            optional = suppress_optional and record.decision.business_result.value == "OK"
+            if full_frame is not None and not optional:
                 media.append(
                     self._save_image(
                         staging, "key_frame.jpg", full_frame, "KEY_FRAME", final_rel_dir
                     )
                 )
-            if roi_image is not None:
+            if roi_image is not None and not optional:
                 media.append(
                     self._save_image(
                         staging, "product_roi.jpg", roi_image, "PRODUCT_ROI", final_rel_dir
                     )
                 )
-            if annotated is not None:
+            if annotated is not None and not optional:
                 media.append(
                     self._save_image(
                         staging,

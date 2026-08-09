@@ -8,8 +8,10 @@ from uuid import UUID, uuid5
 
 import pytest
 import yaml
+from assemblyvision_domain.models import InspectionRecord
 from assemblyvision_edge.api.settings import ServerSettings
 from assemblyvision_edge.api.state import EdgeRuntime, _instance_device_id
+from assemblyvision_edge.persistence.repository import EdgeRepository
 from assemblyvision_vision.sources.frame_source import CapturedFrame
 from PIL import Image
 
@@ -100,6 +102,17 @@ def _write_multi_edge_config(tmp_path: Path, instances: list[dict[str, object]])
     return path
 
 
+def _fake_record() -> InspectionRecord:
+    """A real, persistable inspection record for loop fakes."""
+    from datetime import UTC, datetime
+
+    from assemblyvision_domain.models import BusinessResult
+
+    from tests.test_api import _record
+
+    return _record(datetime.now(UTC), business=BusinessResult.OK, barcode="SN-loop")
+
+
 def test_instance_device_id_defaults_to_uuid5() -> None:
     from assemblyvision_edge.config import InstanceConfig as IC
 
@@ -135,19 +148,22 @@ def test_load_instances_runs_inspection_loop(
         def __init__(self) -> None:
             self.count = 0
 
-        def inspect_frame(self, frame: object, writer: object) -> object:
+        def inspect_frame(
+            self, frame: object, writer: object, *, suppress_optional_capture: bool = False
+        ) -> object:
             self.count += 1
-            from types import SimpleNamespace
 
-            return SimpleNamespace(decision=SimpleNamespace(business_result="OK"))
+            return _fake_record()
 
     monkeypatch.setattr(
         state, "_build_instance_pipeline", lambda instance, rule_registry=None: FakePipeline()
     )
+    (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
     runtime = EdgeRuntime(settings)
+    repository = EdgeRepository.open(settings.db_path)
     config_path = _write_edge_config(tmp_path, _make_images(tmp_path))
-    runtime.load_instances(config_path)
+    runtime.load_instances(config_path, repository)
     try:
         deadline = time.monotonic() + 10.0
         while time.monotonic() < deadline:
@@ -161,11 +177,13 @@ def test_load_instances_runs_inspection_loop(
         assert runtime.camera_manager.latest_frame("line-1") is not None
     finally:
         runtime.shutdown()
+        repository.close()
 
 
 def test_load_instances_reports_pipeline_error_without_crash(
     tmp_path: Path,
 ) -> None:
+    (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
     runtime = EdgeRuntime(settings)
     # No manifest files exist at the resolved paths -> pipeline build fails,
@@ -190,6 +208,7 @@ def test_load_instances_reports_pipeline_error_without_crash(
 
 
 def test_missing_folder_source_is_unavailable_not_fatal(tmp_path: Path) -> None:
+    (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
     runtime = EdgeRuntime(settings)
     good = _make_images(tmp_path)
@@ -225,27 +244,29 @@ def test_missing_folder_source_is_unavailable_not_fatal(tmp_path: Path) -> None:
 def test_inspection_loop_no_silent_frame_loss(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from types import SimpleNamespace
-
     from assemblyvision_edge.api import state as state_module
 
     inspected: list[int] = []
 
     class SlowPipeline:
-        def inspect_frame(self, frame: CapturedFrame, writer: object) -> object:
+        def inspect_frame(
+            self, frame: CapturedFrame, writer: object, *, suppress_optional_capture: bool = False
+        ) -> object:
             inspected.append(frame.sequence)
             time.sleep(0.05)
-            return SimpleNamespace(decision=SimpleNamespace(business_result="OK"))
+            return _fake_record()
 
     monkeypatch.setattr(
         state_module,
         "_build_instance_pipeline",
         lambda instance, rule_registry=None: SlowPipeline(),
     )
+    (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
     runtime = EdgeRuntime(settings)
+    repository = EdgeRepository.open(settings.db_path)
     config_path = _write_edge_config(tmp_path, _make_images(tmp_path))
-    runtime.load_instances(config_path)
+    runtime.load_instances(config_path, repository)
     try:
         deadline = time.monotonic() + 10.0
         while time.monotonic() < deadline:
@@ -262,6 +283,7 @@ def test_inspection_loop_no_silent_frame_loss(
         assert state.degraded is True
     finally:
         runtime.shutdown()
+        repository.close()
 
 
 def test_pause_stops_inspection_and_status_reports_paused(
@@ -281,19 +303,23 @@ def test_pause_stops_inspection_and_status_reports_paused(
             model_version_id=UUID("00000000-0000-0000-0000-000000000002")
         )
 
-        def inspect_frame(self, frame: CapturedFrame, writer: object) -> object:
+        def inspect_frame(
+            self, frame: CapturedFrame, writer: object, *, suppress_optional_capture: bool = False
+        ) -> object:
             inspected.append(frame.sequence)
-            return SimpleNamespace(decision=SimpleNamespace(business_result="OK"))
+            return _fake_record()
 
     monkeypatch.setattr(
         state_module,
         "_build_instance_pipeline",
         lambda instance, rule_registry=None: FastPipeline(),
     )
+    (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
     runtime = EdgeRuntime(settings)
+    repository = EdgeRepository.open(settings.db_path)
     config_path = _write_edge_config(tmp_path, _make_images(tmp_path))
-    runtime.load_instances(config_path)
+    runtime.load_instances(config_path, repository)
     try:
         deadline = time.monotonic() + 10.0
         while time.monotonic() < deadline:
@@ -319,6 +345,7 @@ def test_pause_stops_inspection_and_status_reports_paused(
         assert len(inspected) > settled
     finally:
         runtime.shutdown()
+        repository.close()
 
 
 def test_temporal_loop_expires_idle_window(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -329,7 +356,6 @@ def test_temporal_loop_expires_idle_window(tmp_path: Path, monkeypatch: pytest.M
     be closed as a normal record by ``expire()`` rather than left open until
     shutdown discards it as interrupted (PR-015 F2).
     """
-    from types import SimpleNamespace
     from uuid import uuid4
 
     from assemblyvision_edge.api import state as state_module
@@ -354,15 +380,18 @@ def test_temporal_loop_expires_idle_window(tmp_path: Path, monkeypatch: pytest.M
                 product_identity="test-product",
             )
 
-        def inspect_window(self, window: object, writer: object) -> object:
+        def inspect_window(
+            self, window: object, writer: object, *, suppress_optional_capture: bool = False
+        ) -> object:
             finalized.append(len(window.frames))  # type: ignore[attr-defined]
-            return SimpleNamespace(decision=SimpleNamespace(business_result="OK"))
+            return _fake_record()
 
     monkeypatch.setattr(
         state_module,
         "_build_instance_pipeline",
         lambda instance, rule_registry=None: TemporalPipeline(),
     )
+    (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
     runtime = EdgeRuntime(settings)
     images = _make_images(tmp_path)
@@ -392,7 +421,6 @@ def test_temporal_loop_expires_idle_window(tmp_path: Path, monkeypatch: pytest.M
 def test_temporal_loop_emits_windowed_records(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from types import SimpleNamespace
     from uuid import uuid4
 
     from assemblyvision_edge.api import state as state_module
@@ -417,15 +445,18 @@ def test_temporal_loop_emits_windowed_records(
                 product_identity="test-product",
             )
 
-        def inspect_window(self, window: object, writer: object) -> object:
+        def inspect_window(
+            self, window: object, writer: object, *, suppress_optional_capture: bool = False
+        ) -> object:
             finalized.append(len(window.frames))  # type: ignore[attr-defined]
-            return SimpleNamespace(decision=SimpleNamespace(business_result="OK"))
+            return _fake_record()
 
     monkeypatch.setattr(
         state_module,
         "_build_instance_pipeline",
         lambda instance, rule_registry=None: TemporalPipeline(),
     )
+    (tmp_path / "out").mkdir(parents=True, exist_ok=True)
     settings = ServerSettings(output_root=tmp_path / "out", db_path=tmp_path / "edge.sqlite3")
     runtime = EdgeRuntime(settings)
     config_path = _write_edge_config(
@@ -437,12 +468,17 @@ def test_temporal_loop_emits_windowed_records(
             "maximum_window_ms": 200,
         },
     )
-    runtime.load_instances(config_path)
+    # A repository is required for the projection/outbox to commit before a
+    # result is published (PR-020 F01).
+    from assemblyvision_edge.persistence.repository import EdgeRepository
+
+    repo = EdgeRepository.open(settings.db_path)
     try:
+        runtime.load_instances(config_path, repo)
         assert runtime.instances["line-1"].temporal is not None
         deadline = time.monotonic() + 10.0
         while time.monotonic() < deadline:
-            if finalized:
+            if finalized and runtime.instances["line-1"].last_result == "OK":
                 break
             time.sleep(0.05)
         assert finalized, "temporal loop never finalized a window"
@@ -451,3 +487,4 @@ def test_temporal_loop_emits_windowed_records(
         assert runtime.instances["line-1"].last_result == "OK"
     finally:
         runtime.shutdown()
+        repo.close()

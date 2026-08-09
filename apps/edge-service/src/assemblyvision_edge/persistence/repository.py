@@ -350,6 +350,32 @@ class EdgeRepository:
     def close(self) -> None:
         self._engine.dispose()
 
+    def probe_writability(self) -> bool:
+        """Return whether the SQLite/outbox store accepts a write transaction.
+
+        Used by the storage recovery probe (PR-020 F05): ``BEGIN IMMEDIATE``
+        acquires the write lock and fails on a read-only volume or locked
+        database, so a successful probe proves the outbox can commit.
+        """
+        import sqlite3
+
+        try:
+            raw = self._engine.raw_connection()
+        except sqlite3.Error:
+            return False
+        try:
+            cursor = raw.cursor()
+            try:
+                cursor.execute("BEGIN IMMEDIATE")
+                cursor.execute("ROLLBACK")
+                return True
+            except sqlite3.Error:
+                return False
+            finally:
+                cursor.close()
+        finally:
+            raw.close()
+
     def upsert_inspection(
         self, record: InspectionRecord, *, retention: RetentionPolicy | None = None
     ) -> str:

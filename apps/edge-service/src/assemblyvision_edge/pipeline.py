@@ -237,14 +237,25 @@ class InspectionPipeline:
         return self._inspect_impl(image=image, image_read_error=image is None, writer=writer)
 
     def inspect_frame(
-        self, frame: CapturedFrame, writer: OutputWriter | None = None
+        self,
+        frame: CapturedFrame,
+        writer: OutputWriter | None = None,
+        *,
+        suppress_optional_capture: bool = False,
     ) -> InspectionRecord:
         """Inspect one captured camera frame; each frame is one inspection (ADR-013).
 
         ``writer`` is optional: a dev/test call can analyze without persisting
-        evidence (ADR-014).
+        evidence (ADR-014). ``suppress_optional_capture`` drops optional
+        OK-sample media under critical storage pressure (PR-020 F07); mandatory
+        metadata and NG evidence are always preserved.
         """
-        return self._inspect_impl(image=frame.image, image_read_error=False, writer=writer)
+        return self._inspect_impl(
+            image=frame.image,
+            image_read_error=False,
+            writer=writer,
+            suppress_optional_capture=suppress_optional_capture,
+        )
 
     def frame_observations(self, frame: CapturedFrame) -> FrameObservation:
         """Run one frame's detection pass for temporal window aggregation.
@@ -288,7 +299,11 @@ class InspectionPipeline:
         )
 
     def inspect_window(
-        self, window: ProductWindow, writer: OutputWriter | None = None
+        self,
+        window: ProductWindow,
+        writer: OutputWriter | None = None,
+        *,
+        suppress_optional_capture: bool = False,
     ) -> InspectionRecord:
         """Finalize one product window into a single inspection record.
 
@@ -407,6 +422,7 @@ class InspectionPipeline:
             full_frame=representative.image if representative else None,
             roi_image=representative.roi_image if representative else None,
             annotated=annotated,
+            suppress_optional=suppress_optional_capture,
         )
 
     def _detect_frame(self, frame: Image.Image, frame_id: UUID) -> _DetectionOutcome:
@@ -486,6 +502,7 @@ class InspectionPipeline:
         image: Image.Image | None,
         image_read_error: bool,
         writer: OutputWriter | None,
+        suppress_optional_capture: bool = False,
     ) -> InspectionRecord:
         inspection_id = uuid4()
         frame_id = uuid4()
@@ -594,7 +611,13 @@ class InspectionPipeline:
             )
         if writer is None:
             return record
-        return writer.save(record, full_frame=frame, roi_image=roi_image, annotated=annotated)
+        return writer.save(
+            record,
+            full_frame=frame,
+            roi_image=roi_image,
+            annotated=annotated,
+            suppress_optional=suppress_optional_capture,
+        )
 
     def _collect_inference_metadata(
         self,
