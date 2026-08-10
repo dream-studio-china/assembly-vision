@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3191,44 +3191,44 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </ul>
 <h3 id="h2-published-references-the-removed-staging-directory">H2。发布的 <code>data.yaml</code> 引用已删除的暂存目录<a class="headerlink" href="#h2-published-references-the-removed-staging-directory" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>状态：</strong> 关闭 (7af307b)。</li>
-<li><strong>证据：</strong> 两个适配器和 <code>prepare_components.py:181-189</code> 序列化
-  从其暂存输出派生的绝对路径，然后自动重命名
-  暂存目录。因此，发布的 YAML 指向不存在的
-  目录。</li>
-<li><strong>需要更改：</strong> 编写相对于数据集 YAML 的可移植路径（对于
-  例如 <code>images/train</code> 和 <code>images/val</code>)，或仅写入最终绝对路径
-  出版后。在适配器、准备、
-  和合成发电机。</li>
-<li><strong>验收：</strong> 对于每个适配器和组件准备，创建一个数据集，
-  发布它，解析它的<code>data.yaml</code>，根据以下内容解析<code>train</code>和<code>val</code>
-  选择约定，并断言最终输出下两个目录都存在
-  root 并包含预期的图像。断言序列化值不包含
-  <code>.staging-</code>。</li>
+<li><strong>Status:</strong> CLOSED (7af307b).</li>
+<li><strong>Evidence:</strong> The two adapters and <code>prepare_components.py:181-189</code> serialize
+  absolute paths derived from their staging output, then atomically rename the
+  staging directory. The published YAML therefore points to a non-existent
+  directory.</li>
+<li><strong>Required change:</strong> Write portable paths relative to the dataset YAML (for
+  example <code>images/train</code> and <code>images/val</code>), or write final absolute paths only
+  after publication. Use one documented convention in adapters, preparation,
+  and the synthetic generator.</li>
+<li><strong>Acceptance:</strong> For each adapter and component preparation, create a dataset,
+  publish it, parse its <code>data.yaml</code>, resolve <code>train</code> and <code>val</code> according to the
+  selected convention, and assert both directories exist under the final output
+  root and contain the expected images. Assert no serialized value contains
+  <code>.staging-</code>.</li>
 </ul>
 <h3 id="h3-relative-can-select-the-wrong-ultralytics-run-path">H3。相对<code>--out-weights</code>可以选择错误的Ultralytics运行路径<a class="headerlink" href="#h3-relative-can-select-the-wrong-ultralytics-run-path" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>状态：</strong> 关闭 (fcfcf7c)。</li>
-<li><strong>证据：</strong> <code>cli.py:226,313</code> 通过了潜在的亲属
-  <code>weights_path.parent / ".train-runs"</code>； <code>train.py:71-77</code> 然后假设
-  固定返回路径。这与记录的相对路径命令不同
-  并且可能与 Ultralytics 对相关项目的处理发生冲突。</li>
-<li><strong>需要更改：</strong> 在调用 Ultralytics 之前解析项目目录。
-  从解析的项目目录中导出返回的权重路径，验证
-  它存在并且是 <code>place_weights</code> 之前的常规文件，并提出明确的
-  否则训练错误。</li>
-<li><strong>接受：</strong> 使用相对路径对产品和组件 CLI 路径进行单元测试
-  <code>--out-weights</code>，使用 <code>train_detector</code>/YOLO 进行模拟，并断言该项目是
-  绝对并且选择了预期的 <code>best.pt</code>。添加回归测试
-  丢失返回的神器。运行一个记录的相对路径烟雾命令
-  仅当其受控训练装置可用时才进行 CI。</li>
+<li><strong>Status:</strong> CLOSED (fcfcf7c).</li>
+<li><strong>Evidence:</strong> <code>cli.py:226,313</code> passes a potentially relative
+  <code>weights_path.parent / ".train-runs"</code>; <code>train.py:71-77</code> then assumes a
+  fixed return path. This differs from the documented relative-path commands
+  and can conflict with Ultralytics' handling of relative projects.</li>
+<li><strong>Required change:</strong> Resolve the project directory before calling Ultralytics.
+  Derive the returned weights path from the resolved project directory, verify
+  it exists and is a regular file before <code>place_weights</code>, and raise a clear
+  training error otherwise.</li>
+<li><strong>Acceptance:</strong> Unit-test product and component CLI paths using a relative
+  <code>--out-weights</code>, with <code>train_detector</code>/YOLO mocked, and assert the project is
+  absolute and the expected <code>best.pt</code> is selected. Add a regression test for a
+  missing returned artifact. Run one documented relative-path smoke command in
+  CI only when its controlled training fixture is available.</li>
 </ul>
 <h3 id="h4-states-pr-11-is-open">H4。 <code>context.md</code> 表示 PR #11 已开放<a class="headerlink" href="#h4-states-pr-11-is-open" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>状态：</strong> ~~无效/过时的审计证据~~。</li>
-<li><strong>原因：</strong> <code>docs/ai/context.md:24,31,40</code> 现在声明 PR #11 已合并，
-  没有开放的 PR，并且 <code>dev</code> 与 <code>main</code> 同步。没有变化
-  此项目需要。</li>
+<li><strong>Status:</strong> ~~INVALID / STALE AUDIT EVIDENCE~~.</li>
+<li><strong>Reason:</strong> <code>docs/ai/context.md:24,31,40</code> now states that PR #11 is merged,
+  that there are no open PRs, and that <code>dev</code> is in sync with <code>main</code>. No change
+  is required for this item.</li>
 </ul>
 <hr />
 <h2 id="4-med-findings">4. 医学研究结果<a class="headerlink" href="#4-med-findings" title="Permanent link">&para;</a></h2>
@@ -3236,30 +3236,30 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <table>
 <thead>
 <tr>
-<th>身份证</th>
-<th>现状和证据</th>
-<th>需要改变</th>
-<th>严格验收</th>
+<th>ID</th>
+<th>Status and evidence</th>
+<th>Required change</th>
+<th>Strict acceptance</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>M1</td>
-<td>已关闭（7d987e7）。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
-<td>将路径构建/解析期间引发的 <code>ValueError</code> 视为格式错误的媒体并跳过该记录。隔离单个包中的错误。</td>
-<td>包含 NUL 字节媒体路径的协调测试会导入有效的同级包，跳过格式错误的包，返回正确的导入计数，并发出警告而不引发警告。</td>
+<td>CLOSED (7d987e7). <code>media_path_is_safe</code> catches <code>OSError</code> only (<code>reconcile.py:37-42</code>); <code>Path.resolve()</code> can raise <code>ValueError</code> for an embedded NUL. The startup scan therefore aborts instead of skipping the malformed bundle.</td>
+<td>Treat <code>ValueError</code> raised during path construction/resolution as malformed media and skip that record. Keep errors from a single bundle isolated.</td>
+<td>A reconciliation test containing a NUL-byte media path imports valid sibling bundles, skips the malformed bundle, returns the correct import count, and emits a warning without raising.</td>
 </tr>
 <tr>
 <td>M2</td>
-<td>已关闭 (5f70071)。 <code>register_rule_identity</code> 是选择然后插入，没有 <code>IntegrityError</code> 翻译或重试 (<code>repository.py:688-715</code>)。</td>
-<td>在 unique-race 中，重新读取新事务中存储的哈希值：相等时成功返回，不同时引发 <code>RepositoryError</code>。翻译意外的数据库错误。</td>
-<td>基于屏障的多线程测试同时注册相同的身份/散列，没有原始的 <code>IntegrityError</code>；并发的不同哈希确定性地引发 <code>RepositoryError</code> 并保持原始哈希不变。</td>
+<td>CLOSED (5f70071). <code>register_rule_identity</code> is a select-then-insert without an <code>IntegrityError</code> translation or retry (<code>repository.py:688-715</code>).</td>
+<td>On a unique-race, re-read the stored hash in a new transaction: return successfully when equal and raise <code>RepositoryError</code> when different. Translate unexpected database errors.</td>
+<td>A barrier-based multi-thread test registers the same identity/hash concurrently with no raw <code>IntegrityError</code>; a concurrent differing hash deterministically raises <code>RepositoryError</code> and leaves the original hash unchanged.</td>
 </tr>
 <tr>
 <td>M3</td>
-<td>已关闭 (84e5fd5)。 <code>EdgeRepository.open()</code> 始终为同一新路径（<code>repository.py:155-167</code>、<code>migrate.py:17-29</code>）调用进程不安全的 Alembic 运行器。</td>
-<td>使用进程间锁序列化首次打开迁移，或者在创建引擎之前显式拒绝并发首次打开。在 M1 边界文档中定义行为。</td>
-<td>打开同一个新数据库的多进程测试无需 Alembic <code>KeyError</code> 即可完成，完全保留头部修订版本，启用所需的 SQLite 编译指示，并且两个存储库都可以执行读/写投影操作。</td>
+<td>CLOSED (84e5fd5). <code>EdgeRepository.open()</code> always calls the process-unsafe Alembic runner for the same new path (<code>repository.py:155-167</code>, <code>migrate.py:17-29</code>).</td>
+<td>Serialize first-open migration with an interprocess lock or explicitly reject concurrent first-open before creating the engine. Define the behavior in the M1 boundary documentation.</td>
+<td>A multi-process test opening the same fresh database completes without Alembic <code>KeyError</code>, leaves exactly the head revision, enables the required SQLite pragmas, and both repositories can perform a read/write projection operation.</td>
 </tr>
 </tbody>
 </table>
@@ -3317,7 +3317,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
   或多写入器部署，为权威添加 Alembic 迁移
   模式，保留一个非空的受控产品配置版本，并制作
   等内容并发检查更新插入幂等返回<code>unchanged</code>。</li>
-<li><strong>接受：</strong> 边界文件指出了投影的非权威性
+<li><strong>接受：</strong> 边界文件指出投影的非权威性
   限制。权威商店测试验证所有合同 04/05 约束，
   租赁字段、产品版本追溯、并发等内容
   更新插入返回<code>unchanged</code>；不同的内容必须在没有突变的情况下失败。</li>
@@ -3334,37 +3334,37 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tbody>
 <tr>
 <td>无token非环回服务</td>
-<td>已关闭（056e712）。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
+<td>已关闭 (056e712)。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
 <td>没有令牌的非环回绑定启动失败，或者需要记录高严重性警告的显式开发覆盖。测试环回/dev、非环回/拒绝和非环回/显式覆盖路径。</td>
 </tr>
 <tr>
 <td>经过身份验证的日志端点公开异常消息/路径</td>
-<td>已关闭（056e712）。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
+<td>已关闭 (056e712)。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
 <td>从查看器记录中排除回溯/绝对路径或将端点限制为更高的特权角色。测试引发的异常是否不会在 <code>/logs</code> 中产生回溯或绝对路径。</td>
 </tr>
 <tr>
 <td>会话交换缺乏限制，会话存储没有扫描/上限</td>
-<td>已关闭（056e712）。</td>
+<td>已关闭 (056e712)。</td>
 <td>添加有界的每个源失败尝试限制和有界会话存储以及到期清除；文件 M1 限制。测试重复失败、冷却后成功交换、过期清理和容量行为。</td>
 </tr>
 <tr>
 <td>光标错误和过滤器绑定</td>
-<td>已关闭（056e712）。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
+<td>已关闭 (056e712)。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
 <td>将格式错误的光标映射到 <code>400 INVALID_CURSOR</code>；将游标绑定到规范过滤器哈希。测试必须拒绝没有 500 的格式错误/不匹配的游标，并为匹配的过滤器保留稳定的分页。</td>
 </tr>
 <tr>
 <td>如果文件仍然存在，则可以对已清除的媒体进行流式传输</td>
-<td>已关闭（056e712）。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
+<td>已关闭 (056e712)。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
 <td>首先检查 <code>PURGED</code> 并始终返回 <code>410 MEDIA_PURGED</code>。使用幸存的文件添加测试。</td>
 </tr>
 <tr>
 <td>非 ASCII 承载标头可以从 <code>compare_digest</code></td>
-<td>引发已关闭（056e712）。</td>
+<td>引发已关闭 (056e712)。</td>
 <td>将比较类型/编码失败视为无效凭证并返回 <code>401</code>。添加具有非 ASCII 授权输入的 API 测试。</td>
 </tr>
 <tr>
 <td><code>/api</code> 可能会落入 SPA</td>
-<td>已关闭（056e712）。守卫仅匹配<code>api/</code>。</td>
+<td>已关闭 (056e712)。守卫仅匹配<code>api/</code>。</td>
 <td>在 SPA 回退之前保留 <code>api</code> 和 <code>api/</code>。测试 <code>/api</code>、<code>/api/unknown</code> 和正常的客户端路由。</td>
 </tr>
 <tr>
@@ -3379,7 +3379,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </tr>
 <tr>
 <td>缺少 CSP</td>
-<td>已关闭（056e712）。</td>
+<td>已关闭 (056e712)。</td>
 <td>添加与本地服务的仪表板兼容的最低权限 CSP 并测试响应标头。</td>
 </tr>
 <tr>
@@ -3453,16 +3453,16 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tr>
 <td>Design 14 描述了一个权威的可操作 SQLite 存储，而不是 M1 可重建投影</td>
 <td>已关闭 (5488804)。</td>
-<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作联系起来。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
+<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
 </tr>
 <tr>
-<td>附录 原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
+<td>附录原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
 <td>已关闭 (5488804)。</td>
 <td>使 <code>reason_codes.py</code> 成为显式规范列表或从中生成术语表。测试必须比较所有声明的静态代码和记录的参数化前缀。</td>
 </tr>
 <tr>
 <td>承保范围索赔</td>
-<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍需要基于来源的验证。</td>
+<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍然需要基于来源的验证。</td>
 <td>将数字声明替换为带日期的命令/输出参考，或更新来自一个 CI 工件的所有源。</td>
 </tr>
 <tr>

@@ -770,7 +770,7 @@
   <a href="#86-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.6 配置
+        8.6 Configuration
       
     </span>
   </a>
@@ -1549,7 +1549,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3103,7 +3103,7 @@
   <a href="#86-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.6 配置
+        8.6 Configuration
       
     </span>
   </a>
@@ -3213,7 +3213,7 @@
 </code></pre></div>
 <p>决胜局使重赛更加稳定；它们并不能使多种看似合理的产品变得安全。如果多个候选者通过了可检查性约束，则生产行为为<code>NG</code>，除非经过验证的跟踪器将一个候选者准确地分配给当前窗口。</p>
 <h2 id="84-roi-generation">8.4 投资回报率的产生<a class="headerlink" href="#84-roi-generation" title="Permanent link">&para;</a></h2>
-<p>给定产品框 <code>(x1, y1, x2, y2)</code>，应用可配置的分数或像素边距，然后剪辑到 <code>[0, width] x [0, height]</code>。拒绝零面积、尺寸过小、过度裁剪或不可信的纵横比结果。记录两个盒子以及空间之间的仿射平移。</p>
+<p>给定产品框 <code>(x1, y1, x2, y2)</code>，应用可配置的分数或像素边距，然后剪辑到 <code>[0, width] x [0, height]</code>。拒绝零面积、尺寸过小、过度剪裁或令人难以置信的纵横比结果。记录两个盒子以及空间之间的仿射平移。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">expanded</span> <span class="o">=</span> <span class="n">expand</span><span class="p">(</span><span class="n">product_box</span><span class="p">,</span> <span class="n">margin_x</span><span class="p">,</span> <span class="n">margin_y</span><span class="p">)</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">clipped</span> <span class="o">=</span> <span class="n">clip</span><span class="p">(</span><span class="n">expanded</span><span class="p">,</span> <span class="n">frame_width</span><span class="p">,</span> <span class="n">frame_height</span><span class="p">)</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">if</span> <span class="n">clipped</span><span class="o">.</span><span class="n">area</span> <span class="o">&lt;</span> <span class="n">min_roi_area</span> <span class="ow">or</span> <span class="n">clipped_retention</span><span class="p">(</span><span class="n">expanded</span><span class="p">,</span> <span class="n">clipped</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_retention</span><span class="p">:</span>
@@ -3224,7 +3224,7 @@
 <p>将 ROI 检测映射回全帧会将 ROI 偏移添加到两个角。如果使用调整大小/信箱预处理，请在应用该偏移之前反转填充和缩放。保留足够的变换元数据以准确地再现覆盖。</p>
 <h2 id="85-optional-normalization">8.5 可选的标准化<a class="headerlink" href="#85-optional-normalization" title="Permanent link">&para;</a></h2>
 <p>默认情况下禁用方向或透视标准化。仅当地标或分割边界可靠且验证表明 NG 召回率有所提高且不隐藏缺陷时才启用它。存储正变换和逆变换矩阵。失败的标准化会使该框架无效，而不是默默地退回到几何上不同的推理路径。</p>
-<h2 id="86-configuration">8.6 配置<a class="headerlink" href="#86-configuration" title="Permanent link">&para;</a></h2>
+<h2 id="86-configuration">8.6 Configuration<a class="headerlink" href="#86-configuration" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">product_detection</span><span class="p">:</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">model_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">product-yolo-1.0.0</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">allowed_classes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">product</span><span class="p p-Indicator">]</span>

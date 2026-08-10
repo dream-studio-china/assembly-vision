@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -2830,7 +2830,7 @@
   <a href="#21-lighting-is-the-dominant-factor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1 照明是主导因素
+        2.1 Lighting is the dominant factor
       
     </span>
   </a>
@@ -2874,7 +2874,7 @@
   <a href="#25-camera-mounting-angle-and-stationarity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.5 相机安装、角度和平稳性
+        2.5 Camera mounting, angle, and stationarity
       
     </span>
   </a>
@@ -2974,7 +2974,7 @@
   <a href="#41-how-many-images-do-people-actually-need" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1 人们实际需要多少图像？
+        4.1 How many images do people actually need?
       
     </span>
   </a>
@@ -3260,7 +3260,7 @@
   <a href="#21-lighting-is-the-dominant-factor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1 照明是主导因素
+        2.1 Lighting is the dominant factor
       
     </span>
   </a>
@@ -3304,7 +3304,7 @@
   <a href="#25-camera-mounting-angle-and-stationarity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.5 相机安装、角度和平稳性
+        2.5 Camera mounting, angle, and stationarity
       
     </span>
   </a>
@@ -3404,7 +3404,7 @@
   <a href="#41-how-many-images-do-people-actually-need" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.1 人们实际需要多少图像？
+        4.1 How many images do people actually need?
       
     </span>
   </a>
@@ -3563,7 +3563,7 @@
 <p>本文档提供了 AssemblyVision (a) 固定线检测的成像规范和最佳实践，(b) 标准数据工作流程（收集 SOP、标签标准、分割、质量门），以及 (c) 有关培训成本、数据集大小和常见故障的从业者证据 - 以及直接映射到 AssemblyVision 设计集的实用检查表。</p>
 <hr />
 <h2 id="2-imaging-specifications-and-best-practices-for-fixed-line-inspection">2. 固定线路检测的成像规范和最佳实践<a class="headerlink" href="#2-imaging-specifications-and-best-practices-for-fixed-line-inspection" title="Permanent link">&para;</a></h2>
-<h3 id="21-lighting-is-the-dominant-factor">2.1 照明是主导因素<a class="headerlink" href="#21-lighting-is-the-dominant-factor" title="Permanent link">&para;</a></h3>
+<h3 id="21-lighting-is-the-dominant-factor">2.1 Lighting is the dominant factor<a class="headerlink" href="#21-lighting-is-the-dominant-factor" title="Permanent link">&para;</a></h3>
 <p>供应商与工程界的共识是明确的：<strong>“照明不佳是机器视觉性能不佳的最常见原因。即使是复杂的相机和软件也无法弥补照明不足。”</strong>良好的照明可以最大限度地提高感兴趣特征的对比度，并最大限度地减少其他地方的对比度，并且它必须<strong>一致</strong>，以便正常零件变化不会改变图像对比度（https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision/the-importance-of-lighting）。</p>
 <h3 id="22-lighting-families-and-when-to-use-them">2.2 照明系列（以及何时使用它们）<a class="headerlink" href="#22-lighting-families-and-when-to-use-them" title="Permanent link">&para;</a></h3>
 <table>
@@ -3622,7 +3622,7 @@
 <td><strong>多光谱/红外</strong></td>
 <td>特定颜色或红外 LED</td>
 <td>抑制繁忙的背景或色彩噪声；在具有挑战性的环境光下工作</td>
-<td>如果可见光反射不可避免，则可能有后备方案</td>
+<td>如果可见光反射不可避免，则可能有后退方案</td>
 </tr>
 </tbody>
 </table>
@@ -3640,7 +3640,7 @@
 <li><strong>ISO/增益：</strong> 保持模拟增益/ISO 较低，以最大限度地减少噪音；添加光而不是增益。 （一般成像工程实践；不依赖于单个引用 - 视为来自上述相同 MV 文献的标准知识。）</li>
 <li><strong>过度曝光/泛光：</strong>镜面高光会使传感器饱和并冲掉特征边缘。直方图检查（例如，最大平均亮度限制）属于质量门（AssemblyVision 已在 <code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code> 中指定最小/最大平均亮度和拉普拉斯方差）。</li>
 </ul>
-<h3 id="25-camera-mounting-angle-and-stationarity">2.5 相机安装、角度和平稳性<a class="headerlink" href="#25-camera-mounting-angle-and-stationarity" title="Permanent link">&para;</a></h3>
+<h3 id="25-camera-mounting-angle-and-stationarity">2.5 Camera mounting, angle, and stationarity<a class="headerlink" href="#25-camera-mounting-angle-and-stationarity" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>固定、隔振安装。</strong> 工程指南的环境部分将振动、温度变化和污染物标记为破坏视觉系统的首要环境风险 (https://www.cognex.com/en/tools-and-resources/resource-center/machine-vision-considerations-implementation)。</li>
 <li><strong>角度：</strong> 单个固定角度是正确的设计（AssemblyVision <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 指出约 45 度的角度变化是需要重新验证的域变化）。近乎垂直的自上而下视图最大限度地减少了透视失真并使 ROI 坐标稳定。</li>
@@ -3695,7 +3695,7 @@
 </ul>
 <hr />
 <h2 id="4-training-cost-and-practitioner-experience">4. 培训费用和从业人员经验<a class="headerlink" href="#4-training-cost-and-practitioner-experience" title="Permanent link">&para;</a></h2>
-<h3 id="41-how-many-images-do-people-actually-need">4.1 人们实际需要多少图像？<a class="headerlink" href="#41-how-many-images-do-people-actually-need" title="Permanent link">&para;</a></h3>
+<h3 id="41-how-many-images-do-people-actually-need">4.1 How many images do people actually need?<a class="headerlink" href="#41-how-many-images-do-people-actually-need" title="Permanent link">&para;</a></h3>
 <p>公共指导故意广泛，因为它取决于任务难度：</p>
 <ul>
 <li><strong>非常简单的单类检测（固定对象的存在/计数）：</strong> Roboflow 的缺失项目教程建议 <strong>从一个对象类的 25-50 个图像开始</strong> (https://blog.roboflow.com/missing-item-inspection/)。</li>
@@ -3704,7 +3704,7 @@
 </ul>
 <h3 id="42-training-time-and-compute">4.2 训练时间和计算<a class="headerlink" href="#42-training-time-and-compute" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Ultralytics 参考时间表：</strong> 从 <strong>300 epoch 左右开始</strong>；如果早期过度拟合则减少，如果没有过度拟合则延长至 600-1200+；使用早期停止（耐心）、预训练权重（迁移学习）、混合精度 (AMP) 和子集训练进行迭代 (https://docs.ultralytics.com/guides/model-training-tips/)。</li>
+<li><strong>Ultralytics 参考时间表：</strong> 从 <strong>300 epoch 左右开始</strong>；如果早期过度拟合则减少，如果没有则延长至 600-1200+；使用早期停止（耐心）、预训练权重（迁移学习）、混合精度 (AMP) 和子集训练进行迭代 (https://docs.ultralytics.com/guides/model-training-tips/)。</li>
 <li><strong>托管训练：</strong> Roboflow Train 默认为 100 个 epoch，支持从 COCO 检查点进行训练，NAS 自动训练 10-100 个候选模型（https://blog.roboflow.com/roboflow-train-3-0/）。 Roboflow 的 PCB 演练报告称，对于分叉数据集“训练需要几个小时”(https://blog.roboflow.com/pcb-defect-detection/)。</li>
 <li><strong>从业者的估计（明确标记，不是来自单个可引用的基准）：</strong></li>
 <li>单个现代消费者/数据中心 GPU 上的 <strong>数百个图像</strong> 上的纳米/小型 YOLO 通常在 <strong>分钟到约 1 小时</strong>内收敛，持续 100-300 个周期。 Roboflow 的“几个小时”是托管管道的安全规划数字。</li>
@@ -3782,7 +3782,7 @@
 <li>在最终确定产品窗口策略之前确认触发器可用性（光电眼/PLC/条形码定时）和稳定性。</li>
 <li>确定从设计默认值中选择的质量门阈值（拉普拉斯方差、亮度）对于真实相机和照明是否正确。</li>
 <li>建立客户接受样本量和二项式置信界限，以进行 NG 召回，观察到的遗漏为零或很少（根据 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 第 19.13 节）。</li>
-<li>在团队实际训练硬件上验证 GPU/CPU 训练时间；此数据集大小的云 GPU 小时成本预计很小，但此处未进行测量。</li>
+<li>在团队实际训练硬件上验证 GPU/CPU 训练时间；此数据集大小的云 GPU 小时成本预计会很小，但此处未进行测量。</li>
 </ul>
 
 

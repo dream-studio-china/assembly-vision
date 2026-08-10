@@ -1127,7 +1127,7 @@
   <a href="#1612-accessibility-performance-and-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        16.12 可访问性、性能和安全性
+        16.12 Accessibility, Performance, and Security
       
     </span>
   </a>
@@ -1682,7 +1682,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3369,7 +3369,7 @@
   <a href="#1612-accessibility-performance-and-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        16.12 可访问性、性能和安全性
+        16.12 Accessibility, Performance, and Security
       
     </span>
   </a>
@@ -3440,7 +3440,7 @@
   
 
 
-<h1 id="16-edge-dashboard">16. 边缘仪表板<a class="headerlink" href="#16-edge-dashboard" title="Permanent link">&para;</a></h1>
+<h1 id="16-edge-dashboard">16. Edge Dashboard<a class="headerlink" href="#16-edge-dashboard" title="Permanent link">&para;</a></h1>
 <h2 id="161-purpose-and-users">16.1 目的和用户<a class="headerlink" href="#161-purpose-and-users" title="Permanent link">&para;</a></h2>
 <p>边缘仪表板是由本地边缘服务提供服务的 Vue 3 和 TypeScript Web 应用程序。它支持生产线操作员和维护人员，而无需参与检查决策路径。当浏览器关闭、仪表板崩溃或无法访问中央服务器时，检查会继续进行。</p>
 <p>仪表板使用 <a href="../15-rest-api-and-events/">REST API and Events</a> 中的边缘合约以及从 <a href="../14-data-model-and-database/">Data Model and Database</a> 生成的类型。 Monorepo 放置在 <a href="../18-monorepo-and-code-organization/">Monorepo and Code Organization</a> 中定义。</p>
@@ -3604,7 +3604,7 @@ Element Plus 组件区域设置通过 <code>el-config-provider</code>。该文�
 <ul>
 <li>不可变的身份和捕获时间戳。</li>
 <li>决策原因代码和每个组件的汇总证据。</li>
-<li>产品和组件检测覆盖，带有切换开关和可访问的组件列表。</li>
+<li>产品和组件检测叠加，带有切换开关和可访问的组件列表。</li>
 <li>仅当媒体存在时，关键帧、产品 ROI、带注释的图像和剪辑选项卡。</li>
 <li>帧质量指标和源/全帧坐标元数据。</li>
 <li>模型、规则和产品配置版本标识符。</li>
@@ -3613,7 +3613,7 @@ Element Plus 组件区域设置通过 <code>el-config-provider</code>。该文�
 <p>清除的媒体显示元数据和清除原因，而不是损坏的图像。视频使用范围请求并提供静态后备关键帧。</p>
 <h2 id="166-upload-queue">16.6 上传队列<a class="headerlink" href="#166-upload-queue" title="Permanent link">&para;</a></h2>
 <p>队列页面组 <code>PENDING</code>、<code>IN_PROGRESS</code>、<code>RETRY_WAIT</code>、<code>PERMANENT_FAILURE</code>、<code>CANCELLED</code> 和 <code>SUCCEEDED</code> 计数。默认行显示未完成的任务、下一次尝试、尝试计数、对象类型、检查链接、字节和已清理的错误代码。仪表板解释说，在页面未打开的情况下会继续重试。</p>
-<p>仅对重试/死信任务启用手动重试，需要确认和原因，并发送幂等密钥。它不会创建第二个任务。批量重试被推迟，直到操作证据表明有必要；无限制的批量重试可能会在中断后使中央服务器过载。</p>
+<p>手动重试仅针对重试/死信任务启用，需要确认和原因，并发送幂等密钥。它不会创建第二个任务。批量重试被推迟，直到操作证据表明有必要；无限制的批量重试可能会在中断后使中央服务器过载。</p>
 <h2 id="167-health-and-alerts">16.7 健康状况和警报<a class="headerlink" href="#167-health-and-alerts" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3695,11 +3695,11 @@ Element Plus 组件区域设置通过 <code>el-config-provider</code>。该文�
 </ul>
 <h2 id="1611-failure-loading-and-empty-states">16.11 失败、加载和空状态<a class="headerlink" href="#1611-failure-loading-and-empty-states" title="Permanent link">&para;</a></h2>
 <p>每个窗格都定义加载、无数据、陈旧数据、授权拒绝和服务错误状态。最后已知的状态可能会通过明确的“最后更新”时间戳保持可见；它看起来一定不是最新的。失败的命令保留表单输入和请求 ID。缺少预览不会使结果面板变为空白。 Service Worker 不得缓存经过身份验证的 API 响应；静态资产可以通过版本安全更新进行缓存，以实现本地恢复。</p>
-<h2 id="1612-accessibility-performance-and-security">16.12 可访问性、性能和安全性<a class="headerlink" href="#1612-accessibility-performance-and-security" title="Permanent link">&para;</a></h2>
+<h2 id="1612-accessibility-performance-and-security">16.12 Accessibility, Performance, and Security<a class="headerlink" href="#1612-accessibility-performance-and-security" title="Permanent link">&para;</a></h2>
 <ul>
 <li>键盘操作、焦点、对比度、标签、对话框、表格和非颜色状态指示器符合 WCAG 2.1 AA。</li>
 <li>仅虚拟化已证明较大的表；光标分页是第一个控件。</li>
-<li>延迟加载视频和高级查看器代码。保持初始实时屏幕资源对于目标边缘硬件而言足够小。</li>
+<li>延迟加载视频和高级查看器代码。保持初始实时屏幕资源对于目标边缘硬件来说足够小。</li>
 <li>清理文件名和日志文本，禁止原始 HTML，并使用限制性内容安全策略。</li>
 <li>在使用会话的地方使用安全、仅限 HTTP、同站点 cookie；保护突变免受 CSRF 的影响。</li>
 <li>不要在分析中放置令牌、条形码或媒体 URL。本地仪表板不应依赖于第三方 CDN。</li>
@@ -3712,7 +3712,7 @@ Element Plus 组件区域设置通过 <code>el-config-provider</code>。该文�
 <li>在不丢失最新结果的情况下协调 WebSocket 间隙。</li>
 <li>不打开模态即可看到 NG 原因和缺少的组件。</li>
 <li>边界框在调整大小和全屏模式下保持对齐。</li>
-<li>未授权控件不可用，服务器授权仍拒绝直接调用。</li>
+<li>未经授权的控件不可用，服务器授权仍然拒绝直接调用。</li>
 <li>实时视图在商定的工业显示分辨率和狭窄的维护设备上仍然可用。</li>
 </ul>
 <h2 id="1614-mvp-and-later-scope">16.14 MVP 及后续范围<a class="headerlink" href="#1614-mvp-and-later-scope" title="Permanent link">&para;</a></h2>

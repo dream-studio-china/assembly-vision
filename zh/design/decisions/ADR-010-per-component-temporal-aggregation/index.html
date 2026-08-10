@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -2920,7 +2920,7 @@
   <a href="#4-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.范围
+        4. Scope
       
     </span>
   </a>
@@ -3021,42 +3021,42 @@
 
 <h1 id="adr-010-per-component-temporal-aggregation">ADR-010：每个组件的时间聚合<a class="headerlink" href="#adr-010-per-component-temporal-aggregation" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
-<p>已接受</p>
+<p>Accepted</p>
 <h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
-<p>YOLO 产生每帧检测，而业务决策适用于一个物理产品。各个帧可能会模糊、被遮挡、曝光不良或显示不同的组件。整体产品多数投票可以将一贯缺失的组件隐藏在其他强大的框架后面，并且不表达每个所需规则项的证据。</p>
+<p>YOLO produces detections per frame, while the business decision applies to one physical product. Individual frames may be blurred, occluded, poorly exposed, or show different components. Whole-product majority voting can hide a consistently missing component behind otherwise strong frames and does not express evidence for each required rule item.</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>将框架分组到一个明确的物理产品检查窗口中，然后为每个所需组件独立地汇总证据。策略是版本化且可配置的，包括一个高置信度检测、多个中等置信度检测、相邻帧证据、最小可见区域、最低帧质量以及排除不可用帧。确定性规则引擎评估生成的每个组件状态。</p>
-<p>时间聚合不会提高底层 YOLO 模型的单帧精度。它通过跨框架结合证据来提高系统级的稳健性。不明确的产品边界、框架来源或多个产品会导致明确的不正常/中止路径，而不是混合证据。</p>
-<h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
-<p>这适用于实施实时/视频采集时。静态图像 MVP 无需时间聚合即可发出帧级证据。窗口机制可以使用硬件触发器、条形码事件、跟踪、进入/退出区域、时间限制或基于站点验证的传送带传感器集成。</p>
+<p>Group frames into an explicit physical-product inspection window, then aggregate evidence independently for each required component. Policies are versioned and configurable, including one high-confidence detection, multiple medium-confidence detections, adjacent-frame evidence, minimum visible area, minimum frame quality, and exclusion of unusable frames. The deterministic rule engine evaluates the resulting per-component states.</p>
+<p>Temporal aggregation does not increase the underlying YOLO model's single-frame accuracy. It increases system-level robustness by combining evidence across frames. Ambiguous product boundaries, frame provenance, or multiple products cause an explicit non-OK/aborted path rather than mixed evidence.</p>
+<h2 id="4-scope">4. Scope<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
+<p>This applies when live/video acquisition is implemented. The static-image MVP emits frame-level evidence without temporal aggregation. Window mechanisms may use hardware trigger, barcode event, tracking, entry/exit zones, time bounds, or conveyor sensor integration based on site validation.</p>
 <h2 id="5-consequences">5. 后果<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
 <h3 id="51-positive">5.1 正面<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>保留特定于组件的缺席证据和原因代码。</li>
-<li>降低对一帧不可用或短暂遮挡的敏感度。</li>
-<li>支持特定于产品的关键性和阈值。</li>
-<li>提供每个最终组件状态背后的可检查证据。</li>
+<li>Preserves component-specific absence evidence and reason codes.</li>
+<li>Reduces sensitivity to one unusable or transiently occluded frame.</li>
+<li>Supports product-specific criticality and thresholds.</li>
+<li>Provides inspectable evidence behind each final component state.</li>
 </ul>
 <h3 id="52-negative-and-trade-offs">5.2 负面和权衡<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
-<li>正确的产品窗口边界对于防止框架混合至关重要。</li>
-<li>需要更多配置、状态、延迟和测试用例。</li>
-<li>宽松的证据规则可以将一次错误检测转变为错误的 OK。</li>
-<li>相关的相邻帧不提供独立的统计证据。</li>
+<li>Correct product-window boundaries become critical to prevent frame mixing.</li>
+<li>More configuration, state, latency, and test cases are required.</li>
+<li>Permissive evidence rules can turn one false detection into a false OK.</li>
+<li>Correlated adjacent frames do not provide independent statistical evidence.</li>
 </ul>
 <h2 id="6-alternatives">6.替代方案<a class="headerlink" href="#6-alternatives" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>单个最佳帧：</strong> 由于对模糊、遮挡和计时不必要地敏感而被拒绝。</li>
-<li><strong>整个产品多数投票：</strong> 被拒绝，因为它没有评估每个必需的组件。</li>
-<li><strong>平均所有置信值：</strong> 被拒绝，因为缺少检测、不可用的帧、可见性和相关帧需要显式语义。</li>
-<li><strong>存在的任何检测手段：</strong>仅允许作为具有足够高阈值的有意验证的每个组件策略，而不是作为通用规则。</li>
-<li><strong>跟踪模型作为最终决策：</strong> 可能支持窗口，但不会取代组件规则和证据聚合。</li>
+<li><strong>Single best frame:</strong> rejected as unnecessarily sensitive to blur, occlusion, and timing.</li>
+<li><strong>Whole-product majority voting:</strong> rejected because it does not evaluate each required component.</li>
+<li><strong>Average all confidence values:</strong> rejected because missing detections, unusable frames, visibility, and correlated frames require explicit semantics.</li>
+<li><strong>Any detection means present:</strong> allowed only as a deliberately validated per-component policy with a sufficiently high threshold, not as a universal rule.</li>
+<li><strong>Tracking model as final decision:</strong> may support windowing but does not replace component rules and evidence aggregation.</li>
 </ul>
 <h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>产品窗口信号、传送带速度、产品间距和最大重叠产品。</li>
-<li>来自验证数据的每个组件阈值、邻接/质量策略和延迟预算。</li>
-<li>内部<code>UNCERTAIN</code>细节是否暴露给操作员和API；其业务成果仍为<code>NG</code>。</li>
+<li>Product-window signal, conveyor speed, product spacing, and maximum overlapping products.</li>
+<li>Per-component thresholds, adjacency/quality policies, and latency budget from validation data.</li>
+<li>Whether internal <code>UNCERTAIN</code> detail is exposed to operators and APIs; its business result remains <code>NG</code>.</li>
 </ul>
 <h2 id="8-links">8. 链接<a class="headerlink" href="#8-links" title="Permanent link">&para;</a></h2>
 <ul>

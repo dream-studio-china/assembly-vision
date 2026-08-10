@@ -1560,7 +1560,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3196,7 +3196,7 @@
   
 
 
-<h1 id="12-local-storage-and-retention">12. 本地存储和保留<a class="headerlink" href="#12-local-storage-and-retention" title="Permanent link">&para;</a></h1>
+<h1 id="12-local-storage-and-retention">12. Local Storage and Retention<a class="headerlink" href="#12-local-storage-and-retention" title="Permanent link">&para;</a></h1>
 <h2 id="121-purpose">12.1 目的<a class="headerlink" href="#121-purpose" title="Permanent link">&para;</a></h2>
 <p>边缘客户端持久存储检查、证据元数据、媒体引用、配置版本和持久上传队列。存储支持在网络或中央服务器中断期间进行持续检查。上传行为在<a href="../13-upload-and-synchronization/">upload and synchronization</a>中定义。</p>
 <h2 id="122-scope">12.2 范围<a class="headerlink" href="#122-scope" title="Permanent link">&para;</a></h2>
@@ -3294,7 +3294,7 @@
 <h2 id="126-data-retention-lifecycle">12.6 数据保留生命周期<a class="headerlink" href="#126-data-retention-lifecycle" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     [*] --&gt; Staged
-    Staged --&gt; Committed:原子文件和数据库提交
+    Staged --&gt; Committed:Atomic file and database commit
     Staged --&gt; Quarantined:恢复发现不完整的工件
     Committed --&gt; UploadPending:需要上传
     Committed --&gt; RetentionEligible:无需上传
@@ -3338,8 +3338,8 @@
 </ul>
 <h2 id="1210-open-questions-and-validation-required">12.10 开放问题和需要验证<a class="headerlink" href="#1210-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>就每种媒体类型、日志和元数据的确切保留期限和配额达成一致。</li>
-<li>测量每日检查量、帧尺寸、剪辑尺寸和停机时间来调整磁盘大小。</li>
+<li>就每种媒体类型、日志和元数据的确切保留期和配额达成一致。</li>
+<li>测量每日检查量、帧大小、剪辑大小和中断持续时间来调整磁盘大小。</li>
 <li>确认完整视频或滚动视频是否符合法律和操作要求。</li>
 <li>定义静态加密、备份和安全删除要求。</li>
 <li>当磁盘容量达到受保护数据停止阈值时，确认可接受的行为。</li>
@@ -3369,7 +3369,7 @@
   空闲字节和空闲索引节点压力模式。设备状态公开模式，
   阈值、清理运行状况/指标和稳定警报（<code>DISK_WARNING</code>、
   <code>DISK_CRITICAL</code>、<code>DISK_STOP</code>、<code>STORAGE_WRITE_FAULT</code>、<code>CLEANUP_FAULT</code>）。在
-  停止压力或写入故障时，运行时停止接受新产品并且
+  停止压力或写入故障时，运行时停止接受新产品，并且
   报告<code>inspection_ready=false</code>；它永远不会返回未记录的 <code>OK</code>。的
   仪表板呈现服务器权威状态而不是固定阈值。</li>
 <li><strong>启动完整性 (E2d)</strong>：<code>scan_storage_integrity</code> 验证预计的

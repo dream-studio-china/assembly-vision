@@ -27,7 +27,7 @@
     
     
       
-        <title>PR-022 评论：上传弹性 (E3) - AssemblyVision</title>
+        <title>PR-022 Review: Upload Resilience (E3) - AssemblyVision</title>
       
     
     
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PR-022 评论：上传弹性 (E3)
+              PR-022 Review: Upload Resilience (E3)
             
           </span>
         </div>
@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -2998,7 +2998,7 @@
   <a href="#5-required-regression-matrix-before-re-review" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 重新审核前所需的回归矩阵
+        5. Required Regression Matrix Before Re-review
       
     </span>
   </a>
@@ -3036,7 +3036,7 @@
   
 
 
-<h1 id="pr-022-review-upload-resilience-e3">PR-022 评论：上传弹性 (E3)<a class="headerlink" href="#pr-022-review-upload-resilience-e3" title="Permanent link">&para;</a></h1>
+<h1 id="pr-022-review-upload-resilience-e3">PR-022 Review: Upload Resilience (E3)<a class="headerlink" href="#pr-022-review-upload-resilience-e3" title="Permanent link">&para;</a></h1>
 <h2 id="1-review-decision">1. 审查决定<a class="headerlink" href="#1-review-decision" title="Permanent link">&para;</a></h2>
 <p><strong>状态：已解决</strong></p>
 <p>PR #22 建立了正确的 E3 结构：速率限制器、进程本地
@@ -3094,7 +3094,7 @@
 真实：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>tokens &lt;= rate * 1 second &lt; amount
 </code></pre></div>
-<p>调度程序在调用<code>acquire()</code>之前就已经租用了该任务。那么它
+<p>调度程序在调用 <code>acquire()</code> 之前已经租用了该任务。那么它
 在 250 毫秒内无限循环休眠并且从不调用接收器或写入任务
 过渡。例如，1 Mbps 的 8 MiB 媒体任务有 125,000 字节的存储桶
 容量并永久卡住。工人可以保留过去的任务租约
@@ -3149,7 +3149,7 @@
 比原始媒体字节加上 JSON 元数据大约三分之一。的
 然后，在原始字节等待之后，将完整的信封在一次写入中传递给 <code>httpx</code>。
 因此，实际网络上配置的带宽最大值超出了
-有效负载和<code>upload_bytes_sent</code>度量报告更小的、不同的单位。</p>
+有效负载和 <code>upload_bytes_sent</code> 指标报告更小的、不同的单位。</p>
 <p>这与 E3a 将限制器应用于网络有效负载的要求相矛盾
 字节，并使容量规划/可观察性在中断期间产生误导。</p>
 <p><strong>所需的解决方案</strong></p>
@@ -3239,7 +3239,7 @@
 <thead>
 <tr>
 <th>寻找</th>
-<th>严重程度</th>
+<th>严重性</th>
 <th>分辨率</th>
 <th>测试</th>
 </tr>
@@ -3314,7 +3314,7 @@
 <li>配置示例记录了所有支持的 E3 环境/设置
   值并明确将分块标记为推迟到中央合同冻结。</li>
 </ul>
-<h2 id="5-required-regression-matrix-before-re-review">5. 重新审核前所需的回归矩阵<a class="headerlink" href="#5-required-regression-matrix-before-re-review" title="Permanent link">&para;</a></h2>
+<h2 id="5-required-regression-matrix-before-re-review">5. Required Regression Matrix Before Re-review<a class="headerlink" href="#5-required-regression-matrix-before-re-review" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3341,7 +3341,7 @@
 </tr>
 <tr>
 <td>重试 CAS</td>
-<td>调度程序/操作员竞赛和两个操作员竞赛产生一个权威转换；不合格/未知的情况不会发生变异。</td>
+<td>调度程序/操作员竞争和两个操作员竞争产生一个权威转换；不合格/未知的情况不会发生变异。</td>
 </tr>
 <tr>
 <td>同步和保留</td>

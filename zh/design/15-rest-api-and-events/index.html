@@ -934,7 +934,7 @@
   <a href="#1521-authentication-and-authorization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.2.1 认证和授权
+        15.2.1 Authentication and Authorization
       
     </span>
   </a>
@@ -1035,6 +1035,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1536-confidence-drift-environment-change-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.6 置信度漂移（环境变化诊断）
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1100,7 +1111,7 @@
   <a href="#1545-dashboards-reports-users-and-audit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.4.5 仪表板、报告、用户和审计
+        15.4.5 Dashboards, Reports, Users, and Audit
       
     </span>
   </a>
@@ -1688,7 +1699,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3210,7 +3221,7 @@
   <a href="#1521-authentication-and-authorization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.2.1 认证和授权
+        15.2.1 Authentication and Authorization
       
     </span>
   </a>
@@ -3311,6 +3322,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1536-confidence-drift-environment-change-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.6 置信度漂移（环境变化诊断）
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3376,7 +3398,7 @@
   <a href="#1545-dashboards-reports-users-and-audit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.4.5 仪表板、报告、用户和审计
+        15.4.5 Dashboards, Reports, Users, and Audit
       
     </span>
   </a>
@@ -3458,7 +3480,7 @@
 <p>模式在 <a href="../14-data-model-and-database/">Data Model and Database</a> 中定义。 UI 消费者在 <a href="../16-edge-dashboard/">Edge Dashboard</a> 和 <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a> 中描述。</p>
 <p>所有 JSON 均使用 UTF-8、snake_case 字段、ISO 8601 UTC 时间戳、UUID 字符串和 <code>application/problem+json</code> 错误。问题响应包括<code>type</code>、<code>title</code>、<code>status</code>、<code>detail</code>、<code>code</code>、<code>request_id</code>和可选字段<code>errors</code>。</p>
 <h2 id="152-common-behavior">15.2 常见行为<a class="headerlink" href="#152-common-behavior" title="Permanent link">&para;</a></h2>
-<h3 id="1521-authentication-and-authorization">15.2.1 认证和授权<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
+<h3 id="1521-authentication-and-authorization">15.2.1 Authentication and Authorization<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Edge UI 请求源自本地管理网络。 MVP 可以使用本地操作员会话，但改变路由需要 <code>operator</code> 或 <code>edge_admin</code>；只读健康状况被故意限制。不要将 localhost 视为身份验证。一个例外是审查提交 (<code>POST /api/v1/inspections/{id}/reviews</code>)，它是根据 ADR-016 通过现有查看者凭证有意公开的，直到存在边缘角色模型。</li>
 <li>设备到中心的调用使用相互验证的 TLS 或绑定到 <code>device_id</code> 的短期设备凭据。</li>
@@ -3505,7 +3527,7 @@
 </tr>
 <tr>
 <td><code>GET /api/v1/device/status</code></td>
-<td>完整的设备、磁盘、网络和队列状态。</td>
+<td>完整的设备、磁盘、网络和队列状态。包括运行状况视图的主机系统指标：CPU 计数、1 分钟平均负载、内存总/可用字节以及存储卷总/可用字节。平台上不可用的指标值是<code>null</code>，绝不是捏造的。</td>
 <td>无 / <code>DeviceStatus</code></td>
 <td><code>503 STATUS_UNAVAILABLE</code></td>
 <td>安全获取</td>
@@ -3734,7 +3756,7 @@
 <tr>
 <td><code>PUT /api/v1/configuration/local-overrides</code></td>
 <td>替换允许的站点本地覆盖。</td>
-<td><code>If-Match</code>、<code>LocalOverrides</code> / 新修订版</td>
+<td><code>If-Match</code>、<code>LocalOverrides</code> / 新修订</td>
 <td><code>400 INVALID_CONFIG</code>、<code>403 MANAGED_FIELD</code>、<code>412 REVISION_MISMATCH</code></td>
 <td>幂等替代</td>
 <td>-</td>
@@ -3795,6 +3817,46 @@
 <td>确定性</td>
 <td>-</td>
 <td>R + 开发标志</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1536-confidence-drift-environment-change-diagnostics">15.3.6 置信度漂移（环境变化诊断）<a class="headerlink" href="#1536-confidence-drift-environment-change-diagnostics" title="Permanent link">&para;</a></h3>
+<p><code>GET /api/v1/statistics/confidence-drift</code> 分析检测置信度
+一种固定产品、规则、产品检测器版本、组件检测器下的时间
+版本，以及该设备上的聚合策略版本。这可以防止释放
+或政策转变不再表现为收购环境的变化
+（传送带、相机焦距/角度、照明）。</p>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>置信度指标</td>
+<td>每个组件<code>best_confidence</code>按正<code>detection_count</code>加权（相当于按总检测计数对整个检查进行加权）；证据级别 <code>median</code> 被报告为可靠的参考。只有具有记录的置信度和至少一次检测的证据行才会起作用。</td>
+</tr>
+<tr>
+<td>期间</td>
+<td><code>today</code> = <code>[local-today 00:00, now)</code>、<code>yesterday</code> = <code>[local-yesterday 00:00, local-today 00:00)</code>、<code>previous_7d</code> = <code>[local-today 00:00 - 7 days, local-today 00:00)</code>（包括昨天）、<code>previous_30d</code> = <code>[local-today 00:00 - 30 days, local-today 00:00)</code>（包括 7 天窗口）。日期边界遵循 <code>tz_offset_minutes</code> 指定的运营商本地时区（默认 UTC）。桶半开<code>[from, to)</code>。</td>
+</tr>
+<tr>
+<td>比较</td>
+<td><code>today_vs_yesterday</code>、<code>today_vs_previous_7d</code> 和 <code>today_vs_previous_30d</code> 报告加权平均增量、相对百分比变化以及两个证据计数。</td>
+</tr>
+<tr>
+<td>组件</td>
+<td>今天与前 7 天基线相比的每个成分加权平均值，按降幅最大的在前排序；基线中缺少的组件带有<code>baseline_weighted_mean = null</code>（基线证据不足，绝不是捏造的零）。</td>
+</tr>
+<tr>
+<td>评估</td>
+<td>相对变化与前 7 天平均值的启发式标签：<code>&lt; 2 %</code> 稳定，<code>2–5 %</code> 较小，<code>&gt; 5 %</code> 明显，有下降/上升方向，或 <code>insufficient_data</code>（当任一窗口没有置信证据时）。该标签仅用于决策支持，从不声称根本原因或准确性值；持续下降会提示操作员验证帧质量和媒体。</td>
+</tr>
+<tr>
+<td>过滤器</td>
+<td>必需的 <code>product_code</code>、<code>rule_version_id</code>、<code>product_model_version_id</code>、<code>component_model_version_id</code> 和 <code>aggregation_policy_version</code> 定义可比较范围。可选的<code>component_code</code>缩小了范围。 <code>tz_offset_minutes</code> 绑定到 <code>[-840, 840]</code>（<code>422</code> 之外）；所有验证错误都使用 <code>application/problem+json</code>。</td>
 </tr>
 </tbody>
 </table>
@@ -4152,7 +4214,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="1545-dashboards-reports-users-and-audit">15.4.5 仪表板、报告、用户和审计<a class="headerlink" href="#1545-dashboards-reports-users-and-audit" title="Permanent link">&para;</a></h3>
+<h3 id="1545-dashboards-reports-users-and-audit">15.4.5 Dashboards, Reports, Users, and Audit<a class="headerlink" href="#1545-dashboards-reports-users-and-audit" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4227,7 +4289,7 @@
 <td><code>400 INVALID_FILTER</code></td>
 <td>安全获取</td>
 <td>光标</td>
-<td>O/审计师</td>
+<td>O/审计员</td>
 </tr>
 </tbody>
 </table>

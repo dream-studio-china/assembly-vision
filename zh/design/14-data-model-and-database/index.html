@@ -905,7 +905,7 @@
   <a href="#143-canonical-pydantic-2-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.3 规范 Pydantic 2 模型
+        14.3 Canonical Pydantic 2 Models
       
     </span>
   </a>
@@ -1610,7 +1610,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3131,7 +3131,7 @@
   <a href="#143-canonical-pydantic-2-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.3 规范 Pydantic 2 模型
+        14.3 Canonical Pydantic 2 Models
       
     </span>
   </a>
@@ -3354,7 +3354,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="143-canonical-pydantic-2-models">14.3 规范 Pydantic 2 模型<a class="headerlink" href="#143-canonical-pydantic-2-models" title="Permanent link">&para;</a></h2>
+<h2 id="143-canonical-pydantic-2-models">14.3 Canonical Pydantic 2 Models<a class="headerlink" href="#143-canonical-pydantic-2-models" title="Permanent link">&para;</a></h2>
 <p>这些传输/域模型独立于 SQLAlchemy 持久性类。它们构成了 FastAPI 模式的真实来源。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
@@ -3798,7 +3798,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 <tr>
 <td><code>local_media_files</code></td>
-<td><code>id</code> PK、<code>inspection_id</code> FK 可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
+<td><code>id</code> PK、<code>inspection_id</code> FK可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
 <td>路径必须相对于配置的媒体根； <code>UNIQUE(relative_path)</code> 和 <code>UNIQUE(sha256, kind)</code> ，其中重复数据删除是安全的。</td>
 </tr>
 <tr>
@@ -3824,7 +3824,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>rule_installations</code></td>
 <td><code>rule_version_id</code> PK、产品版本 ID、文档 JSON、校验和、状态、安装/激活次数</td>
-<td>激活验证兼容的模型类和产品版本。</td>
+<td>激活验证兼容的型号类别和产品版本。</td>
 </tr>
 <tr>
 <td><code>review_records</code></td>
@@ -3842,7 +3842,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_device_events_time</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">device_events</span><span class="p">(</span><span class="n">occurred_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
 </code></pre></div>
 <h2 id="146-central-schema">14.6 中心模式<a class="headerlink" href="#146-central-schema" title="Permanent link">&para;</a></h2>
-<p>PostgreSQL 拥有租户隔离和全局历史记录。每个租户拥有的行都带有 <code>organization_id</code>；即使稍后启用行级安全性，存储库查询也必须对其进行范围限制。</p>
+<p>PostgreSQL 拥有租户隔离和全局历史记录。每个租户拥有的行都带有 <code>organization_id</code>；即使稍后启用行级安全性，存储库查询也必须限定其范围。</p>
 <table>
 <thead>
 <tr>
@@ -3940,10 +3940,10 @@ OpenAPI 中的模型。最小注册表是：</p>
     ORGANIZATION ||--o{ SITE :包含
     SITE ||--o{ PRODUCTION_LINE :包含
     PRODUCTION_LINE ||--o{ DEVICE :运作
-    ORGANIZATION ||--o{ USER :有
+    ORGANIZATION ||--o{ USER :has
     USER ||--o{ USER_ROLE :收到
-    ROLE ||--o{ USER_ROLE :补助金
-    ORGANIZATION ||--o{ PRODUCT :拥有
+    ROLE ||--o{ USER_ROLE :赠款
+    ORGANIZATION ||--o{ PRODUCT :owns
     PRODUCT ||--o{ PRODUCT_VERSION :版本
     PRODUCT_VERSION ||--o{ RULE_VERSION :检查者
     RULE ||--o{ RULE_VERSION :版本

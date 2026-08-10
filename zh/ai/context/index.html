@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -2964,7 +2964,7 @@
   <a href="#8-latest-session-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. 最新会议决定
+        8. Latest Session Decisions
       
     </span>
   </a>
@@ -2997,7 +2997,7 @@
   <a href="#83-edge-backend-layer-m1-pr-8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.3 边缘后端层（M1，PR #8）
+        8.3 Edge Backend Layer (M1, PR #8)
       
     </span>
   </a>
@@ -3203,7 +3203,7 @@
   仪表板主题、持久性修复和条形码标识/PLC 触发器
   合同（ADR-015）。 PR #31 到 #36 也被合并：边缘局部人类
   审查、问题模板、文档更新、开发人员手册、边缘网络
-  i18n 和 MkDocs 手动索引修复。目前尚不存在中央服务器代码；
+  i18n 和 MkDocs 手动索引修复。尚不存在中央服务器代码；
   <code>docs/tasks/C1-central-server-m1.md</code>明确了试点实施范围。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
@@ -3356,7 +3356,7 @@
   AI模型中的业务规则；边缘不能依赖于中央服务器；运行测试 + Ruff +
   我的Py；切勿在未执行的情况下声称测试已通过；永远不要声称 100% 准确。</li>
 </ul>
-<h2 id="8-latest-session-decisions">8. 最新会议决定<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
+<h2 id="8-latest-session-decisions">8. Latest Session Decisions<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 12 个 ADR +
   附录）来自<a href="../../source-brief/">docs/source-brief.md</a>（以前的<code>docs/doc-task.md</code>）。</li>
@@ -3381,7 +3381,7 @@
   框架； <code>assemblyvision verify</code> 报告 NG 召回/漏报/误报；和
   <code>scripts/e2e-demo.sh</code> 使用针对误报的硬门运行整个流程。</li>
 <li>数据集：<code>scripts/generate-synthetic-dataset.py</code>构建一个带标签的程序集数据集（确切地说
-  框、缺少组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
+  框、缺失组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
   将 Roboflow YOLOv8 导出转换为两阶段布局，删除通用 <code>missing*</code> 类，
   并且需要一个独立注释的完整产品类（组件盒的联合是
   被拒绝）。源 <code>test</code> 分割仅成为保留的验证集；从来没有
@@ -3411,69 +3411,69 @@
   到 <code>models/weights/</code> （gitignored），清单位于 <code>models/manifests/</code> 下。</li>
 </ul>
 <h2 id="81-review-driven-hardening-pr-003-follow-up">8.1 审查驱动的强化（PR-003 后续）<a class="headerlink" href="#81-review-driven-hardening-pr-003-follow-up" title="Permanent link">&para;</a></h2>
-<p>对 <code>feat/mvp</code> 运行时、训练和验证表面进行代码审查
-到在 <code>feat/mvp</code> 上提交和验证的强化通道（P0 项目全部
-固定的； <code>docs/reviews/PR-003-review.md</code> 中跟踪的剩余 P1/P2 项目）：</p>
+<p>A code review of the <code>feat/mvp</code> runtime, training, and verification surfaces led
+to a hardening pass that is committed and validated on <code>feat/mvp</code> (P0 items all
+fixed; remaining P1/P2 items tracked in <code>docs/reviews/PR-003-review.md</code>):</p>
 <ul>
-<li>规则引擎：<code>expected_count</code> 强制执行为精确计数，声明为空间
-  约束（<code>min_box_area_ratio</code>、<code>max_box_area_ratio</code>、<code>allowed_zone</code>）是
-  根据每次检测标准化 ROI 证据进行评估，空规则是
-  被拒绝和不受支持的规则架构版本或空模型兼容性
-  列表关闭失败。</li>
-<li>验证：不完整的证据（不确定状态、图像读取/推理/ROI/
-  规则失败）不再被评分为真阳性，并被跳过、失败，
-  并且不匹配的预期样本使 <code>verify</code> 退出非零。</li>
-<li>模型完整性：运行时验证工件大小和 SHA-256，验证
-  根据清单加载模型类映射，拒绝绝对工件 URI，
-  并将面向规则的模型版本绑定到经过验证的清单。</li>
-<li>检测器故障安全：输出格式错误（无效的类 ID、非有限置信度
-  或坐标、越界框、不良张量形状）转换为
-  <code>INFERENCE_ERROR</code> 在适配器边界，而不是转义或错误索引。</li>
-<li>配置：阈值必须是有限的，并且在<code>[0, 1]</code>中，布尔值是严格的，
-  <code>min_area_pixels</code>必须是正整数，未知的键将被拒绝
-  每个部分。</li>
-<li>训练数据：格式错误或超出范围的标签、零大小和超出框架
-  盒子是致命的；丢失的标签文件无法验证，除非已记录
-  <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
-  底片；成分制备导致 ROI 作物为负数；并发表
-  模型版本拒绝被不同的字节默默地覆盖。</li>
-<li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code> 和
-  <code>pytest</code> 现在覆盖整个存储库（边缘、包、训练、脚本
-  测试）通过 Makefile 和新的 <code>.github/workflows/ci.yml</code>。</li>
+<li>Rule engine: <code>expected_count</code> is enforced as an exact count, declared spatial
+  constraints (<code>min_box_area_ratio</code>, <code>max_box_area_ratio</code>, <code>allowed_zone</code>) are
+  evaluated against per-detection normalized ROI evidence, empty rules are
+  rejected, and unsupported rule schema versions or empty model-compatibility
+  lists fail closed.</li>
+<li>Verification: incomplete evidence (uncertain states, image-read/inference/ROI/
+  rule failures) is no longer scored as a true positive, and skipped, failed,
+  and unmatched expected samples make <code>verify</code> exit non-zero.</li>
+<li>Model integrity: runtime verifies artifact size and SHA-256, validates the
+  loaded model class map against the manifest, rejects absolute artifact URIs,
+  and binds the rule-facing model version to the verified manifest.</li>
+<li>Detector fail-safe: malformed output (invalid class IDs, non-finite confidence
+  or coordinates, out-of-bounds boxes, bad tensor shapes) is converted to
+  <code>INFERENCE_ERROR</code> at the adapter boundary instead of escaping or mis-indexing.</li>
+<li>Configuration: thresholds must be finite and in <code>[0, 1]</code>, booleans are strict,
+  <code>min_area_pixels</code> must be a positive integer, and unknown keys are rejected in
+  every section.</li>
+<li>Training data: malformed or out-of-range labels, zero-sized and out-of-frame
+  boxes are fatal; missing label files fail validation unless the recorded
+  <code>--allow-missing-labels</code> legacy opt-in is used; empty label files are valid
+  negatives; component preparation keeps negative ROI crops; and published
+  model versions refuse to be silently overwritten with different bytes.</li>
+<li>Quality gates: <code>ruff check .</code>, <code>ruff format --check .</code>, <code>mypy .</code>, and
+  <code>pytest</code> now cover the whole repository (edge, packages, training, scripts
+  tests) via the Makefile and a new <code>.github/workflows/ci.yml</code>.</li>
 </ul>
 <h2 id="82-edge-dashboard-and-operator-prototype-pr-6">8.2 边缘仪表板和操作员原型（PR #6）<a class="headerlink" href="#82-edge-dashboard-and-operator-prototype-pr-6" title="Permanent link">&para;</a></h2>
-<p>前端被构建为一个解耦的 Vue3+TypeScript 层，共享一个
-pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</code>：</p>
+<p>The frontend was built as a decoupled Vue 3 + TypeScript layer sharing a
+pnpm workspace with the existing Python uv workspace, then merged to <code>main</code>:</p>
 <ul>
-<li><strong>合约层</strong> (<code>@assemblyvision/api-client</code>)：手动同步的 TS 类型
-  来自 Pydantic 模型域、<code>ApiClient</code> 接口、<code>MockApiClient</code>
-  （具有操作员工作流程状态机和模拟的确定性内存数据
-  SVG 图像），<code>HttpApiClient</code> （与真实的 <code>/api/v1</code> 端点对话
-  获取边界处的运行时响应验证），以及重新连接
-  WebSocket 服务。</li>
-<li><strong>共享 UI</strong> (<code>@assemblyvision/ui</code>): <code>DetectionViewer</code> （包含缩放
-  使用源坐标叠加、帧 ID 协调、陈旧帧进行预览
-  标记）、与颜色无关的 <code>StatusBadge</code> 和显示格式化程序。</li>
-<li><strong>操作员仪表板</strong> (<code>apps/edge-web</code>)：生产检验仪表板
-  （等待/处理/通过/不合格状态、SN 元数据、带叠加层的产品图像
-  框、规则检查、确认/继续/手动操作）、实时摄像头/检测
-  查看运行日志和检查详细信息、历史记录（SN 搜索 + 结果
-  过滤器）、每个 SN 的可追溯性以及重新检查尝试、统计数据（ECharts
-  带日期/行过滤器），图像管理（原始/检测/注释），
-  设备状态和上传队列。所有数据流经API服务层
-  通过 <code>VITE_API_MODE</code> 显式选择模拟或 HTTP 客户端；的
-  操作员工作流操作仅是模拟的，并且在实模式下隐藏。</li>
-<li><strong>Electron 桌面</strong> (<code>apps/edge-desktop</code>)：硬化默认值（上下文
-  隔离、沙箱、无节点集成）、kiosk 模式和生产构建
-  从构建的边缘网络输出加载。</li>
-<li><strong>测试和 CI</strong>：跨 api-client/ui/edge-web/desktop 的 63 个 Vitest 单元测试
-  (30 + 13 + 17 + 3), 12 剧作家 e2e, 一项 <code>web</code> CI 工作
-  (build/lint/test/e2e)，并且 <code>make check</code> 现在同时运行 Python 和 TypeScript
-  盖茨。</li>
-<li><strong>文档</strong>：QUICKSTART 对每个应用程序进行了重组，并具有可扩展的编号
-  部分；自述文件更新了新功能、项目结构和路线图。</li>
+<li><strong>Contract layer</strong> (<code>@assemblyvision/api-client</code>): hand-synchronized TS types
+  from the domain Pydantic models, an <code>ApiClient</code> interface, <code>MockApiClient</code>
+  (deterministic in-memory data with an operator workflow state machine and mock
+  SVG images), <code>HttpApiClient</code> (talks to the real <code>/api/v1</code> endpoints with
+  runtime response validation at the fetch boundary), and a reconnecting
+  WebSocket service.</li>
+<li><strong>Shared UI</strong> (<code>@assemblyvision/ui</code>): <code>DetectionViewer</code> (contain-scaled
+  preview with source-coordinate overlays, frame-ID reconciliation, stale-frame
+  marker), color-independent <code>StatusBadge</code>, and display formatters.</li>
+<li><strong>Operator dashboard</strong> (<code>apps/edge-web</code>): production inspection dashboard
+  (Waiting/Processing/PASS/NG status, SN metadata, product image with overlay
+  boxes, rule checks, confirm/continue/manual actions), live camera/detection
+  view with runtime logs and inspection details, history (SN search + result
+  filter), traceability per SN with reinspection attempts, statistics (ECharts
+  with date/line filters), image management (original/detection/annotated),
+  device status, and upload queue. All data flows through an API service layer
+  that selects the mock or HTTP client explicitly via <code>VITE_API_MODE</code>; the
+  operator workflow actions are mock-only and hidden in real mode.</li>
+<li><strong>Electron desktop</strong> (<code>apps/edge-desktop</code>): hardened defaults (context
+  isolation, sandbox, no node integration), kiosk mode, and production builds
+  are loaded from the built edge-web output.</li>
+<li><strong>Tests and CI</strong>: 63 Vitest unit tests across api-client/ui/edge-web/desktop
+  (30 + 13 + 17 + 3), 12 Playwright e2e, a <code>web</code> CI job
+  (build/lint/test/e2e), and <code>make check</code> now runs both Python and TypeScript
+  gates.</li>
+<li><strong>Documentation</strong>: QUICKSTART restructured per-app with extensible numbered
+  sections; README updated with new features, project structure, and roadmap.</li>
 </ul>
-<h2 id="83-edge-backend-layer-m1-pr-8">8.3 边缘后端层（M1，PR #8）<a class="headerlink" href="#83-edge-backend-layer-m1-pr-8" title="Permanent link">&para;</a></h2>
+<h2 id="83-edge-backend-layer-m1-pr-8">8.3 Edge Backend Layer (M1, PR #8)<a class="headerlink" href="#83-edge-backend-layer-m1-pr-8" title="Permanent link">&para;</a></h2>
 <p><code>dev</code> 上的 FastAPI + SQLite 后端层提供真实的只读仪表板视图
 CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 阻塞结果 (F1-F14) 和 M1 条件项 (C1-C4)
@@ -3531,7 +3531,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>InspectionRecord.inference_metadata</code>；管道验证检测
   具有纯绝对坐标的出处（框架/模型/坐标空间）
   边界处的公差。</li>
-<li><strong>包装</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
+<li><strong>打包</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
   strict 在整个仓库范围内传递。</li>
 <li><strong>测试强化</strong>：共享门（ruff、format、mypy、pytest）通过
   <code>557 passed</code> (2026-08-09); TypeScript 是 <code>37 passed</code> （api 客户端）、<code>13 passed</code>
@@ -3581,111 +3581,111 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <code>docs/reviews/PR-014-review.md</code>；结果 F1-F14 通过回归得到解决
 测试。设计：</p>
 <ul>
-<li><strong><code>vision-core</code></strong>中的<code>FrameSource</code>协议（设计07§7.3）：<code>open /
-  configure / frames(stop) / close</code>产生单调+的<code>CapturedFrame</code>
-  UTC 时间戳、序列、尺寸、像素格式、状态和 PIL RGB
-  图像；解码失败会引发帧流错误（故障安全）。</li>
-<li><strong>五个可插入源</strong>（全部实现）：<code>folder</code>（可循环）、<code>video</code>
-  (OpenCV), <code>opencv-device</code> (本地/虚拟相机，例如 v4l2loopback 或 OBS),
-  <code>rtsp</code>（PyAV + OpenCV 后备），<code>http-image</code>（httpx 轮询）。供应商 SDK
-  是未来的协议实现。 <code>opencv-python-headless</code>、<code>av</code>、<code>httpx</code>
-  是由边缘服务引入的视觉核心可选附加功能。</li>
-<li><strong>多实例<code>serve</code></strong>：<code>pipeline.yaml</code>中的<code>instances:</code>列表；每个
-  实例将相机源与其自己的模型/规则/产品配对；公寓
-  单配置形式保持向后兼容。 <code>device_id</code> 默认为
-  <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
-  <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
-  保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界的每个实例检查队列
-  溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
-  <code>EdgeRuntime.load_instances</code>开始独立单帧检查
-  当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
-<li><strong>WebSocket 之前的预览</strong>：<code>GET /api/v1/camera/{instance_id}/preview</code>
-  （速率受限的最新帧 JPEG；404 未知实例，503 未就绪）和
-  每个实例<code>camera_state</code>； WebSocket 运行时通道稍后取代
-  预览。</li>
-<li><strong>Web 开发测试工具 (ADR-014)</strong>：门控 <code>/api/v1/dev/inspect-frame</code> 和
-  <code>/api/v1/dev/inspect-video</code>（404，除非<code>serve --enable-web-test</code>）让
-  浏览器拍照（移动操作系统相机）、上传图像或上传短片
-  录像并做出检查决定； <code>/dev</code> 仪表板页面将
-  带有日志选项卡和客户端产品 bbox 覆盖层的工具。图像测试
-  默认写入证据包（<code>persist=false</code>可跳过）；视频测试
-  返回每帧摘要（≤30 帧，&lt;100 MB）而不保留。它是一个
-  测试工具，而不是生产采购。</li>
-<li><strong>产品窗口和时间聚合 (ADR-010)</strong>：具有
-  其管道配置中的 <code>temporal:</code> 块将捕获的帧分组为
-  每个产品窗口并发出一次 <code>per-component-temporal-v1</code> 检查
-  通过确定性的每个组件聚合器记录每个窗口（设计 10）。
-  默认的单帧模式不变。 <code>UNVERIFIABLE</code> 已添加为
-  汇总证据状态；有效帧产量不足
-  <code>UNVERIFIABLE</code>/<code>INSUFFICIENT_VALID_FRAMES</code>，中断的窗口关闭
-  与 <code>INSPECTION_INTERRUPTED</code> 一样为 NG，并且 OpenAPI/TypeScript 合约是
-  为新状态重新生成。 PR-015 审查强化 (F1-F7) 是
-  应用：帧上的窗口组捕获单调时钟和空闲窗口
-  正常过期； <code>window_strategy: identity</code> 将每个窗口密封为一个
-  验证产品身份并在身份丢失/转换时中止或
-  多产品框架；质量被拒绝的帧没有提供任何证据；
-  每帧原因是诊断，而只是窗口完整性违规
-  强制NG；时间配置必须涵盖每个规则所需的组件
-  严格的<code>medium &lt; high</code>阈值；并且计数证据仅限于检测
-  达到或高于政策中等门槛。</li>
-<li><strong>仍处于里程碑</strong>：供应商 SDK 适配器、每实例模型
-  权重共享（阶段 3），将 REST 预览折叠到 WebSocket 中
-  通道和硬件触发/条码相关源
-  <code>window_strategy: identity</code>接缝（仅时间回退仍然是
-  开发模式，而不是生产产品边界）。</li>
-<li><strong>审查强化 (PR-014)</strong>：结果 F1-F14 通过回归结束
-  测试：无静默帧丢失（有界队列+显式溢出），暂停
-  停止检查和设备状态报告<code>PAUSED</code>，损坏的源失败
-  关闭，而坏实例保持非致命性，开发工具上传
-  字节/像素/步长以立即投影持久性为界，禁用开发
-  端点在身份验证之前返回 404，开发视频决策使用
-  具有二进制主体和问题响应的规范业务/内部枚举
-  记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
+<li><strong><code>FrameSource</code> protocol in <code>vision-core</code></strong> (design 07 §7.3): <code>open /
+  configure / frames(stop) / close</code> yielding <code>CapturedFrame</code> with monotonic +
+  UTC timestamps, sequence, dimensions, pixel format, status, and PIL RGB
+  image; decode failures raise a frame-stream error (fail-safe).</li>
+<li><strong>Five pluggable sources</strong> (all implemented): <code>folder</code> (loopable), <code>video</code>
+  (OpenCV), <code>opencv-device</code> (local/virtual camera, e.g. v4l2loopback or OBS),
+  <code>rtsp</code> (PyAV + OpenCV fallback), <code>http-image</code> (httpx polling). Vendor SDKs
+  are future protocol implementations. <code>opencv-python-headless</code>, <code>av</code>, <code>httpx</code>
+  are vision-core optional extras pulled in by edge-service.</li>
+<li><strong>Multi-instance <code>serve</code></strong>: <code>instances:</code> list in <code>pipeline.yaml</code>; each
+  instance pairs a camera source with its own models/rule/product; the flat
+  single-config form stays backward compatible. <code>device_id</code> defaults to
+  <code>uuid5(namespace, instance_id)</code> (explicit override wins). A
+  <code>CameraSourceManager</code> runs one bounded capture thread per instance (latest
+  frame retained for preview, non-fatal per-instance failures); enabled
+  instances consume a bounded per-instance inspection queue with explicit
+  overflow reporting (<code>FRAME_OVERFLOW</code>, PR-014 F1/F2), and
+  <code>EdgeRuntime.load_instances</code> starts an independent single-frame inspection
+  loop per instance when <code>inspection.enabled</code> (default false).</li>
+<li><strong>Preview before WebSocket</strong>: <code>GET /api/v1/camera/{instance_id}/preview</code>
+  (rate-limited latest-frame JPEG; 404 unknown instance, 503 not ready) and
+  per-instance <code>camera_state</code>; the WebSocket runtime channel later supersedes
+  the preview.</li>
+<li><strong>Web dev test harness (ADR-014)</strong>: gated <code>/api/v1/dev/inspect-frame</code> and
+  <code>/api/v1/dev/inspect-video</code> (404 unless <code>serve --enable-web-test</code>) let a
+  browser take a photo (mobile OS camera), upload an image, or upload a short
+  video and get the inspection decision; a <code>/dev</code> dashboard page groups the
+  tools with a Logs tab and a client-side product-bbox overlay. Image tests
+  write evidence bundles by default (<code>persist=false</code> to skip); video tests
+  return a per-frame summary (≤30 frames, &lt;100 MB) without persisting. It is a
+  test harness, not production acquisition.</li>
+<li><strong>Product window and temporal aggregation (ADR-010)</strong>: an instance with a
+  <code>temporal:</code> block in its pipeline config groups captured frames into
+  per-product windows and emits one <code>per-component-temporal-v1</code> inspection
+  record per window via a deterministic per-component aggregator (design 10).
+  The default single-frame mode is unchanged. <code>UNVERIFIABLE</code> was added as an
+  aggregated evidence state; insufficient valid frames yield
+  <code>UNVERIFIABLE</code>/<code>INSUFFICIENT_VALID_FRAMES</code>, an interrupted window is closed
+  as NG with <code>INSPECTION_INTERRUPTED</code>, and the OpenAPI/TypeScript contract was
+  regenerated for the new state. The PR-015 review hardening (F1-F7) is
+  applied: windows group on the frame capture monotonic clock and idle windows
+  expire normally; <code>window_strategy: identity</code> seals each window to one
+  validated product identity and aborts on missing/transitioning identities or
+  multi-product frames; quality-rejected frames contribute no evidence;
+  per-frame reasons are diagnostics while only window-integrity violations
+  force NG; temporal configs must cover every rule-required component with
+  strict <code>medium &lt; high</code> thresholds; and count evidence is limited to detections
+  at or above the policy medium threshold.</li>
+<li><strong>Remaining in the milestone</strong>: vendor SDK adapters, per-instance model
+  weight sharing (Phase 3), folding the REST preview into the WebSocket
+  channel, and hardware trigger / barcode correlation sources that feed the
+  <code>window_strategy: identity</code> seam (the time-only fallback remains a
+  development mode, not a production product boundary).</li>
+<li><strong>Review hardening (PR-014)</strong>: findings F1-F14 are closed with regression
+  tests: no silent frame loss (bounded queue + explicit overflow), pause
+  stops inspection and device status reports <code>PAUSED</code>, corrupt sources fail
+  closed while bad instances stay non-fatal, dev-harness uploads are
+  byte/pixel/step bounded with immediate projection persistence, disabled dev
+  endpoints return 404 before authentication, and dev video decisions use the
+  canonical business/internal enums with binary bodies and problem responses
+  documented in the regenerated OpenAPI/TypeScript contract.</li>
 </ul>
-<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code> 因此严格的 mypy 门会通过
-  回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
-  （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
+<p><code>assemblyvision_edge</code> now ships <code>py.typed</code> so the strict mypy gate passes
+  repo-wide; the current suite is 635 Python tests, 91 TypeScript unit tests
+  (api-client 45, ui 13, edge-web 30, desktop 3), and 12 Playwright e2e.</p>
 <h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
-<p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
-ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
-项目。审查驱动的强化过程记录在
-<code>docs/reviews/PR-017-review.md</code>；结果 F1-F8 加上决议后通过
-通过回归测试解决：</p>
+<p>Merged via PR #17 (dev -&gt; main, 10 commits). Implements the persistent upload
+queue required by ADR-005 and closes the deferred AUDIT-001 4.4 persistence
+item. The review-driven hardening pass is recorded in
+<code>docs/reviews/PR-017-review.md</code>; findings F1-F8 plus a post-resolution pass
+are resolved with regression tests:</p>
 <ul>
-<li><strong>原子投影和发件箱</strong>：<code>persist_inspection_and_enqueue_uploads</code>
-  提交不可变的检查、媒体、证据和一项 <code>INSPECTION</code> 任务
-  在单个 SQLite 事务中为每个工件加上一个 <code>MEDIA</code> 任务；启动
-  调节修复搁浅的<code>LOCAL_ONLY</code>记录。</li>
-<li><strong>订购的租赁工人</strong>：<code>UploadScheduler</code>在一个任务中声明到期任务
-  即时交易； <code>MEDIA</code> 任务只有在检查后才到期
-  任务有经过验证的收据；每个声明都带有每个任务的防护令牌
-  (<code>lease_owner</code>)，陈旧的<code>IN_PROGRESS</code>任务在租约到期后被回收，
-  终端更新需要匹配的令牌。</li>
-<li><strong>故障分类</strong>：传输错误和<code>408/429/5xx</code>时间表
-  从响应时间起遵守<code>Retry-After</code>的全抖动退避；失踪/
-  证据损坏、校验和/大小不匹配以及服务器冲突变得
-  永久性故障，同时保留本地证据。</li>
-<li><strong>验证收据</strong>：仅当有界打字收据时，2xx 才是成功
-  回显幂等键、对象、种类、大小和校验和；媒体收据
-  需要一个中心对象 ID；保留收据并进行检查
-  所有任务的同步为 <code>QUEUED</code>/<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>。</li>
-<li><strong>配置和安全</strong>：<code>UploadSettings</code> + <code>AV_EDGE_UPLOAD_*</code>接线
-  通过 <code>serve</code> （端点或本地接收器、单独的凭据、可调参数）；
-  中央端点需要 HTTPS（仅开发 HTTP 环回），并且
-  查看器 <code>api_token</code> 永远不会重复用于上传。</li>
+<li><strong>Atomic projection and outbox</strong>: <code>persist_inspection_and_enqueue_uploads</code>
+  commits the immutable inspection, media, evidence, and one <code>INSPECTION</code> task
+  plus one <code>MEDIA</code> task per artifact in a single SQLite transaction; startup
+  reconciliation repairs stranded <code>LOCAL_ONLY</code> records.</li>
+<li><strong>Ordered, leased worker</strong>: <code>UploadScheduler</code> claims due tasks in an
+  immediate transaction; <code>MEDIA</code> tasks become due only after their inspection
+  task has a verified receipt; each claim carries a per-task fencing token
+  (<code>lease_owner</code>), stale <code>IN_PROGRESS</code> tasks are reclaimed after lease expiry,
+  and terminal updates require the matching token.</li>
+<li><strong>Failure classification</strong>: transport errors and <code>408/429/5xx</code> schedule
+  full-jitter backoff honoring <code>Retry-After</code> from the response time; missing/
+  corrupt evidence, checksum/size mismatch, and server conflicts become
+  permanent failures while local evidence is preserved.</li>
+<li><strong>Verified receipts</strong>: a 2xx is success only when the bounded typed receipt
+  echoes idempotency key, object, kind, size, and checksum; media receipts
+  require a central object ID; receipts are persisted and inspection
+  synchronization is <code>QUEUED</code>/<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code> from all tasks.</li>
+<li><strong>Configuration and security</strong>: <code>UploadSettings</code> + <code>AV_EDGE_UPLOAD_*</code> wiring
+  through <code>serve</code> (endpoint or local sink, separate credential, tunables);
+  central endpoints require HTTPS (development HTTP loopback-only), and the
+  viewer <code>api_token</code> is never reused for uploads.</li>
 </ul>
 <h2 id="87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20">8.7 可观察性 (E1) 以及保留和磁盘安全性 (E2)（PR #18/#19、#20）<a class="headerlink" href="#87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20" title="Permanent link">&para;</a></h2>
-<p>通过 PR #18 和 #19 合并的可观测性（dev -&gt; main）：Alembic
-<code>fileConfig</code> 副作用，禁用 <code>assemblyvision.*</code> 记录器
-迁移已修复，因此 <code>/api/v1/logs</code> 捕获应用程序记录和设备
-状态现在公开上传队列字节、最早的挂起年龄、尝试/成功/
-失败计数器、失败率、上次联系和 <code>UPLOAD_BLOCKED</code>/
-<code>UPLOAD_FAILING</code> 警报。</p>
-<p>通过 PR #20 合并保留和磁盘安全（dev -&gt; main、E2a-E2d 加上
-PR-020 审查强化）。交付任务和强制性安全不变量是
-在 <code>docs/tasks/E2-retention-and-disk-safety.md</code> 中；审查及其结果
-决议记录在<code>docs/reviews/PR-020-review.md</code>中（已解决）：</p>
+<p>Observability merged via PRs #18 and #19 (dev -&gt; main): the Alembic
+<code>fileConfig</code> side effect that disabled <code>assemblyvision.*</code> loggers after
+migration is fixed so <code>/api/v1/logs</code> captures application records, and device
+status now exposes upload queue bytes, oldest pending age, attempt/success/
+failure counters, failure rate, last contact, and <code>UPLOAD_BLOCKED</code>/
+<code>UPLOAD_FAILING</code> alerts.</p>
+<p>Retention and disk safety merged via PR #20 (dev -&gt; main, E2a-E2d plus the
+PR-020 review hardening). The delivery task and mandatory safety invariants are
+in <code>docs/tasks/E2-retention-and-disk-safety.md</code>; the review and its per-finding
+resolutions are recorded in <code>docs/reviews/PR-020-review.md</code> (RESOLVED):</p>
 <ul>
 <li><strong>持久保留状态 (E2a)</strong>：迁移 0007 添加介质 <code>created_at</code>，
   <code>retention_eligible_at</code>，保留状态，删除声明/租赁/防护列，
@@ -3693,7 +3693,7 @@ PR-020 审查强化）。交付任务和强制性安全不变量是
   仍然是审计墓碑。资格需要经过验证的收据 <code>SYNCED</code>
   使用包含中心对象 ID 的媒体收据进行检查
   保留截止日期，并且没有保留/故障/清除/删除状态。</li>
-<li><strong>清洁工人 (E2b)</strong>：<code>RetentionCleanupWorker</code> 声称候选人在
+<li><strong>清洁工人 (E2b)</strong>：<code>RetentionCleanupWorker</code> 根据
   使用每个工件的隔离令牌进行进程间 SQLite 租赁。一个有围栏的
   取消链接前确认重新验证完整的资格谓词和
   在破坏性 I/O 之前立即更新租约；持有和诚信
@@ -3746,7 +3746,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   <code>UPLOAD_CIRCUIT_OPEN</code> 警报；持久队列永远不会改变。</li>
 <li><strong>受控手动重试 (E3c)</strong>：<code>POST /api/v1/uploads/{id}/retry</code>
   仅重置 <code>RETRY_WAIT</code>/<code>PERMANENT_FAILURE</code> 任务
-  <code>attempt_count + 1</code>; 404 未知，409 不合格，无突变。</li>
+  <code>attempt_count + 1</code>； 404 未知，409 不合格，无突变。</li>
 <li><strong>长时间停电排水 (E3d)</strong>：离线检查、重新启动和恢复的天数
   使用媒体之前的有序元数据恢复无重复的排空队列
   上传和每次检查<code>SYNCED</code>。</li>
@@ -3849,7 +3849,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li><strong>边缘本地人工审查（PR #31，ADR-016）</strong>：可选，附加，
   对任何检查（OK 或 NG）进行仅附加审查，而不改变
   机器决定。域 <code>ReviewDisposition</code> (CONFIRMED_NG/CONFIRMED_OK/
-  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的限制，
+  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的约束，
   <code>ReviewRecord</code> 快照原始决策，一个 <code>review_records</code> 表
   （迁移 0008）使用引用链接取代、存储库
   <code>submit_review</code>/<code>list_review_queue</code>，和端点<code>GET /api/v1/reviews</code>，
@@ -3965,7 +3965,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   项目（现在由 PR #17 交付）。实现共享模型权重（E4c）；
   每个实例管道使用一个注册表。</li>
 <li><strong>条形码身份</strong>（PR #30），<strong>边缘本地人工审核</strong>（PR #31），问题
-  模板 (PR #32)、README/QUICKSTART/SECURITY 刷新 (PR #33)、
+  模板 (PR #32)、自述文件/快速启动/安全刷新 (PR #33)、
   开发人员手册 (PR #34)、edge-web i18n (PR #35) 和 MkDocs 索引修复
   (PR #36) 被合并（参见第 8.11/8.12 节）。</li>
 <li>基线仍然需要真实的客户数据：收集和注释

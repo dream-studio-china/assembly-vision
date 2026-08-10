@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3021,51 +3021,51 @@
 
 
 <h1 id="assemblyvision-engineering-contracts">AssemblyVision 工程合同<a class="headerlink" href="#assemblyvision-engineering-contracts" title="Permanent link">&para;</a></h1>
-<p>该目录定义了 AssemblyVision 的强制性工程合同。</p>
-<p>这些文件的目的是：</p>
+<p>This directory defines the mandatory engineering contracts for AssemblyVision.</p>
+<p>These documents are intended to serve as:</p>
 <ul>
-<li>架构限制</li>
-<li>编码和接口规则</li>
-<li>CI质量门</li>
-<li>运行时验证规则</li>
-<li>模型和规则发布标准</li>
-<li>工业现场变更控制规则</li>
-<li>客户接受标准</li>
+<li>Architecture constraints</li>
+<li>Coding and interface rules</li>
+<li>CI quality gates</li>
+<li>Runtime validation rules</li>
+<li>Model and rule release criteria</li>
+<li>Industrial-site change-control rules</li>
+<li>Customer acceptance criteria</li>
 </ul>
-<p>合同应被视为可执行的工程规则，而不是可选的指导。</p>
+<p>The contracts should be treated as enforceable engineering rules, not as optional guidance.</p>
 <h2 id="contract-index">合约指数<a class="headerlink" href="#contract-index" title="Permanent link">&para;</a></h2>
 <ol>
 <li><a href="01-architecture-boundaries/">01 - Architecture Boundaries</a></li>
-<li><a href="02-code-and-interface-contracts/">02 - Code and Interface Contracts</a>
-3.<a href="03-ai-rule-and-safety-contracts/">03 - AI, Rule Engine, and Fail-Safe Contracts</a></li>
-<li><a href="04-edge-storage-upload-contracts/">04 - Edge, Storage, and Upload Contracts</a>
-5.<a href="05-data-api-and-versioning-contracts/">05 - Data, API, and Versioning Contracts</a></li>
-<li><a href="06-testing-quality-and-ci-contracts/">06 - Testing, Quality, and CI Contracts</a>
-7.<a href="07-deployment-observability-and-operations/">07 - Deployment, Observability, and Operations</a></li>
-<li><a href="08-security-permissions-and-audit/">08 - Security, Permissions, and Audit</a>
-9.<a href="09-industrial-site-and-change-control/">09 - Industrial Site and Change Control</a>
-10.<a href="10-model-rule-release-and-acceptance/">10 - Model, Rule, Release, and Acceptance</a></li>
-<li><a href="11-minimum-mandatory-contracts/">11 - Minimum Mandatory Contracts</a>
-12.<a href="../contributing/">Contributor rules</a></li>
+<li><a href="02-code-and-interface-contracts/">02 - Code and Interface Contracts</a></li>
+<li><a href="03-ai-rule-and-safety-contracts/">03 - AI, Rule Engine, and Fail-Safe Contracts</a></li>
+<li><a href="04-edge-storage-upload-contracts/">04 - Edge, Storage, and Upload Contracts</a></li>
+<li><a href="05-data-api-and-versioning-contracts/">05 - Data, API, and Versioning Contracts</a></li>
+<li><a href="06-testing-quality-and-ci-contracts/">06 - Testing, Quality, and CI Contracts</a></li>
+<li><a href="07-deployment-observability-and-operations/">07 - Deployment, Observability, and Operations</a></li>
+<li><a href="08-security-permissions-and-audit/">08 - Security, Permissions, and Audit</a></li>
+<li><a href="09-industrial-site-and-change-control/">09 - Industrial Site and Change Control</a></li>
+<li><a href="10-model-rule-release-and-acceptance/">10 - Model, Rule, Release, and Acceptance</a></li>
+<li><a href="11-minimum-mandatory-contracts/">11 - Minimum Mandatory Contracts</a></li>
+<li><a href="../contributing/">Contributor rules</a></li>
 </ol>
 <h2 id="related-documentation">相关文档<a class="headerlink" href="#related-documentation" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../design/">Design documentation index</a> — 这些合约约束的架构基线</li>
-<li><a href="../design/appendices/#2-decision-consistency-checklist">Decision consistency checklist</a> — 设计级不变量</li>
-<li><a href="../design/appendices/#4-reason-code-glossary">Reason-code glossary</a> — 稳定的决策代码</li>
-<li><a href="../design/appendices/#3-global-open-questions">Open questions</a> — 影响合同的未解决项目</li>
-<li><a href="../design/decisions/">Architecture decisions</a> — 合同引用的已接受 ADR</li>
-<li><a href="../source-brief/">Source brief</a> — 历史输入； ADR、合同和当前设计都是规范的</li>
+<li><a href="../design/">Design documentation index</a> — the architecture baseline these contracts constrain</li>
+<li><a href="../design/appendices/#2-decision-consistency-checklist">Decision consistency checklist</a> — design-level invariants</li>
+<li><a href="../design/appendices/#4-reason-code-glossary">Reason-code glossary</a> — stable decision codes</li>
+<li><a href="../design/appendices/#3-global-open-questions">Open questions</a> — unresolved items affecting contracts</li>
+<li><a href="../design/decisions/">Architecture decisions</a> — accepted ADRs referenced by the contracts</li>
+<li><a href="../source-brief/">Source brief</a> — historical input; ADRs, contracts, and current design are normative</li>
 </ul>
 <h2 id="enforcement-principle">执行原则<a class="headerlink" href="#enforcement-principle" title="Permanent link">&para;</a></h2>
-<p>只要有可能，违反合同就应该成为自动失败的情况。</p>
-<p>示例：</p>
+<p>Whenever possible, a contract violation should become an automated failure condition.</p>
+<p>Examples:</p>
 <ul>
-<li>当违反模块依赖关系边界时，CI 会失败。</li>
-<li>当核心接口类型不充分时，MyPy 会失败。</li>
-<li>当模型或规则版本丢失时，服务不会进入就绪状态。</li>
-<li>本地清理作业不会删除尚未上传的媒体。</li>
-<li>当证据不完整或无效时，检查管道永远不会返回<code>OK</code>。</li>
+<li>CI fails when module dependency boundaries are violated.</li>
+<li>MyPy fails when core interfaces are insufficiently typed.</li>
+<li>Services do not enter the Ready state when model or rule versions are missing.</li>
+<li>Local cleanup jobs do not delete media that has not been uploaded.</li>
+<li>The inspection pipeline never returns <code>OK</code> when evidence is incomplete or invalid.</li>
 </ul>
 
 

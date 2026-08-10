@@ -932,7 +932,7 @@
   <a href="#138-security-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.8 安全和配置
+        13.8 Security and Configuration
       
     </span>
   </a>
@@ -1593,7 +1593,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3169,7 +3169,7 @@
   <a href="#138-security-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.8 安全和配置
+        13.8 Security and Configuration
       
     </span>
   </a>
@@ -3264,14 +3264,14 @@
 
 <h1 id="13-upload-and-synchronization">13. 上传与同步<a class="headerlink" href="#13-upload-and-synchronization" title="Permanent link">&para;</a></h1>
 <h2 id="131-purpose-and-boundary">13.1 目的和边界<a class="headerlink" href="#131-purpose-and-boundary" title="Permanent link">&para;</a></h2>
-<p>上传子系统将本地保存的检查记录和选定的媒体异步同步到中央服务器。它使用 <a href="../12-local-storage-and-retention/">local storage and retention</a> 中定义的事务发件箱。它从不参与图像推理或本地规则评估，并且当本地受保护的存储仍然可用时，服务器不可用不得停止检查。</p>
+<p>The upload subsystem asynchronously synchronizes locally persisted inspection records and selected media to the central server. It consumes the transactional outbox defined in <a href="../12-local-storage-and-retention/">local storage and retention</a>. It never participates in image inference or local rule evaluation, and server unavailability must not stop inspection while local protected storage remains available.</p>
 <h2 id="132-upload-scope">13.2 上传范围<a class="headerlink" href="#132-upload-scope" title="Permanent link">&para;</a></h2>
-<p>对于 <code>OK</code>，上传检查元数据、条形码、产品类型、决策、组件/置信度摘要、版本、设备/时间戳和一个代表性关键帧。对于 <code>NG</code>，上传完整的元数据、缺失/不确定的组件、多个关键帧、带注释的图像、产品 ROI、可选事件剪辑和相关诊断。对于系统异常，上传异常类型、设备/摄像机状态、相关媒体/日志摘录和时间戳。</p>
-<p>不要上传每个视频帧。介质选择在本地进行并记录在检查清单中。</p>
+<p>For <code>OK</code>, upload inspection metadata, barcode, product type, decision, component/confidence summary, versions, device/timestamp, and one representative key frame. For <code>NG</code>, upload full metadata, missing/uncertain components, multiple key frames, annotated image, product ROI, optional event clip, and relevant diagnostics. For system exceptions, upload exception type, device/camera state, relevant media/log excerpt, and timestamp.</p>
+<p>Do not upload every video frame. Media selection occurs locally and is recorded in the inspection manifest.</p>
 <h2 id="133-task-and-protocol-design">13.3 任务和协议设计<a class="headerlink" href="#133-task-and-protocol-design" title="Permanent link">&para;</a></h2>
-<p>一项检查具有稳定的客户端生成的 <code>inspection_id</code> 和清单校验和。每个上传任务都有一个稳定的 <code>upload_task_id</code>、设备 ID、可为空的检查 ID、工件身份、有效负载哈希、SHA-256 校验和（如果适用）、字节大小、尝试计数、下次尝试时间、时间戳、租用和状态。规范状态包括 <code>PENDING</code>、<code>IN_PROGRESS</code>、<code>RETRY_WAIT</code>、<code>SUCCEEDED</code>、<code>PERMANENT_FAILURE</code> 和 <code>CANCELLED</code>。</p>
-<p>元数据摄取使用稳定的幂等键<code>inspection:{device_id}:{inspection_id}</code>。架构和清单版本保留在散列有效负载内，而不是更改密钥。中央服务器强制 <code>(device_id, inspection_id)</code> 和 <code>(device_id, idempotency_key)</code> 的唯一性，使用接受的元数据自动存储收据，并将其返回以进行相同的重播。具有不同不可变内容的重播会返回冲突并被隔离而不是被覆盖。</p>
-<p>大型媒体应在合理的情况下使用可恢复或预签名的对象上传。仅在服务器确认预期大小/校验和并将对象绑定到检查后才接受完成。</p>
+<p>One inspection has a stable client-generated <code>inspection_id</code> and manifest checksum. Each upload task has a stable <code>upload_task_id</code>, device ID, nullable inspection ID, artifact identity, payload hash, SHA-256 checksum where applicable, byte size, attempt count, next-attempt time, timestamps, lease, and state. Canonical states are <code>PENDING</code>, <code>IN_PROGRESS</code>, <code>RETRY_WAIT</code>, <code>SUCCEEDED</code>, <code>PERMANENT_FAILURE</code>, and <code>CANCELLED</code>.</p>
+<p>Metadata ingestion uses the stable idempotency key <code>inspection:{device_id}:{inspection_id}</code>. Schema and manifest versions remain inside the hashed payload rather than changing the key. The central server enforces uniqueness on <code>(device_id, inspection_id)</code> and <code>(device_id, idempotency_key)</code>, stores the receipt atomically with accepted metadata, and returns it for an identical replay. A replay with different immutable content returns a conflict and is quarantined rather than overwritten.</p>
+<p>Large media should use resumable or pre-signed object uploads when justified. Completion is accepted only after the server confirms expected size/checksum and binds the object to the inspection.</p>
 <h2 id="134-upload-and-retry-sequence">13.4 上传和重试顺序<a class="headerlink" href="#134-upload-and-retry-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Inspect as 检验管道
@@ -3293,16 +3293,16 @@ loop 所需媒体
         Worker-&gt;&gt;DB:标记成功并存储收据
 else 短暂的网络或服务器故障
         Server--xWorker:超时或可重试状态
-        Worker-&gt;&gt;DB:安排回退并包含尝试详细信息
+        Worker-&gt;&gt;DB:Schedule backoff with attempt details
 else 永久验证或内容冲突
         Server--&gt;&gt;Worker:不可重试的错误
-        Worker-&gt;&gt;DB:标记永久性故障并发出警报
+        Worker-&gt;&gt;DB:Mark permanent failure and alert
     end</code></pre>
 <h2 id="135-retry-policy">13.5 重试策略<a class="headerlink" href="#135-retry-policy" title="Permanent link">&para;</a></h2>
-<p>重试连接失败、超时、HTTP <code>408</code>、<code>429</code> 和 <code>5xx</code>，在配置的范围内遵守 <code>Retry-After</code>。不要无限期地自动重试身份验证/授权失败、架构不兼容、校验和冲突或无效内容。使用具有完全抖动的指数退避：</p>
+<p>Retry connection failures, timeouts, HTTP <code>408</code>, <code>429</code>, and <code>5xx</code>, honoring <code>Retry-After</code> within configured bounds. Do not automatically retry authentication/authorization failures, schema incompatibility, checksum conflict, or invalid content indefinitely. Use exponential backoff with full jitter:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>delay = random(0, min(max_delay, base_delay * 2 ** min(attempt, exponent_cap)))
 </code></pre></div>
-<p>工作线程并发和带宽是有限的，因此上传不会导致推理不足或填满内存。工作线程崩溃后，租约会恢复任务。断路器可减少中断期间的重复流量，但会定期探测恢复情况。</p>
+<p>Worker concurrency and bandwidth are bounded so uploads cannot starve inference or fill memory. Leases recover tasks after worker crashes. A circuit breaker reduces repeated traffic during an outage but periodically probes recovery.</p>
 <h2 id="136-offline-operation-sequence">13.6 离线操作顺序<a class="headerlink" href="#136-offline-operation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Camera
@@ -3311,7 +3311,7 @@ else 永久验证或内容冲突
     participant Queue as 持久上传队列
     participant Server as 中央服务器
     Server--xQueue:网络不可用
-loop 停电期间的每个实物产品
+loop Each physical product during outage
         Camera-&gt;&gt;Edge:本地帧和触发器
         Edge-&gt;&gt;Edge:本地检测、聚合和决策
         Edge-&gt;&gt;Store:原子提交决策、证据和上传任务
@@ -3324,12 +3324,12 @@ loop 到期排队任务
         Server--&gt;&gt;Queue:已验证收据
         Queue-&gt;&gt;Store:标记上传已确认
     end</code></pre>
-<p>脱机持续时间受本地受保护存储容量的限制，而不是受服务器上软件依赖性的限制。如果容量达到停止阈值，边缘必须停止接受检查，而不是删除受保护的证据或发出不可审计的<code>OK</code>决策。</p>
+<p>Offline duration is limited by local protected-storage capacity, not by a software dependency on the server. If capacity reaches the stop threshold, the edge must stop accepting inspections rather than delete protected evidence or emit unauditable <code>OK</code> decisions.</p>
 <h2 id="137-ordering-and-synchronization">13.7 排序和同步<a class="headerlink" href="#137-ordering-and-synchronization" title="Permanent link">&para;</a></h2>
-<p>服务器不得要求全局按时间顺序到达。设备可能会延迟上传或无序上传。设备 UTC 时间戳与时钟健康元数据一起保留；服务器接收时间是分开的。元数据先于媒体绑定，但检查可以集中可见，同时所需媒体具有生命周期<code>PENDING</code>；已验证的媒体变为<code>AVAILABLE</code>，终端故障变为<code>FAILED</code>，保留清理记录变为<code>PURGED</code>。</p>
-<p>配置/模型分发是一个单独的拉取/下载工作流程。上传确认无法激活新的规则或模型，并且中央数据永远不会追溯性地改变不可变的本地决策。人工审查会创建额外的中央记录，而不是重写原始证据。</p>
-<h2 id="138-security-and-configuration">13.8 安全和配置<a class="headerlink" href="#138-security-and-configuration" title="Permanent link">&para;</a></h2>
-<p>将 TLS 与每设备凭据和最低权限范围结合使用。凭证在映像外部配置、可轮换且从不记录。验证服务器身份、响应大小、内容类型和超时。</p>
+<p>The server must not require global chronological arrival. Devices can upload late and out of order. Device UTC timestamps are retained with clock-health metadata; server receive time is separate. Metadata precedes media binding, but inspections can be centrally visible while required media has lifecycle <code>PENDING</code>; verified media becomes <code>AVAILABLE</code>, terminal failures become <code>FAILED</code>, and retention cleanup records <code>PURGED</code>.</p>
+<p>Configuration/model distribution is a separate pull/download workflow. Upload acknowledgment cannot activate new rules or models, and central data never retroactively changes the immutable local decision. Manual review creates an additional central record rather than rewriting original evidence.</p>
+<h2 id="138-security-and-configuration">13.8 Security and Configuration<a class="headerlink" href="#138-security-and-configuration" title="Permanent link">&para;</a></h2>
+<p>Use TLS with per-device credentials and least-privilege scopes. Credentials are provisioned outside images, rotatable, and never logged. Validate server identity, response size, content type, and timeouts.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">upload</span><span class="p">:</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">base_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://central.example.invalid/api/v1</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">connect_timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
@@ -3345,11 +3345,11 @@ loop 到期排队任务
 <a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span><span class="nt">media_chunk_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8388608</span><span class="w">  </span><span class="c1"># reserved; single POST envelope until the</span>
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">                              </span><span class="c1"># Edge-to-central resumable contract freezes</span>
 </code></pre></div>
-<p>占位符 URL、<code>null</code> 带宽、电路阈值/开放持续时间以及
-<code>media_chunk_bytes</code> 需要站点配置；环境等价物
-是<code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code>，
+<p>The placeholder URL, <code>null</code> bandwidth, circuit threshold/open duration, and
+<code>media_chunk_bytes</code> require site configuration; the environment equivalents
+are <code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code>,
 <code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code>,
-<code>AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS</code>和<code>AV_EDGE_UPLOAD_MEDIA_CHUNK_BYTES</code>。</p>
+<code>AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS</code>, and <code>AV_EDGE_UPLOAD_MEDIA_CHUNK_BYTES</code>.</p>
 <h2 id="139-failure-handling-and-operations">13.9 故障处理与操作<a class="headerlink" href="#139-failure-handling-and-operations" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3396,13 +3396,13 @@ loop 到期排队任务
 <p>按状态显示队列计数和字节数、最早的挂起时间、尝试率、成功/失败率、上传延迟、吞吐量、电路状态和上次成功联系。手动重试仅重置符合条件的任务并保留尝试历史记录。</p>
 <h2 id="1310-verification">13.10 验证<a class="headerlink" href="#1310-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>在每个服务器提交边界超时后集成测试幂等重播。</li>
+<li>在每个服务器提交边界超时后集成测试幂等重放。</li>
 <li>测试重复的任务交付、无序检查、重复的介质以及冲突的校验和。</li>
 <li>故障注入 DNS 失败、连接重置、响应缓慢、<code>429</code>、<code>5xx</code>、<code>401</code>、<code>409</code> 和工作线程终止。</li>
 <li>运行长时间的离线测试，继续检查，重新启动边缘，恢复网络，并验证完全耗尽而没有重复。</li>
 <li>验证上传负载不能违反检查延迟/资源限制。</li>
 <li>验证保留不会在验证收据之前删除所需的工件。</li>
-<li>合同测试客户端/服务器架构兼容性和不支持的版本处理。</li>
+<li>合同测试客户端/服务器模式兼容性和不支持的版本处理。</li>
 </ul>
 <h2 id="1311-open-questions-and-validation-required">13.11 未解决的问题和需要验证<a class="headerlink" href="#1311-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3417,64 +3417,64 @@ loop 到期排队任务
 <p>持久上传发件箱及其工作人员的实现是
 <code>assemblyvision_edge</code>：</p>
 <ul>
-<li><strong>原子投影和发件箱</strong>：<code>persist_inspection_and_enqueue_uploads</code>
-  插入不可变的投影、媒体、证据和一个 <code>INSPECTION</code> 任务
-  在单个 SQLite 事务中为每个工件加上一个 <code>MEDIA</code> 任务，因此崩溃
-  无法在没有所需上传任务的情况下留下已完成的检查
-  （设计12.4步骤3+4）。启动协调应用相同的操作
-  每个有效的包，修复搁浅的 <code>LOCAL_ONLY</code> 记录而不是
-  跳过它们。</li>
-<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code>在一个任务中声明到期任务
-  即时交易； <code>MEDIA</code> 任务只有在检查后才到期
-  任务保存经过验证的成功收据，因此元数据始终先于媒体。
-  每个声明都带有一个每个任务的防护令牌（<code>lease_owner</code>），并且陈旧
-  <code>IN_PROGRESS</code> 租约到期后任务被回收；每个终端或重试
-  更新需要匹配的令牌，因此迟到的工作人员无法覆盖
-  较新的支架。</li>
-<li><strong>故障分类</strong>（设计 13.9）：运输错误和
-  <code>408/429/5xx</code> 安排具有完全抖动的指数退避，尊重
-  根据响应时间测量的数字<code>Retry-After</code>；本地丢失/损坏
-  证据（<code>MEDIA_EVIDENCE_MISSING</code>、<code>MEDIA_CHECKSUM_MISMATCH</code>、
-  <code>INSPECTION_EVIDENCE_MISSING</code>）和服务器冲突（<code>409</code>）成为永久性的
-  失败，同时保留当地证据。</li>
-<li><strong>验证收据</strong>：只有当有界类型收据时，2xx 才是成功
-  回显幂等键、对象、种类、字节大小和校验和
-  实际发送的有效负载；媒体收据还需要一个中心对象
-  标识符。已验证的收据和中央对象标识符将被保留。
-  检查同步是根据所有必需的任务重新计算的：
-  <code>QUEUED</code> 未完成时， <code>PARTIAL</code> 在带有待处理媒体的元数据之后，
-  <code>SYNCED</code> 仅当每个必需任务都有经过验证的收据时，并且 <code>FAILED</code>
-  任何永久性故障。</li>
-<li><strong>接收器和配置</strong>：<code>DirectoryUploadSink</code>（本地/开发和
-  测试，密钥幂等）和 <code>HttpUploadSink</code> （HTTPS POST 到
-  <code>{base_url}/inspection-uploads</code> 带有幂等密钥和负载）。的
-  通过 <code>UploadSettings</code> 支持的 <code>serve</code> 路径启用工作线程
-  和 <code>AV_EDGE_UPLOAD_*</code> 环境变量（端点或本地接收器，
-  单独的 <code>AV_EDGE_UPLOAD_TOKEN</code> 凭证、超时、重试/租用/批量
-  可调参数、带宽限制）。中央端点需要 HTTPS；明确的
-  开发 HTTP 仅限于环回。没有配置目的地
-  工作人员保持明确禁用状态，并且任务在上传中仍然可见
-  API。</li>
-<li><strong>合同06覆盖</strong>：测试覆盖成功上传、网络
-  中断、重试/退避、<code>Retry-After</code>计时、重复排队、进程
-  重新启动租约回收和防护、丢失文件、校验和不匹配、
-  服务器幂等性冲突、收据验证、媒体之前的有序元数据
-  消耗、同步状态和无重复消耗。</li>
-<li><strong>可观察性 (E1)</strong>：上传 API 报告任务状态；设备状态
-  公开持久队列事实（挂起计数/字节、最旧的挂起年龄）
-  存储库加上进程本地工作人员活跃度（尝试/成功/失败
-  来自调度程序的计数器、失败率、上次尝试/成功、上次错误），
-  与 <code>UPLOAD_BLOCKED</code> （排队工作但没有工作人员）和 <code>UPLOAD_FAILING</code>
-  （可重试积压或在工作待处理时未成功的尝试）
-  警报。任务负载大小记录在队列中，因此队列字节不需要
-  媒体阅读。</li>
+<li><strong>Atomic projection and outbox</strong>: <code>persist_inspection_and_enqueue_uploads</code>
+  inserts the immutable projection, media, evidence, and one <code>INSPECTION</code> task
+  plus one <code>MEDIA</code> task per artifact in a single SQLite transaction, so a crash
+  cannot leave a completed inspection without its required upload tasks
+  (design 12.4 step 3+4). Startup reconciliation applies the same operation to
+  every valid bundle, repairing stranded <code>LOCAL_ONLY</code> records instead of
+  skipping them.</li>
+<li><strong>Ordered, leased worker</strong>: <code>UploadScheduler</code> claims due tasks in an
+  immediate transaction; <code>MEDIA</code> tasks become due only after their inspection
+  task holds a verified success receipt, so metadata always precedes media.
+  Each claim carries a per-task fencing token (<code>lease_owner</code>), and stale
+  <code>IN_PROGRESS</code> tasks are reclaimed after lease expiry; every terminal or retry
+  update requires the matching token, so a late worker cannot overwrite a
+  newer holder.</li>
+<li><strong>Failure classification</strong> (design 13.9): transport errors and
+  <code>408/429/5xx</code> schedule exponential backoff with full jitter, honoring a
+  numeric <code>Retry-After</code> measured from the response time; missing/corrupt local
+  evidence (<code>MEDIA_EVIDENCE_MISSING</code>, <code>MEDIA_CHECKSUM_MISMATCH</code>,
+  <code>INSPECTION_EVIDENCE_MISSING</code>) and server conflicts (<code>409</code>) become permanent
+  failures while local evidence is preserved.</li>
+<li><strong>Verified receipts</strong>: a 2xx is only success when the bounded typed receipt
+  echoes the idempotency key, object, kind, byte size, and checksum of the
+  payload actually sent; media receipts additionally require a central object
+  identifier. Verified receipts and central object identifiers are persisted.
+  Inspection synchronization is recomputed from all required tasks:
+  <code>QUEUED</code> while outstanding, <code>PARTIAL</code> after metadata with pending media,
+  <code>SYNCED</code> only when every required task has a verified receipt, and <code>FAILED</code>
+  on any permanent failure.</li>
+<li><strong>Sinks and configuration</strong>: <code>DirectoryUploadSink</code> (local/development and
+  tests, idempotent by key) and <code>HttpUploadSink</code> (HTTPS POST to
+  <code>{base_url}/inspection-uploads</code> with the idempotency key and payload). The
+  worker is enabled through the supported <code>serve</code> path via <code>UploadSettings</code>
+  and <code>AV_EDGE_UPLOAD_*</code> environment variables (endpoint or local sink,
+  separate <code>AV_EDGE_UPLOAD_TOKEN</code> credential, timeouts, retry/lease/batch
+  tunables, bandwidth bound). Central endpoints require HTTPS; explicit
+  development HTTP is restricted to loopback. Without a configured destination
+  the worker stays explicitly disabled and tasks remain visible in the uploads
+  API.</li>
+<li><strong>Contract 06 coverage</strong>: tests cover successful upload, network
+  interruption, retry/backoff, <code>Retry-After</code> timing, duplicate enqueue, process
+  restart with lease reclamation and fencing, missing file, checksum mismatch,
+  server idempotency conflict, receipt validation, ordered metadata-before-media
+  drain, synchronization states, and duplicate-free drain.</li>
+<li><strong>Observability (E1)</strong>: the uploads API reports task states; device status
+  exposes persistent queue facts (pending count/bytes, oldest pending age) from
+  the repository plus process-local worker liveness (attempt/success/failure
+  counters, failure rate, last attempt/success, last error) from the scheduler,
+  with <code>UPLOAD_BLOCKED</code> (queued work but no worker) and <code>UPLOAD_FAILING</code>
+  (retryable backlog or attempts without any success while work is pending)
+  alerts. Task payload sizes are recorded at enqueue so queue bytes need no
+  media reads.</li>
 </ul>
-<p>剩下的连接试点：中央摄取端点及其
-服务器端收据合同、媒体绑定确认和保留
-对经过验证的收据进行控制。</p>
+<p>Remaining for the connected pilot: the central ingestion endpoint and its
+server-side receipt contract, media binding confirmations, and retention
+gating on verified receipts.</p>
 <h2 id="1313-implementation-status-upload-resilience-e3">13.13 实施状态（上传弹性，E3）<a class="headerlink" href="#1313-implementation-status-upload-resilience-e3" title="Permanent link">&para;</a></h2>
-<p>上传弹性里程碑在发件箱顶部添加了中断行为
-调度程序（设计13.5/13.9，E3任务）：</p>
+<p>The upload-resilience milestone adds outage behavior on top of the outbox
+scheduler (design 13.5/13.9, E3 task):</p>
 <ul>
 <li><strong>带宽限制</strong>：令牌桶限制器限制序列化
   每秒实际发送到 HTTP 接收器的请求主体字节数

@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3397,10 +3397,10 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
 <tr>
 <td>E6-A12</td>
 <td>离线操作</td>
-<td>地方检查、证据和持久的队列在没有中央的情况下继续进行</td>
-<td>自动化本地</td>
+<td>地方检查、证据和持久的队列在没有中央的情况下继续进行自动化本地</td>
 <td>是的</td>
 <td>中央独立（ADR-001，22.8）</td>
+<td></td>
 </tr>
 <tr>
 <td>E6-A13</td>
@@ -3460,63 +3460,63 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
 </tr>
 </tbody>
 </table>
-<p>| E6-A20 | GPU/加速器故障 |没有捏造就OK；可恢复的故障重新加载或切换到具有相同清单的经过验证的 CPU 运行时并记录切换；不可恢复故障故障和块检查|所需硬件 |没有|恢复路径有单位覆盖；真正的加速器故障需要硬件（22.8，设计 09.7） |
-| E6-A21 |数据库故障/损坏 |安全失败、保留诊断、执行经过测试的恢复路径 |自动化本地 |是的 |一次性测试数据库(22.8) |
-| E6-A22 |备份+恢复|代表恢复成功；悬而未决的证据和上传任务继续存在|自动化本地 |是的 |恢复成功之前不可操作 (20.10) |
-| E6-A23 |容器重启 |监督恢复，无需重复产品决策 |自动化本地 |是的 |需要 Docker；在可用的地方运行 |
-| E6-A24 |时钟漂移|保持单调排序和相关性；漂移警报|自动化本地 |没有|需要专用的时钟漂移线束；在此之前，跑步者记录 <code>NOT_EXECUTED</code> |
-| E6-A25 |校验和失败 |拒绝工件并保留可恢复的任务或版本 |自动化本地 |是的 |更改媒体或包字节 (22.8) |
-| E6-A26 |长时间浸泡|没有无限制的资源、文件描述符或队列增长；无数据丢失；在客户同意的限度内实现稳定的延迟|所需硬件 |没有|根据实际操作模式商定的持续时间和工作量 (22.9) |
-| E6-A27 |相机断开连接 |没有捏造就OK；报警、重新连接并安全恢复 |所需硬件 |没有|真实设备移除；适配器一致性套件涵盖基于模拟器的重新连接 (22.5) |</p>
+<p>| E6-A20 | GPU/accelerator failure | No fabricated OK; a recoverable failure reloads or switches to a validated CPU runtime with the same manifest and records the switch; a non-recoverable failure faults and blocks inspection | hardware-required | no | Recovery path has unit coverage; a real accelerator failure needs hardware (22.8, design 09.7) |
+| E6-A21 | Database failure/corruption | Fail safely, preserve diagnostics, execute the tested restore path | automated-local | yes | Disposable test database (22.8) |
+| E6-A22 | Backup + restore | Representative restore succeeds; pending evidence and upload tasks survive | automated-local | yes | Not operational until a restore succeeded (20.10) |
+| E6-A23 | Container restart | Supervisory recovery without a duplicate product decision | automated-local | yes | Requires Docker; run where available |
+| E6-A24 | Clock drift | Preserve monotonic ordering and correlation; alert on drift | automated-local | no | Requires a dedicated clock-drift harness; until then the runner records <code>NOT_EXECUTED</code> |
+| E6-A25 | Checksum failure | Reject the artifact and retain the recoverable task or version | automated-local | yes | Altered media or package bytes (22.8) |
+| E6-A26 | Long-running soak | No unbounded resource, file-descriptor, or queue growth; no data loss; stable latency within customer-agreed limits | hardware-required | no | Duration and workload agreed from actual operating patterns (22.9) |
+| E6-A27 | Camera disconnect | No fabricated OK; alarm, reconnect, and recover safely | hardware-required | no | Real device removal; simulator-based reconnect covered by the adapter conformance suite (22.5) |</p>
 <h2 id="7-mandatory-evidence-requirements">7. 强制性证据要求<a class="headerlink" href="#7-mandatory-evidence-requirements" title="Permanent link">&para;</a></h2>
-<p>每个执行的测试都会保留（设计 26.6，合同 10 §6）：</p>
+<p>Every executed test preserves (design 26.6, contract 10 §6):</p>
 <ul>
-<li>检查结果和原因代码。</li>
-<li>原始和选定的图像证据，加上注释/ROI 证据
-  配置。</li>
-<li>事实真相和裁决来源。</li>
-<li>应用程序、模型、规则、产品配置和审查策略版本
-  和校验和。</li>
-<li>源和接收时间戳以及设备标识符。</li>
-<li>条形码和产品映射结果。</li>
-<li>相关结构化日志、运行状况事件和阶段时间安排。</li>
-<li>上传任务和中央收据/校验和，其中同步在范围内。</li>
-<li>审阅者结果，其中人工验证是程序的一部分。</li>
+<li>Inspection result and reason codes.</li>
+<li>Original and selected image evidence, plus annotated/ROI evidence as
+  configured.</li>
+<li>Ground truth and adjudication provenance.</li>
+<li>Application, model, rule, product-configuration, and review-policy versions
+  and checksums.</li>
+<li>Source and receive timestamps and the device identifier.</li>
+<li>Barcode and product mapping result.</li>
+<li>Relevant structured logs, health events, and stage timings.</li>
+<li>Upload task and central receipt/checksum where synchronization is in scope.</li>
+<li>Reviewer outcome where human verification is part of the procedure.</li>
 </ul>
-<p>证据是不可变的或受校验和保护并通过检查链接
-标识符。 <code>NOT_EXECUTED</code>条目记录所需的环境而不是
-证据。报告的指标包括分子、分母、排除和
-不确定的计数、有意义的置信区间以及细分
-发布版本（设计26.7）。</p>
+<p>Evidence is immutable or checksum-protected and linked through the inspection
+identifier. <code>NOT_EXECUTED</code> entries record the required environment instead of
+evidence. Reported metrics include numerator, denominator, excluded and
+inconclusive counts, confidence interval where meaningful, and segmentation by
+release version (design 26.7).</p>
 <h2 id="8-merge-and-release-gates">8. 合并和释放门<a class="headerlink" href="#8-merge-and-release-gates" title="Permanent link">&para;</a></h2>
 <ul>
-<li>通过类型化接口和类型化、版本化的 Pydantic 进行重点更改
-  体现出来。</li>
-<li>对每个更改的安全不变量进行回归测试。</li>
-<li>通过强制性质量命令：<code>ruff check</code>、<code>ruff format --check</code>、
-  <code>mypy</code>、<code>pytest</code>、<code>mkdocs build --strict</code>、<code>pnpm -r build/lint/test</code> 和
-  边缘网络 e2e。</li>
-<li>现场有证据后才出具边缘验收报告；一个
-  模板或仅准备状态永远不会被视为已接受。</li>
-<li>在代表性恢复完成之前，备份不被视为可操作
-  成功了（设计20.10）。</li>
+<li>Focused changes with typed interfaces and typed, versioned Pydantic
+  manifests.</li>
+<li>Regression tests for every changed safety invariant.</li>
+<li>Passing mandatory quality commands: <code>ruff check</code>, <code>ruff format --check</code>,
+  <code>mypy</code>, <code>pytest</code>, <code>mkdocs build --strict</code>, <code>pnpm -r build/lint/test</code>, and
+  edge-web e2e.</li>
+<li>The edge acceptance report is issued only after on-site evidence exists; a
+  template or prep-only state never reads as accepted.</li>
+<li>A backup is not considered operational until a representative restore has
+  succeeded (design 20.10).</li>
 </ul>
 <h2 id="9-references">9. 参考文献<a class="headerlink" href="#9-references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../design/26-customer-acceptance/">Customer Acceptance</a>，部分
-  26.3-26.8。</li>
-<li><a href="../../design/22-testing-and-quality-assurance/">Testing and Quality Assurance</a>，
-  第 22.7-22.9 节。</li>
-<li><a href="../../contracts/10-model-rule-release-and-acceptance/">Contract 10: Model, Rule Release, and Acceptance</a>。</li>
-<li><a href="../../design/20-deployment-and-operations/">Deployment and Operations</a>，
-  第 20.10 节。</li>
-<li><a href="../E5-deployment-and-security/">E5: Deployment and Security</a>。</li>
-<li><a href="../../runbooks/15-edge-acceptance-execution/">Runbook 15: Edge Acceptance Execution</a>。</li>
-<li><a href="../../design/28-edge-acceptance-report/">Edge acceptance report template</a>。</li>
-<li><code>scripts/edge-acceptance-run.py</code>（本地自动化运行器发出
-  证据明显）。</li>
-<li><a href="../../ai/context/">Full project context</a>，第 9 节（未清项目和当前项目
-  状态）。</li>
+<li><a href="../../design/26-customer-acceptance/">Customer Acceptance</a>, sections
+  26.3-26.8.</li>
+<li><a href="../../design/22-testing-and-quality-assurance/">Testing and Quality Assurance</a>,
+  sections 22.7-22.9.</li>
+<li><a href="../../contracts/10-model-rule-release-and-acceptance/">Contract 10: Model, Rule Release, and Acceptance</a>.</li>
+<li><a href="../../design/20-deployment-and-operations/">Deployment and Operations</a>,
+  section 20.10.</li>
+<li><a href="../E5-deployment-and-security/">E5: Deployment and Security</a>.</li>
+<li><a href="../../runbooks/15-edge-acceptance-execution/">Runbook 15: Edge Acceptance Execution</a>.</li>
+<li><a href="../../design/28-edge-acceptance-report/">Edge acceptance report template</a>.</li>
+<li><code>scripts/edge-acceptance-run.py</code> (local automation runner emitting the
+  evidence manifest).</li>
+<li><a href="../../ai/context/">Full project context</a>, section 9 (open items and current
+  status).</li>
 </ul>
 
 

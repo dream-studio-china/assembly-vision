@@ -1402,7 +1402,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -2920,7 +2920,7 @@
 <p>该文档必须描述初始 MVP 和目标生产架构。</p>
 <hr />
 <h1 id="1-project-context">1. 项目背景<a class="headerlink" href="#1-project-context" title="Permanent link">&para;</a></h1>
-<h2 id="11-project-name">1.1 项目名称<a class="headerlink" href="#11-project-name" title="Permanent link">&para;</a></h2>
+<h2 id="11-project-name">1.1 Project Name<a class="headerlink" href="#11-project-name" title="Permanent link">&para;</a></h2>
 <p><strong>装配愿景</strong></p>
 <p>完整标题：</p>
 <p><strong>AssemblyVision — 工业装配检测系统</strong></p>
@@ -3176,7 +3176,7 @@
 <li>重启政策</li>
 </ul>
 <p>边缘部署不能依赖于Kubernetes。</p>
-<p>中央服务器可能支持 Kubernetes 作为未来的选项，但最初的设计应该保持 Docker Compose 友好。</p>
+<p>中央服务器可能会支持 Kubernetes 作为未来的选项，但最初的设计应该保持 Docker Compose 友好。</p>
 <hr />
 <h1 id="5-detection-architecture">5. 检测架构<a class="headerlink" href="#5-detection-architecture" title="Permanent link">&para;</a></h1>
 <p>使用两级检测管道。</p>
@@ -3230,7 +3230,7 @@
 <li>工业扫描仪SDK</li>
 <li>OpenCV 条形码 API</li>
 <li>pyzbar 或 ZXing 兼容解决方案</li>
-<li>特定于供应商的相机或扫描仪 SDK</li>
+<li>供应商特定的相机或扫描仪 SDK</li>
 </ul>
 <p>条形码识别不得作为 YOLO 分类任务实现，除非 YOLO 仅用于定位条形码区域。</p>
 <p>条形码可识别或帮助解决：</p>
@@ -3240,7 +3240,7 @@
 <li>必要的检验规则</li>
 <li>追溯记录</li>
 </ul>
-<h2 id="55-rule-engine">5.5 规则引擎<a class="headerlink" href="#55-rule-engine" title="Permanent link">&para;</a></h2>
+<h2 id="55-rule-engine">5.5 Rule Engine<a class="headerlink" href="#55-rule-engine" title="Permanent link">&para;</a></h2>
 <p>规则引擎必须是确定性的并且独立于人工智能模型。</p>
 <p>示例：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">product_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model_a</span>
@@ -3281,7 +3281,7 @@
 <li>输送机传感器集成</li>
 </ul>
 <p>讨论权衡。</p>
-<h2 id="62-aggregation-policy">6.2 聚合策略<a class="headerlink" href="#62-aggregation-policy" title="Permanent link">&para;</a></h2>
+<h2 id="62-aggregation-policy">6.2 Aggregation Policy<a class="headerlink" href="#62-aggregation-policy" title="Permanent link">&para;</a></h2>
 <p>不要使用简单的整体产品多数投票。</p>
 <p>每个所需组件的汇总证据。</p>
 <p>示例：</p>
@@ -3311,7 +3311,7 @@
 <p>时间聚合不会提高底层 YOLO 模型的单帧精度。它通过跨框架结合证据来提高系统级的稳健性。</p>
 </blockquote>
 <hr />
-<h1 id="7-local-storage-architecture">7. 本地存储架构<a class="headerlink" href="#7-local-storage-architecture" title="Permanent link">&para;</a></h1>
+<h1 id="7-local-storage-architecture">7. Local Storage Architecture<a class="headerlink" href="#7-local-storage-architecture" title="Permanent link">&para;</a></h1>
 <p>边缘客户端必须维护本地持久存储。</p>
 <p>商店：</p>
 <ul>
@@ -3436,7 +3436,7 @@
 <li><code>tests/</code>包含跨应用程序测试</li>
 <li>运行时生产数据不得存储在 Git 存储库中</li>
 </ul>
-<p>生成并解释类似于以下的清晰目录结构：</p>
+<p>生成并解释一个清晰的目录结构，类似于：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>assembly-vision/
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>├── apps/
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>│   ├── edge-api/
@@ -3558,58 +3558,58 @@
 <li>故意制造缺少手册和缺少组件的案例</li>
 <li>在可行的情况下，从每个缺失组件场景大约 100 个图像开始</li>
 </ul>
-<p>不要假设这些数字保证了目标准确性。</p>
-<p>将它们描述为必须根据测量的验证性能进行调整的起点。</p>
+<p>Do not assume these numbers guarantee a target accuracy.</p>
+<p>Describe them as starting points that must be adjusted based on measured validation performance.</p>
 <h2 id="113-data-splitting">11.3 数据分割<a class="headerlink" href="#113-data-splitting" title="Permanent link">&para;</a></h2>
-<p>避免相邻视频帧泄漏。</p>
-<p>通过以下方式分割数据集：</p>
+<p>Avoid leakage from adjacent video frames.</p>
+<p>Split datasets by:</p>
 <ul>
-<li>产品批次</li>
-<li>捕获会话</li>
-<li>生产日期</li>
-<li>实物产品实例</li>
+<li>Product batch</li>
+<li>Capture session</li>
+<li>Production date</li>
+<li>Physical product instance</li>
 </ul>
-<p>不要在训练集和验证集中随机分割几乎相同的相邻帧。</p>
+<p>Do not randomly split nearly identical adjacent frames across train and validation sets.</p>
 <h2 id="114-camera-angle">11.4 摄像机角度<a class="headerlink" href="#114-camera-angle" title="Permanent link">&para;</a></h2>
-<p>初始模型应针对一个固定的生产角度进行优化。</p>
-<p>如果相机保持固定，第一条生产线不需要多角度数据。</p>
-<p>如果摄像机角度发生显着变化：</p>
+<p>The initial model should optimize for one fixed production angle.</p>
+<p>Multi-angle data is not required for the first production line if the camera remains fixed.</p>
+<p>If the camera angle changes significantly:</p>
 <ul>
-<li>测试当前模型</li>
-<li>从新角度收集数据</li>
-<li>微调现有模型</li>
-<li>重新验证整个系统</li>
+<li>Test the current model</li>
+<li>Collect data from the new angle</li>
+<li>Fine-tune the existing model</li>
+<li>Revalidate the complete system</li>
 </ul>
-<p>接近 45 度的摄像机角度变化应被视为有意义的域变化。</p>
+<p>A camera-angle change near 45 degrees should be treated as a meaningful domain change.</p>
 <hr />
 <h1 id="12-human-in-the-loop-strategy">12. 人机交互策略<a class="headerlink" href="#12-human-in-the-loop-strategy" title="Permanent link">&para;</a></h1>
-<p>谨慎推出。</p>
-<p>初始生产阶段：</p>
+<p>Use a cautious rollout.</p>
+<p>Initial production phase:</p>
 <ul>
-<li>AI执行自动检查</li>
-<li>所有 NG 结果均可供人工审核</li>
-<li>低可信度案例可能会被审查</li>
-<li>可以审核 OK 结果的样本</li>
-<li>存储更正</li>
-<li>错误分类的案例被添加到培训积压中</li>
+<li>AI performs automatic inspection</li>
+<li>All NG results are available for human review</li>
+<li>Low-confidence cases may be reviewed</li>
+<li>A sample of OK results may be audited</li>
+<li>Corrections are stored</li>
+<li>Misclassified cases are added to the training backlog</li>
 </ul>
-<p>后期减少人工审核必须基于生产证据，而不是固定的日历日期。</p>
-<p>曲目：</p>
+<p>Later reduction of manual review must be based on production evidence, not a fixed calendar date.</p>
+<p>Track:</p>
 <ul>
-<li>人工审核率</li>
-<li>手动修正率</li>
-<li>假阳性率</li>
-<li>估计假阴性率</li>
-<li>每个产品的性能</li>
-<li>每个组件的性能</li>
-<li>按型号版本的性能</li>
-<li>按规则版本划分的性能</li>
+<li>Manual review rate</li>
+<li>Manual correction rate</li>
+<li>False-positive rate</li>
+<li>Estimated false-negative rate</li>
+<li>Per-product performance</li>
+<li>Per-component performance</li>
+<li>Performance by model version</li>
+<li>Performance by rule version</li>
 </ul>
 <hr />
 <h1 id="13-mvp-scope">13. MVP 范围<a class="headerlink" href="#13-mvp-scope" title="Permanent link">&para;</a></h1>
 <h2 id="131-two-day-static-image-mvp">13.1 两天静态图像 MVP<a class="headerlink" href="#131-two-day-static-image-mvp" title="Permanent link">&para;</a></h2>
-<p>第一个 MVP 仅处理静态图像。</p>
-<p>所需工作流程：</p>
+<p>The first MVP processes static images only.</p>
+<p>Required workflow:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Input folder
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>→ Read image
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>→ Detect product
@@ -3621,87 +3621,87 @@
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>→ Save annotated image
 <a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>→ Save ROI
 </code></pre></div>
-<p>第一天：</p>
+<p>Day one:</p>
 <ul>
-<li>初始化 Monorepo</li>
-<li>实现文件夹图像源</li>
-<li>装载产品检测器</li>
-<li>检测产品边界框</li>
-<li>实施ROI提取</li>
-<li>保存 ROI 图像</li>
-<li>保存初始 JSON 输出</li>
+<li>Initialize Monorepo</li>
+<li>Implement folder image source</li>
+<li>Load product detector</li>
+<li>Detect product bounding box</li>
+<li>Implement ROI extraction</li>
+<li>Save ROI images</li>
+<li>Save initial JSON output</li>
 </ul>
-<p>第二天：</p>
+<p>Day two:</p>
 <ul>
-<li>负载成分检测器</li>
-<li>检测所需的组件</li>
-<li>实施初始规则引擎</li>
-<li>做出 OK 或 NG 决定</li>
-<li>保存缺少组件的原因</li>
-<li>保存带注释的图像</li>
-<li>添加CLI命令</li>
-<li>添加最少的测试</li>
-<li>添加运行指令</li>
+<li>Load component detector</li>
+<li>Detect required components</li>
+<li>Implement initial rule engine</li>
+<li>Produce OK or NG decision</li>
+<li>Save missing-component reasons</li>
+<li>Save annotated images</li>
+<li>Add CLI command</li>
+<li>Add minimal tests</li>
+<li>Add run instructions</li>
 </ul>
-<p>不包括在两天 MVP 中：</p>
+<p>Do not include in the two-day MVP:</p>
 <ul>
-<li>相机SDK集成</li>
-<li>实时视频</li>
-<li>时间聚合</li>
-<li>中央服务器</li>
-<li>完整的边缘仪表板</li>
-<li>完整的管理仪表板</li>
-<li>认证</li>
-<li>PLC集成</li>
-<li>制造执行系统集成</li>
-<li>自动再培训</li>
+<li>Camera SDK integration</li>
+<li>Real-time video</li>
+<li>Temporal aggregation</li>
+<li>Central server</li>
+<li>Complete edge dashboard</li>
+<li>Complete administration dashboard</li>
+<li>Authentication</li>
+<li>PLC integration</li>
+<li>MES integration</li>
+<li>Automated retraining</li>
 </ul>
 <h2 id="132-one-month-target">13.2 一个月目标<a class="headerlink" href="#132-one-month-target" title="Permanent link">&para;</a></h2>
-<p>第一周：</p>
+<p>Week 1:</p>
 <ul>
-<li>静态图像管道</li>
-<li>产品检测器</li>
-<li>投资回报率引擎</li>
-<li>元件检测器</li>
-<li>规则引擎</li>
-<li>基本评价</li>
+<li>Static image pipeline</li>
+<li>Product detector</li>
+<li>ROI engine</li>
+<li>Component detector</li>
+<li>Rule engine</li>
+<li>Basic evaluation</li>
 </ul>
-<p>第 2 周：</p>
+<p>Week 2:</p>
 <ul>
-<li>相机集成</li>
-<li>条码识别</li>
-<li>本地数据库</li>
-<li>本地文件存储</li>
-<li>边缘API</li>
-<li>基本边缘仪表板</li>
+<li>Camera integration</li>
+<li>Barcode recognition</li>
+<li>Local database</li>
+<li>Local file storage</li>
+<li>Edge API</li>
+<li>Basic edge dashboard</li>
 </ul>
-<p>第 3 周：</p>
+<p>Week 3:</p>
 <ul>
-<li>视频帧处理</li>
-<li>产品窗口管理</li>
-<li>时间聚合</li>
-<li>上传队列</li>
-<li>中央API</li>
-<li>初始中央数据库</li>
-<li>初始管理仪表板</li>
+<li>Video-frame processing</li>
+<li>Product-window management</li>
+<li>Temporal aggregation</li>
+<li>Upload queue</li>
+<li>Central API</li>
+<li>Initial central database</li>
+<li>Initial administration dashboard</li>
 </ul>
-<p>第 4 周：</p>
+<p>Week 4:</p>
 <ul>
-<li>Docker部署</li>
-<li>离线弹性</li>
-<li>重试行为</li>
-<li>数据保留</li>
-<li>日志和健康监控</li>
-<li>客户现场测试</li>
-<li>验收数据集评估</li>
-<li>部署文档</li>
-<li>操作员文档</li>
+<li>Docker deployment</li>
+<li>Offline resilience</li>
+<li>Retry behavior</li>
+<li>Data retention</li>
+<li>Logs and health monitoring</li>
+<li>Customer-site testing</li>
+<li>Acceptance dataset evaluation</li>
+<li>Deployment documentation</li>
+<li>Operator documentation</li>
 </ul>
-<p>使路线图切合实际并确定依赖性和风险。</p>
+<p>Make the roadmap realistic and identify dependencies and risks.</p>
 <hr />
 <h1 id="14-required-documentation-set">14. 所需文件集<a class="headerlink" href="#14-required-documentation-set" title="Permanent link">&para;</a></h1>
-<p>将文档生成为多个 Markdown 文件。</p>
-<p>使用以下结构：</p>
+<p>Generate the documentation as multiple Markdown files.</p>
+<p>Use the following structure:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docs/
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>├── 00-cover-and-status.md
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>├── 01-introduction.md
@@ -3733,358 +3733,358 @@
 <a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>├── 27-risks-and-mitigations.md
 <a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>└── appendices.md
 </code></pre></div>
-<p>还生成：</p>
+<p>Also generate:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>README.md
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>docs/README.md
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>docs/decisions/
 </code></pre></div>
-<p>为重要决策生成架构决策记录，例如：</p>
+<p>Generate architecture decision records for important decisions such as:</p>
 <ul>
-<li>ADR-001：边缘优先检查</li>
-<li>ADR-002：Python 后端</li>
-<li>ADR-003：Vue 3 和 TypeScript 前端</li>
-<li>ADR-004：两阶段检测</li>
-<li>ADR-005：本地优先存储和延迟上传</li>
-<li>ADR-006：REST 加 WebSocket</li>
-<li>ADR-007：莫诺雷波</li>
-<li>ADR-008：Docker 部署</li>
-<li>ADR-009：静态图像优先 MVP</li>
-<li>ADR-010：每个组件时间聚合</li>
+<li>ADR-001: Edge-first inspection</li>
+<li>ADR-002: Python backend</li>
+<li>ADR-003: Vue 3 and TypeScript frontend</li>
+<li>ADR-004: Two-stage detection</li>
+<li>ADR-005: Local-first storage and delayed upload</li>
+<li>ADR-006: REST plus WebSocket</li>
+<li>ADR-007: Monorepo</li>
+<li>ADR-008: Docker deployment</li>
+<li>ADR-009: Static-image-first MVP</li>
+<li>ADR-010: Per-component temporal aggregation</li>
 </ul>
 <hr />
 <h1 id="15-required-diagrams">15. 所需图表<a class="headerlink" href="#15-required-diagrams" title="Permanent link">&para;</a></h1>
-<p>使用美人鱼。</p>
-<p>至少包括：</p>
+<p>Use Mermaid.</p>
+<p>Include at minimum:</p>
 <ul>
-<li>系统上下文图</li>
-<li>边缘和中央服务器部署图</li>
-<li>边缘组件图</li>
-<li>中央服务器组件图</li>
-<li>静态图像检查序列</li>
-<li>实时检查序列</li>
-<li>时间聚合序列</li>
-<li>上传和重试序列</li>
-<li>离线操作顺序</li>
-<li>手动审核顺序</li>
-<li>模型更新顺序</li>
-<li>数据保留生命周期</li>
-<li>Monorepo依赖关系图</li>
-<li>数据库实体关系图</li>
-<li>设备状态图</li>
-<li>检验状态图</li>
+<li>System context diagram</li>
+<li>Edge and central-server deployment diagram</li>
+<li>Edge component diagram</li>
+<li>Central-server component diagram</li>
+<li>Static-image inspection sequence</li>
+<li>Real-time inspection sequence</li>
+<li>Temporal aggregation sequence</li>
+<li>Upload and retry sequence</li>
+<li>Offline operation sequence</li>
+<li>Manual review sequence</li>
+<li>Model update sequence</li>
+<li>Data-retention lifecycle</li>
+<li>Monorepo dependency diagram</li>
+<li>Database entity relationship diagram</li>
+<li>Device state diagram</li>
+<li>Inspection state diagram</li>
 </ul>
-<p>确保 Mermaid 语法有效。</p>
-<p>不要将不受支持的语法放入图表中。</p>
+<p>Ensure Mermaid syntax is valid.</p>
+<p>Do not put unsupported syntax inside diagrams.</p>
 <hr />
 <h1 id="16-required-data-models">16. 所需的数据模型<a class="headerlink" href="#16-required-data-models" title="Permanent link">&para;</a></h1>
-<p>提供具体的 Pydantic 示例：</p>
+<p>Provide concrete Pydantic examples for:</p>
 <ul>
-<li>边界框</li>
-<li>检测</li>
-<li>框架质量</li>
-<li>产品检测</li>
-<li>ROI结果</li>
-<li>组件检测</li>
-<li>聚合组件证据</li>
-<li>检查决定</li>
-<li>检验记录</li>
-<li>上传任务</li>
-<li>设备状态</li>
-<li>产品配置</li>
-<li>规则配置</li>
-<li>模型清单</li>
-<li>评论记录</li>
+<li>BoundingBox</li>
+<li>Detection</li>
+<li>FrameQuality</li>
+<li>ProductDetection</li>
+<li>ROIResult</li>
+<li>ComponentDetection</li>
+<li>AggregatedComponentEvidence</li>
+<li>InspectionDecision</li>
+<li>InspectionRecord</li>
+<li>UploadTask</li>
+<li>DeviceStatus</li>
+<li>ProductConfiguration</li>
+<li>RuleConfiguration</li>
+<li>ModelManifest</li>
+<li>ReviewRecord</li>
 </ul>
-<p>提供匹配的 TypeScript 类型或接口。</p>
-<p>解释如何保持 Python 和 TypeScript API 类型同步。</p>
-<p>在适当的情况下推荐基于 OpenAPI 的 TypeScript 客户端生成。</p>
+<p>Provide matching TypeScript types or interfaces.</p>
+<p>Explain how to keep Python and TypeScript API types synchronized.</p>
+<p>Recommend OpenAPI-based TypeScript client generation where appropriate.</p>
 <hr />
 <h1 id="17-required-apis">17. 所需的API<a class="headerlink" href="#17-required-apis" title="Permanent link">&para;</a></h1>
-<p>为边缘和中央系统定义实用的 API 端点。</p>
-<h2 id="edge-apis">边缘API<a class="headerlink" href="#edge-apis" title="Permanent link">&para;</a></h2>
-<p>示例：</p>
+<p>Define practical API endpoints for the edge and central systems.</p>
+<h2 id="edge-apis">边缘 API<a class="headerlink" href="#edge-apis" title="Permanent link">&para;</a></h2>
+<p>Examples:</p>
 <ul>
-<li>相机状态</li>
-<li>检查状态</li>
-<li>最近的检查</li>
-<li>当地检查详情</li>
-<li>本地图像检索</li>
-<li>上传队列</li>
-<li>重试上传</li>
-<li>本地配置</li>
-<li>设备健康状况</li>
-<li>WebSocket检查事件</li>
+<li>Camera state</li>
+<li>Inspection state</li>
+<li>Recent inspections</li>
+<li>Local inspection details</li>
+<li>Local image retrieval</li>
+<li>Upload queue</li>
+<li>Retry upload</li>
+<li>Local configuration</li>
+<li>Device health</li>
+<li>WebSocket inspection events</li>
 </ul>
 <h2 id="central-apis">中央API<a class="headerlink" href="#central-apis" title="Permanent link">&para;</a></h2>
-<p>示例：</p>
+<p>Examples:</p>
 <ul>
-<li>认证</li>
-<li>设备</li>
-<li>生产线</li>
-<li>检查</li>
-<li>图片</li>
-<li>NG评论</li>
-<li>产品</li>
-<li>必需组件规则</li>
-<li>型号</li>
-<li>规则版本</li>
-<li>设备配置</li>
-<li>仪表板</li>
-<li>报告</li>
-<li>系统事件</li>
-<li>审核日志</li>
+<li>Authentication</li>
+<li>Devices</li>
+<li>Production lines</li>
+<li>Inspections</li>
+<li>Images</li>
+<li>NG reviews</li>
+<li>Products</li>
+<li>Required-component rules</li>
+<li>Models</li>
+<li>Rule versions</li>
+<li>Device configuration</li>
+<li>Dashboard</li>
+<li>Reports</li>
+<li>System events</li>
+<li>Audit logs</li>
 </ul>
-<p>对于每个 API 组，包括：</p>
+<p>For each API group, include:</p>
 <ul>
-<li>端点</li>
-<li>方法</li>
-<li>目的</li>
-<li>请求架构</li>
-<li>响应模式</li>
-<li>错误条件</li>
-<li>适用时幂等行为</li>
-<li>适用时分页</li>
-<li>授权要求</li>
+<li>Endpoint</li>
+<li>Method</li>
+<li>Purpose</li>
+<li>Request schema</li>
+<li>Response schema</li>
+<li>Error conditions</li>
+<li>Idempotency behavior where applicable</li>
+<li>Pagination where applicable</li>
+<li>Authorization requirements</li>
 </ul>
 <hr />
 <h1 id="18-database-design">18. 数据库设计<a class="headerlink" href="#18-database-design" title="Permanent link">&para;</a></h1>
-<p>设计单独的本地边缘和中央数据库模式。</p>
+<p>Design separate local edge and central database schemas.</p>
 <h2 id="edge-database">边缘数据库<a class="headerlink" href="#edge-database" title="Permanent link">&para;</a></h2>
-<p>可能的表：</p>
+<p>Possible tables:</p>
 <ul>
-<li>本地检查</li>
-<li>本地检测帧</li>
-<li>本地组件证据</li>
-<li>本地媒体文件</li>
-<li>上传任务</li>
-<li>设备事件</li>
-<li>本地配置</li>
-<li>模型安装</li>
-<li>规则安装</li>
+<li>local_inspections</li>
+<li>local_detection_frames</li>
+<li>local_component_evidence</li>
+<li>local_media_files</li>
+<li>upload_tasks</li>
+<li>device_events</li>
+<li>local_configuration</li>
+<li>model_installations</li>
+<li>rule_installations</li>
 </ul>
 <h2 id="central-database">中央数据库<a class="headerlink" href="#central-database" title="Permanent link">&para;</a></h2>
-<p>可能的表：</p>
+<p>Possible tables:</p>
 <ul>
-<li>组织</li>
-<li>网站</li>
-<li>生产线</li>
-<li>设备</li>
-<li>用户</li>
-<li>角色</li>
-<li>用户角色</li>
-<li>产品</li>
-<li>产品组件</li>
-<li>规则</li>
-<li>规则版本</li>
-<li>模型包</li>
-<li>模型版本</li>
-<li>检查</li>
-<li>检查组件</li>
-<li>检查媒体</li>
-<li>评论记录</li>
-<li>设备事件</li>
-<li>上传收据</li>
-<li>审计日志</li>
+<li>organizations</li>
+<li>sites</li>
+<li>production_lines</li>
+<li>devices</li>
+<li>users</li>
+<li>roles</li>
+<li>user_roles</li>
+<li>products</li>
+<li>product_components</li>
+<li>rules</li>
+<li>rule_versions</li>
+<li>model_packages</li>
+<li>model_versions</li>
+<li>inspections</li>
+<li>inspection_components</li>
+<li>inspection_media</li>
+<li>review_records</li>
+<li>device_events</li>
+<li>upload_receipts</li>
+<li>audit_logs</li>
 </ul>
-<p>解释一下：</p>
+<p>Explain:</p>
 <ul>
-<li>主键</li>
-<li>企业标识符</li>
-<li>条形码索引</li>
-<li>基于时间的索引</li>
-<li>模型和规则的可追溯性</li>
-<li>媒体元数据</li>
-<li>软删除</li>
-<li>保留</li>
-<li>审核要求</li>
+<li>Primary keys</li>
+<li>Business identifiers</li>
+<li>Barcode indexing</li>
+<li>Time-based indexing</li>
+<li>Model and rule traceability</li>
+<li>Media metadata</li>
+<li>Soft deletion</li>
+<li>Retention</li>
+<li>Audit requirements</li>
 </ul>
 <hr />
 <h1 id="19-testing-requirements">19. 测试要求<a class="headerlink" href="#19-testing-requirements" title="Permanent link">&para;</a></h1>
-<p>定义：</p>
+<p>Define:</p>
 <ul>
-<li>单元测试</li>
-<li>集成测试</li>
-<li>端到端测试</li>
-<li>模型评估</li>
-<li>相机适配器测试</li>
-<li>离线弹性测试</li>
-<li>上传重试测试</li>
-<li>断电恢复测试</li>
-<li>磁盘满测试</li>
-<li>数据库故障测试</li>
-<li>性能测试</li>
-<li>长时间运行稳定性测试</li>
-<li>前端组件测试</li>
-<li>API合约测试</li>
-<li>客户验收测试</li>
+<li>Unit testing</li>
+<li>Integration testing</li>
+<li>End-to-end testing</li>
+<li>Model evaluation</li>
+<li>Camera adapter testing</li>
+<li>Offline resilience testing</li>
+<li>Upload retry testing</li>
+<li>Power-loss recovery testing</li>
+<li>Disk-full testing</li>
+<li>Database failure testing</li>
+<li>Performance testing</li>
+<li>Long-running stability testing</li>
+<li>Frontend component testing</li>
+<li>API contract testing</li>
+<li>Customer acceptance testing</li>
 </ul>
-<p>重点衡量指标：</p>
+<p>Focus metrics on:</p>
 <ul>
-<li>不良召回</li>
-<li>假阴性率</li>
-<li>假阳性率</li>
-<li>每个组件的召回</li>
-<li>每个产品的召回</li>
-<li>产品检测成功</li>
-<li>投资回报率的成功</li>
-<li>条码读取成功</li>
-<li>平均延迟</li>
-<li>P95 延迟</li>
-<li>吞吐量</li>
-<li>上传延迟</li>
-<li>人工审核率</li>
-<li>手动修正率</li>
+<li>NG recall</li>
+<li>False-negative rate</li>
+<li>False-positive rate</li>
+<li>Per-component recall</li>
+<li>Per-product recall</li>
+<li>Product-detection success</li>
+<li>ROI-generation success</li>
+<li>Barcode-read success</li>
+<li>Average latency</li>
+<li>P95 latency</li>
+<li>Throughput</li>
+<li>Upload delay</li>
+<li>Manual review rate</li>
+<li>Manual correction rate</li>
 </ul>
-<p>不要使用总体准确性作为唯一的成功指标。</p>
+<p>Do not use overall accuracy as the only success metric.</p>
 <hr />
 <h1 id="20-risk-requirements">20. 风险要求<a class="headerlink" href="#20-risk-requirements" title="Permanent link">&para;</a></h1>
-<p>包括风险登记册，内容包括：</p>
+<p>Include a risk register covering:</p>
 <ul>
-<li>相机移位</li>
-<li>相机断线</li>
-<li>曝光不正确</li>
-<li>运动模糊</li>
-<li>反思</li>
-<li>产品遮挡</li>
-<li>产品定位变化</li>
-<li>条码读取失败</li>
-<li>错误的产品类型映射</li>
-<li>错误的规则配置</li>
-<li>模型和规则版本不匹配</li>
-<li>一个检查窗口中包含多种产品</li>
-<li>重复检查</li>
-<li>产品之间的框架混合</li>
-<li>网络中断</li>
-<li>中央服务器中断</li>
-<li>上传重复项</li>
-<li>本地磁盘已满</li>
-<li>本地数据库损坏</li>
-<li>容器重启</li>
-<li>客户端断电</li>
-<li>时钟漂移</li>
-<li>模型漂移</li>
-<li>NG样本不足</li>
-<li>顾客改变拍摄角度</li>
-<li>未经授权的配置更改</li>
+<li>Camera shift</li>
+<li>Camera disconnection</li>
+<li>Incorrect exposure</li>
+<li>Motion blur</li>
+<li>Reflection</li>
+<li>Product occlusion</li>
+<li>Product-position variation</li>
+<li>Barcode-read failure</li>
+<li>Wrong product-type mapping</li>
+<li>Wrong rule configuration</li>
+<li>Model and rule version mismatch</li>
+<li>Multiple products in one inspection window</li>
+<li>Duplicate inspection</li>
+<li>Frame mixing between products</li>
+<li>Network outage</li>
+<li>Central-server outage</li>
+<li>Upload duplication</li>
+<li>Local disk full</li>
+<li>Local database corruption</li>
+<li>Container restart</li>
+<li>Client power loss</li>
+<li>Clock drift</li>
+<li>Model drift</li>
+<li>Insufficient NG samples</li>
+<li>Customer changing the camera angle</li>
+<li>Unauthorized configuration changes</li>
 </ul>
-<p>对于每个风险，提供：</p>
+<p>For each risk provide:</p>
 <ul>
-<li>原因</li>
-<li>影响</li>
-<li>检测方法</li>
-<li>预防</li>
-<li>恢复</li>
-<li>剩余风险</li>
+<li>Cause</li>
+<li>Impact</li>
+<li>Detection method</li>
+<li>Prevention</li>
+<li>Recovery</li>
+<li>Residual risk</li>
 </ul>
 <hr />
 <h1 id="21-customer-acceptance-requirements">21. 客户验收要求<a class="headerlink" href="#21-customer-acceptance-requirements" title="Permanent link">&para;</a></h1>
-<p>验收计划必须使用未用于模型训练的客户生产数据。</p>
-<p>分别测试：</p>
+<p>The acceptance plan must use customer production data that was not used for model training.</p>
+<p>Test separately by:</p>
 <ul>
-<li>产品类型</li>
-<li>缺少组件</li>
-<li>缺少手册</li>
-<li>条形码故障</li>
-<li>产品定位转移</li>
-<li>正常生产变化</li>
-<li>连续OK产品</li>
-<li>连续NG产品</li>
-<li>混合产品类型</li>
-<li>离线操作</li>
-<li>网络恢复</li>
-<li>应用程序重新启动</li>
-<li>长时间运行</li>
+<li>Product type</li>
+<li>Missing component</li>
+<li>Missing manual</li>
+<li>Barcode failure</li>
+<li>Product-position shift</li>
+<li>Normal production variation</li>
+<li>Consecutive OK products</li>
+<li>Consecutive NG products</li>
+<li>Mixed product types</li>
+<li>Offline operation</li>
+<li>Network recovery</li>
+<li>Application restart</li>
+<li>Long-running operation</li>
 </ul>
-<p>每个测试必须保留：</p>
+<p>Each test must preserve:</p>
 <ul>
-<li>检查结果</li>
-<li>图像证据</li>
-<li>型号版本</li>
-<li>规则版本</li>
-<li>时间戳</li>
-<li>设备标识符</li>
-<li>相关日志</li>
+<li>Inspection result</li>
+<li>Image evidence</li>
+<li>Model version</li>
+<li>Rule version</li>
+<li>Timestamp</li>
+<li>Device identifier</li>
+<li>Relevant logs</li>
 </ul>
-<p>主要的验收指标是真实的 NG 召回率。</p>
-<p>不要定义未经验证的数字保证。</p>
-<p>相反，应提供一个框架，用于在基线评估后与客户就目标值达成一致。</p>
+<p>The primary acceptance metric is real NG recall.</p>
+<p>Do not define an unvalidated numerical guarantee.</p>
+<p>Instead, provide a framework for agreeing target values with the customer after baseline evaluation.</p>
 <hr />
 <h1 id="22-writing-and-quality-requirements">22. 写作和质量要求<a class="headerlink" href="#22-writing-and-quality-requirements" title="Permanent link">&para;</a></h1>
-<p>生成的文档必须：</p>
+<p>The generated documents must:</p>
 <ul>
-<li>以专业技术英语书写</li>
-<li>使用 Markdown</li>
-<li>使用编号部分</li>
-<li>使用一致的术语</li>
-<li>避免矛盾</li>
-<li>避免无依据的主张</li>
-<li>避免使用模糊的短语，例如“使用人工智能来提高准确性”</li>
-<li>解释每一个主要的架构决策</li>
-<li>分离当前范围、MVP 范围、生产目标和未来范围</li>
-<li>清楚地标记假设</li>
-<li>清楚地标记未解决的决定</li>
-<li>清楚地标记可选组件</li>
-<li>包括面向实施的示例</li>
-<li>包括有用的伪代码</li>
-<li>包括配置示例</li>
-<li>包括 API 示例</li>
-<li>包括 Pydantic 示例</li>
-<li>包括 TypeScript 示例</li>
-<li>包括 SQL 架构指导</li>
-<li>包括 Docker Compose 示例</li>
-<li>包括 Nginx 示例</li>
-<li>包括测试用例</li>
-<li>包括操作手册</li>
-<li>包括故障处理行为</li>
-<li>包括可观察性要求</li>
-<li>包括保留和清理政策</li>
+<li>Be written in professional technical English</li>
+<li>Use Markdown</li>
+<li>Use numbered sections</li>
+<li>Use consistent terminology</li>
+<li>Avoid contradictions</li>
+<li>Avoid unsupported claims</li>
+<li>Avoid vague phrases such as “use AI to improve accuracy”</li>
+<li>Explain every major architectural decision</li>
+<li>Separate current scope, MVP scope, production target, and future scope</li>
+<li>Clearly mark assumptions</li>
+<li>Clearly mark unresolved decisions</li>
+<li>Clearly mark optional components</li>
+<li>Include implementation-oriented examples</li>
+<li>Include pseudocode where useful</li>
+<li>Include configuration examples</li>
+<li>Include API examples</li>
+<li>Include Pydantic examples</li>
+<li>Include TypeScript examples</li>
+<li>Include SQL schema guidance</li>
+<li>Include Docker Compose examples</li>
+<li>Include Nginx examples</li>
+<li>Include test cases</li>
+<li>Include operational runbooks</li>
+<li>Include failure-handling behavior</li>
+<li>Include observability requirements</li>
+<li>Include retention and cleanup policies</li>
 </ul>
-<p>不要捏造未提供的工厂详细信息。</p>
-<p>当信息未知时，创建一个显式部分，名为：</p>
+<p>Do not invent factory details that are not provided.</p>
+<p>When information is unknown, create an explicit section named:</p>
 <p><code>Open Questions and Validation Required</code></p>
-<p>不要默默地假设：</p>
+<p>Do not silently assume:</p>
 <ul>
-<li>输送机速度</li>
-<li>相机供应商</li>
-<li>相机SDK</li>
-<li>GPU模型</li>
-<li>操作系统</li>
-<li>精确的条形码标准</li>
-<li>精确的组件类</li>
-<li>准确的产品数量</li>
-<li>准确的保留期限</li>
-<li>准确的中央服务器位置</li>
-<li>精确的网络可靠性</li>
-<li>准确的客户接受门槛</li>
+<li>Conveyor speed</li>
+<li>Camera vendor</li>
+<li>Camera SDK</li>
+<li>GPU model</li>
+<li>Operating system</li>
+<li>Exact barcode standard</li>
+<li>Exact component classes</li>
+<li>Exact product count</li>
+<li>Exact retention period</li>
+<li>Exact central-server location</li>
+<li>Exact network reliability</li>
+<li>Exact customer acceptance threshold</li>
 </ul>
 <hr />
 <h1 id="23-generation-workflow">23. 生成工作流程<a class="headerlink" href="#23-generation-workflow" title="Permanent link">&para;</a></h1>
-<p>按此顺序执行任务：</p>
+<p>Perform the task in this order:</p>
 <ol>
-<li>创建最终的文档文件树。</li>
-<li>创建术语和决策一致性检查表。</li>
-<li>生成顶层自述文件。</li>
-<li>生成架构概述。</li>
-<li>生成边缘客户端文档。</li>
-<li>生成中央服务器文档。</li>
-<li>生成AI-pipeline文档。</li>
-<li>生成数据和API文档。</li>
-<li>生成前端文档。</li>
-<li>生成部署和操作文档。</li>
-<li>生成测试、验收和风险文件。</li>
-<li>生成ADR 文件。</li>
-<li>检查所有生成的文档是否存在矛盾。
-14.修复不一致的术语。</li>
-<li>验证 Mermaid 语法。</li>
-<li>验证 Markdown 文件之间的链接。</li>
-<li>验证文档树中引用的每个文件是否存在。</li>
-<li>生成生成文件和未解决问题的最终摘要。</li>
+<li>Create the final documentation file tree.</li>
+<li>Create a terminology and decision consistency checklist.</li>
+<li>Generate the top-level README.</li>
+<li>Generate the architecture overview.</li>
+<li>Generate edge-client documents.</li>
+<li>Generate central-server documents.</li>
+<li>Generate AI-pipeline documents.</li>
+<li>Generate data and API documents.</li>
+<li>Generate frontend documents.</li>
+<li>Generate deployment and operations documents.</li>
+<li>Generate testing, acceptance, and risk documents.</li>
+<li>Generate ADR files.</li>
+<li>Review all generated documents for contradictions.</li>
+<li>Fix inconsistent terminology.</li>
+<li>Verify Mermaid syntax.</li>
+<li>Verify links between Markdown files.</li>
+<li>Verify that every file referenced in the documentation tree exists.</li>
+<li>Produce a final summary of generated files and unresolved questions.</li>
 </ol>
-<p>生成轮廓后不要停止。</p>
-<p>生成每个所需文件的完整内容。</p>
+<p>Do not stop after generating an outline.</p>
+<p>Generate the complete content for every required file.</p>
 <hr />
-<h1 id="24-repository-editing-instructions">24. 存储库编辑说明<a class="headerlink" href="#24-repository-editing-instructions" title="Permanent link">&para;</a></h1>
-<p>如果在存储库内操作：</p>
+<h1 id="24-repository-editing-instructions">24. Repository Editing Instructions<a class="headerlink" href="#24-repository-editing-instructions" title="Permanent link">&para;</a></h1>
+<p>If operating inside a repository:</p>
 <ul>
 <li>创建文件之前检查现有存储库。</li>
 <li>保留现有文件，除非明确需要替换。</li>

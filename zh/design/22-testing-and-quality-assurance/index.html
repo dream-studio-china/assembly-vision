@@ -1239,7 +1239,7 @@
   <a href="#2213-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        22.13 未解决的问题和需要验证
+        22.13 Open Questions and Validation Required
       
     </span>
   </a>
@@ -1593,7 +1593,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3224,7 +3224,7 @@
   <a href="#2213-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        22.13 未解决的问题和需要验证
+        22.13 Open Questions and Validation Required
       
     </span>
   </a>
@@ -3264,79 +3264,79 @@
 
 <h1 id="22-testing-and-quality-assurance">22. 测试和质量保证<a class="headerlink" href="#22-testing-and-quality-assurance" title="Permanent link">&para;</a></h1>
 <h2 id="221-purpose-and-quality-objective">22.1 目的和质量目标<a class="headerlink" href="#221-purpose-and-quality-objective" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision 测试展示了在代表性生产条件下测量的行为。主要质量目标是真实 NG 产品的高召回率和极低的假阴性率，并有可追溯的证据和谨慎的人工验证支持。没有任何测试计划或模型能够保证 100% 的准确性。</p>
+<p>AssemblyVision testing demonstrates measured behavior under representative production conditions. The primary quality objective is high recall of real NG products and an extremely low false-negative rate, supported by traceable evidence and cautious human verification. No test plan or model is represented as guaranteeing 100% accuracy.</p>
 <h2 id="222-scope-by-delivery-stage">22.2 按交付阶段划分的范围<a class="headerlink" href="#222-scope-by-delivery-stage" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>静态训练和检查 MVP：</strong> YOLO 数据集布局和标签验证、产品/ROI/组件坐标重新映射测试、合成夹具训练试运行、静态管道集成测试、确定性夹具、CLI 冒烟测试、保留文件名真实验证和基线模型评估。</li>
-<li><strong>一个月目标：</strong> 相机/条形码适配器、本地持久性、时间聚合、边缘 API/仪表板、一个中央摄取/历史/审核路径、有针对性的同步/重启/幂等性测试、部署冒烟测试以及访问允许的受控客户站点基线。</li>
-<li><strong>生产目标：</strong>独立验收数据、长时间运行测试、断电和磁盘满恢复、安全/合约测试、发布回归套件以及模型/规则升级门。</li>
-<li><strong>未来范围：</strong> 多线负载模拟、硬件在环装置、自动化车队金丝雀和其他相机域测试集。</li>
+<li><strong>Static train-and-inspect MVP:</strong> YOLO dataset-layout and label validation, product/ROI/component coordinate-remapping tests, training dry run on synthetic fixtures, static pipeline integration tests, deterministic fixtures, CLI smoke tests, held-out filename-ground-truth verification, and baseline model evaluation.</li>
+<li><strong>One-month target:</strong> camera/barcode adapters, local persistence, temporal aggregation, edge API/dashboard, one central ingestion/history/review path, targeted synchronization/restart/idempotency tests, deployment smoke tests, and a controlled customer-site baseline where access permits.</li>
+<li><strong>Production target:</strong> independent acceptance data, long-running tests, power-loss and disk-full recovery, security/contract testing, release regression suites, and model/rule promotion gates.</li>
+<li><strong>Future scope:</strong> multi-line load simulation, hardware-in-the-loop rigs, automated fleet canaries, and additional camera-domain test sets.</li>
 </ul>
 <h2 id="223-test-levels">22.3 测试级别<a class="headerlink" href="#223-test-levels" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>水平</th>
-<th>焦点</th>
-<th>代表性事例</th>
+<th>Level</th>
+<th>Focus</th>
+<th>Representative examples</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>单位</td>
-<td>纯行为和边界条件</td>
-<td>ROI 裁剪、置信度聚合、规则原因代码、保留资格</td>
+<td>Unit</td>
+<td>Pure behavior and boundary conditions</td>
+<td>ROI clipping, confidence aggregation, rule reason codes, retention eligibility</td>
 </tr>
 <tr>
-<td>组件</td>
-<td>具有受控依赖性的一项服务</td>
-<td>相机适配器重新连接、SQLite 存储库、上传状态机</td>
+<td>Component</td>
+<td>One service with controlled dependencies</td>
+<td>camera adapter reconnect, SQLite repository, upload state machine</td>
 </tr>
 <tr>
-<td>整合</td>
-<td>真正的边界</td>
-<td>API 加数据库、对象存储校验和、模型运行时加 ROI 映射</td>
+<td>Integration</td>
+<td>Real boundaries</td>
+<td>API plus database, object storage checksum, model runtime plus ROI mapping</td>
 </tr>
 <tr>
-<td>端到端</td>
-<td>用户/产品工作流程</td>
-<td>通过当地决策捕获；通过中央审核上传</td>
+<td>End-to-end</td>
+<td>User/product workflow</td>
+<td>capture through local decision; upload through central review</td>
 </tr>
 <tr>
-<td>模型评估</td>
-<td>坚持小组的统计表现</td>
-<td>按组件/产品和置信度分布进行的 NG 召回</td>
+<td>Model evaluation</td>
+<td>Statistical performance on held-out groups</td>
+<td>NG recall by component/product and confidence distributions</td>
 </tr>
 <tr>
-<td>韧性</td>
-<td>恢复和安全降解</td>
-<td>网络中断、重复网络抖动、断电、磁盘已满、加速器/推理故障、损坏、重新启动</td>
+<td>Resilience</td>
+<td>Recovery and safe degradation</td>
+<td>network outage, repeated network flap, power loss, disk full, accelerator/inference failure, corruption, restart</td>
 </tr>
 <tr>
-<td>验收</td>
-<td>客户生产行为</td>
-<td>使用未见过的生产数据在文件 26 中商定矩阵</td>
+<td>Acceptance</td>
+<td>Customer production behavior</td>
+<td>agreed matrix in document 26 using unseen production data</td>
 </tr>
 </tbody>
 </table>
-<p>测试使用与发布时相同的版本化模型、规则、应用程序和配置工件。</p>
+<p>Tests use the same versioned model, rule, application, and configuration artifacts intended for release.</p>
 <h2 id="224-unit-and-component-testing">22.4 单元和组件测试<a class="headerlink" href="#224-unit-and-component-testing" title="Permanent link">&para;</a></h2>
-<p>Python 测试使用 Pytest 并涵盖有效、无效和边界数据。基于属性的测试适用于边界框裁剪、坐标变换、幂等性和状态转换。时间、UUID 生成、摄像头输入和网络行为都是可注入的。</p>
-<p>所需的单元科目包括：</p>
+<p>Python tests use Pytest and cover valid, invalid, and boundary data. Property-based testing is appropriate for bounding-box clipping, coordinate transforms, idempotency, and state transitions. Time, UUID generation, camera input, and network behavior are injectable.</p>
+<p>Required unit subjects include:</p>
 <ul>
-<li>产品窗口打开/关闭和不明确的身份处理。</li>
-<li>ROI 边际扩展、边界裁剪、协调往返和无产品行为。</li>
-<li>帧质量拒绝和每个组件的时间证据策略。</li>
-<li>确定性规则评估，包括缺失和低置信度原因代码。</li>
-<li>产品/条形码映射和故障关闭行为。</li>
-<li>上传重试/退避、幂等密钥稳定性、校验和不匹配以及终端错误。</li>
-<li>保护待处理媒体的保留规则。</li>
-<li>配置/模型清单验证和兼容性检查。</li>
-<li>数据库事务行为和不完整记录恢复。</li>
+<li>Product-window opening/closing and ambiguous identity handling.</li>
+<li>ROI margin expansion, boundary clipping, coordinate round trips, and no-product behavior.</li>
+<li>Frame-quality rejection and per-component temporal evidence policies.</li>
+<li>Deterministic rule evaluation, including missing and low-confidence reason codes.</li>
+<li>Product/barcode mapping and fail-closed behavior.</li>
+<li>Upload retry/backoff, idempotency key stability, checksum mismatch, and terminal errors.</li>
+<li>Retention rules that protect pending media.</li>
+<li>Configuration/model manifest validation and compatibility checks.</li>
+<li>Database transaction behavior and incomplete-record recovery.</li>
 </ul>
-<p>Vue 组件测试使用 Vitest 进行状态状态、表格、检测覆盖、审查控件、表单验证、权限行为和离线/错误呈现。浏览器端到端测试可验证关键工作流程，而无需替代实际的相机测试。</p>
+<p>Vue component tests use Vitest for status states, tables, detection overlays, review controls, form validation, permission behavior, and offline/error presentation. Browser end-to-end tests verify critical workflows without substituting for actual camera testing.</p>
 <h2 id="225-integration-and-contract-testing">22.5 集成和契约测试<a class="headerlink" href="#225-integration-and-contract-testing" title="Permanent link">&para;</a></h2>
-<p>针对支持的数据库和对象存储版本运行集成测试。 SQLite 边缘测试包括写入争用和不干净的进程终止。 PostgreSQL 迁移测试涵盖每个受支持版本的升级和回滚约束。</p>
+<p>Integration tests run against supported database and object-storage versions. SQLite edge tests include write contention and unclean process termination. PostgreSQL migration tests cover upgrade from every supported release and rollback constraints.</p>
 <p>OpenAPI 是生成的 TypeScript 客户端的合约源。合约测试验证状态代码、模式、分页、授权、幂等上传重放、WebSocket 事件信封、媒体范围/下载行为以及前向兼容的未知字段。边缘/中心兼容性在明确支持的版本矩阵中进行了测试。</p>
 <p>相机适配器有一个通用的一致性套件：</p>
 <ol>
@@ -3430,107 +3430,107 @@
 <table>
 <thead>
 <tr>
-<th>故障</th>
-<th>注射</th>
-<th>所需行为</th>
+<th>Fault</th>
+<th>Injection</th>
+<th>Required behavior</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>相机断开连接</td>
-<td>删除设备/停止模拟器</td>
-<td>没有捏造<code>OK</code>；报警、重新连接、安全恢复</td>
+<td>Camera disconnect</td>
+<td>Remove device/stop simulator</td>
+<td>No fabricated <code>OK</code>; alarm, reconnect, recover safely</td>
 </tr>
 <tr>
-<td>网络中断</td>
-<td>阻止中央端点/DNS</td>
-<td>地方决定继续进行；队列持续存在</td>
+<td>Network outage</td>
+<td>Block central endpoint/DNS</td>
+<td>Local decisions continue; queue persists</td>
 </tr>
 <tr>
-<td>反复断网</td>
-<td>针对中央端点的振荡连接（向上/向下循环、部分数据包丢失）</td>
-<td>地方决策继续进行，无需中央往返；队列仍然存在；带有抖动的回退和限制重复流量的断路器；无数据丢失或重复上传；一旦连接恢复，积压的工作就会消失</td>
+<td>Repeated network disconnect</td>
+<td>Oscillate connectivity (up/down cycles, partial packet loss) against the central endpoint</td>
+<td>Local decisions continue without a central round trip; the queue persists; backoff with jitter and the circuit breaker bound repeated traffic; no data loss or duplicate uploads; the backlog drains once connectivity returns</td>
 </tr>
 <tr>
-<td>中央停电</td>
-<td>返回超时/5xx</td>
-<td>带抖动的退避；没有决策障碍</td>
+<td>Central outage</td>
+<td>Return timeout/5xx</td>
+<td>Backoff with jitter; no decision blockage</td>
 </tr>
 <tr>
-<td>重复上传</td>
-<td>重放相同的幂等键</td>
-<td>一次集中检验，一致收货</td>
+<td>Duplicate upload</td>
+<td>Replay same idempotency key</td>
+<td>One central inspection and consistent receipt</td>
 </tr>
 <tr>
-<td>断电</td>
-<td>在选定状态期间杀死主机/进程</td>
-<td>恢复数据库/队列；不明确的窗口未标记为 OK</td>
+<td>Power loss</td>
+<td>Kill host/process during selected states</td>
+<td>Recover database/queue; ambiguous window not marked OK</td>
 </tr>
 <tr>
-<td>磁盘已满</td>
-<td>填充测试量或强制执行配额</td>
-<td>警报、安全清理、在可追溯性丢失之前暂停</td>
+<td>Disk full</td>
+<td>Fill test volume or enforce quota</td>
+<td>Alert, safe cleanup, pause before traceability is lost</td>
 </tr>
 <tr>
-<td>加速器/GPU 故障</td>
-<td>终止或停止推理子进程；强制 CUDA/加速器错误</td>
-<td>没有捏造<code>OK</code>；可恢复的故障使用相同的清单重新加载或切换到经过验证的CPU运行时并记录切换；不可恢复故障故障和块检查（设计09.7）</td>
+<td>Accelerator/GPU failure</td>
+<td>Kill or stall the inference subprocess; force a CUDA/accelerator error</td>
+<td>No fabricated <code>OK</code>; a recoverable failure reloads or switches to a validated CPU runtime using the same manifest and records the switch; a non-recoverable failure faults and blocks inspection (design 09.7)</td>
 </tr>
 <tr>
-<td>数据库故障</td>
-<td>锁定/损坏一次性测试数据库</td>
-<td>安全失败、保留诊断、执行经过测试的恢复路径</td>
+<td>Database failure</td>
+<td>Lock/corrupt disposable test database</td>
+<td>Fail safely, preserve diagnostics, execute tested restore path</td>
 </tr>
 <tr>
-<td>容器重启</td>
-<td>独立重启各个服务</td>
-<td>监督恢复，无需重复产品决策</td>
+<td>Container restart</td>
+<td>Restart each service independently</td>
+<td>Supervisory recovery without duplicate product decision</td>
 </tr>
 <tr>
-<td>时钟漂移</td>
-<td>偏置挂钟</td>
-<td>保持单调排序/相关性并警惕漂移</td>
+<td>Clock drift</td>
+<td>Offset wall clock</td>
+<td>Preserve monotonic ordering/correlation and alert on drift</td>
 </tr>
 <tr>
-<td>校验和失败</td>
-<td>更改媒体/包字节</td>
-<td>拒绝工件并保留可恢复的任务/版本</td>
+<td>Checksum failure</td>
+<td>Alter media/package bytes</td>
+<td>Reject artifact and retain recoverable task/version</td>
 </tr>
 </tbody>
 </table>
-<p>故障测试仅在具有一次性数据的隔离环境中运行。断电测试包括数据库提交、媒体重命名、队列创建、上传传输和接收持久性之前/之后的中断。</p>
+<p>Fault tests run only in isolated environments with disposable data. Power-loss testing includes interruptions before/after database commit, media rename, queue creation, upload transfer, and receipt persistence.</p>
 <h2 id="229-performance-and-stability">22.9 性能和稳定性<a class="headerlink" href="#229-performance-and-stability" title="Permanent link">&para;</a></h2>
-<p>性能测试使用生产分辨率图像和候选边缘硬件。测量捕获、条形码、产品检测、ROI、组件检测、聚合、规则、持久性和 UI/事件交付的阶段时序。单独报告预热并监控 CPU、GPU、内存、温度、磁盘 I/O 和队列增长。</p>
-<p>长时间运行的测试包括正常产品流、突发、空闲期、摄像头重新连接、中央中断、重复网络断开、加速器/推理故障和保留清理。通过意味着没有无限的内存/文件描述符/队列增长，没有数据丢失，并且延迟在客户同意的限制内稳定。工期和工作量根据实际操作模式商定；本文档并未发明它们。</p>
+<p>Performance testing uses production-resolution images and the candidate edge hardware. Measure stage timings for capture, barcode, product detection, ROI, component detection, aggregation, rules, persistence, and UI/event delivery. Report warm-up separately and monitor CPU, GPU, memory, temperature, disk I/O, and queue growth.</p>
+<p>Long-running tests include normal product flow, bursts, idle periods, camera reconnects, central outages, repeated network disconnects, accelerator/inference failures, and retention cleanup. Passing means no unbounded memory/file-descriptor/queue growth, no data loss, and stable latency within customer-agreed limits. Duration and workload are agreed from actual operating patterns; this document does not invent them.</p>
 <h2 id="2210-test-data-and-ground-truth-governance">22.10 测试数据和地面实况治理<a class="headerlink" href="#2210-test-data-and-ground-truth-governance" title="Permanent link">&para;</a></h2>
-<p>固定装置不包含不受控制的客户数据。每个评估项目都有一个不可变的标识符、源组、产品类型、预期组件状态、条形码基本事实（如果适用）、注释/审查出处以及允许的使用。更正创建新的注释版本。培训、验证、测试和客户验收清单均受校验和控制。</p>
-<p>针对每个必需的缺失组件情况，有意收集真实的 NG 示例。合成去除或分期可以作为补充，但必须与自然发生的缺陷分开报告。训练策略中的数据集数量只是起点，而不是保证。</p>
+<p>Fixtures contain no uncontrolled customer data. Each evaluation item has an immutable identifier, source group, product type, expected component state, barcode ground truth where applicable, annotation/review provenance, and permitted use. Corrections create a new annotation version. Training, validation, test, and customer acceptance manifests are checksum-controlled.</p>
+<p>Real NG examples are intentionally collected for every required missing-component condition. Synthetic removal or staging may supplement but must be reported separately from naturally occurring defects. Dataset quantities in the training strategy are starting points, not guarantees.</p>
 <h2 id="2211-release-quality-gates">22.11 发布质量门<a class="headerlink" href="#2211-release-quality-gates" title="Permanent link">&para;</a></h2>
-<p>候选人只有在以下情况下才能晋升：</p>
+<p>A candidate is promotable only when:</p>
 <ol>
-<li>所需的静态检查（<code>Ruff</code>、<code>MyPy</code>、ESLint、格式）和自动化测试通过。</li>
-<li>数据库和API兼容性检查通过。</li>
-<li>安全扫描没有发现不可接受的发布阻止结果。</li>
-<li>按产品、组件、模型和规则版本将模型/系统指标与批准的基线进行比较。</li>
-<li>锁定回归集中没有出现无法解释的 NG-OK 回归。</li>
-<li>发布范围内的离线、重启、重试、磁盘压力和回滚测试均通过。</li>
-<li>证据、版本、时间戳、设备、日志溯源齐全。</li>
-<li>一旦通过基线评估确定了客户特定的目标，就会得到满足，或者批准明确的偏差。</li>
+<li>Required static checks (<code>Ruff</code>, <code>MyPy</code>, ESLint, formatting) and automated tests pass.</li>
+<li>Database and API compatibility checks pass.</li>
+<li>Security scans have no unaccepted release-blocking findings.</li>
+<li>Model/system metrics are compared against the approved baseline by product, component, model, and rule version.</li>
+<li>No unexplained NG-to-OK regression appears in the locked regression set.</li>
+<li>Offline, restart, retry, disk-pressure, and rollback tests pass for the release scope.</li>
+<li>Evidence, version, timestamp, device, and log traceability are complete.</li>
+<li>Customer-specific targets, once established through baseline evaluation, are met or an explicit deviation is approved.</li>
 </ol>
-<p>在代表性基线测量后，数字门被记录在发布/验收计划中；它们不是在这里发明的。</p>
+<p>Numeric gates are recorded in the release/acceptance plan after representative baseline measurement; they are not invented here.</p>
 <h2 id="2212-defect-management-and-evidence">22.12 缺陷管理和证据<a class="headerlink" href="#2212-defect-management-and-evidence" title="Permanent link">&para;</a></h2>
-<p>缺陷包括严重性、环境、应用/模型/规则/配置版本、设备/相机标识符、时间戳、步骤、预期/实际结果、相关图像/日志和隐私分类。漏检的 NG 被视为最高检查质量问题，并触发遏制、受影响范围分析、回归夹具创建和发布审核。</p>
-<p>测试报告和清单与发布来源一起保留。片状测试仅在所有者和补救期限内被隔离；隔离不能绕过安全相关的大门。</p>
-<h2 id="2213-open-questions-and-validation-required">22.13 未解决的问题和需要验证<a class="headerlink" href="#2213-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<p>Defects include severity, environment, application/model/rule/configuration versions, device/camera identifiers, timestamps, steps, expected/actual result, relevant images/logs, and privacy classification. A missed NG is treated as the highest inspection-quality concern and triggers containment, affected-range analysis, regression fixture creation, and release review.</p>
+<p>Test reports and manifests are retained with release provenance. Flaky tests are quarantined only with an owner and remediation deadline; quarantining cannot bypass a safety-relevant gate.</p>
+<h2 id="2213-open-questions-and-validation-required">22.13 Open Questions and Validation Required<a class="headerlink" href="#2213-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>基线评估后客户商定的接受阈值和统计置信度方法。</li>
-<li>产品类型、确切所需的组件类别、缺陷分类法和真实所有者。</li>
-<li>候选相机/SDK、边缘 CPU/GPU、传输速率和延迟/吞吐量预算。</li>
-<li>边缘和中央版本所需的支持版本兼容性窗口。</li>
-<li>长时间运行的测试持续时间、生产工作周期和预期的停机持续时间。</li>
-<li>天然存在的 NG 样品的可用性以及上演缺失组件案例的许可。</li>
-<li>所需的浏览器、操作系统、安全扫描仪和外部测试义务。</li>
-<li>包含客户生产数据的测试证据的保留期限和访问控制。</li>
+<li>Customer-agreed acceptance thresholds and statistical confidence approach after baseline evaluation.</li>
+<li>Product types, exact required component classes, defect taxonomy, and ground-truth owner.</li>
+<li>Candidate camera/SDK, edge CPU/GPU, conveyor rate, and latency/throughput budget.</li>
+<li>Required supported-version compatibility window for edge and central releases.</li>
+<li>Long-running test duration, production duty cycle, and expected outage duration.</li>
+<li>Availability of naturally occurring NG samples and permission to stage missing-component cases.</li>
+<li>Required browsers, operating systems, security scanners, and external test obligations.</li>
+<li>Retention period and access controls for test evidence containing customer production data.</li>
 </ul>
 <h2 id="2214-related-documents">22.14 相关文件<a class="headerlink" href="#2214-related-documents" title="Permanent link">&para;</a></h2>
 <ul>

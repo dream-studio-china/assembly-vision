@@ -1560,7 +1560,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3291,10 +3291,10 @@ UTC 仍然是可追溯性元数据。 PTP 只能在稍后启用
     Window-&gt;&gt;Window:创建检查和引脚版本
 loop 直到退出或超时
         Capture-&gt;&gt;Window:带时间戳的帧
-        Window-&gt;&gt;Vision:相关框架
+        Window-&gt;&gt;Vision:Correlated frame
         Vision--&gt;&gt;Aggregate:每个组件的框架证据
     end
-    Sensor-&gt;&gt;Window:产品退出事件
+    Sensor-&gt;&gt;Window:Product exit event
     Window-&gt;&gt;Aggregate:关闭检查窗口
     Aggregate--&gt;&gt;Rules:每个所需组件的证据
     Rules--&gt;&gt;Store:OK 或 NG 以及原因代码
@@ -3394,10 +3394,10 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 开发以及任何经过验证的低风险部署。 USB3 Vision 相机
 公开 GenICam 使用 <code>gige-vision</code>/GenTL 样式适配器而不是
 默默降级到OpenCV。电话摄像头和低成本以太网摄像头
-不按价格或连接器分类：电话可以通过经过验证的使用
+不按价格或连接器分类：电话可以通过经过验证的设备使用
 用于开发的 UVC、RTSP 或 HTTP 源，而以太网摄像头必须证明
 GigE Vision / GenICam 支持才可以使用生产适配器。一个
-仅暴露 RTSP/ONVIF 的摄像机仍然是 RTSP 兼容源，并且不会
+仅公开 RTSP/ONVIF 的摄像机仍然是 RTSP 兼容源，并且不会
 未获得工业触发保证。</p>
 <h2 id="78-recovery-and-failure-handling">7.8 恢复和故障处理<a class="headerlink" href="#78-recovery-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3405,7 +3405,7 @@ GigE Vision / GenICam 支持才可以使用生产适配器。一个
 <li>在序列间隙或缓冲区溢出时，增加指标并将受影响的窗口标记为降级；证据不足产生<code>NG</code>。</li>
 <li>对于陈旧或重复的帧，拒绝这些帧并报告相机运行状况恶化。</li>
 <li>在时钟调整时，继续使用单调时钟计算持续时间并记录挂钟的不连续性。</li>
-<li>在捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断<code>NG</code>。</li>
+<li>捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断<code>NG</code>。</li>
 <li>服务器中断时，不要进行采集更改。在储存能力允许的情况下，当地捕获和检查将继续进行。</li>
 </ul>
 <p>滚动视频写入分段文件以限制断电后的损坏。媒体持久化和删除规则在<a href="../12-local-storage-and-retention/">local storage and retention</a>中定义。</p>

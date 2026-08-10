@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -2074,7 +2074,7 @@
   <a href="#4-structured-logging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 结构化日志记录
+        4. Structured Logging
       
     </span>
   </a>
@@ -3059,7 +3059,7 @@
   <a href="#4-structured-logging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 结构化日志记录
+        4. Structured Logging
       
     </span>
   </a>
@@ -3133,33 +3133,33 @@
 <h1 id="07-deployment-observability-and-operations">07. 部署、可观察性和操作<a class="headerlink" href="#07-deployment-observability-and-operations" title="Permanent link">&para;</a></h1>
 <h2 id="1-container-requirements">1. 容器要求<a class="headerlink" href="#1-container-requirements" title="Permanent link">&para;</a></h2>
 <ul>
-<li>以非 root 用户身份运行。</li>
-<li>使用显式持久卷。</li>
-<li>定义健康检查。</li>
-<li>定义重启策略。</li>
-<li>使用结构化日志。</li>
-<li>不包含 Git 存储库。</li>
-<li>不包括训练数据集。</li>
-<li>不包括笔记本。</li>
-<li>不包含开发秘密。</li>
-<li>使用多阶段构建。</li>
-<li>将运行时数据保留在图像之外。</li>
+<li>Run as a non-root user.</li>
+<li>Use explicit persistent volumes.</li>
+<li>Define health checks.</li>
+<li>Define restart policies.</li>
+<li>Use structured logs.</li>
+<li>Do not include the Git repository.</li>
+<li>Do not include training datasets.</li>
+<li>Do not include notebooks.</li>
+<li>Do not include development secrets.</li>
+<li>Use multi-stage builds.</li>
+<li>Keep runtime data outside the image.</li>
 </ul>
 <h2 id="2-health-endpoints">2. 健康端点<a class="headerlink" href="#2-health-endpoints" title="Permanent link">&para;</a></h2>
-<p>边缘应用程序应至少公开：</p>
+<p>The edge application should expose at least:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>/api/v1/health/live
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>/api/v1/health/ready
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>/api/v1/device/status
 </code></pre></div>
-<p>定义：</p>
+<p>Definitions:</p>
 <ul>
-<li><code>/api/v1/health/live</code>：进程处于活动状态；它没有暴露任何内部细节。</li>
-<li><code>/api/v1/health/ready</code>：决策关键配置、相机、模型和持久性许可
-  有效的检查。</li>
-<li><code>/api/v1/device/status</code>：经过身份验证的详细相机/模型/存储/上传运行状况，包括
-  单独的 <code>inspection_ready</code> 和 <code>sync_ready</code> 标志。</li>
+<li><code>/api/v1/health/live</code>: the process is alive; it exposes no internal details.</li>
+<li><code>/api/v1/health/ready</code>: decision-critical configuration, camera, models, and persistence permit
+  valid inspections.</li>
+<li><code>/api/v1/device/status</code>: authenticated detailed camera/model/storage/upload health, including
+  separate <code>inspection_ready</code> and <code>sync_ready</code> flags.</li>
 </ul>
-<p>示例：</p>
+<p>Example:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>model unavailable:
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>/api/v1/health/live = healthy
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>/api/v1/health/ready = unhealthy
@@ -3174,8 +3174,8 @@
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>7. Recover upload tasks
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>8. Enable inspection
 </code></pre></div>
-<p>在准备检查通过之前，服务部门不得接受生产检查工作。</p>
-<h2 id="4-structured-logging">4. 结构化日志记录<a class="headerlink" href="#4-structured-logging" title="Permanent link">&para;</a></h2>
+<p>The service must not accept production inspection work before readiness checks pass.</p>
+<h2 id="4-structured-logging">4. Structured Logging<a class="headerlink" href="#4-structured-logging" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inspection_completed&quot;</span><span class="p">,</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;inspection_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
@@ -3188,45 +3188,45 @@
 <a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
 </code></pre></div>
 <h2 id="5-forbidden-log-content">5. 禁止日志内容<a class="headerlink" href="#5-forbidden-log-content" title="Permanent link">&para;</a></h2>
-<p>不记录：</p>
+<p>Do not log:</p>
 <ul>
-<li>密码</li>
-<li>代币</li>
-<li>授权标头</li>
-<li>数据库密码</li>
-<li>原始二进制图像有效负载</li>
-<li>敏感的客户数据</li>
+<li>Passwords</li>
+<li>Tokens</li>
+<li>Authorization headers</li>
+<li>Database passwords</li>
+<li>Raw binary image payloads</li>
+<li>Sensitive customer data</li>
 </ul>
 <h2 id="6-required-operational-metrics">6. 所需的运营指标<a class="headerlink" href="#6-required-operational-metrics" title="Permanent link">&para;</a></h2>
 <ul>
-<li>每分钟检查次数</li>
-<li>OK 和 NG 计数</li>
-<li>平均推理延迟</li>
-<li>P95 推理延迟</li>
-<li>相机断开连接计数</li>
-<li>条码失败率</li>
-<li>投资回报失败率</li>
-<li>磁盘利用率</li>
-<li>上传队列长度</li>
-<li>最早等待上传的年龄</li>
-<li>模型加载状态</li>
-<li>数据库错误计数</li>
-<li>边缘到中心的连接状态</li>
+<li>Inspections per minute</li>
+<li>OK and NG counts</li>
+<li>Average inference latency</li>
+<li>P95 inference latency</li>
+<li>Camera disconnect count</li>
+<li>Barcode failure rate</li>
+<li>ROI failure rate</li>
+<li>Disk utilization</li>
+<li>Upload queue length</li>
+<li>Age of oldest pending upload</li>
+<li>Model load status</li>
+<li>Database error count</li>
+<li>Edge-to-central connectivity state</li>
 </ul>
 <h2 id="7-required-runbooks">7. 所需的操作手册<a class="headerlink" href="#7-required-runbooks" title="Permanent link">&para;</a></h2>
-<p>维护操作手册：</p>
+<p>Maintain runbooks for:</p>
 <ul>
-<li>相机断线</li>
-<li>模型加载失败</li>
-<li>磁盘空间不足</li>
-<li>上传待办事项</li>
-<li>数据库恢复</li>
-<li>容器反复重启</li>
-<li>网络恢复后同步</li>
-<li>模型回滚</li>
-<li>规则回滚</li>
+<li>Camera disconnection</li>
+<li>Model-loading failure</li>
+<li>Low disk space</li>
+<li>Upload backlog</li>
+<li>Database recovery</li>
+<li>Repeated container restart</li>
+<li>Synchronization after network recovery</li>
+<li>Model rollback</li>
+<li>Rule rollback</li>
 </ul>
-<p>索引 Runbook 集位于 <a href="../../runbooks/">docs/runbooks</a> 下。</p>
+<p>The indexed runbook set is under <a href="../../runbooks/">docs/runbooks</a>.</p>
 <h2 id="related-documents">相关文件<a class="headerlink" href="#related-documents" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../design/20-deployment-and-operations/">Deployment and Operations</a></li>

@@ -27,7 +27,7 @@
     
     
       
-        <title>PR-023 评论：运行时和现场事件频道 (E4) - AssemblyVision</title>
+        <title>PR-023 Review: Runtime and Live Event Channel (E4) - AssemblyVision</title>
       
     
     
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PR-023 评论：运行时和现场事件频道 (E4)
+              PR-023 Review: Runtime and Live Event Channel (E4)
             
           </span>
         </div>
@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -2959,7 +2959,7 @@
   <a href="#31-resolution-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1 解析状态
+        3.1 Resolution Status
       
     </span>
   </a>
@@ -3069,7 +3069,7 @@
   
 
 
-<h1 id="pr-023-review-runtime-and-live-event-channel-e4">PR-023 评论：运行时和现场事件频道 (E4)<a class="headerlink" href="#pr-023-review-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h1>
+<h1 id="pr-023-review-runtime-and-live-event-channel-e4">PR-023 Review: Runtime and Live Event Channel (E4)<a class="headerlink" href="#pr-023-review-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h1>
 <h2 id="1-review-decision">1. 审查决定<a class="headerlink" href="#1-review-decision" title="Permanent link">&para;</a></h2>
 <p><strong>状态：已解决</strong></p>
 <p>PR #23 具有预期的 E4 结构：瞬态服务器端运行时事件，
@@ -3128,7 +3128,7 @@
 <code>api_token</code>已配置。现有的跨源流有意保留
 内存中的查看者承载令牌并将其添加到 <code>fetch</code> 请求中。浏览器
 <code>WebSocket</code> 无法设置 <code>Authorization</code> 标头，跨域模式不会
-接收同源会话 cookie，并且禁止查询字符串标记。
+接收同源会话 cookie，并且禁止查询字符串令牌。
 因此，服务器使用 <code>4401</code> 关闭每个此类套接字。</p>
 <p>这使得 E4 实时更新路径在文档中不可用
 受令牌保护的 Vite-to-edge 开发配置。也违反了
@@ -3249,7 +3249,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
    身份密封窗口行为或为其生成第二个 ID。</li>
 <li>仅在<code>_persist_projection()</code>成功后发布<code>inspection.completed</code>，
    就像当前代码一样。失败的推理/持久路径不得发出
-   错误完成；如果引入显式故障事件，请记录其
+   错误完成；如果引入了明确的故障事件，请记录其
    语义并保持 REST 权威。</li>
 <li>在开始和完成的有效负载中一致地包含 <code>instance_id</code>
    因此，多实例仪表板可能会使正确的资源失效。</li>
@@ -3268,12 +3268,12 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <li>仪表板协调测试证明任一模式都会刷新最终结果
   REST 记录并且从不将开始事件视为已完成的决策。</li>
 </ul>
-<h2 id="31-resolution-status">3.1 解析状态<a class="headerlink" href="#31-resolution-status" title="Permanent link">&para;</a></h2>
+<h2 id="31-resolution-status">3.1 Resolution Status<a class="headerlink" href="#31-resolution-status" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>寻找</th>
-<th>严重程度</th>
+<th>严重性</th>
 <th>分辨率</th>
 <th>测试</th>
 </tr>
@@ -3306,7 +3306,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <tr>
 <td>PR23-F05</td>
 <td>P2</td>
-<td><code>RuntimeEventBus</code> 跟踪已发布的事件（总数/按类型）、慢速消费者断开连接和交付失败； <code>GET /api/v1/ws/runtime/stats</code> 公开经过身份验证的快照</td>
+<td><code>RuntimeEventBus</code> 跟踪已发布的事件（总数/按类型）、慢速消费者断开连接和传递失败； <code>GET /api/v1/ws/runtime/stats</code> 公开经过身份验证的快照</td>
 <td><code>test_stats_count_events_and_slow_consumers</code>、<code>test_delivery_failures_are_counted</code>、<code>test_runtime_stats_endpoint_requires_viewer</code></td>
 </tr>
 </tbody>
@@ -3351,7 +3351,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 </ul>
 <p>总线保留<code>connection_count</code>和<code>last_sequence</code>，但都不暴露
 通过运营指标、结构化状态或经过身份验证的支持
-端点。也没有发布/慢消费者断开计数器。 E4的
+端点。也没有发布/慢速消费者断开计数器。 E4的
 强制矩阵明确要求可观察的连接和事件计数，
 因此操作员无法区分空闲仪表板和失败的事件源。</p>
 <p><strong>推荐解决方案</strong></p>
@@ -3391,7 +3391,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <thead>
 <tr>
 <th>寻找</th>
-<th style="text-align: right;">严重程度</th>
+<th style="text-align: right;">严重性</th>
 <th>合并前需要</th>
 <th>决议状态</th>
 </tr>

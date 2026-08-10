@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3192,7 +3192,7 @@
 <li>创建实现<code>FrameSource</code>协议的<code>sources/your_source.py</code>。</li>
 <li><code>open()</code> 返回 <code>CameraCapabilities</code> （源暗淡、fps、像素格式、
      序列号/型号/固件/GenTL 生产者（如果有）。</li>
-<li><code>frames(stop)</code> 产生具有单调 + UTC 时间戳的 <code>CapturedFrame</code>，
+<li><code>frames(stop)</code> 产生带有单调 + UTC 时间戳的 <code>CapturedFrame</code>，
      序列、暗淡、像素格式、状态、PIL RGB 图像；提高
      <code>FrameStreamError</code> 解码失败（从不跳过）。</li>
 <li>实现有界重新连接（参见<code>ReconnectPolicy</code>）
@@ -3241,7 +3241,7 @@
 <li><code>verify_manifest_artifact(manifest, manifest_path) -&gt; Path</code>：解决
   <strong>仅第一个工件</strong>； URI 必须是相对的（没有前导 <code>/</code>，没有 <code>://</code>
   方案，无驱动段）；解析的路径必须保留在模型内
-  捆绑包根（清单目录的父目录，符号链接安全）；文件必须存在；
+  捆绑根（清单目录的父目录，符号链接安全）；文件必须存在；
   <code>size_bytes</code> 和 SHA-256 必须匹配 — 否则 <code>ConfigError</code>。这允许
   记录的 <code>models/manifests</code> + 同级 <code>models/weights</code> 布局。</li>
 <li><code>verify_model_class_map(names, manifest)</code>：Ultralytics <code>model.names</code> 必须

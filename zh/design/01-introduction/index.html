@@ -563,12 +563,12 @@
   <a href="#5-architectural-principles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 架构原则
+        5. Architectural Principles
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. 架构原则">
+    <nav class="md-nav" aria-label="5. Architectural Principles">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1649,7 +1649,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3192,12 +3192,12 @@
   <a href="#5-architectural-principles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 架构原则
+        5. Architectural Principles
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. 架构原则">
+    <nav class="md-nav" aria-label="5. Architectural Principles">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3377,7 +3377,7 @@
 <h1 id="assemblyvision-introduction">AssemblyVision简介<a class="headerlink" href="#assemblyvision-introduction" title="Permanent link">&para;</a></h1>
 <h2 id="1-purpose">1. 目的<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 是一种输送线计算机视觉系统，旨在检查成品中是否存在所需的装配组件。检查目标可能包括完整的产品、大型部件、手册或说明书、条形码以及产品型号或类型。</p>
-<p>对于每个物理产品，业务结果是：</p>
+<p>对于每个实物产品，业务结果是：</p>
 <ul>
 <li><code>OK</code>：所有必需的组件在活动规则下都有足够的有效证据。</li>
 <li><code>NG</code>：组件缺失、证据不确定、产品身份无法可靠解析或检验无法可靠完成。</li>
@@ -3434,13 +3434,13 @@
 <li>培训和评估工作流程，生成版本化模型清单和验证报告，同时保持在生产决策路径之外。</li>
 </ul>
 <p>中央服务器不在实时决策路径中。物理传送带驱动、PLC/MES 行为、相机硬件选择和工厂网络操作都是外部的，除非后续集成明确将它们纳入范围。该文档并不假设 <code>NG</code> 结果会自动停止或转移产品。</p>
-<h2 id="5-architectural-principles">5. 架构原则<a class="headerlink" href="#5-architectural-principles" title="Permanent link">&para;</a></h2>
+<h2 id="5-architectural-principles">5. Architectural Principles<a class="headerlink" href="#5-architectural-principles" title="Permanent link">&para;</a></h2>
 <h3 id="51-safety-biased-decisions">5.1 基于安全的决策<a class="headerlink" href="#51-safety-biased-decisions" title="Permanent link">&para;</a></h3>
 <p>只有完整、有效、足够有力的证据才能产生<code>OK</code>。缺失、陈旧、混合、低质量、未解决或不兼容的证据会产生内部<code>UNCERTAIN</code>或<code>NG</code>；内部 <code>UNCERTAIN</code> 始终映射到业务 <code>NG</code>。</p>
 <h3 id="52-edge-autonomy">5.2 边缘自治<a class="headerlink" href="#52-edge-autonomy" title="Permanent link">&para;</a></h3>
 <p>检查不能等待中央API。决策路径使用的配置和模型包在激活之前在本地安装和验证。上传是异步且可恢复的。</p>
 <h3 id="53-evidence-and-reproducibility">5.3 证据和再现性<a class="headerlink" href="#53-evidence-and-reproducibility" title="Permanent link">&para;</a></h3>
-<p>结果保留足够的结构化证据和不可变的版本标识符来解释哪些输入、模型、配置和规则产生了决策。媒体存储遵循明确的保留政策，不得视为唯一记录。</p>
+<p>结果保留足够的结构化证据和不可变的版本标识符来解释哪些输入、模型、配置和规则产生了决策。媒体存储遵循明确的保留政策，不得被视为唯一记录。</p>
 <h3 id="54-deterministic-policy-around-probabilistic-models">5.4 围绕概率模型的确定性策略<a class="headerlink" href="#54-deterministic-policy-around-probabilistic-models" title="Permanent link">&para;</a></h3>
 <p>模型提供检测和置信值。单独可测试的确定性规则引擎应用批准的阈值和所需组件策略。时间聚合通过结合帧证据来提高系统的鲁棒性；它不会提高模型固有的单帧精度。</p>
 <h3 id="55-incremental-delivery">5.5 增量交付<a class="headerlink" href="#55-incremental-delivery" title="Permanent link">&para;</a></h3>
@@ -3472,7 +3472,7 @@
 <li><code>NG</code> 业务结果如何在运营中使用，自动生产线驱动是否在范围内？</li>
 <li>有哪些相机、条码硬件/标准、计算硬件、操作系统和加速器可用？</li>
 <li>测得的周期时间、视野、模糊/曝光限制以及可接受的决策延迟是多少？</li>
-<li>谁进行审查和抽样审核，以及如何批准更正后的标签进行培训？</li>
+<li>谁进行审查和样品审核，以及如何批准更正的标签进行培训？</li>
 <li>适用哪些安全、隐私、保留和托管限制？</li>
 <li>参见综合<a href="../appendices/#3-global-open-questions">Global Open Questions</a>。</li>
 </ol>

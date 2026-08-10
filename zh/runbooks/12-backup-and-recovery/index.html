@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -2589,7 +2589,7 @@
   <a href="#before-you-begin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        开始之前
+        Before You Begin
       
     </span>
   </a>
@@ -3015,7 +3015,7 @@
   <a href="#before-you-begin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        开始之前
+        Before You Begin
       
     </span>
   </a>
@@ -3088,21 +3088,21 @@
 
 <h1 id="runbook-12-backup-and-recovery">操作手册 12：备份和恢复<a class="headerlink" href="#runbook-12-backup-and-recovery" title="Permanent link">&para;</a></h1>
 <h2 id="trigger">扳机<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
-<p>计划备份、硬件更换、磁盘故障、数据库损坏或
-升级或配置更改之前的预更改快照。</p>
-<h2 id="before-you-begin">开始之前<a class="headerlink" href="#before-you-begin" title="Permanent link">&para;</a></h2>
+<p>Scheduled backup, hardware replacement, disk failure, database corruption, or
+pre-change snapshot before an upgrade or configuration change.</p>
+<h2 id="before-you-begin">Before You Begin<a class="headerlink" href="#before-you-begin" title="Permanent link">&para;</a></h2>
 <ul>
-<li>记录站点/设备、开始/结束时间、参与者、受影响的检查、证据
-  捆绑包、操作、结果和升级参考。</li>
-<li>仅在备份需要时确认服务已停止或停顿
-  目的地； <code>assemblyvision backup</code>使用SQLite在线备份API，是
-  针对正在运行的服务是安全的。</li>
-<li>确认目标有足够的空间容纳数据库、受控文件、
-  以及待定（尚未上传）的证据。</li>
+<li>Record site/device, start/end time, actor, affected inspections, evidence
+  bundle, actions, result, and escalation reference.</li>
+<li>Confirm the service is stopped or quiesced only if required by the backup
+  destination; <code>assemblyvision backup</code> uses the SQLite online backup API and is
+  safe against a running service.</li>
+<li>Confirm the destination has enough space for the database, governed files,
+  and pending (not yet uploaded) evidence.</li>
 </ul>
 <h2 id="backup-procedure">备份程序<a class="headerlink" href="#backup-procedure" title="Permanent link">&para;</a></h2>
 <ol>
-<li>创建一致的、校验和的包：</li>
+<li>Create a consistent, checksummed bundle:</li>
 </ol>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>assemblyvision backup \
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  --output /var/lib/assemblyvision/media \
@@ -3112,20 +3112,20 @@
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  --dest /backup/edge-2026-08-10.tar.gz
 </code></pre></div>
 <ol>
-<li>验证报告的 SHA-256 以及受管理的文件和待决证据
-   计数符合预期。丢失或更改的待决证据文件会导致
-   备份失败关闭而不是生成不完整的包。</li>
-<li>将捆绑包复制到设备上（与设备一致的加密目的地）
-   客户）。备份边缘配置、规则和清单
-   更改并按预定副本进行。</li>
-<li>备份仅在代表性恢复成功后才可操作；
-   不要依赖从未恢复过的备份。</li>
+<li>Verify the reported SHA-256 and that governed files and pending evidence
+   counts match expectations. A missing or changed pending-evidence file makes
+   the backup fail closed instead of producing an incomplete bundle.</li>
+<li>Copy the bundle off the device (encrypted destination agreed with the
+   customer). Backups of edge configuration, rules, and manifests are taken on
+   change and on the scheduled copy.</li>
+<li>A backup is operational only after a representative restore has succeeded;
+   do not rely on a backup that has never been restored.</li>
 </ol>
 <h2 id="recovery-procedure">恢复程序<a class="headerlink" href="#recovery-procedure" title="Permanent link">&para;</a></h2>
 <ol>
-<li>停止边缘服务。保留当前的数据库和媒体；恢复
-   永远不会删除待上传或证据。</li>
-<li>从已验证的捆绑包中恢复：</li>
+<li>Stop the edge service. Preserve the current database and media; recovery
+   never deletes pending uploads or evidence.</li>
+<li>Restore from the verified bundle:</li>
 </ol>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>assemblyvision restore \
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  --backup /backup/edge-2026-08-10.tar.gz \
@@ -3133,22 +3133,22 @@
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  --db /var/lib/assemblyvision/db/edge.sqlite3 \
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  --governed-dest /etc/assemblyvision
 </code></pre></div>
-<p>恢复在应用任何内容之前验证每个捆绑包校验和，预检
-   每个媒体目标，因此冲突文件与当前数据库失败
-   不变，保留当前数据库的 <code>.pre-restore</code> 副本，恢复
-   挂起的媒体不覆盖冲突的文件，恢复受管理的
-   配置/规则/清单文件放入 <code>--governed-dest</code> （永远不会
-   任意路径），并根据输出根协调存储，以便
-   待处理的上传任务将继续存在。
-3. 验证恢复的受控文件（配置解析、规则/模型版本
-   匹配）开始服务之前；请参阅运行手册 14 了解激活检查。
-4.启动服务并确认<code>/api/v1/health/ready</code>报告准备好，历史记录
-   可见，并且上传队列恢复。
-5. 对已知样本进行烟雾检查并在之前验证 NG 行为
-   恢复生产。</p>
+<p>Restore verifies every bundle checksum before applying anything, preflights
+   every media target so a conflicting file fails with the current database
+   unchanged, keeps a <code>.pre-restore</code> copy of the current database, restores
+   pending media without overwriting conflicting files, restores the governed
+   configuration/rule/manifest files into <code>--governed-dest</code> (never an
+   arbitrary path), and reconciles the store against the output root so
+   pending upload tasks survive.
+3. Validate the restored governed files (config parses, rule/model versions
+   match) before starting the service; see runbook 14 for activation checks.
+4. Start the service and confirm <code>/api/v1/health/ready</code> reports ready, history
+   is visible, and the upload queue resumes.
+5. Run a smoke inspection against a known sample and verify NG behavior before
+   returning to production.</p>
 <h2 id="exit-criteria">退出标准<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
-<p>完整性检查通过，存在历史记录和挂起的上传任务，媒体
-参考解析，并且烟雾检查成功。</p>
+<p>Integrity checks pass, history and pending upload tasks are present, media
+references resolve, and a smoke inspection succeeds.</p>
 <h2 id="related">有关的<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../05-database-recovery/">Database Recovery</a></li>

@@ -1035,6 +1035,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1536-confidence-drift-environment-change-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.6 Confidence Drift (Environment-Change Diagnostics)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3311,6 +3322,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1536-confidence-drift-environment-change-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.6 Confidence Drift (Environment-Change Diagnostics)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3505,7 +3527,7 @@
 </tr>
 <tr>
 <td><code>GET /api/v1/device/status</code></td>
-<td>Full device, disk, network, and queue status.</td>
+<td>Full device, disk, network, and queue status. Includes host system metrics for the health view: CPU count, 1-minute load average, memory total/available bytes, and the storage volume total/free bytes. Metric values unavailable on a platform are <code>null</code>, never fabricated.</td>
 <td>None / <code>DeviceStatus</code></td>
 <td><code>503 STATUS_UNAVAILABLE</code></td>
 <td>Safe GET</td>
@@ -3795,6 +3817,46 @@ real-time inspection uses the native app / RTSP / camera sources.</p>
 <td>Deterministic</td>
 <td>-</td>
 <td>R + dev flag</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1536-confidence-drift-environment-change-diagnostics">15.3.6 Confidence Drift (Environment-Change Diagnostics)<a class="headerlink" href="#1536-confidence-drift-environment-change-diagnostics" title="Permanent link">&para;</a></h3>
+<p><code>GET /api/v1/statistics/confidence-drift</code> analyzes detection confidence over
+time under one fixed product, rule, product-detector version, component-detector
+version, and aggregation-policy version on this device. This prevents a release
+or policy switch from being presented as an acquisition-environment change
+(conveyor, camera focus/angle, lighting).</p>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Confidence metric</td>
+<td>Per-component <code>best_confidence</code> weighted by positive <code>detection_count</code> (equivalent to weighting whole inspections by their total detection count); the evidence-level <code>median</code> is reported as a robust reference. Only evidence rows with a recorded confidence and at least one detection contribute.</td>
+</tr>
+<tr>
+<td>Periods</td>
+<td><code>today</code> = <code>[local-today 00:00, now)</code>, <code>yesterday</code> = <code>[local-yesterday 00:00, local-today 00:00)</code>, <code>previous_7d</code> = <code>[local-today 00:00 - 7 days, local-today 00:00)</code> (includes yesterday), <code>previous_30d</code> = <code>[local-today 00:00 - 30 days, local-today 00:00)</code> (includes the 7-day window). Day boundaries follow the operator-local timezone given by <code>tz_offset_minutes</code> (default UTC). Buckets are half-open <code>[from, to)</code>.</td>
+</tr>
+<tr>
+<td>Comparison</td>
+<td><code>today_vs_yesterday</code>, <code>today_vs_previous_7d</code>, and <code>today_vs_previous_30d</code> report the weighted-mean delta, the relative percent change, and both evidence counts.</td>
+</tr>
+<tr>
+<td>Components</td>
+<td>Per-component weighted means for today versus the previous-7-day baseline, sorted with the largest drop first; a component absent from the baseline carries <code>baseline_weighted_mean = null</code> (insufficient baseline evidence, never a fabricated zero).</td>
+</tr>
+<tr>
+<td>Assessment</td>
+<td>Heuristic label from the relative change versus the previous-7-day mean: <code>&lt; 2 %</code> stable, <code>2–5 %</code> minor, <code>&gt; 5 %</code> noticeable, with drop/rise direction, or <code>insufficient_data</code> when either window has no confidence evidence. The label is decision-support only and never claims a root cause or an accuracy value; a persistent drop prompts operators to verify frame quality and media.</td>
+</tr>
+<tr>
+<td>Filters</td>
+<td>Required <code>product_code</code>, <code>rule_version_id</code>, <code>product_model_version_id</code>, <code>component_model_version_id</code>, and <code>aggregation_policy_version</code> define the comparable scope. Optional <code>component_code</code> narrows it. <code>tz_offset_minutes</code> is bounded to <code>[-840, 840]</code> (<code>422</code> outside); all validation errors use <code>application/problem+json</code>.</td>
 </tr>
 </tbody>
 </table>

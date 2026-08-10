@@ -736,7 +736,7 @@
   <a href="#68-observability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.8 可观测性
+        6.8 Observability
       
     </span>
   </a>
@@ -758,7 +758,7 @@
   <a href="#610-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.10 未解决的问题和需要验证
+        6.10 开放性问题和需要验证
       
     </span>
   </a>
@@ -1549,7 +1549,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -3125,7 +3125,7 @@
   <a href="#68-observability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.8 可观测性
+        6.8 Observability
       
     </span>
   </a>
@@ -3147,7 +3147,7 @@
   <a href="#610-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.10 未解决的问题和需要验证
+        6.10 开放性问题和需要验证
       
     </span>
   </a>
@@ -3327,18 +3327,18 @@ deferred：M1静态单帧CLI仅接受<code>product_detection</code>，
 </tbody>
 </table>
 <p>异常在子系统边界处转换为显式原因代码。原始异常和堆栈跟踪属于结构化日志，而检查记录包含稳定的业务原因代码。</p>
-<h2 id="68-observability">6.8 可观测性<a class="headerlink" href="#68-observability" title="Permanent link">&para;</a></h2>
+<h2 id="68-observability">6.8 Observability<a class="headerlink" href="#68-observability" title="Permanent link">&para;</a></h2>
 <p>记录阶段延迟、有效/拒绝帧计数、产品检测成功、ROI 失败、条形码读取成功、每个组件的置信度分布、按原因的决策计数、队列深度、推理设备和活动版本。日志包括<code>inspection_id</code>、<code>frame_id</code>、<code>device_id</code>；它们不得包含凭据或无限制的图像数据。</p>
 <h2 id="69-verification">6.9 验证<a class="headerlink" href="#69-verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>单元测试阶段契约、阈值边界、坐标变换和原因代码映射。</li>
 <li>运行黄金图像测试，并将预期检测和决策固定到模型清单上。</li>
-<li>验证每个注入的阶段异常是否都会产生 <code>NG</code> 或阻止就绪，而不会产生 <code>OK</code>。</li>
+<li>验证每个注入的阶段异常是否都会生成 <code>NG</code> 或阻止就绪，而不是 <code>OK</code>。</li>
 <li>在窗口边界测试混合产品类型和版本变化。</li>
 <li>测量平均和 P95 延迟、吞吐量、NG 召回、产品检测成功和每个组件召回。</li>
 <li>在确定性推理支持允许的情况下，从持久输入、配置和版本元数据中再现结果。</li>
 </ul>
-<h2 id="610-open-questions-and-validation-required">6.10 未解决的问题和需要验证<a class="headerlink" href="#610-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="610-open-questions-and-validation-required">6.10 开放性问题和需要验证<a class="headerlink" href="#610-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>测量传送带速度后确认生产延迟和吞吐量预算。</li>
 <li>选择并验证边缘推理硬件和执行提供商。</li>

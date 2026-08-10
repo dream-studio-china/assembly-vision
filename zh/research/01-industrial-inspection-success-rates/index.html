@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -2889,7 +2889,7 @@
   <a href="#6-implications-and-caveats-for-assemblyvision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. AssemblyVision 的含义和注意事项
+        6. Implications and Caveats for AssemblyVision
       
     </span>
   </a>
@@ -2900,7 +2900,7 @@
   <a href="#7-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. 开放式问题和需要验证
+        7. Open Questions and Validation Required
       
     </span>
   </a>
@@ -3236,7 +3236,7 @@
   <a href="#6-implications-and-caveats-for-assemblyvision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. AssemblyVision 的含义和注意事项
+        6. Implications and Caveats for AssemblyVision
       
     </span>
   </a>
@@ -3247,7 +3247,7 @@
   <a href="#7-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. 开放式问题和需要验证
+        7. Open Questions and Validation Required
       
     </span>
   </a>
@@ -3293,7 +3293,7 @@
 <li><strong>金属铸造/焊接检查</strong>（孔隙、裂纹、夹杂物）</li>
 <li><strong>药品检验</strong>（直接公布的数字很少；仅邻近证据）</li>
 </ul>
-<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回）在 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
+<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回率）在 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
 <hr />
 <h2 id="2-reference-datasets-and-benchmarks-environment-size-ground-truth">2. 参考数据集和基准（环境、大小、地面实况）<a class="headerlink" href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" title="Permanent link">&para;</a></h2>
 <table>
@@ -3350,7 +3350,7 @@
 <td>15 个对象和纹理类别，包括瓶子、榛子、晶体管、金属螺母、电缆等</td>
 <td>&gt;5,000 张高分辨率图像</td>
 <td>73+ 缺陷类型； 5 个纹理 + 10 个对象类别</td>
-<td>“模拟真实的工业检查场景”；无监督异常检测基准；每类别无缺陷训练集</td>
+<td>“模拟现实世界的工业检查场景”；无监督异常检测基准；每类别无缺陷训练集</td>
 <td>像素级精确的异常注释；图像级和像素级评估</td>
 <td>https://www.mvtec.com/research-teaching/datasets/mvtec-ad</td>
 </tr>
@@ -3467,7 +3467,7 @@
 <tr>
 <td>工业-YOLO（微调YOLOv8，边缘优化）</td>
 <td>YOLOv8 + TensorRT/OpenVINO</td>
-<td><strong>NEU-DET + MVTec AD + 定制汽车/电池缺陷图像基准；索赔部署在活跃的汽车装配线上</strong></td>
+<td><strong>NEU-DET + MVTec AD + 定制汽车/电池缺陷图像的基准；声称部署在活跃的汽车装配线上</strong></td>
 <td>NEU-DET、MVTec AD、自定义扩展</td>
 <td><strong>mAP 98.5%</strong>； <strong>&gt; NVIDIA Jetson Orin 上 120 FPS</strong></td>
 <td><strong>2026 年预印本，单组，未经同行评审；视为供应商/作者报告。</strong> NEU-DET 上的典型 YOLO 论文报告较低的 mAP (~70-80%)，具体取决于拆分； 98.5% 处于乐观状态，可能包括数据管理效应</td>
@@ -3603,7 +3603,7 @@
 <p><strong>没有找到可靠、可引用的公共生产召回/精确度数据用于人工智能药品视觉检查（小瓶/安瓿/注射器完整性或颗粒检测）。</strong> 相关证据：</p>
 <ul>
 <li>MVTec AD 2 包括透明物体场景（与安瓿/小瓶相关）并报告 SOTA 异常检测低于 60% AU-PRO (https://arxiv.org/abs/2503.21622)。</li>
-<li>药品检验主要由供应商 AOI 系统（Cognex、Omron 等）主导，这些系统不发布召回编号。 https://www.cognex.com/what-is/machine-vision 描述了检测功能，但没有量化的准确性。</li>
+<li>药品检验主要由供应商 AOI 系统（Cognex、Omron 等）主导，这些系统不发布召回编号。 https://www.cognex.com/what-is/machine-vision 描述了检测功能，但没有量化准确性。</li>
 </ul>
 <p><strong>这是一个明确的数据差距。</strong> AssemblyVision 不得假设存在公布的药品费率；计划生成自己的验收数据。</p>
 <h3 id="37-general-industry-level-failure-statistics-context">3.7 一般行业级故障统计（上下文）<a class="headerlink" href="#37-general-industry-level-failure-statistics-context" title="Permanent link">&para;</a></h3>
@@ -3718,7 +3718,7 @@
 </ul>
 <p><strong>AssemblyVision 的底线：</strong>已发布的证据支持在稳定成像下进行存在检查的高单帧检测置信度（mAP50 ~0.95+），但<strong>没有公共来源报告装配完整性的生产假阴性率</strong>。 AssemblyVision 的故障安全设计（对任何缺失/不确定的证据、时间聚合、人工审核的 NG）是对这种不确定性的正确响应，其接受阈值必须来自测量的客户数据，而不是来自这些基准数字。</p>
 <hr />
-<h2 id="6-implications-and-caveats-for-assemblyvision">6. AssemblyVision 的含义和注意事项<a class="headerlink" href="#6-implications-and-caveats-for-assemblyvision" title="Permanent link">&para;</a></h2>
+<h2 id="6-implications-and-caveats-for-assemblyvision">6. Implications and Caveats for AssemblyVision<a class="headerlink" href="#6-implications-and-caveats-for-assemblyvision" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>mAP 不是生产召回率。</strong> 上述每个基准数字都是测试集平均值； AssemblyVision 的验收指标（NG 召回）必须使用排除的生产数据的固定阈值进行测量。</li>
 <li><strong>微小的姿势和光照变化在误差预算中占主导地位。</strong> 它们的预算（VR-YOLO -4pp；MVTec AD2 &lt;60% AU-PRO）。仅当监测漂移时，AssemblyVision 的固定摄像头 + 固定照明才有优势（请参阅<code>[docs/design/07-camera-and-image-acquisition.md](../design/07-camera-and-image-acquisition.md)</code>）。</li>
@@ -3727,7 +3727,7 @@
 <li><strong>行业失败统计数据</strong>（77% 的试点失速；50-70% 的项目未达到预期）是关于集成和流程，而不是探测器精度。 AssemblyVision 的边缘优先、离线功能设计和人机交互计划可解决这些特定的故障模式。</li>
 </ol>
 <hr />
-<h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="7-open-questions-and-validation-required">7. Open Questions and Validation Required<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>没有公共基准测量 <strong>NG 召回/组件存在（装配完整性）检查的误报率</strong>。 AssemblyVision 必须定义自己的接受数据集和置信界限（根据 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>，观察到的零失误的二项式界限）。</li>
 <li>Kaggle 选角数据集数据（7,348 张图像；5,198 张正常/2,150 张有缺陷）是数据集页面报告的，如果用作参考，应重新验证。</li>
