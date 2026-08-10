@@ -421,5 +421,9 @@ export default {
   'Scope': '対象範囲',
   'No completed inspection is available for confidence drift.': '信頼度ドリフト分析に利用できる完了検査がありません。',
   'No resolved product is available for confidence drift.': '信頼度ドリフト分析に利用できる解決済み製品がありません。',
+  'Load': '負荷',
+  'Memory': 'メモリ',
+  'Disk': 'ディスク',
+'CPU {count} cores total load': 'CPU {count} コア総負荷',
 
 } as const;

@@ -423,5 +423,9 @@ export default {
   "Scope": "Scope",
   "No completed inspection is available for confidence drift.": "No completed inspection is available for confidence drift.",
   "No resolved product is available for confidence drift.": "No resolved product is available for confidence drift.",
+"Load": "Load",
+"Memory": "Memory",
+"Disk": "Disk",
+"CPU {count} cores total load": "CPU {count} cores total load",
 
 } as const;

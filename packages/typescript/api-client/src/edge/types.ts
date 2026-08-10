@@ -339,6 +339,7 @@ export type DeviceStatus = {
   upload_last_success_at: ISODateTime | null;
   upload_last_error_code: string | null;
   storage_mode: "NORMAL" | "WARNING" | "CRITICAL" | "STOP";
+  storage_total_bytes: number;
   storage_free_bytes: number;
   storage_free_percent: number;
   storage_free_inodes: number;
@@ -348,6 +349,11 @@ export type DeviceStatus = {
   storage_stop_free_percent: number;
   storage_observed_at: ISODateTime | null;
   storage_write_fault: boolean;
+  /** Host system metrics for the health view; null when the platform cannot measure them. */
+  cpu_count: number | null;
+  load_1m: number | null;
+  memory_total_bytes: number | null;
+  memory_available_bytes: number | null;
   cleanup_enabled: boolean;
   cleanup_eligible_count: number;
   cleanup_eligible_bytes: number;

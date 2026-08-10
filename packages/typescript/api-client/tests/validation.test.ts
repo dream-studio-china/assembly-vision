@@ -92,6 +92,11 @@ describe("HttpApiClient runtime response validation (F9)", () => {
       central_connected: false,
       disk_free_bytes: 1024,
       upload_pending_count: 0,
+      storage_total_bytes: 2048,
+      cpu_count: 8,
+      load_1m: 1.0,
+      memory_total_bytes: 16 * 1024 ** 3,
+      memory_available_bytes: 8 * 1024 ** 3,
       alerts: [],
     });
     await expect(client.getDeviceStatus()).resolves.toBeDefined();

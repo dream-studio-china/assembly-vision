@@ -99,8 +99,14 @@ function validateDeviceStatus(body: unknown): void {
   ]) {
     hasBoolean(record, key, "$");
   }
-  for (const key of ["disk_free_bytes", "upload_pending_count"]) {
+  for (const key of ["disk_free_bytes", "upload_pending_count", "storage_total_bytes"]) {
     hasNumber(record, key, "$");
+  }
+  for (const key of ["cpu_count", "load_1m", "memory_total_bytes", "memory_available_bytes"]) {
+    const value = record[key];
+    if (value !== null && typeof value !== "number") {
+      fail(`$.${key}`, "number|null", value);
+    }
   }
   hasArray(record, "alerts", "$");
 }

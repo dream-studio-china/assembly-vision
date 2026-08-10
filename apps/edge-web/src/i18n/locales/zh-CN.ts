@@ -421,5 +421,9 @@ export default {
   'Scope': '范围',
   'No completed inspection is available for confidence drift.': '没有可用于置信度漂移分析的已完成检测。',
   'No resolved product is available for confidence drift.': '没有可用于置信度漂移分析的已解析产品。',
+  'Load': '负载',
+  'Memory': '内存',
+  'Disk': '磁盘',
+'CPU {count} cores total load': 'CPU {count} 核心总负载',
 
 } as const;

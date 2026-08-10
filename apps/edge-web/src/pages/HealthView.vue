@@ -30,28 +30,47 @@ function severityLabelOf(severity: string): string {
   return severityLabel[severity as Alert["severity"]] ?? severity;
 }
 
-const diskOption = computed<echarts.EChartsOption>(() => {
-  const theme = chartTokens();
-  const free = status.value?.disk_free_bytes ?? 0;
-  const total = Math.max(free, 50 * 1024 ** 3);
-  return {
-    title: { text: t("Disk usage"), left: "center", textStyle: { fontSize: 14, color: theme.text } },
-    series: [
-      {
-        type: "gauge",
-        startAngle: 90,
-        endAngle: -270,
-        min: 0,
-        max: total,
-        progress: { show: true, width: 12 },
-        axisLine: { lineStyle: { width: 12 } },
-        axisLabel: { formatter: (value: number) => formatBytes(value) },
-        data: [{ value: total - free, name: t("Used") }],
-        detail: { formatter: () => t("{bytes} free", { bytes: formatBytes(free) }), fontSize: 12 },
-      },
-    ],
-  };
+// Host resource gauges (design 15.3.1): load as a share of the CPU cores,
+// memory and disk as used/total percentages. Null means the platform cannot
+// measure the value, so the gauge renders empty with a "-" caption.
+const loadPercent = computed<number | null>(() => {
+  const load = status.value?.load_1m;
+  const cores = status.value?.cpu_count;
+  if (load === null || load === undefined || cores === null || cores === undefined || cores <= 0) {
+    return null;
+  }
+  return Math.min(100, Math.round((load / cores) * 100));
 });
+
+const memoryUsed = computed<number>(() => {
+  const total = status.value?.memory_total_bytes ?? 0;
+  const available = status.value?.memory_available_bytes ?? 0;
+  return Math.max(0, total - available);
+});
+
+const memoryPercent = computed<number | null>(() => {
+  const total = status.value?.memory_total_bytes ?? 0;
+  if (total <= 0) return null;
+  return Math.round((memoryUsed.value / total) * 100);
+});
+
+const diskUsed = computed<number>(() => {
+  const total = status.value?.storage_total_bytes ?? 0;
+  const free = status.value?.storage_free_bytes ?? status.value?.disk_free_bytes ?? 0;
+  return Math.max(0, total - free);
+});
+
+const diskPercent = computed<number | null>(() => {
+  const total = status.value?.storage_total_bytes ?? 0;
+  if (total <= 0) return null;
+  return Math.round((diskUsed.value / total) * 100);
+});
+
+function gaugeColor(percent: number): string {
+  if (percent >= 85) return "var(--status-ng)";
+  if (percent >= 70) return "var(--status-warning)";
+  return "var(--status-ok)";
+}
 
 const queueOption = computed<echarts.EChartsOption>(() => {
   const theme = chartTokens();
@@ -61,9 +80,15 @@ const queueOption = computed<echarts.EChartsOption>(() => {
   }
   return {
     title: { text: t("Upload queue by state"), left: "center", textStyle: { fontSize: 14, color: theme.text } },
-    xAxis: { type: "category", data: Object.keys(byState), axisLine: { lineStyle: { color: theme.border } }, axisLabel: { color: theme.text } },
-    yAxis: { type: "value", minInterval: 1, splitLine: { lineStyle: { color: theme.border } }, axisLabel: { color: theme.text } },
-    series: [{ type: "bar", data: Object.values(byState), itemStyle: { color: theme.accent } }],
+    grid: { top: 52, left: 8, right: 8, bottom: 8, containLabel: true },
+    xAxis: {
+      type: "category",
+      data: Object.keys(byState),
+      axisLine: { lineStyle: { color: theme.border } },
+      axisLabel: { color: theme.text, fontSize: 10, rotate: 30 },
+    },
+    yAxis: { type: "value", minInterval: 1, splitLine: { lineStyle: { color: theme.border } }, axisLabel: { color: theme.text, fontSize: 10 } },
+    series: [{ type: "bar", data: Object.values(byState), itemStyle: { color: theme.accent }, barMaxWidth: 24 }],
   };
 });
 
@@ -147,10 +172,45 @@ onMounted(async () => {
       </el-collapse>
     </section>
 
-    <div class="health__charts">
-      <EChart :option="diskOption" />
-      <EChart :option="queueOption" />
+    <div class="health__gauges">
+      <div class="gauge">
+        <el-progress
+          type="circle"
+          :percentage="loadPercent ?? 0"
+          :width="120"
+          :stroke-width="10"
+          :color="gaugeColor(loadPercent ?? 0)"
+        />
+        <div class="gauge__label">{{ t("Load") }}</div>
+        <div class="gauge__sub">{{ t("CPU {count} cores total load", { count: status?.cpu_count ?? "-" }) }}</div>
+      </div>
+      <div class="gauge">
+        <el-progress
+          type="circle"
+          :percentage="memoryPercent ?? 0"
+          :width="120"
+          :stroke-width="10"
+          :color="gaugeColor(memoryPercent ?? 0)"
+        />
+        <div class="gauge__label">{{ t("Memory") }}</div>
+        <div class="gauge__sub">{{ formatBytes(memoryUsed) }} / {{ formatBytes(status?.memory_total_bytes ?? 0) }}</div>
+      </div>
+      <div class="gauge">
+        <el-progress
+          type="circle"
+          :percentage="diskPercent ?? 0"
+          :width="120"
+          :stroke-width="10"
+          :color="gaugeColor(diskPercent ?? 0)"
+        />
+        <div class="gauge__label">{{ t("Disk") }}</div>
+        <div class="gauge__sub">{{ formatBytes(diskUsed) }} / {{ formatBytes(status?.storage_total_bytes ?? 0) }}</div>
+      </div>
+      <div class="health__queue">
+        <EChart :option="queueOption" />
+      </div>
     </div>
+
     <el-table :data="status ? [status] : []">
       <el-table-column prop="operational_state" :label="t('State')" width="140" />
       <el-table-column prop="inspection_ready" :label="t('Inspection ready')" width="140">
@@ -208,9 +268,39 @@ onMounted(async () => {
   background: var(--status-info-soft);
   color: var(--status-info);
 }
-.health__charts {
+.health__gauges {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
+}
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--panel-padding);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+}
+.gauge__label {
+  font-weight: 600;
+  font-size: 13px;
+}
+.gauge__sub {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.health__queue {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--panel-padding);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+}
+.health__queue :deep(.echart) {
+  height: 180px;
 }
 </style>

@@ -805,6 +805,8 @@ export interface components {
              * @default 0
              */
             cleanup_purged_count: number;
+            /** Cpu Count */
+            cpu_count?: number | null;
             /** Current Component Model Version Id */
             current_component_model_version_id?: string | null;
             /** Current Product Model Version Id */
@@ -848,6 +850,12 @@ export interface components {
              * @default false
              */
             integrity_verify_checksums: boolean;
+            /** Load 1M */
+            load_1m?: number | null;
+            /** Memory Available Bytes */
+            memory_available_bytes?: number | null;
+            /** Memory Total Bytes */
+            memory_total_bytes?: number | null;
             /** Model Loaded */
             model_loaded: boolean;
             /** Observed At */
@@ -891,6 +899,11 @@ export interface components {
              * @default 0
              */
             storage_stop_free_percent: number;
+            /**
+             * Storage Total Bytes
+             * @default 0
+             */
+            storage_total_bytes: number;
             /**
              * Storage Warning Free Percent
              * @default 0
