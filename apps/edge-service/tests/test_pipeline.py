@@ -727,3 +727,41 @@ def test_artifact_checksum_empty_manifest() -> None:
     manifest = load_model_manifest(PRODUCT_MANIFEST)
     manifest.artifacts = []
     assert _artifact_checksum(manifest) == "0" * 64
+
+
+def test_inference_metadata_projection_persists_through_repository(tmp_path: Path) -> None:
+    """Regression: the SQLite projection must serialize inference metadata.
+
+    The writer path serializes the full record (model_dump mode=json), but the
+    repository projection previously re-serialized the raw Pydantic object,
+    which is not JSON serializable and broke persisted dev uploads (PR-028).
+    """
+    from assemblyvision_edge.persistence.repository import EdgeRepository
+
+    image_path = tmp_path / "product.png"
+    _write_image(image_path)
+    component_detector = FakeComponentDetector(
+        [_component_obs(uuid4(), c) for c in ("component_a", "component_b", "manual")]
+    )
+    pipeline = _build_pipeline(
+        SettingsAwareProductDetector(_Outcome(selected=_product_detection(uuid4()))),
+        component_detector,
+    )
+    record = pipeline.inspect_image(
+        FolderSource(tmp_path), image_path, OutputWriter(tmp_path / "out")
+    )
+    assert record.inference_metadata is not None
+
+    repo = EdgeRepository.open(str(tmp_path / "edge.sqlite3"))
+    try:
+        repo.persist_inspection_and_enqueue_uploads(record)
+        stored = repo.get_inspection(str(record.inspection_id))
+    finally:
+        repo.close()
+
+    assert stored is not None
+    assert stored.inference_metadata is not None
+    product_meta = stored.inference_metadata.product_detection
+    assert product_meta is not None
+    assert product_meta.model_version != ""
+    assert product_meta.settings.conf == pytest.approx(0.5)
