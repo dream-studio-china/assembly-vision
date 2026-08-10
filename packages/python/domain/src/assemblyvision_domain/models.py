@@ -338,3 +338,96 @@ class ModelManifest(APIModel):
     approved_at: datetime | None = None
     supersedes_model_version_id: UUID | None = None
     created_at: datetime
+
+
+class ReviewDisposition(StrEnum):
+    """Human disposition applied to one inspection (design 24.3).
+
+    A correction never rewrites the machine decision; it is recorded as a
+    separate append-only disposition.
+    """
+
+    CONFIRMED_NG = "CONFIRMED_NG"
+    CONFIRMED_OK = "CONFIRMED_OK"
+    CORRECTED_NG = "CORRECTED_NG"
+    INCONCLUSIVE = "INCONCLUSIVE"
+    REINSPECT = "REINSPECT"
+
+
+class ComponentCorrectionState(StrEnum):
+    """Per-component ground truth recorded by a reviewer."""
+
+    PRESENT = "PRESENT"
+    MISSING = "MISSING"
+    UNCERTAIN = "UNCERTAIN"
+
+
+class ComponentCorrection(APIModel):
+    """Per-component correction recorded against the original evidence."""
+
+    component_code: str = Field(min_length=1, max_length=64)
+    corrected_state: ComponentCorrectionState
+    note: str | None = Field(default=None, max_length=500)
+
+
+class ReviewRecord(APIModel):
+    """Append-only human review of one inspection (design 24.7).
+
+    The original machine outcome and versions are snapshotted on the record so
+    the review remains interpretable even if the inspection projection is later
+    purged. A later review supersedes an earlier one by reference; records are
+    never overwritten.
+    """
+
+    review_id: UUID
+    inspection_id: UUID
+    disposition: ReviewDisposition
+    reason: str | None = Field(default=None, max_length=200)
+    note: str | None = Field(default=None, max_length=2000)
+    reviewer: str = Field(min_length=1, max_length=128)
+    created_at: datetime
+    original_business_result: BusinessResult
+    original_internal_decision: InternalDecision
+    original_reason_codes: list[str] = Field(default_factory=list)
+    component_corrections: list[ComponentCorrection] = Field(default_factory=list)
+    supersedes_review_id: UUID | None = None
+
+    @model_validator(mode="after")
+    def _require_reason_when_inconclusive(self) -> ReviewRecord:
+        if self.disposition is ReviewDisposition.INCONCLUSIVE and not self.reason:
+            raise ValueError("an inconclusive review requires a reason")
+        return self
+
+
+def allowed_review_dispositions(
+    business_result: BusinessResult, internal_decision: InternalDecision
+) -> frozenset[ReviewDisposition]:
+    """Return the dispositions permitted for a machine outcome (design 24.3).
+
+    UNCERTAIN is resolved separately from plain NG so the distinct explanatory
+    category survives; a sampled OK audit may only confirm or correct to NG.
+    """
+    if internal_decision is InternalDecision.UNCERTAIN:
+        return frozenset(
+            {
+                ReviewDisposition.CONFIRMED_NG,
+                ReviewDisposition.CONFIRMED_OK,
+                ReviewDisposition.REINSPECT,
+                ReviewDisposition.INCONCLUSIVE,
+            }
+        )
+    if business_result is BusinessResult.NG:
+        return frozenset(
+            {
+                ReviewDisposition.CONFIRMED_NG,
+                ReviewDisposition.CONFIRMED_OK,
+                ReviewDisposition.INCONCLUSIVE,
+            }
+        )
+    return frozenset(
+        {
+            ReviewDisposition.CONFIRMED_OK,
+            ReviewDisposition.CORRECTED_NG,
+            ReviewDisposition.INCONCLUSIVE,
+        }
+    )
