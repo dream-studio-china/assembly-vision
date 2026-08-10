@@ -29,7 +29,9 @@ architectural change with no customer requirement behind it.
    reinspected, or inconclusive; plain `NG` may be confirmed NG/OK or
    inconclusive; sampled `OK` may be confirmed OK, corrected to NG, or
    inconclusive. An incompatible disposition is rejected (`422
-   REVIEW_DISPOSITION_INVALID`) rather than recorded.
+   REVIEW_DISPOSITION_INVALID`) rather than recorded. The design 24.3 "system
+   exception" row (with the operational-fault disposition) is outside
+   edge-local scope and is deferred until central review exists.
 3. **Reviewer identity is caller-supplied and local.** The reviewer name is a
    required field on the submission; there is no edge role system. The record
    snapshots the original machine outcome and reason codes so it stays

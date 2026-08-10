@@ -12,7 +12,7 @@ All JSON uses UTF-8, snake_case fields, ISO 8601 UTC timestamps, UUID strings, a
 
 ### 15.2.1 Authentication and Authorization
 
-- Edge UI requests originate on the local management network. MVP may use a local operator session, but mutating routes require `operator` or `edge_admin`; read-only health is deliberately limited. Do not treat localhost as authentication.
+- Edge UI requests originate on the local management network. MVP may use a local operator session, but mutating routes require `operator` or `edge_admin`; read-only health is deliberately limited. Do not treat localhost as authentication. The one exception is review submission (`POST /api/v1/inspections/{id}/reviews`), which is intentionally exposed through the existing viewer credential per ADR-016 until an edge role model exists.
 - Device-to-central calls use mutually authenticated TLS or short-lived device credentials bound to `device_id`.
 - Central users authenticate through OIDC Authorization Code with PKCE. API authorization uses organization-scoped roles: `viewer`, `reviewer`, `config_manager`, `fleet_admin`, and `org_admin`.
 - Media authorization is checked before issuing a short-lived download URL.
@@ -64,13 +64,14 @@ append-only; a later review supersedes an earlier one by reference.
 |---|---|---|---|---|---|---|
 | `GET /api/v1/reviews` | List the review queue with each inspection's review state. | Query: business_result, internal_decision, reviewed, cursor, limit / `Page[ReviewQueueItem]` | `400 INVALID_CURSOR` | Safe GET | Cursor | R |
 | `GET /api/v1/inspections/{inspection_id}/reviews` | Append-only review history of one inspection (oldest first). | Path UUID / `list[ReviewRecord]` | `404 INSPECTION_NOT_FOUND` | Safe GET | - | R |
-| `POST /api/v1/inspections/{inspection_id}/reviews` | Append one human disposition. | `SubmitReviewRequest` / `ReviewRecord` | `404 INSPECTION_NOT_FOUND`, `409 REVIEW_CONFLICT`, `422 REVIEW_DISPOSITION_INVALID` / `REVIEW_VALIDATION_FAILED` | Deterministic per review_id | - | R |
+| `POST /api/v1/inspections/{inspection_id}/reviews` | Append one human disposition. | `SubmitReviewRequest` / `ReviewRecord` | `404 INSPECTION_NOT_FOUND`, `409 REVIEW_CONFLICT`, `422 REVIEW_DISPOSITION_INVALID` / `REVIEW_VALIDATION_FAILED` | None: each call appends a new review | - | R |
 
 `SubmitReviewRequest` requires `disposition` and a non-empty `reviewer`;
 `INCONCLUSIVE` requires a `reason`. The disposition must be permitted for the
 machine outcome (design 24.3): `UNCERTAIN` may be confirmed NG/OK, reinspected,
 or inconclusive; plain `NG` may be confirmed NG/OK or inconclusive; sampled
-`OK` may be confirmed OK, corrected to NG, or inconclusive.
+`OK` may be confirmed OK, corrected to NG, or inconclusive. `409 REVIEW_CONFLICT`
+also covers a `supersedes_review_id` that names no review of that inspection.
 
 ### 15.3.4 Upload Queue and Configuration
 

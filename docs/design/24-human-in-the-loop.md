@@ -41,10 +41,16 @@ The machine outcome remains immutable. A review adds a separate human dispositio
 
 | Machine outcome | Review purpose | Allowed human disposition |
 |---|---|---|
-| `NG` | Confirm real defect or false NG | Confirmed NG, corrected OK, inconclusive |
+| `NG` | Confirm real defect or false NG | Confirmed NG, confirmed OK, inconclusive |
 | Business `NG`, internal `UNCERTAIN` | Resolve insufficient/conflicting evidence | Confirmed NG, confirmed OK, recapture/reinspect, inconclusive |
 | Sampled `OK` | Estimate missed defects and detect drift | Confirmed OK, corrected NG, inconclusive |
 | System exception | Determine inspectability and recovery | Reinspect, operational fault, inconclusive |
+
+An `NG` corrected to `OK` and a sampled `OK` confirmed share the `CONFIRMED_OK`
+disposition; the original machine outcome on the review record distinguishes
+them. The "system exception" row (including the operational-fault disposition)
+is outside edge-local review scope and is deferred until central review exists
+(ADR-016).
 
 A correction does not rewrite the edge decision. It records reviewer, time, reason, ground-truth component states, evidence used, and relationship to the original inspection.
 
