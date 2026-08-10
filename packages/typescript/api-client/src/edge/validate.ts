@@ -108,6 +108,18 @@ function validateDeviceStatus(body: unknown): void {
       fail(`$.${key}`, "number|null", value);
     }
   }
+  for (const key of [
+    "network_rx_bytes_per_sec",
+    "network_tx_bytes_per_sec",
+    "gpu_utilization_percent",
+    "gpu_power_watts",
+    "gpu_power_max_watts",
+  ]) {
+    const value = record[key];
+    if (value !== null && typeof value !== "number") {
+      fail(`$.${key}`, "number|null", value);
+    }
+  }
   hasArray(record, "alerts", "$");
 }
 

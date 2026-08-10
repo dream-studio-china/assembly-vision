@@ -425,5 +425,8 @@ export default {
   'Memory': '内存',
   'Disk': '磁盘',
 'CPU {count} cores total load': 'CPU {count} 核心总负载',
-
+  'Network traffic': '网络流量',
+  'Download': '下载',
+  'GPU load': 'GPU 负载',
+  'GPU power': 'GPU 功率',
 } as const;

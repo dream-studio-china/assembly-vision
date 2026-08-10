@@ -26,12 +26,17 @@ test("inspection detail shows evidence and reason codes", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Components" })).toBeVisible();
 });
 
-test("health page renders system gauges and queue chart on one row", async ({ page }) => {
+test("health page renders system gauges and charts aligned in rows", async ({ page }) => {
   await page.goto("/health");
   await expect(page.getByRole("heading", { name: "Device health" })).toBeVisible();
-  await expect(page.locator(".health__gauges .gauge")).toHaveCount(3);
-  await expect(page.locator(".gauge__label", { hasText: "Load" })).toBeVisible();
-  await expect(page.locator(".gauge__label", { hasText: "Memory" })).toBeVisible();
-  await expect(page.locator(".gauge__label", { hasText: "Disk" })).toBeVisible();
-  await expect(page.locator(".health__gauges .health__queue .echart canvas")).toBeVisible();
+  await expect(page.locator(".health__row--system .gauge")).toHaveCount(4);
+  await expect(page.getByText("Load", { exact: true })).toBeVisible();
+  await expect(page.getByText("Memory", { exact: true })).toBeVisible();
+  await expect(page.getByText("GPU load", { exact: true })).toBeVisible();
+  await expect(page.getByText("GPU power", { exact: true })).toBeVisible();
+  // Second row: network traffic area chart spans two columns beside disk and
+  // the upload queue chart, aligned to the four-column grid above.
+  await expect(page.locator(".health__row--network .health__network .echart canvas")).toBeVisible();
+  await expect(page.getByText("Disk", { exact: true })).toBeVisible();
+  await expect(page.locator(".health__row--network .health__queue .echart canvas")).toBeVisible();
 });
