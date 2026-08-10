@@ -24,6 +24,10 @@ decision path.
 |:---:|:---:|
 | <img src="docs/images/inspection.jpg" alt="Inspection detail view" width="100%"/> | <img src="docs/images/live.jpg" alt="Live inspection view" width="100%"/> |
 
+| Health view | Statistics view |
+|:---:|:---:|
+| <img src="docs/images/health.jpg" alt="Health view" width="100%"/> | <img src="docs/images/statistics.jpg" alt="Statistics view" width="100%"/> |
+
 ## Production Status
 
 The Edge production-candidate gates E1–E5 are merged, and the Central server
