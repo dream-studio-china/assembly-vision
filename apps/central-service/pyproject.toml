@@ -1,0 +1,39 @@
+[project]
+name = "assemblyvision-central"
+version = "0.1.0"
+description = "AssemblyVision central server (pilot M1: ingestion, history, review)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "assemblyvision-domain",
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.2,<3",
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.30,<1",
+    "sqlalchemy>=2.0,<3",
+    "alembic>=1.13,<2",
+    "psycopg[binary]>=3.1,<4",
+    "minio>=7.2,<8",
+]
+
+[tool.uv.sources]
+assemblyvision-domain = { workspace = true }
+
+[project.scripts]
+central-service = "central_service.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.10",
+    "pytest>=8.0",
+    "pytest-cov>=7.1",
+    "ruff>=0.5",
+    "httpx>=0.27,<1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/central_service"]

@@ -1,0 +1,95 @@
+# AssemblyVision central pilot compose deployment (design 05 section 10, C1a).
+#
+# Services: PostgreSQL, MinIO, central-service (API), central-migrate
+# (one-shot controlled schema release step), and admin-web (built pilot UI).
+#
+# Credentials below are DEVELOPMENT defaults only. Copy this file's variable
+# block into a private `.env` next to this compose file (Compose reads `.env`
+# automatically) and override every `${VAR}` to deploy a real pilot.
+#
+# Run: docker compose -f apps/central-service/compose.yaml up --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-central}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-assemblyvision-dev}
+      POSTGRES_DB: ${POSTGRES_DB:-assemblyvision}
+    volumes:
+      - central-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-central} -d ${POSTGRES_DB:-assemblyvision}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-assemblyvision-dev}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-assemblyvision-dev}
+    volumes:
+      - central-miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  central-migrate:
+    build:
+      context: ../..
+      dockerfile: apps/central-service/Dockerfile
+    command: ["migrate"]
+    environment:
+      AV_CENTRAL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-central}:${POSTGRES_PASSWORD:-assemblyvision-dev}@postgres:5432/${POSTGRES_DB:-assemblyvision}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  central-service:
+    build:
+      context: ../..
+      dockerfile: apps/central-service/Dockerfile
+    environment:
+      AV_CENTRAL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-central}:${POSTGRES_PASSWORD:-assemblyvision-dev}@postgres:5432/${POSTGRES_DB:-assemblyvision}
+      AV_CENTRAL_MINIO_ENDPOINT: minio:9000
+      AV_CENTRAL_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-assemblyvision-dev}
+      AV_CENTRAL_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-assemblyvision-dev}
+      AV_CENTRAL_MINIO_BUCKET: ${MINIO_BUCKET:-assemblyvision-central}
+      AV_CENTRAL_MINIO_SECURE: "false"
+      AV_CENTRAL_ADMIN_TOKEN: ${CENTRAL_ADMIN_TOKEN:-assemblyvision-admin-dev}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      central-migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "central_service.healthcheck", "http://127.0.0.1:8000/api/v1/health/ready"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 4
+    restart: unless-stopped
+
+  admin-web:
+    build:
+      context: ../..
+      dockerfile: apps/admin-web/Dockerfile
+    depends_on:
+      central-service:
+        condition: service_healthy
+    ports:
+      - "${ADMIN_WEB_PORT:-8080}:80"
+    restart: unless-stopped
+
+volumes:
+  central-pgdata:
+  central-miniodata:
