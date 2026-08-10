@@ -648,7 +648,7 @@
   <a href="#32-two-stage-vision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 两阶段愿景
+        3.2 Two-Stage Vision
       
     </span>
   </a>
@@ -780,7 +780,7 @@
   <a href="#11-deployment-and-source-packaging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11. Deployment and Source Packaging
+        11. 部署与源码打包
       
     </span>
   </a>
@@ -814,7 +814,7 @@
   <a href="#122-one-month-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        12.2 一个月目标
+        12.2 One-Month Target
       
     </span>
   </a>
@@ -852,7 +852,7 @@
   <a href="#13-assumptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13. Assumptions
+        13. 假设
       
     </span>
   </a>
@@ -1710,7 +1710,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1906,7 +1906,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2868,7 +2868,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3254,7 +3254,7 @@
   <a href="#32-two-stage-vision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 两阶段愿景
+        3.2 Two-Stage Vision
       
     </span>
   </a>
@@ -3386,7 +3386,7 @@
   <a href="#11-deployment-and-source-packaging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11. Deployment and Source Packaging
+        11. 部署与源码打包
       
     </span>
   </a>
@@ -3420,7 +3420,7 @@
   <a href="#122-one-month-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        12.2 一个月目标
+        12.2 One-Month Target
       
     </span>
   </a>
@@ -3458,7 +3458,7 @@
   <a href="#13-assumptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13. Assumptions
+        13. 假设
       
     </span>
   </a>
@@ -3498,8 +3498,8 @@
 
 <h1 id="assemblyvision-edge-client-architecture">AssemblyVision 边缘客户端架构<a class="headerlink" href="#assemblyvision-edge-client-architecture" title="Permanent link">&para;</a></h1>
 <h2 id="1-responsibilities-and-boundary">1. 职责与边界<a class="headerlink" href="#1-responsibilities-and-boundary" title="Permanent link">&para;</a></h2>
-<p>The edge client owns every operation needed to produce and retain a production decision: hardware capture, trigger/window management, barcode decoding, product-type resolution, two-stage vision, optional OpenCV checks, temporal aggregation, rules, local records/media, health, local API/Web UI, and delayed upload. It must inspect without the network or central server.</p>
-<p>The edge does not train models, depend on central queries for active rules, or upload every frame. The broader boundary is shown in <a href="../03-architecture-overview/">Architecture Overview</a>.</p>
+<p>边缘客户端拥有生成和保留生产决策所需的所有操作：硬件捕获、触发器/窗口管理、条形码解码、产品类型解析、两阶段视觉、可选的 OpenCV 检查、时间聚合、规则、本地记录/媒体、运行状况、本地 API/Web UI 和延迟上传。它必须在没有网络或中央服务器的情况下进行检查。</p>
+<p>边缘不训练模型，依赖于活动规则的中央查询，也不上传每个帧。更广泛的边界如<a href="../03-architecture-overview/">Architecture Overview</a>所示。</p>
 <h2 id="2-edge-component-architecture">2. 边缘组件架构<a class="headerlink" href="#2-edge-component-architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
     Hardware[相机扫描仪传感器适配器] --&gt; Coordinator[检验协调员]
@@ -3518,37 +3518,37 @@
     Persist --&gt; Media[(媒体音量)]
     Persist --&gt; Upload[(持久上传任务)]
     Upload --&gt; Sync[上传调度程序]
-    Sync --&gt;|当可用时| Central[Central ingestion API]
+    Sync --&gt;|当可用时| Central[中央摄取 API]
     API[本地FastAPI] --&gt; Persist
     API --&gt; Coordinator
-    Web[本地Vue应用程序] --&gt; API
-    Health[健康监测仪] --&gt; Hardware
+    Web[Local Vue application] --&gt; API
+    Health[健康监测器] --&gt; Hardware
     Health --&gt; DB
     Health --&gt; Media
     Health --&gt; API</code></pre>
-<p>The one-month target deploys one <code>edge-service</code> containing FastAPI, capture orchestration, persistence, and upload scheduling. Decision-critical work runs in bounded worker tasks and may use a supervised inference subprocess for SDK/GPU isolation; it is not a separately deployed service until measured isolation or scaling needs justify that complexity. API or browser request failure must not stop capture and decision tasks.</p>
-<p>One <code>edge-service</code> process may run several independent inspection instances,
-each pairing its own camera source with its own models/rule/product and its
-own stable device identity (<code>device_id = uuid5(namespace, instance_id)</code> unless
-configured explicitly), matching the fleet model of one device per line
-(ADR-013). Instances share the process and its storage but never share
-evidence; per-instance model loading means memory grows with the instance
-count until weight sharing is justified.</p>
+<p>一月目标部署一个包含 FastAPI、捕获编排、持久性和上传调度的 <code>edge-service</code>。决策关键型工作在有界工作任务中运行，并且可以使用监督推理子进程进行 SDK/GPU 隔离；在测量的隔离或扩展需求证明其复杂性合理之前，它不是单独部署的服务。 API 或浏览器请求失败不得停止捕获和决策任务。</p>
+<p>一个<code>edge-service</code>进程可以运行多个独立的检查实例，
+每个将自己的相机源与其自己的模型/规则/产品及其
+拥有稳定的设备身份（<code>device_id = uuid5(namespace, instance_id)</code>除非
+显式配置），匹配每条线路一台设备的车队模型
+（ADR-013）。实例共享进程及其存储，但从不共享
+证据；每个实例的模型加载意味着内存随着实例的增长而增长
+计数直至重量分配合理。</p>
 <h2 id="3-inspection-processing">3、检验处理<a class="headerlink" href="#3-inspection-processing" title="Permanent link">&para;</a></h2>
 <h3 id="31-window-and-identity">3.1 窗口和身份<a class="headerlink" href="#31-window-and-identity" title="Permanent link">&para;</a></h3>
-<p>The coordinator creates <code>inspection_id</code> before accepting evidence and pins active package versions. A hardware trigger gives the clearest boundary when available; barcode events add identity but may arrive late or fail; tracking/zones handle image-only flows but require careful tuning; a timeout bounds resource usage but cannot by itself prove physical separation. The production mechanism should combine only validated signals and test consecutive/multiple products explicitly.</p>
-<p>Barcode output includes raw value, symbology if available, timestamp, source, read quality/status, and error. A versioned resolver maps identity to product configuration. No read, conflicting reads, unknown value, or absent configuration prevents <code>OK</code> and emits a reason code.</p>
-<h3 id="32-two-stage-vision">3.2 两阶段愿景<a class="headerlink" href="#32-two-stage-vision" title="Permanent link">&para;</a></h3>
-<p>For each usable frame, the product detector processes the full image. The ROI engine selects an unambiguous product candidate, expands by configured margins, clips to bounds, and records transforms between full-frame and ROI coordinates. Zero-area, excessive clipping, no-product, or multiple-product ambiguity is invalid evidence.</p>
-<p>The component detector runs on the generated ROI and emits class, box, confidence, frame ID, and model version. Required classes come from the pinned product configuration. Optional OpenCV checks emit named observations with their own algorithm/configuration version; they must not mutate detector output invisibly.</p>
+<p>协调器在接受证据并固定活动包版本之前创建 <code>inspection_id</code>。硬件触发可在可用时提供最清晰的边界；条形码事件添加身份，但可能会延迟到达或失败；跟踪/区域处理仅图像流，但需要仔细调整；超时限制资源使用，但其本身不能证明物理分离。生产机制应仅结合经过验证的信号并明确测试连续/多个产品。</p>
+<p>条形码输出包括原始值、符号系统（如果可用）、时间戳、来源、读取质量/状态和错误。版本化解析器将身份映射到产品配置。没有读取、读取冲突、未知值或缺少配置会阻止 <code>OK</code> 并发出原因代码。</p>
+<h3 id="32-two-stage-vision">3.2 Two-Stage Vision<a class="headerlink" href="#32-two-stage-vision" title="Permanent link">&para;</a></h3>
+<p>对于每个可用帧，产品检测器都会处理完整图像。 ROI 引擎选择明确的候选产品，通过配置的边距进行扩展，剪辑到边界，并记录全帧和 ROI 坐标之间的转换。零面积、过度剪裁、无产品或多产品模糊性都是无效证据。</p>
+<p>组件检测器在生成的 ROI 上运行并发出类别、框、置信度、帧 ID 和模型版本。所需的类来自固定的产品配置。可选的 OpenCV 检查使用自己的算法/配置版本发出命名观察结果；它们不能无形地改变检测器的输出。</p>
 <h3 id="33-per-component-aggregation-and-rules">3.3 每个组件的聚合和规则<a class="headerlink" href="#33-per-component-aggregation-and-rules" title="Permanent link">&para;</a></h3>
-<p>The aggregator excludes invalid/blurred frames and evaluates each required component using a configured policy, for example one high-confidence observation, two medium-confidence observations, adjacent-frame evidence, visible-area limits, and minimum usable-frame count. Threshold values remain model/product specific and require evaluation.</p>
-<p>The rule engine consumes only typed aggregate evidence and pinned configuration. It returns internal <code>OK</code>, <code>NG</code>, or <code>UNCERTAIN</code>, component lists, and reason codes. <code>UNCERTAIN</code> always maps to business <code>NG</code>; presentation may show the internal reason but cannot change the business result to <code>OK</code>.</p>
+<p>聚合器排除无效/模糊的帧，并使用配置的策略评估每个所需的组件，例如一个高置信度观察、两个中等置信度观察、相邻帧证据、可见区域限制和最小可用帧计数。阈值仍然特定于型号/产品，并且需要评估。</p>
+<p>规则引擎仅使用类型化的聚合证据和固定配置。它返回内部 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code>、组件列表和原因代码。 <code>UNCERTAIN</code>始终映射到业务<code>NG</code>；演示文稿可以显示内部原因，但不能将业务结果更改为<code>OK</code>。</p>
 <h2 id="4-inspection-state-model">4. 检验状态模型<a class="headerlink" href="#4-inspection-state-model" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     [*] --&gt; Idle
     Idle --&gt; WindowOpen:已验证的开始事件
-    WindowOpen --&gt; Collecting:first related frame or identity event
+    WindowOpen --&gt; Collecting:第一个相关帧或身份事件
     Collecting --&gt; Evaluating:已验证的结束事件或有限超时
     Evaluating --&gt; Persisting:做出的决定
     Evaluating --&gt; Persisting:异常产生保守的结果
@@ -3556,20 +3556,20 @@ count until weight sharing is justified.</p>
     Persisting --&gt; RecoveryRequired:提交或媒体最终确定失败
     RecoveryRequired --&gt; Persisting:重试成功
     RecoveryRequired --&gt; Faulted:不可能安全恢复
-    Completed --&gt; Queued:上传策略创建任务
-    Completed --&gt; Idle:无需上传任务
+    Completed --&gt; Queued:upload policy creates tasks
+    Completed --&gt; Idle:no upload task required
     Queued --&gt; Idle:持久记录的任务
     WindowOpen --&gt; Cancelled:无效或重复的开始
     Collecting --&gt; Cancelled:根据批准的政策取消运营商
     Cancelled --&gt; Persisting:取消记录及原因
     Faulted --&gt; Idle:授权恢复和健康检查通过</code></pre>
-<p>Every terminal path creates an auditable record where storage remains available. A cancelled or exception path cannot yield <code>OK</code>.</p>
+<p>每个终端路径都会创建一个可审计的记录，其中存储仍然可用。取消或异常路径不能产生 <code>OK</code>。</p>
 <h2 id="5-device-state-model">5. 设备状态模型<a class="headerlink" href="#5-device-state-model" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     [*] --&gt; Starting
     Starting --&gt; Ready:依赖项和活动包有效
-    Starting --&gt; Faulted:mandatory dependency invalid
-    Ready --&gt; Inspecting:inspection window opens
+    Starting --&gt; Faulted:强制依赖无效
+    Ready --&gt; Inspecting:检查窗口打开
     Inspecting --&gt; Ready:已提交检查
     Ready --&gt; Degraded:非关键依赖性受损
     Inspecting --&gt; Degraded:网络或上传不可用
@@ -3578,12 +3578,12 @@ count until weight sharing is justified.</p>
     Ready --&gt; Paused:授权暂停
     Degraded --&gt; Paused:授权暂停
     Paused --&gt; Ready:授权简历和检查通过
-    Inspecting --&gt; Faulted:camera storage or active package failure
-    Faulted --&gt; Starting:authorized restart or recovery
+    Inspecting --&gt; Faulted:相机存储或活动包故障
+    Faulted --&gt; Starting:授权重启或恢复
     Starting --&gt; Maintenance:维修授权
     Ready --&gt; Maintenance:维修授权
     Maintenance --&gt; Starting:维护完成</code></pre>
-<p>Network or central failure is degraded, not decision-critical. Camera failure, invalid active model/rule compatibility, inability to persist mandatory records, or unsafe disk exhaustion is faulted. Exact line signaling for these states requires site agreement.</p>
+<p>网络或中央故障是降级的，而不是决策关键的。相机故障、无效的活动模型/规则兼容性、无法持久保存强制记录或不安全的磁盘耗尽等故障。这些状态的精确线路信号需要站点协议。</p>
 <h2 id="6-local-persistence-and-recovery">6. 本地持久化和恢复<a class="headerlink" href="#6-local-persistence-and-recovery" title="Permanent link">&para;</a></h2>
 <h3 id="61-data-layout">6.1 数据布局<a class="headerlink" href="#61-data-layout" title="Permanent link">&para;</a></h3>
 <p>SQLite 最初存储检查、帧元数据、组件证据、媒体清单、上传任务、设备事件、本地配置和已安装的模型/规则版本。媒体位于显式安装的数据根下，按日期和检查 ID 分区，绝不位于容器层或存储库内。</p>
@@ -3609,27 +3609,27 @@ count until weight sharing is justified.</p>
 <li>根据经过验证的窗口策略，有界捕获缓冲区有利于最近的帧；禁止无界队列。</li>
 <li>对于选定的 CPU/GPU 资源，推理并发性受到明确限制。</li>
 <li>每帧携带检查ID、帧ID、序列、捕获时间戳和来源；较晚的结果将从关闭/不同的窗口中丢弃并记录。</li>
-<li>缓慢上传、UI、注释渲染或中央调用无法阻止捕获/推理。</li>
+<li>上传缓慢、UI、注释渲染或中央调用无法阻止捕获/推理。</li>
 <li>使用负载/运行状况检查和原子活动版本切换在窗口之间进行模型激活；以前的包仍然可以回滚。</li>
 <li>正常关闭会停止新窗口，为活动窗口提供有界完成策略，提交状态并释放硬件。</li>
 </ul>
 <h2 id="10-health-and-observability">10. 健康与可观察性<a class="headerlink" href="#10-health-and-observability" title="Permanent link">&para;</a></h2>
 <p>结构化日志和指标涵盖捕获率/丢包、可用帧、阶段延迟、产品/投资回报率/条形码成功、每个结果/原因计数、队列年龄/深度、重试结果、磁盘水印、数据库错误、包版本和服务重启。关联使用设备、检查、帧、上传任务和请求 ID。健康端点区分活跃度、就绪度和详细的运行状态；与相机断开连接的进程可能处于活动状态，但尚未准备好进行检查。</p>
-<h2 id="11-deployment-and-source-packaging">11. Deployment and Source Packaging<a class="headerlink" href="#11-deployment-and-source-packaging" title="Permanent link">&para;</a></h2>
+<h2 id="11-deployment-and-source-packaging">11. 部署与源码打包<a class="headerlink" href="#11-deployment-and-source-packaging" title="Permanent link">&para;</a></h2>
 <p>边缘使用 Compose，无需 Kubernetes。映像是多阶段的，以非 root 身份运行，声明运行状况/重新启动策略，并显式挂载配置/数据/媒体/日志卷。在适配器允许的情况下，运行时文件系统是只读的。前端源代码被编译为静态资源。 Python <code>.pyc</code>-only 打包可能会减少随意浏览，但它不是健壮的混淆；不提供任何 Git 历史记录、训练数据、笔记本、生产数据、实验设置或嵌入的长期机密。</p>
 <h2 id="12-delivery-horizons">12. 交付范围<a class="headerlink" href="#12-delivery-horizons" title="Permanent link">&para;</a></h2>
 <h3 id="121-static-train-and-inspect-mvp">12.1 静态训练和检查 MVP<a class="headerlink" href="#121-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
 <p>使用文件夹源、经过训练的模型适配器、ROI、组件证据、规则、JSON/媒体输出、保留验证和重点测试来实现边缘 CLI 路径。一个单独的仅供开发人员使用的培训 CLI 会生成模型工件；它不是边缘运行时的一部分。</p>
-<h3 id="122-one-month-target">12.2 一个月目标<a class="headerlink" href="#122-one-month-target" title="Permanent link">&para;</a></h3>
+<h3 id="122-one-month-target">12.2 One-Month Target<a class="headerlink" href="#122-one-month-target" title="Permanent link">&para;</a></h3>
 <p>添加选定的硬件适配器、产品窗口、条形码解析器、<code>edge-service</code> 内的有界决策工作者、SQLite/媒体管理器、聚合、队列/重试、本地 Web UI、Compose 和恢复/运行状况测试。整合最初的集中摄取，而不将其引入决策中。</p>
 <h3 id="123-production-target">12.3 生产目标<a class="headerlink" href="#123-production-target" title="Permanent link">&para;</a></h3>
-<p>验证时序/硬件、强化迁移/备份/保留、凭据、包签名/回滚、故障状态、长时间运行的操作、支持诊断和验收指标。通过 NG 审核和抽样 OK 审核进行谨慎的推出。</p>
+<p>验证时序/硬件、强化迁移/备份/保留、凭据、包签名/回滚、故障状态、长时间运行的操作、支持诊断和验收指标。通过 NG 审查和抽样 OK 审核进行谨慎的推出。</p>
 <h3 id="124-future">12.4 未来<a class="headerlink" href="#124-future" title="Permanent link">&para;</a></h3>
 <p>仅通过明确的要求和验证来考虑 Tauri、更大的边缘 PostgreSQL、PLC/MES 适配器、高级跟踪和远程包自动化。</p>
-<h2 id="13-assumptions">13. Assumptions<a class="headerlink" href="#13-assumptions" title="Permanent link">&para;</a></h2>
+<h2 id="13-assumptions">13. 假设<a class="headerlink" href="#13-assumptions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>硬件 SDK 可以隔离在适配器后面并允许可恢复的重新连接。</li>
-<li>所选主机支持容器访问硬件和持久安装的存储。</li>
+<li>所选主机支持容器对硬件和持久安装存储的访问。</li>
 <li>产品吞吐量允许在硬件基准测试后进行有界两阶段推理。</li>
 <li>经批准的流程可以在边缘失去连接之前提供活动包。</li>
 </ul>
@@ -3639,7 +3639,7 @@ count until weight sharing is justified.</p>
 <li>支持哪些操作系统、CPU/GPU、内存、磁盘类型/容量和容器运行时？</li>
 <li>什么打开/关闭窗口，观察到的传送带时间是多少，以及产品在视图中是否可以重叠？</li>
 <li>每个产品/型号验证了哪些帧质量、ROI、置信度、聚合和超时阈值？</li>
-<li>在对外报告结果之前，特别是在磁盘压力下，哪些本地证据是强制性的？</li>
+<li>在向外部报告结果之前，特别是在磁盘压力下，哪些本地证据是强制性的？</li>
 <li>适用哪些保留、隐私、加密、本地访问控制和维护策略？</li>
 <li>什么协议和安全状态行为将结果/设备故障连接到生产线？</li>
 <li>除了休闲浏览威慑之外，合同还要求什么级别的源代码打包？</li>

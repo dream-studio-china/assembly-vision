@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3060,7 +3060,7 @@
   <a href="#pr31-t01---p2-reviewer-identity-is-caller-supplied-free-text-impersonation-surface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR31-T01 - P2: Reviewer identity is caller-supplied free text (impersonation surface)
+        PR31-T01 - P2：审阅者身份是呼叫者提供的自由文本（模拟表面）
       
     </span>
   </a>
@@ -3093,7 +3093,7 @@
   <a href="#pr31-t04---p3-disposition-evolution-touches-8-hand-maintained-locations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR31-T04 - P3: Disposition evolution touches ~8 hand-maintained locations
+        PR31-T04 - P3：性格演变涉及~8个手动维护的位置
       
     </span>
   </a>
@@ -3104,7 +3104,7 @@
   <a href="#pr31-t05---p3-review-submission-is-exposed-through-the-viewer-credential-contract-08-deviation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR31-T05 - P3: Review submission is exposed through the viewer credential (contract 08 deviation)
+        PR31-T05 - P3：评论提交通过查看者凭证暴露（合约08偏差）
       
     </span>
   </a>
@@ -3147,7 +3147,7 @@
   <a href="#6-extensibility-assessment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Extensibility Assessment
+        6.可扩展性评估
       
     </span>
   </a>
@@ -3298,7 +3298,7 @@ edge-web build/lint/test（49 次测试）、edge-web Playwright e2e（15 次通
   行（和操作故障处置），直到存在中央审查。</li>
 </ul>
 <h3 id="32-accepted-trade-offs-and-deferred-work">3.2 接受的权衡和推迟的工作<a class="headerlink" href="#32-accepted-trade-offs-and-deferred-work" title="Permanent link">&para;</a></h3>
-<h4 id="pr31-t01---p2-reviewer-identity-is-caller-supplied-free-text-impersonation-surface">PR31-T01 - P2: Reviewer identity is caller-supplied free text (impersonation surface)<a class="headerlink" href="#pr31-t01---p2-reviewer-identity-is-caller-supplied-free-text-impersonation-surface" title="Permanent link">&para;</a></h4>
+<h4 id="pr31-t01---p2-reviewer-identity-is-caller-supplied-free-text-impersonation-surface">PR31-T01 - P2：审阅者身份是呼叫者提供的自由文本（模拟表面）<a class="headerlink" href="#pr31-t01---p2-reviewer-identity-is-caller-supplied-free-text-impersonation-surface" title="Permanent link">&para;</a></h4>
 <p>任何持有单一查看者凭证的人都可以记录归因于的评论
 任何审稿人姓名； API 不会将名称绑定到经过身份验证的会话。
 这是明确的、公认的 ADR-016 决定 3/7（无边缘角色模型），并且
@@ -3316,13 +3316,13 @@ edge-web build/lint/test（49 次测试）、edge-web Playwright e2e（15 次通
 <p><code>review_records</code> 无限增长（仅追加）并且提交不受限制
 速率受限； <code>list_inspection_reviews</code> 未分页。 MVP 可接受
 规模；保留/压缩策略和速率限制将在未来加强。</p>
-<h4 id="pr31-t04---p3-disposition-evolution-touches-8-hand-maintained-locations">PR31-T04 - P3: Disposition evolution touches ~8 hand-maintained locations<a class="headerlink" href="#pr31-t04---p3-disposition-evolution-touches-8-hand-maintained-locations" title="Permanent link">&para;</a></h4>
+<h4 id="pr31-t04---p3-disposition-evolution-touches-8-hand-maintained-locations">PR31-T04 - P3：性格演变涉及~8个手动维护的位置<a class="headerlink" href="#pr31-t04---p3-disposition-evolution-touches-8-hand-maintained-locations" title="Permanent link">&para;</a></h4>
 <p>添加配置需要在域枚举 <code>allowed_review_dispositions</code> 中进行编辑，
 生成的 OpenAPI/TS（CI 检查）、<code>types.ts</code>、<code>validate.ts</code>、
 <code>MockApiClient.allowedDispositions</code> 和两个 Vue 组件。该评论添加了一个
 一致性契约测试；从生成的派生 <code>REVIEW_DISPOSITIONS</code>
 schemas 是推荐的下一个重构。</p>
-<h4 id="pr31-t05---p3-review-submission-is-exposed-through-the-viewer-credential-contract-08-deviation">PR31-T05 - P3: Review submission is exposed through the viewer credential (contract 08 deviation)<a class="headerlink" href="#pr31-t05---p3-review-submission-is-exposed-through-the-viewer-credential-contract-08-deviation" title="Permanent link">&para;</a></h4>
+<h4 id="pr31-t05---p3-review-submission-is-exposed-through-the-viewer-credential-contract-08-deviation">PR31-T05 - P3：评论提交通过查看者凭证暴露（合约08偏差）<a class="headerlink" href="#pr31-t05---p3-review-submission-is-exposed-through-the-viewer-credential-contract-08-deviation" title="Permanent link">&para;</a></h4>
 <p>合同 08 §3 列出了“追加或取代人工审查的行为”
 需要提升权限的操作中的“处置”，但边缘审查
 提交内容有意使用现有的单一查看者凭据
@@ -3374,7 +3374,7 @@ PR31-T01。现在没有做出任何行为改变；未来的 RBAC ADR
 <li>迁移安全：附加create-table +索引，FK到<code>inspections</code>，
   schema.py/migration 逐列镜像。</li>
 </ul>
-<h2 id="6-extensibility-assessment">6. Extensibility Assessment<a class="headerlink" href="#6-extensibility-assessment" title="Permanent link">&para;</a></h2>
+<h2 id="6-extensibility-assessment">6.可扩展性评估<a class="headerlink" href="#6-extensibility-assessment" title="Permanent link">&para;</a></h2>
 <ul>
 <li>仅附加记录语义和单一权威域配置
   政策使未来的裁决/重新分配附加（新记录类型或

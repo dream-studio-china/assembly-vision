@@ -1312,7 +1312,7 @@
   <a href="#2411-operational-exceptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.11 操作异常
+        24.11 Operational Exceptions
       
     </span>
   </a>
@@ -1632,7 +1632,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1828,7 +1828,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2790,7 +2790,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3280,7 +3280,7 @@
   <a href="#2411-operational-exceptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        24.11 操作异常
+        24.11 Operational Exceptions
       
     </span>
   </a>
@@ -3340,11 +3340,11 @@
   
 
 
-<h1 id="24-human-in-the-loop-operations">24. 人机交互操作<a class="headerlink" href="#24-human-in-the-loop-operations" title="Permanent link">&para;</a></h1>
+<h1 id="24-human-in-the-loop-operations">24. Human-in-the-Loop Operations<a class="headerlink" href="#24-human-in-the-loop-operations" title="Permanent link">&para;</a></h1>
 <h2 id="241-purpose-and-safety-position">24.1 目的和安全位置<a class="headerlink" href="#241-purpose-and-safety-position" title="Permanent link">&para;</a></h2>
 <p>人工审核是一个受控的质量流程，旨在谨慎推出、模糊证据、NG 处理和持续改进。它不会隐藏模型限制或改变原始机器决策。 AssemblyVision 优先考虑高 NG 召回率：早期操作接受额外的错误 NG 决策，因为它们可以进行审查，而错误地发布为 OK 的真正 NG 是主要的质量风险。</p>
 <p>审核是<strong>可选且附加的</strong> (ADR-016)：运行
-检查，永远不会改变不可变的机器决策，并且永远不会改变
+检查，永远不会改变不可变的机器决策，也永远不会改变
 现有的检查终点或预测。任何检查 — <code>OK</code> 或 <code>NG</code> —
 可以在边缘进行本地审查； NG 详细视图显示评论条目
 OK 视图提供了可选的审核路径。</p>
@@ -3424,7 +3424,7 @@ OK 视图提供了可选的审核路径。</p>
 <p>All-NG 审查是一项初始部署策略，而不是永久的架构要求。合格的审核样本必须通过记录的方法来选择，而不是为了审查者的方便。抽样分层应防止大批量产品类型隐藏小批量风险。</p>
 <h2 id="245-manual-review-sequence">24.5 手动审核顺序<a class="headerlink" href="#245-manual-review-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
-    participant E as 边缘客户端
+    participant E as Edge Client
     participant C as 中央服务器
     participant Q as 审核队列
     participant R as 审稿人
@@ -3437,7 +3437,7 @@ OK 视图提供了可选的审核路径。</p>
     C--&gt;&gt;R:返回证据和机器原理
     R-&gt;&gt;C:提交处理意见和理由
     C-&gt;&gt;C:附加不可变的审核记录和审核事件
-alt 机器决策修正
+alt machine decision corrected
         C-&gt;&gt;T:添加具有审查出处的受治理候选人
         C--&gt;&gt;E:仅报告汇总反馈
 else 机器决策确认
@@ -3479,11 +3479,11 @@ else 机器决策确认
 <h2 id="2410-metrics-and-review-reduction">24.10 指标和审查减少<a class="headerlink" href="#2410-metrics-and-review-reduction" title="Permanent link">&para;</a></h2>
 <p>跟踪审核率、队列年龄、审核者周转率、纠正率、误报率、OK 审核的估计误报率、不确定率、分歧率以及每个产品/每个组件/模型/规则结果。每个比率都包括其样本数量和抽样方法。</p>
 <p>仅当测量的生产证据支持更改时，才会减少手动审核。该决定考虑了 NG 召回、OK 审核结果、新颖性、审查纠正率、样本代表性、最近的相机/产品/配置更改以及客户风险承受能力。没有固定的日历日期或未经验证的数字触发器。</p>
-<h2 id="2411-operational-exceptions">24.11 操作异常<a class="headerlink" href="#2411-operational-exceptions" title="Permanent link">&para;</a></h2>
+<h2 id="2411-operational-exceptions">24.11 Operational Exceptions<a class="headerlink" href="#2411-operational-exceptions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>如果中央服务器不可用，边缘检查将继续，并稍后同步审核项目。</li>
-<li>如果所需的证据丢失或损坏，则审查没有结论，并且会引发操作事件。</li>
-<li>如果队列增长超过人员配置能力，优先政策会保护最高风险的物品；它不会自动将 NG 转换为 OK。</li>
+<li>如果中央服务器不可用，边缘检查将继续并稍后同步审核项目。</li>
+<li>如果所需的证据缺失或损坏，则审查没有结论，并且会引发操作事件。</li>
+<li>如果队列增长超过人员配置能力，优先政策将保护最高风险的物品；它不会自动将 NG 转换为 OK。</li>
 <li>如果审核者发现潜在的漏检 NG 模式，请遵循 <a href="../23-observability-and-support/">Observability and Support</a> 中的遏制运行手册。</li>
 <li>如果产品配置发生变化，请在激活之前和之后维护单独的审核指标。</li>
 </ul>

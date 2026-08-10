@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1588,7 +1588,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -1744,7 +1744,7 @@
   <a href="#writing-tests-for-behavioral-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为行为改变编写测试
+        Writing tests for behavioral changes
       
     </span>
   </a>
@@ -1766,7 +1766,7 @@
   <a href="#coverage-targets-contract-06-7" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Coverage targets (contract 06 §7)
+        覆盖范围目标（合同 06 §7）
       
     </span>
   </a>
@@ -2674,7 +2674,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3059,7 +3059,7 @@
   <a href="#writing-tests-for-behavioral-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为行为改变编写测试
+        Writing tests for behavioral changes
       
     </span>
   </a>
@@ -3081,7 +3081,7 @@
   <a href="#coverage-targets-contract-06-7" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Coverage targets (contract 06 §7)
+        覆盖范围目标（合同 06 §7）
       
     </span>
   </a>
@@ -3109,16 +3109,16 @@
 
 
 <h1 id="11-testing-and-quality-gates">11 — 测试和质量门<a class="headerlink" href="#11-testing-and-quality-gates" title="Permanent link">&para;</a></h1>
-<p>测试套件如何组织、每个区域使用的夹具模式、
-运行它们的确切命令，以及 CI 强制执行的内容。</p>
+<p>How the test suites are organized, the fixture patterns each area uses, the
+exact commands to run them, and what CI enforces.</p>
 <h2 id="pytest-configuration-root">Pytest 配置（根 <code>pyproject.toml</code>）<a class="headerlink" href="#pytest-configuration-root" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">[tool.pytest.ini_options]</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">testpaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;apps/edge-service/tests&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;packages/python/vision-core/tests&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;training/tests&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;scripts/tests&quot;</span><span class="p">]</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">addopts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-q&quot;</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">markers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;slow: slower training or integration tests&quot;</span><span class="p">]</span>
 </code></pre></div>
-<p>存在一个标记：<code>slow</code>（当前仅选择一个测试 —
-<code>training/tests/test_train.py::test_training_dry_run_on_synthetic</code>）。</p>
+<p>One marker exists: <code>slow</code> (currently selects exactly one test —
+<code>training/tests/test_train.py::test_training_dry_run_on_synthetic</code>).</p>
 <h2 id="exact-commands">精确的命令<a class="headerlink" href="#exact-commands" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w">                                  </span><span class="c1"># everything</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>apps/edge-service/tests<span class="w">          </span><span class="c1"># runtime + API + persistence + upload + retention</span>
@@ -3137,7 +3137,7 @@
 <a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>make<span class="w"> </span>web-check<span class="w">         </span><span class="c1"># pnpm -r build &amp;&amp; pnpm -r lint &amp;&amp; pnpm -r test &amp;&amp; edge-web e2e</span>
 <a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>make<span class="w"> </span>check<span class="w">             </span><span class="c1"># everything</span>
 </code></pre></div>
-<p>打字稿：</p>
+<p>TypeScript:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pnpm<span class="w"> </span>-r<span class="w"> </span>build<span class="w">          </span><span class="c1"># tsc --noEmit / vue-tsc (web build needs VITE_API_MODE=http)</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pnpm<span class="w"> </span>-r<span class="w"> </span>lint
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>pnpm<span class="w"> </span>-r<span class="w"> </span><span class="nb">test</span><span class="w">           </span><span class="c1"># all Vitest suites</span>
@@ -3149,41 +3149,41 @@
 <table>
 <thead>
 <tr>
-<th>面积</th>
-<th>文件</th>
-<th>夹具图案</th>
+<th>Area</th>
+<th>Files</th>
+<th>Fixture patterns</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>边缘服务（~50 个文件，759 次测试）</td>
+<td>edge-service (~50 files, 759 tests)</td>
 <td><code>apps/edge-service/tests/</code></td>
-<td><code>conftest.py</code> 自动重置规则身份注册表；常量<code>REPO_ROOT/EXAMPLE_PIPELINE/EXAMPLE_RULE/PRODUCT_MANIFEST/COMPONENT_MANIFEST</code>；构建器 <code>make_rule</code>、<code>make_context</code>、<code>make_evidence</code>； tmp <code>output_root</code> + <code>seeded_root</code> （写入 <code>inspection.json</code> 包）； <code>client = TestClient(create_app(ServerSettings(...)))</code>； <code>repo = EdgeRepository.open(tmp_path/"edge.sqlite3")</code>；假探测器（<code>FakeProductDetector</code>、<code>RaisingComponentDetector</code>、...）； <code>token_settings</code> 与 <code>api_token="test-edge-token"</code>；内存中的 PIL 帧； <code>_AdvancingClock</code>/<code>_ScriptedSink</code> 用于调度程序测试</td>
+<td><code>conftest.py</code> auto-resets the rule-identity registry; constants <code>REPO_ROOT/EXAMPLE_PIPELINE/EXAMPLE_RULE/PRODUCT_MANIFEST/COMPONENT_MANIFEST</code>; builders <code>make_rule</code>, <code>make_context</code>, <code>make_evidence</code>; tmp <code>output_root</code> + <code>seeded_root</code> (writes <code>inspection.json</code> bundles); <code>client = TestClient(create_app(ServerSettings(...)))</code>; <code>repo = EdgeRepository.open(tmp_path/"edge.sqlite3")</code>; fake detectors (<code>FakeProductDetector</code>, <code>RaisingComponentDetector</code>, ...); <code>token_settings</code> with <code>api_token="test-edge-token"</code>; in-memory PIL frames; <code>_AdvancingClock</code>/<code>_ScriptedSink</code> for scheduler tests</td>
 </tr>
 <tr>
-<td>视觉核心（8 个文件，82 次测试）</td>
+<td>vision-core (8 files, 82 tests)</td>
 <td><code>packages/python/vision-core/tests/</code></td>
-<td>来自<code>Image.new</code>的假帧；通过 <code>monkeypatch.setattr(backend, "_module", Fake)</code> 注入假 OpenCV/PyAV/Harvester；真正的环回 HTTP 服务器装置；真正的小<code>.avi</code>通过<code>cv2.VideoWriter</code>;工厂验证</td>
+<td>Fake frames from <code>Image.new</code>; fake OpenCV/PyAV/Harvester injected via <code>monkeypatch.setattr(backend, "_module", Fake)</code>; real loopback HTTP server fixture; real tiny <code>.avi</code> via <code>cv2.VideoWriter</code>; factory validation</td>
 </tr>
 <tr>
-<td>培训（6 个文件，41 次测试）</td>
+<td>training (6 files, 41 tests)</td>
 <td><code>training/tests/</code></td>
-<td><code>yolo_dataset_dir(tmp_path)</code> 固定装置（64×64 PNG + 标签 + data.yaml）； <code>_FakeModel</code>/<code>_Boxes</code>/<code>_Tensor</code>/<code>_Result</code> 存根猴子补丁到<code>ultralytics.YOLO</code>; CLI 测试 Monkeypatch <code>train_detector</code>/<code>place_weights</code>/<code>write_manifest</code></td>
+<td><code>yolo_dataset_dir(tmp_path)</code> fixture (64×64 PNGs + labels + data.yaml); <code>_FakeModel</code>/<code>_Boxes</code>/<code>_Tensor</code>/<code>_Result</code> stubs monkeypatched onto <code>ultralytics.YOLO</code>; CLI tests monkeypatch <code>train_detector</code>/<code>place_weights</code>/<code>write_manifest</code></td>
 </tr>
 <tr>
-<td>脚本（4 个文件，47 个测试）</td>
+<td>scripts (4 files, 47 tests)</td>
 <td><code>scripts/tests/</code></td>
-<td>通过 <code>importlib.util.spec_from_file_location</code> 加载脚本； <code>_make_export(tmp_path, layout=...)</code> 建设者；断言失败时清理暂存目录</td>
+<td>scripts loaded via <code>importlib.util.spec_from_file_location</code>; <code>_make_export(tmp_path, layout=...)</code> builders; asserts staging dirs cleaned on failure</td>
 </tr>
 <tr>
-<td>域</td>
-<td>无</td>
-<td>域被间接覆盖；通过边缘服务测试保持模型的运行</td>
+<td>domain</td>
+<td>none</td>
+<td>domain is covered indirectly; keep models exercised through edge-service tests</td>
 </tr>
 </tbody>
 </table>
 <h2 id="representative-test-idioms">具有代表性的测试习语<a class="headerlink" href="#representative-test-idioms" title="Permanent link">&para;</a></h2>
-<p>规则引擎（只有在证据充分的情况下才能关闭失败）：</p>
+<p>Rule engine (fail-closed OK only with full evidence):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_ok_when_all_present_and_gates_hold</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">rule</span> <span class="o">=</span> <span class="n">make_rule</span><span class="p">()</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">context</span> <span class="o">=</span> <span class="n">make_context</span><span class="p">(</span>
@@ -3197,7 +3197,7 @@
 <a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="k">assert</span> <span class="n">decision</span><span class="o">.</span><span class="n">business_result</span> <span class="ow">is</span> <span class="n">BusinessResult</span><span class="o">.</span><span class="n">OK</span>
 <a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="k">assert</span> <span class="n">decision</span><span class="o">.</span><span class="n">reason_codes</span> <span class="o">==</span> <span class="p">[]</span>
 </code></pre></div>
-<p>管道故障安全（推理失败 → 不确定的证据 + NG，永远不会 OK）：</p>
+<p>Pipeline fail-safe (inference failure → UNCERTAIN evidence + NG, never OK):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_component_inference_failure_is_uncertain_not_missing</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">image_path</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;product.png&quot;</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">_write_image</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
@@ -3210,7 +3210,7 @@
 <a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="k">assert</span> <span class="s2">&quot;INFERENCE_ERROR&quot;</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">decision</span><span class="o">.</span><span class="n">reason_codes</span>
 <a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">evidence</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;UNCERTAIN&quot;</span> <span class="k">for</span> <span class="n">evidence</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">evidence</span><span class="p">)</span>
 </code></pre></div>
-<p>API 身份验证（除健康/实时之外的每条路线都需要令牌）：</p>
+<p>API auth (token required on every route except health/live):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_read_routes_require_token_when_configured</span><span class="p">(</span><span class="n">token_settings</span><span class="p">:</span> <span class="n">ServerSettings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">(</span><span class="n">token_settings</span><span class="p">)</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="k">with</span> <span class="n">TestClient</span><span class="p">(</span><span class="n">app</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
@@ -3221,14 +3221,14 @@
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>            <span class="n">allowed</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer test-edge-token&quot;</span><span class="p">})</span>
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>            <span class="k">assert</span> <span class="n">allowed</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">503</span><span class="p">),</span> <span class="n">path</span>
 </code></pre></div>
-<p>持久性围栏（过时的租约持有者不能变异）：</p>
+<p>Persistence fencing (stale lease holder cannot mutate):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># The stale worker&#39;s updates are rejected: zero rows changed.</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">assert</span> <span class="n">repo</span><span class="o">.</span><span class="n">mark_upload_succeeded</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">stale_owner</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">assert</span> <span class="n">repo</span><span class="o">.</span><span class="n">mark_upload_retry</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">stale_owner</span><span class="p">,</span> <span class="s2">&quot;HTTP_503&quot;</span><span class="p">,</span> <span class="n">later</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># A current lease holder still cannot claim success without a verified receipt.</span>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">assert</span> <span class="n">repo</span><span class="o">.</span><span class="n">mark_upload_succeeded</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">current</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">upload_task_id</span><span class="p">),</span> <span class="n">current</span><span class="o">.</span><span class="n">lease_owner</span><span class="p">,</span> <span class="n">later</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
 </code></pre></div>
-<p>前端单元（用 <code>vi.hoisted</code> + <code>vi.mock</code> 模拟服务模块）：</p>
+<p>Frontend unit (mock the service module with <code>vi.hoisted</code> + <code>vi.mock</code>):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">mocks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">vi</span><span class="p">.</span><span class="nx">hoisted</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="nx">getApiClient</span><span class="o">:</span><span class="w"> </span><span class="kt">vi.fn</span><span class="p">()</span><span class="w"> </span><span class="p">}));</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nx">vi</span><span class="p">.</span><span class="nx">mock</span><span class="p">(</span><span class="s2">&quot;../src/services/client&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="nx">getApiClient</span><span class="o">:</span><span class="w"> </span><span class="kt">mocks.getApiClient</span><span class="w"> </span><span class="p">}));</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
@@ -3249,40 +3249,40 @@
 <a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">  </span><span class="p">});</span>
 <a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="p">});</span>
 </code></pre></div>
-<p>其他前端模式：<code>vi.stubEnv("VITE_API_MODE", "http")</code> +
-<code>vi.resetModules</code> 用于模式选择； <code>setActivePinia(createPinia())</code> 对于
-商店；将 <code>fetch</code> 存根注入到 <code>new HttpApiClient("http://edge.test",
-stubFetch(body))</code> 中以进行 api 客户端测试。</p>
-<h2 id="writing-tests-for-behavioral-changes">为行为改变编写测试<a class="headerlink" href="#writing-tests-for-behavioral-changes" title="Permanent link">&para;</a></h2>
+<p>Other frontend patterns: <code>vi.stubEnv("VITE_API_MODE", "http")</code> +
+<code>vi.resetModules</code> for mode selection; <code>setActivePinia(createPinia())</code> for
+stores; stubbed <code>fetch</code> injected into <code>new HttpApiClient("http://edge.test",
+stubFetch(body))</code> for api-client tests.</p>
+<h2 id="writing-tests-for-behavioral-changes">Writing tests for behavioral changes<a class="headerlink" href="#writing-tests-for-behavioral-changes" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>安全相关路径</strong>：添加故障注入测试，证明没有 <code>OK</code>
-  不完整/无效的证据（引发检测器/规则引擎、损坏的帧、
-  缺少清单、磁盘压力）。</li>
-<li><strong>状态机</strong>：测试每个转换，包括。陈旧的租赁/围栏和
-  重新启动恢复。</li>
-<li><strong>合同</strong>：更新<code>packages/typescript/api-client/tests/contract.test.ts</code>
-  API 形状更改时的架构断言。</li>
-<li><strong>永远不要声称检查已通过，除非你运行了它</strong>；报告确切的命令和
-  任何未解决的故障。</li>
+<li><strong>Safety-relevant paths</strong>: add fault-injection tests proving no <code>OK</code> on
+  incomplete/invalid evidence (raise detectors/rule engine, corrupt frames,
+  missing manifests, disk pressure).</li>
+<li><strong>State machines</strong>: test every transition incl. stale-lease/fencing and
+  restart recovery.</li>
+<li><strong>Contract</strong>: update <code>packages/typescript/api-client/tests/contract.test.ts</code>
+  schema assertions when API shapes change.</li>
+<li><strong>Never claim a check passed unless you ran it</strong>; report exact commands and
+  any unresolved failures.</li>
 </ul>
 <h2 id="ci-flow">CI 流程 (<code>.github/workflows/ci.yml</code>)<a class="headerlink" href="#ci-flow" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>质量</strong>工作：<code>uv sync</code> → <code>ruff check</code> → <code>ruff format --check</code> →
-  <code>mypy</code> → <code>pytest</code> → <strong>OpenAPI 漂移检查</strong>
+<li><strong>quality</strong> job: <code>uv sync</code> → <code>ruff check</code> → <code>ruff format --check</code> →
+  <code>mypy</code> → <code>pytest</code> → <strong>OpenAPI drift check</strong>
   (<code>uv run python scripts/generate-edge-openapi.py</code> +
-  <code>git diff --exit-code -- apps/edge-service/openapi/edge-openapi.json</code>）。</li>
-<li><strong>网络</strong>工作：<code>pnpm install --frozen-lockfile</code>→<code>pnpm -r build</code>与
-  <code>VITE_API_MODE=http</code> → <strong>TS 合约漂移检查</strong>
+  <code>git diff --exit-code -- apps/edge-service/openapi/edge-openapi.json</code>).</li>
+<li><strong>web</strong> job: <code>pnpm install --frozen-lockfile</code> → <code>pnpm -r build</code> with
+  <code>VITE_API_MODE=http</code> → <strong>TS contract drift check</strong>
   (<code>pnpm --filter @assemblyvision/api-client generate:types</code> +
-  <code>git diff --exit-code</code>) → <code>pnpm -r lint</code> → <code>pnpm -r test</code> → 剧作家
-  安装 → <code>cd apps/edge-web &amp;&amp; pnpm test:e2e</code>。</li>
-<li>推送到 <code>main</code>/<code>dev</code> 和所有 PR 时触发；每个引用的并发性
-  取消正在进行中。单独的 <code>docs.yml</code> 构建和部署双语
-  网站。</li>
+  <code>git diff --exit-code</code>) → <code>pnpm -r lint</code> → <code>pnpm -r test</code> → Playwright
+  install → <code>cd apps/edge-web &amp;&amp; pnpm test:e2e</code>.</li>
+<li>Triggered on push to <code>main</code>/<code>dev</code> and all PRs; per-ref concurrency with
+  cancel-in-progress. A separate <code>docs.yml</code> builds and deploys the bilingual
+  site.</li>
 </ul>
-<h2 id="coverage-targets-contract-06-7">Coverage targets (contract 06 §7)<a class="headerlink" href="#coverage-targets-contract-06-7" title="Permanent link">&para;</a></h2>
-<p>规则引擎≥95%； ROI引擎≥95%；时间聚合率≥90%；上传队列
-≥90%； API层≥80%。模型质量从来不是通过代码覆盖率来衡量的。</p>
+<h2 id="coverage-targets-contract-06-7">覆盖范围目标（合同 06 §7）<a class="headerlink" href="#coverage-targets-contract-06-7" title="Permanent link">&para;</a></h2>
+<p>Rule Engine ≥ 95%; ROI Engine ≥ 95%; Temporal Aggregator ≥ 90%; Upload Queue
+≥ 90%; API Layer ≥ 80%. Model quality is never measured by code coverage.</p>
 
 
 

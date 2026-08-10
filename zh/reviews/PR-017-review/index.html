@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2898,7 +2898,7 @@
   <a href="#merge-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Merge Decision
+        合并决策
       
     </span>
   </a>
@@ -2920,7 +2920,7 @@
   <a href="#validation-performed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Validation Performed
+        已执行验证
       
     </span>
   </a>
@@ -3082,10 +3082,10 @@
 
 <h1 id="pr-017-review-durable-edge-upload-outbox-and-scheduler">PR-017 评论：耐用边缘上传发件箱和调度程序<a class="headerlink" href="#pr-017-review-durable-edge-upload-outbox-and-scheduler" title="Permanent link">&para;</a></h1>
 <h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
-<p>Code review of PR #17 (<code>dev</code> against <code>main</code>, commit <code>7c0b9b9</code>) covering the
-transactional outbox, SQLite lease handling, upload sinks, runtime wiring,
-configuration, documentation, and contract-06 test coverage.</p>
-<p>Relevant requirements reviewed:</p>
+<p>PR #17 的代码审查（针对 <code>main</code> 的 <code>dev</code>，提交 <code>7c0b9b9</code>）涵盖
+事务发件箱、SQLite 租约处理、上传接收器、运行时接线、
+配置、文档和 Contract-06 测试覆盖率。</p>
+<p>审查的相关要求：</p>
 <ul>
 <li><code>docs/design/12-local-storage-and-retention.md</code></li>
 <li><code>docs/design/13-upload-and-synchronization.md</code></li>
@@ -3095,62 +3095,62 @@ configuration, documentation, and contract-06 test coverage.</p>
 <li><code>docs/contracts/04-edge-storage-upload-contracts.md</code></li>
 <li><code>docs/contracts/06-testing-quality-and-ci-contracts.md</code></li>
 </ul>
-<h2 id="merge-decision">Merge Decision<a class="headerlink" href="#merge-decision" title="Permanent link">&para;</a></h2>
-<p><strong>Resolved — all findings fixed and validated on <code>dev</code> (PR #17 updated).</strong></p>
-<p>The original review found that the PR could not safely transfer binary media,
-did not make inspection persistence and task creation one recoverable unit,
-permitted stale workers to overwrite a newer lease holder, and could report an
-inspection as synchronized without a verified server receipt or its required
-media. The normal <code>serve</code> path also provided no way to configure the
-scheduler, while the programmatic HTTP path permitted plaintext credential and
-evidence transmission. Each finding (F1-F8) below now has a fix commit with
-regression tests, and the full quality gates pass.</p>
+<h2 id="merge-decision">合并决策<a class="headerlink" href="#merge-decision" title="Permanent link">&para;</a></h2>
+<p><strong>已解决 - 所有发现均已在 <code>dev</code> 上修复和验证（PR #17 已更新）。</strong></p>
+<p>最初的审查发现 PR 无法安全地传输二进制媒体，
+没有将检查持久性和任务创建作为一个可恢复单元，
+允许过时的工人覆盖新的租约持有者，并且可以报告
+检查同步，无需经过验证的服务器收据或其要求
+媒体。正常的 <code>serve</code> 路径也没有提供配置的方法
+调度程序，而编程 HTTP 路径允许纯文本凭证和
+证据传输。下面的每个发现 (F1-F8) 现在都有一个修复提交
+回归测试，并且完整的质量门通过了。</p>
 <h2 id="resolution-status">解决状态<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
-<p>Each finding was fixed on <code>dev</code> in its own commit with regression tests that
-failed before the fix and pass after:</p>
+<p>每个发现都在其自己的提交中通过回归测试固定在 <code>dev</code> 上
+修复前失败，修复后通过：</p>
 <ul>
-<li><strong>F1</strong> - <code>HttpUploadSink</code> sends <code>base64.b64encode(payload)</code> with the byte
-  size in the typed body; a mock-transport test round-trips non-ASCII bytes
-  exactly and verifies size and checksum (<code>4f8b9b6</code>).</li>
-<li><strong>F2</strong> - <code>EdgeRepository.persist_inspection_and_enqueue_uploads</code> commits the
-  immutable projection, media, evidence, and all idempotent upload tasks in one
-  SQLite transaction; runtime projection, dev import, and startup
-  reconciliation use it for every bundle, so a stranded <code>LOCAL_ONLY</code> record is
-  repaired rather than skipped, and interrupted <code>force_close</code> records are
-  mirrored (<code>53a6385</code>).</li>
-<li><strong>F3</strong> - <code>claim_upload_tasks</code> persists a unique per-task fencing token in
-  <code>lease_owner</code> (migration 0004) and returns <code>ClaimedUploadTask</code>; every
-  terminal or retry update requires <code>IN_PROGRESS</code> plus the matching token and
-  returns the affected row count, so a late worker cannot overwrite a reclaimed
-  task (<code>4c651b0</code>).</li>
-<li><strong>F4</strong> - <code>MEDIA</code> tasks are claimable only after their <code>INSPECTION</code> task is
-  <code>SUCCEEDED</code>, with inspection tasks ordered first; tests prove no media
-  request is sent before the inspection receipt and that media blocked behind
-  failed metadata stays <code>PENDING</code> (<code>6e4190d</code>).</li>
-<li><strong>F5</strong> - <code>HttpUploadSink</code> parses a bounded typed receipt and accepts a 2xx
-  only when it echoes the idempotency key, object, kind, byte size, and
-  checksum; verified receipts and central object ids are persisted (migration
-  0005); inspection synchronization is recomputed from every required task as
-  <code>QUEUED</code>/<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code> (<code>d956493</code>).</li>
-<li><strong>F6</strong> - <code>UploadSettings</code> plus CLI/env wiring (<code>AV_EDGE_UPLOAD_*</code>) activate
-  the scheduler through the supported <code>serve</code> path; a configured local sink
-  drains end to end, an omitted configuration is an explicitly observable
-  disabled state, and invalid numeric configuration fails startup (<code>ccdefc8</code>).</li>
-<li><strong>F7</strong> - upload endpoints must be HTTPS with a non-empty host and no embedded
-  credentials (plaintext only under an explicit dev flag); the sink uses the
-  separate <code>AV_EDGE_UPLOAD_TOKEN</code> credential and never the viewer <code>api_token</code>,
-  with tests proving the viewer credential is never sent (<code>406150e</code>).</li>
-<li><strong>F8</strong> - an injected clock anchors every transition to the response/failure
-  time, so a slow request cannot erode <code>Retry-After</code>; the deterministic test
-  verifies <code>next_attempt_at = response_time + 60</code> (<code>81fc6f4</code>).</li>
-<li><strong>Post-resolution hardening</strong> - final review closed four small gaps in the
-  original fixes: receipts now require matching size/checksum and a media
-  central-object ID before success; repository sync requires persisted verified
-  receipt metadata; <code>create_app</code> revalidates programmatic upload settings and
-  limits plaintext development HTTP to loopback; media size and explicit zero
-  bandwidth configuration now fail closed (follow-up commit pending).</li>
+<li><strong>F1</strong> - <code>HttpUploadSink</code> 发送带有字节的 <code>base64.b64encode(payload)</code>
+  打字正文的大小；模拟传输测试往返非 ASCII 字节
+  准确并验证大小和校验和 (<code>4f8b9b6</code>)。</li>
+<li><strong>F2</strong> - <code>EdgeRepository.persist_inspection_and_enqueue_uploads</code> 提交
+  不可变的投影、媒体、证据和所有幂等上传任务合而为一
+  SQLite 事务；运行时投影、开发导入和启动
+  协调将其用于每个捆绑包，因此搁浅的 <code>LOCAL_ONLY</code> 记录是
+  修复而不是跳过，并且中断的 <code>force_close</code> 记录
+  镜像 (<code>53a6385</code>)。</li>
+<li><strong>F3</strong> - <code>claim_upload_tasks</code> 在中保留唯一的每个任务防护令牌
+  <code>lease_owner</code>（迁移0004）并返回<code>ClaimedUploadTask</code>；每个
+  终端或重试更新需要 <code>IN_PROGRESS</code> 加上匹配的令牌和
+  返回受影响的行数，因此迟到的工作人员无法覆盖回收的行数
+  任务（<code>4c651b0</code>）。</li>
+<li><strong>F4</strong> - <code>MEDIA</code> 任务只有在 <code>INSPECTION</code> 任务完成后才能领取
+  <code>SUCCEEDED</code>，先订购检查任务；测试证明没有媒体
+  请求在检查收据之前发送，并且介质在后面被阻止
+  失败的元数据保留为 <code>PENDING</code> (<code>6e4190d</code>)。</li>
+<li><strong>F5</strong> - <code>HttpUploadSink</code> 解析有界类型的收据并接受 2xx
+  仅当它回显幂等键、对象、种类、字节大小和
+  校验和；已验证的收据和中央对象 ID 会保留（迁移
+  0005）；检查同步根据每个所需任务重新计算为
+  <code>QUEUED</code>/<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code> (<code>d956493</code>)。</li>
+<li><strong>F6</strong> - <code>UploadSettings</code> 加上 CLI/env 连接 (<code>AV_EDGE_UPLOAD_*</code>) 激活
+  通过支持的 <code>serve</code> 路径进行调度；配置好的本地接收器
+  端到端地排水，省略的配置是明确可观察到的
+  禁用状态，并且无效的数字配置启动失败（<code>ccdefc8</code>）。</li>
+<li><strong>F7</strong> - 上传端点必须是 HTTPS，具有非空主机且没有嵌入
+  凭证（仅在显式开发标志下的明文）；水槽使用
+  单独的 <code>AV_EDGE_UPLOAD_TOKEN</code> 凭据，而不是查看者 <code>api_token</code>，
+  测试证明查看者凭据从未发送（<code>406150e</code>）。</li>
+<li><strong>F8</strong> - 注入的时钟锚定响应/失败的每个转换
+  时间，因此缓慢的请求不会侵蚀<code>Retry-After</code>；确定性测试
+  验证 <code>next_attempt_at = response_time + 60</code> (<code>81fc6f4</code>)。</li>
+<li><strong>决议后强化</strong> - 最终审查弥补了四个小差距
+  原始修复：收据现在需要匹配的尺寸/校验和和介质
+  成功前的中心对象 ID；存储库同步需要持久验证
+  收据元数据； <code>create_app</code> 重新验证程序化上传设置并
+  限制明文开发HTTP为环回；介质大小和显式零
+  带宽配置现在失败关闭（后续提交待处理）。</li>
 </ul>
-<p>Validation executed after the fixes (all green):</p>
+<p>修复后执行的验证（全绿色）：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git diff --check
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv run ruff check .
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv run ruff format --check .
@@ -3158,13 +3158,13 @@ failed before the fix and pass after:</p>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>uv run pytest            # full repo suite, exit 0
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>uv run mkdocs build --strict
 </code></pre></div>
-<h2 id="validation-performed">Validation Performed<a class="headerlink" href="#validation-performed" title="Permanent link">&para;</a></h2>
-<p>The review used the actual PR range and current GitHub PR status:</p>
+<h2 id="validation-performed">已执行验证<a class="headerlink" href="#validation-performed" title="Permanent link">&para;</a></h2>
+<p>该评论使用了实际 PR 范围和当前 GitHub PR 状态：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git diff --check origin/main...dev
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>git diff --find-renames --find-copies origin/main...dev
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>gh pr view 17 --json state,mergeStateStatus,statusCheckRollup
 </code></pre></div>
-<p>Results:</p>
+<p>结果：</p>
 <ul>
 <li>diff 空白检查通过。</li>
 <li>PR #17 是开放且可合并的；两个 CI 质量作业、Web 作业和 CodeQL
@@ -3306,7 +3306,7 @@ failed before the fix and pass after:</p>
 <ol>
 <li>明确地建模依赖关系：媒体任务仅在其父任务之后到期
    检验任务已验证成功收货，或使用单
-   检查会话状态机，在发布媒体之前上传元数据
+   在发布媒体之前上传元数据的检查会话状态机
    工作。</li>
 <li>将媒体保留在 <code>PENDING</code> 中（有依赖性原因），而不是处理
    预元数据服务器响应作为永久证据失败。</li>
@@ -3339,7 +3339,7 @@ failed before the fix and pass after:</p>
 已达到<code>PERMANENT_FAILURE</code>。</p>
 <p>这违反了合同 04 第 6 节（验证完成、存储中心对象
 标识符，仅在确认成功后更新）并滥用记录的
-设计14中的<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>同步状态。它还使得
+设计14中的<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>同步状态。它也使得
 未来的保留无法证明每个所需的工件都收到了
 已验证收据。</p>
 <p><strong>解决：</strong></p>

@@ -1129,7 +1129,7 @@
   <a href="#214-network-and-api-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.4 Network and API Security
+        21.4 网络和API安全
       
     </span>
   </a>
@@ -1173,7 +1173,7 @@
   <a href="#218-source-distribution-caveats" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.8 Source Distribution Caveats
+        21.8 源分发注意事项
       
     </span>
   </a>
@@ -1229,7 +1229,7 @@
   <a href="#21103-vulnerable-runtime-dependency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.10.3 Vulnerable Runtime Dependency
+        21.10.3 易受攻击的运行时依赖项
       
     </span>
   </a>
@@ -1638,7 +1638,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1834,7 +1834,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2796,7 +2796,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3187,7 +3187,7 @@
   <a href="#214-network-and-api-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.4 Network and API Security
+        21.4 网络和API安全
       
     </span>
   </a>
@@ -3231,7 +3231,7 @@
   <a href="#218-source-distribution-caveats" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.8 Source Distribution Caveats
+        21.8 源分发注意事项
       
     </span>
   </a>
@@ -3287,7 +3287,7 @@
   <a href="#21103-vulnerable-runtime-dependency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        21.10.3 Vulnerable Runtime Dependency
+        21.10.3 易受攻击的运行时依赖项
       
     </span>
   </a>
@@ -3402,14 +3402,14 @@
 </tr>
 </tbody>
 </table>
-<p>授权默认拒绝，并按组织/站点/线路/设备划分范围。在人员配备允许的情况下，应将起草和批准安全相关配置分开。所有权限、配置、规则、模型、保留和审查更改均通过参与者、时间、旧/新值或校验和、原因和相关标识符进行审核。</p>
+<p>授权默认拒绝，并按组织/站点/线路/设备划分范围。在人员配备允许的情况下，起草和批准安全相关配置应分开。所有权限、配置、规则、模型、保留和审查更改均通过参与者、时间、旧/新值或校验和、原因和相关标识符进行审核。</p>
 <p>本地仪表板访问必须反映站点限制。仅环回信息亭可以减少暴露，但不能取代其他用户可以访问主机的身份验证。本地可紧急暂停；配置更改需要更强的授权。</p>
-<h2 id="214-network-and-api-security">21.4 Network and API Security<a class="headerlink" href="#214-network-and-api-security" title="Permanent link">&para;</a></h2>
+<h2 id="214-network-and-api-security">21.4 网络和API安全<a class="headerlink" href="#214-network-and-api-security" title="Permanent link">&para;</a></h2>
 <ul>
 <li>对边缘到中心和浏览器到中心的流量使用 TLS；验证主机名和信任链。</li>
 <li>首选仅出站边缘连接，因此工厂防火墙无需集中公开边缘 API。</li>
 <li>对每个上传进行身份验证并将其绑定到已注册的设备。</li>
-<li>应用请求大小限制、模式验证、速率限制和安全媒体内容处理。</li>
+<li>应用请求大小限制、架构验证、速率限制和安全媒体内容处理。</li>
 <li>使用幂等密钥而不将其视为身份验证。</li>
 <li>将数据库、Redis 和对象存储接口保留在专用网络上。</li>
 <li>限制本​​地API监听地址和跨域策略。</li>
@@ -3437,7 +3437,7 @@
 <li>在部署时注入短期或可轮换的秘密；永远不要将长期秘密烘焙到图像中。</li>
 </ol>
 <p>第三方 Python 源代码仍可能包含在依赖项打包中，并且必须遵循其许可证。许可通知和所需的归属必须保持可用。必须有意控制调试符号和前端源映射；删除它们会使支持变得更加困难，并且不会阻止客户行为的重建。</p>
-<h2 id="218-source-distribution-caveats">21.8 Source Distribution Caveats<a class="headerlink" href="#218-source-distribution-caveats" title="Permanent link">&para;</a></h2>
+<h2 id="218-source-distribution-caveats">21.8 源分发注意事项<a class="headerlink" href="#218-source-distribution-caveats" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>.pyc</code> 可以直接使用可用工具进行分析，并且不是强大的反逆向工程保护。</li>
 <li>Docker 打包文件和进程，但不是针对主机管理员的源代码安全边界。</li>
@@ -3467,7 +3467,7 @@
 <li>使用保留的模型/规则版本和证据重新审查可能受影响的检查。</li>
 <li>在服务正常化之前更正权限或凭证暴露。</li>
 </ol>
-<h3 id="21103-vulnerable-runtime-dependency">21.10.3 Vulnerable Runtime Dependency<a class="headerlink" href="#21103-vulnerable-runtime-dependency" title="Permanent link">&para;</a></h3>
+<h3 id="21103-vulnerable-runtime-dependency">21.10.3 易受攻击的运行时依赖项<a class="headerlink" href="#21103-vulnerable-runtime-dependency" title="Permanent link">&para;</a></h3>
 <ol>
 <li>确定部署的镜像中是否存在易受攻击的组件和代码路径。</li>
 <li>在需要时应用补偿网络或功能控制。</li>

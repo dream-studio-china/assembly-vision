@@ -27,7 +27,7 @@
     
     
       
-        <title>PR-003 后续审查 - AssemblyVision</title>
+        <title>PR-003 Follow-up Review - AssemblyVision</title>
       
     
     
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PR-003 后续审查
+              PR-003 Follow-up Review
             
           </span>
         </div>
@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2987,7 +2987,7 @@
   <a href="#product-detector-training-drops-explicit-background-negatives" class="md-nav__link">
     <span class="md-ellipsis">
       
-        产品检测器训练消除了明确的背景底片
+        Product detector training drops explicit background negatives
       
     </span>
   </a>
@@ -3009,7 +3009,7 @@
   <a href="#verification-identifies-samples-only-by-basename" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Verification identifies samples only by basename
+        验证仅通过基本名称识别样本
       
     </span>
   </a>
@@ -3037,7 +3037,7 @@
   <a href="#inspection-evidence-output-is-not-bundle-atomic-or-power-loss-durable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        检查证据输出不具有束原子或断电持久性
+        Inspection evidence output is not bundle-atomic or power-loss durable
       
     </span>
   </a>
@@ -3059,7 +3059,7 @@
   <a href="#dataset-adaptation-and-preparation-can-retain-stale-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        数据集调整和准备可以保留陈旧的输出
+        Dataset adaptation and preparation can retain stale output
       
     </span>
   </a>
@@ -3102,7 +3102,7 @@
   
 
 
-<h1 id="pr-003-follow-up-review">PR-003 后续审查<a class="headerlink" href="#pr-003-follow-up-review" title="Permanent link">&para;</a></h1>
+<h1 id="pr-003-follow-up-review">PR-003 Follow-up Review<a class="headerlink" href="#pr-003-follow-up-review" title="Permanent link">&para;</a></h1>
 <h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
 <p>本文件记录了可操作的 P1 和 P2 发现后剩余的
 P0 修复已提交为 <code>677c094</code>、<code>c23d831</code> 和 <code>1618efb</code>。</p>
@@ -3186,75 +3186,75 @@ NMS 可以在精确计数规则之前抑制重叠的产品或组件
 提供有意的选择加入模式并将其记录在数据集清单中。</p>
 <p>相关参考：<code>docs/design/19-training-and-evaluation.md</code>和
 <code>docs/design/25-roadmap.md</code>。</p>
-<h3 id="product-detector-training-drops-explicit-background-negatives">产品检测器训练消除了明确的背景底片<a class="headerlink" href="#product-detector-training-drops-explicit-background-negatives" title="Permanent link">&para;</a></h3>
-<p><code>scripts/adapt-roboflow-dataset.py</code> 排除所有没有产品包装盒的图像
-来自 <code>dataset_product</code>，包括明确的空标签传送带/背景
-图像。这消除了有用的产品检测器底片。</p>
-<p>在具有空产品的产品数据集中保留显式的空标签图像
-标签文件。拒绝包含组件标签但缺少所需的图像
-独立的产品盒，而不是将它们与背景混为一谈。</p>
-<p>相关参考：<code>docs/design/19-training-and-evaluation.md</code>和
-<code>docs/design/22-testing-and-quality-assurance.md</code>。</p>
+<h3 id="product-detector-training-drops-explicit-background-negatives">Product detector training drops explicit background negatives<a class="headerlink" href="#product-detector-training-drops-explicit-background-negatives" title="Permanent link">&para;</a></h3>
+<p><code>scripts/adapt-roboflow-dataset.py</code> excludes every image without a product box
+from <code>dataset_product</code>, including explicitly empty-label conveyor/background
+images. This removes useful product-detector negatives.</p>
+<p>Keep explicit empty-label images in the product dataset with empty product
+label files. Reject images that contain component labels but lack the required
+independent product box instead of conflating them with backgrounds.</p>
+<p>Relevant references: <code>docs/design/19-training-and-evaluation.md</code> and
+<code>docs/design/22-testing-and-quality-assurance.md</code>.</p>
 <h3 id="expected-label-verification-still-accepts-unexpected-filename-labeled-files">预期标签验证仍然接受意外的文件名标签文件<a class="headerlink" href="#expected-label-verification-still-accepts-unexpected-filename-labeled-files" title="Permanent link">&para;</a></h3>
-<p><code>apps/edge-service/src/assemblyvision_edge/cli.py</code> 调用 <code>run_verify()</code>
-即使提供了 <code>--expected</code>，文件名后备也会启用。额外的过时文件
-以 <code>ok</code>、<code>ng</code> 或 <code>missing</code> 命名的系统会默默分配预期标签，并且
-包含在指标中。</p>
-<p>通过<code>filename_fallback=args.expected is None</code>。当预期清单是
-提供，要求其条目与
-输入文件，将丢失和意外的文件报告为验证差距。</p>
-<p>相关参考文献：<code>docs/design/22-testing-and-quality-assurance.md</code>。</p>
-<h3 id="verification-identifies-samples-only-by-basename">Verification identifies samples only by basename<a class="headerlink" href="#verification-identifies-samples-only-by-basename" title="Permanent link">&para;</a></h3>
-<p><code>apps/edge-service/src/assemblyvision_edge/verify.py</code> 使用 <code>path.name</code> 作为
-预期结果键。不同文件夹提供的同名图像共享
-一个标签，<code>seen</code> 集会折叠它们，同时指标对两行进行计数。</p>
-<p>使用清单相对路径或不可变的示例 ID。拒绝重复工作
-身份，并且每个预期条目都需要一个输入。</p>
-<p>相关参考：<code>docs/design/19-training-and-evaluation.md</code>和
-<code>docs/design/22-testing-and-quality-assurance.md</code>。</p>
+<p><code>apps/edge-service/src/assemblyvision_edge/cli.py</code> calls <code>run_verify()</code> with
+filename fallback enabled even when <code>--expected</code> is supplied. Extra stale files
+named with <code>ok</code>, <code>ng</code>, or <code>missing</code> are silently assigned expected labels and
+included in metrics.</p>
+<p>Pass <code>filename_fallback=args.expected is None</code>. When an expected manifest is
+provided, require exact one-to-one correspondence between its entries and the
+input files, reporting both missing and unexpected files as verification gaps.</p>
+<p>Relevant references: <code>docs/design/22-testing-and-quality-assurance.md</code>.</p>
+<h3 id="verification-identifies-samples-only-by-basename">验证仅通过基本名称识别样本<a class="headerlink" href="#verification-identifies-samples-only-by-basename" title="Permanent link">&para;</a></h3>
+<p><code>apps/edge-service/src/assemblyvision_edge/verify.py</code> uses <code>path.name</code> as the
+expected-result key. Same-named images supplied from different folders share
+one label, and the <code>seen</code> set collapses them while metrics count both rows.</p>
+<p>Use a manifest-relative path or immutable sample ID. Reject duplicate work
+identities and require exactly one input for every expected entry.</p>
+<p>Relevant references: <code>docs/design/19-training-and-evaluation.md</code> and
+<code>docs/design/22-testing-and-quality-assurance.md</code>.</p>
 <h2 id="p2-findings">P2 调查结果<a class="headerlink" href="#p2-findings" title="Permanent link">&para;</a></h2>
-<h3 id="inspection-evidence-output-is-not-bundle-atomic-or-power-loss-durable">检查证据输出不具有束原子或断电持久性<a class="headerlink" href="#inspection-evidence-output-is-not-bundle-atomic-or-power-loss-durable" title="Permanent link">&para;</a></h3>
-<p><code>apps/edge-service/src/assemblyvision_edge/output/writer.py</code> 写入媒体并
-JSON独立在最终检查目录中。失败可以离开
-部分可见证据；重试可以将替换的媒体与旧的 JSON 结合起来
-记录。单个文件和目录不会进行 fsync。</p>
-<p>在同级暂存目录中构建每个检查，刷新并同步所有文件
-和目录，然后自动发布完整的目录。拒绝写入
-到已发布的检查 ID 并添加注入的写入失败和
-重新启动恢复测试。</p>
-<p>相关参考文献：<code>docs/design/06-ai-detection-pipeline.md</code>和
-<code>docs/design/23-observability-and-support.md</code>。</p>
+<h3 id="inspection-evidence-output-is-not-bundle-atomic-or-power-loss-durable">Inspection evidence output is not bundle-atomic or power-loss durable<a class="headerlink" href="#inspection-evidence-output-is-not-bundle-atomic-or-power-loss-durable" title="Permanent link">&para;</a></h3>
+<p><code>apps/edge-service/src/assemblyvision_edge/output/writer.py</code> writes media and
+JSON independently in the final inspection directory. A failure can leave
+partial visible evidence; a retry can combine replaced media with an older JSON
+record. Individual files and directories are not fsynced.</p>
+<p>Build each inspection in a sibling staging directory, flush and fsync all files
+and directories, then atomically publish the complete directory. Reject writes
+to an already published inspection ID and add injected write-failure and
+restart-recovery tests.</p>
+<p>Relevant references: <code>docs/design/06-ai-detection-pipeline.md</code> and
+<code>docs/design/23-observability-and-support.md</code>.</p>
 <h3 id="rule-version-identity-is-not-bound-to-rule-content">规则版本标识不与规则内容绑定<a class="headerlink" href="#rule-version-identity-is-not-bound-to-rule-content" title="Permanent link">&para;</a></h3>
-<p><code>rule_version_id()</code> 在
-<code>apps/edge-service/src/assemblyvision_edge/rules/rule_engine.py</code> 仅限哈希值
-<code>rule_id</code> 和 <code>rule_version</code>。组件要求、门的变化，
-空间限制或兼容模型可以保留相同的持久 UUID。</p>
-<p>保留记录的规范规则校验和，或派生版本
-来自规范规则内容的身份。拒绝重复使用相同的规则 ID/版本
-具有不同的内容。</p>
-<p>相关参考：<code>docs/contracts/05-data-api-and-versioning-contracts.md</code>
-和<code>docs/design/11-rule-engine.md</code>。</p>
-<h3 id="dataset-adaptation-and-preparation-can-retain-stale-output">数据集调整和准备可以保留陈旧的输出<a class="headerlink" href="#dataset-adaptation-and-preparation-can-retain-stale-output" title="Permanent link">&para;</a></h3>
-<p><code>scripts/adapt-roboflow-dataset.py</code> 和
-<code>training/src/assemblyvision_training/prepare_components.py</code> 直接写入
-现有的输出目录。使用更少的样本、不同的来源重新运行
-数据，或者跳过样本的检测器将旧文件留在新数据集中。</p>
-<p>拒绝非空目标或将完整的新数据集写入暂存
-目录、验证它并自动发布它。记录一个文件清单
-数据集成员资格和沿袭是可审计的。</p>
-<p>相关参考：<code>docs/design/19-training-and-evaluation.md</code>和
-<code>docs/design/25-roadmap.md</code>。</p>
+<p><code>rule_version_id()</code> in
+<code>apps/edge-service/src/assemblyvision_edge/rules/rule_engine.py</code> hashes only
+<code>rule_id</code> and <code>rule_version</code>. Changes to component requirements, gates,
+spatial constraints, or compatible models can retain the same persisted UUID.</p>
+<p>Persist a canonical rule checksum with the record, or derive the release
+identity from canonical rule content. Reject reuse of the same rule ID/version
+with different content.</p>
+<p>Relevant references: <code>docs/contracts/05-data-api-and-versioning-contracts.md</code>
+and <code>docs/design/11-rule-engine.md</code>.</p>
+<h3 id="dataset-adaptation-and-preparation-can-retain-stale-output">Dataset adaptation and preparation can retain stale output<a class="headerlink" href="#dataset-adaptation-and-preparation-can-retain-stale-output" title="Permanent link">&para;</a></h3>
+<p><code>scripts/adapt-roboflow-dataset.py</code> and
+<code>training/src/assemblyvision_training/prepare_components.py</code> write directly to
+existing output directories. Re-running with fewer samples, different source
+data, or a detector that skips a sample leaves old files in the new dataset.</p>
+<p>Reject non-empty destinations or write a complete new dataset to a staging
+directory, validate it, and atomically publish it. Record a file manifest so
+dataset membership and lineage are auditable.</p>
+<p>Relevant references: <code>docs/design/19-training-and-evaluation.md</code> and
+<code>docs/design/25-roadmap.md</code>.</p>
 <h3 id="component-dataset-preparation-does-not-share-the-production-selection-policy">组件数据集准备不共享生产选择策略<a class="headerlink" href="#component-dataset-preparation-does-not-share-the-production-selection-policy" title="Permanent link">&para;</a></h3>
-<p><code>training/src/assemblyvision_training/prepare_components.py</code> 加载未经验证的
-权重，使用固定置信度设置，并选择最大的产品框
-当检测到多个产品时。这可以根据不同的标签裁剪标签
-来自运行时管道的对象。</p>
-<p>需要经过验证的产品清单并重用运行时产品检测器
-选择策略，包括单一产品处理和清单派生
-推理设置。失败或产生明确的排除清单
-不明确的样本。</p>
-<p>相关参考：<code>docs/design/19-training-and-evaluation.md</code>、
-<code>docs/design/08-product-detection-and-roi.md</code>和ADR-004。</p>
+<p><code>training/src/assemblyvision_training/prepare_components.py</code> loads unverified
+weights, uses fixed confidence settings, and selects the largest product box
+when multiple products are detected. This can crop labels against a different
+object from the runtime pipeline.</p>
+<p>Require a verified product manifest and reuse the runtime product-detector
+selection policy, including exactly-one-product handling and manifest-derived
+inference settings. Fail or produce an explicit exclusion manifest for
+ambiguous samples.</p>
+<p>Relevant references: <code>docs/design/19-training-and-evaluation.md</code>,
+<code>docs/design/08-product-detection-and-roi.md</code>, and ADR-004.</p>
 
 
 

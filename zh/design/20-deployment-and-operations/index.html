@@ -1123,7 +1123,7 @@
   <a href="#204-edge-docker-compose-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.4 Edge Docker 组合示例
+        20.4 Edge Docker Compose Example
       
     </span>
   </a>
@@ -1167,7 +1167,7 @@
   <a href="#208-model-and-rule-update-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.8 Model and Rule Update Sequence
+        20.8 模型和规则更新顺序
       
     </span>
   </a>
@@ -1693,7 +1693,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1889,7 +1889,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2851,7 +2851,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3264,7 +3264,7 @@
   <a href="#204-edge-docker-compose-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.4 Edge Docker 组合示例
+        20.4 Edge Docker Compose Example
       
     </span>
   </a>
@@ -3308,7 +3308,7 @@
   <a href="#208-model-and-rule-update-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        20.8 Model and Rule Update Sequence
+        20.8 模型和规则更新顺序
       
     </span>
   </a>
@@ -3567,7 +3567,7 @@
 <li>通过运行状况 API 公开构建标识符和应用程序版本。</li>
 <li>固定基础镜像并在发布前扫描它们。</li>
 </ol>
-<h2 id="204-edge-docker-compose-example">20.4 Edge Docker 组合示例<a class="headerlink" href="#204-edge-docker-compose-example" title="Permanent link">&para;</a></h2>
+<h2 id="204-edge-docker-compose-example">20.4 Edge Docker Compose Example<a class="headerlink" href="#204-edge-docker-compose-example" title="Permanent link">&para;</a></h2>
 <p>该示例是一个模板。设备路径、图像注册表、存储路径和资源限制需要站点验证。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">services</span><span class="p">:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">edge-service</span><span class="p">:</span>
@@ -3661,7 +3661,7 @@
 <h2 id="207-configuration-and-secrets">20.7 配置和秘密<a class="headerlink" href="#207-configuration-and-secrets" title="Permanent link">&para;</a></h2>
 <p>配置优先级是键入的应用程序默认值、受管理的不可变包、批准的站点配置和仅部署环境覆盖。环境/本地覆盖可能会更改连接、路径、资源限制和非安全显示选项；他们不得更改产品映射、所需组件、阈值或模型/规则兼容性。产品规则和模型清单是签名/版本控制的域工件，而不是普通的环境变量。机密包括中央凭据、设备凭据、TLS 私钥和对象存储凭据。它们是从具有最低权限的主机秘密存储或部署系统安装的。</p>
 <p>每个有效的配置快照都会记录其版本和校验和。验证发生在激活之前。无效配置会使最后一个已知良好的版本保持活动状态并发出事件。影响相机几何形状、产品映射、所需组件、阈值或模型的更改需要审核记录和明确的激活操作。</p>
-<h2 id="208-model-and-rule-update-sequence">20.8 Model and Rule Update Sequence<a class="headerlink" href="#208-model-and-rule-update-sequence" title="Permanent link">&para;</a></h2>
+<h2 id="208-model-and-rule-update-sequence">20.8 模型和规则更新顺序<a class="headerlink" href="#208-model-and-rule-update-sequence" title="Permanent link">&para;</a></h2>
 <p>更新是拉取式或集中式启动的，但绝不会直接从未经验证的下载中激活。模型和兼容规则版本作为原子发行集安装。</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant A as 行政人员
@@ -3681,7 +3681,7 @@ alt 验证成功
         E-&gt;&gt;E:原子切换主动释放
         E-&gt;&gt;I:重新启动或重新加载
         I--&gt;&gt;E:新版本带来健康
-        E-&gt;&gt;C:Report installation success
+        E-&gt;&gt;C:报告安装成功
 else 验证或健康检查失败
         V--&gt;&gt;E:无效的
         E-&gt;&gt;E:保留或恢复最后的已知良好版本

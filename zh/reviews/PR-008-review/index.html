@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2920,7 +2920,7 @@
   <a href="#validation-performed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Validation Performed
+        已执行验证
       
     </span>
   </a>
@@ -3141,12 +3141,12 @@
   <a href="#conditional-production-persistence-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Conditional Production-Persistence Findings
+        条件生产-持久性发现
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Conditional Production-Persistence Findings">
+    <nav class="md-nav" aria-label="条件生产-持久性发现">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3256,7 +3256,7 @@
 <p><strong>更正 (AUDIT-001)。</strong> PR 中的“100% 测试覆盖率”声明
 描述没有被复制。测量边缘 Python 语句覆盖率
 合并结果约为 99.5% (pytest-cov)；未覆盖的线条
-是查看者会话/无令牌分支、派生图像和统计数据
+是查看器会话/无令牌分支、派生图像和统计数据
 后备、验证空工作分支和无法访问的 IntegrityError
 处理程序。将覆盖率数字视为过时的测量工件，而不是
 保证，并在提出索赔时记录准确的命令/输出。</p>
@@ -3299,7 +3299,7 @@ GitHub CI、CodeQL 和本地质量门都通过了，但有几个关键的
   SQLite 持久化/发件箱）被记录为下一个里程碑，并且不
   阻止此 PR。</li>
 </ul>
-<h2 id="validation-performed">Validation Performed<a class="headerlink" href="#validation-performed" title="Permanent link">&para;</a></h2>
+<h2 id="validation-performed">已执行验证<a class="headerlink" href="#validation-performed" title="Permanent link">&para;</a></h2>
 <p>在 <code>dev</code> 上执行而不修改跟踪文件：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>make check
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git diff --check origin/main...HEAD
@@ -3319,109 +3319,109 @@ GitHub CI、CodeQL 和本地质量门都通过了，但有几个关键的
 <table>
 <thead>
 <tr>
-<th>Findings</th>
-<th>Validation</th>
-<th>Notes</th>
+<th>调查结果</th>
+<th>验证</th>
+<th>笔记</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>F1-F2</td>
-<td>Feasible as written</td>
-<td>Fix at both persistence/import and serve boundaries; F1 must preserve pre-rename bundle atomicity.</td>
+<td>如所写的那样可行</td>
+<td>修复持久性/导入和服务边界； F1 必须保留预重命名包原子性。</td>
 </tr>
 <tr>
 <td>F3</td>
-<td>Feasible after one security decision</td>
-<td>The accepted contracts require backend authorization, but the exact offline edge-session mechanism remains an open design choice. Do not replace authentication with loopback binding or CORS.</td>
+<td>一项安全决策后可行</td>
+<td>接受的合约需要后端授权，但确切的离线边缘会话机制仍然是一个开放的设计选择。不要用环回绑定或 CORS 替换身份验证。</td>
 </tr>
 <tr>
 <td>F4</td>
-<td>Feasible with two valid scopes</td>
-<td>Recommended for M1: remove/disable unsupported controls. Production alternative: add an inspection coordinator; do not put pause state in detector classes.</td>
+<td>有两个有效范围可行</td>
+<td>建议用于 M1：删除/禁用不支持的控件。生产替代方案：添加一名检验协调员；不要将暂停状态放入检测器类中。</td>
 </tr>
 <tr>
 <td>F5-F8</td>
-<td>Feasible as written</td>
-<td>Explicit API mode, no mixed mock/real state, Ultralytics <code>[height, width]</code>, and subset compatibility checks are bounded changes.</td>
+<td>如所写的那样可行</td>
+<td>显式 API 模式、无混合模拟/真实状态、Ultralytics <code>[height, width]</code> 和子集兼容性检查是有界更改。</td>
 </tr>
 <tr>
 <td>F9</td>
-<td>Feasible but cross-workspace</td>
-<td>This implements the already accepted OpenAPI-generation strategy and must update Python models, generated artifacts, TypeScript wrappers, and CI together.</td>
+<td>可行但跨工作空间</td>
+<td>这实现了已经接受的 OpenAPI 生成策略，并且必须一起更新 Python 模型、生成的工件、TypeScript 包装器和 CI。</td>
 </tr>
 <tr>
 <td>F10</td>
-<td>Feasible as written</td>
-<td>Separate persistent database configuration from per-connection PRAGMAs and hash only immutable inspection content.</td>
+<td>如所写的那样可行</td>
+<td>将持久数据库配置与每个连接的 PRAGMA 分开，并仅散列不可变的检查内容。</td>
 </tr>
 <tr>
 <td>F11-F14</td>
-<td>Feasible and required before merge</td>
-<td>These close fail-safe, evidence-provenance, statistics, and evidence-presentation defects in behavior claimed by this PR.</td>
+<td>合并前可行且必需的</td>
+<td>本 PR 声称的行为中存在这些接近的故障安全、证据来源、统计数据和证据呈现缺陷。</td>
 </tr>
 <tr>
 <td>C1-C4</td>
-<td>Feasible but conditional</td>
-<td>Required when SQLite/upload becomes authoritative production persistence; not blockers for a clearly labelled rebuildable M1 read index.</td>
+<td>可行但有条件</td>
+<td>当SQLite/upload成为权威生产持久化时需要；不是明确标记的可重建 M1 读取索引的障碍。</td>
 </tr>
 </tbody>
 </table>
 <h2 id="global-acceptance-rules">全球接受规则<a class="headerlink" href="#global-acceptance-rules" title="Permanent link">&para;</a></h2>
-<p>Every blocking finding is accepted only when:</p>
+<p>仅当出现以下情况时，才会接受每个阻塞结果：</p>
 <ul>
-<li>A regression test fails on the pre-fix implementation and passes with the
-  fix; line coverage alone is not evidence of behavioral coverage.</li>
-<li>Tests exercise the public boundary involved (HTTP, persisted bundle/database,
-  generated client, or inspection coordinator), not only a mocked private
-  helper.</li>
-<li>Negative and fail-safe paths are asserted explicitly, including the returned
-  problem code or NG reason code where applicable.</li>
-<li><code>make check</code> and <code>git diff --check origin/main...HEAD</code> pass after all fixes.</li>
-<li>Quickstart/context claims are updated to match the implemented M1/production
-  boundary; no unavailable feature is described as operational.</li>
+<li>回归测试在前缀实现上失败并通过
+  修复；仅线路覆盖并不能证明行为覆盖。</li>
+<li>测试涉及公共边界（HTTP、持久包/数据库、
+  生成的客户，或检查协调员），而不仅仅是一个被嘲笑的私人
+  帮手。</li>
+<li>显式断言负路径和故障安全路径，包括返回的路径
+  问题代码或 NG 原因代码（如果适用）。</li>
+<li><code>make check</code> 和 <code>git diff --check origin/main...HEAD</code> 在所有修复后通过。</li>
+<li>快速入门/上下文声明已更新，以匹配实施的 M1/生产
+  边界；没有不可用的功能被描述为可操作的。</li>
 </ul>
 <hr />
 <h2 id="immediate-blocking-findings">立即封锁结果<a class="headerlink" href="#immediate-blocking-findings" title="Permanent link">&para;</a></h2>
 <h3 id="f1-media-records-published-under-the-staging-path-that-is-later-renamed-away">F1。在暂存路径下发布的媒体记录，后来更名为“离开”<a class="headerlink" href="#f1-media-records-published-under-the-staging-path-that-is-later-renamed-away" title="Permanent link">&para;</a></h3>
-<p><strong>Problem:</strong> <code>OutputWriter.save</code> writes media into a random <code>.staging-...</code>
-directory and then renames that directory to the inspection ID, but the
-persisted <code>relative_path</code> is derived from the staging directory name and is
-never updated after the rename. Every media record produced by the hardened
-writer therefore points at a path that no longer exists.</p>
-<p><strong>Location:</strong>
-- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:114</code> (staging dir)
-- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:130</code> (rename)
+<p><strong>问题：</strong> <code>OutputWriter.save</code> 将媒体写入随机 <code>.staging-...</code>
+目录，然后将该目录重命名为检查 ID，但是
+persisted <code>relative_path</code> 源自暂存目录名称，并且是
+重命名后就再也没有更新过。每一条媒体记录均由硬核制作
+因此，作者指出了一条不再存在的路径。</p>
+<p><strong>地点：</strong>
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:114</code>（暂存目录）
+- <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:130</code>（重命名）
 - <code>apps/edge-service/src/assemblyvision_edge/output/writer.py:151</code> (<code>relative = f"{inspection_dir.name}/{name}"</code>)</p>
-<p><strong>Impact:</strong> After <code>assemblyvision inspect</code>, the final file exists at
-<code>&lt;output&gt;/&lt;inspection_id&gt;/key_frame.jpg</code> while the record references
-<code>&lt;output&gt;/.staging-.../key_frame.jpg</code>. Reconciliation imports the invalid path
-and <code>GET /api/v1/media/{id}/content</code> returns 404 for every generated image.
-Reproduced locally: the persisted path did not exist while the final file did.</p>
-<p><strong>Test gap:</strong> <code>apps/edge-service/tests/test_output_writer.py:60-78</code> and
-<code>apps/edge-service/tests/test_output_writer_extended.py</code> assert the physical
-file and checksum but never resolve <code>output_root / media.relative_path</code>.</p>
-<p><strong>Proposed solution:</strong> Build the final <code>relative_path</code> from the stable
-inspection ID while files are still written under the staging directory. Pass
-the final relative directory name separately to <code>_save_image</code>; do not rewrite
-the record after publication because that would require rewriting
-<code>inspection.json</code> after the atomic directory rename. Add a round-trip test that
-saves media, reconciles, and serves the content through the repository and media
-endpoint.</p>
-<p><strong>Acceptance criteria:</strong>
-- <code>media.relative_path</code> resolves to an existing file under <code>output_root</code> for
-  every kind of media produced by <code>writer.save</code>.
-- A test verifies <code>output_root / media["relative_path"]</code> exists after save and
-  after <code>reconcile_output_root</code>.
-- An API test verifies <code>GET /api/v1/media/{id}/content</code> returns the bytes for a
-  freshly produced inspection.</p>
+<p><strong>影响：</strong> <code>assemblyvision inspect</code>之后，最终文件存在于
+<code>&lt;output&gt;/&lt;inspection_id&gt;/key_frame.jpg</code>同时记录引用
+<code>&lt;output&gt;/.staging-.../key_frame.jpg</code>。协调导入无效路径
+<code>GET /api/v1/media/{id}/content</code> 为每个生成的图像返回 404。
+本地重现：持久路径不存在，而最终文件存在。</p>
+<p><strong>测试间隙：</strong> <code>apps/edge-service/tests/test_output_writer.py:60-78</code> 和
+<code>apps/edge-service/tests/test_output_writer_extended.py</code>断言物理
+文件和校验和，但从未解析 <code>output_root / media.relative_path</code>。</p>
+<p><strong>建议的解决方案：</strong> 从稳定版构建最终的 <code>relative_path</code>
+文件仍写入暂存目录下时检查 ID。通行证
+最终相对目录名单独到<code>_save_image</code>；不要重写
+出版后的记录，因为这需要重写
+原子目录重命名后的<code>inspection.json</code>。添加一个往返测试
+通过存储库和媒体保存媒体、协调和提供内容
+端点。</p>
+<p><strong>验收标准：</strong>
+- <code>media.relative_path</code> 解析为 <code>output_root</code> 下的现有文件
+  <code>writer.save</code>制作的各种媒体。
+- 测试验证保存后是否存在 <code>output_root / media["relative_path"]</code>
+  <code>reconcile_output_root</code> 之后。
+- API 测试验证 <code>GET /api/v1/media/{id}/content</code> 返回 a 的字节
+  新鲜生产的检验。</p>
 <h3 id="f2-media-content-endpoint-allows-directory-traversal-and-absolute-paths">F2。媒体内容端点允许目录遍历和绝对路径<a class="headerlink" href="#f2-media-content-endpoint-allows-directory-traversal-and-absolute-paths" title="Permanent link">&para;</a></h3>
-<p><strong>Problem:</strong> <code>relative_path</code> is imported from <code>inspection.json</code> without
-validation and served by joining <code>settings.output_root / media.relative_path</code>
-without resolving and checking containment. An <code>inspection.json</code> containing
-<code>../secret.txt</code> or an absolute path is accepted during reconciliation and its
-content is served outside the media root. The caller-controlled MIME type can
-also cause active browser content to be served.</p>
+<p><strong>问题：</strong> <code>relative_path</code> 是从 <code>inspection.json</code> 导入的，没有
+验证并通过加入 <code>settings.output_root / media.relative_path</code> 提供服务
+无需解决和检查遏制。一个 <code>inspection.json</code> 包含
+<code>../secret.txt</code> 或在协调过程中接受绝对路径及其
+内容在媒体根之外提供。调用者控制的 MIME 类型可以
+还会导致提供活动的浏览器内容。</p>
 <p><strong>地点：</strong>
 - <code>packages/python/domain/src/assemblyvision_domain/models.py:136-145</code>
 - <code>apps/edge-service/src/assemblyvision_edge/persistence/reconcile.py:30-40</code>
@@ -3729,7 +3729,7 @@ pipeline 不会将其转换为保守的终端记录。命令行界面
 - 丢失或清除的证据显示明确的不可用/清除状态并且没有
   HTTP 模式下的合成图像。</p>
 <hr />
-<h2 id="conditional-production-persistence-findings">Conditional Production-Persistence Findings<a class="headerlink" href="#conditional-production-persistence-findings" title="Permanent link">&para;</a></h2>
+<h2 id="conditional-production-persistence-findings">条件生产-持久性发现<a class="headerlink" href="#conditional-production-persistence-findings" title="Permanent link">&para;</a></h2>
 <p>C1-C4是权威生产持久性的有效要求
 上传子系统。如果 API、快速入门、
 上下文文档明确地将 SQLite 标记为 CLI 的可重建投影
@@ -3863,7 +3863,7 @@ static-MVP 结果并显式地将 SQLite 视为可重建的读取投影。
 </li>
 <li>
 <p><strong>上传重试会忽略资格、幂等性、原因和状态元数据。</strong>
-  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>;
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>；
   <code>repository.retry_upload</code> 接受任何状态，忽略 <code>Idempotency-Key</code> 和
   原因，并且不更新 <code>updated_at</code>/<code>next_attempt_at</code>。
   <em>解决方案：</em> 因为调度程序超出了 M1 范围，所以删除/禁用

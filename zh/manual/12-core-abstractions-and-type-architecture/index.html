@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1588,7 +1588,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -1801,7 +1801,7 @@
   <a href="#edge-service" class="md-nav__link">
     <span class="md-ellipsis">
       
-        BarcodeDecoder（边缘服务barcode/）
+        BarcodeDecoder (edge-service barcode/)
       
     </span>
   </a>
@@ -1883,7 +1883,7 @@
   <a href="#adding-new-types-decision-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
-        添加新类型 - 决策清单
+        Adding new types — decision checklist
       
     </span>
   </a>
@@ -2763,7 +2763,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3177,7 +3177,7 @@
   <a href="#edge-service" class="md-nav__link">
     <span class="md-ellipsis">
       
-        BarcodeDecoder（边缘服务barcode/）
+        BarcodeDecoder (edge-service barcode/)
       
     </span>
   </a>
@@ -3259,7 +3259,7 @@
   <a href="#adding-new-types-decision-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
-        添加新类型 - 决策清单
+        Adding new types — decision checklist
       
     </span>
   </a>
@@ -3383,10 +3383,10 @@ from_attributes=True)</code> — 未知字段会被大声拒绝，ORM 风格
     IR --&gt; IM[推理元数据]
     DEC --&gt; ID[内部决策]
     DEC --&gt; BRES[业务成果]
-    EV --&gt; BB[BoundingBox]
+    EV --&gt; BB[边界框]
     PD --&gt; BB2[边界框]
-    RR --&gt; BB3[BoundingBox]
-    IM --&gt; SM[推理阶段元数据 *]
+    RR --&gt; BB3[边界框]
+    IM --&gt; SM[InferenceStageMetadata *]
     SM --&gt; IS[推理设置]</code></pre>
 <p>模型中包含的关键不变量：
 - <code>evidence[]</code> 根据需要携带一个 <code>AggregatedComponentEvidence</code>
@@ -3414,7 +3414,7 @@ from_attributes=True)</code> — 未知字段会被大声拒绝，ORM 风格
 <code>build_frame_source(config)</code>（工厂）。仅边缘<code>CameraSourceManager</code>
 了解协议——供应商 SDK 被隔离在其后面 (ADR-013)。添加一个
 根据<code>08-camera-sources-and-vision-core.md</code>的新来源。</p>
-<h3 id="edge-service"><code>BarcodeDecoder</code>（边缘服务<code>barcode/</code>）<a class="headerlink" href="#edge-service" title="Permanent link">&para;</a></h3>
+<h3 id="edge-service"><code>BarcodeDecoder</code> (edge-service <code>barcode/</code>)<a class="headerlink" href="#edge-service" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BarcodeDecoder</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">BarcodeObservation</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span> <span class="o">...</span>
 </code></pre></div>
@@ -3439,39 +3439,39 @@ FIFO 适配器（<code>ModbusTcpTriggerAdapter</code> 位于 <code>ModbusTcpTran
 开发/测试。调度程序取决于协议，而不是具体的接收器。</p>
 <h3 id="how-to-add-a-new-seam">如何添加新接缝<a class="headerlink" href="#how-to-add-a-new-seam" title="Permanent link">&para;</a></h3>
 <ol>
-<li>使用类型化方法定义 <code>Protocol</code> （记录失败契约：
-   提高与返回状态 - 例如汇返回<code>UploadResult</code>，源提高
-   <code>FrameStreamError</code>）。
-2.为每个变体添加一个具体实现；保持供应商/SDK 导入惰性
-   在带有可选附加依赖项的 <code>_backend.py</code> 帮助器后面。
-3.工厂/组合根中的线材构建（<code>build_frame_source</code>，
-   <code>cli._build_pipeline</code>、<code>EdgeRuntime.load_instances</code>）。</li>
-<li>通过构造函数注入——永远不要在消费者内部实例化。</li>
-<li>使用伪造的后端测试具体实现并测试
-   反对最小结构假的协议
-   （<code>test_frame_source_is_runtime_checkable_protocol</code> 正是这样做的）。</li>
+<li>Define a <code>Protocol</code> with typed methods (document the failure contract:
+   raise vs return status — e.g. sinks return <code>UploadResult</code>, sources raise
+   <code>FrameStreamError</code>).</li>
+<li>Add one concrete implementation per variant; keep vendor/SDK imports lazy
+   behind a <code>_backend.py</code> helper with an optional-extras dependency.</li>
+<li>Wire construction in the factory/composition root (<code>build_frame_source</code>,
+   <code>cli._build_pipeline</code>, <code>EdgeRuntime.load_instances</code>).</li>
+<li>Inject through constructors — never instantiate inside a consumer.</li>
+<li>Test the concrete implementations with faked backends and test the
+   protocol against a minimal structural fake
+   (<code>test_frame_source_is_runtime_checkable_protocol</code> does exactly this).</li>
 </ol>
 <h2 id="composition-root-and-dependency-direction">组合根和依赖方向<a class="headerlink" href="#composition-root-and-dependency-direction" title="Permanent link">&para;</a></h2>
-<p><strong>没有 DI 框架</strong>。组合在条目处显式发生
-点：</p>
+<p>There is <strong>no DI framework</strong>. Composition happens explicitly at the entry
+points:</p>
 <ul>
-<li><code>cli._build_pipeline</code> (CLI)：加载配置/规则/清单，构建
-  <code>ProductDetector</code>/<code>ComponentDetector</code>/<code>ROIEngine</code>/<code>RuleEngine</code>，那么
-  <code>InspectionPipeline(...)</code>。</li>
-<li><code>api.app.create_app</code>（服务）：构建<code>EdgeRepository</code>，<code>RuntimeEventBus</code>，
-  <code>EdgeRuntime</code>（+ 实例），然后 <code>UploadScheduler</code>/<code>RetentionCleanupWorker</code>
-  和 FastAPI 应用程序；路由器通过 <code>Depends(...)</code> 接收依赖项
-  读取 <code>request.app.state</code> 的访问器。</li>
+<li><code>cli._build_pipeline</code> (CLI): loads config/rule/manifests, builds
+  <code>ProductDetector</code>/<code>ComponentDetector</code>/<code>ROIEngine</code>/<code>RuleEngine</code>, then
+  <code>InspectionPipeline(...)</code>.</li>
+<li><code>api.app.create_app</code> (serve): builds <code>EdgeRepository</code>, <code>RuntimeEventBus</code>,
+  <code>EdgeRuntime</code> (+ instances), then <code>UploadScheduler</code>/<code>RetentionCleanupWorker</code>
+  and the FastAPI app; routers receive dependencies via <code>Depends(...)</code>
+  accessors that read <code>request.app.state</code>.</li>
 </ul>
-<p>依赖方向（通过审查强制执行，合同 01）：</p>
+<p>Dependency direction (enforced by review, contract 01):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>api/routers → api (schemas, deps, problems) → application services (pipeline, runtime)
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  → domain protocols/models (assemblyvision_domain, assemblyvision_vision)
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>infrastructure (persistence, upload, retention, output) implements protocols
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  consumed by application services
 </code></pre></div>
-<p>规则：路由永远不会直接调用YOLO或SQLAlchemy；规则引擎从不
-导入FastAPI/DB/YOLO；边缘代码从不导入 <code>training/</code>；共享
-包在导入时从不读取环境变量。</p>
+<p>Rules: routes never call YOLO or SQLAlchemy directly; the rule engine never
+imports FastAPI/DB/YOLO; edge code never imports <code>training/</code>; shared
+packages never read env vars at import time.</p>
 <h2 id="error-hierarchy-reason-codes">错误层次→原因代码<a class="headerlink" href="#error-hierarchy-reason-codes" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>AssemblyVisionError (packages/python/domain/errors.py)
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>├── ConfigError              # invalid config/rule/manifest → pipeline load fails, exit 2
@@ -3484,73 +3484,73 @@ FIFO 适配器（<code>ModbusTcpTriggerAdapter</code> 位于 <code>ModbusTcpTran
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>FrameStreamError (vision-core) # frame source open/read/decode failure; never silently skipped
 <a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>ApiProblem (edge api/problems.py)  # → application/problem+json response
 </code></pre></div>
-<p><strong>模式</strong>：子系统引发类型异常；在子系统边界
-它们被转换为稳定的<strong>原因代码</strong>（规范集
-<code>reason_codes.py</code>);检查记录仅带有原因代码，从不堆叠
-痕迹。故障安全：任何检测/ROI/读取/规则失败都会合并到
-<code>extra_reasons</code> 并强制业务 <code>NG</code> — 绝不 <code>OK</code>。</p>
+<p><strong>The pattern</strong>: subsystems raise typed exceptions; at subsystem boundaries
+they are converted to stable <strong>reason codes</strong> (canonical set in
+<code>reason_codes.py</code>); inspection records carry only reason codes, never stack
+traces. Fail-safe: any detection/ROI/read/rule failure merges into
+<code>extra_reasons</code> and forces business <code>NG</code> — never <code>OK</code>.</p>
 <h2 id="patterns-used-across-the-runtime">运行时使用的模式<a class="headerlink" href="#patterns-used-across-the-runtime" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>图案</th>
-<th>哪里</th>
+<th>Pattern</th>
+<th>Where</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>存储库</td>
-<td><code>EdgeRepository</code> — SQLite 的单一访问点；类型化方法、CAS 转换</td>
+<td>Repository</td>
+<td><code>EdgeRepository</code> — single access point for SQLite; typed methods, CAS transitions</td>
 </tr>
 <tr>
-<td>交易发件箱</td>
-<td><code>persist_inspection_and_enqueue_uploads</code> — 一笔交易中的检查 + 媒体 + 任务</td>
+<td>Transactional outbox</td>
+<td><code>persist_inspection_and_enqueue_uploads</code> — inspection + media + tasks in one transaction</td>
 </tr>
 <tr>
-<td>适配器</td>
-<td>所有<code>Protocol</code>接缝+具体实现</td>
+<td>Adapter</td>
+<td>All <code>Protocol</code> seams + concrete implementations</td>
 </tr>
 <tr>
-<td>策略</td>
-<td><code>InspectionPipeline.inspect_frame</code>（单帧）与 <code>inspect_window</code>（时间聚合）</td>
+<td>Strategy</td>
+<td><code>InspectionPipeline.inspect_frame</code> (single-frame) vs <code>inspect_window</code> (temporal aggregation)</td>
 </tr>
 <tr>
-<td>状态机</td>
-<td><code>ProductWindowManager</code> (CloseReason)、存储 <code>PressureMode</code>、通过枚举检查/设备/上传状态</td>
+<td>State machine</td>
+<td><code>ProductWindowManager</code> (CloseReason), storage <code>PressureMode</code>, inspection/device/upload states via enums</td>
 </tr>
 <tr>
-<td>租赁+围栏令牌</td>
-<td><code>UploadScheduler</code> 声明、<code>RetentionCleanupWorker</code> 删除、审核取代 (<code>BEGIN IMMEDIATE</code>)</td>
+<td>Lease + fencing token</td>
+<td><code>UploadScheduler</code> claims, <code>RetentionCleanupWorker</code> deletion, review supersede (<code>BEGIN IMMEDIATE</code>)</td>
 </tr>
 <tr>
-<td>作文根</td>
-<td><code>cli._build_pipeline</code>、<code>create_app</code>、<code>EdgeRuntime.load_instances</code></td>
+<td>Composition root</td>
+<td><code>cli._build_pipeline</code>, <code>create_app</code>, <code>EdgeRuntime.load_instances</code></td>
 </tr>
 <tr>
-<td>失败关闭验证</td>
-<td><code>extra="forbid"</code> 模型、<code>PRAGMA quick_check</code>、清单校验和、未知密钥拒绝</td>
+<td>Fail-closed validation</td>
+<td><code>extra="forbid"</code> models, <code>PRAGMA quick_check</code>, manifest checksums, unknown-key rejection</td>
 </tr>
 <tr>
-<td>原子文件系统写入</td>
-<td>temp + fsync + 重命名（输出写入器、媒体、备份包）</td>
+<td>Atomic filesystem writes</td>
+<td>temp + fsync + rename (output writer, media, backup bundles)</td>
 </tr>
 </tbody>
 </table>
-<h2 id="adding-new-types-decision-checklist">添加新类型 - 决策清单<a class="headerlink" href="#adding-new-types-decision-checklist" title="Permanent link">&para;</a></h2>
+<h2 id="adding-new-types-decision-checklist">Adding new types — decision checklist<a class="headerlink" href="#adding-new-types-decision-checklist" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] 跨越边界（API/持久性/配置/清单）？ → 派丹提克
-  <code>domain</code>（共享）或 <code>api/schemas.py</code>（仅限 API）中的 <code>APIModel</code>，
-  <code>extra="forbid"</code>，时区感知的 UTC 日期时间，UUID 字符串。</li>
-<li>[ ] 内部值/配置对象？ → <code>@dataclass(frozen=True)</code> 与
-  <code>__post_init__</code> 验证（镜像 <code>ROIConfig</code>/<code>ComponentTemporalPolicy</code>）。</li>
-<li>[ ] 可交换功能？ → <code>Protocol</code> + 具体实现 + 工厂
-  接线+假后端测试。</li>
-<li>[ ] 新的故障模式？ → 添加类型错误子类或重用现有的
-  一，以及 <code>reason_codes.py</code> 中的稳定原因代码（带有测试+
-  文档——原因代码是可执行的事实来源）。</li>
-<li>[ ] 新状态？ → 扩展相关的枚举/文字及其允许的
-  过渡；添加状态机测试，包括 stale-lease/fencing 和
-  重新启动恢复路径。</li>
+<li>[ ] Crosses a boundary (API/persistence/config/manifest)? → Pydantic
+  <code>APIModel</code> in <code>domain</code> (shared) or <code>api/schemas.py</code> (API-only),
+  <code>extra="forbid"</code>, timezone-aware UTC datetimes, UUID strings.</li>
+<li>[ ] Internal value/configuration object? → <code>@dataclass(frozen=True)</code> with
+  <code>__post_init__</code> validation (mirror <code>ROIConfig</code>/<code>ComponentTemporalPolicy</code>).</li>
+<li>[ ] Swappable capability? → <code>Protocol</code> + concrete implementations + factory
+  wiring + fake-backend tests.</li>
+<li>[ ] New failure mode? → add a typed error subclass or reuse an existing
+  one, and a stable reason code in <code>reason_codes.py</code> (with tests +
+  documentation — reason codes are the enforceable source of truth).</li>
+<li>[ ] New state? → extend the relevant enum/Literal and its allowed
+  transitions; add state-machine tests including stale-lease/fencing and
+  restart-recovery paths.</li>
 </ul>
 
 

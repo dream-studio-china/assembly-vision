@@ -31,7 +31,7 @@
     
     
       
-        <title>TLS 证书轮换 - AssemblyVision</title>
+        <title>TLS Certificate Rotation - AssemblyVision</title>
       
     
     
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              TLS 证书轮换
+              TLS Certificate Rotation
             
           </span>
         </div>
@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1588,7 +1588,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2559,7 +2559,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2577,7 +2577,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2639,7 +2639,7 @@
   <a href="#rotation-procedure-upstream-factory-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rotation Procedure (upstream factory proxy)
+        轮换流程（上游工厂代理）
       
     </span>
   </a>
@@ -3037,7 +3037,7 @@
   <a href="#rotation-procedure-upstream-factory-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rotation Procedure (upstream factory proxy)
+        轮换流程（上游工厂代理）
       
     </span>
   </a>
@@ -3088,49 +3088,49 @@
 
 <h1 id="runbook-13-tls-certificate-rotation">Runbook 13：TLS 证书轮换<a class="headerlink" href="#runbook-13-tls-certificate-rotation" title="Permanent link">&para;</a></h1>
 <h2 id="trigger">扳机<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
-<p>Certificate near expiry, suspected compromise, or a required renewal per the
-customer certificate policy.</p>
+<p>证书即将到期、疑似泄露或需要根据
+客户证书政策。</p>
 <h2 id="immediate-safety-action">立即采取安全行动<a class="headerlink" href="#immediate-safety-action" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Do not remove the current certificate until the replacement validates.</li>
-<li>Record site/device, start/end time, actor, affected services, actions,
-   result, and escalation reference.</li>
-<li>Confirm the certificate and private key are not world-readable; the edge
-   service rejects a private key readable by group or others.</li>
+<li>在替换验证之前，请勿删除当前证书。</li>
+<li>记录站点/设备、开始/结束时间、参与者、受影响的服务、操作、
+   结果和升级参考。</li>
+<li>确认证书和私钥不是世界可读的；边缘
+   服务拒绝组或其他人可读的私钥。</li>
 </ol>
 <h2 id="rotation-procedure-edge-service-local-tls">轮换过程（边缘服务本地 TLS）<a class="headerlink" href="#rotation-procedure-edge-service-local-tls" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Obtain the replacement certificate and key from the approved CA and place
-   them where the runtime can read them (for example a Docker secret mounted at
-   <code>/run/secrets/edge_tls_cert</code> and <code>/run/secrets/edge_tls_key</code> with mode
-   <code>0400</code>).</li>
-<li>Validate the pair before activating it:</li>
+<li>从认可的CA和地点获取替换证书和密钥
+   它们在运行时可以读取它们的地方（例如安装在
+   <code>/run/secrets/edge_tls_cert</code> 和 <code>/run/secrets/edge_tls_key</code> 与模式
+   <code>0400</code>）。</li>
+<li>在激活之前验证该对：</li>
 </ol>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>openssl x509 -in cert.pem -noout -dates
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>openssl verify -CAfile &lt;ca-bundle&gt; cert.pem
 </code></pre></div>
 <ol>
-<li>Update the certificate/key mount or <code>AV_EDGE_TLS_CERT</code> / <code>AV_EDGE_TLS_KEY</code>
-   paths, then restart the edge service.</li>
-<li>Confirm the service starts (the certificate/key pair is validated at
-   startup, including match and permissions), then verify:</li>
+<li>更新证书/密钥挂载或<code>AV_EDGE_TLS_CERT</code> / <code>AV_EDGE_TLS_KEY</code>
+   路径，然后重新启动边缘服务。</li>
+<li>确认服务启动（证书/密钥对在
+   启动，包括匹配和权限），然后验证：</li>
 </ol>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>curl --cacert &lt;ca-bundle&gt; https://127.0.0.1:8000/api/v1/health/live
 </code></pre></div>
-<p>and confirm the presented certificate is the new one.
-5. Confirm WebSocket connections still authenticate (<code>/api/v1/ws/runtime</code>)
-   from the dashboard and that uploads still reach the central endpoint.</p>
-<h2 id="rotation-procedure-upstream-factory-proxy">Rotation Procedure (upstream factory proxy)<a class="headerlink" href="#rotation-procedure-upstream-factory-proxy" title="Permanent link">&para;</a></h2>
+<p>并确认所提供的证书是新证书。
+5. 确认 WebSocket 连接仍进行身份验证 (<code>/api/v1/ws/runtime</code>)
+   从仪表板，上传仍然到达中央端点。</p>
+<h2 id="rotation-procedure-upstream-factory-proxy">轮换流程（上游工厂代理）<a class="headerlink" href="#rotation-procedure-upstream-factory-proxy" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Follow the customer proxy certificate rotation procedure; the edge service
-   configuration does not change.</li>
-<li>Confirm the proxy forwards <code>X-Forwarded-Proto</code> and that the dashboard and
-   WebSocket URLs use <code>https:</code>/<code>wss:</code> as documented.</li>
+<li>遵循客户代理证书轮换程序；边缘服务
+   配置不变。</li>
+<li>确认代理转发 <code>X-Forwarded-Proto</code> 并且仪表板和
+   WebSocket URL 按照文档使用 <code>https:</code>/<code>wss:</code>。</li>
 </ol>
 <h2 id="exit-criteria">退出标准<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
-<p>Health/live returns over TLS with the new certificate, WebSocket and REST
-authentication work, uploads succeed, and the old certificate no longer
-validates.</p>
+<p>Health/live 通过 TLS 使用新证书、WebSocket 和 REST 返回
+身份验证工作，上传成功，旧证书不再有效
+验证。</p>
 <h2 id="related">有关的<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../06-repeated-container-restart/">Repeated Container Restart</a></li>

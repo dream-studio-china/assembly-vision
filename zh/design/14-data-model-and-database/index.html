@@ -905,7 +905,7 @@
   <a href="#143-canonical-pydantic-2-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.3 Canonical Pydantic 2 Models
+        14.3 规范 Pydantic 2 模型
       
     </span>
   </a>
@@ -928,7 +928,7 @@
   <a href="#1441-api-supporting-schema-registry" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.4.1 支持模式注册表的 API
+        14.4.1 API Supporting Schema Registry
       
     </span>
   </a>
@@ -966,7 +966,7 @@
   <a href="#147-entity-relationships" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.7 实体关系
+        14.7 Entity Relationships
       
     </span>
   </a>
@@ -1610,7 +1610,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1806,7 +1806,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2768,7 +2768,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3131,7 +3131,7 @@
   <a href="#143-canonical-pydantic-2-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.3 Canonical Pydantic 2 Models
+        14.3 规范 Pydantic 2 模型
       
     </span>
   </a>
@@ -3154,7 +3154,7 @@
   <a href="#1441-api-supporting-schema-registry" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.4.1 支持模式注册表的 API
+        14.4.1 API Supporting Schema Registry
       
     </span>
   </a>
@@ -3192,7 +3192,7 @@
   <a href="#147-entity-relationships" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14.7 实体关系
+        14.7 Entity Relationships
       
     </span>
   </a>
@@ -3298,64 +3298,64 @@
 
 <h1 id="14-data-model-and-database">14. 数据模型和数据库<a class="headerlink" href="#14-data-model-and-database" title="Permanent link">&para;</a></h1>
 <h2 id="141-purpose-and-scope">14.1 目的和范围<a class="headerlink" href="#141-purpose-and-scope" title="Permanent link">&para;</a></h2>
-<p>本文档定义了规范的 AssemblyVision 域模型以及单独的边缘和中央持久性模式。边缘数据库是一个针对不间断检查和上传恢复进行优化的操作存储。中央 PostgreSQL 数据库是用于车队配置、同步检查历史记录、审查和审计的记录系统。</p>
+<p>This document defines the canonical AssemblyVision domain models and the separate edge and central persistence schemas. The edge database is an operational store optimized for uninterrupted inspection and upload recovery. The central PostgreSQL database is the system of record for fleet configuration, synchronized inspection history, review, and audit.</p>
 <blockquote>
-<p><strong>M1 实现边界。</strong> 在 M1 只读里程碑 (ADR-012) 中
-边缘 SQLite 数据库是 CLI 的 <strong>可重建读取投影</strong>
-<code>inspection.json</code>捆绑包，非权威运营商城描述
-下面。它可以从同一个包中删除和重建，它不是
-完成/发件箱存储，其模式尚未携带唯一的
-约束、产品配置列或上传所需的租约
-生产设计。权威商店与上传一起搭建
-调度程序；在此之前，该设计描述的是目标，而不是当前
-实施（AUDIT-001）。</p>
+<p><strong>M1 implementation boundary.</strong> In the M1 read-only milestone (ADR-012) the
+edge SQLite database is a <strong>rebuildable read projection</strong> of the CLI
+<code>inspection.json</code> bundles, not the authoritative operational store described
+below. It can be deleted and rebuilt from the same bundles, it is not the
+completion/outbox store, and its schema does not yet carry the unique
+constraints, product-configuration column, or upload leases required by the
+production design. The authoritative store is built together with the upload
+scheduler; until then this design describes the target, not the current
+implementation (AUDIT-001).</p>
 </blockquote>
-<p>相关文档：<a href="../15-rest-api-and-events/">REST API and Events</a>、<a href="../16-edge-dashboard/">Edge Dashboard</a>、<a href="../17-central-admin-dashboard/">Central Admin Dashboard</a>和<a href="../19-training-and-evaluation/">Training and Evaluation</a>。</p>
+<p>Related documents: <a href="../15-rest-api-and-events/">REST API and Events</a>, <a href="../16-edge-dashboard/">Edge Dashboard</a>, <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a>, and <a href="../19-training-and-evaluation/">Training and Evaluation</a>.</p>
 <h2 id="142-data-conventions">14.2 数据约定<a class="headerlink" href="#142-data-conventions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>关注</th>
-<th>大会</th>
+<th>Concern</th>
+<th>Convention</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>标识符</td>
-<td>应用程序生成的 UUID；新记录首选 UUIDv7。切勿重复使用数据库序列作为同步标识。</td>
+<td>Identifiers</td>
+<td>Application-generated UUIDs; UUIDv7 is preferred for new records. Never reuse a database sequence as a synchronization identity.</td>
 </tr>
 <tr>
-<td>时间</td>
-<td>UTC、API 中的时区感知 ISO 8601； <code>TIMESTAMPTZ</code> 集中； SQLite 中的 UTC 文本或整数纪元。分别记录设备捕获时间和中心接收时间。</td>
+<td>Time</td>
+<td>UTC, timezone-aware ISO 8601 at APIs; <code>TIMESTAMPTZ</code> centrally; UTC text or integer epoch in SQLite. Record device capture time and central receive time separately.</td>
 </tr>
 <tr>
-<td>坐标</td>
-<td>像素空间 <code>xyxy</code>，原点位于左上角，右/下边界除外。包括源图像尺寸。</td>
+<td>Coordinates</td>
+<td>Pixel-space <code>xyxy</code>, origin at the upper-left, right/bottom bounds exclusive. Include source image dimensions.</td>
 </tr>
 <tr>
-<td>信心</td>
-<td><code>[0, 1]</code>中的浮点数；没有证据就不是信心<code>0</code>。</td>
+<td>Confidence</td>
+<td>Floating point in <code>[0, 1]</code>; absence of evidence is not confidence <code>0</code>.</td>
 </tr>
 <tr>
-<td>决定</td>
-<td>内部<code>OK</code>、<code>NG</code>或<code>UNCERTAIN</code>； <code>UNCERTAIN</code> 始终映射到业务/物理 <code>NG</code> 路径。</td>
+<td>Decisions</td>
+<td>Internal <code>OK</code>, <code>NG</code>, or <code>UNCERTAIN</code>; <code>UNCERTAIN</code> always maps to the business/physical <code>NG</code> path.</td>
 </tr>
 <tr>
-<td>版本控制</td>
-<td>模型、产品和规则版本是每次检查时捕获的不可变标识符。</td>
+<td>Versioning</td>
+<td>Model, product, and rule versions are immutable identifiers captured on every inspection.</td>
 </tr>
 <tr>
 <td>JSON</td>
-<td>仅将 JSON 用于有界快照或不断变化的细节。查询关键值仍然是类型列。</td>
+<td>Use JSON only for bounded snapshots or evolving detail. Query-critical values remain typed columns.</td>
 </tr>
 <tr>
-<td>删除</td>
-<td>配置使用存档/软删除。检查和审计删除是受控保留操作，而不是普通的 API 删除。</td>
+<td>Deletion</td>
+<td>Configuration uses archive/soft deletion. Inspection and audit deletion is a controlled retention operation, not an ordinary API delete.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="143-canonical-pydantic-2-models">14.3 Canonical Pydantic 2 Models<a class="headerlink" href="#143-canonical-pydantic-2-models" title="Permanent link">&para;</a></h2>
-<p>这些传输/域模型独立于 SQLAlchemy 持久性类。它们构成了 FastAPI 模式的真实来源。</p>
+<h2 id="143-canonical-pydantic-2-models">14.3 规范 Pydantic 2 模型<a class="headerlink" href="#143-canonical-pydantic-2-models" title="Permanent link">&para;</a></h2>
+<p>These transport/domain models are independent of SQLAlchemy persistence classes. They form the FastAPI schema source of truth.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
@@ -3686,14 +3686,14 @@
 <a id="__codelineno-0-328" name="__codelineno-0-328" href="#__codelineno-0-328"></a>    <span class="n">reviewed_at</span><span class="p">:</span> <span class="n">datetime</span>
 <a id="__codelineno-0-329" name="__codelineno-0-329" href="#__codelineno-0-329"></a>    <span class="n">revision</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
 </code></pre></div>
-<p>上面的模型是<strong>中央</strong>审查记录（用户FK，修订链）。的
-边缘本地审查记录（ADR-016）是一个独特的仅附加模型：它存储
-调用者提供的 <code>reviewer</code> 字符串，五值
-<code>ReviewDisposition</code>/<code>ComponentCorrectionState</code> 枚举，以及 <code>supersedes_review_id</code>
-用于链接，并保留在边缘 <code>review_records</code> 表中（第 14.5 节）。</p>
-<p>15 个必需的公共模型是 <code>BoundingBox</code>、<code>Detection</code>、<code>FrameQuality</code>、<code>ProductDetection</code>、<code>ROIResult</code>、<code>ComponentDetection</code>、<code>AggregatedComponentEvidence</code>、<code>InspectionDecision</code>、<code>InspectionRecord</code>、<code>UploadTask</code>、<code>DeviceStatus</code>、<code>ProductConfiguration</code>、<code>RuleConfiguration</code>、<code>ModelManifest</code> 和 <code>ReviewRecord</code>。条形码、分辨率、生命周期、媒体、数据集、指标和校正类型支持值对象，并且仍然是生成的 API 合约的一部分。</p>
+<p>The model above is the <strong>central</strong> review record (user FK, revision chain). The
+edge-local review record (ADR-016) is a distinct append-only model: it stores a
+caller-supplied <code>reviewer</code> string, the five-value
+<code>ReviewDisposition</code>/<code>ComponentCorrectionState</code> enums, and <code>supersedes_review_id</code>
+for chaining, and is persisted in the edge <code>review_records</code> table (§14.5).</p>
+<p>The 15 required public models are <code>BoundingBox</code>, <code>Detection</code>, <code>FrameQuality</code>, <code>ProductDetection</code>, <code>ROIResult</code>, <code>ComponentDetection</code>, <code>AggregatedComponentEvidence</code>, <code>InspectionDecision</code>, <code>InspectionRecord</code>, <code>UploadTask</code>, <code>DeviceStatus</code>, <code>ProductConfiguration</code>, <code>RuleConfiguration</code>, <code>ModelManifest</code>, and <code>ReviewRecord</code>. Barcode, resolution, lifecycle, media, dataset, metric, and correction types are supporting value objects and are still part of the generated API contract.</p>
 <h2 id="144-matching-typescript-types">14.4 匹配 TypeScript 类型<a class="headerlink" href="#144-matching-typescript-types" title="Permanent link">&para;</a></h2>
-<p>这些界面显示了预期生成的形状。前端应该导入生成的类型，而不是手动维护此块。 UUID 和日期时间在应用程序边界仍然是品牌别名，因为 JSON 携带字符串。</p>
+<p>These interfaces show the expected generated shape. Frontends should import generated types, not maintain this block manually. UUIDs and date-times remain branded aliases at application boundaries because JSON carries strings.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">export</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">UUID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">export</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">ISODateTime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">export</span><span class="w"> </span><span class="kr">type</span><span class="w"> </span><span class="nx">InternalDecision</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;OK&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;NG&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;UNCERTAIN&quot;</span><span class="p">;</span>
@@ -3729,49 +3729,49 @@
 <a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">ComponentCorrection</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">component_code</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="nx">state</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;PRESENT&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;MISSING&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;UNCERTAIN&quot;</span><span class="w"> </span><span class="p">}</span>
 <a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">ReviewRecord</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">review_id</span><span class="o">:</span><span class="w"> </span><span class="kt">UUID</span><span class="p">;</span><span class="w"> </span><span class="nx">inspection_id</span><span class="o">:</span><span class="w"> </span><span class="kt">UUID</span><span class="p">;</span><span class="w"> </span><span class="nx">reviewer_user_id</span><span class="o">:</span><span class="w"> </span><span class="kt">UUID</span><span class="p">;</span><span class="w"> </span><span class="nx">original_internal_decision</span><span class="o">:</span><span class="w"> </span><span class="kt">InternalDecision</span><span class="p">;</span><span class="w"> </span><span class="nx">original_business_result</span><span class="o">:</span><span class="w"> </span><span class="kt">BusinessResult</span><span class="p">;</span><span class="w"> </span><span class="nx">reviewed_disposition</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;CONFIRMED_OK&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;CONFIRMED_NG&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;REINSPECT&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;INCONCLUSIVE&quot;</span><span class="p">;</span><span class="w"> </span><span class="nx">component_corrections</span><span class="o">:</span><span class="w"> </span><span class="kt">ComponentCorrection</span><span class="p">[];</span><span class="w"> </span><span class="nx">reason_code</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="nx">comment</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w"> </span><span class="nx">reviewed_at</span><span class="o">:</span><span class="w"> </span><span class="kt">ISODateTime</span><span class="p">;</span><span class="w"> </span><span class="nx">revision</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
-<h3 id="1441-api-supporting-schema-registry">14.4.1 支持模式注册表的 API<a class="headerlink" href="#1441-api-supporting-schema-registry" title="Permanent link">&para;</a></h3>
-<p><a href="../15-rest-api-and-events/">REST API and Events</a> 中的每个命名模式都必须是类型化的 Pydantic
-OpenAPI 中的模型。最小注册表是：</p>
+<h3 id="1441-api-supporting-schema-registry">14.4.1 API Supporting Schema Registry<a class="headerlink" href="#1441-api-supporting-schema-registry" title="Permanent link">&para;</a></h3>
+<p>Every named schema in <a href="../15-rest-api-and-events/">REST API and Events</a> must be a typed Pydantic
+model in OpenAPI. The minimum registry is:</p>
 <table>
 <thead>
 <tr>
-<th>模式家族</th>
-<th>所需型号</th>
+<th>Schema family</th>
+<th>Required models</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>错误和分页</td>
-<td><code>Problem</code>、<code>ProblemFieldError</code>、<code>Page[T]</code>、不透明游标元数据</td>
+<td>Errors and pagination</td>
+<td><code>Problem</code>, <code>ProblemFieldError</code>, <code>Page[T]</code>, opaque cursor metadata</td>
 </tr>
 <tr>
-<td>运行时</td>
-<td><code>CameraState</code>、<code>InspectionRuntimeState</code>、<code>OperationAccepted</code>、<code>EffectiveConfiguration</code>、<code>ValidationResult</code></td>
+<td>Runtime</td>
+<td><code>CameraState</code>, <code>InspectionRuntimeState</code>, <code>OperationAccepted</code>, <code>EffectiveConfiguration</code>, <code>ValidationResult</code></td>
 </tr>
 <tr>
-<td>检验查询</td>
-<td><code>InspectionSummary</code>、<code>CentralInspectionDetail</code>、<code>MediaMetadata</code></td>
+<td>Inspection queries</td>
+<td><code>InspectionSummary</code>, <code>CentralInspectionDetail</code>, <code>MediaMetadata</code></td>
 </tr>
 <tr>
-<td>食入</td>
-<td><code>UploadReceipt</code>、<code>MediaUploadInitiate</code>、<code>MediaUploadComplete</code>、<code>DeviceEventBatch</code>、每件收据</td>
+<td>Ingestion</td>
+<td><code>UploadReceipt</code>, <code>MediaUploadInitiate</code>, <code>MediaUploadComplete</code>, <code>DeviceEventBatch</code>, per-item receipt</td>
 </tr>
 <tr>
-<td>配置</td>
-<td><code>ConfigurationCandidate</code>、<code>LocalOverrides</code>、<code>DesiredConfiguration</code>、分配/验证/激活确认</td>
+<td>Configuration</td>
+<td><code>ConfigurationCandidate</code>, <code>LocalOverrides</code>, <code>DesiredConfiguration</code>, assignment/validation/activation acknowledgement</td>
 </tr>
 <tr>
-<td>行政</td>
-<td>输入站点、线路、设备、用户、仪表板、报告和审核请求/响应预测</td>
+<td>Administration</td>
+<td>typed site, line, device, user, dashboard, report, and audit request/response projections</td>
 </tr>
 </tbody>
 </table>
-<p><code>Problem</code> 使用 API 合约中的 <code>application/problem+json</code> 字段。请求模型保留
-<code>extra="forbid"</code>； WebSocket 事件负载消费者允许在同一事件负载中添加未知字段
-架构版本。事件 <code>sequence</code> 对于 <code>(source_id, channel)</code> 是单调的，并且仅当
-源身份变更。</p>
+<p><code>Problem</code> uses the <code>application/problem+json</code> fields in the API contract. Request models retain
+<code>extra="forbid"</code>; WebSocket event payload consumers allow unknown additive fields within the same
+schema version. Event <code>sequence</code> is monotonic per <code>(source_id, channel)</code> and resets only when the
+source identity changes.</p>
 <h2 id="145-edge-schema">14.5 边缘模式<a class="headerlink" href="#145-edge-schema" title="Permanent link">&para;</a></h2>
-<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份简短的写入交易；媒体字节保留在文件系统中。</p>
+<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份短写交易；媒体字节保留在文件系统中。</p>
 <table>
 <thead>
 <tr>
@@ -3824,7 +3824,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>rule_installations</code></td>
 <td><code>rule_version_id</code> PK、产品版本 ID、文档 JSON、校验和、状态、安装/激活次数</td>
-<td>激活验证兼容的型号类别和产品版本。</td>
+<td>激活验证兼容的模型类和产品版本。</td>
 </tr>
 <tr>
 <td><code>review_records</code></td>
@@ -3842,7 +3842,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_device_events_time</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">device_events</span><span class="p">(</span><span class="n">occurred_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
 </code></pre></div>
 <h2 id="146-central-schema">14.6 中心模式<a class="headerlink" href="#146-central-schema" title="Permanent link">&para;</a></h2>
-<p>PostgreSQL 拥有租户隔离和全局历史记录。每个租户拥有的行都带有 <code>organization_id</code>；即使稍后启用行级安全性，存储库查询也必须限定其范围。</p>
+<p>PostgreSQL 拥有租户隔离和全局历史记录。每个租户拥有的行都带有 <code>organization_id</code>；即使稍后启用行级安全性，存储库查询也必须对其进行范围限制。</p>
 <table>
 <thead>
 <tr>
@@ -3900,7 +3900,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>inspections</code></td>
 <td>UUID PK 匹配边缘 ID、组织/设备 FK、设备序列、生命周期/时间、条形码/产品分辨率、内部决策、业务结果、应用程序/产品模型/组件模型/规则版本和校验和、延迟、接收时间</td>
-<td><code>UNIQUE(device_id, device_sequence)</code>;保留准确的运行时版本。</td>
+<td><code>UNIQUE(device_id, device_sequence)</code>；保留准确的运行时版本。</td>
 </tr>
 <tr>
 <td><code>inspection_components</code></td>
@@ -3934,25 +3934,25 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 </tbody>
 </table>
-<p>仅当测量的数量证明其合理性时，才对 <code>inspections</code>、<code>device_events</code> 和 <code>audit_logs</code> 使用每月范围分区。过早的分区会使外键和迁移变得复杂。</p>
-<h2 id="147-entity-relationships">14.7 实体关系<a class="headerlink" href="#147-entity-relationships" title="Permanent link">&para;</a></h2>
+<p>仅在测量的数量证明其合理性后，才对 <code>inspections</code>、<code>device_events</code> 和 <code>audit_logs</code> 使用每月范围分区。过早的分区会使外键和迁移变得复杂。</p>
+<h2 id="147-entity-relationships">14.7 Entity Relationships<a class="headerlink" href="#147-entity-relationships" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>erDiagram
     ORGANIZATION ||--o{ SITE :包含
     SITE ||--o{ PRODUCTION_LINE :包含
     PRODUCTION_LINE ||--o{ DEVICE :运作
-    ORGANIZATION ||--o{ USER :has
+    ORGANIZATION ||--o{ USER :有
     USER ||--o{ USER_ROLE :收到
     ROLE ||--o{ USER_ROLE :赠款
-    ORGANIZATION ||--o{ PRODUCT :owns
+    ORGANIZATION ||--o{ PRODUCT :拥有
     PRODUCT ||--o{ PRODUCT_VERSION :版本
     PRODUCT_VERSION ||--o{ RULE_VERSION :检查者
     RULE ||--o{ RULE_VERSION :版本
     MODEL_PACKAGE ||--o{ MODEL_VERSION :版本
     DEVICE ||--o{ INSPECTION :产生
     PRODUCT_VERSION ||--o{ INSPECTION :分类
-    RULE_VERSION ||--o{ INSPECTION :评估
+    RULE_VERSION ||--o{ INSPECTION :evaluates
     MODEL_VERSION ||--o{ INSPECTION :运行
-    INSPECTION ||--o{ INSPECTION_COMPONENT :包含
+    INSPECTION ||--o{ INSPECTION_COMPONENT :contains
     INSPECTION ||--o{ INSPECTION_MEDIA :有
     INSPECTION ||--o{ REVIEW_RECORD :评论者
     DEVICE ||--o{ DEVICE_EVENT :发出

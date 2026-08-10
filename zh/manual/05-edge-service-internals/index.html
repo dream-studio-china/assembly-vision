@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1554,7 +1554,7 @@
   <a href="#config-loading-and-validation-gates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        配置加载和验证门
+        Config loading and validation gates
       
     </span>
   </a>
@@ -1712,7 +1712,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2674,7 +2674,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3037,7 +3037,7 @@
   <a href="#config-loading-and-validation-gates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        配置加载和验证门
+        Config loading and validation gates
       
     </span>
   </a>
@@ -3223,7 +3223,7 @@ fsync dir → 将 staging 重命名为 <code>&lt;output&gt;/&lt;inspection_id&gt
 <code>storage_write_fault</code>，<strong>未发布</strong> <code>inspection.completed</code> 事件。
 成功 → 发布 <code>inspection.completed</code>
 <code>{inspection_id, instance_id, business_result, internal_decision}</code>。</p>
-<h2 id="config-loading-and-validation-gates">配置加载和验证门<a class="headerlink" href="#config-loading-and-validation-gates" title="Permanent link">&para;</a></h2>
+<h2 id="config-loading-and-validation-gates">Config loading and validation gates<a class="headerlink" href="#config-loading-and-validation-gates" title="Permanent link">&para;</a></h2>
 <p><code>config.py</code>：
 - <code>load_pipeline_config</code> → <code>_parse_pipeline_doc</code>：未知的顶级键
   被拒绝； <code>product_detection</code>键<code>{model_version, confidence_threshold
@@ -3239,7 +3239,7 @@ fsync dir → 将 staging 重命名为 <code>&lt;output&gt;/&lt;inspection_id&gt
   <code>_register_rule_identity</code>：进程本地注册表键控
   <code>(rule_id, rule_version)</code> 反对规范 JSON 的 SHA-256；重新加载
   相同身份不同内容→<code>ConfigError</code>；然后是耐用的
-  回调到 SQLite <code>rule_identities</code>（如果不匹配则为 <code>RepositoryError</code>）。
+  回调到 SQLite <code>rule_identities</code> （<code>RepositoryError</code> 不匹配时）。
 - <code>load_edge_config</code>：每个实例的门 - 唯一的<code>instance_id</code>； <code>device_id</code>
   解析为 UUID；相机源类型特定的必填字段； <code>fps &gt; 0</code>；
   <code>reconnect.maximum_delay_ms &gt;= initial_delay_ms</code>； <code>gige-vision</code> 需要

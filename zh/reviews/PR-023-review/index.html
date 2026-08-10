@@ -27,7 +27,7 @@
     
     
       
-        <title>PR-023 Review: Runtime and Live Event Channel (E4) - AssemblyVision</title>
+        <title>PR-023 评论：运行时和现场事件频道 (E4) - AssemblyVision</title>
       
     
     
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PR-023 Review: Runtime and Live Event Channel (E4)
+              PR-023 评论：运行时和现场事件频道 (E4)
             
           </span>
         </div>
@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2959,7 +2959,7 @@
   <a href="#31-resolution-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1 Resolution Status
+        3.1 解析状态
       
     </span>
   </a>
@@ -3069,12 +3069,12 @@
   
 
 
-<h1 id="pr-023-review-runtime-and-live-event-channel-e4">PR-023 Review: Runtime and Live Event Channel (E4)<a class="headerlink" href="#pr-023-review-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h1>
+<h1 id="pr-023-review-runtime-and-live-event-channel-e4">PR-023 评论：运行时和现场事件频道 (E4)<a class="headerlink" href="#pr-023-review-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h1>
 <h2 id="1-review-decision">1. 审查决定<a class="headerlink" href="#1-review-decision" title="Permanent link">&para;</a></h2>
 <p><strong>状态：已解决</strong></p>
 <p>PR #23 具有预期的 E4 结构：瞬态服务器端运行时事件，
 显式模拟触发接缝，以及校验和/设备键控共享模型
-注册表。实施正确地保持检查持久性领先
+注册表。实施正确地保持检查持续性领先
 <code>inspection.completed</code> 发布并序列化共享的推理
 超解预测器。</p>
 <p>初步审查发现了三个阻止运行时通道的 P1 问题
@@ -3119,7 +3119,7 @@
 <li><code>docs/design/15-rest-api-and-events.md:157-160</code></li>
 </ul>
 <p><strong>问题</strong></p>
-<p>对于支持的跨域开发设置，<code>VITE_API_BASE_URL</code> 是
+<p>对于支持的跨源开发设置，<code>VITE_API_BASE_URL</code> 是
 边缘原点，例如 <code>http://edge-host:8000</code>。 <code>runtimeWsUrl()</code> 将其转换为
 <code>ws://edge-host:8000/ws/runtime</code>，但服务器端点是
 <code>/api/v1/ws/runtime</code>；连接在身份验证之前收到 404
@@ -3128,7 +3128,7 @@
 <code>api_token</code>已配置。现有的跨源流有意保留
 内存中的查看者承载令牌并将其添加到 <code>fetch</code> 请求中。浏览器
 <code>WebSocket</code> 无法设置 <code>Authorization</code> 标头，跨域模式不会
-接收同源会话 cookie，并且禁止查询字符串令牌。
+接收同源会话 cookie，并且禁止查询字符串标记。
 因此，服务器使用 <code>4401</code> 关闭每个此类套接字。</p>
 <p>这使得 E4 实时更新路径在文档中不可用
 受令牌保护的 Vite-to-edge 开发配置。也违反了
@@ -3268,7 +3268,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <li>仪表板协调测试证明任一模式都会刷新最终结果
   REST 记录并且从不将开始事件视为已完成的决策。</li>
 </ul>
-<h2 id="31-resolution-status">3.1 Resolution Status<a class="headerlink" href="#31-resolution-status" title="Permanent link">&para;</a></h2>
+<h2 id="31-resolution-status">3.1 解析状态<a class="headerlink" href="#31-resolution-status" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3306,7 +3306,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <tr>
 <td>PR23-F05</td>
 <td>P2</td>
-<td><code>RuntimeEventBus</code> 跟踪已发布的事件（总数/按类型）、慢速消费者断开连接和传递失败； <code>GET /api/v1/ws/runtime/stats</code> 公开经过身份验证的快照</td>
+<td><code>RuntimeEventBus</code> 跟踪已发布的事件（总数/按类型）、慢速消费者断开连接和交付失败； <code>GET /api/v1/ws/runtime/stats</code> 公开经过身份验证的快照</td>
 <td><code>test_stats_count_events_and_slow_consumers</code>、<code>test_delivery_failures_are_counted</code>、<code>test_runtime_stats_endpoint_requires_viewer</code></td>
 </tr>
 </tbody>

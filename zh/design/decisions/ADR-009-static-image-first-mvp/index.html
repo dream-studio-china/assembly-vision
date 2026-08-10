@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2981,7 +2981,7 @@
   <a href="#7-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. 开放式问题和需要验证
+        7. Open Questions and Validation Required
       
     </span>
   </a>
@@ -2992,7 +2992,7 @@
   <a href="#8-links" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Links
+        8. 链接
       
     </span>
   </a>
@@ -3021,43 +3021,43 @@
 
 <h1 id="adr-009-static-image-first-mvp">ADR-009：静态图像优先 MVP<a class="headerlink" href="#adr-009-static-image-first-mvp" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
-<p>Accepted; superseded in part by <a href="../ADR-011-labeled-train-and-inspect-mvp/">ADR-011: Labeled Train-and-Inspect MVP</a>.</p>
+<p>已接受；部分被 <a href="../ADR-011-labeled-train-and-inspect-mvp/">ADR-011: Labeled Train-and-Inspect MVP</a> 取代。</p>
 <h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
-<p>The end system requires camera capture, live video, product windows, barcode, temporal aggregation, persistence, synchronization, and Web applications. Implementing all of these before validating core product/ROI/component/rule behavior would combine model, hardware, timing, state, and network uncertainty and make failures difficult to isolate.</p>
+<p>终端系统需要摄像头捕捉、实时视频、产品窗口、条形码、时间聚合、持久性、同步和 Web 应用程序。在验证核心产品/投资回报率/组件/规则行为之前实施所有这些将结合模型、硬件、时序、状态和网络不确定性，并使故障难以隔离。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>Build a static-image MVP first. It reads one image or a folder, detects the product, generates and maps the ROI, detects components, evaluates a versioned deterministic rule, outputs <code>OK</code> or <code>NG</code> with reasons, and saves JSON, ROI, and annotated evidence through a CLI.</p>
-<p>The MVP excludes camera SDK integration, real-time video, temporal aggregation, central services, full dashboards, authentication, PLC/MES integration, and automated retraining. Its interfaces and schemas should be reusable by later live acquisition rather than becoming an alternate production pipeline. The original training exclusion is superseded by ADR-011; all other exclusions remain in force.</p>
+<p>首先构建静态图像 MVP。它读取一张图像或一个文件夹、检测产品、生成和映射 ROI、检测组件、评估版本化确定性规则、输出带有原因的 <code>OK</code> 或 <code>NG</code>，并通过 CLI 保存 JSON、ROI 和带注释的证据。</p>
+<p>MVP 不包括摄像头 SDK 集成、实时视频、时间聚合、中央服务、完整仪表板、身份验证、PLC/MES 集成和自动再培训。它的接口和模式应该可以通过以后的实时采集来重用，而不是成为替代的生产管道。原来的训练排除被ADR-011取代；所有其他排除条款仍然有效。</p>
 <h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
-<p>This decision governs initial implementation sequence, not the final operational architecture. Static files also remain valuable as deterministic regression fixtures after live integration.</p>
+<p>该决定控制初始实施顺序，而不是最终的操作架构。实时集成后，静态文件作为确定性回归装置仍然很有价值。</p>
 <h2 id="5-consequences">5. 后果<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
 <h3 id="51-positive">5.1 正面<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Validates the core two-stage and rule boundaries quickly.</li>
-<li>Produces inspectable deterministic artifacts for debugging and model evaluation.</li>
-<li>Decouples vision/data issues from camera/window/network issues.</li>
-<li>Establishes tests and schemas before asynchronous behavior is added.</li>
+<li>快速验证核心两阶段和规则边界。</li>
+<li>生成可检查的确定性工件以进行调试和模型评估。</li>
+<li>将视觉/数据问题与相机/窗口/网络问题分离。</li>
+<li>在添加异步行为之前建立测试和模式。</li>
 </ul>
 <h3 id="52-negative-and-trade-offs">5.2 负面和权衡<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Does not validate frame timing, camera SDK, motion blur, barcode, or product identity windows.</li>
-<li>Single-image results do not demonstrate temporal system robustness.</li>
-<li>Prototype success can be misinterpreted as production acceptance unless limitations are explicit.</li>
-<li>Some interfaces will evolve after real camera constraints are known.</li>
+<li>不验证帧时序、相机 SDK、运动模糊、条形码或产品标识窗口。</li>
+<li>单图像结果不能证明时间系统的鲁棒性。</li>
+<li>原型成功可能会被误解为生产验收，除非有明确的限制。</li>
+<li>在了解真实的相机限制后，一些界面将会演变。</li>
 </ul>
 <h2 id="6-alternatives">6.替代方案<a class="headerlink" href="#6-alternatives" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Live camera first:</strong> rejected because hardware/timing failures obscure basic model and rule behavior.</li>
-<li><strong>Central/dashboard first:</strong> rejected because it does not reduce the core inspection risk.</li>
-<li><strong>Model notebook only:</strong> rejected because it omits production-style schemas, rules, evidence, CLI, and tests.</li>
-<li><strong>Simulated video first:</strong> useful after static flow, but unnecessary for the static-image objective.</li>
+<li><strong>首先是实时摄像头：</strong> 被拒绝，因为硬件/计时故障模糊了基本模型和规则行为。</li>
+<li><strong>首先是中央/仪表板：</strong> 被拒绝，因为它不会降低核心检查风险。</li>
+<li><strong>仅限模型笔记本：</strong> 被拒绝，因为它省略了生产风格的架构、规则、证据、CLI 和测试。</li>
+<li><strong>首先模拟视频：</strong> 在静态流之后有用，但对于静态图像目标来说不必要。</li>
 </ul>
-<h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="7-open-questions-and-validation-required">7. Open Questions and Validation Required<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Availability and rights for representative static production images and missing-component examples.</li>
-<li>Initial model artifacts, classes, and product rules.</li>
-<li>How MVP outputs map to the final versioned inspection schema.</li>
+<li>代表性静态生产图像和缺失组件示例的可用性和权利。</li>
+<li>初始模型工件、类和产品规则。</li>
+<li>MVP 输出如何映射到最终版本化检查模式。</li>
 </ul>
-<h2 id="8-links">8. Links<a class="headerlink" href="#8-links" title="Permanent link">&para;</a></h2>
+<h2 id="8-links">8. 链接<a class="headerlink" href="#8-links" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../25-roadmap/">Roadmap</a></li>
 <li><a href="../../22-testing-and-quality-assurance/">Testing and Quality Assurance</a></li>

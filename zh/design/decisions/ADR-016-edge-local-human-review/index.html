@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2898,7 +2898,7 @@
   <a href="#2-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 背景
+        2. Context
       
     </span>
   </a>
@@ -3000,7 +3000,7 @@
 <h1 id="adr-016-edge-local-human-review-optional">ADR-016：边缘本地人工审核（可选）<a class="headerlink" href="#adr-016-edge-local-human-review-optional" title="Permanent link">&para;</a></h1>
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
 <p>已接受</p>
-<h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
+<h2 id="2-context">2. Context<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
 <p>Design 24 将人工审查放在中央服务器上：证据上传、
 中央审查队列和仅附加处置。中央服务器没有
 尚未存在，设计 24.11 要求边缘检查和审查保持
@@ -3012,7 +3012,7 @@
 架构变更背后没有客户需求。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>人工审核是可选的和附加的。</strong> 从来不需要人工审核
+<li><strong>人工审核是可选的且是附加的。</strong> 人工审核从来都不是必需的。
    检查完成，永远不会改变 <code>InspectionRecord</code> 或其投影，
    并且不向现有检查 API 添加任何字段或端点。审查数据
    位于单独的仅附加 <code>review_records</code> 表中（迁移 0008）并且
@@ -3038,7 +3038,7 @@
    和域记录。</li>
 <li><strong>审核队列列出每个检查</strong>及其审核状态
    （<code>has_review</code>、<code>latest_disposition</code>）并支持业务结果和
-   审查了过滤器，因此最初的全 NG 推出策略和 OK 审计抽样
+   审查了过滤器，因此最初的全 NG 推出策略和 OK 审核抽样
    两者都是可表达的。 Web UI 默认为 NG/未清项目。</li>
 <li><strong>评论仅通过现有查看者凭证公开。</strong> 未来
    中央审查流程或 RBAC 是一个单独的 ADR；保留本地审核记录

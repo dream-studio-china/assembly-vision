@@ -27,7 +27,7 @@
     
     
       
-        <title>E3 管道：上传弹性 - AssemblyVision</title>
+        <title>E3 Pipeline: Upload Resilience - AssemblyVision</title>
       
     
     
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              E3 管道：上传弹性
+              E3 Pipeline: Upload Resilience
             
           </span>
         </div>
@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2937,7 +2937,7 @@
   <a href="#3-safety-invariants" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 安全不变量
+        3. Safety Invariants
       
     </span>
   </a>
@@ -2971,7 +2971,7 @@
   <a href="#e3a-bandwidth-throttling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        E3a：带宽限制
+        E3a: Bandwidth Throttling
       
     </span>
   </a>
@@ -3004,7 +3004,7 @@
   <a href="#e3d-long-outage-drain-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        E3d: Long-Outage Drain Tests
+        E3d：长时间断电排水测试
       
     </span>
   </a>
@@ -3015,7 +3015,7 @@
   <a href="#e3e-resumable-large-media-client-contract" class="md-nav__link">
     <span class="md-ellipsis">
       
-        E3e：可恢复的大媒体客户端合同
+        E3e: Resumable Large-Media Client Contract
       
     </span>
   </a>
@@ -3080,7 +3080,7 @@
   
 
 
-<h1 id="e3-pipeline-upload-resilience">E3 管道：上传弹性<a class="headerlink" href="#e3-pipeline-upload-resilience" title="Permanent link">&para;</a></h1>
+<h1 id="e3-pipeline-upload-resilience">E3 Pipeline: Upload Resilience<a class="headerlink" href="#e3-pipeline-upload-resilience" title="Permanent link">&para;</a></h1>
 <h2 id="1-purpose">1. 目的<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
 <p>使边缘上传路径在退化网络和长中心网络下具有弹性
 在不削弱边缘优先、故障安全检查合同的情况下实现停电。 E3
@@ -3112,7 +3112,7 @@ PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
 <li>静态加密、备份和安全删除义务（站点
   决策、E2 生产支持）。</li>
 </ul>
-<h2 id="3-safety-invariants">3. 安全不变量<a class="headerlink" href="#3-safety-invariants" title="Permanent link">&para;</a></h2>
+<h2 id="3-safety-invariants">3. Safety Invariants<a class="headerlink" href="#3-safety-invariants" title="Permanent link">&para;</a></h2>
 <p>在每个 E3 变更和测试中，以下不变量是强制性的：</p>
 <ol>
 <li>节流和电路开路状态绝不能丢弃、延迟提交或
@@ -3146,7 +3146,7 @@ PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
 </ul>
 <h2 id="5-delivery-pipeline">5. 交付管道<a class="headerlink" href="#5-delivery-pipeline" title="Permanent link">&para;</a></h2>
 <p>每个门都可以独立审查。</p>
-<h3 id="e3a-bandwidth-throttling">E3a：带宽限制<a class="headerlink" href="#e3a-bandwidth-throttling" title="Permanent link">&para;</a></h3>
+<h3 id="e3a-bandwidth-throttling">E3a: Bandwidth Throttling<a class="headerlink" href="#e3a-bandwidth-throttling" title="Permanent link">&para;</a></h3>
 <p><strong>实施</strong></p>
 <ul>
 <li>在<code>UploadScheduler</code>驱动中实现有界速率限制器（令牌桶）
@@ -3204,7 +3204,7 @@ PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
   返回 409/404，无突变；重试的任务会幂等地重新排出；
   重试后，收据门控保留资格不会改变。</li>
 </ul>
-<h3 id="e3d-long-outage-drain-tests">E3d: Long-Outage Drain Tests<a class="headerlink" href="#e3d-long-outage-drain-tests" title="Permanent link">&para;</a></h3>
+<h3 id="e3d-long-outage-drain-tests">E3d：长时间断电排水测试<a class="headerlink" href="#e3d-long-outage-drain-tests" title="Permanent link">&para;</a></h3>
 <p><strong>实施</strong></p>
 <ul>
 <li>添加运行长时间离线的故障注入测试（sink
@@ -3218,7 +3218,7 @@ PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
   重复，不会过早保留删除，并进行检查
   每条记录的同步达到<code>SYNCED</code>。</li>
 </ul>
-<h3 id="e3e-resumable-large-media-client-contract">E3e：可恢复的大媒体客户端合同<a class="headerlink" href="#e3e-resumable-large-media-client-contract" title="Permanent link">&para;</a></h3>
+<h3 id="e3e-resumable-large-media-client-contract">E3e: Resumable Large-Media Client Contract<a class="headerlink" href="#e3e-resumable-large-media-client-contract" title="Permanent link">&para;</a></h3>
 <p><strong>实施</strong></p>
 <ul>
 <li>记录可恢复的大媒体合同（设计13.3/13.11）：稳定

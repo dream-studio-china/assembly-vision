@@ -1392,7 +1392,7 @@
   <span class="md-ellipsis">
     
   
-    Repository Layout
+    存储库布局
   
 
     
@@ -1671,7 +1671,7 @@
   <a href="#model-manifests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        模型清单 (manifests.py)
+        Model manifests (manifests.py)
       
     </span>
   </a>
@@ -1682,7 +1682,7 @@
   <a href="#adding-a-new-component-class-no-code-changes-needed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        添加新的组件类（无需更改代码）
+        Adding a new component class (no code changes needed)
       
     </span>
   </a>
@@ -1712,7 +1712,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -2674,7 +2674,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -3070,7 +3070,7 @@
   <a href="#model-manifests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        模型清单 (manifests.py)
+        Model manifests (manifests.py)
       
     </span>
   </a>
@@ -3081,7 +3081,7 @@
   <a href="#adding-a-new-component-class-no-code-changes-needed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        添加新的组件类（无需更改代码）
+        Adding a new component class (no code changes needed)
       
     </span>
   </a>
@@ -3109,11 +3109,11 @@
 
 
 <h1 id="08-camera-sources-and-vision-core">08 — 相机源和视觉核心<a class="headerlink" href="#08-camera-sources-and-vision-core" title="Permanent link">&para;</a></h1>
-<p>图像采集、ROI 引擎和模型清单如何工作
-<code>packages/python/vision-core</code> (<code>assemblyvision_vision</code>)，以及如何添加新的
-相机来源。</p>
+<p>How image acquisition, the ROI engine, and model manifests work in
+<code>packages/python/vision-core</code> (<code>assemblyvision_vision</code>), and how to add a new
+camera source.</p>
 <h2 id="the-protocol"><code>FrameSource</code>协议<a class="headerlink" href="#the-protocol" title="Permanent link">&para;</a></h2>
-<p>每个采集源都实现此协议
+<p>Every acquisition source implements this protocol
 (<code>sources/frame_source.py</code>):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">FrameSource</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraCapabilities</span><span class="p">:</span> <span class="o">...</span>
@@ -3121,147 +3121,147 @@
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">frames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">CapturedFrame</span><span class="p">]:</span> <span class="o">...</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
 </code></pre></div>
-<p><code>CapturedFrame</code>（冻结数据类，<code>eq=False</code>）：
-<code>monotonic_ts_ns</code>（整数）、<code>wall_clock_utc</code>（日期时间）、<code>sequence</code>（整数）、
-<code>pixel_format</code> (str)、<code>status</code> (str)、<code>image</code> (PIL RGB)，以及可选
-<code>product_identity</code>和<code>multi_product</code>（由身份相关器标记）。</p>
-<p><strong>故障安全规则</strong>：读取/解码失败引发 <code>FrameStreamError</code> — 帧
-永远不会默默地跳过（ADR-013）。原始缓冲区永远不会默默无闻
-重新解释；不支持的格式在检查前失败。</p>
+<p><code>CapturedFrame</code> (frozen dataclass, <code>eq=False</code>):
+<code>monotonic_ts_ns</code> (int), <code>wall_clock_utc</code> (datetime), <code>sequence</code> (int),
+<code>pixel_format</code> (str), <code>status</code> (str), <code>image</code> (PIL RGB), plus optional
+<code>product_identity</code> and <code>multi_product</code> (stamped by the identity correlator).</p>
+<p><strong>Fail-safe rule</strong>: read/decode failures raise <code>FrameStreamError</code> — frames
+are never silently skipped (ADR-013). Raw buffers are never silently
+reinterpreted; unsupported formats fail before inspection.</p>
 <h2 id="implemented-sources">实施来源<a class="headerlink" href="#implemented-sources" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>来源</th>
-<th>班级</th>
-<th>配置字段</th>
-<th>笔记</th>
+<th>Source</th>
+<th>Class</th>
+<th>Config fields</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>文件夹</td>
+<td>folder</td>
 <td><code>FolderSource</code></td>
-<td><code>path</code>、<code>loop</code>、<code>fps</code></td>
-<td>确定性排序迭代；支持 <code>.jpg .jpeg .png .bmp .tif .tiff .webp</code></td>
+<td><code>path</code>, <code>loop</code>, <code>fps</code></td>
+<td>Deterministic sorted iteration; supported <code>.jpg .jpeg .png .bmp .tif .tiff .webp</code></td>
 </tr>
 <tr>
-<td>视频</td>
+<td>video</td>
 <td><code>VideoFrameSource</code></td>
-<td><code>path</code>、<code>fps</code>、<code>loop</code></td>
-<td>OpenCV <code>VideoCapture</code>，寻找 0 进行循环</td>
+<td><code>path</code>, <code>fps</code>, <code>loop</code></td>
+<td>OpenCV <code>VideoCapture</code>, seeks to 0 to loop</td>
 </tr>
 <tr>
-<td>opencv 设备</td>
+<td>opencv-device</td>
 <td><code>OpenCVCameraSource</code></td>
-<td><code>device</code>（索引或<code>/dev/videoN</code>）、<code>fps</code>、<code>width</code>、<code>height</code>、<code>reconnect</code></td>
-<td>有界指数退避重新连接（<code>ReconnectPolicy</code> 250 ms → 10 s）；还有虚拟摄像机（v4l2loopback、OBS）</td>
+<td><code>device</code> (index or <code>/dev/videoN</code>), <code>fps</code>, <code>width</code>, <code>height</code>, <code>reconnect</code></td>
+<td>Bounded exponential backoff reconnect (<code>ReconnectPolicy</code> 250 ms → 10 s); also virtual cameras (v4l2loopback, OBS)</td>
 </tr>
 <tr>
 <td>rtsp</td>
 <td><code>RTSPFrameSource</code></td>
-<td><code>url</code> (<code>rtsp://</code>/<code>rtsps://</code>)、<code>fps</code>、<code>reconnect</code></td>
-<td>PyAV 主要 (<code>rtsp_transport=tcp</code>)，OpenCV 后备</td>
+<td><code>url</code> (<code>rtsp://</code>/<code>rtsps://</code>), <code>fps</code>, <code>reconnect</code></td>
+<td>PyAV primary (<code>rtsp_transport=tcp</code>), OpenCV fallback</td>
 </tr>
 <tr>
-<td>http 图像</td>
+<td>http-image</td>
 <td><code>HttpImageSource</code></td>
-<td><code>url</code> (<code>http(s)://</code>)、<code>fps</code>、<code>timeout_seconds</code></td>
-<td>httpx 轮询；重试瞬时传输失败，无法解码的内容导致源故障</td>
+<td><code>url</code> (<code>http(s)://</code>), <code>fps</code>, <code>timeout_seconds</code></td>
+<td>httpx polling; transient transport failures retried, undecodable content faults the source</td>
 </tr>
 <tr>
-<td>吉格视觉</td>
+<td>gige-vision</td>
 <td><code>GigEVisionFrameSource</code></td>
-<td><code>serial</code>、<code>gentl_producer</code>、<code>trigger_mode</code>、<code>pixel_format</code>、<code>exposure_us</code>、<code>gain_db</code>、<code>packet_size</code>、<code>fps</code>、<code>width</code>、<code>height</code>、<code>reconnect</code></td>
-<td>GenICam/GenTL 通过 Harvester + 供应商 <code>.cti</code>；串行绑定（从不 IP）；仅 <code>Mono8</code>/<code>RGB8</code>/<code>BGR8</code> 确定性转换；通过回读验证节点映射配置；仅限 Linux/Windows（macOS gige extra 解析为空）</td>
+<td><code>serial</code>, <code>gentl_producer</code>, <code>trigger_mode</code>, <code>pixel_format</code>, <code>exposure_us</code>, <code>gain_db</code>, <code>packet_size</code>, <code>fps</code>, <code>width</code>, <code>height</code>, <code>reconnect</code></td>
+<td>GenICam/GenTL via Harvester + vendor <code>.cti</code>; serial-bound (never IP); only <code>Mono8</code>/<code>RGB8</code>/<code>BGR8</code> convert deterministically; node-map config verified by read-back; Linux/Windows only (macOS gige extra resolves to nothing)</td>
 </tr>
 </tbody>
 </table>
-<p>惰性后端助手（<code>_opencv.py</code>、<code>_av.py</code>、<code>_harvester.py</code>）提高明确
-当可选时询问匹配 <code>vision-core[extra]</code> 时出错
-缺少依赖性。</p>
+<p>Lazy backend helpers (<code>_opencv.py</code>, <code>_av.py</code>, <code>_harvester.py</code>) raise clear
+errors asking for the matching <code>vision-core[extra]</code> when the optional
+dependency is missing.</p>
 <h2 id="factory">工厂<a class="headerlink" href="#factory" title="Permanent link">&para;</a></h2>
 <p><code>sources/factory.py</code> — <code>SourceType = Literal["folder", "video",
-"opencv-device", "rtsp", "http-image", "gige-vision"]</code>；
-<code>build_frame_source(config: FrameSourceConfig) -&gt; FrameSource</code> 验证
-每个源类型所需的字段并构造源。工厂是
-从 <code>assemblyvision_edge.config._parse_camera_source</code> 调用（边缘配置）
-和实例管道构建。</p>
+"opencv-device", "rtsp", "http-image", "gige-vision"]</code>;
+<code>build_frame_source(config: FrameSourceConfig) -&gt; FrameSource</code> validates the
+required fields per source type and constructs the source. The factory is
+called from <code>assemblyvision_edge.config._parse_camera_source</code> (edge config)
+and the instance pipeline build.</p>
 <h2 id="adding-a-new-camera-source">添加新的相机源<a class="headerlink" href="#adding-a-new-camera-source" title="Permanent link">&para;</a></h2>
 <ol>
-<li>创建实现<code>FrameSource</code>协议的<code>sources/your_source.py</code>。</li>
-<li><code>open()</code> 返回 <code>CameraCapabilities</code> （源暗淡、fps、像素格式、
-     序列号/型号/固件/GenTL 生产者（如果有）。</li>
-<li><code>frames(stop)</code> 产生带有单调 + UTC 时间戳的 <code>CapturedFrame</code>，
-     序列、暗淡、像素格式、状态、PIL RGB 图像；提高
-     <code>FrameStreamError</code> 解码失败（从不跳过）。</li>
-<li>实现有界重新连接（参见<code>ReconnectPolicy</code>）
-     <code>sources/reconnect.py</code>）。</li>
-<li>如果供应商 SDK 是可选的，则通过 <code>_your_backend.py</code> 延迟加载它
-     helper 并在 <code>pyproject.toml</code> 中添加 <code>vision-core[your-extra]</code> 额外内容
-     （镜像<code>_harvester.py</code>）。
-2.注册源类型：</li>
-<li><code>sources/factory.py</code>：添加到<code>SourceType</code>，扩展<code>build_frame_source</code>，
-     并验证必需的 <code>FrameSourceConfig</code> 字段。</li>
+<li>Create <code>sources/your_source.py</code> implementing the <code>FrameSource</code> protocol.</li>
+<li><code>open()</code> returns <code>CameraCapabilities</code> (source dims, fps, pixel format,
+     serial/model/firmware/GenTL producer where available).</li>
+<li><code>frames(stop)</code> yields <code>CapturedFrame</code>s with monotonic + UTC timestamps,
+     sequence, dims, pixel format, status, PIL RGB image; raise
+     <code>FrameStreamError</code> on decode failure (never skip).</li>
+<li>Implement bounded reconnect (see <code>ReconnectPolicy</code> in
+     <code>sources/reconnect.py</code>).</li>
+<li>If a vendor SDK is optional, load it lazily via a <code>_your_backend.py</code>
+     helper and add a <code>vision-core[your-extra]</code> extra in <code>pyproject.toml</code>
+     (mirror <code>_harvester.py</code>).</li>
+<li>Register the source type:</li>
+<li><code>sources/factory.py</code>: add to <code>SourceType</code>, extend <code>build_frame_source</code>,
+     and validate the required <code>FrameSourceConfig</code> fields.</li>
 <li><code>assemblyvision_edge/config.py</code> <code>_SOURCE_TYPES</code> + <code>_parse_camera_source</code>
-     验证以便 YAML 配置接受它。
-3.连线管道：边<code>CameraSourceManager</code>只需要一个<code>FrameSource</code>
-   — 没有其他运行时变化。</li>
-<li>在现有的<code>packages/python/vision-core/tests/</code>中添加测试
-   模式：通过注入假后端
-   <code>monkeypatch.setattr(_your_backend, "_module", FakeModule)</code>（没有真正的
-   需要硬件），并断言重新连接、停止语义、解码失败
-   故障安全和工厂验证。</li>
-<li>更新文档：设计 07，ADR-013 式决策（如果更改）
-   建筑学和本手册。</li>
+     validation so the YAML config accepts it.</li>
+<li>Wire the pipeline: the edge <code>CameraSourceManager</code> only needs a <code>FrameSource</code>
+   — no other runtime changes.</li>
+<li>Add tests in <code>packages/python/vision-core/tests/</code> following the existing
+   pattern: inject a fake backend via
+   <code>monkeypatch.setattr(_your_backend, "_module", FakeModule)</code> (no real
+   hardware needed), and assert reconnect, stop semantics, decode-failure
+   fail-safe, and factory validation.</li>
+<li>Update docs: design 07, ADR-013-style decision if the change is
+   architectural, and this manual.</li>
 </ol>
 <h2 id="roi-engine">投资回报率引擎<a class="headerlink" href="#roi-engine" title="Permanent link">&para;</a></h2>
-<p><code>roi/roi_engine.py</code>：</p>
+<p><code>roi/roi_engine.py</code>:</p>
 <ul>
-<li><code>ROIConfig</code>（冻结数据类）：<code>margin_x_ratio=0.05</code>，
-  <code>margin_y_ratio=0.05</code>、<code>min_area_pixels=250_000</code>、
-  <code>min_expanded_area_retained=0.90</code>，<code>normalize_perspective=False</code>。
-  构造函数因无效边距/区域/保留而引发 <code>ROIGenerationError</code>
-  或 <code>normalize_perspective=True</code> （不受 MVP 支持）。</li>
-<li><code>ROIEngine.generate(frame, frame_id, product_box) -&gt; GeneratedROI</code>：
-  按边距扩展 → 裁剪到框架 → 拒绝 (<code>ROI_INVALID</code>)
-  剪切区域 &lt; <code>min_area_pixels</code> 或 <code>retained_fraction &lt;
-  min_expanded_area_retained</code> → 裁剪 → 构建 <code>ROIResult</code>
-  <code>transform_full_to_roi</code>（仅翻译）。</li>
+<li><code>ROIConfig</code> (frozen dataclass): <code>margin_x_ratio=0.05</code>,
+  <code>margin_y_ratio=0.05</code>, <code>min_area_pixels=250_000</code>,
+  <code>min_expanded_area_retained=0.90</code>, <code>normalize_perspective=False</code>.
+  Constructor raises <code>ROIGenerationError</code> for invalid margins/area/retention
+  or <code>normalize_perspective=True</code> (unsupported by the MVP).</li>
+<li><code>ROIEngine.generate(frame, frame_id, product_box) -&gt; GeneratedROI</code>:
+  expand by margins → clip to frame → reject (<code>ROI_INVALID</code>) when the
+  clipped area &lt; <code>min_area_pixels</code> or <code>retained_fraction &lt;
+  min_expanded_area_retained</code> → crop → build <code>ROIResult</code> with
+  <code>transform_full_to_roi</code> (translation only).</li>
 </ul>
-<p><code>roi/geometry.py</code>（纯，无 I/O）— <code>Box</code>（xyxy + 区域）、<code>expand</code>、<code>clip</code>、
-<code>retained_fraction</code>、<code>translation_transform</code>、<code>inverse_transform</code>、
-<code>apply_transform</code>。这与使用的转换代码相同
-<code>training/prepare_components.py</code> 因此数据集准备和运行时推理共享
-精确的坐标语义。</p>
-<h2 id="model-manifests">模型清单 (<code>manifests.py</code>)<a class="headerlink" href="#model-manifests" title="Permanent link">&para;</a></h2>
+<p><code>roi/geometry.py</code> (pure, no I/O) — <code>Box</code> (xyxy + area), <code>expand</code>, <code>clip</code>,
+<code>retained_fraction</code>, <code>translation_transform</code>, <code>inverse_transform</code>,
+<code>apply_transform</code>. This is the same transform code used by
+<code>training/prepare_components.py</code> so dataset prep and runtime inference share
+exact coordinate semantics.</p>
+<h2 id="model-manifests">Model manifests (<code>manifests.py</code>)<a class="headerlink" href="#model-manifests" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>load_model_manifest(path) -&gt; ModelManifest</code>：JSON → Pydantic
-  (<code>extra="forbid"</code>)，需要<code>runtime == "ultralytics"</code>，否则<code>ConfigError</code>。</li>
-<li><code>verify_manifest_artifact(manifest, manifest_path) -&gt; Path</code>：解决
-  <strong>仅第一个工件</strong>； URI 必须是相对的（没有前导 <code>/</code>，没有 <code>://</code>
-  方案，无驱动段）；解析的路径必须保留在模型内
-  捆绑根（清单目录的父目录，符号链接安全）；文件必须存在；
-  <code>size_bytes</code> 和 SHA-256 必须匹配 — 否则 <code>ConfigError</code>。这允许
-  记录的 <code>models/manifests</code> + 同级 <code>models/weights</code> 布局。</li>
-<li><code>verify_model_class_map(names, manifest)</code>：Ultralytics <code>model.names</code> 必须
-  连续的 <code>0..n-1</code> 且在顺序上完全等于 <code>class_names</code>。</li>
+<li><code>load_model_manifest(path) -&gt; ModelManifest</code>: JSON → Pydantic
+  (<code>extra="forbid"</code>), requires <code>runtime == "ultralytics"</code>, else <code>ConfigError</code>.</li>
+<li><code>verify_manifest_artifact(manifest, manifest_path) -&gt; Path</code>: resolves the
+  <strong>first artifact only</strong>; URI must be relative (no leading <code>/</code>, no <code>://</code>
+  scheme, no drive segments); resolved path must stay inside the model
+  bundle root (manifest directory's parent, symlink-safe); file must exist;
+  <code>size_bytes</code> and SHA-256 must match — else <code>ConfigError</code>. This permits the
+  documented <code>models/manifests</code> + sibling <code>models/weights</code> layout.</li>
+<li><code>verify_model_class_map(names, manifest)</code>: Ultralytics <code>model.names</code> must
+  be contiguous <code>0..n-1</code> and exactly equal <code>class_names</code> in order.</li>
 <li><code>model_version_label(task, semver)</code>: <code>product-yolo-&lt;semver&gt;</code> /
-  <code>component-yolo-&lt;semver&gt;</code>； <code>manifest_model_version(manifest)</code> 推导出
-  用于 <code>pipeline.yaml</code> <code>model_version</code> 声明的规范标签。</li>
+  <code>component-yolo-&lt;semver&gt;</code>; <code>manifest_model_version(manifest)</code> derives the
+  canonical label used for <code>pipeline.yaml</code> <code>model_version</code> declaration.</li>
 </ul>
-<h2 id="adding-a-new-component-class-no-code-changes-needed">添加新的组件类（无需更改代码）<a class="headerlink" href="#adding-a-new-component-class-no-code-changes-needed" title="Permanent link">&para;</a></h2>
-<p>新的组件类是<strong>配置数据</strong>，而不是代码：</p>
+<h2 id="adding-a-new-component-class-no-code-changes-needed">Adding a new component class (no code changes needed)<a class="headerlink" href="#adding-a-new-component-class-no-code-changes-needed" title="Permanent link">&para;</a></h2>
+<p>A new component class is <strong>configuration data</strong>, not code:</p>
 <ol>
-<li>组件检测器必须经过培训（参见
-   <code>09-training-and-datasets.md</code>）及其清单 <code>class_names</code> 已更新。
-2.<code>pipeline.yaml</code>→<code>component_detection.components.&lt;code&gt;:
-   {observation_threshold: &lt;t&gt;}</code>。</li>
-<li><code>product-rule.yaml</code> → 添加<code>&lt;code&gt;: {expected_count: 1}</code>
-   <code>required_components</code>，并确保清单标签位于
-   <code>compatible_component_model_versions</code>。</li>
-<li>验证：管道加载拒绝从任一管道中丢失的组件
-   配置或清单；在加载时检查规则/组件兼容性。</li>
+<li>The component detector must have been trained on it (see
+   <code>09-training-and-datasets.md</code>) and its manifest <code>class_names</code> updated.</li>
+<li><code>pipeline.yaml</code> → <code>component_detection.components.&lt;code&gt;:
+   {observation_threshold: &lt;t&gt;}</code>.</li>
+<li><code>product-rule.yaml</code> → add <code>&lt;code&gt;: {expected_count: 1}</code> to
+   <code>required_components</code>, and ensure the manifest label is in
+   <code>compatible_component_model_versions</code>.</li>
+<li>Validate: the pipeline load rejects components missing from either the
+   config or the manifest; rule/component compatibility is checked at load.</li>
 </ol>
 
 
