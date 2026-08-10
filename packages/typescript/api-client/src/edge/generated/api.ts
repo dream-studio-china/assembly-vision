@@ -1552,6 +1552,7 @@ export interface operations {
             query?: {
                 instance_id?: string | null;
                 persist?: boolean;
+                barcode?: string | null;
             };
             header?: never;
             path?: never;

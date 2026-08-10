@@ -72,7 +72,7 @@ export interface ApiClient {
   devInspectFrame(
     instanceId: string,
     image: Blob,
-    opts?: { persist?: boolean },
+    opts?: { persist?: boolean; barcode?: string },
   ): Promise<InspectionRecord>;
   devInspectVideo(
     instanceId: string,

@@ -235,11 +235,12 @@ export class HttpApiClient implements ApiClient {
   devInspectFrame(
     instanceId: string,
     image: Blob,
-    opts?: { persist?: boolean },
+    opts?: { persist?: boolean; barcode?: string },
   ): Promise<InspectionRecord> {
     const params = new URLSearchParams();
     if (instanceId) params.set("instance_id", instanceId);
     if (opts?.persist === false) params.set("persist", "false");
+    if (opts?.barcode?.trim()) params.set("barcode", opts.barcode.trim());
     return this.#request(
       `/dev/inspect-frame?${params.toString()}`,
       { method: "POST", body: image, headers: { "Content-Type": mediaContentType(image) } },
