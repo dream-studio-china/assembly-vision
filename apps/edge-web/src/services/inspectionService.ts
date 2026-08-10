@@ -11,9 +11,12 @@
 // is configured.
 
 import type {
+  ConfidenceDriftFilter,
+  ConfidenceDriftReport,
   CurrentInspection,
   InspectionFilter,
   InspectionImages,
+  InspectionRecord,
   InspectionSummary,
   LogEvent,
   Page,
@@ -90,6 +93,10 @@ export const inspectionService = {
     return getApiClient().listInspections(filter);
   },
 
+  getInspection(inspectionId: string): Promise<InspectionRecord> {
+    return getApiClient().getInspection(inspectionId);
+  },
+
   async getImages(inspectionId: string): Promise<InspectionImages> {
     const images = await getApiClient().getInspectionImages(inspectionId);
     return isCrossOriginHttp() ? resolveCrossOriginImages(images) : images;
@@ -109,6 +116,10 @@ export const inspectionService = {
       return getApiClient().getStatistics(rest);
     }
     return getApiClient().getStatistics(filter);
+  },
+
+  getConfidenceDrift(filter: ConfidenceDriftFilter): Promise<ConfidenceDriftReport> {
+    return getApiClient().getConfidenceDrift(filter);
   },
 
   listLogs(): Promise<Page<LogEvent>> {

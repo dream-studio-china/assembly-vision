@@ -35,7 +35,7 @@ In the tables, `R` means authenticated edge viewer, `O` operator, and `A` edge a
 |---|---|---|---|---|---|---|
 | `GET /api/v1/health/live` | Process liveness only. | None / `{status}` | `503` only during shutdown | Safe GET | - | Unauthenticated, no internals |
 | `GET /api/v1/health/ready` | Camera/model/database readiness. | None / `DeviceStatus` summary | `503 NOT_READY` | Safe GET | - | R |
-| `GET /api/v1/device/status` | Full device, disk, network, and queue status. | None / `DeviceStatus` | `503 STATUS_UNAVAILABLE` | Safe GET | - | R |
+| `GET /api/v1/device/status` | Full device, disk, network, and queue status. Includes host system metrics for the health view: CPU count, 1-minute load average, memory total/available bytes, and the storage volume total/free bytes. Metric values unavailable on a platform are `null`, never fabricated. | None / `DeviceStatus` | `503 STATUS_UNAVAILABLE` | Safe GET | - | R |
 | `GET /api/v1/camera/state` | Camera connection and capture settings, excluding secrets. | None / `CameraState` | `503 CAMERA_ADAPTER_ERROR` | Safe GET | - | R |
 | `GET /api/v1/camera/{instance_id}/preview` | Latest captured frame as a rate-limited JPEG for the configured instance (interim REST preview, ADR-013). | Path instance ID / JPEG bytes | `404 INSTANCE_NOT_FOUND`, `503 CAMERA_UNAVAILABLE` | Safe GET | - | R |
 | `POST /api/v1/camera/reconnect` | Request a supervised camera reconnect. | `{reason}` / `OperationAccepted` | `409 INSPECTION_ACTIVE`, `503 CAMERA_ADAPTER_ERROR` | `Idempotency-Key` | - | A |
@@ -95,6 +95,23 @@ real-time inspection uses the native app / RTSP / camera sources.
 |---|---|---|---|---|---|---|
 | `POST /api/v1/dev/inspect-frame` | Analyze one uploaded image through an instance pipeline; writes an evidence bundle unless `persist=false`. | Query: optional `barcode` simulated keyboard input; raw image bytes / `InspectionRecord` | `400 INVALID_IMAGE`, `404 INSTANCE_NOT_FOUND`, `413 PAYLOAD_TOO_LARGE`, `503 PIPELINE_UNAVAILABLE` | Deterministic | - | R + dev flag |
 | `POST /api/v1/dev/inspect-video` | Analyze an uploaded video frame by frame (≤30 sampled frames) and return a summary; nothing is persisted. | Raw video bytes / `VideoInspectResult` | `400 INVALID_VIDEO`, `404 INSTANCE_NOT_FOUND`, `413 PAYLOAD_TOO_LARGE`, `503 PIPELINE_UNAVAILABLE` | Deterministic | - | R + dev flag |
+
+### 15.3.6 Confidence Drift (Environment-Change Diagnostics)
+
+`GET /api/v1/statistics/confidence-drift` analyzes detection confidence over
+time under one fixed product, rule, product-detector version, component-detector
+version, and aggregation-policy version on this device. This prevents a release
+or policy switch from being presented as an acquisition-environment change
+(conveyor, camera focus/angle, lighting).
+
+| Aspect | Behavior |
+|---|---|
+| Confidence metric | Per-component `best_confidence` weighted by positive `detection_count` (equivalent to weighting whole inspections by their total detection count); the evidence-level `median` is reported as a robust reference. Only evidence rows with a recorded confidence and at least one detection contribute. |
+| Periods | `today` = `[local-today 00:00, now)`, `yesterday` = `[local-yesterday 00:00, local-today 00:00)`, `previous_7d` = `[local-today 00:00 - 7 days, local-today 00:00)` (includes yesterday), `previous_30d` = `[local-today 00:00 - 30 days, local-today 00:00)` (includes the 7-day window). Day boundaries follow the operator-local timezone given by `tz_offset_minutes` (default UTC). Buckets are half-open `[from, to)`. |
+| Comparison | `today_vs_yesterday`, `today_vs_previous_7d`, and `today_vs_previous_30d` report the weighted-mean delta, the relative percent change, and both evidence counts. |
+| Components | Per-component weighted means for today versus the previous-7-day baseline, sorted with the largest drop first; a component absent from the baseline carries `baseline_weighted_mean = null` (insufficient baseline evidence, never a fabricated zero). |
+| Assessment | Heuristic label from the relative change versus the previous-7-day mean: `< 2 %` stable, `2–5 %` minor, `> 5 %` noticeable, with drop/rise direction, or `insufficient_data` when either window has no confidence evidence. The label is decision-support only and never claims a root cause or an accuracy value; a persistent drop prompts operators to verify frame quality and media. |
+| Filters | Required `product_code`, `rule_version_id`, `product_model_version_id`, `component_model_version_id`, and `aggregation_policy_version` define the comparable scope. Optional `component_code` narrows it. `tz_offset_minutes` is bounded to `[-840, 840]` (`422` outside); all validation errors use `application/problem+json`. |
 
 ## 15.4 Central API Groups
 

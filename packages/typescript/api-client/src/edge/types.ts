@@ -339,6 +339,7 @@ export type DeviceStatus = {
   upload_last_success_at: ISODateTime | null;
   upload_last_error_code: string | null;
   storage_mode: "NORMAL" | "WARNING" | "CRITICAL" | "STOP";
+  storage_total_bytes: number;
   storage_free_bytes: number;
   storage_free_percent: number;
   storage_free_inodes: number;
@@ -348,6 +349,11 @@ export type DeviceStatus = {
   storage_stop_free_percent: number;
   storage_observed_at: ISODateTime | null;
   storage_write_fault: boolean;
+  /** Host system metrics for the health view; null when the platform cannot measure them. */
+  cpu_count: number | null;
+  load_1m: number | null;
+  memory_total_bytes: number | null;
+  memory_available_bytes: number | null;
   cleanup_enabled: boolean;
   cleanup_eligible_count: number;
   cleanup_eligible_bytes: number;
@@ -506,6 +512,83 @@ export type StatisticsSummary = {
   pass_count: number;
   ng_count: number;
   pass_rate: number;
+};
+
+export type ConfidenceDriftFilter = {
+  product_code: string;
+  rule_version_id: string;
+  product_model_version_id: string;
+  component_model_version_id: string;
+  aggregation_policy_version: string;
+  component_code?: string;
+  /** Operator-local timezone offset in minutes (UTC-12 .. UTC+14). */
+  tz_offset_minutes?: number;
+};
+
+export type ConfidencePeriod = {
+  from_iso: string;
+  to_iso: string;
+  inspection_count: number;
+  evidence_count: number;
+  weighted_mean: number | null;
+  median: number | null;
+};
+
+export type ConfidenceComparison = {
+  weighted_mean_delta: number | null;
+  weighted_mean_relative_percent: number | null;
+  today_evidence_count: number;
+  baseline_evidence_count: number;
+};
+
+export type ComponentConfidenceDrift = {
+  component_code: string;
+  today_weighted_mean: number | null;
+  baseline_weighted_mean: number | null;
+  delta: number | null;
+  today_evidence_count: number;
+  baseline_evidence_count: number;
+};
+
+export type ConfidenceDriftScope = {
+  device_id: string;
+  product_code: string;
+  rule_version_id: string;
+  product_model_version_id: string;
+  component_model_version_id: string;
+  aggregation_policy_version: string;
+  tz_offset_minutes: number;
+  as_of_iso: string;
+};
+
+export type DriftLevel =
+  | "stable"
+  | "minor_drop"
+  | "noticeable_drop"
+  | "minor_rise"
+  | "noticeable_rise"
+  | "insufficient_data";
+
+export type DriftAssessment = {
+  level: DriftLevel;
+  detail: string;
+};
+
+export type ConfidenceDriftReport = {
+  scope: ConfidenceDriftScope;
+  periods: {
+    today: ConfidencePeriod;
+    yesterday: ConfidencePeriod;
+    previous_7d: ConfidencePeriod;
+    previous_30d: ConfidencePeriod;
+  };
+  comparison: {
+    today_vs_yesterday: ConfidenceComparison;
+    today_vs_previous_7d: ConfidenceComparison;
+    today_vs_previous_30d: ConfidenceComparison;
+  };
+  components: ComponentConfidenceDrift[];
+  assessment: DriftAssessment;
 };
 
 /** One analyzed frame's decision summary (web dev test harness, ADR-014). */

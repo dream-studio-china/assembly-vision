@@ -6,6 +6,8 @@ import type {
   BoundingBox,
   BusinessResult,
   CameraState,
+  ConfidenceDriftFilter,
+  ConfidenceDriftReport,
   CurrentInspection,
   DeviceStatus,
   EffectiveConfiguration,
@@ -447,6 +449,7 @@ export class MockApiClient implements ApiClient {
       upload_last_success_at: ISO(-1),
       upload_last_error_code: null,
       storage_mode: "NORMAL",
+      storage_total_bytes: 100 * 1024 ** 3,
       storage_free_bytes: 42 * 1024 ** 3,
       storage_free_percent: 60,
       storage_free_inodes: 1000,
@@ -456,6 +459,10 @@ export class MockApiClient implements ApiClient {
       storage_stop_free_percent: 5,
       storage_observed_at: ISO(0),
       storage_write_fault: false,
+      cpu_count: 8,
+      load_1m: 1.2,
+      memory_total_bytes: 16 * 1024 ** 3,
+      memory_available_bytes: 8 * 1024 ** 3,
       cleanup_enabled: false,
       cleanup_eligible_count: 0,
       cleanup_eligible_bytes: 0,
@@ -711,6 +718,99 @@ export class MockApiClient implements ApiClient {
       pass_count: passCount,
       ng_count: total - passCount,
       pass_rate: total === 0 ? 0 : passCount / total,
+    };
+  }
+
+  async getConfidenceDrift(filter: ConfidenceDriftFilter): Promise<ConfidenceDriftReport> {
+    const asOf = NOW.toISOString();
+    return {
+      scope: {
+        device_id: DEVICE_ID,
+        product_code: filter.product_code,
+        rule_version_id: filter.rule_version_id,
+        product_model_version_id: filter.product_model_version_id,
+        component_model_version_id: filter.component_model_version_id,
+        aggregation_policy_version: filter.aggregation_policy_version,
+        tz_offset_minutes: filter.tz_offset_minutes ?? 0,
+        as_of_iso: asOf,
+      },
+      periods: {
+        today: {
+          from_iso: ISO(-3600),
+          to_iso: asOf,
+          inspection_count: 42,
+          evidence_count: 96,
+          weighted_mean: 0.912,
+          median: 0.93,
+        },
+        yesterday: {
+          from_iso: ISO(-86400 - 3600),
+          to_iso: ISO(-3600),
+          inspection_count: 51,
+          evidence_count: 120,
+          weighted_mean: 0.945,
+          median: 0.95,
+        },
+        previous_7d: {
+          from_iso: ISO(-7 * 86400 - 3600),
+          to_iso: ISO(-3600),
+          inspection_count: 330,
+          evidence_count: 812,
+          weighted_mean: 0.951,
+          median: 0.96,
+        },
+        previous_30d: {
+          from_iso: ISO(-30 * 86400 - 3600),
+          to_iso: ISO(-3600),
+          inspection_count: 1420,
+          evidence_count: 3480,
+          weighted_mean: 0.953,
+          median: 0.96,
+        },
+      },
+      comparison: {
+        today_vs_yesterday: {
+          weighted_mean_delta: -0.033,
+          weighted_mean_relative_percent: -3.5,
+          today_evidence_count: 96,
+          baseline_evidence_count: 120,
+        },
+        today_vs_previous_7d: {
+          weighted_mean_delta: -0.039,
+          weighted_mean_relative_percent: -4.1,
+          today_evidence_count: 96,
+          baseline_evidence_count: 812,
+        },
+        today_vs_previous_30d: {
+          weighted_mean_delta: -0.041,
+          weighted_mean_relative_percent: -4.3,
+          today_evidence_count: 96,
+          baseline_evidence_count: 3480,
+        },
+      },
+      components: [
+        {
+          component_code: "component_a",
+          today_weighted_mean: 0.90,
+          baseline_weighted_mean: 0.96,
+          delta: -0.06,
+          today_evidence_count: 40,
+          baseline_evidence_count: 300,
+        },
+        {
+          component_code: "component_b",
+          today_weighted_mean: 0.93,
+          baseline_weighted_mean: 0.95,
+          delta: -0.02,
+          today_evidence_count: 34,
+          baseline_evidence_count: 280,
+        },
+      ],
+      assessment: {
+        level: "minor_drop",
+        detail:
+          "today's weighted-mean confidence is 4.1% below the previous-7-day mean; monitor the trend",
+      },
     };
   }
 

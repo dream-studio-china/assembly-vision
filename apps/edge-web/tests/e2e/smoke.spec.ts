@@ -26,9 +26,12 @@ test("inspection detail shows evidence and reason codes", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Components" })).toBeVisible();
 });
 
-test("health page renders disk gauge and queue chart", async ({ page }) => {
+test("health page renders system gauges and queue chart on one row", async ({ page }) => {
   await page.goto("/health");
   await expect(page.getByRole("heading", { name: "Device health" })).toBeVisible();
-  await expect(page.locator(".echart canvas").first()).toBeVisible();
-  await expect(page.locator(".echart canvas").nth(1)).toBeVisible();
+  await expect(page.locator(".health__gauges .gauge")).toHaveCount(3);
+  await expect(page.locator(".gauge__label", { hasText: "Load" })).toBeVisible();
+  await expect(page.locator(".gauge__label", { hasText: "Memory" })).toBeVisible();
+  await expect(page.locator(".gauge__label", { hasText: "Disk" })).toBeVisible();
+  await expect(page.locator(".health__gauges .health__queue .echart canvas")).toBeVisible();
 });

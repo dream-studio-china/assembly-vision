@@ -368,6 +368,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/statistics/confidence-drift": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Confidence Drift
+         * @description Confidence drift analysis for one stable inference scope (15.3.6).
+         *
+         *     Compares today's weighted-mean detection confidence with yesterday, the
+         *     previous 7 days, and the previous 30 days under the same product, rule,
+         *     detector-version, and aggregation-policy scope. This prevents a release
+         *     or policy switch from being presented as an acquisition-environment change.
+         *     The assessment is a heuristic hint, not a root-cause or accuracy claim.
+         */
+        get: operations["confidence_drift_api_v1_statistics_confidence_drift_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/traceability/{sn}": {
         parameters: {
             query?: never;
@@ -598,6 +624,24 @@ export interface components {
             trigger_mode?: string | null;
         };
         /**
+         * ComponentConfidenceDrift
+         * @description Per-component weighted-mean change between today and a baseline.
+         */
+        ComponentConfidenceDrift: {
+            /** Baseline Evidence Count */
+            baseline_evidence_count: number;
+            /** Baseline Weighted Mean */
+            baseline_weighted_mean: number | null;
+            /** Component Code */
+            component_code: string;
+            /** Delta */
+            delta: number | null;
+            /** Today Evidence Count */
+            today_evidence_count: number;
+            /** Today Weighted Mean */
+            today_weighted_mean: number | null;
+        };
+        /**
          * ComponentCorrection
          * @description Per-component correction recorded against the original evidence.
          */
@@ -635,6 +679,84 @@ export interface components {
             iou_threshold: number;
             /** Model Version */
             model_version: string;
+        };
+        /**
+         * ConfidenceComparison
+         * @description Today versus one baseline period on the weighted-mean confidence.
+         */
+        ConfidenceComparison: {
+            /** Baseline Evidence Count */
+            baseline_evidence_count: number;
+            /** Today Evidence Count */
+            today_evidence_count: number;
+            /** Weighted Mean Delta */
+            weighted_mean_delta: number | null;
+            /** Weighted Mean Relative Percent */
+            weighted_mean_relative_percent: number | null;
+        };
+        /**
+         * ConfidenceDriftReport
+         * @description Confidence drift analysis for the current device (design 15.3.6).
+         *
+         *     Computed under one product, rule, detector-version, and aggregation-policy
+         *     scope so a confidence change is not conflated with a configuration change.
+         */
+        ConfidenceDriftReport: {
+            assessment: components["schemas"]["DriftAssessment"];
+            /** Comparison */
+            comparison: {
+                [key: string]: components["schemas"]["ConfidenceComparison"];
+            };
+            /** Components */
+            components: components["schemas"]["ComponentConfidenceDrift"][];
+            /** Periods */
+            periods: {
+                [key: string]: components["schemas"]["ConfidencePeriod"];
+            };
+            scope: components["schemas"]["ConfidenceDriftScope"];
+        };
+        /**
+         * ConfidenceDriftScope
+         * @description The device/product/rule scope a drift report was computed for.
+         */
+        ConfidenceDriftScope: {
+            /** Aggregation Policy Version */
+            aggregation_policy_version: string;
+            /** As Of Iso */
+            as_of_iso: string;
+            /** Component Model Version Id */
+            component_model_version_id: string;
+            /** Device Id */
+            device_id: string;
+            /** Product Code */
+            product_code: string;
+            /** Product Model Version Id */
+            product_model_version_id: string;
+            /** Rule Version Id */
+            rule_version_id: string;
+            /**
+             * Tz Offset Minutes
+             * @default 0
+             */
+            tz_offset_minutes: number;
+        };
+        /**
+         * ConfidencePeriod
+         * @description Confidence statistics for one time bucket (design 15.3.6).
+         */
+        ConfidencePeriod: {
+            /** Evidence Count */
+            evidence_count: number;
+            /** From Iso */
+            from_iso: string;
+            /** Inspection Count */
+            inspection_count: number;
+            /** Median */
+            median: number | null;
+            /** To Iso */
+            to_iso: string;
+            /** Weighted Mean */
+            weighted_mean: number | null;
         };
         /** DeviceStatus */
         DeviceStatus: {
@@ -683,6 +805,8 @@ export interface components {
              * @default 0
              */
             cleanup_purged_count: number;
+            /** Cpu Count */
+            cpu_count?: number | null;
             /** Current Component Model Version Id */
             current_component_model_version_id?: string | null;
             /** Current Product Model Version Id */
@@ -726,6 +850,12 @@ export interface components {
              * @default false
              */
             integrity_verify_checksums: boolean;
+            /** Load 1M */
+            load_1m?: number | null;
+            /** Memory Available Bytes */
+            memory_available_bytes?: number | null;
+            /** Memory Total Bytes */
+            memory_total_bytes?: number | null;
             /** Model Loaded */
             model_loaded: boolean;
             /** Observed At */
@@ -769,6 +899,11 @@ export interface components {
              * @default 0
              */
             storage_stop_free_percent: number;
+            /**
+             * Storage Total Bytes
+             * @default 0
+             */
+            storage_total_bytes: number;
             /**
              * Storage Warning Free Percent
              * @default 0
@@ -830,6 +965,25 @@ export interface components {
              * @default 0
              */
             upload_successes: number;
+        };
+        /**
+         * DriftAssessment
+         * @description Heuristic label for a confidence drift report (design 15.3.6).
+         *
+         *     The label is a decision-support hint derived from the relative change in
+         *     the weighted-mean confidence; it never claims a root cause or an accuracy
+         *     value. A persistent drop suggests a possible acquisition-environment
+         *     change (conveyor, camera focus/angle, lighting) that operators verify
+         *     against frame quality and media.
+         */
+        DriftAssessment: {
+            /** Detail */
+            detail: string;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "stable" | "minor_drop" | "noticeable_drop" | "minor_rise" | "noticeable_rise" | "insufficient_data";
         };
         /** EffectiveConfiguration */
         EffectiveConfiguration: {
@@ -2320,6 +2474,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confidence_drift_api_v1_statistics_confidence_drift_get: {
+        parameters: {
+            query: {
+                product_code: string;
+                rule_version_id: string;
+                product_model_version_id: string;
+                component_model_version_id: string;
+                aggregation_policy_version: string;
+                component_code?: string | null;
+                tz_offset_minutes?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfidenceDriftReport"];
+                };
+            };
+            /** @description Invalid or incomplete comparison scope */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };

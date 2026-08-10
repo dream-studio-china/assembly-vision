@@ -37,6 +37,7 @@ from assemblyvision_edge.retention.storage import (
     observe_storage,
 )
 from assemblyvision_edge.retention.worker import CleanupHealth
+from assemblyvision_edge.system import system_metrics
 from assemblyvision_edge.upload.scheduler import SchedulerHealth
 
 log = logging.getLogger("assemblyvision.runtime")
@@ -604,7 +605,7 @@ class EdgeRuntime:
         if write_fault is None:
             write_fault = self.storage_write_fault
         if self.instances:
-            return self._device_status_instances(
+            status = self._device_status_instances(
                 upload_pending,
                 queue,
                 health,
@@ -615,17 +616,27 @@ class EdgeRuntime:
                 cleanup_metrics,
                 cleanup_enabled,
             )
-        return self._device_status_single(
-            upload_pending,
-            queue,
-            health,
-            scheduler_enabled,
-            storage,
-            write_fault,
-            cleanup,
-            cleanup_metrics,
-            cleanup_enabled,
-        )
+        else:
+            status = self._device_status_single(
+                upload_pending,
+                queue,
+                health,
+                scheduler_enabled,
+                storage,
+                write_fault,
+                cleanup,
+                cleanup_metrics,
+                cleanup_enabled,
+            )
+        # Host system metrics are best-effort observability (None when the
+        # platform cannot provide the value) and never affect decision paths.
+        metrics = system_metrics()
+        status["cpu_count"] = metrics.cpu_count
+        status["load_1m"] = metrics.load_1m
+        status["memory_total_bytes"] = metrics.memory_total_bytes
+        status["memory_available_bytes"] = metrics.memory_available_bytes
+        status["storage_total_bytes"] = storage.total_bytes if storage else 0
+        return status
 
     @staticmethod
     def _storage_status_fields(

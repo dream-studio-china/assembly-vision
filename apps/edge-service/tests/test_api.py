@@ -211,6 +211,11 @@ def test_device_status(client: TestClient) -> None:
     body = response.json()
     assert "device_id" in body
     assert body["central_connected"] is False
+    # Host system metrics for the health view are always present (None is a
+    # valid "platform cannot measure" value, never a missing field).
+    for key in ("cpu_count", "load_1m", "memory_total_bytes", "memory_available_bytes"):
+        assert key in body
+    assert body["storage_total_bytes"] >= 0
 
 
 def test_list_inspections_newest_first_and_filtered(client: TestClient) -> None:

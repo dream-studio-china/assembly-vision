@@ -363,6 +363,66 @@
         "title": "CameraState",
         "type": "object"
       },
+      "ComponentConfidenceDrift": {
+        "description": "Per-component weighted-mean change between today and a baseline.",
+        "properties": {
+          "baseline_evidence_count": {
+            "title": "Baseline Evidence Count",
+            "type": "integer"
+          },
+          "baseline_weighted_mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Weighted Mean"
+          },
+          "component_code": {
+            "title": "Component Code",
+            "type": "string"
+          },
+          "delta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta"
+          },
+          "today_evidence_count": {
+            "title": "Today Evidence Count",
+            "type": "integer"
+          },
+          "today_weighted_mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Today Weighted Mean"
+          }
+        },
+        "required": [
+          "component_code",
+          "today_weighted_mean",
+          "baseline_weighted_mean",
+          "delta",
+          "today_evidence_count",
+          "baseline_evidence_count"
+        ],
+        "title": "ComponentConfidenceDrift",
+        "type": "object"
+      },
       "ComponentCorrection": {
         "additionalProperties": false,
         "description": "Per-component correction recorded against the original evidence.",
@@ -464,6 +524,192 @@
         "title": "ComponentDetectionSnapshot",
         "type": "object"
       },
+      "ConfidenceComparison": {
+        "description": "Today versus one baseline period on the weighted-mean confidence.",
+        "properties": {
+          "baseline_evidence_count": {
+            "title": "Baseline Evidence Count",
+            "type": "integer"
+          },
+          "today_evidence_count": {
+            "title": "Today Evidence Count",
+            "type": "integer"
+          },
+          "weighted_mean_delta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weighted Mean Delta"
+          },
+          "weighted_mean_relative_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weighted Mean Relative Percent"
+          }
+        },
+        "required": [
+          "weighted_mean_delta",
+          "weighted_mean_relative_percent",
+          "today_evidence_count",
+          "baseline_evidence_count"
+        ],
+        "title": "ConfidenceComparison",
+        "type": "object"
+      },
+      "ConfidenceDriftReport": {
+        "description": "Confidence drift analysis for the current device (design 15.3.6).\n\nComputed under one product, rule, detector-version, and aggregation-policy\nscope so a confidence change is not conflated with a configuration change.",
+        "properties": {
+          "assessment": {
+            "$ref": "#/components/schemas/DriftAssessment"
+          },
+          "comparison": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ConfidenceComparison"
+            },
+            "title": "Comparison",
+            "type": "object"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentConfidenceDrift"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "periods": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ConfidencePeriod"
+            },
+            "title": "Periods",
+            "type": "object"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/ConfidenceDriftScope"
+          }
+        },
+        "required": [
+          "scope",
+          "periods",
+          "comparison",
+          "components",
+          "assessment"
+        ],
+        "title": "ConfidenceDriftReport",
+        "type": "object"
+      },
+      "ConfidenceDriftScope": {
+        "description": "The device/product/rule scope a drift report was computed for.",
+        "properties": {
+          "aggregation_policy_version": {
+            "title": "Aggregation Policy Version",
+            "type": "string"
+          },
+          "as_of_iso": {
+            "title": "As Of Iso",
+            "type": "string"
+          },
+          "component_model_version_id": {
+            "title": "Component Model Version Id",
+            "type": "string"
+          },
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "product_code": {
+            "title": "Product Code",
+            "type": "string"
+          },
+          "product_model_version_id": {
+            "title": "Product Model Version Id",
+            "type": "string"
+          },
+          "rule_version_id": {
+            "title": "Rule Version Id",
+            "type": "string"
+          },
+          "tz_offset_minutes": {
+            "default": 0,
+            "title": "Tz Offset Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "device_id",
+          "product_code",
+          "rule_version_id",
+          "product_model_version_id",
+          "component_model_version_id",
+          "aggregation_policy_version",
+          "as_of_iso"
+        ],
+        "title": "ConfidenceDriftScope",
+        "type": "object"
+      },
+      "ConfidencePeriod": {
+        "description": "Confidence statistics for one time bucket (design 15.3.6).",
+        "properties": {
+          "evidence_count": {
+            "title": "Evidence Count",
+            "type": "integer"
+          },
+          "from_iso": {
+            "title": "From Iso",
+            "type": "string"
+          },
+          "inspection_count": {
+            "title": "Inspection Count",
+            "type": "integer"
+          },
+          "median": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median"
+          },
+          "to_iso": {
+            "title": "To Iso",
+            "type": "string"
+          },
+          "weighted_mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weighted Mean"
+          }
+        },
+        "required": [
+          "from_iso",
+          "to_iso",
+          "inspection_count",
+          "evidence_count",
+          "weighted_mean",
+          "median"
+        ],
+        "title": "ConfidencePeriod",
+        "type": "object"
+      },
       "DeviceStatus": {
         "properties": {
           "alerts": {
@@ -537,6 +783,17 @@
             "default": 0,
             "title": "Cleanup Purged Count",
             "type": "integer"
+          },
+          "cpu_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cpu Count"
           },
           "current_component_model_version_id": {
             "anyOf": [
@@ -641,6 +898,39 @@
             "title": "Integrity Verify Checksums",
             "type": "boolean"
           },
+          "load_1m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Load 1M"
+          },
+          "memory_available_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory Available Bytes"
+          },
+          "memory_total_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory Total Bytes"
+          },
           "model_loaded": {
             "title": "Model Loaded",
             "type": "boolean"
@@ -698,6 +988,11 @@
             "default": 0.0,
             "title": "Storage Stop Free Percent",
             "type": "number"
+          },
+          "storage_total_bytes": {
+            "default": 0,
+            "title": "Storage Total Bytes",
+            "type": "integer"
           },
           "storage_warning_free_percent": {
             "default": 0.0,
@@ -832,6 +1127,33 @@
           "upload_pending_count"
         ],
         "title": "DeviceStatus",
+        "type": "object"
+      },
+      "DriftAssessment": {
+        "description": "Heuristic label for a confidence drift report (design 15.3.6).\n\nThe label is a decision-support hint derived from the relative change in\nthe weighted-mean confidence; it never claims a root cause or an accuracy\nvalue. A persistent drop suggests a possible acquisition-environment\nchange (conveyor, camera focus/angle, lighting) that operators verify\nagainst frame quality and media.",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "stable",
+              "minor_drop",
+              "noticeable_drop",
+              "minor_rise",
+              "noticeable_rise",
+              "insufficient_data"
+            ],
+            "title": "Level",
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "detail"
+        ],
+        "title": "DriftAssessment",
         "type": "object"
       },
       "EffectiveConfiguration": {
@@ -3992,6 +4314,118 @@
           }
         },
         "summary": "Statistics",
+        "tags": [
+          "derived"
+        ]
+      }
+    },
+    "/api/v1/statistics/confidence-drift": {
+      "get": {
+        "description": "Confidence drift analysis for one stable inference scope (15.3.6).\n\nCompares today's weighted-mean detection confidence with yesterday, the\nprevious 7 days, and the previous 30 days under the same product, rule,\ndetector-version, and aggregation-policy scope. This prevents a release\nor policy switch from being presented as an acquisition-environment change.\nThe assessment is a heuristic hint, not a root-cause or accuracy claim.",
+        "operationId": "confidence_drift_api_v1_statistics_confidence_drift_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "product_code",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Product Code",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rule_version_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Rule Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "product_model_version_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Product Model Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "component_model_version_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Component Model Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "aggregation_policy_version",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Aggregation Policy Version",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "component_code",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Component Code"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tz_offset_minutes",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 840,
+              "minimum": -840,
+              "title": "Tz Offset Minutes",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfidenceDriftReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Invalid or incomplete comparison scope"
+          }
+        },
+        "summary": "Confidence Drift",
         "tags": [
           "derived"
         ]

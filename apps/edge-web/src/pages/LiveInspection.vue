@@ -302,7 +302,7 @@ onBeforeUnmount(() => {
     <div class="live-inspection__grid">
       <section class="panel">
         <h3>{{ t("Camera image") }}</h3>
-        <div class="live-inspection__viewer">
+        <div class="live-inspection__viewer live-inspection__camera-viewer">
           <DetectionViewer
             v-if="cameraFrame"
             :image-url="cameraFrame"

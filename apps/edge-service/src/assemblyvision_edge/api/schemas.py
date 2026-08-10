@@ -180,8 +180,15 @@ class DeviceStatus(BaseModel):
     # server is the single authority for thresholds and mode; the dashboard
     # renders these instead of duplicating a fixed warning threshold.
     storage_mode: str = "NORMAL"
+    storage_total_bytes: int = 0
     storage_free_bytes: int = 0
     storage_free_percent: float = 0.0
+    # Host system metrics for the device health view (design 15.3.1); None
+    # means the platform cannot provide the value.
+    cpu_count: int | None = None
+    load_1m: float | None = None
+    memory_total_bytes: int | None = None
+    memory_available_bytes: int | None = None
     storage_free_inodes: int = 0
     storage_inode_percent: float = 0.0
     storage_warning_free_percent: float = 0.0
@@ -350,6 +357,85 @@ class StatisticsSummary(BaseModel):
     pass_count: int
     ng_count: int
     pass_rate: float
+
+
+class ConfidencePeriod(BaseModel):
+    """Confidence statistics for one time bucket (design 15.3.6)."""
+
+    from_iso: str
+    to_iso: str
+    inspection_count: int
+    evidence_count: int
+    weighted_mean: float | None
+    median: float | None
+
+
+class ConfidenceComparison(BaseModel):
+    """Today versus one baseline period on the weighted-mean confidence."""
+
+    weighted_mean_delta: float | None
+    weighted_mean_relative_percent: float | None
+    today_evidence_count: int
+    baseline_evidence_count: int
+
+
+class ComponentConfidenceDrift(BaseModel):
+    """Per-component weighted-mean change between today and a baseline."""
+
+    component_code: str
+    today_weighted_mean: float | None
+    baseline_weighted_mean: float | None
+    delta: float | None
+    today_evidence_count: int
+    baseline_evidence_count: int
+
+
+class ConfidenceDriftScope(BaseModel):
+    """The device/product/rule scope a drift report was computed for."""
+
+    device_id: str
+    product_code: str
+    rule_version_id: str
+    product_model_version_id: str
+    component_model_version_id: str
+    aggregation_policy_version: str
+    tz_offset_minutes: int = 0
+    as_of_iso: str
+
+
+class DriftAssessment(BaseModel):
+    """Heuristic label for a confidence drift report (design 15.3.6).
+
+    The label is a decision-support hint derived from the relative change in
+    the weighted-mean confidence; it never claims a root cause or an accuracy
+    value. A persistent drop suggests a possible acquisition-environment
+    change (conveyor, camera focus/angle, lighting) that operators verify
+    against frame quality and media.
+    """
+
+    level: Literal[
+        "stable",
+        "minor_drop",
+        "noticeable_drop",
+        "minor_rise",
+        "noticeable_rise",
+        "insufficient_data",
+    ]
+    detail: str
+
+
+class ConfidenceDriftReport(BaseModel):
+    """Confidence drift analysis for the current device (design 15.3.6).
+
+    Computed under one product, rule, detector-version, and aggregation-policy
+    scope so a confidence change is not conflated with a configuration change.
+    """
+
+    scope: ConfidenceDriftScope
+    periods: dict[str, ConfidencePeriod]
+    comparison: dict[str, ConfidenceComparison]
+    components: list[ComponentConfidenceDrift]
+    assessment: DriftAssessment
 
 
 class InspectionImages(BaseModel):
