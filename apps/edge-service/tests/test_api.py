@@ -640,9 +640,7 @@ def test_review_operations_declare_problem_responses() -> None:
                 assert response is not None, (
                     f"{path} {method} must declare the {code} problem response"
                 )
-                media = response["content"].get("application/problem+json") or response[
-                    "content"
-                ].get("application/json")
+                media = response["content"].get("application/problem+json")
                 assert media is not None, f"{path} {method} {code} must declare problem content"
                 assert media["schema"]["$ref"] == "#/components/schemas/Problem", (
                     f"{path} {method} {code} must use the Problem schema"

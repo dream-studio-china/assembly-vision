@@ -18,6 +18,7 @@ const resultFilter = ref<"NG" | "OK" | "ALL">("NG");
 const reviewedFilter = ref<"all" | "open" | "reviewed">("open");
 
 const PAGE_SIZE = 25;
+let requestGeneration = 0;
 
 const DISPOSITION_LABELS: Record<string, string> = {
   CONFIRMED_NG: "Confirmed NG",
@@ -28,6 +29,7 @@ const DISPOSITION_LABELS: Record<string, string> = {
 };
 
 async function load(reset: boolean): Promise<void> {
+  const generation = ++requestGeneration;
   loading.value = true;
   error.value = null;
   try {
@@ -40,12 +42,14 @@ async function load(reset: boolean): Promise<void> {
       cursor: reset ? undefined : nextCursor.value ?? undefined,
       limit: PAGE_SIZE,
     });
+    if (generation !== requestGeneration) return;
     items.value = reset ? page.items : [...items.value, ...page.items];
     nextCursor.value = page.next_cursor;
   } catch (err) {
+    if (generation !== requestGeneration) return;
     error.value = err instanceof ApiError ? err.message : String(err);
   } finally {
-    loading.value = false;
+    if (generation === requestGeneration) loading.value = false;
   }
 }
 

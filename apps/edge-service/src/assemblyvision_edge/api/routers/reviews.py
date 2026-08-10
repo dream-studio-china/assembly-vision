@@ -27,7 +27,6 @@ from assemblyvision_edge.api.deps import get_repository
 from assemblyvision_edge.api.problems import ApiProblem
 from assemblyvision_edge.api.schemas import (
     Page,
-    Problem,
     ReviewQueueItem,
     SubmitReviewRequest,
 )
@@ -42,10 +41,20 @@ from assemblyvision_edge.persistence.repository import (
 router = APIRouter(tags=["reviews"])
 
 
+def _problem_response(description: str) -> dict[str, object]:
+    """Describe the RFC 7807 media type emitted by the shared handlers."""
+    return {
+        "description": description,
+        "content": {
+            "application/problem+json": {"schema": {"$ref": "#/components/schemas/Problem"}}
+        },
+    }
+
+
 @router.get(
     "/reviews",
     response_model=Page[ReviewQueueItem],
-    responses={400: {"model": Problem, "description": "Malformed or filter-mismatched cursor"}},
+    responses={400: _problem_response("Malformed or filter-mismatched cursor")},
 )
 def list_review_queue(
     business_result: str | None = None,
@@ -95,7 +104,7 @@ def list_review_queue(
 @router.get(
     "/inspections/{inspection_id}/reviews",
     response_model=list[ReviewRecord],
-    responses={404: {"model": Problem, "description": "Inspection not found"}},
+    responses={404: _problem_response("Inspection not found")},
 )
 def list_inspection_reviews(
     inspection_id: str,
@@ -113,12 +122,9 @@ def list_inspection_reviews(
     "/inspections/{inspection_id}/reviews",
     response_model=ReviewRecord,
     responses={
-        404: {"model": Problem, "description": "Inspection not found"},
-        409: {
-            "model": Problem,
-            "description": "Review conflict (supersede targets another inspection)",
-        },
-        422: {"model": Problem, "description": "Invalid disposition or review"},
+        404: _problem_response("Inspection not found"),
+        409: _problem_response("Review conflict (supersede targets another inspection)"),
+        422: _problem_response("Invalid disposition or review"),
     },
 )
 def submit_review(
