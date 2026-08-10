@@ -11,6 +11,8 @@
 // is configured.
 
 import type {
+  ConfidenceDriftFilter,
+  ConfidenceDriftReport,
   CurrentInspection,
   InspectionFilter,
   InspectionImages,
@@ -109,6 +111,10 @@ export const inspectionService = {
       return getApiClient().getStatistics(rest);
     }
     return getApiClient().getStatistics(filter);
+  },
+
+  getConfidenceDrift(filter?: ConfidenceDriftFilter): Promise<ConfidenceDriftReport> {
+    return getApiClient().getConfidenceDrift(filter);
   },
 
   listLogs(): Promise<Page<LogEvent>> {

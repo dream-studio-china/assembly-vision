@@ -1,5 +1,7 @@
 import type {
   CameraState,
+  ConfidenceDriftFilter,
+  ConfidenceDriftReport,
   CurrentInspection,
   DeviceStatus,
   EffectiveConfiguration,
@@ -86,6 +88,7 @@ export interface ApiClient {
   getInspectionImages(inspectionId: string): Promise<InspectionImages>;
   getTraceability(sn: string): Promise<TraceabilityView>;
   getStatistics(filter?: StatisticsFilter): Promise<StatisticsSummary>;
+  getConfidenceDrift(filter?: ConfidenceDriftFilter): Promise<ConfidenceDriftReport>;
 
   // Gated web dev test harness (ADR-014); the server 404s unless started
   // with --enable-web-test.

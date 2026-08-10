@@ -269,6 +269,91 @@ function validateStatisticsSummary(body: unknown): void {
   }
 }
 
+const DRIFT_LEVELS = [
+  "stable",
+  "minor_drop",
+  "noticeable_drop",
+  "minor_rise",
+  "noticeable_rise",
+  "insufficient_data",
+] as const;
+
+function validateConfidencePeriod(record: Record_, path: string): void {
+  for (const key of ["from_iso", "to_iso"]) hasString(record, key, path);
+  for (const key of ["inspection_count", "evidence_count"]) hasNumber(record, key, path);
+  const mean = record["weighted_mean"];
+  if (mean !== null && (typeof mean !== "number" || !Number.isFinite(mean))) {
+    fail(`${path}.weighted_mean`, "number|null", mean);
+  }
+  const median = record["median"];
+  if (median !== null && (typeof median !== "number" || !Number.isFinite(median))) {
+    fail(`${path}.median`, "number|null", median);
+  }
+}
+
+function validateConfidenceComparison(record: Record_, path: string): void {
+  const delta = record["weighted_mean_delta"];
+  if (delta !== null && (typeof delta !== "number" || !Number.isFinite(delta))) {
+    fail(`${path}.weighted_mean_delta`, "number|null", delta);
+  }
+  const relative = record["weighted_mean_relative_percent"];
+  if (relative !== null && (typeof relative !== "number" || !Number.isFinite(relative))) {
+    fail(`${path}.weighted_mean_relative_percent`, "number|null", relative);
+  }
+  hasNumber(record, "today_evidence_count", path);
+  hasNumber(record, "baseline_evidence_count", path);
+}
+
+function validateComponentDrift(record: Record_, path: string): void {
+  hasString(record, "component_code", path);
+  for (const key of ["today_weighted_mean", "baseline_weighted_mean", "delta"]) {
+    const value = record[key];
+    if (value !== null && (typeof value !== "number" || !Number.isFinite(value))) {
+      fail(`${path}.${key}`, "number|null", value);
+    }
+  }
+  hasNumber(record, "today_evidence_count", path);
+  hasNumber(record, "baseline_evidence_count", path);
+}
+
+function validateConfidenceDriftReport(body: unknown): void {
+  const record = expectRecord(body);
+  const scope = expectRecord(record["scope"], "$.scope");
+  hasString(scope, "device_id", "$.scope");
+  const productCode = scope["product_code"];
+  if (productCode !== null && typeof productCode !== "string") {
+    fail("$.scope.product_code", "string|null", productCode);
+  }
+  const ruleVersion = scope["rule_version_id"];
+  if (ruleVersion !== null && typeof ruleVersion !== "string") {
+    fail("$.scope.rule_version_id", "string|null", ruleVersion);
+  }
+  hasNumber(scope, "tz_offset_minutes", "$.scope");
+  hasString(scope, "as_of_iso", "$.scope");
+
+  const periods = expectRecord(record["periods"], "$.periods");
+  for (const key of ["today", "yesterday", "previous_7d"]) {
+    validateConfidencePeriod(expectRecord(periods[key], `$.periods.${key}`), `$.periods.${key}`);
+  }
+
+  const comparison = expectRecord(record["comparison"], "$.comparison");
+  for (const key of ["today_vs_yesterday", "today_vs_previous_7d"]) {
+    validateConfidenceComparison(
+      expectRecord(comparison[key], `$.comparison.${key}`),
+      `$.comparison.${key}`,
+    );
+  }
+
+  const components = hasArray(record, "components", "$");
+  components.forEach((item, index) =>
+    validateComponentDrift(expectRecord(item, `$.components[${index}]`), `$.components[${index}]`),
+  );
+
+  const assessment = expectRecord(record["assessment"], "$.assessment");
+  hasOneOf(assessment, "level", DRIFT_LEVELS, "$.assessment");
+  hasString(assessment, "detail", "$.assessment");
+}
+
 function validateReviewRecord(body: unknown): void {
   const record = expectRecord(body);
   for (const key of [
@@ -370,4 +455,5 @@ export const validators: Record<string, Validator> = {
   inspectionImages: validateInspectionImages,
   traceabilityView: validateTraceabilityView,
   statisticsSummary: validateStatisticsSummary,
+  confidenceDriftReport: validateConfidenceDriftReport,
 };

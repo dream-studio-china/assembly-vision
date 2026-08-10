@@ -82,6 +82,15 @@ describe("MockApiClient", () => {
     expect(stats.pass_rate).toBeLessThanOrEqual(1);
   });
 
+  it("returns a deterministic confidence-drift report", async () => {
+    const client = new MockApiClient();
+    const report = await client.getConfidenceDrift();
+    expect(report.assessment.level).toBe("minor_drop");
+    expect(report.periods.today.weighted_mean).toBeLessThan(report.periods.previous_7d.weighted_mean ?? 1);
+    expect(report.components.length).toBeGreaterThan(0);
+    expect(report.scope.device_id).toBeTruthy();
+  });
+
   it("returns inspection images for a known inspection", async () => {
     const client = new MockApiClient();
     const page = await client.listInspections();
@@ -201,6 +210,25 @@ describe("HttpApiClient", () => {
     const client = new HttpApiClient("http://edge:8000/", fetchImpl);
     await client.listUploads("abc", 25);
     expect(called).toContain("/api/v1/uploads?cursor=abc&limit=25");
+  });
+
+  it("builds confidence-drift query params", async () => {
+    let called = "";
+    const fetchImpl = ((input: RequestInfo | URL) => {
+      called = String(input);
+      // The report validator rejects an empty body; the URL construction is
+      // what this test asserts.
+      return Promise.resolve(
+        new Response(JSON.stringify({}), { status: 200 }),
+      );
+    }) as typeof fetch;
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+    await client
+      .getConfidenceDrift({ product_code: "model_a", tz_offset_minutes: 480 })
+      .catch(() => undefined);
+    expect(called).toContain("/api/v1/statistics/confidence-drift?");
+    expect(called).toContain("product_code=model_a");
+    expect(called).toContain("tz_offset_minutes=480");
   });
 
   it("parses problem+json errors into ApiError", async () => {

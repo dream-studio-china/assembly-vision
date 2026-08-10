@@ -6,6 +6,8 @@ import type {
   BoundingBox,
   BusinessResult,
   CameraState,
+  ConfidenceDriftFilter,
+  ConfidenceDriftReport,
   CurrentInspection,
   DeviceStatus,
   EffectiveConfiguration,
@@ -711,6 +713,83 @@ export class MockApiClient implements ApiClient {
       pass_count: passCount,
       ng_count: total - passCount,
       pass_rate: total === 0 ? 0 : passCount / total,
+    };
+  }
+
+  async getConfidenceDrift(_filter?: ConfidenceDriftFilter): Promise<ConfidenceDriftReport> {
+    void _filter; // the mock ignores filters and returns deterministic data
+    const asOf = NOW.toISOString();
+    return {
+      scope: {
+        device_id: DEVICE_ID,
+        product_code: null,
+        rule_version_id: null,
+        tz_offset_minutes: 0,
+        as_of_iso: asOf,
+      },
+      periods: {
+        today: {
+          from_iso: ISO(-3600),
+          to_iso: asOf,
+          inspection_count: 42,
+          evidence_count: 96,
+          weighted_mean: 0.912,
+          median: 0.93,
+        },
+        yesterday: {
+          from_iso: ISO(-86400 - 3600),
+          to_iso: ISO(-3600),
+          inspection_count: 51,
+          evidence_count: 120,
+          weighted_mean: 0.945,
+          median: 0.95,
+        },
+        previous_7d: {
+          from_iso: ISO(-7 * 86400 - 3600),
+          to_iso: ISO(-3600),
+          inspection_count: 330,
+          evidence_count: 812,
+          weighted_mean: 0.951,
+          median: 0.96,
+        },
+      },
+      comparison: {
+        today_vs_yesterday: {
+          weighted_mean_delta: -0.033,
+          weighted_mean_relative_percent: -3.5,
+          today_evidence_count: 96,
+          baseline_evidence_count: 120,
+        },
+        today_vs_previous_7d: {
+          weighted_mean_delta: -0.039,
+          weighted_mean_relative_percent: -4.1,
+          today_evidence_count: 96,
+          baseline_evidence_count: 812,
+        },
+      },
+      components: [
+        {
+          component_code: "component_a",
+          today_weighted_mean: 0.90,
+          baseline_weighted_mean: 0.96,
+          delta: -0.06,
+          today_evidence_count: 40,
+          baseline_evidence_count: 300,
+        },
+        {
+          component_code: "component_b",
+          today_weighted_mean: 0.93,
+          baseline_weighted_mean: 0.95,
+          delta: -0.02,
+          today_evidence_count: 34,
+          baseline_evidence_count: 280,
+        },
+      ],
+      assessment: {
+        level: "minor_drop",
+        detail:
+          "today's weighted-mean confidence is 4.1% below the previous-7-day mean; monitor the trend",
+      },
     };
   }
 

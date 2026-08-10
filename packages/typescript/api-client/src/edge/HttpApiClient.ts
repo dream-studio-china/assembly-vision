@@ -4,6 +4,8 @@ import type { Validator } from "./validate";
 import { validators } from "./validate";
 import type {
   CameraState,
+  ConfidenceDriftFilter,
+  ConfidenceDriftReport,
   CurrentInspection,
   DeviceStatus,
   EffectiveConfiguration,
@@ -269,6 +271,22 @@ export class HttpApiClient implements ApiClient {
     if (filter?.line) params.set("line", filter.line);
     const qs = params.toString();
     return this.#request(`/statistics${qs ? `?${qs}` : ""}`, undefined, validators.statisticsSummary);
+  }
+
+  getConfidenceDrift(filter?: ConfidenceDriftFilter): Promise<ConfidenceDriftReport> {
+    const params = new URLSearchParams();
+    if (filter?.product_code) params.set("product_code", filter.product_code);
+    if (filter?.rule_version_id) params.set("rule_version_id", filter.rule_version_id);
+    if (filter?.component_code) params.set("component_code", filter.component_code);
+    if (filter?.tz_offset_minutes !== undefined) {
+      params.set("tz_offset_minutes", String(filter.tz_offset_minutes));
+    }
+    const qs = params.toString();
+    return this.#request(
+      `/statistics/confidence-drift${qs ? `?${qs}` : ""}`,
+      undefined,
+      validators.confidenceDriftReport,
+    );
   }
 
   devInspectFrame(

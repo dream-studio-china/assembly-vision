@@ -395,4 +395,28 @@ export default {
   "Model/rule incompatible": "Model/rule incompatible",
   "Rule not found": "Rule not found",
   "Invalid configuration": "Invalid configuration",
+  // Confidence drift (design 15.3.6)
+  "Confidence drift": "Confidence drift",
+  "Compares today's weighted mean detection confidence with yesterday and the previous 7 days for the same product and rule. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).":
+    "Compares today's weighted mean detection confidence with yesterday and the previous 7 days for the same product and rule. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).",
+  "Stable": "Stable",
+  "Minor drop": "Minor drop",
+  "Noticeable drop": "Noticeable drop",
+  "Minor rise": "Minor rise",
+  "Noticeable rise": "Noticeable rise",
+  "Insufficient data": "Insufficient data",
+  "Today": "Today",
+  "Yesterday": "Yesterday",
+  "Previous 7 days": "Previous 7 days",
+  "Median": "Median",
+  "Samples": "Samples",
+  "Comparison": "Comparison",
+  "Delta": "Delta",
+  "Relative": "Relative",
+  "Today vs yesterday": "Today vs yesterday",
+  "Today vs previous 7 days": "Today vs previous 7 days",
+  "Today mean": "Today mean",
+  "Baseline mean": "Baseline mean",
+  "Confidence drift unavailable": "Confidence drift unavailable",
+
 } as const;

@@ -508,6 +508,75 @@ export type StatisticsSummary = {
   pass_rate: number;
 };
 
+export type ConfidenceDriftFilter = {
+  product_code?: string;
+  rule_version_id?: string;
+  component_code?: string;
+  /** Operator-local timezone offset in minutes (UTC-12 .. UTC+14). */
+  tz_offset_minutes?: number;
+};
+
+export type ConfidencePeriod = {
+  from_iso: string;
+  to_iso: string;
+  inspection_count: number;
+  evidence_count: number;
+  weighted_mean: number | null;
+  median: number | null;
+};
+
+export type ConfidenceComparison = {
+  weighted_mean_delta: number | null;
+  weighted_mean_relative_percent: number | null;
+  today_evidence_count: number;
+  baseline_evidence_count: number;
+};
+
+export type ComponentConfidenceDrift = {
+  component_code: string;
+  today_weighted_mean: number | null;
+  baseline_weighted_mean: number | null;
+  delta: number | null;
+  today_evidence_count: number;
+  baseline_evidence_count: number;
+};
+
+export type ConfidenceDriftScope = {
+  device_id: string;
+  product_code: string | null;
+  rule_version_id: string | null;
+  tz_offset_minutes: number;
+  as_of_iso: string;
+};
+
+export type DriftLevel =
+  | "stable"
+  | "minor_drop"
+  | "noticeable_drop"
+  | "minor_rise"
+  | "noticeable_rise"
+  | "insufficient_data";
+
+export type DriftAssessment = {
+  level: DriftLevel;
+  detail: string;
+};
+
+export type ConfidenceDriftReport = {
+  scope: ConfidenceDriftScope;
+  periods: {
+    today: ConfidencePeriod;
+    yesterday: ConfidencePeriod;
+    previous_7d: ConfidencePeriod;
+  };
+  comparison: {
+    today_vs_yesterday: ConfidenceComparison;
+    today_vs_previous_7d: ConfidenceComparison;
+  };
+  components: ComponentConfidenceDrift[];
+  assessment: DriftAssessment;
+};
+
 /** One analyzed frame's decision summary (web dev test harness, ADR-014). */
 export type VideoFrameInspectResult = {
   index: number;
