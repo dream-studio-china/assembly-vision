@@ -48,6 +48,7 @@ onBeforeUnmount(() => {
         <router-link to="/">Operator</router-link>
         <router-link to="/live">Live</router-link>
         <router-link to="/history">History</router-link>
+        <router-link to="/review">Review</router-link>
         <router-link to="/statistics">Statistics</router-link>
         <router-link to="/uploads">Uploads</router-link>
         <router-link to="/health">Health</router-link>

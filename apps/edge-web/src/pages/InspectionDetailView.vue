@@ -5,6 +5,7 @@ import { DetectionViewer, StatusBadge, formatBytes, formatIsoTime, formatLatency
 import type { ViewerBox } from "@assemblyvision/ui";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import ReviewPanel from "../components/ReviewPanel.vue";
 import { getApiClient, isCrossOriginHttp, isMockMode } from "../services/client";
 import { buildMediaUrl, inspectionService } from "../services/inspectionService";
 import { placeholderFrame } from "../services/placeholder";
@@ -300,6 +301,13 @@ const qualityLabel = computed<string>(() => {
           </ul>
         </aside>
       </div>
+
+      <ReviewPanel
+        v-if="record"
+        :inspection-id="record.inspection_id"
+        :business-result="record.decision.business_result"
+        :internal-decision="record.decision.internal_decision"
+      />
     </template>
 
     <el-empty v-else description="Loading" />

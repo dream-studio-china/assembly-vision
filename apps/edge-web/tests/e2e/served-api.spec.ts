@@ -170,6 +170,29 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
     await page.getByRole("tab", { name: "Product ROI" }).click();
     await expect(page.getByText("Media content unavailable")).toBeVisible();
     await expect(page.locator('img[alt="inspection media"]')).toHaveCount(0);
+
+    // Optional human-in-the-loop review (design 24): the detail view offers a
+    // review panel and a submitted disposition appears in the review queue.
+    await page.goto(`http://127.0.0.1:${port}/inspections/${inspectionId}`);
+    await expect(page.getByText("Human review")).toBeVisible();
+    await expect(page.getByText("Optional audit review")).toBeVisible();
+    const review = await page.request.post(
+      `http://127.0.0.1:${port}/api/v1/inspections/${inspectionId}/reviews`,
+      {
+        data: {
+          disposition: "CONFIRMED_OK",
+          reason: "audit sampled",
+          reviewer: "e2e-reviewer",
+        },
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    expect(review.status()).toBe(200);
+    await page.goto(`http://127.0.0.1:${port}/review`);
+    await page.locator("label.el-radio-button", { hasText: "OK" }).click();
+    await page.locator("label.el-radio-button", { hasText: "All states" }).click();
+    await expect(page.getByText("SN-E2E-REAL")).toBeVisible();
+    await expect(page.getByText("Confirmed OK")).toBeVisible();
   } finally {
     proc.kill("SIGTERM");
   }
