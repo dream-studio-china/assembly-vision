@@ -2,8 +2,10 @@
 import type { InspectionFilter, InspectionSummary } from "@assemblyvision/api-client";
 import { StatusBadge, formatIsoTime, toDecisionStatus } from "@assemblyvision/ui";
 import { onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { getApiClient } from "../services/client";
 
+const { t } = useI18n();
 const PAGE_SIZE = 50;
 
 const items = ref<InspectionSummary[]>([]);
@@ -85,8 +87,8 @@ onMounted(load);
       <el-select
         v-model="resultFilter"
         data-testid="inspection-result-filter"
-        aria-label="Inspection result filter"
-        placeholder="All results"
+        :aria-label="t('Inspection result filter')"
+        :placeholder="t('All results')"
         clearable
         @change="resetAndLoad"
         style="width: 150px"
@@ -96,57 +98,57 @@ onMounted(load);
       </el-select>
       <el-input
         v-model="barcodeFilter"
-        placeholder="Barcode"
+        :placeholder="t('Barcode')"
         clearable
-        aria-label="Barcode filter"
+        :aria-label="t('Barcode filter')"
         @input="scheduleSearch"
         style="width: 170px"
       />
       <el-input
         v-model="productFilter"
-        placeholder="Product"
+        :placeholder="t('Product')"
         clearable
-        aria-label="Product filter"
+        :aria-label="t('Product filter')"
         @input="scheduleSearch"
         style="width: 170px"
       />
       <el-date-picker
         type="datetimerange"
-        start-placeholder="From"
-        end-placeholder="To"
+        :start-placeholder="t('From')"
+        :end-placeholder="t('To')"
         value-format="YYYY-MM-DDTHH:mm:ssZ"
         @change="onDateRange"
         style="width: 320px"
       />
-      <span class="inspections__count">{{ items.length }} rows</span>
+      <span class="inspections__count">{{ t("{count} rows", { count: items.length }) }}</span>
     </div>
 
-    <el-table :data="items" v-loading="loading" empty-text="No inspections found">
-      <el-table-column prop="inspection_id" label="Inspection ID" min-width="200">
+    <el-table :data="items" v-loading="loading" :empty-text="t('No inspections found')">
+      <el-table-column prop="inspection_id" :label="t('Inspection ID')" min-width="200">
         <template #default="{ row }">
           <router-link :to="`/inspections/${row.inspection_id}`">{{ row.inspection_id }}</router-link>
         </template>
       </el-table-column>
-      <el-table-column label="Result" width="120">
+      <el-table-column :label="t('Result')" width="120">
         <template #default="{ row }">
           <StatusBadge :status="toDecisionStatus(row.business_result, row.internal_decision)" />
         </template>
       </el-table-column>
-      <el-table-column prop="product_code" label="Product" width="120" />
-      <el-table-column prop="barcode" label="Barcode" width="140" />
-      <el-table-column prop="completed_at" label="Completed" min-width="170">
+      <el-table-column prop="product_code" :label="t('Product')" width="120" />
+      <el-table-column prop="barcode" :label="t('Barcode')" width="140" />
+      <el-table-column prop="completed_at" :label="t('Completed')" min-width="170">
         <template #default="{ row }">{{ formatIsoTime(row.completed_at) }}</template>
       </el-table-column>
-      <el-table-column prop="reason_summary" label="Reasons" min-width="200">
+      <el-table-column prop="reason_summary" :label="t('Reasons')" min-width="200">
         <template #default="{ row }">
           <span v-for="code in row.reason_summary" :key="code" class="inspections__reason">{{ code }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="upload_state" label="Upload" width="110" />
+      <el-table-column prop="upload_state" :label="t('Upload')" width="110" />
     </el-table>
 
     <div class="inspections__more">
-      <el-button v-if="nextCursor" :loading="loadingMore" @click="loadMore">Load more</el-button>
+      <el-button v-if="nextCursor" :loading="loadingMore" @click="loadMore">{{ t("Load more") }}</el-button>
     </div>
   </div>
 </template>

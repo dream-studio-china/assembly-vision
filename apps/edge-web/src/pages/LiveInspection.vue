@@ -15,6 +15,7 @@ import {
 import type { ViewerBox } from "@assemblyvision/ui";
 import { ReconnectingWebSocket } from "@assemblyvision/api-client";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { mockCameraFrame } from "../mock/images";
 import { useInspectionStore } from "../stores/inspection";
 import { useRuntimeStore } from "../stores/runtime";
@@ -29,6 +30,7 @@ import {
 } from "../services/client";
 import { inspectionService } from "../services/inspectionService";
 
+const { t } = useI18n();
 const store = useInspectionStore();
 const runtime = useRuntimeStore();
 const images = ref<InspectionImages | null>(null);
@@ -73,11 +75,11 @@ const mockBoxes = computed<ViewerBox[]>(() => {
   const id = store.current?.inspection_id ?? "frame";
   const boxes: ViewerBox[] = [];
   if (store.current?.status === "NG") {
-    boxes.push({ id: "manual", kind: "component", label: "manual (missing)", box: { x_min: 500, y_min: 420, x_max: 620, y_max: 480 }, frameId: id });
+    boxes.push({ id: "manual", kind: "component", label: t("manual (missing)"), box: { x_min: 500, y_min: 420, x_max: 620, y_max: 480 }, frameId: id });
   } else if (store.current?.status === "PASS" || store.current?.status === "PROCESSING") {
-    boxes.push({ id: "product", kind: "product", label: "product", box: { x_min: 120, y_min: 90, x_max: 680, y_max: 520 }, frameId: id });
+    boxes.push({ id: "product", kind: "product", label: t("product"), box: { x_min: 120, y_min: 90, x_max: 680, y_max: 520 }, frameId: id });
   }
-  boxes.push({ id: "roi", kind: "roi", label: "ROI", box: { x_min: 80, y_min: 60, x_max: 720, y_max: 550 }, frameId: id });
+  boxes.push({ id: "roi", kind: "roi", label: t("ROI"), box: { x_min: 80, y_min: 60, x_max: 720, y_max: 550 }, frameId: id });
   return boxes;
 });
 
@@ -252,8 +254,8 @@ onBeforeUnmount(() => {
   <div class="live-inspection">
     <div class="live-inspection__head">
       <div>
-        <p class="live-inspection__eyebrow">LOCAL INSPECTION</p>
-        <h2>Live inspection</h2>
+        <p class="live-inspection__eyebrow">{{ t("LOCAL INSPECTION") }}</p>
+        <h2>{{ t("Live inspection") }}</h2>
       </div>
       <StatusBadge :status="badgeStatus" />
       <span class="live-inspection__sn">{{ headerSn }}</span>
@@ -275,31 +277,31 @@ onBeforeUnmount(() => {
       :closable="false"
     />
 
-    <div class="live-inspection__strips" aria-label="Inspection readiness and connectivity">
+    <div class="live-inspection__strips" :aria-label="t('Inspection readiness and connectivity')">
       <section class="status-strip">
-        <h3>Inspection readiness</h3>
+        <h3>{{ t("Inspection readiness") }}</h3>
         <div class="status-strip__items">
-          <span class="status-chip" :class="runtime.status?.inspection_ready ? 'status-chip--ready' : 'status-chip--critical'">Engine {{ runtime.status?.inspection_ready ? "ready" : "not ready" }}</span>
-          <span class="status-chip" :class="runtime.status?.camera_connected ? 'status-chip--ready' : 'status-chip--critical'">Camera {{ runtime.status?.camera_connected ? "connected" : "offline" }}</span>
-          <span class="status-chip" :class="runtime.status?.model_loaded ? 'status-chip--ready' : 'status-chip--critical'">Model {{ runtime.status?.model_loaded ? "loaded" : "unavailable" }}</span>
-          <span class="status-chip" :class="runtime.status?.current_rule_version_id ? 'status-chip--ready' : 'status-chip--critical'">Rule {{ runtime.status?.current_rule_version_id ? "loaded" : "missing" }}</span>
-          <span class="status-chip" :class="(runtime.status?.storage_mode ?? 'NORMAL') !== 'NORMAL' ? 'status-chip--warning' : 'status-chip--ready'">Disk {{ runtime.status ? formatBytes(runtime.status.disk_free_bytes) + " free · " + (runtime.status.storage_mode ?? "NORMAL") : "unknown" }}</span>
+          <span class="status-chip" :class="runtime.status?.inspection_ready ? 'status-chip--ready' : 'status-chip--critical'">{{ t("Engine {state}", { state: runtime.status?.inspection_ready ? t("ready") : t("not ready") }) }}</span>
+          <span class="status-chip" :class="runtime.status?.camera_connected ? 'status-chip--ready' : 'status-chip--critical'">{{ t("Camera {state}", { state: runtime.status?.camera_connected ? t("connected") : t("offline") }) }}</span>
+          <span class="status-chip" :class="runtime.status?.model_loaded ? 'status-chip--ready' : 'status-chip--critical'">{{ t("Model {state}", { state: runtime.status?.model_loaded ? t("loaded") : t("unavailable") }) }}</span>
+          <span class="status-chip" :class="runtime.status?.current_rule_version_id ? 'status-chip--ready' : 'status-chip--critical'">{{ t("Rule {state}", { state: runtime.status?.current_rule_version_id ? t("loaded") : t("missing") }) }}</span>
+          <span class="status-chip" :class="(runtime.status?.storage_mode ?? 'NORMAL') !== 'NORMAL' ? 'status-chip--warning' : 'status-chip--ready'">{{ runtime.status ? t("Disk {bytes} free · {mode}", { bytes: formatBytes(runtime.status.disk_free_bytes), mode: runtime.status.storage_mode ?? "NORMAL" }) : t("unknown") }}</span>
         </div>
       </section>
       <section class="status-strip">
-        <h3>Connectivity</h3>
+        <h3>{{ t("Connectivity") }}</h3>
         <div class="status-strip__items">
-          <span class="status-chip" :class="localApiFresh ? 'status-chip--ready' : 'status-chip--neutral'">Local API {{ localApiFresh ? "available" : "stale" }}</span>
-          <span class="status-chip" :class="runtime.status?.central_connected ? 'status-chip--ready' : 'status-chip--warning'">Central {{ runtime.status?.central_connected ? "connected" : "offline" }}</span>
-          <span class="status-chip status-chip--neutral">Uploads pending {{ runtime.status?.upload_pending_count ?? "-" }}</span>
+          <span class="status-chip" :class="localApiFresh ? 'status-chip--ready' : 'status-chip--neutral'">{{ t("Local API {state}", { state: localApiFresh ? t("available") : t("stale") }) }}</span>
+          <span class="status-chip" :class="runtime.status?.central_connected ? 'status-chip--ready' : 'status-chip--warning'">{{ t("Central {state}", { state: runtime.status?.central_connected ? t("connected") : t("offline") }) }}</span>
+          <span class="status-chip status-chip--neutral">{{ t("Uploads pending {count}", { count: runtime.status?.upload_pending_count ?? "-" }) }}</span>
         </div>
-        <p class="live-inspection__updated">Last updated {{ lastUpdatedTime }}</p>
+        <p class="live-inspection__updated">{{ t("Last updated {time}", { time: lastUpdatedTime }) }}</p>
       </section>
     </div>
 
     <div class="live-inspection__grid">
       <section class="panel">
-        <h3>Camera image</h3>
+        <h3>{{ t("Camera image") }}</h3>
         <div class="live-inspection__viewer">
           <DetectionViewer
             v-if="cameraFrame"
@@ -311,10 +313,10 @@ onBeforeUnmount(() => {
             :last-frame-at="frameTimestamp"
             :stale-after-ms="3000"
           />
-          <div v-if="isCameraStale" class="live-inspection__stale" role="status">STALE FRAME</div>
+          <div v-if="isCameraStale" class="live-inspection__stale" role="status">{{ t("STALE FRAME") }}</div>
           <el-empty
             v-else-if="!cameraFrame"
-            description="No camera feed available"
+            :description="t('No camera feed available')"
             :image-size="72"
             class="live-inspection__unavailable"
           />
@@ -322,7 +324,7 @@ onBeforeUnmount(() => {
       </section>
 
       <section class="panel">
-        <h3>Detection result</h3>
+        <h3>{{ t("Detection result") }}</h3>
         <div class="live-inspection__viewer">
           <DetectionViewer
             v-if="detectionUrl"
@@ -334,7 +336,7 @@ onBeforeUnmount(() => {
           />
           <el-empty
             v-else
-            description="No detection image available"
+            :description="t('No detection image available')"
             :image-size="72"
             class="live-inspection__unavailable"
           />
@@ -342,7 +344,7 @@ onBeforeUnmount(() => {
       </section>
 
       <section class="panel">
-        <h3>Detection regions</h3>
+        <h3>{{ t("Detection regions") }}</h3>
         <div class="live-inspection__viewer">
           <DetectionViewer
             v-if="annotatedUrl"
@@ -354,7 +356,7 @@ onBeforeUnmount(() => {
           />
           <el-empty
             v-else
-            description="No annotated image available"
+            :description="t('No annotated image available')"
             :image-size="72"
             class="live-inspection__unavailable"
           />
@@ -364,66 +366,66 @@ onBeforeUnmount(() => {
 
     <div class="live-inspection__info" :class="{ 'live-inspection__info--single': isHttp }">
       <section v-if="isHttp" class="panel">
-        <h3>Latest result</h3>
+        <h3>{{ t("Latest result") }}</h3>
         <template v-if="latestResult">
           <StatusBadge :status="badgeStatus" />
           <dl class="info-dl">
-            <dt>Inspection ID</dt>
+            <dt>{{ t("Inspection ID") }}</dt>
             <dd>{{ latestResult.inspection_id }}</dd>
-            <dt>Barcode / SN</dt>
+            <dt>{{ t("Barcode / SN") }}</dt>
             <dd>{{ latestResult.barcode ?? latestResult.sn ?? "—" }}</dd>
-            <dt>Product</dt>
+            <dt>{{ t("Product") }}</dt>
             <dd>{{ latestResult.product_code || "—" }}</dd>
-            <dt>Latency</dt>
+            <dt>{{ t("Latency") }}</dt>
             <dd>{{ formatLatency(latestResult.latency_ms) }}</dd>
-            <dt>Completed</dt>
+            <dt>{{ t("Completed") }}</dt>
             <dd>{{ formatIsoTime(latestResult.completed_at) }}</dd>
           </dl>
         </template>
         <el-empty
           v-else
-          description="No completed inspection yet"
+          :description="t('No completed inspection yet')"
           :image-size="48"
           class="live-inspection__info-empty"
         />
       </section>
 
       <section v-else class="panel">
-        <h3>Inspection details</h3>
+        <h3>{{ t("Inspection details") }}</h3>
         <dl class="info-dl">
-          <dt>Inspection ID</dt>
+          <dt>{{ t("Inspection ID") }}</dt>
           <dd>{{ store.current?.inspection_id }}</dd>
-          <dt>SN</dt>
+          <dt>{{ t("SN") }}</dt>
           <dd>{{ store.current?.sn ?? "—" }}</dd>
-          <dt>Product</dt>
+          <dt>{{ t("Product") }}</dt>
           <dd>{{ store.current?.product_code || "—" }}</dd>
-          <dt>Operator</dt>
+          <dt>{{ t("Operator") }}</dt>
           <dd>{{ store.current?.operator ?? "—" }}</dd>
-          <dt>Started</dt>
+          <dt>{{ t("Started") }}</dt>
           <dd>{{ formatIsoTime(store.current?.started_at) }}</dd>
-          <dt>Duration</dt>
+          <dt>{{ t("Duration") }}</dt>
           <dd>{{ formatLatency(store.current?.duration_ms) }}</dd>
-          <dt>Status</dt>
+          <dt>{{ t("Status") }}</dt>
           <dd>{{ store.current?.status ?? "WAITING" }}</dd>
         </dl>
       </section>
 
       <section v-if="!isHttp" class="panel">
-        <h3>Rules</h3>
+        <h3>{{ t("Rules") }}</h3>
         <el-table :data="store.current?.rules ?? []" size="small">
-          <el-table-column prop="name" label="Rule" min-width="150" />
-          <el-table-column label="Status" width="100">
+          <el-table-column prop="name" :label="t('Rule')" min-width="150" />
+          <el-table-column :label="t('Status')" width="100">
             <template #default="{ row }">
               <span class="rule" :class="`rule--${row.status.toLowerCase()}`">{{ row.status }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="result_message" label="Result message" min-width="160" />
+          <el-table-column prop="result_message" :label="t('Result message')" min-width="160" />
         </el-table>
       </section>
     </div>
 
     <section class="panel live-inspection__recent">
-      <h3>Recent results</h3>
+      <h3>{{ t("Recent results") }}</h3>
       <div v-if="recentResults.length" class="live-inspection__rail">
         <router-link
           v-for="r in recentResults"
@@ -438,21 +440,21 @@ onBeforeUnmount(() => {
       </div>
       <el-empty
         v-else
-        description="No completed inspections yet"
+        :description="t('No completed inspections yet')"
         :image-size="48"
         class="live-inspection__info-empty"
       />
     </section>
 
     <section class="panel live-inspection__logs">
-      <h3>Runtime logs</h3>
+      <h3>{{ t("Runtime logs") }}</h3>
       <el-table :data="logs" size="small" height="280">
-        <el-table-column label="Time" width="150">
+        <el-table-column :label="t('Time')" width="150">
           <template #default="{ row }">{{ formatIsoTime(row.logged_at) }}</template>
         </el-table-column>
-        <el-table-column prop="level" label="Level" width="70" />
-        <el-table-column prop="component" label="Component" width="140" />
-        <el-table-column prop="message" label="Message" min-width="200" />
+        <el-table-column prop="level" :label="t('Level')" width="70" />
+        <el-table-column prop="component" :label="t('Component')" width="140" />
+        <el-table-column prop="message" :label="t('Message')" min-width="200" />
       </el-table>
     </section>
   </div>

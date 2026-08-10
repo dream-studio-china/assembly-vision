@@ -1,5 +1,6 @@
 import type { DeviceStatus } from "@assemblyvision/api-client";
 import { defineStore } from "pinia";
+import { i18n } from "../i18n";
 
 export type AlertSeverity = "critical" | "warning" | "info";
 
@@ -98,14 +99,17 @@ export const useAlertsStore = defineStore("alerts", {
 
 function deriveCandidates(status: DeviceStatus): AlertCandidate[] {
   const candidates: AlertCandidate[] = [];
+  // The alert text follows the dashboard locale (i18n); codes stay stable so
+  // tests and the API contract never depend on translated prose.
+  const t = i18n.global.t;
 
   if (!status.inspection_ready) {
     candidates.push({
       id: "not_ready",
       severity: "critical",
       code: "NOT_READY",
-      message: "Inspection not ready",
-      guidance: "Inspection cannot run until all readiness checks pass. Review camera, model, and rule status before resuming.",
+      message: t("Inspection not ready"),
+      guidance: t("Inspection cannot run until all readiness checks pass. Review camera, model, and rule status before resuming."),
     });
   }
 
@@ -114,8 +118,8 @@ function deriveCandidates(status: DeviceStatus): AlertCandidate[] {
       id: "camera_disconnected",
       severity: "critical",
       code: "CAMERA_DISCONNECTED",
-      message: "Camera disconnected",
-      guidance: "Check cable and power; administrator may request reconnect.",
+      message: t("Camera disconnected"),
+      guidance: t("Check cable and power; administrator may request reconnect."),
     });
   }
 
@@ -125,10 +129,10 @@ function deriveCandidates(status: DeviceStatus): AlertCandidate[] {
       id: "model_unavailable",
       severity: "critical",
       code: "MODEL_UNAVAILABLE",
-      message: "Model unavailable",
+      message: t("Model unavailable"),
       guidance: versions
-        ? `Active model versions: ${versions}. Load the required models before inspecting.`
-        : "No active model version is present. Load the required models before inspecting.",
+        ? t("Active model versions: {versions}. Load the required models before inspecting.", { versions })
+        : t("No active model version is present. Load the required models before inspecting."),
     });
   }
 
@@ -137,8 +141,8 @@ function deriveCandidates(status: DeviceStatus): AlertCandidate[] {
       id: "rule_unavailable",
       severity: "critical",
       code: "RULE_UNAVAILABLE",
-      message: "Rule unavailable",
-      guidance: "No active rule version is loaded. Inspection cannot run without a valid rule set.",
+      message: t("Rule unavailable"),
+      guidance: t("No active rule version is loaded. Inspection cannot run without a valid rule set."),
     });
   }
 
@@ -147,8 +151,10 @@ function deriveCandidates(status: DeviceStatus): AlertCandidate[] {
       id: "disk_low",
       severity: status.storage_mode === "STOP" ? "critical" : "warning",
       code: "DISK_LOW",
-      message: `Disk space ${status.storage_mode.toLowerCase()}`,
-      guidance: `Free space: ${formatFreeBytes(status.storage_free_bytes)}. Manage retention so required evidence is never silently discarded.`,
+      message: t("Disk space {mode}", { mode: status.storage_mode.toLowerCase() }),
+      guidance: t("Free space: {bytes}. Manage retention so required evidence is never silently discarded.", {
+        bytes: formatFreeBytes(status.storage_free_bytes),
+      }),
     });
   }
 
@@ -157,8 +163,10 @@ function deriveCandidates(status: DeviceStatus): AlertCandidate[] {
       id: "central_unreachable",
       severity: "warning",
       code: "CENTRAL_UNREACHABLE",
-      message: "Central server unreachable",
-      guidance: `Inspection continues locally; uploads queue and retry automatically. Pending uploads: ${status.upload_pending_count}.`,
+      message: t("Central server unreachable"),
+      guidance: t("Inspection continues locally; uploads queue and retry automatically. Pending uploads: {count}.", {
+        count: status.upload_pending_count,
+      }),
     });
   }
 
@@ -169,8 +177,8 @@ function deriveCandidates(status: DeviceStatus): AlertCandidate[] {
       id: "upload_degraded",
       severity: "warning",
       code: "UPLOAD_DEGRADED",
-      message: "Upload degraded",
-      guidance: "Uploads are failing or the retry circuit is open. Review connectivity and the upload error details.",
+      message: t("Upload degraded"),
+      guidance: t("Uploads are failing or the retry circuit is open. Review connectivity and the upload error details."),
     });
   }
 
@@ -179,8 +187,8 @@ function deriveCandidates(status: DeviceStatus): AlertCandidate[] {
       id: "sync_pending",
       severity: "info",
       code: "SYNC_PENDING",
-      message: "Synchronization pending",
-      guidance: "The device has not fully synchronized with the central server.",
+      message: t("Synchronization pending"),
+      guidance: t("The device has not fully synchronized with the central server."),
     });
   }
 

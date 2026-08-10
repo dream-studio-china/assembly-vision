@@ -2,8 +2,10 @@
 import type { UploadTask, UploadTaskState } from "@assemblyvision/api-client";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { getApiClient } from "../services/client";
 
+const { t } = useI18n();
 const tasks = ref<UploadTask[]>([]);
 const loading = ref(false);
 const retrying = ref<string | null>(null);
@@ -60,14 +62,14 @@ async function retry(task: UploadTask): Promise<void> {
   let reason: string;
   try {
     const result = await ElMessageBox.prompt(
-      `Reset upload task ${task.upload_task_id} to pending and retry it now?`,
-      "Confirm manual retry",
+      t("Reset upload task {id} to pending and retry it now?", { id: task.upload_task_id }),
+      t("Confirm manual retry"),
       {
-        confirmButtonText: "Retry",
-        cancelButtonText: "Cancel",
-        inputPlaceholder: "Reason for the retry (required)",
+        confirmButtonText: t("Retry"),
+        cancelButtonText: t("Cancel"),
+        inputPlaceholder: t("Reason for the retry (required)"),
         inputValidator: (value) =>
-          value.trim().length > 0 ? true : "A reason is required to confirm the retry",
+          value.trim().length > 0 ? true : t("A reason is required to confirm the retry"),
       },
     );
     reason = result.value.trim();
@@ -79,12 +81,12 @@ async function retry(task: UploadTask): Promise<void> {
     const updated = await getApiClient().retryUpload(task.upload_task_id, { reason });
     const index = tasks.value.findIndex((t) => t.upload_task_id === task.upload_task_id);
     if (index >= 0) tasks.value[index] = updated;
-    ElMessage.success("Task reset to pending; it will drain on the next attempt");
+    ElMessage.success(t("Task reset to pending; it will drain on the next attempt"));
   } catch (error) {
     // The server is authoritative: a concurrent worker claim or another
     // operator retry surfaces as a 409/404 problem without local mutation.
     const message = error instanceof Error ? error.message : String(error);
-    ElMessage.error(`Retry failed: ${message}`);
+    ElMessage.error(t("Retry failed: {message}", { message }));
     await load();
   } finally {
     retrying.value = null;
@@ -96,20 +98,20 @@ onMounted(load);
 
 <template>
   <div class="uploads">
-    <h2>Upload queue</h2>
-    <div class="uploads__counts" aria-label="Upload queue state counts">
+    <h2>{{ t("Upload queue") }}</h2>
+    <div class="uploads__counts" :aria-label="t('Upload queue state counts')">
       <span v-for="state in COUNT_STATES" :key="state" class="uploads__count">
         <span class="uploads__count-value">{{ statusCounts[state] }}</span>
         {{ state }}
       </span>
     </div>
     <div class="uploads__toolbar">
-      <el-switch v-model="showAll" active-text="All tasks" inactive-text="Unfinished only" />
+      <el-switch v-model="showAll" :active-text="t('All tasks')" :inactive-text="t('Unfinished only')" />
     </div>
     <el-table :data="visibleTasks" v-loading="loading">
-      <el-table-column prop="upload_task_id" label="Task ID" min-width="200" />
-      <el-table-column prop="kind" label="Kind" width="110" />
-      <el-table-column label="Inspection" min-width="200">
+      <el-table-column prop="upload_task_id" :label="t('Task ID')" min-width="200" />
+      <el-table-column prop="kind" :label="t('Kind')" width="110" />
+      <el-table-column :label="t('Inspection')" min-width="200">
         <template #default="{ row }">
           <router-link v-if="row.inspection_id" :to="`/inspections/${row.inspection_id}`">
             {{ row.inspection_id }}
@@ -117,15 +119,15 @@ onMounted(load);
           <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="Status" width="150" />
-      <el-table-column prop="attempt_count" label="Attempts" width="90" />
-      <el-table-column prop="next_attempt_at" label="Next attempt" min-width="170">
+      <el-table-column prop="status" :label="t('Status')" width="150" />
+      <el-table-column prop="attempt_count" :label="t('Attempts')" width="90" />
+      <el-table-column prop="next_attempt_at" :label="t('Next attempt')" min-width="170">
         <template #default="{ row }">{{ row.next_attempt_at ?? "-" }}</template>
       </el-table-column>
-      <el-table-column prop="last_error_code" label="Last error" min-width="140">
+      <el-table-column prop="last_error_code" :label="t('Last error')" min-width="140">
         <template #default="{ row }">{{ row.last_error_code ?? "-" }}</template>
       </el-table-column>
-      <el-table-column label="Actions" width="110" fixed="right">
+      <el-table-column :label="t('Actions')" width="110" fixed="right">
         <template #default="{ row }">
           <el-button
             size="small"
@@ -134,16 +136,15 @@ onMounted(load);
             :loading="retrying === row.upload_task_id"
             @click="retry(row)"
           >
-            Retry
+            {{ t("Retry") }}
           </el-button>
         </template>
       </el-table-column>
     </el-table>
     <p class="uploads__hint">
-      Manual retry is available only for <code>RETRY_WAIT</code> and
-      <code>PERMANENT_FAILURE</code> tasks and preserves attempt history; a
-      retried task never re-authorizes retention deletion before a new verified
-      receipt (E3c).
+      {{ t("Manual retry is available only for") }} <code>RETRY_WAIT</code>
+      {{ t("and") }} <code>PERMANENT_FAILURE</code>
+      {{ t("tasks and preserves attempt history; a retried task never re-authorizes retention deletion before a new verified receipt (E3c).") }}
     </p>
   </div>
 </template>

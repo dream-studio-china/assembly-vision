@@ -2,6 +2,7 @@
 import { formatBytes, formatIsoTime } from "@assemblyvision/ui";
 import * as echarts from "echarts";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import EChart from "../components/EChart.vue";
 import { getApiClient } from "../services/client";
 import { useAlertsStore } from "../stores/alerts";
@@ -9,6 +10,7 @@ import type { Alert } from "../stores/alerts";
 import { chartTokens } from "../theme";
 import type { DeviceStatus, UploadTask } from "@assemblyvision/api-client";
 
+const { t } = useI18n();
 const status = ref<DeviceStatus | null>(null);
 const uploads = ref<UploadTask[]>([]);
 const error = ref<string | null>(null);
@@ -19,9 +21,9 @@ const activeAlerts = computed<Alert[]>(() => alertsStore.alerts);
 const clearedAlerts = computed<Alert[]>(() => alertsStore.history);
 
 const severityLabel: Record<Alert["severity"], string> = {
-  critical: "Critical",
-  warning: "Warning",
-  info: "Info",
+  critical: t("Critical"),
+  warning: t("Warning"),
+  info: t("Info"),
 };
 
 function severityLabelOf(severity: string): string {
@@ -33,7 +35,7 @@ const diskOption = computed<echarts.EChartsOption>(() => {
   const free = status.value?.disk_free_bytes ?? 0;
   const total = Math.max(free, 50 * 1024 ** 3);
   return {
-    title: { text: "Disk usage", left: "center", textStyle: { fontSize: 14, color: theme.text } },
+    title: { text: t("Disk usage"), left: "center", textStyle: { fontSize: 14, color: theme.text } },
     series: [
       {
         type: "gauge",
@@ -44,8 +46,8 @@ const diskOption = computed<echarts.EChartsOption>(() => {
         progress: { show: true, width: 12 },
         axisLine: { lineStyle: { width: 12 } },
         axisLabel: { formatter: (value: number) => formatBytes(value) },
-        data: [{ value: total - free, name: "Used" }],
-        detail: { formatter: () => formatBytes(free) + " free", fontSize: 12 },
+        data: [{ value: total - free, name: t("Used") }],
+        detail: { formatter: () => t("{bytes} free", { bytes: formatBytes(free) }), fontSize: 12 },
       },
     ],
   };
@@ -58,7 +60,7 @@ const queueOption = computed<echarts.EChartsOption>(() => {
     byState[task.status] = (byState[task.status] ?? 0) + 1;
   }
   return {
-    title: { text: "Upload queue by state", left: "center", textStyle: { fontSize: 14, color: theme.text } },
+    title: { text: t("Upload queue by state"), left: "center", textStyle: { fontSize: 14, color: theme.text } },
     xAxis: { type: "category", data: Object.keys(byState), axisLine: { lineStyle: { color: theme.border } }, axisLabel: { color: theme.text } },
     yAxis: { type: "value", minInterval: 1, splitLine: { lineStyle: { color: theme.border } }, axisLabel: { color: theme.text } },
     series: [{ type: "bar", data: Object.values(byState), itemStyle: { color: theme.accent } }],
@@ -83,35 +85,35 @@ onMounted(async () => {
 
 <template>
   <div class="health">
-    <h2>Device health</h2>
+    <h2>{{ t("Device health") }}</h2>
     <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" />
-    <p v-if="lastUpdated" class="health__updated">Last updated {{ formatIsoTime(lastUpdated) }}</p>
+    <p v-if="lastUpdated" class="health__updated">{{ t("Last updated {time}", { time: formatIsoTime(lastUpdated) }) }}</p>
 
     <section v-if="activeAlerts.length > 0" class="health__alerts">
-      <h3>Active alerts</h3>
+      <h3>{{ t("Active alerts") }}</h3>
       <el-table :data="activeAlerts">
-        <el-table-column label="Severity" width="110">
+        <el-table-column :label="t('Severity')" width="110">
           <template #default="{ row }">
             <span class="severity-chip" :class="`severity-chip--${row.severity}`">{{ severityLabelOf(row.severity) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="code" label="Code" width="180" />
-        <el-table-column prop="message" label="Message" min-width="200" />
-        <el-table-column label="Guidance" min-width="280">
+        <el-table-column prop="code" :label="t('Code')" width="180" />
+        <el-table-column prop="message" :label="t('Message')" min-width="200" />
+        <el-table-column :label="t('Guidance')" min-width="280">
           <template #default="{ row }">
             <span class="health__guidance">{{ row.guidance }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="First observed" width="180">
+        <el-table-column :label="t('First observed')" width="180">
           <template #default="{ row }">{{ formatIsoTime(row.firstSeenAt) }}</template>
         </el-table-column>
-        <el-table-column label="Last observed" width="180">
+        <el-table-column :label="t('Last observed')" width="180">
           <template #default="{ row }">{{ formatIsoTime(row.lastSeenAt) }}</template>
         </el-table-column>
         <el-table-column v-if="activeAlerts.some((a) => a.severity !== 'critical')" label="" width="110">
           <template #default="{ row }">
             <el-button v-if="row.severity !== 'critical'" size="small" text type="primary" @click="alertsStore.dismiss(row.id)">
-              Dismiss
+              {{ t("Dismiss") }}
             </el-button>
           </template>
         </el-table-column>
@@ -120,24 +122,24 @@ onMounted(async () => {
 
     <section v-if="clearedAlerts.length > 0" class="health__cleared">
       <el-collapse>
-        <el-collapse-item :title="`Cleared alerts (${clearedAlerts.length})`" name="cleared">
+        <el-collapse-item :title="t('Cleared alerts ({count})', { count: clearedAlerts.length })" name="cleared">
           <el-table :data="clearedAlerts">
-            <el-table-column label="Severity" width="110">
+            <el-table-column :label="t('Severity')" width="110">
               <template #default="{ row }">
                 <span class="severity-chip" :class="`severity-chip--${row.severity}`">{{ severityLabelOf(row.severity) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="code" label="Code" width="180" />
-            <el-table-column prop="message" label="Message" min-width="200" />
-            <el-table-column label="Guidance" min-width="280">
+            <el-table-column prop="code" :label="t('Code')" width="180" />
+            <el-table-column prop="message" :label="t('Message')" min-width="200" />
+            <el-table-column :label="t('Guidance')" min-width="280">
               <template #default="{ row }">
                 <span class="health__guidance">{{ row.guidance }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="First observed" width="180">
+            <el-table-column :label="t('First observed')" width="180">
               <template #default="{ row }">{{ formatIsoTime(row.firstSeenAt) }}</template>
             </el-table-column>
-            <el-table-column label="Cleared" width="180">
+            <el-table-column :label="t('Cleared')" width="180">
               <template #default="{ row }">{{ formatIsoTime(row.clearedAt) }}</template>
             </el-table-column>
           </el-table>
@@ -150,23 +152,23 @@ onMounted(async () => {
       <EChart :option="queueOption" />
     </div>
     <el-table :data="status ? [status] : []">
-      <el-table-column prop="operational_state" label="State" width="140" />
-      <el-table-column prop="inspection_ready" label="Inspection ready" width="140">
-        <template #default="{ row }">{{ row.inspection_ready ? "yes" : "no" }}</template>
+      <el-table-column prop="operational_state" :label="t('State')" width="140" />
+      <el-table-column prop="inspection_ready" :label="t('Inspection ready')" width="140">
+        <template #default="{ row }">{{ row.inspection_ready ? t("yes") : t("no") }}</template>
       </el-table-column>
-      <el-table-column prop="camera_connected" label="Camera" width="100">
-        <template #default="{ row }">{{ row.camera_connected ? "connected" : "disconnected" }}</template>
+      <el-table-column prop="camera_connected" :label="t('Camera')" width="100">
+        <template #default="{ row }">{{ row.camera_connected ? t("connected") : t("disconnected") }}</template>
       </el-table-column>
-      <el-table-column prop="model_loaded" label="Model" width="100">
-        <template #default="{ row }">{{ row.model_loaded ? "loaded" : "missing" }}</template>
+      <el-table-column prop="model_loaded" :label="t('Model')" width="100">
+        <template #default="{ row }">{{ row.model_loaded ? t("loaded") : t("missing") }}</template>
       </el-table-column>
-      <el-table-column prop="central_connected" label="Central" width="100">
-        <template #default="{ row }">{{ row.central_connected ? "connected" : "offline" }}</template>
+      <el-table-column prop="central_connected" :label="t('Central')" width="100">
+        <template #default="{ row }">{{ row.central_connected ? t("connected") : t("offline") }}</template>
       </el-table-column>
-      <el-table-column label="Free disk" width="140">
+      <el-table-column :label="t('Free disk')" width="140">
         <template #default="{ row }">{{ formatBytes(row.disk_free_bytes) }}</template>
       </el-table-column>
-      <el-table-column prop="upload_pending_count" label="Pending uploads" width="140" />
+      <el-table-column prop="upload_pending_count" :label="t('Pending uploads')" width="140" />
     </el-table>
   </div>
 </template>
