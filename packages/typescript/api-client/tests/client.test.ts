@@ -118,6 +118,47 @@ describe("MockApiClient", () => {
     const freshTask = (await second.listUploads()).items.find((t) => t.status === "RETRY_WAIT");
     expect(freshTask).toBeTruthy();
   });
+
+  it("submits, lists, and queues reviews for any inspection", async () => {
+    const client = new MockApiClient();
+    const page = await client.listInspections({ business_result: "NG" });
+    const ng = page.items[0];
+
+    const open = await client.listReviewQueue({ business_result: "NG", reviewed: false });
+    expect(open.items.some((item) => item.inspection_id === ng.inspection_id)).toBe(true);
+    expect(open.items.every((item) => item.has_review === false)).toBe(true);
+
+    const review = await client.submitReview(ng.inspection_id, {
+      disposition: "CONFIRMED_NG",
+      reason: "defect visible",
+      reviewer: "operator-1",
+    });
+    expect(review.original_business_result).toBe("NG");
+    expect(review.reviewer).toBe("operator-1");
+
+    const history = await client.listInspectionReviews(ng.inspection_id);
+    expect(history.map((r) => r.review_id)).toEqual([review.review_id]);
+
+    const done = await client.listReviewQueue({ business_result: "NG", reviewed: true });
+    expect(done.items.some((item) => item.inspection_id === ng.inspection_id)).toBe(true);
+  });
+
+  it("mock client rejects an incompatible disposition like the server", async () => {
+    const client = new MockApiClient();
+    const ok = (await client.listInspections({ business_result: "OK" })).items[0];
+    await expect(
+      client.submitReview(ok.inspection_id, {
+        disposition: "REINSPECT",
+        reviewer: "operator-1",
+      }),
+    ).rejects.toMatchObject({ code: "REVIEW_DISPOSITION_INVALID", status: 422 });
+    await expect(
+      client.submitReview("00000000-0000-4000-8000-ffffffffffff", {
+        disposition: "CONFIRMED_NG",
+        reviewer: "operator-1",
+      }),
+    ).rejects.toMatchObject({ code: "INSPECTION_NOT_FOUND", status: 404 });
+  });
 });
 
 describe("HttpApiClient", () => {
@@ -186,6 +227,58 @@ describe("HttpApiClient", () => {
     expect(method).toBe("POST");
     expect(called).toContain("/api/v1/uploads/task-1/retry");
     expect(updated.status).toBe("PENDING");
+  });
+
+  it("submits a review and loads the review queue over HTTP", async () => {
+    const queueBody = { items: [], next_cursor: null };
+    const reviewBody = {
+      review_id: "r-1",
+      inspection_id: "i-1",
+      disposition: "CONFIRMED_NG",
+      reason: "defect",
+      note: null,
+      reviewer: "operator-1",
+      created_at: "2026-08-10T00:00:00Z",
+      original_business_result: "NG",
+      original_internal_decision: "NG",
+      original_reason_codes: ["COMPONENT_MISSING:component_a"],
+      component_corrections: [],
+      supersedes_review_id: null,
+    };
+    let called = "";
+    let method = "";
+    let body = "";
+    const fetchImpl = ((input: RequestInfo | URL, init?: RequestInit) => {
+      called = String(input);
+      method = init?.method ?? "GET";
+      body = String(init?.body ?? "");
+      const payload = called.includes("/reviews") && method === "POST" ? reviewBody : queueBody;
+      return Promise.resolve(
+        new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+    const client = new HttpApiClient("http://edge:8000", fetchImpl);
+
+    await client.listReviewQueue({ business_result: "NG", reviewed: false, limit: 25 });
+    expect(called).toContain("/api/v1/reviews?business_result=NG&reviewed=false&limit=25");
+
+    const review = await client.submitReview("i-1", {
+      disposition: "CONFIRMED_NG",
+      reason: "defect",
+      reviewer: "operator-1",
+    });
+    expect(review.disposition).toBe("CONFIRMED_NG");
+    expect(method).toBe("POST");
+    expect(JSON.parse(body)).toMatchObject({
+      disposition: "CONFIRMED_NG",
+      reviewer: "operator-1",
+      reason: "defect",
+      supersedes_review_id: null,
+      component_corrections: [],
+    });
   });
 
   it("maps a 409 TASK_NOT_RETRYABLE into a typed ApiError", async () => {

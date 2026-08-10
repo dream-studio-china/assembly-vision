@@ -12,8 +12,12 @@ import type {
   MediaMetadata,
   Page,
   RetryUploadRequest,
+  ReviewFilter,
+  ReviewQueueItem,
+  ReviewRecord,
   StatisticsFilter,
   StatisticsSummary,
+  SubmitReviewRequest,
   TraceabilityView,
   UploadTask,
   VideoInspectResult,
@@ -57,6 +61,22 @@ export interface ApiClient {
   retryUpload(uploadTaskId: string, request?: RetryUploadRequest): Promise<UploadTask>;
   getEffectiveConfiguration(): Promise<EffectiveConfiguration>;
   listLogs(cursor?: string, limit?: number): Promise<Page<LogEvent>>;
+
+  /**
+   * List the optional human-review queue with each inspection's review state
+   * (design 24.4). Every inspection is listed; filter by business result and
+   * `reviewed` to separate open from completed items.
+   */
+  listReviewQueue(filter?: ReviewFilter): Promise<Page<ReviewQueueItem>>;
+  /** Return the append-only review history of one inspection (24.7). */
+  listInspectionReviews(inspectionId: string): Promise<ReviewRecord[]>;
+  /**
+   * Append one human disposition for an inspection (24.3/24.6). Reviews are
+   * optional and never rewrite the machine decision; the disposition must be
+   * permitted for the machine outcome (422) and may only supersede a review
+   * of the same inspection (409).
+   */
+  submitReview(inspectionId: string, request: SubmitReviewRequest): Promise<ReviewRecord>;
 
   // Operator workflow
   getCurrentInspection(): Promise<CurrentInspection>;

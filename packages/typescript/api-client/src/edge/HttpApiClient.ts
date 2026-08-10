@@ -17,8 +17,12 @@ import type {
   Page,
   Problem,
   RetryUploadRequest,
+  ReviewFilter,
+  ReviewQueueItem,
+  ReviewRecord,
   StatisticsFilter,
   StatisticsSummary,
+  SubmitReviewRequest,
   TraceabilityView,
   UploadTask,
   VideoInspectResult,
@@ -192,6 +196,41 @@ export class HttpApiClient implements ApiClient {
     if (limit !== undefined) params.set("limit", String(limit));
     const qs = params.toString();
     return this.#request(`/logs${qs ? `?${qs}` : ""}`, undefined, validators.logPage);
+  }
+
+  listReviewQueue(filter?: ReviewFilter): Promise<Page<ReviewQueueItem>> {
+    const params = new URLSearchParams();
+    if (filter?.business_result) params.set("business_result", filter.business_result);
+    if (filter?.internal_decision) params.set("internal_decision", filter.internal_decision);
+    if (filter?.reviewed !== undefined) params.set("reviewed", String(filter.reviewed));
+    if (filter?.cursor) params.set("cursor", filter.cursor);
+    if (filter?.limit !== undefined) params.set("limit", String(filter.limit));
+    const qs = params.toString();
+    return this.#request(`/reviews${qs ? `?${qs}` : ""}`, undefined, validators.reviewPage);
+  }
+
+  listInspectionReviews(inspectionId: string): Promise<ReviewRecord[]> {
+    return this.#request(
+      `/inspections/${encodeURIComponent(inspectionId)}/reviews`,
+      undefined,
+      validators.reviewList,
+    );
+  }
+
+  submitReview(inspectionId: string, request: SubmitReviewRequest): Promise<ReviewRecord> {
+    const body: Record<string, unknown> = {
+      disposition: request.disposition,
+      reviewer: request.reviewer,
+      reason: request.reason ?? null,
+      note: request.note ?? null,
+      supersedes_review_id: request.supersedes_review_id ?? null,
+      component_corrections: request.component_corrections ?? [],
+    };
+    return this.#request(
+      `/inspections/${encodeURIComponent(inspectionId)}/reviews`,
+      { method: "POST", body: JSON.stringify(body), headers: { "Content-Type": "application/json" } },
+      validators.reviewRecord,
+    );
   }
 
   // Operator workflow (future FastAPI endpoints; see ApiClient contract).

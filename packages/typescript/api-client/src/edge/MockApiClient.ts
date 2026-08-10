@@ -23,8 +23,12 @@ import type {
   Page,
   ProductResolution,
   RetryUploadRequest,
+  ReviewFilter,
+  ReviewQueueItem,
+  ReviewRecord,
   StatisticsFilter,
   StatisticsSummary,
+  SubmitReviewRequest,
   TraceabilityView,
   UploadTask,
   VideoInspectResult,
@@ -64,6 +68,20 @@ function decision(business: BusinessResult, missing: string[], reasonCodes: stri
     reason_codes: reasonCodes,
     decided_at: ISO(0),
   };
+}
+
+/** Dispositions permitted for a machine outcome (design 24.3). */
+function allowedDispositions(
+  business: BusinessResult,
+  internal: InternalDecision,
+): string[] {
+  if (internal === "UNCERTAIN") {
+    return ["CONFIRMED_NG", "CONFIRMED_OK", "REINSPECT", "INCONCLUSIVE"];
+  }
+  if (business === "NG") {
+    return ["CONFIRMED_NG", "CONFIRMED_OK", "INCONCLUSIVE"];
+  }
+  return ["CONFIRMED_OK", "CORRECTED_NG", "INCONCLUSIVE"];
 }
 
 function record(seq: number, business: BusinessResult, missing: string[], reasonCodes: string[]): InspectionRecord {
@@ -390,6 +408,7 @@ const INITIAL_LOGS: LogEvent[] = [
 export class MockApiClient implements ApiClient {
   #records: InspectionRecord[] = RECORDS;
   #uploads: UploadTask[] = UPLOADS.slice();
+  #reviews: ReviewRecord[] = [];
   #paused = false;
   #current: CurrentInspection = buildCurrent("SN-0001", "PROCESSING");
   #queueIndex = 0;
@@ -547,6 +566,89 @@ export class MockApiClient implements ApiClient {
   async listLogs(cursor?: string, limit?: number): Promise<Page<LogEvent>> {
     void cursor;
     return { items: this.#logs.slice(0, limit ?? 50), next_cursor: null };
+  }
+
+  async listReviewQueue(filter?: ReviewFilter): Promise<Page<ReviewQueueItem>> {
+    let items = this.#records.map((r) => {
+      const reviews = this.#reviews.filter((review) => review.inspection_id === r.inspection_id);
+      const latest = reviews[reviews.length - 1];
+      return {
+        inspection_id: r.inspection_id,
+        completed_at: r.completed_at,
+        business_result: r.decision.business_result,
+        internal_decision: r.decision.internal_decision,
+        barcode: r.barcode_result.value,
+        reason_summary: r.decision.reason_codes,
+        has_review: reviews.length > 0,
+        latest_disposition: latest?.disposition ?? null,
+      };
+    });
+    if (filter?.business_result) {
+      items = items.filter((item) => item.business_result === filter.business_result);
+    }
+    if (filter?.internal_decision) {
+      items = items.filter((item) => item.internal_decision === filter.internal_decision);
+    }
+    if (filter?.reviewed !== undefined) {
+      items = items.filter((item) => item.has_review === filter.reviewed);
+    }
+    const page = items.slice(0, filter?.limit ?? 50);
+    return { items: page, next_cursor: null };
+  }
+
+  async listInspectionReviews(inspectionId: string): Promise<ReviewRecord[]> {
+    await this.getInspection(inspectionId);
+    return this.#reviews
+      .filter((review) => review.inspection_id === inspectionId)
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+  }
+
+  async submitReview(inspectionId: string, request: SubmitReviewRequest): Promise<ReviewRecord> {
+    const record = this.#records.find((r) => r.inspection_id === inspectionId);
+    if (!record) throw new ApiError(404, "INSPECTION_NOT_FOUND", `no inspection ${inspectionId}`);
+    const allowed = allowedDispositions(
+      record.decision.business_result,
+      record.decision.internal_decision,
+    );
+    if (!allowed.includes(request.disposition)) {
+      throw new ApiError(
+        422,
+        "REVIEW_DISPOSITION_INVALID",
+        `disposition ${request.disposition} is not permitted for machine outcome ${record.decision.business_result}/${record.decision.internal_decision}`,
+      );
+    }
+    const prior = this.#reviews
+      .filter((review) => review.inspection_id === inspectionId)
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+    const supersedes = request.supersedes_review_id ?? prior[prior.length - 1]?.review_id ?? null;
+    if (supersedes && !prior.some((review) => review.review_id === supersedes)) {
+      throw new ApiError(
+        409,
+        "REVIEW_CONFLICT",
+        `review ${supersedes} does not belong to inspection ${inspectionId}`,
+      );
+    }
+    const review: ReviewRecord = {
+      review_id: `00000000-0000-4000-8000-${String(this.#reviews.length + 1).padStart(12, "0")}`,
+      inspection_id: inspectionId,
+      disposition: request.disposition,
+      reason: request.reason ?? null,
+      note: request.note ?? null,
+      reviewer: request.reviewer,
+      created_at: ISO(0),
+      original_business_result: record.decision.business_result,
+      original_internal_decision: record.decision.internal_decision,
+      original_reason_codes: record.decision.reason_codes,
+      component_corrections: request.component_corrections ?? [],
+      supersedes_review_id: supersedes,
+    };
+    this.#reviews.push(review);
+    this.#log(
+      "INFO",
+      "edge.review",
+      `review ${request.disposition} recorded for inspection ${inspectionId} by ${request.reviewer}`,
+    );
+    return review;
   }
 
   // ---- Operator workflow ----
