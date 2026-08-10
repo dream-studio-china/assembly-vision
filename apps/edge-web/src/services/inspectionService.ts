@@ -22,7 +22,7 @@ import type {
   TraceabilityView,
 } from "@assemblyvision/api-client";
 import { MockApiClient } from "@assemblyvision/api-client";
-import { getApiClient, isCrossOriginHttp, isHttpMode, loadMediaBlobUrl } from "./client";
+import { getApiBaseUrl, getApiClient, isCrossOriginHttp, isHttpMode, loadMediaBlobUrl } from "./client";
 
 const operatorWorkflow = new MockApiClient();
 
@@ -52,9 +52,26 @@ async function resolveCrossOriginImages(images: InspectionImages): Promise<Inspe
   };
 }
 
+/**
+ * Content URL for one media item (design 16.5).
+ *
+ * Same-origin deployments render `<img>`/`<video>` directly against this URL so
+ * the browser can send `Range` requests for clips. Cross-origin hosts cannot
+ * serve media to a plain element (no credential header), so those deployments
+ * fetch through `getMediaContentBlobUrl` instead.
+ */
+export function buildMediaUrl(mediaId: string): string {
+  return `${getApiBaseUrl()}/api/v1/media/${encodeURIComponent(mediaId)}/content`;
+}
+
 export const inspectionService = {
   getCurrent(): Promise<CurrentInspection> {
     return operatorWorkflow.getCurrentInspection();
+  },
+
+  /** Fetch media content and return a renderable blob URL. */
+  getMediaContentBlobUrl(mediaId: string): Promise<string> {
+    return loadMediaBlobUrl(buildMediaUrl(mediaId));
   },
 
   confirmResult(): Promise<CurrentInspection> {
