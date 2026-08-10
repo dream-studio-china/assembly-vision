@@ -332,12 +332,12 @@ function validateConfidenceDriftReport(body: unknown): void {
   hasString(scope, "as_of_iso", "$.scope");
 
   const periods = expectRecord(record["periods"], "$.periods");
-  for (const key of ["today", "yesterday", "previous_7d"]) {
+  for (const key of ["today", "yesterday", "previous_7d", "previous_30d"]) {
     validateConfidencePeriod(expectRecord(periods[key], `$.periods.${key}`), `$.periods.${key}`);
   }
 
   const comparison = expectRecord(record["comparison"], "$.comparison");
-  for (const key of ["today_vs_yesterday", "today_vs_previous_7d"]) {
+  for (const key of ["today_vs_yesterday", "today_vs_previous_7d", "today_vs_previous_30d"]) {
     validateConfidenceComparison(
       expectRecord(comparison[key], `$.comparison.${key}`),
       `$.comparison.${key}`,

@@ -752,6 +752,14 @@ export class MockApiClient implements ApiClient {
           weighted_mean: 0.951,
           median: 0.96,
         },
+        previous_30d: {
+          from_iso: ISO(-30 * 86400 - 3600),
+          to_iso: ISO(-3600),
+          inspection_count: 1420,
+          evidence_count: 3480,
+          weighted_mean: 0.953,
+          median: 0.96,
+        },
       },
       comparison: {
         today_vs_yesterday: {
@@ -765,6 +773,12 @@ export class MockApiClient implements ApiClient {
           weighted_mean_relative_percent: -4.1,
           today_evidence_count: 96,
           baseline_evidence_count: 812,
+        },
+        today_vs_previous_30d: {
+          weighted_mean_delta: -0.041,
+          weighted_mean_relative_percent: -4.3,
+          today_evidence_count: 96,
+          baseline_evidence_count: 3480,
         },
       },
       components: [

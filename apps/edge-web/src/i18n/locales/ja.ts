@@ -406,6 +406,8 @@ export default {
   'Today': '今日',
   'Yesterday': '昨日',
   'Previous 7 days': '過去7日間',
+  'Previous 30 days': '過去30日間',
+  'Today vs previous 30 days': '今日 vs 過去30日間',
   'Median': '中央値',
   'Samples': 'サンプル数',
   'Comparison': '比較',

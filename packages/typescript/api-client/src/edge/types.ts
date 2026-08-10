@@ -568,10 +568,12 @@ export type ConfidenceDriftReport = {
     today: ConfidencePeriod;
     yesterday: ConfidencePeriod;
     previous_7d: ConfidencePeriod;
+    previous_30d: ConfidencePeriod;
   };
   comparison: {
     today_vs_yesterday: ConfidenceComparison;
     today_vs_previous_7d: ConfidenceComparison;
+    today_vs_previous_30d: ConfidenceComparison;
   };
   components: ComponentConfidenceDrift[];
   assessment: DriftAssessment;

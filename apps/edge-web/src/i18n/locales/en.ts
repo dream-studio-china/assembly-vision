@@ -408,6 +408,8 @@ export default {
   "Today": "Today",
   "Yesterday": "Yesterday",
   "Previous 7 days": "Previous 7 days",
+  "Previous 30 days": "Previous 30 days",
+  "Today vs previous 30 days": "Today vs previous 30 days",
   "Median": "Median",
   "Samples": "Samples",
   "Comparison": "Comparison",

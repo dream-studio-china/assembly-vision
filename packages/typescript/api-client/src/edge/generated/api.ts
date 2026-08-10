@@ -379,11 +379,11 @@ export interface paths {
          * Confidence Drift
          * @description Confidence drift analysis for one product/rule on this device (15.3.6).
          *
-         *     Compares today's weighted-mean detection confidence with yesterday and
-         *     with the previous 7 days under the premise of the same product and rule
-         *     version, so a change reflects the acquisition environment rather than a
-         *     product-rule switch. The assessment is a heuristic hint, not a root-cause
-         *     or accuracy claim.
+         *     Compares today's weighted-mean detection confidence with yesterday, the
+         *     previous 7 days, and the previous 30 days under the premise of the same
+         *     product and rule version, so a change reflects the acquisition
+         *     environment rather than a product-rule switch. The assessment is a
+         *     heuristic hint, not a root-cause or accuracy claim.
          */
         get: operations["confidence_drift_api_v1_statistics_confidence_drift_get"];
         put?: never;

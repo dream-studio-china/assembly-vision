@@ -135,6 +135,12 @@ onMounted(load);
           <div class="card__sub">{{ t("Median") }}: {{ formatConfidence(drift.periods.previous_7d.median) }}</div>
           <div class="card__sub">{{ t("Samples") }}: {{ drift.periods.previous_7d.evidence_count }}</div>
         </div>
+        <div class="card">
+          <div class="card__label">{{ t("Previous 30 days") }}</div>
+          <div class="card__value">{{ formatConfidence(drift.periods.previous_30d.weighted_mean) }}</div>
+          <div class="card__sub">{{ t("Median") }}: {{ formatConfidence(drift.periods.previous_30d.median) }}</div>
+          <div class="card__sub">{{ t("Samples") }}: {{ drift.periods.previous_30d.evidence_count }}</div>
+        </div>
       </div>
 
       <div class="drift__comparison">
@@ -159,6 +165,12 @@ onMounted(load);
               <td>{{ formatConfidence(drift.comparison.today_vs_previous_7d.weighted_mean_delta) }}</td>
               <td>{{ formatPercent(drift.comparison.today_vs_previous_7d.weighted_mean_relative_percent) }}</td>
               <td>{{ drift.comparison.today_vs_previous_7d.today_evidence_count }} / {{ drift.comparison.today_vs_previous_7d.baseline_evidence_count }}</td>
+            </tr>
+            <tr>
+              <td>{{ t("Today vs previous 30 days") }}</td>
+              <td>{{ formatConfidence(drift.comparison.today_vs_previous_30d.weighted_mean_delta) }}</td>
+              <td>{{ formatPercent(drift.comparison.today_vs_previous_30d.weighted_mean_relative_percent) }}</td>
+              <td>{{ drift.comparison.today_vs_previous_30d.today_evidence_count }} / {{ drift.comparison.today_vs_previous_30d.baseline_evidence_count }}</td>
             </tr>
           </tbody>
         </table>
@@ -274,7 +286,7 @@ onMounted(load);
 }
 .drift__periods {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 .table {
