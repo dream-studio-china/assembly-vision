@@ -2,7 +2,13 @@
 package = false
 
 [tool.uv.workspace]
-members = ["apps/edge-service", "packages/python/domain", "packages/python/vision-core", "training"]
+members = [
+    "apps/central-service",
+    "apps/edge-service",
+    "packages/python/domain",
+    "packages/python/vision-core",
+    "training",
+]
 
 [tool.ruff]
 line-length = 100
@@ -20,6 +26,8 @@ ignore = ["E501"]
 "apps/edge-service/src/assemblyvision_edge/api/routers/**" = ["B008"]
 "apps/edge-service/src/assemblyvision_edge/persistence/**" = ["S608"]
 "apps/edge-service/migrations/**" = ["UP007", "UP035", "I001", "S101"]
+"apps/central-service/src/central_service/api/routers/**" = ["B008"]
+"apps/central-service/migrations/**" = ["UP007", "UP035", "I001", "S101"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -27,7 +35,13 @@ strict = true
 exclude = ["site", "docs-zh", "docs"]
 
 [tool.pytest.ini_options]
-testpaths = ["apps/edge-service/tests", "packages/python/vision-core/tests", "training/tests", "scripts/tests"]
+testpaths = [
+    "apps/central-service/tests",
+    "apps/edge-service/tests",
+    "packages/python/vision-core/tests",
+    "training/tests",
+    "scripts/tests",
+]
 addopts = "-q"
 markers = [
     "slow: slower training or integration tests",

@@ -26,9 +26,10 @@ decision path.
 
 ## Production Status
 
-The Edge production-candidate gates E1–E5 are merged; the Central server is
-intentionally not started until the Edge gates and the Edge-to-central
-contract are ready.
+The Edge production-candidate gates E1–E5 are merged, and the Central server
+M1 pilot has started (C1a foundation delivered; C1b–C6 pending). Central
+never appears in the real-time inspection path, and M1 preserves the current
+Edge upload envelope and verified-receipt semantics.
 
 | Milestone | Status |
 |---|---|
@@ -39,8 +40,8 @@ contract are ready.
 | E5 Deployment and security | Merged (PR #24) |
 | E6 Edge acceptance | E6-prep tooling merged (PR #25); clock-drift harness and on-site acceptance remain open |
 | Barcode identity / PLC FIFO trigger (ADR-015) | Merged (PR #30) |
-| Edge-local human review (ADR-016) | Implemented, pending merge (PR #31) |
-| Central server | Not started (post E6) |
+| Edge-local human review (ADR-016) | Merged (PR #31) |
+| Central server (M1 pilot) | In progress — C1a workspace/service/Compose foundation delivered; C1b–C6 pending ([plan](docs/tasks/C1-central-server-m1.md)) |
 
 **E6 edge acceptance** is split into two phases. The **E6-prep** deliverables
 need no real environment and are delivered: the acceptance test matrix
@@ -78,6 +79,12 @@ pass results are ever recorded.
 - **Camera sources** — folder, video, OpenCV device, RTSP, HTTP-image, and a hardened GigE/GenICam source; multi-instance `serve` pairs each camera with its own models/rule/product
 - **Operator dashboard** — Vue 3 + TypeScript UI (inspection detail, live view, history, traceability, statistics, device status, images, upload queue, review queue, health) decoupled from the backend by a typed API client
 - **Edge desktop** — Electron shell running the dashboard as a local desktop/kiosk app
+
+**Central management plane (M1 pilot)**
+
+- **Central service** — FastAPI application (`apps/central-service`) with PostgreSQL persistence, MinIO object storage behind a typed abstraction, controlled schema migrations (never auto-applied by the API), and a fail-closed `/health/ready` dependency probe
+- **Pilot administration UI** — Vue 3 `admin-web` overview shell served behind an nginx proxy to the API
+- **Typed central contract** — committed OpenAPI document with generated `api-client-central` TypeScript types and CI drift checks
 
 **Engineering**
 
@@ -119,10 +126,10 @@ flowchart TB
         REVIEW --> DB
     end
 
-    subgraph Central["Central server (planned)"]
-        API["Central API"] --> CDB[("PostgreSQL")]
-        API --> OBJ[("Object storage")]
-        API --> ADMIN["Fleet · review · administration"]
+    subgraph Central["Central server (M1 pilot)"]
+        API["Central API (FastAPI)"] --> CDB[("PostgreSQL")]
+        API --> OBJ[("MinIO object storage")]
+        API --> ADMIN["admin-web (Vue)"]
     end
 
     SCHED -->|"HTTPS · idempotent · checksummed"| API
@@ -138,6 +145,12 @@ queue with idempotency and verified receipts, enforces receipt-gated retention
 cleanup, and fails closed under disk pressure or integrity faults — an
 unrecorded `OK` is never possible. Human-review dispositions are recorded
 locally (ADR-016) and never rewrite the machine decision.
+
+The central M1 pilot (`docs/tasks/C1-central-server-m1.md`) implements the
+bounded management plane: idempotent ingestion of the current edge envelope,
+PostgreSQL history, MinIO evidence, and pilot administration, delivered as
+`apps/central-service` and `apps/admin-web`. Central unavailability never
+blocks or alters an edge inspection decision.
 
 ## Quickstart
 
@@ -180,9 +193,21 @@ Run the dashboard as a local desktop/kiosk app:
 pnpm --filter edge-web build && pnpm --filter edge-desktop start
 ```
 
+Run the central M1 pilot stack (PostgreSQL + MinIO + API + admin-web):
+
+```bash
+cp apps/central-service/compose.env.example apps/central-service/.env   # dev defaults; override secrets for real use
+docker compose -f apps/central-service/compose.yaml up -d --build
+curl http://localhost:8080/api/v1/health/live        # via the admin-web proxy
+```
+
+Schema migrations are a controlled release step (the one-shot `central-migrate`
+service in the stack; the API never migrates automatically).
+
 See [QUICKSTART.md](QUICKSTART.md) for a detailed walkthrough, structured
 per app: section 4 covers the edge inspection CLI, section 5 the edge
-dashboard, section 6 the edge desktop shell.
+dashboard, section 6 the edge desktop shell, section 7 the central server
+pilot.
 
 ## Usage
 
@@ -201,20 +226,23 @@ img/product_001.jpg  NG  INFERENCE_ERROR,GATE_FAILED:product_detected,...  <insp
 
 ```text
 apps/
-  edge-service/           # inspection runtime (CLI, pipeline, rules, detectors)
-  edge-web/               # Vue 3 edge dashboard (Vite)
-  edge-desktop/           # Electron shell for the dashboard (desktop/kiosk)
+  central-service/          # central M1 API (FastAPI · PostgreSQL · MinIO)
+  admin-web/                # central administration UI (Vue 3)
+  edge-service/             # inspection runtime (CLI, pipeline, rules, detectors)
+  edge-web/                 # Vue 3 edge dashboard (Vite)
+  edge-desktop/             # Electron shell for the dashboard (desktop/kiosk)
 packages/
   python/
-    domain/               # canonical Pydantic models, errors, reason codes
-    vision-core/          # ROI geometry, image sources, manifest loading
+    domain/                 # canonical Pydantic models, errors, reason codes
+    vision-core/            # ROI geometry, image sources, manifest loading
   typescript/
-    api-client/           # edge API contract (types, Mock/HTTP client)
-    ui/                   # shared UI primitives (detection viewer, status)
-config/examples/          # pipeline, rule, and manifest examples
-models/manifests/         # model metadata (weights outside Git)
-scripts/                  # dataset adapters (Roboflow / X-AnyLabeling), e2e demo, E6 acceptance runner
-docs/                     # architecture, contracts, ADRs, runbooks
+    api-client/             # edge API contract (types, Mock/HTTP client)
+    api-client-central/     # central API contract (generated types)
+    ui/                     # shared UI primitives (detection viewer, status)
+config/examples/            # pipeline, rule, and manifest examples
+models/manifests/           # model metadata (weights outside Git)
+scripts/                    # dataset adapters (Roboflow / X-AnyLabeling), e2e demo, E6 acceptance runner
+docs/                       # architecture, contracts, ADRs, runbooks
 ```
 
 ## Documentation
@@ -229,6 +257,7 @@ docs/                     # architecture, contracts, ADRs, runbooks
 | [Single-product data acquisition](docs/design/19-training-and-evaluation.md#1917-single-product-data-acquisition-and-annotation-checklist) | What to collect and how to annotate the real-data baseline |
 | [E6 edge acceptance (matrix)](docs/tasks/E6-edge-acceptance.md) | E6-prep vs on-site split and the mandatory acceptance test matrix |
 | [Edge acceptance report template](docs/design/28-edge-acceptance-report.md) | Evidence-based report structure with `NOT_MEASURED` defaults |
+| [Central server M1 plan](docs/tasks/C1-central-server-m1.md) | Bounded pilot scope: ingestion, history, review, pilot auth, Compose |
 | [Decisions (ADRs)](docs/design/decisions/README.md) | Why major architecture choices were made |
 | [Contracts](docs/contracts/README.md) | Mandatory implementation constraints |
 | [Runbooks](docs/runbooks/README.md) | Operational recovery procedures (incl. data collection and annotation) |
@@ -253,7 +282,7 @@ procedures live in the runbooks (camera disconnection, low disk space, database
 recovery, network recovery synchronization). The E6 acceptance matrix
 ([docs/tasks/E6-edge-acceptance.md](docs/tasks/E6-edge-acceptance.md)) classifies
 every scenario by environment, and the local runner
-(`scripts/edge-acceptance-run.py`, see QUICKSTART §8.1) executes supported
+(`scripts/edge-acceptance-run.py`, see QUICKSTART §9.1) executes supported
 locally automatable items while on-site and unsupported items stay
 `NOT_EXECUTED` until their required evidence is available.
 
@@ -272,8 +301,8 @@ the native app / RTSP / camera sources. See [QUICKSTART](QUICKSTART.md) §4.8.
 | Phase | Status |
 |---|---|
 | **Phase 1 — MVP** | Delivered — static train-and-inspect pipeline, operator dashboard, and the read-only M1 edge API are on `main` (PRs #3/#6/#8) |
-| **Phase 2 — Edge production readiness** | E1–E5 production gates, camera sources, temporal aggregation, upload outbox, barcode identity / PLC trigger (ADR-015), and edge-local human review (ADR-016, PR #31, pending merge) are implemented; E6 on-site acceptance remains open |
-| **Phase 3 — Central server** | Not started — begins after the Edge gates pass and the Edge-to-central contract is frozen |
+| **Phase 2 — Edge production readiness** | E1–E5 production gates, camera sources, temporal aggregation, upload outbox, barcode identity / PLC trigger (ADR-015), and edge-local human review (ADR-016, PR #31) are implemented; E6 on-site acceptance remains open |
+| **Phase 3 — Central server** | M1 pilot in progress — C1a workspace/service/Compose foundation delivered; C1b–C6 pending ([C1 plan](docs/tasks/C1-central-server-m1.md)) |
 
 ### Outlook
 

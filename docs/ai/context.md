@@ -1,6 +1,6 @@
 # AssemblyVision - Full Project Context
 
-> Context snapshot. Last updated: 2026-08-10
+> Context snapshot. Last updated: 2026-08-11
 >
 > Read this file first in a new session to reconstruct the project state quickly.
 
@@ -40,12 +40,15 @@ and verifies that all required assembly components are present.
   PRs #26/#27/#28 added the hardened GigE/GenICam source and the
   production-ready dashboard themes; PR #29 fixed persistence inference
   metadata; and PR #30 added exact-mapped barcode identity resolution with an
-  opt-in Modbus TCP FIFO trigger contract (ADR-015). The edge-local human
-  review feature (ADR-016, PR #31) is implemented on
-  `feat/edge-local-human-review` with its review recorded in
-  `docs/reviews/PR-031-review.md` and is pending merge. The central
-  server is not implemented and stays out of scope until those Edge gates
-  pass.
+  opt-in Modbus TCP FIFO trigger contract (ADR-015). PR #31 merged the
+  edge-local human review feature (ADR-016), including its review hardening
+  and the documented PR31-T05 viewer-credential trade-off. PRs #32 and #33
+  added issue templates and the industrial README/QUICKSTART/SECURITY refresh;
+  PR #34 added the developer manual; PR #35 added edge-web i18n; and PR #36
+  fixed the MkDocs README-index exclusion. Edge coding is complete through the
+  E6 preparation gate. The central server M1 pilot has started (C1a
+  foundation delivered); its bounded implementation plan is in
+  `docs/tasks/C1-central-server-m1.md`.
 
 ## 2. Repository State
 
@@ -54,10 +57,10 @@ and verifies that all required assembly components are present.
   multi-instance (ADR-013/014), temporal aggregation (ADR-010), durable upload
   outbox (ADR-005), E1-E5 gates, E6 acceptance prep, GigE/GenICam source,
   dashboard themes, persistence fixes, and barcode identity / PLC trigger
-  contract (ADR-015). The edge-local human review feature (ADR-016) is
-  implemented on `feat/edge-local-human-review` (PR #31) with review fixes and
-  `docs/reviews/PR-031-review.md` pending merge. The central server is not
-  implemented yet and is intentionally out of scope until the Edge gates pass.
+  contract (ADR-015). PRs #31 through #36 are also merged: edge-local human
+  review, issue templates, documentation refresh, developer manual, edge-web
+  i18n, and the MkDocs manual-index fix. No central-server code exists yet;
+  `docs/tasks/C1-central-server-m1.md` defines its pilot implementation scope.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -70,6 +73,7 @@ assembly-vision/
 ├── QUICKSTART.md           # Developer onboarding: setup, checks, CLI, end-to-end demo
 ├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
 ├── LICENSE                 # MIT License (c) 2026 dream-studio-china
+├── SECURITY.md             # Security policy: position, edge auth, vulnerability reporting
 ├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
 ├── Makefile                # Quality gates: lint, format, typecheck, test, check
 ├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
@@ -83,7 +87,9 @@ assembly-vision/
 │   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -> two-stage layout
 │   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
 │   └── tests/                       # tests for the dataset adapters
-├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
+├── .github/
+│   ├── ISSUE_TEMPLATE/              # bug_report / feature_request / security_vulnerability + config
+│   └── workflows/                   # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
 ├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
 ├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
 ├── apps/edge-desktop/                # Electron kiosk/desktop shell
@@ -109,13 +115,16 @@ assembly-vision/
     ├── contributing.md     # Contributor-facing repository rules and precedence
     ├── overrides/main.html # Theme override placeholder
     ├── ai/context.md       # THIS file
+    ├── images/             # README screenshots (inspection detail, live view)
+    ├── manual/             # Developer manual
     ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
+    ├── tasks/              # Delivery tasks, including the Central Server M1 plan
     ├── contracts/          # 11 mandatory engineering contracts + index
-    ├── runbooks/           # 11 operational recovery runbooks + index
+    ├── runbooks/           # 15 operational recovery runbooks (01-15) + index
     ├── design/             # 28 design documents + appendices + decisions/
     │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
     │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-    │   └── decisions/      # ADR-001 ... ADR-012 + README
+    │   └── decisions/      # ADR-001 ... ADR-016 + README
     └── research/           # 3 external-research reports
         ├── 01-industrial-inspection-success-rates.md
         ├── 02-yolo-capabilities-and-success-rates.md
@@ -166,9 +175,11 @@ assembly-vision/
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
 - [docs/contracts/](../contracts/README.md): 11 enforceable architecture, safety, API, quality,
   operations, security, change-control, and acceptance contracts.
-- [docs/runbooks/](../runbooks/README.md): executable recovery procedures for all contract-required
-  operational scenarios, including model improvement (runbook 10) and data
-  collection and annotation (runbook 11).
+- [docs/runbooks/](../runbooks/README.md): 15 executable recovery procedures for all contract-required
+  operational scenarios, including model improvement (runbook 10), data
+  collection and annotation (runbook 11), backup and recovery (12), TLS
+  certificate rotation (13), deployment upgrade and rollback (14), and edge
+  acceptance execution (15).
 
 ## 6. Bilingual MkDocs (English + Chinese)
 
@@ -188,6 +199,9 @@ assembly-vision/
 - Known machine-translation quality issues (not script bugs): `frames` -> 框架 (should be 帧),
   `volume` -> 音量 (should be 存储卷), `poll` -> 民意调查 (should be 轮询). Review before publishing.
 - `docs-zh/`, `site/`, and the generated configs are build artifacts, not committed.
+- `exclude_docs` must use `/README.md` (anchored) so the root documentation
+  README is excluded without excluding nested manual, design, contract, and
+  runbook index pages. `uv run mkdocs build --strict` verifies the site.
 
 ## 7. Conventions (AGENTS.md)
 
@@ -684,8 +698,12 @@ Implemented on `feat/e5-deployment-security` (delivery task
 ## 8.11 Barcode Identity and Edge-Local Human Review (PRs #30/#31)
 
 Merged via PR #30 (dev -> main): exact-mapped barcode identity resolution
-(ADR-015). Implemented on `feat/edge-local-human-review` (PR #31, pending
-merge): optional edge-local human review (ADR-016).
+(ADR-015). PR #31 merged optional edge-local human review (ADR-016), including
+the review hardening recorded in `docs/reviews/PR-031-review.md`: serialized
+supersede chaining under
+`BEGIN IMMEDIATE`, unique normalized component corrections, problem+json
+declarations in the regenerated OpenAPI/TS contract, the review-queue initial
+load, and review-panel history-error gating.
 
 - **Barcode identity (PR #30, ADR-015)**: typed `BarcodeObservation` models,
   an optional ZXing-cpp visual decoder (`zxing-cpp>=2.3,<3`), an explicitly
@@ -720,6 +738,90 @@ merge): optional edge-local human review (ADR-016).
   (no edge role model yet); local review records do not yet sync to a
   central server.
 
+## 8.12 Review Hardening, Documentation, i18n, and MkDocs (PRs #31-#36)
+
+PRs #31 through #36 are merged to `main`.
+
+- **PR #31 review hardening**: PR-031
+  findings F01-F10 are resolved, and follow-up fixes address the residual
+  review findings: `submit_review` acquires the SQLite write lock before the
+  supersede read (`BEGIN IMMEDIATE`) so concurrent submissions chain linearly
+  (regression test with two repositories); `component_corrections` are
+  normalized (whitespace-stripped, non-empty) and duplicate/contradictory
+  codes are rejected at the domain and API boundaries; the review endpoints
+  declare their 404/409/422 RFC 7807 problem responses with the real
+  `application/problem+json` media type (OpenAPI + TS regenerated); the
+  `/review` page loads its default NG/open queue on first entry and ignores
+  stale in-flight responses; and the review panel blocks submission until the
+  append-only history loads successfully, surfacing load failures with a
+  retry. The viewer-credential review exception is recorded as accepted
+  trade-off PR31-T05 (deferred until an edge RBAC exists).
+- **PR #32 issue templates**: completed
+  `.github/ISSUE_TEMPLATE/` for the current project state - the bug report
+  gained P0-P3 severity, E1-E6 production impact, a related-runbook field, and
+  the camera/barcode/trigger component; the feature request gained the ADR
+  requirement plus documentation-impact and change-control-impact checkboxes
+  (contracts 05/07/09/10); a new security-vulnerability template follows
+  SECURITY.md private reporting; and the chooser links the security policy.
+  The `triage` and `security` labels were created.
+- **PR #33 documentation refresh**: the README
+  was rewritten for an industrial, open-source-presentable tone - badges, an
+  OK/NG false-negative safety framing, side-by-side dashboard screenshots
+  (`docs/images/`), a vertical Mermaid architecture diagram covering the full
+  edge pipeline and the planned central server, a production status table, and
+  a three-phase roadmap (MVP / Edge / Central) with an outlook toward a
+  complete AI recognition platform. QUICKSTART and SECURITY were aligned with
+  the current state (WebSocket runtime channel, TLS/Docker-secret options, the
+  separate upload credential, `gige-vision` and the trigger/identity seam,
+  backup/restore, and the PR31-T05 edge review exception).
+- **PR #34 developer manual**: added an indexed codebase manual.
+- **PR #35 edge-web i18n**: added `vue-i18n` catalogs for English,
+  Simplified Chinese, Traditional Chinese, and Japanese. English text is used
+  as the message key; `VITE_DEFAULT_LOCALE` controls the default; a globe SVG
+  dropdown persists the selected locale; and Element Plus uses the active
+  locale provider. The edge-web checks passed: typecheck, lint, unit tests,
+  build, and 15 Playwright tests.
+- **PR #36 MkDocs index fix**: changed `exclude_docs: README.md` to
+  `exclude_docs: /README.md`, restoring nested `README.md` index pages such as
+  `/manual/`, `/design/`, `/contracts/`, and `/runbooks/`.
+- **Central Server M1 plan**: `docs/tasks/C1-central-server-m1.md` defines a
+  pilot implementation that remains edge-independent: separate device-upload
+  and admin credentials, PostgreSQL + MinIO, current edge-compatible
+  idempotent uploads and verified receipts, history/media, and append-only
+  central review. OIDC, full RBAC, WebSocket, remote package rollout, and
+  resumable uploads remain deferred.
+
+## 8.13 Central Server M1 Foundation (C1a)
+
+The first central-server delivery (C1a of
+`docs/tasks/C1-central-server-m1.md`) is implemented and validated:
+
+- **`apps/central-service`** (uv workspace member `assemblyvision-central`):
+  FastAPI application with typed `AV_CENTRAL_*` settings, RFC 7807 problem
+  responses, request-ID correlation, a `MinioObjectStorage` abstraction with
+  idempotent bucket bootstrap, and an Alembic migration runner. Migrations are
+  a **controlled release step** (`python -m central_service migrate`); the API
+  never migrates automatically. Baseline migration `0001` establishes the
+  `central_meta` marker.
+- **Health/readiness**: `GET /api/v1/health/live` (no dependencies) and `GET
+  /api/v1/health/ready` (503 + problem while PostgreSQL is unreachable, the
+  schema is behind head, the MinIO bucket is unavailable, or the pilot
+  credential is not configured). Probe results are injectable for tests.
+- **`apps/admin-web`** (pnpm workspace): minimal Vue 3 + TypeScript + Pinia +
+  Element Plus pilot shell (overview page, router, Vitest, Playwright e2e)
+  with a Dockerfile serving it behind nginx that proxies `/api` to the API.
+- **`packages/typescript/api-client-central`**: generated OpenAPI types from
+  the committed `apps/central-service/openapi/central-openapi.json` with CI
+  drift checks on both sides.
+- **Compose**: PostgreSQL + MinIO + `central-migrate` (one-shot) +
+  `central-service` + `admin-web`, named volumes, non-root images, health
+  checks, dev-only env defaults in `compose.env.example`. Verified cold start,
+  readiness, proxied health via admin-web, and restart persistence; CI/Makefile
+  now cover the central OpenAPI drift check and admin-web gates.
+
+The edge runtime imports no central code; the current edge upload envelope is
+unchanged.
+
 ## 9. Open Items / Next Steps
 
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6); **E1
@@ -737,9 +839,10 @@ merge): optional edge-local human review (ADR-016).
 - AUDIT-001 is **closed** including the deferred 4.4 authoritative persistence
   item (now delivered by PR #17). Shared model weights are implemented (E4c);
   per-instance pipelines use one registry.
-- **Barcode identity** (PR #30) and **edge-local human review** (PR #31) are
-  implemented; PR #31 (with its review fixes and `docs/reviews/PR-031-review.md`)
-  is pending merge to `main` from `feat/edge-local-human-review`.
+- **Barcode identity** (PR #30), **edge-local human review** (PR #31), issue
+  templates (PR #32), the README/QUICKSTART/SECURITY refresh (PR #33), the
+  developer manual (PR #34), edge-web i18n (PR #35), and the MkDocs index fix
+  (PR #36) are merged (see sections 8.11/8.12).
 - Real customer data is still required for the baseline: collect and annotate
   with X-AnyLabeling per
   `docs/design/19-training-and-evaluation.md` §19.17 and
@@ -756,11 +859,15 @@ merge): optional edge-local human review (ADR-016).
   replace the mock trigger source (the Modbus FIFO contract from PR #30 needs
   a site-validated register profile) and the time-only fallback (which is a
   development mode, not a production product boundary).
-- The central server (ingestion API, PostgreSQL model, object storage,
-  idempotent receipts, central manual review) is **not implemented**; only the
-  edge-side request/receipt contract and edge-local review records exist.
-  Central work starts after E1-E6 pass and the Edge-to-central contract is
-  frozen.
+- The central server M1 pilot is **in progress** (`docs/tasks/C1-central-server-m1.md`).
+  C1a (workspace, service, Compose, health/readiness, OpenAPI) is delivered:
+  `apps/central-service` (FastAPI, PostgreSQL, MinIO, controlled schema
+  migrations), `apps/admin-web` (Vue 3 pilot shell), and
+  `packages/typescript/api-client-central`. Ingestion with verified receipts,
+  media binding, history, central review, metadata governance, and hardening
+  (C1b–C6) remain. It must preserve the current edge upload envelope and
+  receipt semantics; resumable uploads remain deferred until that contract
+  changes.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.
