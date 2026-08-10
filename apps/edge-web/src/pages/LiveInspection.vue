@@ -1,10 +1,17 @@
 <script setup lang="ts">
-// Live inspection view: camera feed, detection result, detection region
-// overlay, inspection progress, and detailed inspection info + runtime logs
+// Live inspection view: camera feed, latest result, evidence overlays,
+// readiness and connectivity strips, recent results, and runtime logs
 // (docs/design/16-edge-dashboard.md 16.4).
 
-import type { InspectionImages, LogEvent, WSEventEnvelope } from "@assemblyvision/api-client";
-import { DetectionViewer, StatusBadge, formatBytes, formatIsoTime, formatLatency } from "@assemblyvision/ui";
+import type { InspectionImages, InspectionSummary, LogEvent, WSEventEnvelope } from "@assemblyvision/api-client";
+import {
+  DetectionViewer,
+  StatusBadge,
+  formatBytes,
+  formatIsoTime,
+  formatLatency,
+  toDecisionStatus,
+} from "@assemblyvision/ui";
 import type { ViewerBox } from "@assemblyvision/ui";
 import { ReconnectingWebSocket } from "@assemblyvision/api-client";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
@@ -12,9 +19,12 @@ import { mockCameraFrame } from "../mock/images";
 import { useInspectionStore } from "../stores/inspection";
 import { useRuntimeStore } from "../stores/runtime";
 import {
+  getApiBaseUrl,
   getRuntimeWsUrl,
   isCrossOriginHttp,
+  isHttpMode,
   isMockMode,
+  loadMediaBlobUrl,
   requestRuntimeTicket,
 } from "../services/client";
 import { inspectionService } from "../services/inspectionService";
@@ -23,29 +33,43 @@ const store = useInspectionStore();
 const runtime = useRuntimeStore();
 const images = ref<InspectionImages | null>(null);
 const logs = ref<LogEvent[]>([]);
+const latestResult = ref<InspectionSummary | null>(null);
+const recentResults = ref<InspectionSummary[]>([]);
+const httpCameraFrame = ref<string | null>(null);
+const lastPreviewFrameAt = ref<string | null>(null);
+const now = ref(Date.now());
 let timer: ReturnType<typeof setInterval> | null = null;
+let clockTimer: ReturnType<typeof setInterval> | null = null;
+let cameraTimer: ReturnType<typeof setInterval> | null = null;
 let socket: ReconnectingWebSocket | null = null;
+let previewSeq = 0;
 
-// In real mode there is no live operator window (M1, ADR-012), so simulated
-// frames and the mock current inspection must never be shown alongside live
-// device state (F6). Media that is absent or unreachable renders as an explicit
-// unavailable state instead of a fabricated frame.
+// In real mode there is no live operator window (M1, ADR-012): the view is
+// driven by the camera preview, device status, and completed inspections, and
+// the mock current-inspection store is never used (F6, design 16.11). Media
+// that is absent or unreachable renders as an explicit unavailable state.
 const isMock = isMockMode();
-const cameraFrame = computed(() => (isMock ? mockCameraFrame(800, 600) : null));
+const isHttp = isHttpMode();
+
+// The per-instance REST preview (design 16.4.3, ADR-013) needs the configured
+// camera instance id, which the aggregated device status does not carry. It is
+// read from VITE_CAMERA_INSTANCE_ID and defaults to the example single-line
+// instance; fleet deployments must set the variable per line.
+const CAMERA_INSTANCE_ID =
+  (import.meta.env.VITE_CAMERA_INSTANCE_ID as string | undefined) ?? "line-1";
+
+const cameraFrame = computed(() => (isHttp ? httpCameraFrame.value : mockCameraFrame(800, 600)));
+const cameraWidth = computed(() => runtime.camera?.source_width ?? 800);
+const cameraHeight = computed(() => runtime.camera?.source_height ?? 600);
 const detectionUrl = computed(() => images.value?.detection || cameraFrame.value || null);
 const annotatedUrl = computed(() => images.value?.annotated || cameraFrame.value || null);
 
-const badgeStatus = computed(() => {
-  const s = store.current?.status ?? "WAITING";
-  if (s === "PASS") return "OK";
-  if (s === "NG") return "NG";
-  return "UNCERTAIN";
-});
+// Overlays exist only for the operator workflow's mock evidence; real mode has
+// no source-coordinate overlay stream, so the camera and latest evidence are
+// shown without boxes (16.4.1).
+const overlayBoxes = computed<ViewerBox[]>(() => (isHttp ? [] : mockBoxes.value));
 
-const currentFrameId = computed(() => (store.current?.inspection_id ?? "frame") as string);
-
-// Detection regions drawn over the detection image in source coordinates.
-const detectionBoxes = computed<ViewerBox[]>(() => {
+const mockBoxes = computed<ViewerBox[]>(() => {
   const id = store.current?.inspection_id ?? "frame";
   const boxes: ViewerBox[] = [];
   if (store.current?.status === "NG") {
@@ -57,8 +81,54 @@ const detectionBoxes = computed<ViewerBox[]>(() => {
   return boxes;
 });
 
+const currentFrameId = computed(() => (store.current?.inspection_id ?? "frame") as string);
+
+const badgeStatus = computed(() => {
+  if (isHttp) {
+    return latestResult.value
+      ? toDecisionStatus(latestResult.value.business_result, latestResult.value.internal_decision)
+      : "UNCERTAIN";
+  }
+  const s = store.current?.status ?? "WAITING";
+  if (s === "PASS") return "OK";
+  if (s === "NG") return "NG";
+  return "UNCERTAIN";
+});
+
+const headerSn = computed(() => (isHttp ? latestResult.value?.sn : store.current?.sn) ?? "waiting");
+const headerInspectionId = computed(() =>
+  isHttp ? latestResult.value?.inspection_id : store.current?.inspection_id,
+);
+
+// Local API freshness: green only while the last successful snapshot refresh is
+// recent and error-free; otherwise the connectivity chip reports stale and the
+// stored snapshot is never presented as current (16.11).
+const lastUpdatedTime = computed(() =>
+  runtime.lastUpdatedAt ? formatClock(runtime.lastUpdatedAt) : "—",
+);
+const localApiFresh = computed(() => {
+  if (!runtime.lastUpdatedAt || runtime.error) return false;
+  return now.value - new Date(runtime.lastUpdatedAt).getTime() < 5000;
+});
+
+// The frame timestamp is the camera capture time when the backend provides it,
+// otherwise the last successfully received preview frame. A preview that stops
+// delivering frames for more than 3s renders as stale (16.4.1).
+const frameTimestamp = computed(() => runtime.camera?.last_frame_at ?? lastPreviewFrameAt.value ?? null);
+const isCameraStale = computed(() => {
+  const ts = frameTimestamp.value;
+  if (!ts) return false;
+  return now.value - new Date(ts).getTime() > 3000;
+});
+
+function formatClock(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
 async function loadImages(): Promise<void> {
-  const id = store.current?.inspection_id;
+  const id = isHttp ? latestResult.value?.inspection_id : store.current?.inspection_id;
   if (!id) {
     images.value = null;
     return;
@@ -78,10 +148,47 @@ async function loadLogs(): Promise<void> {
   }
 }
 
+async function loadHistory(): Promise<void> {
+  try {
+    const [latestPage, recentPage] = await Promise.all([
+      inspectionService.listHistory({ limit: 1 }),
+      inspectionService.listHistory({ limit: 10 }),
+    ]);
+    latestResult.value = latestPage.items[0] ?? null;
+    recentResults.value = recentPage.items;
+  } catch {
+    // keep the last known result and recent rail
+  }
+}
+
 async function refresh(): Promise<void> {
-  if (isMock) await store.loadCurrent();
+  if (!isHttp) await store.loadCurrent();
   await runtime.refresh();
+  await loadHistory();
   await Promise.all([loadImages(), loadLogs()]);
+}
+
+// Preview polling is best-effort: the server re-encodes the JPEG at most every
+// _PREVIEW_MIN_INTERVAL_S per instance, so 1500ms keeps the panel fresh without
+// saturating the edge CPU (ADR-013). Old object URLs are revoked so the page
+// never leaks blob memory.
+async function pollCameraPreview(): Promise<void> {
+  if (!isHttp) return;
+  const seq = ++previewSeq;
+  const url = `${getApiBaseUrl()}/api/v1/camera/${CAMERA_INSTANCE_ID}/preview`;
+  try {
+    const blobUrl = await loadMediaBlobUrl(url);
+    if (seq !== previewSeq) {
+      URL.revokeObjectURL(blobUrl);
+      return;
+    }
+    if (httpCameraFrame.value) URL.revokeObjectURL(httpCameraFrame.value);
+    httpCameraFrame.value = blobUrl;
+    lastPreviewFrameAt.value = new Date().toISOString();
+  } catch {
+    // Keep the last frame; preview loss never changes the inspection engine
+    // state and the stale marker takes over (16.4.3).
+  }
 }
 
 function onRuntimeEvent(event: WSEventEnvelope): void {
@@ -105,6 +212,15 @@ onMounted(() => {
   void refresh();
   // Slow fallback poll; the WebSocket channel drives timely refreshes.
   timer = setInterval(() => void refresh(), 30000);
+  // A live clock keeps the local-API freshness chip and the stale-frame marker
+  // accurate between snapshot refreshes.
+  clockTimer = setInterval(() => {
+    now.value = Date.now();
+  }, 1000);
+  if (isHttp) {
+    void pollCameraPreview();
+    cameraTimer = setInterval(() => void pollCameraPreview(), 1500);
+  }
   if (!isMock) {
     socket = new ReconnectingWebSocket();
     socket.onGap(() => void refresh());
@@ -122,7 +238,13 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (timer !== null) clearInterval(timer);
+  if (clockTimer !== null) clearInterval(clockTimer);
+  if (cameraTimer !== null) clearInterval(cameraTimer);
   socket?.disconnect();
+  if (httpCameraFrame.value) {
+    URL.revokeObjectURL(httpCameraFrame.value);
+    httpCameraFrame.value = null;
+  }
 });
 </script>
 
@@ -134,16 +256,24 @@ onBeforeUnmount(() => {
         <h2>Live inspection</h2>
       </div>
       <StatusBadge :status="badgeStatus" />
-      <span class="live-inspection__sn">{{ store.current?.sn ?? "waiting" }}</span>
-      <span class="live-inspection__inspection-id">{{ store.current?.inspection_id }}</span>
+      <span class="live-inspection__sn">{{ headerSn }}</span>
+      <span class="live-inspection__inspection-id">{{ headerInspectionId }}</span>
     </div>
 
-    <div class="live-inspection__progress">
+    <div v-if="!isHttp" class="live-inspection__progress">
       <el-progress
         :percentage="Math.round((store.current?.progress ?? 0) * 100)"
         :stroke-width="10"
       />
     </div>
+
+    <el-alert
+      v-if="runtime.error"
+      :title="runtime.error"
+      type="error"
+      show-icon
+      :closable="false"
+    />
 
     <div class="live-inspection__strips" aria-label="Inspection readiness and connectivity">
       <section class="status-strip">
@@ -152,27 +282,39 @@ onBeforeUnmount(() => {
           <span class="status-chip" :class="runtime.status?.inspection_ready ? 'status-chip--ready' : 'status-chip--critical'">Engine {{ runtime.status?.inspection_ready ? "ready" : "not ready" }}</span>
           <span class="status-chip" :class="runtime.status?.camera_connected ? 'status-chip--ready' : 'status-chip--critical'">Camera {{ runtime.status?.camera_connected ? "connected" : "offline" }}</span>
           <span class="status-chip" :class="runtime.status?.model_loaded ? 'status-chip--ready' : 'status-chip--critical'">Model {{ runtime.status?.model_loaded ? "loaded" : "unavailable" }}</span>
+          <span class="status-chip" :class="runtime.status?.current_rule_version_id ? 'status-chip--ready' : 'status-chip--critical'">Rule {{ runtime.status?.current_rule_version_id ? "loaded" : "missing" }}</span>
           <span class="status-chip" :class="(runtime.status?.storage_mode ?? 'NORMAL') !== 'NORMAL' ? 'status-chip--warning' : 'status-chip--ready'">Disk {{ runtime.status ? formatBytes(runtime.status.disk_free_bytes) + " free · " + (runtime.status.storage_mode ?? "NORMAL") : "unknown" }}</span>
         </div>
       </section>
       <section class="status-strip">
         <h3>Connectivity</h3>
         <div class="status-strip__items">
-          <span class="status-chip status-chip--ready">Local API available</span>
+          <span class="status-chip" :class="localApiFresh ? 'status-chip--ready' : 'status-chip--neutral'">Local API {{ localApiFresh ? "available" : "stale" }}</span>
           <span class="status-chip" :class="runtime.status?.central_connected ? 'status-chip--ready' : 'status-chip--warning'">Central {{ runtime.status?.central_connected ? "connected" : "offline" }}</span>
           <span class="status-chip status-chip--neutral">Uploads pending {{ runtime.status?.upload_pending_count ?? "-" }}</span>
         </div>
+        <p class="live-inspection__updated">Last updated {{ lastUpdatedTime }}</p>
       </section>
     </div>
 
     <div class="live-inspection__grid">
       <section class="panel">
         <h3>Camera image</h3>
-        <div class="live-inspection__frame">
-          <img v-if="cameraFrame" :src="cameraFrame" alt="camera preview" />
+        <div class="live-inspection__viewer">
+          <DetectionViewer
+            v-if="cameraFrame"
+            :image-url="cameraFrame"
+            :image-width="cameraWidth"
+            :image-height="cameraHeight"
+            :boxes="[]"
+            :current-frame-id="null"
+            :last-frame-at="frameTimestamp"
+            :stale-after-ms="3000"
+          />
+          <div v-if="isCameraStale" class="live-inspection__stale" role="status">STALE FRAME</div>
           <el-empty
-            v-else
-            description="No camera feed in read-only mode"
+            v-else-if="!cameraFrame"
+            description="No camera feed available"
             :image-size="72"
             class="live-inspection__unavailable"
           />
@@ -187,7 +329,7 @@ onBeforeUnmount(() => {
             :image-url="detectionUrl"
             :image-width="800"
             :image-height="600"
-            :boxes="detectionBoxes"
+            :boxes="overlayBoxes"
             :current-frame-id="currentFrameId"
           />
           <el-empty
@@ -207,7 +349,7 @@ onBeforeUnmount(() => {
             :image-url="annotatedUrl"
             :image-width="800"
             :image-height="600"
-            :boxes="detectionBoxes"
+            :boxes="overlayBoxes"
             :current-frame-id="currentFrameId"
           />
           <el-empty
@@ -220,8 +362,33 @@ onBeforeUnmount(() => {
       </section>
     </div>
 
-    <div class="live-inspection__info">
-      <section class="panel">
+    <div class="live-inspection__info" :class="{ 'live-inspection__info--single': isHttp }">
+      <section v-if="isHttp" class="panel">
+        <h3>Latest result</h3>
+        <template v-if="latestResult">
+          <StatusBadge :status="badgeStatus" />
+          <dl class="info-dl">
+            <dt>Inspection ID</dt>
+            <dd>{{ latestResult.inspection_id }}</dd>
+            <dt>Barcode / SN</dt>
+            <dd>{{ latestResult.barcode ?? latestResult.sn ?? "—" }}</dd>
+            <dt>Product</dt>
+            <dd>{{ latestResult.product_code || "—" }}</dd>
+            <dt>Latency</dt>
+            <dd>{{ formatLatency(latestResult.latency_ms) }}</dd>
+            <dt>Completed</dt>
+            <dd>{{ formatIsoTime(latestResult.completed_at) }}</dd>
+          </dl>
+        </template>
+        <el-empty
+          v-else
+          description="No completed inspection yet"
+          :image-size="48"
+          class="live-inspection__info-empty"
+        />
+      </section>
+
+      <section v-else class="panel">
         <h3>Inspection details</h3>
         <dl class="info-dl">
           <dt>Inspection ID</dt>
@@ -241,7 +408,7 @@ onBeforeUnmount(() => {
         </dl>
       </section>
 
-      <section class="panel">
+      <section v-if="!isHttp" class="panel">
         <h3>Rules</h3>
         <el-table :data="store.current?.rules ?? []" size="small">
           <el-table-column prop="name" label="Rule" min-width="150" />
@@ -254,6 +421,28 @@ onBeforeUnmount(() => {
         </el-table>
       </section>
     </div>
+
+    <section class="panel live-inspection__recent">
+      <h3>Recent results</h3>
+      <div v-if="recentResults.length" class="live-inspection__rail">
+        <router-link
+          v-for="r in recentResults"
+          :key="r.inspection_id"
+          :to="`/inspections/${r.inspection_id}`"
+          class="live-inspection__rail-item"
+        >
+          <StatusBadge :status="toDecisionStatus(r.business_result, r.internal_decision)" />
+          <span class="live-inspection__rail-label">{{ r.sn ?? r.barcode ?? "—" }}</span>
+          <span class="live-inspection__rail-time">{{ formatIsoTime(r.completed_at) }}</span>
+        </router-link>
+      </div>
+      <el-empty
+        v-else
+        description="No completed inspections yet"
+        :image-size="48"
+        class="live-inspection__info-empty"
+      />
+    </section>
 
     <section class="panel live-inspection__logs">
       <h3>Runtime logs</h3>
@@ -304,6 +493,12 @@ onBeforeUnmount(() => {
 .status-chip--critical { background: var(--status-ng-soft); color: var(--status-ng); }
 .status-chip--warning { background: var(--status-warning-soft); color: var(--status-warning); }
 .status-chip--neutral { background: var(--surface-muted); color: var(--text-muted); }
+.live-inspection__updated {
+  margin: 8px 0 0;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
 .live-inspection__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -314,23 +509,72 @@ onBeforeUnmount(() => {
   grid-template-columns: 1fr 1.4fr;
   gap: 16px;
 }
+.live-inspection__info--single {
+  grid-template-columns: 1fr;
+}
+.live-inspection__recent {
+  width: 100%;
+}
+.live-inspection__rail {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.live-inspection__rail-item {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 170px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12px;
+}
+.live-inspection__rail-label {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.live-inspection__rail-time {
+  color: var(--text-faint);
+  font-size: 11px;
+}
 .live-inspection__logs {
   width: 100%;
 }
-.live-inspection__frame img {
-  width: 100%;
-  display: block;
-  border-radius: var(--radius-small);
-}
 .live-inspection__viewer {
+  position: relative;
   height: 46vh;
   min-height: 280px;
   border: 1px solid var(--border);
   border-radius: var(--radius-small);
 }
+.live-inspection__stale {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  background: var(--status-warning);
+  color: var(--shell-text);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: var(--radius-small);
+}
 .live-inspection__unavailable {
   height: 100%;
   min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.live-inspection__info-empty {
+  min-height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -352,7 +596,7 @@ onBeforeUnmount(() => {
   grid-template-columns: 110px 1fr;
   gap: 6px 12px;
   font-size: 13px;
-  margin: 0;
+  margin: 10px 0 0;
 }
 .info-dl dt {
   color: var(--text-muted);

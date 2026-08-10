@@ -22,6 +22,7 @@ import type {
   MediaMetadata,
   Page,
   ProductResolution,
+  RetryUploadRequest,
   StatisticsFilter,
   StatisticsSummary,
   TraceabilityView,
@@ -508,7 +509,8 @@ export class MockApiClient implements ApiClient {
     return { items, next_cursor: null };
   }
 
-  async retryUpload(uploadTaskId: string): Promise<UploadTask> {
+  async retryUpload(uploadTaskId: string, request?: RetryUploadRequest): Promise<UploadTask> {
+    void request;
     const task = this.#uploads.find((t) => t.upload_task_id === uploadTaskId);
     if (!task) throw new ApiError(404, "NOT_FOUND", `upload task ${uploadTaskId} not found`);
     if (task.status !== "RETRY_WAIT" && task.status !== "PERMANENT_FAILURE") {

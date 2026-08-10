@@ -158,21 +158,19 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
 
     // Absent media renders an unavailable state, never a fabricated frame.
     await page.goto(`http://127.0.0.1:${port}/live`);
-    await expect(page.getByText("No camera feed in read-only mode")).toBeVisible();
+    await expect(page.getByText("No camera feed available")).toBeVisible();
     await expect(page.getByText("No detection image available")).toBeVisible();
     await expect(page.locator('img[alt="camera preview"]')).toHaveCount(0);
 
     await page.goto(`http://127.0.0.1:${port}/images/${inspectionId}`);
     // Purged media renders an explicit purged state, never a broken image (F14).
-    await expect(page.getByText("Original evidence has been purged")).toBeVisible();
-    await expect(page.locator('img[alt="original frame"]')).toHaveCount(0);
-    await page.getByRole("tab", { name: "Detection result" }).click();
+    await expect(page.getByText("Content is not retained")).toBeVisible();
+    await expect(page.locator('img[alt="inspection media"]')).toHaveCount(0);
     // AVAILABLE metadata with a missing file must settle into an unavailable
     // state after the media endpoint returns 404, not remain as a broken image.
-    await expect(page.getByText("No detection image available")).toBeVisible();
-    await expect(page.locator('img[alt="detection result"]')).toHaveCount(0);
-    await page.getByRole("tab", { name: "Annotations" }).click();
-    await expect(page.getByText("No annotated image available")).toBeVisible();
+    await page.getByRole("tab", { name: "Product ROI" }).click();
+    await expect(page.getByText("Media content unavailable")).toBeVisible();
+    await expect(page.locator('img[alt="inspection media"]')).toHaveCount(0);
   } finally {
     proc.kill("SIGTERM");
   }

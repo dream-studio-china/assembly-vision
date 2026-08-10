@@ -14,6 +14,9 @@ export const useRuntimeStore = defineStore("runtime", {
     camera: null as CameraState | null,
     loading: false,
     error: null as string | null,
+    // ISO timestamp of the last successful snapshot refresh; used to judge
+    // whether the local API snapshot is fresh (design 16.11).
+    lastUpdatedAt: null as string | null,
   }),
 
   actions: {
@@ -30,6 +33,7 @@ export const useRuntimeStore = defineStore("runtime", {
         this.status = status;
         this.runtime = runtime;
         this.camera = camera;
+        this.lastUpdatedAt = new Date().toISOString();
       } catch (error) {
         this.error = (error as ApiError).message ?? String(error);
       } finally {

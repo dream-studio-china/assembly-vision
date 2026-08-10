@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import Literal
 
 from assemblyvision_domain.models import BusinessResult, InternalDecision
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Problem(BaseModel):
@@ -26,6 +26,27 @@ class Problem(BaseModel):
     code: str
     request_id: str | None = None
     errors: list[dict[str, str]] = Field(default_factory=list)
+
+
+class RetryUploadRequest(BaseModel):
+    """Operator confirmation for a manual upload retry (design 15.3.3).
+
+    ``reason`` is optional so legacy callers that retry without a body keep
+    working; the dashboard always sends a non-empty operator reason, which is
+    stripped of surrounding whitespace before it reaches the repository audit
+    log.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str | None = Field(default=None, max_length=200)
+
+    @field_validator("reason")
+    @classmethod
+    def _strip_reason(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip() or None
 
 
 class HealthLive(BaseModel):

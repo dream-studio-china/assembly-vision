@@ -20,8 +20,9 @@ The dashboard consumes the edge contracts in [REST API and Events](15-rest-api-a
 
 The dashboard provides a persisted, local UI preference with three professional
 themes. Theme choice changes visual tokens only: routes, component structure,
-spacing scale, type scale, interaction patterns, safety labels, and API behavior
-remain identical.
+layout hierarchy, spacing scale, typography scale, interaction patterns, safety
+labels, and API behavior remain identical. Density, colors, borders, shadows,
+radius, and visual atmosphere vary per theme by design.
 
 | Theme | Intended environment | Visual characteristics |
 |---|---|---|

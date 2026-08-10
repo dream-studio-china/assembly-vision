@@ -16,6 +16,7 @@ import type {
   MediaMetadata,
   Page,
   Problem,
+  RetryUploadRequest,
   StatisticsFilter,
   StatisticsSummary,
   TraceabilityView,
@@ -30,6 +31,7 @@ function toQuery(filter: InspectionFilter | undefined): string {
   if (filter.internal_decision) params.set("internal_decision", filter.internal_decision);
   if (filter.barcode) params.set("barcode", filter.barcode);
   if (filter.product) params.set("product", filter.product);
+  if (filter.sn) params.set("sn", filter.sn);
   if (filter.from) params.set("from", filter.from);
   if (filter.to) params.set("to", filter.to);
   if (filter.cursor) params.set("cursor", filter.cursor);
@@ -167,10 +169,15 @@ export class HttpApiClient implements ApiClient {
     return this.#request(`/uploads${qs ? `?${qs}` : ""}`, undefined, validators.uploadPage);
   }
 
-  retryUpload(uploadTaskId: string): Promise<UploadTask> {
+  retryUpload(uploadTaskId: string, request?: RetryUploadRequest): Promise<UploadTask> {
+    const init: RequestInit = { method: "POST" };
+    if (request) {
+      init.body = JSON.stringify({ reason: request.reason ?? null });
+      init.headers = { "Content-Type": "application/json" };
+    }
     return this.#request(
       `/uploads/${encodeURIComponent(uploadTaskId)}/retry`,
-      { method: "POST" },
+      init,
       validators.uploadTask,
     );
   }

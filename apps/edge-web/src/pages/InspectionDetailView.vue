@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import type { InspectionRecord, MediaMetadata } from "@assemblyvision/api-client";
+import type { InspectionRecord, MediaKind, MediaMetadata } from "@assemblyvision/api-client";
 import { ApiError } from "@assemblyvision/api-client";
-import { DetectionViewer, StatusBadge, formatIsoTime, formatLatency, reasonCodeLabel, toDecisionStatus } from "@assemblyvision/ui";
+import { DetectionViewer, StatusBadge, formatBytes, formatIsoTime, formatLatency, reasonCodeLabel, toDecisionStatus } from "@assemblyvision/ui";
 import type { ViewerBox } from "@assemblyvision/ui";
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { getApiClient } from "../services/client";
+import { getApiClient, isCrossOriginHttp, isMockMode } from "../services/client";
+import { buildMediaUrl, inspectionService } from "../services/inspectionService";
 import { placeholderFrame } from "../services/placeholder";
 
 const route = useRoute();
@@ -15,6 +16,28 @@ const error = ref<string | null>(null);
 const showProduct = ref(true);
 const showRoi = ref(true);
 
+const activeTabKey = ref<string | null>(null);
+const videoFailed = ref(false);
+const blobUrls = ref<Record<string, string>>({});
+const failedIds = ref(new Set<string>());
+let trackedBlobUrls = new Set<string>();
+
+const isMock = isMockMode();
+const crossOrigin = isCrossOriginHttp();
+
+const IMAGE_KINDS: MediaKind[] = ["KEY_FRAME", "PRODUCT_ROI", "ANNOTATED_FRAME"];
+const CLIP_KINDS: MediaKind[] = ["NG_CLIP", "ROLLING_VIDEO"];
+
+const KIND_LABELS: Record<MediaKind, string> = {
+  KEY_FRAME: "Key frame",
+  PRODUCT_ROI: "Product ROI",
+  ANNOTATED_FRAME: "Annotated",
+  NG_CLIP: "Clip",
+  ROLLING_VIDEO: "Clip",
+};
+
+type MediaTab = { key: string; label: string; kinds: MediaKind[]; media: MediaMetadata; isVideo: boolean };
+
 onMounted(async () => {
   const id = String(route.params.id);
   try {
@@ -23,6 +46,11 @@ onMounted(async () => {
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : String(err);
   }
+});
+
+onBeforeUnmount(() => {
+  for (const url of trackedBlobUrls) URL.revokeObjectURL(url);
+  trackedBlobUrls = new Set<string>();
 });
 
 const overlayBoxes = computed<ViewerBox[]>(() => {
@@ -46,7 +74,93 @@ const sourceSize = computed(() =>
 );
 
 const currentFrameId = computed(() => record.value?.product_detection?.frame_id ?? "frame");
-const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourceSize.value.height));
+
+function firstAvailable(kind: MediaKind): MediaMetadata | undefined {
+  return media.value.find((m) => m.kind === kind && m.lifecycle === "AVAILABLE");
+}
+
+const mediaTabs = computed<MediaTab[]>(() => {
+  if (isMock) return [];
+  const tabs: MediaTab[] = [];
+  for (const kind of IMAGE_KINDS) {
+    const item = firstAvailable(kind);
+    if (item) tabs.push({ key: `img-${kind}`, label: KIND_LABELS[kind], kinds: [kind], media: item, isVideo: false });
+  }
+  const clip = CLIP_KINDS.map(firstAvailable).find((m) => m !== undefined);
+  if (clip) tabs.push({ key: "clip", label: "Clip", kinds: [...CLIP_KINDS], media: clip, isVideo: true });
+  return tabs;
+});
+
+const activeTab = computed<MediaTab | null>(() => mediaTabs.value.find((t) => t.key === activeTabKey.value) ?? null);
+const activeMedia = computed<MediaMetadata | null>(() => activeTab.value?.media ?? null);
+const activeIsVideo = computed(() => activeTab.value?.isVideo ?? false);
+
+watch(mediaTabs, (tabs) => {
+  if (!activeTabKey.value || !tabs.some((t) => t.key === activeTabKey.value)) {
+    const preferred = tabs.find((t) => !t.isVideo) ?? tabs[0];
+    activeTabKey.value = preferred?.key ?? null;
+  }
+}, { immediate: true });
+
+async function resolveBlob(mediaId: string): Promise<string | null> {
+  if (blobUrls.value[mediaId]) return blobUrls.value[mediaId];
+  if (failedIds.value.has(mediaId)) return null;
+  try {
+    const url = await inspectionService.getMediaContentBlobUrl(mediaId);
+    trackedBlobUrls.add(url);
+    blobUrls.value = { ...blobUrls.value, [mediaId]: url };
+    return url;
+  } catch {
+    failedIds.value = new Set([...failedIds.value, mediaId]);
+    return null;
+  }
+}
+
+function mediaSrc(m: MediaMetadata): string | null {
+  if (m.lifecycle !== "AVAILABLE") return null;
+  return crossOrigin ? (blobUrls.value[m.media_id] ?? null) : buildMediaUrl(m.media_id);
+}
+
+const activeSrc = computed<string | null>(() => (activeMedia.value ? mediaSrc(activeMedia.value) : null));
+
+const keyFrameMedia = computed<MediaMetadata | null>(() => firstAvailable("KEY_FRAME") ?? null);
+const keyFrameSrc = computed<string | null>(() => (keyFrameMedia.value ? mediaSrc(keyFrameMedia.value) : null));
+
+watch(activeMedia, async (m) => {
+  videoFailed.value = false;
+  if (m && crossOrigin) await resolveBlob(m.media_id);
+}, { immediate: true });
+
+watch(keyFrameMedia, async (m) => {
+  if (m && crossOrigin) await resolveBlob(m.media_id);
+}, { immediate: true });
+
+const evidenceImageUrl = computed<string>(() => {
+  const src = activeIsVideo.value ? keyFrameSrc.value : activeSrc.value;
+  return src ?? placeholderFrame(sourceSize.value.width, sourceSize.value.height);
+});
+
+function selectMedia(m: MediaMetadata): void {
+  if (isMock) return;
+  const tab = mediaTabs.value.find((t) => t.kinds.includes(m.kind));
+  if (tab) activeTabKey.value = tab.key;
+}
+
+function mediaKindLabel(kind: MediaKind): string {
+  return KIND_LABELS[kind];
+}
+
+const sourceLabel = computed<string>(() => {
+  const det = record.value?.product_detection;
+  return det ? `${det.bbox.image_width}×${det.bbox.image_height}` : "-";
+});
+
+const qualityLabel = computed<string>(() => {
+  const q = record.value?.product_detection?.quality;
+  if (!q) return "-";
+  if (q.usable) return `usable · blur ${q.blur_score.toFixed(1)}`;
+  return q.reason_codes.length ? `rejected · ${q.reason_codes.join(", ")}` : "rejected";
+});
 </script>
 
 <template>
@@ -63,15 +177,49 @@ const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourc
         <section class="detail__panel">
           <h3>Evidence</h3>
           <div class="detail__viewer">
+            <div v-if="mediaTabs.length" class="detail__tabs" role="tablist">
+              <button
+                v-for="tab in mediaTabs"
+                :key="tab.key"
+                class="detail__tab"
+                :class="{ 'detail__tab--active': tab.key === activeTabKey }"
+                role="tab"
+                :aria-selected="tab.key === activeTabKey"
+                type="button"
+                @click="activeTabKey = tab.key"
+              >
+                {{ tab.label }}
+              </button>
+            </div>
+
             <DetectionViewer
-              :image-url="previewSrc"
+              v-if="!activeIsVideo"
+              :image-url="evidenceImageUrl"
               :image-width="sourceSize.width"
               :image-height="sourceSize.height"
               :boxes="overlayBoxes"
               :current-frame-id="currentFrameId"
             />
-            <el-checkbox v-model="showProduct" label="Product box" />
-            <el-checkbox v-model="showRoi" label="ROI" />
+            <div v-else class="detail__clip">
+              <video
+                v-if="activeSrc && !videoFailed"
+                :src="activeSrc"
+                controls
+                class="detail__clip-video"
+                @error="videoFailed = true"
+              ></video>
+              <img
+                v-else
+                :src="evidenceImageUrl"
+                alt="clip key-frame fallback"
+                class="detail__clip-fallback"
+              />
+            </div>
+
+            <div class="detail__viewer-controls">
+              <el-checkbox v-model="showProduct" label="Product box" />
+              <el-checkbox v-model="showRoi" label="ROI" />
+            </div>
           </div>
 
           <h3>Reason codes</h3>
@@ -106,6 +254,10 @@ const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourc
             <dd>{{ formatLatency(record.processing_ms) }}</dd>
             <dt>Upload</dt>
             <dd>{{ record.synchronization_status }}</dd>
+            <dt>Source</dt>
+            <dd>{{ sourceLabel }}</dd>
+            <dt>Frame quality</dt>
+            <dd>{{ qualityLabel }}</dd>
           </dl>
 
           <h3>Versions</h3>
@@ -123,8 +275,26 @@ const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourc
           <h3>Media</h3>
           <ul class="detail__media">
             <li v-for="m in media" :key="m.media_id">
-              {{ m.kind }} · {{ (m.size_bytes / 1024).toFixed(1) }} KB
-              <span v-if="m.lifecycle === 'PURGED'" class="pill pill--warn">purged</span>
+              <button
+                v-if="m.lifecycle === 'AVAILABLE' && !isMock"
+                class="detail__media-row"
+                :class="{ 'detail__media-row--active': m.media_id === activeMedia?.media_id }"
+                type="button"
+                @click="selectMedia(m)"
+              >
+                <span class="detail__media-kind">{{ mediaKindLabel(m.kind) }}</span>
+                <span class="detail__media-size">{{ formatBytes(m.size_bytes) }}</span>
+              </button>
+              <div v-else class="detail__media-row detail__media-row--muted">
+                <span class="detail__media-kind">{{ mediaKindLabel(m.kind) }}</span>
+                <span class="detail__media-size">{{ formatBytes(m.size_bytes) }}</span>
+                <span v-if="m.lifecycle === 'PURGED'" class="pill pill--warn">purged</span>
+                <span v-else-if="m.lifecycle === 'FAILED'" class="pill pill--failed">failed</span>
+                <span v-else-if="m.lifecycle === 'PENDING'" class="pill pill--pending">pending</span>
+                <span v-else class="pill pill--present">available</span>
+              </div>
+              <p v-if="m.lifecycle === 'PURGED'" class="detail__media-note">Content is not retained</p>
+              <p v-if="m.lifecycle === 'FAILED'" class="detail__media-note">Capture or storage failed</p>
             </li>
             <li v-if="!media.length">No media</li>
           </ul>
@@ -177,6 +347,51 @@ const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourc
 .detail__viewer .detection-viewer {
   flex: 1;
 }
+.detail__viewer-controls {
+  display: flex;
+  gap: 12px;
+}
+.detail__tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.detail__tab {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.detail__tab:hover {
+  border-color: var(--border-strong);
+}
+.detail__tab--active {
+  background: var(--status-info-soft);
+  color: var(--status-info);
+  border-color: var(--status-info);
+}
+.detail__clip {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-inset);
+  overflow: hidden;
+}
+.detail__clip-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.detail__clip-fallback {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
 .detail__reasons {
   margin: 0;
   padding-left: 20px;
@@ -201,6 +416,49 @@ const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourc
   list-style: none;
   font-size: 13px;
 }
+.detail__media li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+.detail__media-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  background: var(--surface-raised);
+  padding: 4px 8px;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.detail__media-row:hover {
+  border-color: var(--border-strong);
+}
+.detail__media-row--active {
+  border-color: var(--status-info);
+  background: var(--status-info-soft);
+}
+.detail__media-row--muted {
+  cursor: default;
+  border-style: dashed;
+}
+.detail__media-kind {
+  overflow-wrap: anywhere;
+}
+.detail__media-size {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.detail__media-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
 .pill {
   display: inline-block;
   border-radius: var(--radius-small);
@@ -222,5 +480,13 @@ const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourc
 .pill--warn {
   background: var(--status-warning-soft);
   color: var(--status-warning);
+}
+.pill--failed {
+  background: var(--status-ng-soft);
+  color: var(--status-ng);
+}
+.pill--pending {
+  background: var(--status-info-soft);
+  color: var(--status-info);
 }
 </style>

@@ -451,6 +451,60 @@ def test_cursor_bound_to_filter_set(client: TestClient) -> None:
     assert matching.status_code == 200
 
 
+def test_list_inspections_sn_filter(client: TestClient) -> None:
+    page = client.get("/api/v1/inspections", params={"sn": "SN-00"}).json()
+    assert len(page["items"]) == 2
+    fuzzy = client.get("/api/v1/inspections", params={"sn": "sn-0001"}).json()
+    assert len(fuzzy["items"]) == 1
+    assert fuzzy["items"][0]["sn"] == "SN-0001"
+    none = client.get("/api/v1/inspections", params={"sn": "zzz"}).json()
+    assert none["items"] == []
+
+
+def test_list_inspections_sn_filter_cursor_pagination(tmp_path: Path) -> None:
+    root = tmp_path / "out"
+    root.mkdir()
+    base = datetime(2026, 1, 1, tzinfo=UTC)
+    for idx in range(5):
+        record = _record(
+            base + timedelta(hours=idx), business=BusinessResult.OK, barcode=f"SN-{idx:03d}"
+        )
+        directory = root / str(record.inspection_id)
+        directory.mkdir()
+        directory.joinpath("inspection.json").write_text(record.model_dump_json(indent=2))
+
+    settings = ServerSettings(output_root=root, db_path=tmp_path / "edge.sqlite3")
+    app = create_app(settings)
+    with TestClient(app) as c:
+        first = c.get("/api/v1/inspections", params={"sn": "SN-", "limit": 2}).json()
+        assert len(first["items"]) == 2
+        cursor = first["next_cursor"]
+        assert cursor is not None
+        second = c.get(
+            "/api/v1/inspections", params={"sn": "SN-", "limit": 2, "cursor": cursor}
+        ).json()
+        assert len(second["items"]) == 2
+        assert second["next_cursor"] is not None
+        third = c.get(
+            "/api/v1/inspections",
+            params={"sn": "SN-", "limit": 2, "cursor": second["next_cursor"]},
+        ).json()
+        assert len(third["items"]) == 1
+        assert third["next_cursor"] is None
+        walked = first["items"] + second["items"] + third["items"]
+        assert len({item["inspection_id"] for item in walked}) == 5
+        # Newest first: the seeded timestamps ascend with idx, so the first
+        # page must start at the latest completed_at.
+        assert walked[0]["sn"] == "SN-004"
+        # A cursor is bound to the sn filter set that produced it.
+        mismatch = c.get(
+            "/api/v1/inspections",
+            params={"sn": "SN-000", "limit": 2, "cursor": first["next_cursor"]},
+        )
+        assert mismatch.status_code == 400
+        assert mismatch.json()["code"] == "INVALID_CURSOR"
+
+
 def test_purged_media_returns_410_even_when_file_exists(tmp_path: Path) -> None:
     import sqlite3
 

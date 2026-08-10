@@ -2,15 +2,20 @@
 import { formatBytes } from "@assemblyvision/ui";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRuntimeStore } from "./stores/runtime";
+import { useSessionStore } from "./stores/session";
 import { isHttpMode } from "./services/client";
 import { activeTheme, applyTheme, themes } from "./theme";
 
 const runtime = useRuntimeStore();
+const session = useSessionStore();
 const localTime = ref(new Date());
 let clockTimer: ReturnType<typeof setInterval> | null = null;
 
 const deviceCode = computed(() => runtime.status?.device_id.slice(0, 8).toUpperCase() ?? "LOCAL EDGE");
 const diskWarning = computed(() => runtime.status?.storage_mode !== undefined && runtime.status.storage_mode !== "NORMAL");
+// Admin-only links are always shown in mock mode; in HTTP mode they appear
+// only for an authenticated administrator (design 16.3).
+const showAdminLinks = computed(() => !isHttpMode() || (session.authenticated && session.admin));
 
 function selectTheme(): void {
   try {
@@ -46,10 +51,13 @@ onBeforeUnmount(() => {
         <router-link to="/statistics">Statistics</router-link>
         <router-link to="/uploads">Uploads</router-link>
         <router-link to="/health">Health</router-link>
-        <router-link to="/configuration">Config</router-link>
-        <router-link to="/logs">Logs</router-link>
-        <router-link to="/dev">Dev</router-link>
-        <router-link v-if="isHttpMode()" to="/login">Sign in</router-link>
+        <router-link v-if="showAdminLinks" to="/configuration">Config</router-link>
+        <router-link v-if="showAdminLinks" to="/logs">Logs</router-link>
+        <router-link v-if="showAdminLinks" to="/dev">Dev</router-link>
+        <router-link v-if="isHttpMode() && !session.authenticated" to="/login">Sign in</router-link>
+        <span v-else-if="isHttpMode() && session.authenticated" class="app-shell__session-chip">
+          Viewer session
+        </span>
       </nav>
       <div class="app-shell__telemetry" aria-label="Device telemetry">
         <span
@@ -70,6 +78,7 @@ onBeforeUnmount(() => {
         <el-select
           v-model="activeTheme"
           class="app-shell__theme-select"
+          data-testid="theme-selector"
           :teleported="false"
           aria-label="Interface theme"
           @change="selectTheme"
@@ -158,6 +167,15 @@ body,
   font-weight: 600;
 }
 .app-shell__disk-warning { color: var(--status-warning); }
+.app-shell__session-chip {
+  color: var(--status-ok);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border: 1px solid var(--status-ok);
+  border-radius: 999px;
+}
 .dot {
   width: 10px;
   height: 10px;
