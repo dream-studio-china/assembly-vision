@@ -425,5 +425,8 @@ export default {
   'Memory': 'メモリ',
   'Disk': 'ディスク',
 'CPU {count} cores total load': 'CPU {count} コア総負荷',
-
+  'Network traffic': 'ネットワークトラフィック',
+  'Download': 'ダウンロード',
+  'GPU load': 'GPU 負荷',
+  'GPU power': 'GPU 電力',
 } as const;

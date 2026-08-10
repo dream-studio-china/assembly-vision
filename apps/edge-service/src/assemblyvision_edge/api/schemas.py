@@ -189,6 +189,13 @@ class DeviceStatus(BaseModel):
     load_1m: float | None = None
     memory_total_bytes: int | None = None
     memory_available_bytes: int | None = None
+    # Network transfer rates (bytes/second) and NVIDIA GPU metrics; None when
+    # the platform cannot measure them.
+    network_rx_bytes_per_sec: float | None = None
+    network_tx_bytes_per_sec: float | None = None
+    gpu_utilization_percent: float | None = None
+    gpu_power_watts: float | None = None
+    gpu_power_max_watts: float | None = None
     storage_free_inodes: int = 0
     storage_inode_percent: float = 0.0
     storage_warning_free_percent: float = 0.0

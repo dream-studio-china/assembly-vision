@@ -817,6 +817,12 @@ export interface components {
             device_id: string;
             /** Disk Free Bytes */
             disk_free_bytes: number;
+            /** Gpu Power Max Watts */
+            gpu_power_max_watts?: number | null;
+            /** Gpu Power Watts */
+            gpu_power_watts?: number | null;
+            /** Gpu Utilization Percent */
+            gpu_utilization_percent?: number | null;
             /** Inspection Error Code */
             inspection_error_code?: string | null;
             /** Inspection Ready */
@@ -858,6 +864,10 @@ export interface components {
             memory_total_bytes?: number | null;
             /** Model Loaded */
             model_loaded: boolean;
+            /** Network Rx Bytes Per Sec */
+            network_rx_bytes_per_sec?: number | null;
+            /** Network Tx Bytes Per Sec */
+            network_tx_bytes_per_sec?: number | null;
             /** Observed At */
             observed_at: string;
             /** Operational State */

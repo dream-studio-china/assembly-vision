@@ -354,6 +354,12 @@ export type DeviceStatus = {
   load_1m: number | null;
   memory_total_bytes: number | null;
   memory_available_bytes: number | null;
+  /** Network transfer rates (bytes/second) and NVIDIA GPU metrics; null when unavailable. */
+  network_rx_bytes_per_sec: number | null;
+  network_tx_bytes_per_sec: number | null;
+  gpu_utilization_percent: number | null;
+  gpu_power_watts: number | null;
+  gpu_power_max_watts: number | null;
   cleanup_enabled: boolean;
   cleanup_eligible_count: number;
   cleanup_eligible_bytes: number;

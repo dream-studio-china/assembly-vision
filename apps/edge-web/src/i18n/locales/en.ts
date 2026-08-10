@@ -427,5 +427,10 @@ export default {
 "Memory": "Memory",
 "Disk": "Disk",
 "CPU {count} cores total load": "CPU {count} cores total load",
+"Network traffic": "Network traffic",
+"Download": "Download",
+
+"GPU load": "GPU load",
+"GPU power": "GPU power",
 
 } as const;

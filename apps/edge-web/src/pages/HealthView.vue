@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { formatBytes, formatIsoTime } from "@assemblyvision/ui";
 import * as echarts from "echarts";
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import EChart from "../components/EChart.vue";
 import { getApiClient } from "../services/client";
@@ -15,6 +15,7 @@ const status = ref<DeviceStatus | null>(null);
 const uploads = ref<UploadTask[]>([]);
 const error = ref<string | null>(null);
 const lastUpdated = ref<string | null>(null);
+let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 const alertsStore = useAlertsStore();
 const activeAlerts = computed<Alert[]>(() => alertsStore.alerts);
@@ -72,6 +73,106 @@ function gaugeColor(percent: number): string {
   return "var(--status-ok)";
 }
 
+// GPU gauges: utilization is already a percentage; power is shown as a share
+// of the card power limit. Null means no NVIDIA GPU is present.
+const gpuLoadPercent = computed<number | null>(() => {
+  const value = status.value?.gpu_utilization_percent;
+  if (value === null || value === undefined) return null;
+  return Math.min(100, Math.round(value));
+});
+
+const gpuPowerPercent = computed<number | null>(() => {
+  const watts = status.value?.gpu_power_watts;
+  const max = status.value?.gpu_power_max_watts;
+  if (watts === null || watts === undefined || max === null || max === undefined || max <= 0) {
+    return null;
+  }
+  return Math.min(100, Math.round((watts / max) * 100));
+});
+
+const gpuPowerCaption = computed<string>(() => {
+  const watts = status.value?.gpu_power_watts;
+  const max = status.value?.gpu_power_max_watts;
+  if (watts === null || watts === undefined || max === null || max === undefined) return "-";
+  return `${Math.round(watts)} W / ${Math.round(max)} W`;
+});
+
+// Live network traffic: one sample per second, sliding window of 60 points.
+type NetPoint = { time: string; rx: number; tx: number };
+const NET_WINDOW = 60;
+const netSeries = ref<NetPoint[]>([]);
+
+function pushNetPoint(): void {
+  const rx = status.value?.network_rx_bytes_per_sec;
+  const tx = status.value?.network_tx_bytes_per_sec;
+  netSeries.value = [
+    ...netSeries.value.slice(-(NET_WINDOW - 1)),
+    {
+      time: new Date().toLocaleTimeString(),
+      rx: rx === null || rx === undefined ? 0 : rx,
+      tx: tx === null || tx === undefined ? 0 : tx,
+    },
+  ];
+}
+
+const networkOption = computed<echarts.EChartsOption>(() => {
+  const theme = chartTokens();
+  const rxColor = theme.accent;
+  const txColor = theme.ok;
+  return {
+    title: { text: t("Network traffic"), left: "center", textStyle: { fontSize: 14, color: theme.text } },
+    tooltip: { trigger: "axis", backgroundColor: "var(--surface-raised)", borderColor: "var(--border)", textStyle: { color: "var(--text)" } },
+    legend: { data: [t("Download"), t("Upload")], top: 28, textStyle: { color: theme.text, fontSize: 11 } },
+    grid: { top: 56, left: 8, right: 8, bottom: 8, containLabel: true },
+    xAxis: {
+      type: "category",
+      data: netSeries.value.map((p) => p.time),
+      boundaryGap: false,
+      axisLine: { lineStyle: { color: theme.border } },
+      axisLabel: { color: theme.text, fontSize: 9, interval: 10 },
+    },
+    yAxis: {
+      type: "value",
+      splitLine: { lineStyle: { color: theme.border } },
+      axisLabel: { color: theme.text, fontSize: 9, formatter: (value: number) => `${formatBytes(value)}/s` },
+    },
+    series: [
+      {
+        name: t("Download"),
+        type: "line",
+        stack: "traffic",
+        smooth: true,
+        showSymbol: false,
+        data: netSeries.value.map((p) => p.rx),
+        lineStyle: { width: 1.5, color: rxColor },
+        itemStyle: { color: rxColor },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: echarts.color.modifyAlpha(rxColor, 0.35) },
+            { offset: 1, color: echarts.color.modifyAlpha(rxColor, 0.02) },
+          ]),
+        },
+      },
+      {
+        name: t("Upload"),
+        type: "line",
+        stack: "traffic",
+        smooth: true,
+        showSymbol: false,
+        data: netSeries.value.map((p) => p.tx),
+        lineStyle: { width: 1.5, color: txColor },
+        itemStyle: { color: txColor },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: echarts.color.modifyAlpha(txColor, 0.35) },
+            { offset: 1, color: echarts.color.modifyAlpha(txColor, 0.02) },
+          ]),
+        },
+      },
+    ],
+  };
+});
+
 const queueOption = computed<echarts.EChartsOption>(() => {
   const theme = chartTokens();
   const byState: Record<string, number> = {};
@@ -102,9 +203,25 @@ onMounted(async () => {
     uploads.value = page.items;
     lastUpdated.value = new Date().toISOString();
     alertsStore.setFromDeviceStatus(device);
+    pushNetPoint();
   } catch (err) {
     error.value = String(err);
   }
+  // The network area chart samples once per second; the gauges refresh with
+  // the same poll since they share the device status snapshot.
+  pollTimer = setInterval(async () => {
+    try {
+      status.value = await getApiClient().getDeviceStatus();
+      lastUpdated.value = new Date().toISOString();
+      pushNetPoint();
+    } catch {
+      // keep the last known snapshot; the stale timestamp marks it
+    }
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (pollTimer !== null) clearInterval(pollTimer);
 });
 </script>
 
@@ -172,7 +289,7 @@ onMounted(async () => {
       </el-collapse>
     </section>
 
-    <div class="health__gauges">
+    <div class="health__row health__row--system">
       <div class="gauge">
         <el-progress
           type="circle"
@@ -194,6 +311,34 @@ onMounted(async () => {
         />
         <div class="gauge__label">{{ t("Memory") }}</div>
         <div class="gauge__sub">{{ formatBytes(memoryUsed) }} / {{ formatBytes(status?.memory_total_bytes ?? 0) }}</div>
+      </div>
+      <div class="gauge">
+        <el-progress
+          type="circle"
+          :percentage="gpuLoadPercent ?? 0"
+          :width="120"
+          :stroke-width="10"
+          :color="gaugeColor(gpuLoadPercent ?? 0)"
+        />
+        <div class="gauge__label">{{ t("GPU load") }}</div>
+        <div class="gauge__sub">{{ gpuLoadPercent === null ? "-" : `${gpuLoadPercent}%` }}</div>
+      </div>
+      <div class="gauge">
+        <el-progress
+          type="circle"
+          :percentage="gpuPowerPercent ?? 0"
+          :width="120"
+          :stroke-width="10"
+          :color="gaugeColor(gpuPowerPercent ?? 0)"
+        />
+        <div class="gauge__label">{{ t("GPU power") }}</div>
+        <div class="gauge__sub">{{ gpuPowerCaption }}</div>
+      </div>
+    </div>
+
+    <div class="health__row health__row--network">
+      <div class="health__network">
+        <EChart :option="networkOption" />
       </div>
       <div class="gauge">
         <el-progress
@@ -268,10 +413,16 @@ onMounted(async () => {
   background: var(--status-info-soft);
   color: var(--status-info);
 }
-.health__gauges {
+.health__row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+}
+/* ECharts canvases carry their own intrinsic width, which would otherwise
+   become the grid item's min-width and stop the row from shrinking with the
+   window; 0 lets the grid compress and the ResizeObserver redraw the chart. */
+.health__row > * {
+  min-width: 0;
 }
 .gauge {
   display: flex;
@@ -292,6 +443,17 @@ onMounted(async () => {
 .gauge__sub {
   color: var(--text-muted);
   font-size: 12px;
+}
+.health__network {
+  grid-column: span 2;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--panel-padding);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+}
+.health__network :deep(.echart) {
+  height: 180px;
 }
 .health__queue {
   border: 1px solid var(--border);

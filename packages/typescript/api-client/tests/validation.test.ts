@@ -97,6 +97,11 @@ describe("HttpApiClient runtime response validation (F9)", () => {
       load_1m: 1.0,
       memory_total_bytes: 16 * 1024 ** 3,
       memory_available_bytes: 8 * 1024 ** 3,
+      network_rx_bytes_per_sec: 120 * 1024,
+      network_tx_bytes_per_sec: 60 * 1024,
+      gpu_utilization_percent: 35,
+      gpu_power_watts: 95,
+      gpu_power_max_watts: 250,
       alerts: [],
     });
     await expect(client.getDeviceStatus()).resolves.toBeDefined();

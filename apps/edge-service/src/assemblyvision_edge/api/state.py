@@ -37,7 +37,13 @@ from assemblyvision_edge.retention.storage import (
     observe_storage,
 )
 from assemblyvision_edge.retention.worker import CleanupHealth
-from assemblyvision_edge.system import system_metrics
+from assemblyvision_edge.system import (
+    GpuMetrics,
+    NetworkRates,
+    gpu_metrics,
+    network_rates,
+    system_metrics,
+)
 from assemblyvision_edge.upload.scheduler import SchedulerHealth
 
 log = logging.getLogger("assemblyvision.runtime")
@@ -636,6 +642,13 @@ class EdgeRuntime:
         status["memory_total_bytes"] = metrics.memory_total_bytes
         status["memory_available_bytes"] = metrics.memory_available_bytes
         status["storage_total_bytes"] = storage.total_bytes if storage else 0
+        net: NetworkRates = network_rates()
+        gpu: GpuMetrics = gpu_metrics()
+        status["network_rx_bytes_per_sec"] = net.rx_bps
+        status["network_tx_bytes_per_sec"] = net.tx_bps
+        status["gpu_utilization_percent"] = gpu.utilization_percent
+        status["gpu_power_watts"] = gpu.power_watts
+        status["gpu_power_max_watts"] = gpu.power_max_watts
         return status
 
     @staticmethod
