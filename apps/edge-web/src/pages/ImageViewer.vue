@@ -109,13 +109,13 @@ onMounted(async () => {
   gap: 12px;
 }
 .images__meta {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .images__img {
   width: 100%;
   max-width: 820px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 </style>

@@ -88,7 +88,7 @@ onMounted(load);
   gap: 12px;
 }
 .uploads__hint {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 13px;
 }
 </style>

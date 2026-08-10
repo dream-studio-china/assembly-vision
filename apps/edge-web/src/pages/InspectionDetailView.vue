@@ -165,8 +165,10 @@ const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourc
 .detail__viewer {
   height: 50vh;
   min-height: 280px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -186,7 +188,7 @@ const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourc
   font-size: 13px;
 }
 .detail__dl dt {
-  color: #6b7280;
+  color: var(--text-muted);
   word-break: break-word;
 }
 .detail__dl dd {
@@ -201,24 +203,24 @@ const previewSrc = computed(() => placeholderFrame(sourceSize.value.width, sourc
 }
 .pill {
   display: inline-block;
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   padding: 1px 10px;
   font-size: 12px;
 }
 .pill--present {
-  background: #e8f5e9;
-  color: #1b5e20;
+  background: var(--status-ok-soft);
+  color: var(--status-ok);
 }
 .pill--missing {
-  background: #fdecea;
-  color: #b71c1c;
+  background: var(--status-ng-soft);
+  color: var(--status-ng);
 }
 .pill--uncertain {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--status-warning-soft);
+  color: var(--status-warning);
 }
 .pill--warn {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--status-warning-soft);
+  color: var(--status-warning);
 }
 </style>

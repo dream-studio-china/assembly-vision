@@ -6,6 +6,7 @@ import * as echarts from "echarts";
 import { computed, onMounted, ref } from "vue";
 import EChart from "../components/EChart.vue";
 import { inspectionService } from "../services/inspectionService";
+import { chartTokens } from "../theme";
 import type { StatisticsSummary } from "@assemblyvision/api-client";
 
 const stats = ref<StatisticsSummary | null>(null);
@@ -13,20 +14,23 @@ const from = ref<string>("");
 const to = ref<string>("");
 const line = ref<string>("");
 
-const pieOption = computed<echarts.EChartsOption>(() => ({
-  title: { text: "Result split", left: "center", textStyle: { fontSize: 14 } },
+const pieOption = computed<echarts.EChartsOption>(() => {
+  const theme = chartTokens();
+  return {
+  title: { text: "Result split", left: "center", textStyle: { fontSize: 14, color: theme.text } },
   tooltip: { trigger: "item" },
   series: [
     {
       type: "pie",
       radius: ["40%", "70%"],
       data: [
-        { name: "PASS", value: stats.value?.pass_count ?? 0, itemStyle: { color: "#43a047" } },
-        { name: "NG", value: stats.value?.ng_count ?? 0, itemStyle: { color: "#e53935" } },
+        { name: "PASS", value: stats.value?.pass_count ?? 0, itemStyle: { color: theme.ok } },
+        { name: "NG", value: stats.value?.ng_count ?? 0, itemStyle: { color: theme.ng } },
       ],
     },
   ],
-}));
+};
+});
 
 async function load(): Promise<void> {
   const filter = {
@@ -81,9 +85,11 @@ onMounted(load);
   gap: 16px;
 }
 .card {
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--panel-padding);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
   text-align: center;
 }
 .card__value {
@@ -91,13 +97,13 @@ onMounted(load);
   font-weight: 700;
 }
 .card--pass .card__value {
-  color: #1b5e20;
+  color: var(--status-ok);
 }
 .card--ng .card__value {
-  color: #b71c1c;
+  color: var(--status-ng);
 }
 .card__label {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 13px;
   margin-top: 4px;
 }

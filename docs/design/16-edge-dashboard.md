@@ -16,6 +16,28 @@ The dashboard consumes the edge contracts in [REST API and Events](15-rest-api-a
 6. Use text, iconography, and color together. Red/green alone is not sufficient.
 7. Avoid displaying a high-confidence detection as proof of overall OK; the final deterministic decision is authoritative.
 
+### 16.2.1 Theme System
+
+The dashboard provides a persisted, local UI preference with three professional
+themes. Theme choice changes visual tokens only: routes, component structure,
+spacing scale, type scale, interaction patterns, safety labels, and API behavior
+remain identical.
+
+| Theme | Intended environment | Visual characteristics |
+|---|---|---|
+| Industrial Minimal (default) | Shop-floor HMI and maintenance terminals | Sharp rectangular surfaces, compact density, strong separators, restrained elevation, neutral steel palette |
+| Modern Light | Engineering review and management workstations | Bright surfaces, moderate radius, measured whitespace, subtle elevation, enterprise-blue accent |
+| Modern Dark | Long-running monitoring and control rooms | Graphite surfaces, high contrast text, subdued borders, readable non-neon status indicators |
+
+CSS custom properties are the single token source for backgrounds, surfaces,
+text, borders, focus, semantic status colors, density, radius, and Element Plus
+variables. ECharts consumes the active token palette explicitly because canvas
+charts do not inherit CSS variables. The selected theme is stored locally and
+does not affect inspection decisions, audit records, uploads, or device state.
+Semantic meaning remains stable in every theme: green means normal/OK, red
+means NG/alarm, amber means warning/uncertain, and blue means informational.
+Color always supplements text and iconography rather than replacing it.
+
 ## 16.3 Information Architecture
 
 | Route | Primary purpose | Roles | Data source |

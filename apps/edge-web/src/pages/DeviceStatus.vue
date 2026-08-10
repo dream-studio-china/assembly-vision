@@ -94,26 +94,26 @@ onMounted(async () => {
   gap: 16px;
 }
 .device__meta {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .device__alerts {
-  color: #b45309;
+  color: var(--status-warning);
   font-size: 13px;
   font-weight: 600;
 }
 .pill {
   display: inline-block;
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   padding: 2px 12px;
   font-size: 12px;
 }
 .pill--ok {
-  background: #e8f5e9;
-  color: #1b5e20;
+  background: var(--status-ok-soft);
+  color: var(--status-ok);
 }
 .pill--ng {
-  background: #fdecea;
-  color: #b71c1c;
+  background: var(--status-ng-soft);
+  color: var(--status-ng);
 }
 </style>

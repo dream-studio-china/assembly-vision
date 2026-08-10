@@ -137,7 +137,7 @@ function onFileSelected(event: Event, kind: "image" | "video"): void {
   font-size: 13px;
 }
 .dev-tools__busy {
-  color: #909399;
+  color: var(--text-muted);
 }
 .dev-tools__result {
   display: flex;
@@ -147,16 +147,16 @@ function onFileSelected(event: Event, kind: "image" | "video"): void {
 .dev-tools__badge {
   align-self: flex-start;
   padding: 4px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   font-weight: 700;
 }
 .dev-tools__badge.is-ok {
-  background: #67c23a;
-  color: #fff;
+  background: var(--status-ok);
+  color: var(--shell-text);
 }
 .dev-tools__badge.is-ng {
-  background: #f56c6c;
-  color: #fff;
+  background: var(--status-ng);
+  color: var(--shell-text);
 }
 .dev-tools__preview {
   position: relative;
@@ -169,7 +169,7 @@ function onFileSelected(event: Event, kind: "image" | "video"): void {
 }
 .dev-tools__box {
   position: absolute;
-  border: 2px solid #67c23a;
+  border: 2px solid var(--status-ok);
   box-sizing: border-box;
   pointer-events: none;
 }

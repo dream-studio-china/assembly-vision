@@ -283,27 +283,27 @@ onBeforeUnmount(() => {
 }
 .live-inspection__head h2 {
   margin: 0;
-  color: #17202a;
+  color: var(--text);
   font-size: 24px;
 }
-.live-inspection__eyebrow { margin: 0 0 3px; color: #176b87; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; }
+.live-inspection__eyebrow { margin: 0 0 3px; color: var(--accent); font-family: var(--font-mono); font-size: 11px; font-weight: 800; letter-spacing: 0.1em; }
 .live-inspection__sn {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 14px;
 }
 .live-inspection__inspection-id {
-  color: #9aa2ae;
+  color: var(--text-faint);
   font-size: 12px;
 }
 .live-inspection__strips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.status-strip { border: 1px solid #cbd7dc; border-left: 4px solid #176b87; border-radius: 6px; background: #fff; padding: 11px 12px; }
-.status-strip h3 { margin: 0 0 8px; color: #46555c; font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase; }
+.status-strip { border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--radius); background: var(--surface-raised); padding: 11px 12px; box-shadow: var(--shadow); }
+.status-strip h3 { margin: 0 0 8px; color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
 .status-strip__items { display: flex; flex-wrap: wrap; gap: 7px; }
-.status-chip { border-radius: 3px; padding: 4px 7px; font-size: 12px; font-weight: 650; }
-.status-chip--ready { background: #e5f3ed; color: #17633c; }
-.status-chip--critical { background: #fde7e4; color: #a72d24; }
-.status-chip--warning { background: #fff1d8; color: #825600; }
-.status-chip--neutral { background: #e9eef0; color: #405159; }
+.status-chip { border-radius: var(--radius-small); padding: 4px 7px; font-size: 12px; font-weight: 650; }
+.status-chip--ready { background: var(--status-ok-soft); color: var(--status-ok); }
+.status-chip--critical { background: var(--status-ng-soft); color: var(--status-ng); }
+.status-chip--warning { background: var(--status-warning-soft); color: var(--status-warning); }
+.status-chip--neutral { background: var(--surface-muted); color: var(--text-muted); }
 .live-inspection__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -320,13 +320,13 @@ onBeforeUnmount(() => {
 .live-inspection__frame img {
   width: 100%;
   display: block;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 .live-inspection__viewer {
   height: 46vh;
   min-height: 280px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
 }
 .live-inspection__unavailable {
   height: 100%;
@@ -336,15 +336,16 @@ onBeforeUnmount(() => {
   justify-content: center;
 }
 .panel {
-  border: 1px solid #cbd7dc;
-  border-radius: 6px;
-  padding: 14px;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--panel-padding);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
 }
 .panel h3 {
   margin: 0 0 10px;
   font-size: 14px;
-  color: #374151;
+  color: var(--text);
 }
 .info-dl {
   display: grid;
@@ -354,7 +355,7 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 .info-dl dt {
-  color: #6b7280;
+  color: var(--text-muted);
 }
 .info-dl dd {
   margin: 0;
@@ -362,25 +363,25 @@ onBeforeUnmount(() => {
 }
 .rule {
   display: inline-block;
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   padding: 1px 10px;
   font-size: 12px;
 }
 .rule--pass {
-  background: #e8f5e9;
-  color: #1b5e20;
+  background: var(--status-ok-soft);
+  color: var(--status-ok);
 }
 .rule--ng {
-  background: #fdecea;
-  color: #b71c1c;
+  background: var(--status-ng-soft);
+  color: var(--status-ng);
 }
 .rule--checking {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--status-warning-soft);
+  color: var(--status-warning);
 }
 .rule--pending {
-  background: #eceff1;
-  color: #546e7a;
+  background: var(--surface-muted);
+  color: var(--text-muted);
 }
 @media (max-width: 1180px) {
   .live-inspection__grid { grid-template-columns: repeat(2, 1fr); }

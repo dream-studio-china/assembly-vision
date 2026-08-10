@@ -14,7 +14,7 @@ test("app shell renders navigation and the operator dashboard", async ({ page })
 test("inspection history filters by result", async ({ page }) => {
   await page.goto("/inspections");
   await expect(page.getByText("Inspection ID")).toBeVisible();
-  await page.locator(".el-select").first().click();
+  await page.getByTestId("inspection-result-filter").click();
   await page.getByRole("option", { name: "NG", exact: true }).click();
   await expect(page.locator(".el-table__row").first()).toBeVisible();
 });

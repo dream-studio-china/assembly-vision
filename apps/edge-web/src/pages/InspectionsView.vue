@@ -26,6 +26,8 @@ onMounted(load);
     <div class="inspections__filters">
       <el-select
         v-model="filter.business_result"
+        data-testid="inspection-result-filter"
+        aria-label="Inspection result filter"
         placeholder="All results"
         clearable
         @change="load"
@@ -69,9 +71,9 @@ onMounted(load);
   gap: 12px;
 }
 .inspections__reason {
-  background: #fdecea;
-  color: #b71c1c;
-  border-radius: 3px;
+  background: var(--status-ng-soft);
+  color: var(--status-ng);
+  border-radius: var(--radius-small);
   padding: 1px 6px;
   margin-right: 4px;
   font-size: 12px;
