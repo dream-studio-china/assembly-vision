@@ -4,6 +4,12 @@
 
 Human review is a controlled quality process for cautious rollout, ambiguous evidence, NG disposition, and continuous improvement. It does not conceal model limitations or change the original machine decision. AssemblyVision prioritizes high NG recall: early operation accepts additional false NG decisions because they can be reviewed, while a real NG incorrectly released as OK is the principal quality risk.
 
+Review is **optional and additive** (ADR-016): it is never required to run an
+inspection, never mutates the immutable machine decision, and never changes the
+existing inspection endpoints or projections. Any inspection — `OK` or `NG` —
+may be reviewed locally on the edge; NG detail views surface a review entry
+point while OK views offer an optional audit path.
+
 ## 24.2 Scope by Phase
 
 ### 24.2.1 Initial Production Phase
@@ -156,3 +162,12 @@ Manual review is reduced only when measured production evidence supports the cha
 - [Testing and Quality Assurance](22-testing-and-quality-assurance.md)
 - [Customer Acceptance](26-customer-acceptance.md)
 - [Model update sequence](20-deployment-and-operations.md#208-model-and-rule-update-sequence)
+
+## 24.14 Edge-Local Review (ADR-016)
+
+While the mature design routes review through the central server (section
+24.5), the edge stores append-only local review records so the process keeps
+working while offline (section 24.11) and before a central server exists.
+See [ADR-016](decisions/ADR-016-edge-local-human-review.md) for the scope
+decisions: optional per-inspection review, disposition compatibility, local
+reviewer identity, supersede chaining, and the web review queue.
