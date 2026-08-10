@@ -377,13 +377,13 @@ export interface paths {
         };
         /**
          * Confidence Drift
-         * @description Confidence drift analysis for one product/rule on this device (15.3.6).
+         * @description Confidence drift analysis for one stable inference scope (15.3.6).
          *
          *     Compares today's weighted-mean detection confidence with yesterday, the
-         *     previous 7 days, and the previous 30 days under the premise of the same
-         *     product and rule version, so a change reflects the acquisition
-         *     environment rather than a product-rule switch. The assessment is a
-         *     heuristic hint, not a root-cause or accuracy claim.
+         *     previous 7 days, and the previous 30 days under the same product, rule,
+         *     detector-version, and aggregation-policy scope. This prevents a release
+         *     or policy switch from being presented as an acquisition-environment change.
+         *     The assessment is a heuristic hint, not a root-cause or accuracy claim.
          */
         get: operations["confidence_drift_api_v1_statistics_confidence_drift_get"];
         put?: never;
@@ -698,8 +698,8 @@ export interface components {
          * ConfidenceDriftReport
          * @description Confidence drift analysis for the current device (design 15.3.6).
          *
-         *     Computed under the premise of one product and one rule version so a
-         *     confidence change is not conflated with a product-rule change.
+         *     Computed under one product, rule, detector-version, and aggregation-policy
+         *     scope so a confidence change is not conflated with a configuration change.
          */
         ConfidenceDriftReport: {
             assessment: components["schemas"]["DriftAssessment"];
@@ -720,14 +720,20 @@ export interface components {
          * @description The device/product/rule scope a drift report was computed for.
          */
         ConfidenceDriftScope: {
+            /** Aggregation Policy Version */
+            aggregation_policy_version: string;
             /** As Of Iso */
             as_of_iso: string;
+            /** Component Model Version Id */
+            component_model_version_id: string;
             /** Device Id */
             device_id: string;
             /** Product Code */
-            product_code?: string | null;
+            product_code: string;
+            /** Product Model Version Id */
+            product_model_version_id: string;
             /** Rule Version Id */
-            rule_version_id?: string | null;
+            rule_version_id: string;
             /**
              * Tz Offset Minutes
              * @default 0
@@ -2461,9 +2467,12 @@ export interface operations {
     };
     confidence_drift_api_v1_statistics_confidence_drift_get: {
         parameters: {
-            query?: {
-                product_code?: string | null;
-                rule_version_id?: string | null;
+            query: {
+                product_code: string;
+                rule_version_id: string;
+                product_model_version_id: string;
+                component_model_version_id: string;
+                aggregation_policy_version: string;
                 component_code?: string | null;
                 tz_offset_minutes?: number;
             };
@@ -2482,13 +2491,13 @@ export interface operations {
                     "application/json": components["schemas"]["ConfidenceDriftReport"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Invalid or incomplete comparison scope */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };

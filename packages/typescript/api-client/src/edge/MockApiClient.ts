@@ -716,15 +716,17 @@ export class MockApiClient implements ApiClient {
     };
   }
 
-  async getConfidenceDrift(_filter?: ConfidenceDriftFilter): Promise<ConfidenceDriftReport> {
-    void _filter; // the mock ignores filters and returns deterministic data
+  async getConfidenceDrift(filter: ConfidenceDriftFilter): Promise<ConfidenceDriftReport> {
     const asOf = NOW.toISOString();
     return {
       scope: {
         device_id: DEVICE_ID,
-        product_code: null,
-        rule_version_id: null,
-        tz_offset_minutes: 0,
+        product_code: filter.product_code,
+        rule_version_id: filter.rule_version_id,
+        product_model_version_id: filter.product_model_version_id,
+        component_model_version_id: filter.component_model_version_id,
+        aggregation_policy_version: filter.aggregation_policy_version,
+        tz_offset_minutes: filter.tz_offset_minutes ?? 0,
         as_of_iso: asOf,
       },
       periods: {

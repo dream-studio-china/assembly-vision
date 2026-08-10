@@ -320,13 +320,14 @@ function validateConfidenceDriftReport(body: unknown): void {
   const record = expectRecord(body);
   const scope = expectRecord(record["scope"], "$.scope");
   hasString(scope, "device_id", "$.scope");
-  const productCode = scope["product_code"];
-  if (productCode !== null && typeof productCode !== "string") {
-    fail("$.scope.product_code", "string|null", productCode);
-  }
-  const ruleVersion = scope["rule_version_id"];
-  if (ruleVersion !== null && typeof ruleVersion !== "string") {
-    fail("$.scope.rule_version_id", "string|null", ruleVersion);
+  for (const key of [
+    "product_code",
+    "rule_version_id",
+    "product_model_version_id",
+    "component_model_version_id",
+    "aggregation_policy_version",
+  ]) {
+    hasString(scope, key, "$.scope");
   }
   hasNumber(scope, "tz_offset_minutes", "$.scope");
   hasString(scope, "as_of_iso", "$.scope");

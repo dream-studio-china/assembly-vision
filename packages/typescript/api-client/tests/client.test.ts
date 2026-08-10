@@ -84,7 +84,13 @@ describe("MockApiClient", () => {
 
   it("returns a deterministic confidence-drift report", async () => {
     const client = new MockApiClient();
-    const report = await client.getConfidenceDrift();
+    const report = await client.getConfidenceDrift({
+      product_code: "model_a",
+      rule_version_id: "rule-1",
+      product_model_version_id: "product-model-1",
+      component_model_version_id: "component-model-1",
+      aggregation_policy_version: "single-frame-mvp-1",
+    });
     expect(report.assessment.level).toBe("minor_drop");
     expect(report.periods.today.weighted_mean).toBeLessThan(report.periods.previous_7d.weighted_mean ?? 1);
     expect(report.components.length).toBeGreaterThan(0);
@@ -224,10 +230,18 @@ describe("HttpApiClient", () => {
     }) as typeof fetch;
     const client = new HttpApiClient("http://edge:8000", fetchImpl);
     await client
-      .getConfidenceDrift({ product_code: "model_a", tz_offset_minutes: 480 })
+      .getConfidenceDrift({
+        product_code: "model_a",
+        rule_version_id: "rule-1",
+        product_model_version_id: "product-model-1",
+        component_model_version_id: "component-model-1",
+        aggregation_policy_version: "single-frame-mvp-1",
+        tz_offset_minutes: 480,
+      })
       .catch(() => undefined);
     expect(called).toContain("/api/v1/statistics/confidence-drift?");
     expect(called).toContain("product_code=model_a");
+    expect(called).toContain("component_model_version_id=component-model-1");
     expect(called).toContain("tz_offset_minutes=480");
   });
 

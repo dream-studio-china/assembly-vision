@@ -273,12 +273,15 @@ export class HttpApiClient implements ApiClient {
     return this.#request(`/statistics${qs ? `?${qs}` : ""}`, undefined, validators.statisticsSummary);
   }
 
-  getConfidenceDrift(filter?: ConfidenceDriftFilter): Promise<ConfidenceDriftReport> {
+  getConfidenceDrift(filter: ConfidenceDriftFilter): Promise<ConfidenceDriftReport> {
     const params = new URLSearchParams();
-    if (filter?.product_code) params.set("product_code", filter.product_code);
-    if (filter?.rule_version_id) params.set("rule_version_id", filter.rule_version_id);
-    if (filter?.component_code) params.set("component_code", filter.component_code);
-    if (filter?.tz_offset_minutes !== undefined) {
+    params.set("product_code", filter.product_code);
+    params.set("rule_version_id", filter.rule_version_id);
+    params.set("product_model_version_id", filter.product_model_version_id);
+    params.set("component_model_version_id", filter.component_model_version_id);
+    params.set("aggregation_policy_version", filter.aggregation_policy_version);
+    if (filter.component_code) params.set("component_code", filter.component_code);
+    if (filter.tz_offset_minutes !== undefined) {
       params.set("tz_offset_minutes", String(filter.tz_offset_minutes));
     }
     const qs = params.toString();

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Production statistics: totals, pass/NG counts, pass rate, plus the
 // confidence-drift analysis (design 15.3.6) that compares today's weighted
-// mean detection confidence with yesterday and the previous 7 days.
+// mean detection confidence with recent periods within one stable inference scope.
 
 import * as echarts from "echarts";
 import { computed, onMounted, ref } from "vue";
@@ -72,7 +72,19 @@ async function load(): Promise<void> {
   };
   stats.value = await inspectionService.getStatistics(filter);
   try {
-    drift.value = await inspectionService.getConfidenceDrift();
+    const latest = (await inspectionService.listHistory({ limit: 1 })).items[0];
+    if (!latest) throw new Error(t("No completed inspection is available for confidence drift."));
+    const record = await inspectionService.getInspection(latest.inspection_id);
+    const productCode = record.product_resolution.product_code;
+    if (!productCode) throw new Error(t("No resolved product is available for confidence drift."));
+    drift.value = await inspectionService.getConfidenceDrift({
+      product_code: productCode,
+      rule_version_id: record.rule_version_id,
+      product_model_version_id: record.product_model_version_id,
+      component_model_version_id: record.component_model_version_id,
+      aggregation_policy_version: record.aggregation_policy_version,
+      tz_offset_minutes: -new Date().getTimezoneOffset(),
+    });
     driftError.value = null;
   } catch (error) {
     drift.value = null;
@@ -107,10 +119,15 @@ onMounted(load);
 
     <h2>{{ t("Confidence drift") }}</h2>
     <p class="muted">
-      {{ t("Compares today's weighted mean detection confidence with yesterday and the previous 7 days for the same product and rule. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).") }}
+      {{ t("Compares today's weighted mean detection confidence with yesterday and the previous 7 and 30 days for the same product, rule, models, and aggregation policy. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).") }}
     </p>
 
     <template v-if="drift">
+      <p class="muted drift__scope">
+        {{ t("Scope") }}: {{ drift.scope.product_code }} / {{ drift.scope.rule_version_id }} /
+        {{ drift.scope.product_model_version_id }} / {{ drift.scope.component_model_version_id }} /
+        {{ drift.scope.aggregation_policy_version }} (UTC{{ drift.scope.tz_offset_minutes >= 0 ? "+" : "" }}{{ drift.scope.tz_offset_minutes / 60 }})
+      </p>
       <div class="drift__assessment" :class="levelClass">
         <span class="drift__level">{{ levelLabel[drift.assessment.level] }}</span>
         <span class="drift__detail">{{ drift.assessment.detail }}</span>
@@ -192,7 +209,7 @@ onMounted(load);
               <td>{{ item.component_code }}</td>
               <td>{{ formatConfidence(item.today_weighted_mean) }}</td>
               <td>{{ formatConfidence(item.baseline_weighted_mean) }}</td>
-              <td :class="item.delta !== null && item.delta < 0 ? 'delta--down' : 'delta--up'">
+              <td :class="item.delta === null || item.delta === 0 ? 'delta--neutral' : item.delta < 0 ? 'delta--down' : 'delta--up'">
                 {{ formatConfidence(item.delta) }}
               </td>
               <td>{{ item.today_evidence_count }} / {{ item.baseline_evidence_count }}</td>
@@ -286,7 +303,7 @@ onMounted(load);
 }
 .drift__periods {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
 }
 .table {
@@ -309,5 +326,8 @@ onMounted(load);
 }
 .delta--up {
   color: var(--status-ok);
+}
+.delta--neutral {
+  color: var(--text-muted);
 }
 </style>

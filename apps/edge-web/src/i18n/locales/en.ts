@@ -397,8 +397,8 @@ export default {
   "Invalid configuration": "Invalid configuration",
   // Confidence drift (design 15.3.6)
   "Confidence drift": "Confidence drift",
-  "Compares today's weighted mean detection confidence with yesterday and the previous 7 days for the same product and rule. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).":
-    "Compares today's weighted mean detection confidence with yesterday and the previous 7 days for the same product and rule. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).",
+  "Compares today's weighted mean detection confidence with yesterday and the previous 7 and 30 days for the same product, rule, models, and aggregation policy. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).":
+    "Compares today's weighted mean detection confidence with yesterday and the previous 7 and 30 days for the same product, rule, models, and aggregation policy. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).",
   "Stable": "Stable",
   "Minor drop": "Minor drop",
   "Noticeable drop": "Noticeable drop",
@@ -420,5 +420,8 @@ export default {
   "Today mean": "Today mean",
   "Baseline mean": "Baseline mean",
   "Confidence drift unavailable": "Confidence drift unavailable",
+  "Scope": "Scope",
+  "No completed inspection is available for confidence drift.": "No completed inspection is available for confidence drift.",
+  "No resolved product is available for confidence drift.": "No resolved product is available for confidence drift.",
 
 } as const;

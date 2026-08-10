@@ -509,8 +509,11 @@ export type StatisticsSummary = {
 };
 
 export type ConfidenceDriftFilter = {
-  product_code?: string;
-  rule_version_id?: string;
+  product_code: string;
+  rule_version_id: string;
+  product_model_version_id: string;
+  component_model_version_id: string;
+  aggregation_policy_version: string;
   component_code?: string;
   /** Operator-local timezone offset in minutes (UTC-12 .. UTC+14). */
   tz_offset_minutes?: number;
@@ -543,8 +546,11 @@ export type ComponentConfidenceDrift = {
 
 export type ConfidenceDriftScope = {
   device_id: string;
-  product_code: string | null;
-  rule_version_id: string | null;
+  product_code: string;
+  rule_version_id: string;
+  product_model_version_id: string;
+  component_model_version_id: string;
+  aggregation_policy_version: string;
   tz_offset_minutes: number;
   as_of_iso: string;
 };

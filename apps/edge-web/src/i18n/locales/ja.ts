@@ -396,7 +396,7 @@ export default {
   "Invalid configuration": "設定が不正",
   // Confidence drift (design 15.3.6)
   'Confidence drift': '信頼度ドリフト',
-  "Compares today's weighted mean detection confidence with yesterday and the previous 7 days for the same product and rule. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).": '同じ製品・ルールの前提で、今日の加重平均検出信頼度を昨日および過去7日間と比較します。継続的な低下は、取得環境の変化（コンベア、カメラの焦点・角度、照明）を示す可能性があります。',
+  "Compares today's weighted mean detection confidence with yesterday and the previous 7 and 30 days for the same product, rule, models, and aggregation policy. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).": '同じ製品、ルール、モデル、集約ポリシーの範囲で、今日の加重平均検出信頼度を昨日、過去7日間、過去30日間と比較します。継続的な低下は、取得環境の変化（コンベア、カメラの焦点・角度、照明）を示す可能性があります。',
   'Stable': '安定',
   'Minor drop': '軽微な低下',
   'Noticeable drop': '顕著な低下',
@@ -418,5 +418,8 @@ export default {
   'Today mean': '今日の平均',
   'Baseline mean': '基準の平均',
   'Confidence drift unavailable': '信頼度ドリフトを利用できません',
+  'Scope': '対象範囲',
+  'No completed inspection is available for confidence drift.': '信頼度ドリフト分析に利用できる完了検査がありません。',
+  'No resolved product is available for confidence drift.': '信頼度ドリフト分析に利用できる解決済み製品がありません。',
 
 } as const;

@@ -396,7 +396,7 @@ export default {
   "Invalid configuration": "配置无效",
   // Confidence drift (design 15.3.6)
   'Confidence drift': '置信度漂移',
-  "Compares today's weighted mean detection confidence with yesterday and the previous 7 days for the same product and rule. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).": '在同一产品和规则前提下，将今天的加权平均检测置信度与昨天及前 7 天比较。持续下降可能表示采集环境发生变化（传送带、相机对焦/角度、光照）。',
+  "Compares today's weighted mean detection confidence with yesterday and the previous 7 and 30 days for the same product, rule, models, and aggregation policy. A persistent drop can indicate an acquisition-environment change (conveyor, camera focus/angle, lighting).": '在同一产品、规则、模型和聚合策略范围内，将今天的加权平均检测置信度与昨天、前 7 天及前 30 天比较。持续下降可能表示采集环境发生变化（传送带、相机对焦/角度、光照）。',
   'Stable': '稳定',
   'Minor drop': '轻微下降',
   'Noticeable drop': '明显下降',
@@ -418,5 +418,8 @@ export default {
   'Today mean': '今天均值',
   'Baseline mean': '基线均值',
   'Confidence drift unavailable': '置信度漂移不可用',
+  'Scope': '范围',
+  'No completed inspection is available for confidence drift.': '没有可用于置信度漂移分析的已完成检测。',
+  'No resolved product is available for confidence drift.': '没有可用于置信度漂移分析的已解析产品。',
 
 } as const;
