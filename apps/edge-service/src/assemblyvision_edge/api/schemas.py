@@ -81,7 +81,9 @@ class SubmitReviewRequest(BaseModel):
     note: str | None = Field(default=None, max_length=2000)
     reviewer: str = Field(min_length=1, max_length=128)
     supersedes_review_id: UUID | None = None
-    component_corrections: list[ComponentCorrectionRequest] = Field(default_factory=list)
+    component_corrections: list[ComponentCorrectionRequest] = Field(
+        default_factory=list, max_length=64
+    )
 
     @field_validator("reason", "note", "reviewer")
     @classmethod

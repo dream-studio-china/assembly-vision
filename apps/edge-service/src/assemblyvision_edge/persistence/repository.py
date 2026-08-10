@@ -281,9 +281,11 @@ def _decode_cursor(cursor: str | None, filters: str | None = None) -> tuple[str,
     try:
         raw = base64.urlsafe_b64decode(cursor.encode("ascii"))
         payload = json.loads(raw)
+        if not isinstance(payload, dict):
+            raise InvalidCursorError("invalid cursor")
         completed_at = str(payload["completed_at"])
         inspection_id = str(payload["inspection_id"])
-    except (ValueError, KeyError, json.JSONDecodeError) as exc:
+    except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
         raise InvalidCursorError("invalid cursor") from exc
     if filters is not None and payload.get("filters") != filters:
         raise InvalidCursorError("cursor does not match the current filters")
@@ -292,6 +294,21 @@ def _decode_cursor(cursor: str | None, filters: str | None = None) -> tuple[str,
 
 def _json_loads(raw: str | None) -> Any:
     return json.loads(raw) if raw is not None else None
+
+
+def _decision_reasons(raw: Any) -> list[str]:
+    """Extract machine reason codes from a stored inspection ``decision`` cell.
+
+    The cell is a JSON ``Text`` column, so it arrives as a string on read; a
+    dict is tolerated for in-memory rows.
+    """
+    if isinstance(raw, dict):
+        decision = raw
+    elif isinstance(raw, str):
+        decision = json.loads(raw or "{}")
+    else:
+        decision = {}
+    return list(decision.get("reason_codes") or [])
 
 
 def _to_record(row: Any) -> InspectionRecord:
@@ -2265,7 +2282,9 @@ class EdgeRepository:
                 },
             )
         log.info(
-            "review recorded inspection=%s reviewer=%s disposition=%s supersedes=%s",
+            # The reviewer name is caller-supplied free text; log it repr-escaped
+            # so control characters cannot forge log lines (CWE-117).
+            "review recorded inspection=%s reviewer=%r disposition=%s supersedes=%s",
             record.inspection_id,
             record.reviewer,
             record.disposition.value,
@@ -2355,15 +2374,12 @@ class EdgeRepository:
         sql = text(
             f"""
             SELECT i.inspection_id, i.completed_at, i.business_result,
-                   i.internal_decision, i.barcode_value,
+                   i.internal_decision, i.barcode_value, i.decision AS decision_json,
                    EXISTS(SELECT 1 FROM {review_records.name} r
                           WHERE r.inspection_id = i.inspection_id) AS has_review,
                    (SELECT r.disposition FROM {review_records.name} r
                     WHERE r.inspection_id = i.inspection_id
-                    ORDER BY r.created_at DESC, r.review_id DESC LIMIT 1) AS latest_disposition,
-                   (SELECT r.original_reason_codes FROM {review_records.name} r
-                    WHERE r.inspection_id = i.inspection_id
-                    ORDER BY r.created_at DESC, r.review_id DESC LIMIT 1) AS reason_json
+                    ORDER BY r.created_at DESC, r.review_id DESC LIMIT 1) AS latest_disposition
             FROM {inspections.name} i
             WHERE {where}
             ORDER BY i.completed_at DESC, i.inspection_id DESC
@@ -2382,7 +2398,9 @@ class EdgeRepository:
                 business_result=row["business_result"],
                 internal_decision=row["internal_decision"],
                 barcode=row["barcode_value"],
-                reason_summary=_json_loads(row["reason_json"]) or [],
+                # The machine reason codes are the primary triage data for open
+                # items; the review snapshot is available on the record itself.
+                reason_summary=_decision_reasons(row["decision_json"]),
                 has_review=bool(row["has_review"]),
                 latest_disposition=row["latest_disposition"],
             )

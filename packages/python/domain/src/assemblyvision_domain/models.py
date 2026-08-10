@@ -389,7 +389,7 @@ class ReviewRecord(APIModel):
     original_business_result: BusinessResult
     original_internal_decision: InternalDecision
     original_reason_codes: list[str] = Field(default_factory=list)
-    component_corrections: list[ComponentCorrection] = Field(default_factory=list)
+    component_corrections: list[ComponentCorrection] = Field(default_factory=list, max_length=64)
     supersedes_review_id: UUID | None = None
 
     @model_validator(mode="after")

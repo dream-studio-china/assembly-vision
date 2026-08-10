@@ -119,25 +119,31 @@ def submit_review(
         raise ApiProblem(
             status_code=404, code="INSPECTION_NOT_FOUND", detail=f"no inspection {inspection_id}"
         )
-    review = ReviewRecord(
-        review_id=uuid4(),
-        inspection_id=record.inspection_id,
-        disposition=request.disposition,
-        reason=request.reason,
-        note=request.note,
-        reviewer=request.reviewer,
-        created_at=datetime.now(UTC),
-        original_business_result=record.decision.business_result,
-        original_internal_decision=record.decision.internal_decision,
-        original_reason_codes=record.decision.reason_codes,
-        component_corrections=[
-            ComponentCorrection(**correction.model_dump())
-            for correction in request.component_corrections
-        ],
-        supersedes_review_id=request.supersedes_review_id,
-    )
     try:
+        review = ReviewRecord(
+            review_id=uuid4(),
+            inspection_id=record.inspection_id,
+            disposition=request.disposition,
+            reason=request.reason,
+            note=request.note,
+            reviewer=request.reviewer,
+            created_at=datetime.now(UTC),
+            original_business_result=record.decision.business_result,
+            original_internal_decision=record.decision.internal_decision,
+            original_reason_codes=record.decision.reason_codes,
+            component_corrections=[
+                ComponentCorrection(**correction.model_dump())
+                for correction in request.component_corrections
+            ],
+            supersedes_review_id=request.supersedes_review_id,
+        )
         result = repository.submit_review(review)
+    except ValidationError as exc:
+        raise ApiProblem(
+            status_code=422,
+            code="REVIEW_VALIDATION_FAILED",
+            detail="review record is invalid",
+        ) from exc
     except ReviewDispositionError as exc:
         raise ApiProblem(
             status_code=422,
@@ -149,12 +155,6 @@ def submit_review(
             status_code=409,
             code="REVIEW_CONFLICT",
             detail=str(exc),
-        ) from exc
-    except ValidationError as exc:
-        raise ApiProblem(
-            status_code=422,
-            code="REVIEW_VALIDATION_FAILED",
-            detail="review record is invalid",
         ) from exc
     except RepositoryError as exc:
         raise ApiProblem(
