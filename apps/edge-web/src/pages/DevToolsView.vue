@@ -9,6 +9,7 @@ const activeTab = ref("test");
 const instanceId = ref("");
 const persist = ref(true);
 const step = ref(1);
+const simulatedBarcode = ref("");
 
 const { busy, error, record, videoResult, imageUrl, inspectFrame, inspectVideo } =
   useDevInspectSession();
@@ -22,7 +23,10 @@ const overlayStyle = computed(() => {
 });
 
 function handleImageFile(file: File): void {
-  inspectFrame(getApiClient(), instanceId.value, file, { persist: persist.value });
+  inspectFrame(getApiClient(), instanceId.value, file, {
+    persist: persist.value,
+    barcode: simulatedBarcode.value,
+  });
 }
 
 function handleVideoFile(file: File): void {
@@ -54,6 +58,11 @@ function onFileSelected(event: Event, kind: "image" | "video"): void {
       <el-tab-pane label="Test" name="test">
         <div class="dev-tools__controls">
           <el-input v-model="instanceId" placeholder="Instance id (default: first instance)" />
+          <el-input
+            v-model="simulatedBarcode"
+            aria-label="Simulated barcode input"
+            placeholder="Simulated barcode input (development only)"
+          />
           <el-checkbox v-model="persist">Persist evidence bundle</el-checkbox>
           <el-input-number v-model="step" :min="1" label="Video step" />
         </div>
@@ -73,6 +82,14 @@ function onFileSelected(event: Event, kind: "image" | "video"): void {
         </div>
 
         <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" />
+        <el-alert
+          v-if="record?.decision.reason_codes.some((code) => code.startsWith('BARCODE_') || code.startsWith('PRODUCT_'))"
+          title="Identity verification failed: manual review required"
+          :description="record.decision.reason_codes.join(', ')"
+          type="error"
+          show-icon
+          :closable="false"
+        />
         <div v-if="busy" class="dev-tools__busy">Analyzing…</div>
 
         <div v-if="record" class="dev-tools__result">
@@ -83,6 +100,11 @@ function onFileSelected(event: Event, kind: "image" | "video"): void {
             Decision: {{ record.decision.internal_decision }} · Reasons:
             {{ record.decision.reason_codes.join(", ") || "none" }} · Missing:
             {{ record.decision.missing_components.join(", ") || "none" }}
+          </p>
+          <p>
+            Barcode: {{ record.barcode_result.status }} {{ record.barcode_result.value ?? "—" }} ·
+            Product resolution: {{ record.product_resolution.status }}
+            {{ record.product_resolution.product_code ?? "—" }}
           </p>
           <div v-if="imageUrl" class="dev-tools__preview">
             <img :src="imageUrl" alt="Uploaded test image" />

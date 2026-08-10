@@ -289,9 +289,14 @@ describe("web dev test harness (ADR-014)", () => {
       );
     }) as typeof fetch;
     const client = new HttpApiClient("http://edge:8000", fetchImpl);
-    const result = await client.devInspectFrame("line-1", new Blob(["jpeg"], { type: "image/jpeg" }));
+    const result = await client.devInspectFrame(
+      "line-1",
+      new Blob(["jpeg"], { type: "image/jpeg" }),
+      { barcode: "instance 001" },
+    );
     expect(result.decision.business_result).toBe("OK");
     expect(captured?.url).toContain("/api/v1/dev/inspect-frame?instance_id=line-1");
+    expect(captured?.url).toContain("barcode=instance+001");
     expect(captured?.init?.method).toBe("POST");
     expect(new Headers(captured?.init?.headers).get("Content-Type")).toBe("image/jpeg");
   });

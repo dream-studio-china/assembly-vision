@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -17,13 +19,19 @@ from assemblyvision_domain.models import (
     InspectionRecord,
     ProductDetection,
 )
-from assemblyvision_edge.config import load_pipeline_config, load_rule_definition
+from assemblyvision_edge.barcode import BarcodeObservation, BarcodeSource, resolve_barcode_identity
+from assemblyvision_edge.config import (
+    BarcodeIdentityConfig,
+    load_pipeline_config,
+    load_rule_definition,
+)
 from assemblyvision_edge.output.writer import OutputWriter
 from assemblyvision_edge.pipeline import InspectionPipeline
 from assemblyvision_edge.rules.rule_engine import RuleEngine
 from assemblyvision_vision.manifests import load_model_manifest
 from assemblyvision_vision.roi.roi_engine import ROIEngine
 from assemblyvision_vision.sources.folder_source import FolderSource
+from assemblyvision_vision.sources.frame_source import CapturedFrame
 from PIL import Image
 
 from tests.conftest import COMPONENT_MANIFEST, EXAMPLE_PIPELINE, EXAMPLE_RULE, PRODUCT_MANIFEST
@@ -220,6 +228,87 @@ def test_ok_when_all_components_present(tmp_path: Path) -> None:
     inspection_dir = tmp_path / "out" / str(record.inspection_id)
     assert (inspection_dir / "product_roi.jpg").is_file()
     assert (inspection_dir / "annotated_frame.jpg").is_file()
+
+
+def test_barcode_required_identity_is_verified_and_persisted(tmp_path: Path) -> None:
+    pipeline = _build_pipeline(
+        FakeProductDetector(_Outcome(selected=_product_detection(uuid4()))),
+        FakeComponentDetector(
+            [_component_obs(uuid4(), c) for c in ("component_a", "component_b", "manual")]
+        ),
+    )
+    pipeline._rule.barcode_required = True  # noqa: SLF001
+    identity = resolve_barcode_identity(
+        (BarcodeObservation("ABC", "QRCode", BarcodeSource.ZXING_CPP, datetime.now(UTC)),),
+        BarcodeIdentityConfig(
+            True, True, ("QRCode",), tmp_path / "barcodes.yaml", {"ABC": "model_a"}
+        ),
+        pipeline._rule.product_type,  # noqa: SLF001
+    )
+
+    record = pipeline.inspect_frame(
+        CapturedFrame(0, datetime.now(UTC), 1, "RGB", "OK", Image.new("RGB", (800, 600))),
+        OutputWriter(tmp_path / "out"),
+        identity=identity,
+    )
+
+    assert record.decision.business_result is BusinessResult.OK
+    assert record.barcode_result.value == "ABC"
+    assert record.product_resolution.source == "BARCODE"
+
+
+def test_barcode_required_unverified_identity_cannot_be_ok(tmp_path: Path) -> None:
+    pipeline = _build_pipeline(
+        FakeProductDetector(_Outcome(selected=_product_detection(uuid4()))),
+        FakeComponentDetector(
+            [_component_obs(uuid4(), c) for c in ("component_a", "component_b", "manual")]
+        ),
+    )
+    pipeline._rule.barcode_required = True  # noqa: SLF001
+    identity = resolve_barcode_identity(
+        (),
+        BarcodeIdentityConfig(True, True, (), tmp_path / "barcodes.yaml", {"ABC": "model_a"}),
+        pipeline._rule.product_type,  # noqa: SLF001
+    )
+
+    record = pipeline.inspect_frame(
+        CapturedFrame(0, datetime.now(UTC), 1, "RGB", "OK", Image.new("RGB", (800, 600))),
+        identity=identity,
+    )
+
+    assert record.decision.business_result is BusinessResult.NG
+    assert rc.PRODUCT_IDENTITY_UNVERIFIED in record.decision.reason_codes
+
+
+def test_enabled_barcode_identity_unverified_cannot_be_ok_when_rule_is_optional(
+    tmp_path: Path,
+) -> None:
+    pipeline = _build_pipeline(
+        FakeProductDetector(_Outcome(selected=_product_detection(uuid4()))),
+        FakeComponentDetector(
+            [_component_obs(uuid4(), c) for c in ("component_a", "component_b", "manual")]
+        ),
+    )
+    barcode_identity = BarcodeIdentityConfig(
+        True, False, (), tmp_path / "barcodes.yaml", {"ABC": "model_a"}
+    )
+    pipeline._config = replace(  # noqa: SLF001
+        pipeline._config,  # noqa: SLF001
+        barcode_identity=barcode_identity,
+    )
+    identity = resolve_barcode_identity(
+        (),
+        barcode_identity,
+        pipeline._rule.product_type,  # noqa: SLF001
+    )
+
+    record = pipeline.inspect_frame(
+        CapturedFrame(0, datetime.now(UTC), 1, "RGB", "OK", Image.new("RGB", (800, 600))),
+        identity=identity,
+    )
+
+    assert record.decision.business_result is BusinessResult.NG
+    assert rc.BARCODE_UNREADABLE in record.decision.reason_codes
 
 
 def test_rule_evaluation_error_is_persisted_failsafe_ng(tmp_path: Path) -> None:

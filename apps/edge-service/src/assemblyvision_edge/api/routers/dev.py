@@ -124,6 +124,7 @@ async def dev_inspect_frame(
     request: Request,
     instance_id: str | None = None,
     persist: bool = True,
+    barcode: str | None = None,
     runtime: EdgeRuntime = Depends(get_runtime),
 ) -> InspectionRecord:
     """Inspect one uploaded image; writes an evidence bundle unless persist=false."""
@@ -154,7 +155,17 @@ async def dev_inspect_frame(
         image=image,
     )
     writer = OutputWriter(runtime._settings.output_root) if persist else None  # noqa: SLF001
-    record = cast(InspectionRecord, pipeline.inspect_frame(frame, writer))
+    identity = (
+        pipeline.resolve_dev_identity(image, barcode)
+        if getattr(pipeline, "barcode_identity_enabled", False)
+        else None
+    )
+    record = cast(
+        InspectionRecord,
+        pipeline.inspect_frame(frame, writer, identity=identity)
+        if identity is not None
+        else pipeline.inspect_frame(frame, writer),
+    )
     if writer is not None:
         _import_projection(request, record)
     return record

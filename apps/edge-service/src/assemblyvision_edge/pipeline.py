@@ -50,6 +50,12 @@ from assemblyvision_vision.sources.folder_source import FolderSource
 from assemblyvision_vision.sources.frame_source import CapturedFrame
 from PIL import Image
 
+from assemblyvision_edge.barcode import (
+    KeyboardBarcodeInputAdapter,
+    ResolvedBarcodeIdentity,
+    ZXingCppBarcodeDecoder,
+    resolve_barcode_identity,
+)
 from assemblyvision_edge.config import PipelineConfig
 from assemblyvision_edge.detection.component_detector import ComponentDetector
 from assemblyvision_edge.detection.product_detector import ProductDetector
@@ -243,6 +249,7 @@ class InspectionPipeline:
         *,
         suppress_optional_capture: bool = False,
         inspection_id: UUID | None = None,
+        identity: ResolvedBarcodeIdentity | None = None,
     ) -> InspectionRecord:
         """Inspect one captured camera frame; each frame is one inspection (ADR-013).
 
@@ -259,7 +266,33 @@ class InspectionPipeline:
             writer=writer,
             suppress_optional_capture=suppress_optional_capture,
             inspection_id=inspection_id,
+            identity=identity,
         )
+
+    @property
+    def barcode_identity_enabled(self) -> bool:
+        """Whether this pipeline is configured to collect barcode identity evidence."""
+        return bool(self._config.barcode_identity and self._config.barcode_identity.enabled)
+
+    def resolve_dev_identity(
+        self, image: Image.Image, simulated_input: str | None
+    ) -> ResolvedBarcodeIdentity | None:
+        """Collect dev visual/keyboard evidence and resolve it without route-level decisions."""
+        config = self._config.barcode_identity
+        if config is None or not config.enabled:
+            return None
+        observations = list(ZXingCppBarcodeDecoder().decode(image))
+        if simulated_input is not None:
+            observations.extend(KeyboardBarcodeInputAdapter().feed(f"{simulated_input}\n"))
+        return resolve_barcode_identity(tuple(observations), config, self._rule.product_type)
+
+    def resolve_image_identity(self, image: Image.Image) -> ResolvedBarcodeIdentity | None:
+        """Resolve visual barcode evidence for a production captured frame."""
+        config = self._config.barcode_identity
+        if config is None or not config.enabled:
+            return None
+        observations = ZXingCppBarcodeDecoder().decode(image)
+        return resolve_barcode_identity(observations, config, self._rule.product_type)
 
     def frame_observations(self, frame: CapturedFrame) -> FrameObservation:
         """Run one frame's detection pass for temporal window aggregation.
@@ -508,6 +541,7 @@ class InspectionPipeline:
         writer: OutputWriter | None,
         suppress_optional_capture: bool = False,
         inspection_id: UUID | None = None,
+        identity: ResolvedBarcodeIdentity | None = None,
     ) -> InspectionRecord:
         inspection_id = inspection_id if inspection_id is not None else uuid4()
         frame_id = uuid4()
@@ -531,8 +565,13 @@ class InspectionPipeline:
         extra_reasons.extend(outcome.reasons)
 
         evidence_map = self._build_evidence(observations, gates, frame is not None, frame_id)
+        identity_verified = (
+            identity.verified if identity is not None else not self._rule.barcode_required
+        )
+        if identity is not None and not identity.verified:
+            extra_reasons.extend(identity.reason_codes)
         context = RuleContext(
-            product_identity_verified=not self._rule.barcode_required,
+            product_identity_verified=identity_verified,
             component_model_version=manifest_model_version(self._component_manifest),
             gates=gates,
             components=evidence_map,
@@ -578,9 +617,19 @@ class InspectionPipeline:
             lifecycle_status=InspectionLifecycle.COMPLETED,
             started_at=started_at,
             completed_at=datetime.now(UTC),
-            barcode_result=BarcodeResult(status="NOT_REQUIRED"),
-            product_resolution=ProductResolution(
-                status="RESOLVED", source="CONFIGURED_DEFAULT", product_code=self._rule.product_type
+            barcode_result=(
+                identity.barcode_result
+                if identity is not None
+                else BarcodeResult(status="NOT_REQUIRED")
+            ),
+            product_resolution=(
+                identity.product_resolution
+                if identity is not None
+                else ProductResolution(
+                    status="RESOLVED",
+                    source="CONFIGURED_DEFAULT",
+                    product_code=self._rule.product_type,
+                )
             ),
             product_detection=product_detection,
             roi_result=roi_result,

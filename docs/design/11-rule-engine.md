@@ -79,6 +79,11 @@ and that module must stay in sync (AUDIT-001).
 
 Human-readable text is localized separately. Analytics use reason code plus structured parameters, not parsed display messages.
 
+For the development upload path, barcode resolution supplies the identity
+verification flag and the persisted barcode/product-resolution fields; rule
+evaluation remains unchanged. Exact barcode mappings which resolve to a product
+other than the active rule product type are unverified.
+
 ## 11.6 Configuration Lifecycle
 
 Draft rules are schema-validated and simulated against a regression corpus. Publication requires authorization and an audit entry. Edge installation writes the package durably, validates checksums and compatibility, then activates it atomically between product windows. If activation fails, retain the last validated version and report the failure. If no valid rule exists for a product, that product is `NG`; a generic permissive rule is prohibited.

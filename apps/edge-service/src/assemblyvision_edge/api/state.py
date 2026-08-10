@@ -396,12 +396,24 @@ class EdgeRuntime:
                         {"inspection_id": str(inspection_id), "instance_id": instance_id},
                         correlation_id=str(inspection_id),
                     )
-                    record = runtime.pipeline.inspect_frame(
-                        frame,
-                        writer,
-                        suppress_optional_capture=optional,
-                        inspection_id=inspection_id,
-                    )
+                    identity = None
+                    if getattr(runtime.pipeline, "barcode_identity_enabled", False):
+                        identity = runtime.pipeline.resolve_image_identity(frame.image)
+                    if identity is None:
+                        record = runtime.pipeline.inspect_frame(
+                            frame,
+                            writer,
+                            suppress_optional_capture=optional,
+                            inspection_id=inspection_id,
+                        )
+                    else:
+                        record = runtime.pipeline.inspect_frame(
+                            frame,
+                            writer,
+                            suppress_optional_capture=optional,
+                            inspection_id=inspection_id,
+                            identity=identity,
+                        )
                     if self._persist_projection(record, instance_id):
                         runtime.last_result = record.decision.business_result
             except Exception as exc:  # noqa: BLE001 - loop must survive frame errors
