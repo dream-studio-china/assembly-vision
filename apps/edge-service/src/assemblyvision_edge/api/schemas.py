@@ -9,9 +9,15 @@ shared domain package and are reused directly.
 from __future__ import annotations
 
 from typing import Literal
+from uuid import UUID
 
-from assemblyvision_domain.models import BusinessResult, InternalDecision
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from assemblyvision_domain.models import (
+    BusinessResult,
+    ComponentCorrectionState,
+    InternalDecision,
+    ReviewDisposition,
+)
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class Problem(BaseModel):
@@ -47,6 +53,88 @@ class RetryUploadRequest(BaseModel):
         if value is None:
             return None
         return value.strip() or None
+
+
+class ComponentCorrectionRequest(BaseModel):
+    """Per-component ground truth submitted with a review (design 24.7)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    component_code: str = Field(min_length=1, max_length=64)
+    corrected_state: ComponentCorrectionState
+    note: str | None = Field(default=None, max_length=500)
+
+    @field_validator("component_code")
+    @classmethod
+    def _normalize_component_code(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("component_code must be a non-empty component identifier")
+        return value
+
+
+class SubmitReviewRequest(BaseModel):
+    """Human disposition for one inspection (design 24.3/24.6).
+
+    ``reviewer`` identifies the reviewer; ``reason`` is mandatory for
+    ``INCONCLUSIVE`` and stripped of surrounding whitespace otherwise. A review
+    never rewrites the machine decision: the record is appended and references
+    any superseded review.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    disposition: ReviewDisposition
+    reason: str | None = Field(default=None, max_length=200)
+    note: str | None = Field(default=None, max_length=2000)
+    reviewer: str = Field(min_length=1, max_length=128)
+    supersedes_review_id: UUID | None = None
+    component_corrections: list[ComponentCorrectionRequest] = Field(
+        default_factory=list, max_length=64
+    )
+
+    @field_validator("reason", "note", "reviewer")
+    @classmethod
+    def _strip_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+    @field_validator("reviewer")
+    @classmethod
+    def _reviewer_required(cls, value: str | None) -> str | None:
+        if value is None or not value.strip():
+            raise ValueError("reviewer must be a non-empty name")
+        return value
+
+    @model_validator(mode="after")
+    def _require_reason_when_inconclusive(self) -> SubmitReviewRequest:
+        if self.disposition is ReviewDisposition.INCONCLUSIVE and not self.reason:
+            raise ValueError("an inconclusive review requires a reason")
+        return self
+
+    @model_validator(mode="after")
+    def _reject_duplicate_component_corrections(self) -> SubmitReviewRequest:
+        codes = [correction.component_code for correction in self.component_corrections]
+        if len(codes) != len(set(codes)):
+            raise ValueError("each component may be corrected at most once")
+        return self
+
+
+class ReviewQueueItem(BaseModel):
+    """One inspection row of the review queue with its review state (24.4)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    inspection_id: UUID
+    completed_at: str
+    business_result: BusinessResult
+    internal_decision: InternalDecision
+    barcode: str | None = None
+    reason_summary: list[str] = Field(default_factory=list)
+    has_review: bool
+    latest_disposition: ReviewDisposition | None = None
 
 
 class HealthLive(BaseModel):

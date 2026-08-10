@@ -267,6 +267,36 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inspections/{inspection_id}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Inspection Reviews
+         * @description Return the append-only review history of one inspection (24.7).
+         */
+        get: operations["list_inspection_reviews_api_v1_inspections__inspection_id__reviews_get"];
+        put?: never;
+        /**
+         * Submit Review
+         * @description Append one human disposition for an inspection (24.3/24.6).
+         *
+         *     The disposition must be permitted for the machine outcome: an incompatible
+         *     correction is rejected (422) instead of recorded, and a review may only
+         *     supersede another review of the same inspection (409). The submitted
+         *     reviewer name and reason are required as documented; ``INCONCLUSIVE``
+         *     always requires a reason.
+         */
+        post: operations["submit_review_api_v1_inspections__inspection_id__reviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/logs": {
         parameters: {
             query?: never;
@@ -293,6 +323,26 @@ export interface paths {
         };
         /** Media Content */
         get: operations["media_content_api_v1_media__media_id__content_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Review Queue
+         * @description List the review queue with each inspection's review state (24.4).
+         */
+        get: operations["list_review_queue_api_v1_reviews_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -547,6 +597,34 @@ export interface components {
             /** Trigger Mode */
             trigger_mode?: string | null;
         };
+        /**
+         * ComponentCorrection
+         * @description Per-component correction recorded against the original evidence.
+         */
+        ComponentCorrection: {
+            /** Component Code */
+            component_code: string;
+            corrected_state: components["schemas"]["ComponentCorrectionState"];
+            /** Note */
+            note?: string | null;
+        };
+        /**
+         * ComponentCorrectionRequest
+         * @description Per-component ground truth submitted with a review (design 24.7).
+         */
+        ComponentCorrectionRequest: {
+            /** Component Code */
+            component_code: string;
+            corrected_state: components["schemas"]["ComponentCorrectionState"];
+            /** Note */
+            note?: string | null;
+        };
+        /**
+         * ComponentCorrectionState
+         * @description Per-component ground truth recorded by a reviewer.
+         * @enum {string}
+         */
+        ComponentCorrectionState: "PRESENT" | "MISSING" | "UNCERTAIN";
         /** ComponentDetectionSnapshot */
         ComponentDetectionSnapshot: {
             /** Components */
@@ -1098,6 +1176,13 @@ export interface components {
             /** Next Cursor */
             next_cursor?: string | null;
         };
+        /** Page[ReviewQueueItem] */
+        Page_ReviewQueueItem_: {
+            /** Items */
+            items: components["schemas"]["ReviewQueueItem"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
         /** Page[UploadTask] */
         Page_UploadTask_: {
             /** Items */
@@ -1244,6 +1329,78 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /**
+         * ReviewDisposition
+         * @description Human disposition applied to one inspection (design 24.3).
+         *
+         *     A correction never rewrites the machine decision; it is recorded as a
+         *     separate append-only disposition.
+         * @enum {string}
+         */
+        ReviewDisposition: "CONFIRMED_NG" | "CONFIRMED_OK" | "CORRECTED_NG" | "INCONCLUSIVE" | "REINSPECT";
+        /**
+         * ReviewQueueItem
+         * @description One inspection row of the review queue with its review state (24.4).
+         */
+        ReviewQueueItem: {
+            /** Barcode */
+            barcode?: string | null;
+            business_result: components["schemas"]["BusinessResult"];
+            /** Completed At */
+            completed_at: string;
+            /** Has Review */
+            has_review: boolean;
+            /**
+             * Inspection Id
+             * Format: uuid
+             */
+            inspection_id: string;
+            internal_decision: components["schemas"]["InternalDecision"];
+            latest_disposition?: components["schemas"]["ReviewDisposition"] | null;
+            /** Reason Summary */
+            reason_summary?: string[];
+        };
+        /**
+         * ReviewRecord
+         * @description Append-only human review of one inspection (design 24.7).
+         *
+         *     The original machine outcome and versions are snapshotted on the record so
+         *     the review remains interpretable even if the inspection projection is later
+         *     purged. A later review supersedes an earlier one by reference; records are
+         *     never overwritten.
+         */
+        ReviewRecord: {
+            /** Component Corrections */
+            component_corrections?: components["schemas"]["ComponentCorrection"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            disposition: components["schemas"]["ReviewDisposition"];
+            /**
+             * Inspection Id
+             * Format: uuid
+             */
+            inspection_id: string;
+            /** Note */
+            note?: string | null;
+            original_business_result: components["schemas"]["BusinessResult"];
+            original_internal_decision: components["schemas"]["InternalDecision"];
+            /** Original Reason Codes */
+            original_reason_codes?: string[];
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Review Id
+             * Format: uuid
+             */
+            review_id: string;
+            /** Reviewer */
+            reviewer: string;
+            /** Supersedes Review Id */
+            supersedes_review_id?: string | null;
+        };
         /** RuleSnapshot */
         RuleSnapshot: {
             /** Product Type */
@@ -1288,6 +1445,28 @@ export interface components {
             pass_rate: number;
             /** Total Inspections */
             total_inspections: number;
+        };
+        /**
+         * SubmitReviewRequest
+         * @description Human disposition for one inspection (design 24.3/24.6).
+         *
+         *     ``reviewer`` identifies the reviewer; ``reason`` is mandatory for
+         *     ``INCONCLUSIVE`` and stripped of surrounding whitespace otherwise. A review
+         *     never rewrites the machine decision: the record is appended and references
+         *     any superseded review.
+         */
+        SubmitReviewRequest: {
+            /** Component Corrections */
+            component_corrections?: components["schemas"]["ComponentCorrectionRequest"][];
+            disposition: components["schemas"]["ReviewDisposition"];
+            /** Note */
+            note?: string | null;
+            /** Reason */
+            reason?: string | null;
+            /** Reviewer */
+            reviewer: string;
+            /** Supersedes Review Id */
+            supersedes_review_id?: string | null;
         };
         /** TraceabilityAttempt */
         TraceabilityAttempt: {
@@ -1913,6 +2092,99 @@ export interface operations {
             };
         };
     };
+    list_inspection_reviews_api_v1_inspections__inspection_id__reviews_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inspection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewRecord"][];
+                };
+            };
+            /** @description Inspection not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_review_api_v1_inspections__inspection_id__reviews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inspection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewRecord"];
+                };
+            };
+            /** @description Inspection not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Review conflict (supersede targets another inspection) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Invalid disposition or review */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     list_logs_api_v1_logs_get: {
         parameters: {
             query?: {
@@ -1962,6 +2234,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_review_queue_api_v1_reviews_get: {
+        parameters: {
+            query?: {
+                business_result?: string | null;
+                internal_decision?: string | null;
+                reviewed?: boolean | null;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ReviewQueueItem_"];
+                };
+            };
+            /** @description Malformed or filter-mismatched cursor */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
             /** @description Validation Error */

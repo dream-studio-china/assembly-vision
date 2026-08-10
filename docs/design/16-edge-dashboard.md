@@ -46,6 +46,7 @@ Color always supplements text and iconography rather than replacing it.
 | `/` | Live inspection and current operational state | Viewer, operator | Status REST snapshot and runtime WebSocket |
 | `/inspections` | Search recent local records | Viewer | Local inspection REST API |
 | `/inspections/:id` | Review evidence, overlays, versions, and media | Viewer | Inspection/media REST APIs |
+| `/review` | Optional human review queue and dispositions | Viewer | Review REST API (design 24, ADR-016) |
 | `/uploads` | Queue state, failures, and manual retry | Viewer; operator retries | Upload REST API and events |
 | `/health` | Camera, model, disk, network, database, and service health | Viewer | Device/camera/health APIs |
 | `/configuration` | Effective configuration and permitted local overrides | Edge administrator | Configuration APIs |

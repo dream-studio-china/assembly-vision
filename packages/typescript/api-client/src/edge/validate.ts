@@ -269,6 +269,82 @@ function validateStatisticsSummary(body: unknown): void {
   }
 }
 
+function validateReviewRecord(body: unknown): void {
+  const record = expectRecord(body);
+  for (const key of [
+    "review_id",
+    "inspection_id",
+    "disposition",
+    "reviewer",
+    "created_at",
+    "original_business_result",
+    "original_internal_decision",
+  ]) {
+    hasString(record, key, "$");
+  }
+  hasOneOf(
+    record,
+    "disposition",
+    ["CONFIRMED_NG", "CONFIRMED_OK", "CORRECTED_NG", "INCONCLUSIVE", "REINSPECT"],
+    "$.disposition",
+  );
+  hasOneOf(record, "original_business_result", ["OK", "NG"], "$.original_business_result");
+  hasOneOf(
+    record,
+    "original_internal_decision",
+    ["OK", "NG", "UNCERTAIN"],
+    "$.original_internal_decision",
+  );
+  hasArray(record, "original_reason_codes", "$");
+  hasArray(record, "component_corrections", "$");
+  if (record.reason !== null && record.reason !== undefined && typeof record.reason !== "string") {
+    fail("$.reason", "string|null", record.reason);
+  }
+  if (record.note !== null && record.note !== undefined && typeof record.note !== "string") {
+    fail("$.note", "string|null", record.note);
+  }
+  if (
+    record.supersedes_review_id !== null &&
+    record.supersedes_review_id !== undefined &&
+    typeof record.supersedes_review_id !== "string"
+  ) {
+    fail("$.supersedes_review_id", "string|null", record.supersedes_review_id);
+  }
+}
+
+function validateReviewQueueItem(body: unknown): void {
+  const item = expectRecord(body);
+  for (const key of ["inspection_id", "completed_at", "business_result", "internal_decision"]) {
+    hasString(item, key, "$");
+  }
+  hasOneOf(item, "business_result", ["OK", "NG"], "$.business_result");
+  hasOneOf(item, "internal_decision", ["OK", "NG", "UNCERTAIN"], "$.internal_decision");
+  if (item.barcode !== null && item.barcode !== undefined && typeof item.barcode !== "string") {
+    fail("$.barcode", "string|null", item.barcode);
+  }
+  hasArray(item, "reason_summary", "$");
+  if (typeof item.has_review !== "boolean") {
+    fail("$.has_review", "boolean", item.has_review);
+  }
+  if (
+    item.latest_disposition !== null &&
+    item.latest_disposition !== undefined &&
+    typeof item.latest_disposition === "string" &&
+    !["CONFIRMED_NG", "CONFIRMED_OK", "CORRECTED_NG", "INCONCLUSIVE", "REINSPECT"].includes(
+      item.latest_disposition,
+    )
+  ) {
+    fail("$.latest_disposition", "disposition|null", item.latest_disposition);
+  }
+  if (
+    item.latest_disposition !== null &&
+    item.latest_disposition !== undefined &&
+    typeof item.latest_disposition !== "string"
+  ) {
+    fail("$.latest_disposition", "disposition|null", item.latest_disposition);
+  }
+}
+
 export const validators: Record<string, Validator> = {
   healthLive: validateHealthLive,
   deviceStatus: validateDeviceStatus,
@@ -283,6 +359,12 @@ export const validators: Record<string, Validator> = {
   },
   uploadPage: (body) => pageOf(body, validateUploadTask),
   uploadTask: validateUploadTask,
+  reviewPage: (body) => pageOf(body, validateReviewQueueItem),
+  reviewList: (body) => {
+    if (!Array.isArray(body)) fail("$", "array", body);
+    body.forEach((item) => validateReviewRecord(item));
+  },
+  reviewRecord: validateReviewRecord,
   logPage: (body) => pageOf(body, validateLogEvent),
   effectiveConfiguration: validateEffectiveConfiguration,
   inspectionImages: validateInspectionImages,

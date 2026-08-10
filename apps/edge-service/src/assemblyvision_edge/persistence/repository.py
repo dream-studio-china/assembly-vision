@@ -19,9 +19,13 @@ from uuid import UUID, uuid4
 from assemblyvision_domain.errors import AssemblyVisionError
 from assemblyvision_domain.models import (
     AggregatedComponentEvidence,
+    BusinessResult,
     InspectionRecord,
+    InternalDecision,
     MediaMetadata,
+    ReviewRecord,
     UploadTask,
+    allowed_review_dispositions,
 )
 from sqlalchemy import bindparam, create_engine, event, func, select, text
 from sqlalchemy.engine import Engine
@@ -31,6 +35,7 @@ from assemblyvision_edge.persistence.schema import (
     component_evidence,
     inspections,
     media,
+    review_records,
     rule_identities,
     upload_tasks,
 )
@@ -48,6 +53,14 @@ class RepositoryError(AssemblyVisionError):
 
 class InvalidCursorError(RepositoryError):
     """Raised when a cursor is malformed or bound to a different filter set."""
+
+
+class ReviewDispositionError(RepositoryError):
+    """Raised when a disposition is not permitted for the machine outcome."""
+
+
+class ReviewConflictError(RepositoryError):
+    """Raised when a review supersedes a record of a different inspection."""
 
 
 @dataclass(frozen=True)
@@ -131,6 +144,32 @@ class UploadRetryResult:
 
     outcome: Literal["NOT_FOUND", "NOT_RETRYABLE", "RETRIED"]
     task: UploadTask | None = None
+
+
+@dataclass(frozen=True)
+class ReviewSubmissionResult:
+    """Outcome of one append-only review submission (design 24.7).
+
+    ``superseded_review_id`` references the previous latest review of the same
+    inspection when one exists; records are never overwritten.
+    """
+
+    review: ReviewRecord
+    superseded_review_id: UUID | None = None
+
+
+@dataclass(frozen=True)
+class ReviewQueueItem:
+    """One inspection row of the review queue with its review state (24.4)."""
+
+    inspection_id: UUID
+    completed_at: str
+    business_result: str
+    internal_decision: str
+    barcode: str | None
+    reason_summary: list[str]
+    has_review: bool
+    latest_disposition: str | None
 
 
 @dataclass(frozen=True)
@@ -242,9 +281,11 @@ def _decode_cursor(cursor: str | None, filters: str | None = None) -> tuple[str,
     try:
         raw = base64.urlsafe_b64decode(cursor.encode("ascii"))
         payload = json.loads(raw)
+        if not isinstance(payload, dict):
+            raise InvalidCursorError("invalid cursor")
         completed_at = str(payload["completed_at"])
         inspection_id = str(payload["inspection_id"])
-    except (ValueError, KeyError, json.JSONDecodeError) as exc:
+    except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
         raise InvalidCursorError("invalid cursor") from exc
     if filters is not None and payload.get("filters") != filters:
         raise InvalidCursorError("cursor does not match the current filters")
@@ -253,6 +294,21 @@ def _decode_cursor(cursor: str | None, filters: str | None = None) -> tuple[str,
 
 def _json_loads(raw: str | None) -> Any:
     return json.loads(raw) if raw is not None else None
+
+
+def _decision_reasons(raw: Any) -> list[str]:
+    """Extract machine reason codes from a stored inspection ``decision`` cell.
+
+    The cell is a JSON ``Text`` column, so it arrives as a string on read; a
+    dict is tolerated for in-memory rows.
+    """
+    if isinstance(raw, dict):
+        decision = raw
+    elif isinstance(raw, str):
+        decision = json.loads(raw or "{}")
+    else:
+        decision = {}
+    return list(decision.get("reason_codes") or [])
 
 
 def _to_record(row: Any) -> InspectionRecord:
@@ -285,6 +341,26 @@ def _to_record(row: Any) -> InspectionRecord:
         "media": [],
     }
     return InspectionRecord.model_validate(payload)
+
+
+def _to_review(row: Any) -> ReviewRecord:
+    """Convert one ``review_records`` row into a typed review record."""
+    return ReviewRecord.model_validate(
+        {
+            "review_id": row.review_id,
+            "inspection_id": row.inspection_id,
+            "disposition": row.disposition,
+            "reason": row.reason,
+            "note": row.note,
+            "reviewer": row.reviewer,
+            "created_at": row.created_at,
+            "original_business_result": row.original_business_result,
+            "original_internal_decision": row.original_internal_decision,
+            "original_reason_codes": _json_loads(row.original_reason_codes),
+            "component_corrections": _json_loads(row.component_corrections) or [],
+            "supersedes_review_id": row.supersedes_review_id,
+        }
+    )
 
 
 def _install_sqlite_pragmas(engine: Engine) -> None:
@@ -2111,3 +2187,238 @@ class EdgeRepository:
                 .all()
             )
             return [self._attach_media_and_evidence(conn, _to_record(r)) for r in rows]
+
+    def submit_review(self, record: ReviewRecord) -> ReviewSubmissionResult:
+        """Append one review record, superseding the previous latest (24.7).
+
+        The disposition must be permitted for the inspection's machine outcome
+        (design 24.3); an incompatible disposition is rejected instead of
+        recording a misleading correction. When ``supersedes_review_id`` is not
+        supplied the newest existing review of the same inspection is
+        referenced, so corrections chain without overwriting. The submission
+        and the supersede resolution share one transaction.
+        """
+        # Supersede resolution is read-then-insert, so the write lock must be
+        # acquired before any read: BEGIN IMMEDIATE serializes concurrent
+        # submissions of one inspection so the reference chain stays linear
+        # instead of forking (PR-031 review finding).
+        with self._engine.connect() as conn:
+            conn.execute(text("BEGIN IMMEDIATE"))
+            try:
+                inspection = (
+                    conn.execute(
+                        text(f"SELECT * FROM {inspections.name} WHERE inspection_id = :id"),
+                        {"id": str(record.inspection_id)},
+                    )
+                    .mappings()
+                    .first()
+                )
+                if inspection is None:
+                    raise RepositoryError(f"no inspection {record.inspection_id} to review")
+                allowed = allowed_review_dispositions(
+                    BusinessResult(inspection["business_result"]),
+                    InternalDecision(inspection["internal_decision"]),
+                )
+                if record.disposition not in allowed:
+                    raise ReviewDispositionError(
+                        f"disposition {record.disposition.value} is not permitted for machine "
+                        f"outcome {inspection['business_result']}/{inspection['internal_decision']}"
+                    )
+                supersedes: UUID | None = record.supersedes_review_id
+                if supersedes is None:
+                    previous = (
+                        conn.execute(
+                            text(
+                                f"SELECT review_id FROM {review_records.name} "
+                                "WHERE inspection_id = :id "
+                                "ORDER BY created_at DESC, review_id DESC LIMIT 1"
+                            ),
+                            {"id": str(record.inspection_id)},
+                        )
+                        .mappings()
+                        .first()
+                    )
+                    if previous is not None:
+                        supersedes = UUID(previous["review_id"])
+                if supersedes is not None:
+                    owned = conn.execute(
+                        text(
+                            f"SELECT 1 FROM {review_records.name} "
+                            "WHERE review_id = :rid AND inspection_id = :iid"
+                        ),
+                        {"rid": str(supersedes), "iid": str(record.inspection_id)},
+                    ).scalar()
+                    if not owned:
+                        raise ReviewConflictError(
+                            f"review {supersedes} does not belong to inspection {record.inspection_id}"
+                        )
+                conn.execute(
+                    text(
+                        f"""
+                        INSERT INTO {review_records.name} (
+                            review_id, inspection_id, disposition, reason, note,
+                            reviewer, created_at, original_business_result,
+                            original_internal_decision, original_reason_codes,
+                            component_corrections, supersedes_review_id
+                        ) VALUES (
+                            :review_id, :inspection_id, :disposition, :reason, :note,
+                            :reviewer, :created_at, :original_business_result,
+                            :original_internal_decision, :original_reason_codes,
+                            :component_corrections, :supersedes_review_id
+                        )
+                        """
+                    ),
+                    {
+                        "review_id": str(record.review_id),
+                        "inspection_id": str(record.inspection_id),
+                        "disposition": record.disposition.value,
+                        "reason": record.reason,
+                        "note": record.note,
+                        "reviewer": record.reviewer,
+                        "created_at": record.created_at.isoformat(),
+                        "original_business_result": record.original_business_result.value,
+                        "original_internal_decision": record.original_internal_decision.value,
+                        "original_reason_codes": json.dumps(record.original_reason_codes),
+                        "component_corrections": json.dumps(
+                            [correction.model_dump() for correction in record.component_corrections]
+                        )
+                        if record.component_corrections
+                        else None,
+                        "supersedes_review_id": str(supersedes) if supersedes is not None else None,
+                    },
+                )
+                conn.commit()
+            finally:
+                conn.rollback()
+        log.info(
+            # The reviewer name is caller-supplied free text; log it repr-escaped
+            # so control characters cannot forge log lines (CWE-117).
+            "review recorded inspection=%s reviewer=%r disposition=%s supersedes=%s",
+            record.inspection_id,
+            record.reviewer,
+            record.disposition.value,
+            supersedes,
+        )
+        return ReviewSubmissionResult(review=record, superseded_review_id=supersedes)
+
+    def get_review(self, review_id: str) -> ReviewRecord | None:
+        """Return one review record, or None when it does not exist."""
+        with self._engine.connect() as conn:
+            row = (
+                conn.execute(
+                    text(f"SELECT * FROM {review_records.name} WHERE review_id = :id"),
+                    {"id": review_id},
+                )
+                .mappings()
+                .first()
+            )
+        return _to_review(row) if row is not None else None
+
+    def list_reviews(self, inspection_id: str) -> list[ReviewRecord]:
+        """Return the append-only review history of one inspection (oldest first)."""
+        with self._engine.connect() as conn:
+            rows = (
+                conn.execute(
+                    text(
+                        f"SELECT * FROM {review_records.name} "
+                        "WHERE inspection_id = :id "
+                        "ORDER BY created_at ASC, review_id ASC"
+                    ),
+                    {"id": inspection_id},
+                )
+                .mappings()
+                .all()
+            )
+        return [_to_review(row) for row in rows]
+
+    def list_review_queue(
+        self,
+        *,
+        business_result: str | None = None,
+        internal_decision: str | None = None,
+        reviewed: bool | None = None,
+        cursor: str | None = None,
+        limit: int = _PAGE_DEFAULT_LIMIT,
+    ) -> Page[ReviewQueueItem]:
+        """List inspections for human review with their review state (24.4).
+
+        Every inspection is listed; callers filter to ``business_result=NG``
+        (including UNCERTAIN) for the initial all-NG rollout policy and use
+        ``reviewed`` to separate open from completed queue items. Cursor
+        pagination matches :meth:`list_inspections` ordering.
+        """
+        if limit < 1 or limit > _PAGE_MAX_LIMIT:
+            limit = _PAGE_DEFAULT_LIMIT
+        clauses: list[str] = ["1 = 1"]
+        params: dict[str, Any] = {}
+        if business_result:
+            clauses.append("i.business_result = :business_result")
+            params["business_result"] = business_result
+        if internal_decision:
+            clauses.append("i.internal_decision = :internal_decision")
+            params["internal_decision"] = internal_decision
+        if reviewed is True:
+            clauses.append(
+                "EXISTS (SELECT 1 FROM review_records r WHERE r.inspection_id = i.inspection_id)"
+            )
+        elif reviewed is False:
+            clauses.append(
+                "NOT EXISTS (SELECT 1 FROM review_records r WHERE r.inspection_id = i.inspection_id)"
+            )
+        filter_fingerprint = _filter_fingerprint(
+            {
+                "business_result": business_result,
+                "internal_decision": internal_decision,
+                "reviewed": reviewed,
+            }
+        )
+        keys = _decode_cursor(cursor, filter_fingerprint)
+        if keys is not None:
+            clauses.append(
+                "(i.completed_at < :cursor_at OR (i.completed_at = :cursor_at AND i.inspection_id < :cursor_id))"
+            )
+            params["cursor_at"] = keys[0]
+            params["cursor_id"] = keys[1]
+        where = " AND ".join(clauses)
+        sql = text(
+            f"""
+            SELECT i.inspection_id, i.completed_at, i.business_result,
+                   i.internal_decision, i.barcode_value, i.decision AS decision_json,
+                   EXISTS(SELECT 1 FROM {review_records.name} r
+                          WHERE r.inspection_id = i.inspection_id) AS has_review,
+                   (SELECT r.disposition FROM {review_records.name} r
+                    WHERE r.inspection_id = i.inspection_id
+                    ORDER BY r.created_at DESC, r.review_id DESC LIMIT 1) AS latest_disposition
+            FROM {inspections.name} i
+            WHERE {where}
+            ORDER BY i.completed_at DESC, i.inspection_id DESC
+            LIMIT :limit
+            """
+        )
+        params["limit"] = limit + 1
+        with self._engine.connect() as conn:
+            rows = conn.execute(sql, params).mappings().all()
+        has_more = len(rows) > limit
+        rows = rows[:limit]
+        items = [
+            ReviewQueueItem(
+                inspection_id=UUID(row["inspection_id"]),
+                completed_at=row["completed_at"],
+                business_result=row["business_result"],
+                internal_decision=row["internal_decision"],
+                barcode=row["barcode_value"],
+                # The machine reason codes are the primary triage data for open
+                # items; the review snapshot is available on the record itself.
+                reason_summary=_decision_reasons(row["decision_json"]),
+                has_review=bool(row["has_review"]),
+                latest_disposition=row["latest_disposition"],
+            )
+            for row in rows
+        ]
+        next_cursor = None
+        if has_more and rows:
+            last = rows[-1]
+            next_cursor = _encode_cursor(
+                str(last["completed_at"]), str(last["inspection_id"]), filter_fingerprint
+            )
+        return Page(items=items, next_cursor=next_cursor)

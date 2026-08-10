@@ -209,3 +209,25 @@ rule_identities = Table(
     Column("registered_at", Text, nullable=False),
     comment="Durable installed-rule registry: a rule identity is immutable once registered",
 )
+
+review_records = Table(
+    "review_records",
+    metadata,
+    Column("review_id", String(36), primary_key=True),
+    Column("inspection_id", String(36), ForeignKey("inspections.inspection_id"), nullable=False),
+    Column("disposition", String(24), nullable=False),
+    Column("reason", String(200), nullable=True),
+    Column("note", Text, nullable=True),
+    Column("reviewer", String(128), nullable=False),
+    Column("created_at", Text, nullable=False),
+    Column("original_business_result", String(16), nullable=False),
+    Column("original_internal_decision", String(16), nullable=False),
+    Column("original_reason_codes", Text, nullable=False),
+    Column("component_corrections", Text, nullable=True),
+    Column("supersedes_review_id", String(36), nullable=True),
+    comment="Append-only human review dispositions (design 24.7)",
+)
+
+Index("ix_review_records_inspection", review_records.c.inspection_id, review_records.c.created_at)
+Index("ix_review_records_created_at", review_records.c.created_at)
+Index("ix_review_records_disposition", review_records.c.disposition)

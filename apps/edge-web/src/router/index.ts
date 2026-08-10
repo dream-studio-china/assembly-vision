@@ -8,6 +8,7 @@ export const router = createRouter({
     { path: "/", name: "operator-dashboard", meta: { requiresAuth: true }, component: () => import("../pages/OperatorDashboard.vue") },
     { path: "/live", name: "live", meta: { requiresAuth: true }, component: () => import("../pages/LiveInspection.vue") },
     { path: "/history", name: "history", meta: { requiresAuth: true }, component: () => import("../pages/HistoryView.vue") },
+    { path: "/review", name: "review", meta: { requiresAuth: true }, component: () => import("../pages/ReviewView.vue") },
     { path: "/traceability/:sn", name: "traceability", meta: { requiresAuth: true }, component: () => import("../pages/TraceabilityView.vue") },
     { path: "/images/:id", name: "images", meta: { requiresAuth: true }, component: () => import("../pages/ImageViewer.vue") },
     { path: "/statistics", name: "statistics", meta: { requiresAuth: true }, component: () => import("../pages/StatisticsView.vue") },

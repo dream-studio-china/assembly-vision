@@ -365,6 +365,12 @@ class ReviewRecord(APIModel):
     revision: Annotated[int, Field(gt=0)]
 ```
 
+The model above is the **central** review record (user FK, revision chain). The
+edge-local review record (ADR-016) is a distinct append-only model: it stores a
+caller-supplied `reviewer` string, the five-value
+`ReviewDisposition`/`ComponentCorrectionState` enums, and `supersedes_review_id`
+for chaining, and is persisted in the edge `review_records` table (§14.5).
+
 The 15 required public models are `BoundingBox`, `Detection`, `FrameQuality`, `ProductDetection`, `ROIResult`, `ComponentDetection`, `AggregatedComponentEvidence`, `InspectionDecision`, `InspectionRecord`, `UploadTask`, `DeviceStatus`, `ProductConfiguration`, `RuleConfiguration`, `ModelManifest`, and `ReviewRecord`. Barcode, resolution, lifecycle, media, dataset, metric, and correction types are supporting value objects and are still part of the generated API contract.
 
 ## 14.4 Matching TypeScript Types
@@ -442,6 +448,7 @@ SQLite is the MVP default. Enable WAL mode, foreign keys, `busy_timeout`, and `s
 | `local_configuration` | `key` PK, revision, value JSON, source, applied time, checksum | Atomic effective configuration snapshot; retain prior snapshots in history or event records. |
 | `model_installations` | `model_version_id` PK, manifest JSON, local path, SHA-256, state, installed/activated times | Only one active installation per task, enforced transactionally. |
 | `rule_installations` | `rule_version_id` PK, product version ID, document JSON, checksum, state, installed/activated times | Activation validates compatible model classes and product version. |
+| `review_records` | `review_id` PK, `inspection_id` FK, disposition, reason, note, reviewer, created time, original business/internal decision and reason JSON, component-corrections JSON, supersedes review id | Append-only (ADR-016, migration 0008); disposition is constrained per machine outcome; a later review supersedes by reference and never overwrites. |
 
 Required edge indexes:
 

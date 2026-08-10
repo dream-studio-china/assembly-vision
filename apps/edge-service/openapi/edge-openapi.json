@@ -363,6 +363,82 @@
         "title": "CameraState",
         "type": "object"
       },
+      "ComponentCorrection": {
+        "additionalProperties": false,
+        "description": "Per-component correction recorded against the original evidence.",
+        "properties": {
+          "component_code": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Component Code",
+            "type": "string"
+          },
+          "corrected_state": {
+            "$ref": "#/components/schemas/ComponentCorrectionState"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "component_code",
+          "corrected_state"
+        ],
+        "title": "ComponentCorrection",
+        "type": "object"
+      },
+      "ComponentCorrectionRequest": {
+        "additionalProperties": false,
+        "description": "Per-component ground truth submitted with a review (design 24.7).",
+        "properties": {
+          "component_code": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Component Code",
+            "type": "string"
+          },
+          "corrected_state": {
+            "$ref": "#/components/schemas/ComponentCorrectionState"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "component_code",
+          "corrected_state"
+        ],
+        "title": "ComponentCorrectionRequest",
+        "type": "object"
+      },
+      "ComponentCorrectionState": {
+        "description": "Per-component ground truth recorded by a reviewer.",
+        "enum": [
+          "PRESENT",
+          "MISSING",
+          "UNCERTAIN"
+        ],
+        "title": "ComponentCorrectionState",
+        "type": "string"
+      },
       "ComponentDetectionSnapshot": {
         "properties": {
           "components": {
@@ -1683,6 +1759,33 @@
         "title": "Page[LogEvent]",
         "type": "object"
       },
+      "Page_ReviewQueueItem_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewQueueItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Page[ReviewQueueItem]",
+        "type": "object"
+      },
       "Page_UploadTask_": {
         "properties": {
           "items": {
@@ -2045,6 +2148,178 @@
         "title": "RetryUploadRequest",
         "type": "object"
       },
+      "ReviewDisposition": {
+        "description": "Human disposition applied to one inspection (design 24.3).\n\nA correction never rewrites the machine decision; it is recorded as a\nseparate append-only disposition.",
+        "enum": [
+          "CONFIRMED_NG",
+          "CONFIRMED_OK",
+          "CORRECTED_NG",
+          "INCONCLUSIVE",
+          "REINSPECT"
+        ],
+        "title": "ReviewDisposition",
+        "type": "string"
+      },
+      "ReviewQueueItem": {
+        "additionalProperties": false,
+        "description": "One inspection row of the review queue with its review state (24.4).",
+        "properties": {
+          "barcode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Barcode"
+          },
+          "business_result": {
+            "$ref": "#/components/schemas/BusinessResult"
+          },
+          "completed_at": {
+            "title": "Completed At",
+            "type": "string"
+          },
+          "has_review": {
+            "title": "Has Review",
+            "type": "boolean"
+          },
+          "inspection_id": {
+            "format": "uuid",
+            "title": "Inspection Id",
+            "type": "string"
+          },
+          "internal_decision": {
+            "$ref": "#/components/schemas/InternalDecision"
+          },
+          "latest_disposition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewDisposition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason_summary": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Summary",
+            "type": "array"
+          }
+        },
+        "required": [
+          "inspection_id",
+          "completed_at",
+          "business_result",
+          "internal_decision",
+          "has_review"
+        ],
+        "title": "ReviewQueueItem",
+        "type": "object"
+      },
+      "ReviewRecord": {
+        "additionalProperties": false,
+        "description": "Append-only human review of one inspection (design 24.7).\n\nThe original machine outcome and versions are snapshotted on the record so\nthe review remains interpretable even if the inspection projection is later\npurged. A later review supersedes an earlier one by reference; records are\nnever overwritten.",
+        "properties": {
+          "component_corrections": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentCorrection"
+            },
+            "maxItems": 64,
+            "title": "Component Corrections",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/ReviewDisposition"
+          },
+          "inspection_id": {
+            "format": "uuid",
+            "title": "Inspection Id",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "original_business_result": {
+            "$ref": "#/components/schemas/BusinessResult"
+          },
+          "original_internal_decision": {
+            "$ref": "#/components/schemas/InternalDecision"
+          },
+          "original_reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Original Reason Codes",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "review_id": {
+            "format": "uuid",
+            "title": "Review Id",
+            "type": "string"
+          },
+          "reviewer": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Reviewer",
+            "type": "string"
+          },
+          "supersedes_review_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersedes Review Id"
+          }
+        },
+        "required": [
+          "review_id",
+          "inspection_id",
+          "disposition",
+          "reviewer",
+          "created_at",
+          "original_business_result",
+          "original_internal_decision"
+        ],
+        "title": "ReviewRecord",
+        "type": "object"
+      },
       "RuleSnapshot": {
         "properties": {
           "product_type": {
@@ -2138,6 +2413,71 @@
           "pass_rate"
         ],
         "title": "StatisticsSummary",
+        "type": "object"
+      },
+      "SubmitReviewRequest": {
+        "additionalProperties": false,
+        "description": "Human disposition for one inspection (design 24.3/24.6).\n\n``reviewer`` identifies the reviewer; ``reason`` is mandatory for\n``INCONCLUSIVE`` and stripped of surrounding whitespace otherwise. A review\nnever rewrites the machine decision: the record is appended and references\nany superseded review.",
+        "properties": {
+          "component_corrections": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentCorrectionRequest"
+            },
+            "maxItems": 64,
+            "title": "Component Corrections",
+            "type": "array"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/ReviewDisposition"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "reviewer": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Reviewer",
+            "type": "string"
+          },
+          "supersedes_review_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersedes Review Id"
+          }
+        },
+        "required": [
+          "disposition",
+          "reviewer"
+        ],
+        "title": "SubmitReviewRequest",
         "type": "object"
       },
       "TraceabilityAttempt": {
@@ -3245,6 +3585,134 @@
         ]
       }
     },
+    "/api/v1/inspections/{inspection_id}/reviews": {
+      "get": {
+        "description": "Return the append-only review history of one inspection (24.7).",
+        "operationId": "list_inspection_reviews_api_v1_inspections__inspection_id__reviews_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "inspection_id",
+            "required": true,
+            "schema": {
+              "title": "Inspection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewRecord"
+                  },
+                  "title": "Response List Inspection Reviews Api V1 Inspections  Inspection Id  Reviews Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Inspection not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Inspection Reviews",
+        "tags": [
+          "reviews"
+        ]
+      },
+      "post": {
+        "description": "Append one human disposition for an inspection (24.3/24.6).\n\nThe disposition must be permitted for the machine outcome: an incompatible\ncorrection is rejected (422) instead of recorded, and a review may only\nsupersede another review of the same inspection (409). The submitted\nreviewer name and reason are required as documented; ``INCONCLUSIVE``\nalways requires a reason.",
+        "operationId": "submit_review_api_v1_inspections__inspection_id__reviews_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "inspection_id",
+            "required": true,
+            "schema": {
+              "title": "Inspection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Inspection not found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Review conflict (supersede targets another inspection)"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Invalid disposition or review"
+          }
+        },
+        "summary": "Submit Review",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
     "/api/v1/logs": {
       "get": {
         "operationId": "list_logs_api_v1_logs_get",
@@ -3325,6 +3793,124 @@
         "summary": "Media Content",
         "tags": [
           "media"
+        ]
+      }
+    },
+    "/api/v1/reviews": {
+      "get": {
+        "description": "List the review queue with each inspection's review state (24.4).",
+        "operationId": "list_review_queue_api_v1_reviews_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "business_result",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Business Result"
+            }
+          },
+          {
+            "in": "query",
+            "name": "internal_decision",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Internal Decision"
+            }
+          },
+          {
+            "in": "query",
+            "name": "reviewed",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reviewed"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ReviewQueueItem_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Malformed or filter-mismatched cursor"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Review Queue",
+        "tags": [
+          "reviews"
         ]
       }
     },

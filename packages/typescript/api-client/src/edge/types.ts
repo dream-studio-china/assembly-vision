@@ -246,6 +246,78 @@ export type RetryUploadRequest = {
   reason?: string | null;
 };
 
+export const REVIEW_DISPOSITIONS = [
+  "CONFIRMED_NG",
+  "CONFIRMED_OK",
+  "CORRECTED_NG",
+  "INCONCLUSIVE",
+  "REINSPECT",
+] as const;
+export type ReviewDisposition = (typeof REVIEW_DISPOSITIONS)[number];
+
+export const COMPONENT_CORRECTION_STATES = ["PRESENT", "MISSING", "UNCERTAIN"] as const;
+export type ComponentCorrectionState = (typeof COMPONENT_CORRECTION_STATES)[number];
+
+/** Per-component ground truth recorded by a reviewer (design 24.7). */
+export type ComponentCorrection = {
+  component_code: string;
+  corrected_state: ComponentCorrectionState;
+  note?: string | null;
+};
+
+/** Per-component ground truth submitted with a review (design 24.6). */
+export type ComponentCorrectionRequest = {
+  component_code: string;
+  corrected_state: ComponentCorrectionState;
+  note?: string | null;
+};
+
+/** Append-only human review of one inspection (design 24.7). */
+export type ReviewRecord = {
+  review_id: UUID;
+  inspection_id: UUID;
+  disposition: ReviewDisposition;
+  reason: string | null;
+  note: string | null;
+  reviewer: string;
+  created_at: ISODateTime;
+  original_business_result: BusinessResult;
+  original_internal_decision: InternalDecision;
+  original_reason_codes: string[];
+  component_corrections: ComponentCorrection[];
+  supersedes_review_id: UUID | null;
+};
+
+/** Human disposition submission for one inspection (design 24.6). */
+export type SubmitReviewRequest = {
+  disposition: ReviewDisposition;
+  reason?: string | null;
+  note?: string | null;
+  reviewer: string;
+  supersedes_review_id?: UUID | null;
+  component_corrections?: ComponentCorrectionRequest[];
+};
+
+/** One inspection row of the review queue with its review state (24.4). */
+export type ReviewQueueItem = {
+  inspection_id: UUID;
+  completed_at: ISODateTime;
+  business_result: BusinessResult;
+  internal_decision: InternalDecision;
+  barcode: string | null;
+  reason_summary: string[];
+  has_review: boolean;
+  latest_disposition: ReviewDisposition | null;
+};
+
+export type ReviewFilter = {
+  business_result?: BusinessResult;
+  internal_decision?: InternalDecision;
+  reviewed?: boolean;
+  cursor?: string;
+  limit?: number;
+};
+
 export type DeviceStatus = {
   device_id: UUID;
   observed_at: ISODateTime;

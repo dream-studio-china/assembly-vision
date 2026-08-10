@@ -35,6 +35,7 @@ from assemblyvision_edge.api.routers import (
     inspections,
     logs,
     media,
+    reviews,
     uploads,
     ws,
 )
@@ -267,6 +268,7 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
         configuration.router,
         logs.router,
         derived.router,
+        reviews.router,
     ):
         app.include_router(router, prefix="/api/v1", dependencies=[Depends(require_viewer)])
     # The dev router declares its own enablement gate ahead of viewer
