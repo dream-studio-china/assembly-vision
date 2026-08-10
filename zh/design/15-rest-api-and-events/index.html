@@ -1207,7 +1207,7 @@
   <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.3 Upload Queue and Configuration
+        15.3.3 上传队列和配置
       
     </span>
   </a>
@@ -1339,7 +1339,7 @@
   <a href="#158-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.8 Open Questions and Validation Required
+        15.8 未解决的问题和需要验证
       
     </span>
   </a>
@@ -3671,7 +3671,7 @@
   <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.3 Upload Queue and Configuration
+        15.3.3 上传队列和配置
       
     </span>
   </a>
@@ -3803,7 +3803,7 @@
   <a href="#158-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.8 Open Questions and Validation Required
+        15.8 未解决的问题和需要验证
       
     </span>
   </a>
@@ -4016,7 +4016,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="1533-upload-queue-and-configuration">15.3.3 Upload Queue and Configuration<a class="headerlink" href="#1533-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
+<h3 id="1533-upload-queue-and-configuration">15.3.3 上传队列和配置<a class="headerlink" href="#1533-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4107,7 +4107,7 @@
 <tr>
 <td><code>POST /api/v1/dev/inspect-frame</code></td>
 <td>通过实例管道分析一张上传的图像；除非<code>persist=false</code>，否则写入证据包。</td>
-<td>原始图像字节 / <code>InspectionRecord</code></td>
+<td>查询：可选<code>barcode</code>模拟键盘输入；原始图像字节 / <code>InspectionRecord</code></td>
 <td><code>400 INVALID_IMAGE</code>、<code>404 INSTANCE_NOT_FOUND</code>、<code>413 PAYLOAD_TOO_LARGE</code>、<code>503 PIPELINE_UNAVAILABLE</code></td>
 <td>确定性</td>
 <td>-</td>
@@ -4583,7 +4583,7 @@
 </tr>
 </tbody>
 </table>
-<p>WebSocket 身份验证使用现有的安全会话 cookie 或通过 REST 获取的短期、单一用途票证。令牌不得出现在 URL 查询日志中。浏览器 WebSocket 无法设置 <code>Authorization</code> 标头，因此跨域仪表板将其查看者凭证交换为 <code>POST /api/v1/ws/runtime/ticket</code> 处的一次性票证，并将其作为协商的 <code>Sec-WebSocket-Protocol</code> 值发送；该票证在接受过程中会被自动消耗，几秒钟内就会过期，并且永远不会被记录。</p>
+<p>WebSocket 身份验证使用现有的安全会话 cookie 或通过 REST 获取的短期、单一用途票证。令牌不得出现在 URL 查询日志中。浏览器 WebSocket 无法设置 <code>Authorization</code> 标头，因此跨源仪表板将其查看者凭证交换为 <code>POST /api/v1/ws/runtime/ticket</code> 处的一次性票证，并将其作为协商的 <code>Sec-WebSocket-Protocol</code> 值发送；该票证在接受过程中会被自动消耗，几秒钟内就会过期，并且永远不会被记录。</p>
 <h2 id="156-event-envelope-and-evolution">15.6 事件包络和演化<a class="headerlink" href="#156-event-envelope-and-evolution" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;event_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span>
@@ -4606,7 +4606,7 @@
 <li>传播<code>X-Request-ID</code>；边缘上传尝试还携带检查和任务关联 ID。</li>
 <li>对大型媒体使用预签名对象上传；除非存储限制需要，否则不要通过 API Worker 代理视频。</li>
 </ul>
-<h2 id="158-open-questions-and-validation-required">15.8 Open Questions and Validation Required<a class="headerlink" href="#158-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="158-open-questions-and-validation-required">15.8 未解决的问题和需要验证<a class="headerlink" href="#158-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>选择中央身份提供商和设备证书注册/轮换流程。</li>
 <li>确认边缘本地用户要求、会话超时和紧急暂停授权。</li>

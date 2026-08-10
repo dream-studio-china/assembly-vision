@@ -994,6 +994,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#711-development-barcode-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.11 开发条码标识
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3554,6 +3565,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#711-development-barcode-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.11 开发条码标识
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3783,7 +3805,7 @@ GigE Vision / GenICam 支持才可以使用生产适配器。一个
 <li>在序列间隙或缓冲区溢出时，增加指标并将受影响的窗口标记为降级；证据不足产生<code>NG</code>。</li>
 <li>对于陈旧或重复的帧，拒绝这些帧并报告相机运行状况恶化。</li>
 <li>在时钟调整时，继续使用单调时钟计算持续时间并记录挂钟的不连续性。</li>
-<li>在捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断<code>NG</code>。</li>
+<li>捕获进程重新启动时，不要恢复不明确的打开窗口，就像完成一样；将其保留为中断<code>NG</code>。</li>
 <li>服务器中断时，不要进行采集更改。在储存能力允许的情况下，当地捕获和检查将继续进行。</li>
 </ul>
 <p>滚动视频写入分段文件以限制断电后的损坏。媒体持久化和删除规则在<a href="../12-local-storage-and-retention/">local storage and retention</a>中定义。</p>
@@ -3804,6 +3826,14 @@ GigE Vision / GenICam 支持才可以使用生产适配器。一个
 <li>验证照明稳定性、眩光、运动模糊和可接受的相机移位容差。</li>
 <li>确认条形码读取器拓扑和与图像捕获相关的时序。</li>
 </ul>
+<h2 id="711-development-barcode-identity">7.11 开发条码标识<a class="headerlink" href="#711-development-barcode-identity" title="Permanent link">&para;</a></h2>
+<p>单管道网络开发上传路径可以实现精确的条形码身份
+映射在 <code>identity.barcode</code> 下。它使用 ZXing-cpp 解码上传的图像
+并且可以接收明确的模拟键盘输入。配置的条形码映射
+是完整条形码值到产品代码的 YAML 映射；前缀或模式
+不使用匹配。冲突、不可读、符号系统不受支持、未知、
+或 active-rule-product-mismatched 证据未经验证，并且在以下情况下无法关闭：
+需要条形码标识。</p>
 
 
 

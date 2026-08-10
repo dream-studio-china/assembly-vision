@@ -4025,7 +4025,7 @@
 <h3 id="1911-static-train-and-inspect-mvp">19.1.1 静态训练和检查 MVP<a class="headerlink" href="#1911-static-train-and-inspect-mvp" title="Permanent link">&para;</a></h3>
 <p>MVP 在相机集成之前实现了开发人员控制的训练到检查循环。 X-AnyLabeling 是选定的注释工具，并导出标准 YOLO 文本标签。产品和组件盒以全框坐标进行注释。训练 CLI 验证导出的数据集，从全帧图像训练产品检测器，然后使用产品 ROI 变换来裁剪组件训练图像，并在组件训练之前将组件框重新映射到 ROI 坐标。</p>
 <p>运行时检查 CLI 仅使用生成的不可变权重工件和清单。训练代码位于单独的 <code>training/</code> 工作区中，永远不会由运行时导入，并且被排除在运行时发行版之外。配置的文件名约定为保留验证提供了预期的 <code>OK</code> 或 <code>NG</code> 标签；它不能替代检测器训练期间的边界框标签。</p>
-<p>第一个 MVP 在开发人员具有 16 GB 内存的 Apple Silicon Mac 上运行小型模型并测量图像尺寸。它记录再现性元数据并报告保留的静态设置结果，但不声明生产精度、生产吞吐量或生产验收。具有 SHA-256 清单的普通模型工件对于此 MVP 来说已经足够了；模型加密和仅限 <code>.pyc</code> 的分发打包被推迟。</p>
+<p>第一个 MVP 在开发人员具有 16 GB 内存的 Apple Silicon Mac 上运行小型模型并测量图像大小。它记录再现性元数据并报告保留的静态设置结果，但不声明生产精度、生产吞吐量或生产验收。具有 SHA-256 清单的普通模型工件对于此 MVP 来说已经足够了；模型加密和仅限 <code>.pyc</code> 的分发打包被推迟。</p>
 <p>最小 YOLO 数据集布局为：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>dataset/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── images/{train,val}/
@@ -4045,7 +4045,7 @@
 <p>每个源图像/帧都与一个清单相关联，其中包含：</p>
 <ul>
 <li>数据集/源记录 ID 和不可变文件校验和。</li>
-<li>站点、线路、摄像机和捕获设置标识符（如果允许）。</li>
+<li>站点、线路、摄像机和捕捉设置标识符（如果允许）。</li>
 <li>捕获会话 ID、生产日期、产品批次和物理产品实例 ID。</li>
 <li>视频/检查窗口 ID、帧索引和时间戳。</li>
 <li>在允许的情况下，受保护元数据中的产品代码/类型和条形码。</li>
@@ -4081,7 +4081,7 @@
 <h2 id="196-leakage-safe-data-splits">19.6 防泄漏数据分割<a class="headerlink" href="#196-leakage-safe-data-splits" title="Permanent link">&para;</a></h2>
 <h3 id="1961-split-unit">19.6.1 分割单元<a class="headerlink" href="#1961-split-unit" title="Permanent link">&para;</a></h3>
 <p>最小拆分组是整个检查/视频窗口中的物理产品实例。首选结合捕获会话、产品批次、生产日期和设置修订的更高级别组。从一个源组派生的所有相邻帧、裁剪、增强、重新编码和注释都保留在一个分割中。</p>
-<p>切勿随机分割单个视频帧。训练和验证中几乎相同的帧会产生误导性的指标，并根据重复的证据调整时间聚合。</p>
+<p>切勿随机分割单个视频帧。训练和验证过程中几乎相同的帧会产生误导性的指标，并根据重复的证据调整时间聚合。</p>
 <h3 id="1962-recommended-sets">19.6.2 推荐设置<a class="headerlink" href="#1962-recommended-sets" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4140,7 +4140,7 @@
 <h2 id="199-detector-level-metrics">19.9 检测器级指标<a class="headerlink" href="#199-detector-level-metrics" title="Permanent link">&para;</a></h2>
 <p>对于产品和组件检测器报告：</p>
 <ul>
-<li>记录的 IoU 阈值的精确率-召回率曲线和平均精度，包括 mAP50 和 mAP50-95（如果适用）。</li>
+<li>记录的 IoU 阈值的精度-召回率曲线和平均精度，包括 mAP50 和 mAP50-95（如果适用）。</li>
 <li>每类精度、召回率、AP、支持度和置信度分布。</li>
 <li>在操作置信度/IoU 标准下产品检测成功。</li>
 <li>空/背景帧的错误检测。</li>
@@ -4195,7 +4195,7 @@
 <p>仅当满足以下条件时才能发布候选人：</p>
 <ol>
 <li>工件、清单、数据集和评估校验和完整且可重现。</li>
-<li>所需的每个产品/每个组件层具有足够的数据或记录的限制。</li>
+<li>所需的每个产品/每个组件分层具有足够的数据或记录的限制。</li>
 <li>NG召回、假阴性计数、条形码/产品处理或延迟方面没有出现不可接受的回归。</li>
 <li>规则和类兼容性验证通过。</li>
 <li>内部测试结果由指定的工程/质量审批人员审核。</li>
@@ -4212,7 +4212,7 @@
 <li>基线评估后建立客户接受度目标、置信度、样本量和<code>UNCERTAIN</code>的处理方法。</li>
 <li>确认代表性边缘 CPU/GPU、所需吞吐量、传送带时序和延迟预算。</li>
 <li>定义允许的相机位置/角度/曝光容差以及声明域更改的过程。</li>
-<li>确认生产正常审核抽样所需，以估计误报和模型漂移。</li>
+<li>确认生产正常审核抽样，以估计误报和模型漂移。</li>
 </ul>
 <h2 id="1917-single-product-data-acquisition-and-annotation-checklist">19.17 单产品数据采集和注释清单<a class="headerlink" href="#1917-single-product-data-acquisition-and-annotation-checklist" title="Permanent link">&para;</a></h2>
 <p>本节是常见情况的权威数据质量规范：<strong>一个

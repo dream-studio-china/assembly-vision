@@ -1196,7 +1196,7 @@
   <a href="#181-goals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.1 Goals
+        18.1 目标
       
     </span>
   </a>
@@ -1417,7 +1417,7 @@
   <a href="#1813-ci-and-build-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.13 CI and Build Flow
+        18.13 CI 和构建流程
       
     </span>
   </a>
@@ -3592,7 +3592,7 @@
   <a href="#181-goals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.1 Goals
+        18.1 目标
       
     </span>
   </a>
@@ -3813,7 +3813,7 @@
   <a href="#1813-ci-and-build-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        18.13 CI and Build Flow
+        18.13 CI 和构建流程
       
     </span>
   </a>
@@ -3863,14 +3863,14 @@
 
 
 <h1 id="18-monorepo-and-code-organization">18. Monorepo 和代码组织<a class="headerlink" href="#18-monorepo-and-code-organization" title="Permanent link">&para;</a></h1>
-<h2 id="181-goals">18.1 Goals<a class="headerlink" href="#181-goals" title="Permanent link">&para;</a></h2>
+<h2 id="181-goals">18.1 目标<a class="headerlink" href="#181-goals" title="Permanent link">&para;</a></h2>
 <p>AssemblyVision 使用一个 Python/TypeScript monorepo 来协调域合约、边缘和中央版本、前端客户端、迁移、部署和评估。存储库必须保留运行时边界，而无需为每个管道步骤创建包。</p>
 <p>相关合约定义在<a href="../14-data-model-and-database/">Data Model and Database</a>和<a href="../15-rest-api-and-events/">REST API and Events</a>中。前端所有权在 <a href="../16-edge-dashboard/">Edge Dashboard</a> 和 <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a> 中描述； ML 工作流程在 <a href="../19-training-and-evaluation/">Training and Evaluation</a> 中描述。</p>
 <h2 id="182-organization-principles">18.2 组织原则<a class="headerlink" href="#182-organization-principles" title="Permanent link">&para;</a></h2>
 <ol>
 <li><code>apps/</code>包含独立可运行/可部署的进程和Web应用程序。</li>
 <li><code>packages/</code> 包含由至少两个应用程序或需要独立测试的内聚域重用的代码。</li>
-<li>将产品检测、ROI、组件检测、时间聚合和规则放在 <code>vision-core</code> 中。一旦第二个具体消费者需要<code>domain</code>和<code>vision-core</code>，就提取它们；标记的训练和检查 MVP 就是那个触发器，因为训练重用了域模式和 ROI/预处理。</li>
+<li>将产品检测、ROI、组件检测、时间聚合和规则放在 <code>vision-core</code> 中。一旦第二个具体消费者需要<code>domain</code>和<code>vision-core</code>，就提取它们；标记为“训练和检查”的 MVP 就是该触发器，因为训练重用了域模式和 ROI/预处理。</li>
 <li>运行时应用程序代码永远不会从 <code>training/</code> 导入。</li>
 <li>边缘代码不得导入中央持久性或需要中央连接。</li>
 <li>前端使用生成的 API 合约和小型共享视觉原语；特定于页面的商店和组件保留在其应用程序中。</li>
@@ -4030,8 +4030,8 @@
 </tr>
 <tr>
 <td><code>platform-common</code></td>
-<td>在两个应用程序需要它们之后，可选择提取窄记录/配置/校验和/遥测实用程序</td>
-<td>域业务规则，通用“utils”垃圾场</td>
+<td>在两个应用程序需要它们后，可选择提取窄记录/配置/校验和/遥测实用程序</td>
+<td>领域业务规则，通用“utils”垃圾场</td>
 </tr>
 </tbody>
 </table>
@@ -4045,7 +4045,7 @@
 </ul>
 <h2 id="187-dependency-diagram">18.7 依赖关系图<a class="headerlink" href="#187-dependency-diagram" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
-    EV[边缘网] --&gt; AC[TS api-client]
+    EV[边缘网] --&gt; AC[TS api 客户端]
     EV --&gt; UI[TS用户界面]
     AW[管理网] --&gt; AC
     AW --&gt; UI
@@ -4124,7 +4124,7 @@
 </tbody>
 </table>
 <p>测试不会从生产数据目录导入装置。 ML 评估数据集在外部进行版本控制，并与快速 CI 分开调用。</p>
-<h2 id="1813-ci-and-build-flow">18.13 CI and Build Flow<a class="headerlink" href="#1813-ci-and-build-flow" title="Permanent link">&para;</a></h2>
+<h2 id="1813-ci-and-build-flow">18.13 CI 和构建流程<a class="headerlink" href="#1813-ci-and-build-flow" title="Permanent link">&para;</a></h2>
 <ol>
 <li>验证可用工具的格式、Ruff、MyPy、ESLint、TypeScript 和 Markdown 链接/图表。</li>
 <li>运行更改包单元测试，然后运行合同测试和集成测试。</li>
@@ -4143,8 +4143,8 @@
 <li>确认 CI 提供程序、容器注册表、工件/模型注册表和 SBOM/签名要求。</li>
 <li>确认相机 SDK 许可或本机库是否需要单独构建的适配器包/图像。</li>
 <li>决定在每个消费者构建期间是否提交或生成生成的 OpenAPI 客户端。</li>
-<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人合理。</li>
-<li>确认支持的边缘操作系统、CPU/GPU架构和离线依赖安装过程。</li>
+<li>验证报告/媒体工作负载是否证明 <code>central-worker</code> 和一个月演示中的工作经纪人是合理的。</li>
+<li>确认支持的边缘操作系统、CPU/GPU架构以及离线依赖安装过程。</li>
 </ul>
 
 

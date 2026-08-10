@@ -3693,7 +3693,7 @@
 <li><strong>金属铸造/焊接检查</strong>（孔隙、裂纹、夹杂物）</li>
 <li><strong>药品检验</strong>（直接公布的数字很少；仅邻近证据）</li>
 </ul>
-<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回）在 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
+<p><strong>指标注释。</strong>工业论文绝大多数报告了保留测试集上的<strong>mAP（平均精度）</strong>，而不是操作阈值下的生产召回率/精度。 mAP 是超过置信阈值的平均值，与固定置信阈值后生产线实现的操作召回不同。当论文报告精确度/召回率/F1 处于阈值时，会对此进行说明。 AssemblyVision 自身的安全指标（NG 召回率）在 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code> 中定义；没有公共基准能够准确衡量装配完整性的数量，因此 AssemblyVision 必须建立自己的基准。</p>
 <hr />
 <h2 id="2-reference-datasets-and-benchmarks-environment-size-ground-truth">2. 参考数据集和基准（环境、大小、地面实况）<a class="headerlink" href="#2-reference-datasets-and-benchmarks-environment-size-ground-truth" title="Permanent link">&para;</a></h2>
 <table>
@@ -3867,7 +3867,7 @@
 <tr>
 <td>工业-YOLO（微调YOLOv8，边缘优化）</td>
 <td>YOLOv8 + TensorRT/OpenVINO</td>
-<td><strong>NEU-DET + MVTec AD + 定制汽车/电池缺陷图像的基准；索赔部署在活跃的汽车装配线上</strong></td>
+<td><strong>NEU-DET + MVTec AD + 定制汽车/电池缺陷图像基准；索赔部署在活跃的汽车装配线上</strong></td>
 <td>NEU-DET、MVTec AD、自定义扩展</td>
 <td><strong>mAP 98.5%</strong>； <strong>&gt; NVIDIA Jetson Orin 上 120 FPS</strong></td>
 <td><strong>2026 年预印本，单组，未经同行评审；视为供应商/作者报告。</strong> NEU-DET 上的典型 YOLO 论文报告较低的 mAP (~70-80%)，具体取决于拆分； 98.5% 处于乐观状态，可能包括数据管理效应</td>
@@ -3915,7 +3915,7 @@
 <td>YOLOv8物体检测+姿态细化+Pose2State融合</td>
 <td>医疗/工业装配；遮挡和外观动态</td>
 <td>ASDF数据集+GBOT数据集</td>
-<td>优于“纯基于深度学习”的组装状态基线；更稳健的 6D 姿势； GBOT 击败混合和纯跟踪方法证明检测器 + 几何验证相结合优于单独检测器 - 与 AssemblyVision 的 ROI + 规则设计直接相关</td>
+<td>优于“纯基于深度学习”的组装状态基线；更稳健的 6D 姿势； GBOT 击败混合和纯跟踪方法证明检测器 + 几何验证相结合优于单独使用检测器 - 与 AssemblyVision 的 ROI + 规则设计直接相关</td>
 <td>https://arxiv.org/abs/2403.16400</td>
 <td></td>
 </tr>
@@ -4003,7 +4003,7 @@
 <p><strong>没有找到可靠、可引用的公共生产召回/精确度数据用于人工智能药品视觉检查（小瓶/安瓿/注射器完整性或颗粒检测）。</strong> 相关证据：</p>
 <ul>
 <li>MVTec AD 2 包括透明物体场景（与安瓿/小瓶相关）并报告 SOTA 异常检测低于 60% AU-PRO (https://arxiv.org/abs/2503.21622)。</li>
-<li>药品检验主要由供应商 AOI 系统（Cognex、Omron 等）主导，这些系统不发布召回编号。 https://www.cognex.com/what-is/machine-vision 描述了检测功能，但没有量化的准确性。</li>
+<li>药品检查由供应商 AOI 系统（Cognex、Omron 等）主导，这些系统不发布召回编号。 https://www.cognex.com/what-is/machine-vision 描述了检测功能，但没有量化的准确性。</li>
 </ul>
 <p><strong>这是一个明确的数据差距。</strong> AssemblyVision 不得假设存在公布的药品费率；计划生成自己的验收数据。</p>
 <h3 id="37-general-industry-level-failure-statistics-context">3.7 一般行业级故障统计（上下文）<a class="headerlink" href="#37-general-industry-level-failure-statistics-context" title="Permanent link">&para;</a></h3>
@@ -4064,7 +4064,7 @@
 </tr>
 <tr>
 <td>装配状态</td>
-<td>YOLOv8 + 姿态融合</td>
+<td>YOLOv8 + 姿势融合</td>
 <td>受控装配台</td>
 <td>与纯深度学习相比的相对改进</td>
 <td>“比纯深度学习基线更好”</td>
@@ -4131,7 +4131,7 @@
 <ul>
 <li>没有公共基准测量 <strong>NG 召回/组件存在（装配完整性）检查的误报率</strong>。 AssemblyVision 必须定义自己的接受数据集和置信界限（根据 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>，观察到的零失误的二项式界限）。</li>
 <li>Kaggle 选角数据集数据（7,348 张图像；5,198 张正常/2,150 张有缺陷）是数据集页面报告的，如果用作参考，应重新验证。</li>
-<li>已发布的 PCB mAP 数字来自特定的公共数据集（分割有所不同）； VR-YOLO 和多尺度 PCB 论文使用的确切数据集和分割在引用它们作为锚点之前应该得到确认。</li>
+<li>已发布的 PCB mAP 数字来自特定的公共数据集（分割各不相同）； VR-YOLO 和多尺度 PCB 论文使用的确切数据集和分割在引用它们作为锚点之前应该得到确认。</li>
 <li>药品目视检查不存在可靠的公众号；将该行业视为数据缺口。</li>
 <li>Industrial-YOLO 2026 预印本（mAP 98.5%，在 Jetson Orin 上 &gt;120 FPS）未经同行评审；在依赖其吞吐量声明进行边缘硬件预算之前确认或放弃。</li>
 <li>通过与 Ultralytics (https://docs.ultralytics.com/guides/data-collection-and-annotation/) 指南中的“每个类几百个对象就足以启动，每个类约 1,500 个图像/10,000 个实例来实现可靠的实际性能”进行比较，验证 AssemblyVision 自己的目标（300-800 个产品图像；300-500 个实例/组件）是否足够。</li>

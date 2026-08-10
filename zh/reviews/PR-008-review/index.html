@@ -4662,7 +4662,7 @@ static-MVP 结果并显式地将 SQLite 视为可重建的读取投影。
 </li>
 <li>
 <p><strong>上传重试会忽略资格、幂等性、原因和状态元数据。</strong>
-  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>;
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>；
   <code>repository.retry_upload</code> 接受任何状态，忽略 <code>Idempotency-Key</code> 和
   原因，并且不更新 <code>updated_at</code>/<code>next_attempt_at</code>。
   <em>解决方案：</em> 因为调度程序超出了 M1 范围，所以删除/禁用

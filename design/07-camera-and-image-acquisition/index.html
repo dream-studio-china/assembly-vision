@@ -994,6 +994,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#711-development-barcode-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.11 Development Barcode Identity
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3554,6 +3565,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#711-development-barcode-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.11 Development Barcode Identity
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3806,6 +3828,14 @@ not gain industrial trigger guarantees.</p>
 <li>Validate lighting stability, glare, motion blur, and acceptable camera-shift tolerances.</li>
 <li>Confirm the barcode reader topology and timing relative to image capture.</li>
 </ul>
+<h2 id="711-development-barcode-identity">7.11 Development Barcode Identity<a class="headerlink" href="#711-development-barcode-identity" title="Permanent link">&para;</a></h2>
+<p>The single-pipeline web development upload path may enable exact barcode identity
+mapping under <code>identity.barcode</code>. It decodes the uploaded image with ZXing-cpp
+and may receive explicit simulated keyboard input. A configured barcode mapping
+is a YAML mapping of complete barcode values to product codes; prefix or pattern
+matching is not used. Conflicting, unreadable, unsupported-symbology, unknown,
+or active-rule-product-mismatched evidence is unverified and fails closed when
+barcode identity is required.</p>
 
 
 
