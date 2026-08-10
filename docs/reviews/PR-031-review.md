@@ -175,6 +175,21 @@ generated OpenAPI/TS (CI-checked), `types.ts`, `validate.ts`,
 consistency contract test; deriving `REVIEW_DISPOSITIONS` from the generated
 schemas is the recommended next refactor.
 
+#### PR31-T05 - P3: Review submission is exposed through the viewer credential (contract 08 deviation)
+
+Contract 08 §3 lists "human-review actions that append or supersede a human
+disposition" among operations requiring elevated permissions, but edge review
+submission intentionally uses the existing single viewer credential per
+ADR-016 decision 3/7 (no edge role model). The viewer permission is a
+deliberate operator-convenience decision: the reviewer must be able to
+disposition `NG` cases directly from the operator dashboard without an
+additional credential, and the edge has no role system to enforce a separate
+`reviewer` role. This is the same accepted impersonation surface as
+PR31-T01. No behavior change is made now; a future RBAC ADR
+(`reviewer` role on the edge, or a separately approved PLC/MES disposition
+contract) resolves the deviation, and design 15 §15.2.1 already documents the
+exception.
+
 ## 4. Confirmed Non-Invasive and Decoupled
 
 - **Domain**: only additive models appended after `ModelManifest`;
