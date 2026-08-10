@@ -31,6 +31,7 @@ function toQuery(filter: InspectionFilter | undefined): string {
   if (filter.internal_decision) params.set("internal_decision", filter.internal_decision);
   if (filter.barcode) params.set("barcode", filter.barcode);
   if (filter.product) params.set("product", filter.product);
+  if (filter.sn) params.set("sn", filter.sn);
   if (filter.from) params.set("from", filter.from);
   if (filter.to) params.set("to", filter.to);
   if (filter.cursor) params.set("cursor", filter.cursor);

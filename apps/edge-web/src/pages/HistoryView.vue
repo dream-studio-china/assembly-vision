@@ -1,35 +1,68 @@
 <script setup lang="ts">
-// Inspection history: search by SN, filter by result, image reference links.
+// Inspection history: server-side SN search, result filter, and cursor
+// pagination (design 16.5).
 
 import { StatusBadge, formatIsoTime, toDecisionStatus } from "@assemblyvision/ui";
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { inspectionService } from "../services/inspectionService";
-import type { InspectionSummary } from "@assemblyvision/api-client";
+import type { InspectionFilter, InspectionSummary } from "@assemblyvision/api-client";
+
+const PAGE_SIZE = 25;
 
 const items = ref<InspectionSummary[]>([]);
 const loading = ref(false);
+const loadingMore = ref(false);
+const nextCursor = ref<string | null>(null);
 const snFilter = ref("");
 const resultFilter = ref<"" | "OK" | "NG">("");
 
-const filtered = computed(() => {
-  let rows = items.value;
-  if (snFilter.value.trim()) {
-    const q = snFilter.value.trim().toLowerCase();
-    rows = rows.filter((r) => (r.sn ?? "").toLowerCase().includes(q));
-  }
-  if (resultFilter.value) {
-    rows = rows.filter((r) => r.business_result === resultFilter.value);
-  }
-  return rows;
-});
+let searchTimer: number | undefined;
+let requestSeq = 0;
+
+function buildFilter(cursor?: string): InspectionFilter {
+  return {
+    ...(snFilter.value.trim() ? { sn: snFilter.value.trim() } : {}),
+    ...(resultFilter.value ? { business_result: resultFilter.value } : {}),
+    cursor,
+    limit: PAGE_SIZE,
+  };
+}
+
+function scheduleSearch(): void {
+  window.clearTimeout(searchTimer);
+  searchTimer = window.setTimeout(() => void load(), 300);
+}
+
+function onResultChange(): void {
+  window.clearTimeout(searchTimer);
+  void load();
+}
 
 async function load(): Promise<void> {
+  const seq = ++requestSeq;
+  nextCursor.value = null;
   loading.value = true;
   try {
-    const page = await inspectionService.listHistory({ limit: 100 });
+    const page = await inspectionService.listHistory(buildFilter());
+    if (seq !== requestSeq) return;
     items.value = page.items;
+    nextCursor.value = page.next_cursor;
   } finally {
-    loading.value = false;
+    if (seq === requestSeq) loading.value = false;
+  }
+}
+
+async function loadMore(): Promise<void> {
+  if (!nextCursor.value || loading.value || loadingMore.value) return;
+  const seq = ++requestSeq;
+  loadingMore.value = true;
+  try {
+    const page = await inspectionService.listHistory(buildFilter(nextCursor.value));
+    if (seq !== requestSeq) return;
+    items.value = [...items.value, ...page.items];
+    nextCursor.value = page.next_cursor;
+  } finally {
+    if (seq === requestSeq) loadingMore.value = false;
   }
 }
 
@@ -45,15 +78,25 @@ onMounted(load);
         v-model="snFilter"
         placeholder="Search by SN"
         clearable
-        style="width: 240px"
+        aria-label="SN filter"
+        @input="scheduleSearch"
+        style="width: 220px"
       />
-      <el-select v-model="resultFilter" placeholder="All results" clearable style="width: 160px">
+      <el-select
+        v-model="resultFilter"
+        placeholder="All results"
+        clearable
+        aria-label="Inspection result filter"
+        @change="onResultChange"
+        style="width: 160px"
+      >
         <el-option label="PASS" value="OK" />
         <el-option label="NG" value="NG" />
       </el-select>
+      <span class="history__count">{{ items.length }} rows</span>
     </div>
 
-    <el-table :data="filtered" v-loading="loading">
+    <el-table :data="items" v-loading="loading" empty-text="No inspections found">
       <el-table-column prop="sn" label="SN" width="140">
         <template #default="{ row }">
           <router-link v-if="row.sn" :to="`/traceability/${row.sn}`">{{ row.sn }}</router-link>
@@ -80,6 +123,10 @@ onMounted(load);
         </template>
       </el-table-column>
     </el-table>
+
+    <div class="history__more">
+      <el-button v-if="nextCursor" :loading="loadingMore" @click="loadMore">Load more</el-button>
+    </div>
   </div>
 </template>
 
@@ -91,6 +138,16 @@ onMounted(load);
 }
 .history__filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+  align-items: center;
+}
+.history__count {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.history__more {
+  display: flex;
+  justify-content: center;
 }
 </style>

@@ -793,6 +793,7 @@ class EdgeRepository:
         internal_decision: str | None = None,
         barcode: str | None = None,
         product: str | None = None,
+        sn: str | None = None,
         from_iso: str | None = None,
         to_iso: str | None = None,
         cursor: str | None = None,
@@ -814,6 +815,11 @@ class EdgeRepository:
         if product:
             clauses.append("product_code = :product")
             params["product"] = product
+        if sn:
+            # The persisted SN is the barcode value (summary ``sn`` is derived
+            # from ``barcode_value``), so the fuzzy match targets that column.
+            clauses.append("barcode_value LIKE :sn")
+            params["sn"] = f"%{sn}%"
         if from_iso:
             clauses.append("completed_at >= :from_iso")
             params["from_iso"] = from_iso
@@ -826,6 +832,7 @@ class EdgeRepository:
                 "internal_decision": internal_decision,
                 "barcode": barcode,
                 "product": product,
+                "sn": sn,
                 "from_iso": from_iso,
                 "to_iso": to_iso,
             }
