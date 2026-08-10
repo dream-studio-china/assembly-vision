@@ -217,6 +217,37 @@ def test_compatible_rule_config_manifest_sets_are_accepted() -> None:
     assert "manual" in config.components
 
 
+def test_barcode_required_rule_needs_enabled_identity_config(tmp_path: Path) -> None:
+    """A rule that requires a barcode must be backed by enabled identity config."""
+    from assemblyvision_edge.config import load_pipeline_config
+
+    config = load_pipeline_config(EXAMPLE_PIPELINE)
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    rule = make_rule(barcode_required=True)
+    with pytest.raises(ConfigError, match="barcode-required rule needs enabled required identity"):
+        validate_rule_component_compatibility(rule, config, manifest)
+
+
+def test_barcode_required_rule_accepted_with_enabled_identity(tmp_path: Path) -> None:
+    """Identity config enabled+required satisfies the barcode-required rule."""
+    from dataclasses import replace
+
+    from assemblyvision_edge.config import BarcodeIdentityConfig, load_pipeline_config
+
+    config = load_pipeline_config(EXAMPLE_PIPELINE)
+    identity = BarcodeIdentityConfig(
+        enabled=True,
+        required=True,
+        allowed_symbologies=(),
+        mapping_file=tmp_path / "barcodes.yaml",
+        mappings={"ABC": "model_a"},
+    )
+    config = replace(config, barcode_identity=identity)
+    manifest = load_model_manifest(COMPONENT_MANIFEST)
+    rule = make_rule(barcode_required=True)
+    validate_rule_component_compatibility(rule, config, manifest)
+
+
 def test_rule_identity_collision_with_different_content_rejected(tmp_path: Path) -> None:
     first = tmp_path / "a.yaml"
     first.write_text(
@@ -302,3 +333,44 @@ def test_config_rejects_empty_components(tmp_path: Path) -> None:
     )
     with pytest.raises(ConfigError, match="at least one component"):
         load_pipeline_config(path)
+
+
+def test_loads_exact_barcode_identity_mapping(tmp_path: Path) -> None:
+    mapping = tmp_path / "barcodes.yaml"
+    mapping.write_text("ABC-001: model_a\nQR-002: model_b\n", encoding="utf-8")
+    config = load_pipeline_config(
+        _write_pipeline(
+            tmp_path,
+            "identity:\n"
+            "  barcode:\n"
+            "    enabled: true\n"
+            "    required: true\n"
+            "    allowed_symbologies: [QRCode, Code128]\n"
+            "    mapping_file: barcodes.yaml\n",
+        )
+    )
+
+    assert config.barcode_identity is not None
+    assert config.barcode_identity.mappings == {"ABC-001": "model_a", "QR-002": "model_b"}
+    assert config.barcode_identity.allowed_symbologies == ("QRCode", "Code128")
+
+
+@pytest.mark.parametrize(
+    "mapping, config, match",
+    [
+        (
+            "ABC: model_a\nABC: model_b\n",
+            "enabled: true\n    mapping_file: barcodes.yaml",
+            "duplicate",
+        ),
+        ("ABC: ''\n", "enabled: true\n    mapping_file: barcodes.yaml", "values"),
+        ("", "enabled: true", "mapping_file"),
+    ],
+)
+def test_barcode_identity_config_fails_closed(
+    tmp_path: Path, mapping: str, config: str, match: str
+) -> None:
+    if mapping:
+        (tmp_path / "barcodes.yaml").write_text(mapping, encoding="utf-8")
+    with pytest.raises(ConfigError, match=match):
+        load_pipeline_config(_write_pipeline(tmp_path, f"identity:\n  barcode:\n    {config}\n"))

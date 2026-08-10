@@ -78,6 +78,49 @@ def test_load_edge_config_parses_instances(tmp_path: Path) -> None:
     assert second.camera.loop is True
 
 
+def test_load_edge_config_preserves_barcode_identity(tmp_path: Path) -> None:
+    mapping = tmp_path / "barcodes.yaml"
+    mapping.write_text("ABC-001: model_a\n", encoding="utf-8")
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                identity={
+                    "barcode": {
+                        "enabled": True,
+                        "required": True,
+                        "allowed_symbologies": ["Code128"],
+                        "mapping_file": "barcodes.yaml",
+                    }
+                }
+            )
+        ],
+    )
+
+    identity = load_edge_config(path).instances[0].pipeline.barcode_identity
+
+    assert identity is not None
+    assert identity.enabled is True
+    assert identity.mappings == {"ABC-001": "model_a"}
+
+
+def test_load_edge_config_rejects_barcode_identity_with_temporal_inspection(tmp_path: Path) -> None:
+    mapping = tmp_path / "barcodes.yaml"
+    mapping.write_text("ABC-001: model_a\n", encoding="utf-8")
+    path = _write_edge_config(
+        tmp_path,
+        [
+            _instance_yaml(
+                temporal={"window_strategy": "identity"},
+                identity={"barcode": {"enabled": True, "mapping_file": "barcodes.yaml"}},
+            )
+        ],
+    )
+
+    with pytest.raises(ConfigError, match="not supported with temporal inspection"):
+        load_edge_config(path)
+
+
 def test_load_edge_config_device_id_defaults_and_validation(tmp_path: Path) -> None:
     valid_uuid = "12345678-1234-5678-1234-567812345678"
     path = _write_edge_config(tmp_path, [_instance_yaml("line-1", device_id=valid_uuid)])

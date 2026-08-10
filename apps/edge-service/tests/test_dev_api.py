@@ -99,6 +99,24 @@ class PublishingPipeline(FakePipeline):
         return record
 
 
+class BarcodePipeline(FakePipeline):
+    barcode_identity_enabled = True
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.simulated_input: str | None = None
+
+    def resolve_dev_identity(self, image: Image.Image, simulated_input: str | None) -> object:
+        self.simulated_input = simulated_input
+        return object()
+
+    def inspect_frame(
+        self, frame: CapturedFrame, writer: object | None = None, *, identity: object | None = None
+    ) -> InspectionRecord:
+        assert identity is not None
+        return super().inspect_frame(frame, writer)
+
+
 class StubRuntime:
     def __init__(self, tmp_path: Path, *, instances: bool = False, alternate: bool = False) -> None:
         self._settings = ServerSettings(
@@ -184,6 +202,19 @@ def test_dev_frame_persist_false_skips_writer(tmp_path: Path) -> None:
     assert runtime.pipeline is not None
     _frame, writer = runtime.pipeline.calls[0]
     assert writer is None
+
+
+def test_dev_frame_passes_simulated_keyboard_barcode_to_pipeline(tmp_path: Path) -> None:
+    runtime = StubRuntime(tmp_path)
+    pipeline = BarcodePipeline()
+    runtime.pipeline = pipeline
+
+    response = _app(runtime).post(
+        "/dev/inspect-frame", params={"barcode": "ABC-001"}, content=_jpeg_bytes()
+    )
+
+    assert response.status_code == 200
+    assert pipeline.simulated_input == "ABC-001"
 
 
 def test_dev_frame_uses_instance_id(tmp_path: Path) -> None:

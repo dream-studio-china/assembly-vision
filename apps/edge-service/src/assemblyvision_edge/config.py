@@ -67,6 +67,12 @@ def validate_rule_component_compatibility(
             f"component model version {model_version!r} is not in rule compatible "
             f"versions {sorted(rule.compatible_component_model_versions)}"
         )
+    if rule.barcode_required:
+        identity = config.barcode_identity
+        if identity is None or not identity.enabled or not identity.required:
+            raise ConfigError(
+                "a barcode-required rule needs enabled required identity.barcode configuration"
+            )
 
 
 @dataclass(frozen=True)
@@ -96,6 +102,18 @@ class PipelineConfig:
     component_detection: DetectionSettings
     components: dict[str, ComponentDetectionSettings]
     roi: ROIConfig
+    barcode_identity: BarcodeIdentityConfig | None = None
+
+
+@dataclass(frozen=True)
+class BarcodeIdentityConfig:
+    """Exact barcode-to-product identity configuration for a pipeline."""
+
+    enabled: bool
+    required: bool
+    allowed_symbologies: tuple[str, ...]
+    mapping_file: Path | None
+    mappings: dict[str, str]
 
 
 def _require_mapping(section: Any, name: str) -> dict[str, Any]:
@@ -158,7 +176,14 @@ def load_pipeline_config(path: Path) -> PipelineConfig:
     doc = _require_mapping(raw, "pipeline configuration")
     _reject_unknown(
         doc,
-        {"application_version", "models", "product_detection", "component_detection", "roi"},
+        {
+            "application_version",
+            "models",
+            "product_detection",
+            "component_detection",
+            "roi",
+            "identity",
+        },
         "pipeline configuration",
     )
     return _parse_pipeline_doc(doc, path.parent)
@@ -261,6 +286,7 @@ def _parse_pipeline_doc(doc: dict[str, Any], base: Path) -> PipelineConfig:
         raise ConfigError(f"roi configuration is invalid: {exc}") from exc
     except (TypeError, ValueError) as exc:
         raise ConfigError(f"roi configuration is invalid: {exc}") from exc
+    barcode_identity = _parse_barcode_identity(doc.get("identity"), base)
     return PipelineConfig(
         application_version=application_version,
         product_manifest=product_manifest,
@@ -269,7 +295,88 @@ def _parse_pipeline_doc(doc: dict[str, Any], base: Path) -> PipelineConfig:
         component_detection=component_detection,
         components=components,
         roi=roi,
+        barcode_identity=barcode_identity,
     )
+
+
+def _parse_barcode_identity(raw: Any, base: Path) -> BarcodeIdentityConfig | None:
+    if raw is None:
+        return None
+    identity = _require_mapping(raw, "identity")
+    _reject_unknown(identity, {"barcode"}, "identity")
+    barcode = _require_mapping(identity.get("barcode"), "identity.barcode")
+    _reject_unknown(
+        barcode,
+        {"enabled", "required", "allowed_symbologies", "mapping_file"},
+        "identity.barcode",
+    )
+    enabled = _as_bool(barcode.get("enabled"), "identity.barcode.enabled", False)
+    required = _as_bool(barcode.get("required"), "identity.barcode.required", False)
+    symbologies_raw = barcode.get("allowed_symbologies", [])
+    if not isinstance(symbologies_raw, list) or any(
+        not isinstance(value, str) or not value.strip() for value in symbologies_raw
+    ):
+        raise ConfigError(
+            "identity.barcode.allowed_symbologies must be a list of non-empty strings"
+        )
+    symbologies = tuple(symbologies_raw)
+    if len(set(symbologies)) != len(symbologies):
+        raise ConfigError("identity.barcode.allowed_symbologies must not contain duplicates")
+    mapping_raw = barcode.get("mapping_file")
+    if not enabled and mapping_raw is None:
+        return BarcodeIdentityConfig(False, required, symbologies, None, {})
+    if mapping_raw is None:
+        raise ConfigError(
+            "identity.barcode.mapping_file is required when barcode identity is enabled"
+        )
+    mapping_file = _resolve_path(base, mapping_raw, "identity.barcode.mapping_file")
+    return BarcodeIdentityConfig(
+        enabled=enabled,
+        required=required,
+        allowed_symbologies=symbologies,
+        mapping_file=mapping_file,
+        mappings=_load_barcode_mappings(mapping_file),
+    )
+
+
+class _UniqueKeyLoader(yaml.SafeLoader):
+    pass
+
+
+def _construct_unique_mapping(
+    loader: _UniqueKeyLoader, node: yaml.MappingNode, deep: bool = False
+) -> dict[object, object]:
+    mapping: dict[object, object] = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in mapping:
+            raise ConfigError(f"duplicate barcode mapping key {key!r}")
+        mapping[key] = loader.construct_object(value_node, deep=deep)
+    return mapping
+
+
+_UniqueKeyLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_unique_mapping
+)
+
+
+def _load_barcode_mappings(path: Path) -> dict[str, str]:
+    """Load a flat, exact barcode-to-product mapping without prefix matching."""
+    try:
+        raw = yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)  # noqa: S506
+    except (OSError, yaml.YAMLError, ConfigError) as exc:
+        raise ConfigError(f"cannot load barcode mapping file {path}: {exc}") from exc
+    mappings = _require_mapping(raw, "barcode mapping file")
+    parsed: dict[str, str] = {}
+    for barcode, product_code in mappings.items():
+        if not isinstance(barcode, str) or not barcode.strip():
+            raise ConfigError("barcode mapping keys must be non-empty strings")
+        if not isinstance(product_code, str) or not product_code.strip():
+            raise ConfigError("barcode mapping values must be non-empty product codes")
+        parsed[barcode] = product_code
+    if not parsed:
+        raise ConfigError("barcode mapping file must contain at least one mapping")
+    return parsed
 
 
 def _require_str(raw: Any, name: str) -> str:
@@ -460,6 +567,7 @@ def load_edge_config(path: Path) -> EdgeConfig:
                 "product_detection",
                 "component_detection",
                 "roi",
+                "identity",
                 "trigger",
             },
             name,
@@ -491,10 +599,16 @@ def load_edge_config(path: Path) -> EdgeConfig:
             "product_detection": instance.get("product_detection"),
             "component_detection": instance.get("component_detection"),
             "roi": instance.get("roi"),
+            "identity": instance.get("identity"),
         }
         pipeline_config = _parse_pipeline_doc(pipeline_doc, base)
         temporal = _parse_temporal(instance.get("temporal"), f"{name}.temporal")
         _validate_temporal_against_pipeline(temporal, pipeline_config, f"{name}.temporal")
+        if temporal is not None and pipeline_config.barcode_identity is not None:
+            raise ConfigError(
+                f"{name}.identity.barcode is not supported with temporal inspection; "
+                "configure per-frame inspection until windowed barcode correlation is implemented"
+            )
         _validate_temporal_inspection_strategy(inspection, temporal, name)
         trigger = _parse_trigger_source(instance.get("trigger"), f"{name}.trigger")
         instances.append(
