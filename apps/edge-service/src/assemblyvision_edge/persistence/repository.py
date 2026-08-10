@@ -64,6 +64,39 @@ class ReviewConflictError(RepositoryError):
 
 
 @dataclass(frozen=True)
+class ConfidencePeriodStats:
+    """Weighted confidence statistics for one time period (design 15.3.6).
+
+    ``weighted_mean`` weights each evidence row by its ``detection_count``;
+    this is equivalent to weighting whole inspections by their total
+    detection count. ``median`` is the evidence-level median as a robust
+    reference. Both are None when the period has no confidence evidence.
+    """
+
+    inspection_count: int
+    evidence_count: int
+    weighted_mean: float | None
+    median: float | None
+
+
+@dataclass(frozen=True)
+class ComponentConfidenceDelta:
+    """Per-component confidence change between today and a baseline period."""
+
+    component_code: str
+    today_weighted_mean: float | None
+    baseline_weighted_mean: float | None
+    today_evidence_count: int
+    baseline_evidence_count: int
+
+    @property
+    def delta(self) -> float | None:
+        if self.today_weighted_mean is None or self.baseline_weighted_mean is None:
+            return None
+        return self.today_weighted_mean - self.baseline_weighted_mean
+
+
+@dataclass(frozen=True)
 class InspectionSummary:
     """Dashboard summary derived from a stored inspection record."""
 
@@ -2169,6 +2202,190 @@ class EdgeRepository:
                 params,
             ).scalar_one()
         return {"total": int(total), "ng": int(ng)}
+
+    def confidence_period_stats(
+        self,
+        *,
+        from_iso: str,
+        to_iso: str,
+        product_code: str | None = None,
+        rule_version_id: str | None = None,
+        component_code: str | None = None,
+    ) -> ConfidencePeriodStats:
+        """Weighted confidence statistics over evidence rows in ``[from, to)``.
+
+        Only evidence rows with a recorded ``best_confidence`` contribute.
+        The period is half-open so adjacent day buckets never double-count a
+        record at the boundary.
+        """
+        clauses = [
+            "ce.best_confidence IS NOT NULL",
+            "i.completed_at >= :from_iso",
+            "i.completed_at < :to_iso",
+        ]
+        params: dict[str, Any] = {"from_iso": from_iso, "to_iso": to_iso}
+        if product_code is not None:
+            clauses.append("i.product_code = :product_code")
+            params["product_code"] = product_code
+        if rule_version_id is not None:
+            clauses.append("i.rule_version_id = :rule_version_id")
+            params["rule_version_id"] = rule_version_id
+        if component_code is not None:
+            clauses.append("ce.component_code = :component_code")
+            params["component_code"] = component_code
+        query = text(
+            f"""
+            SELECT i.inspection_id, ce.best_confidence, ce.detection_count
+            FROM {component_evidence.name} AS ce
+            JOIN {inspections.name} AS i ON i.inspection_id = ce.inspection_id
+            WHERE {" AND ".join(clauses)}
+            """
+        )
+        with self._engine.connect() as conn:
+            rows = conn.execute(query, params).mappings().all()
+        if not rows:
+            return ConfidencePeriodStats(
+                inspection_count=0, evidence_count=0, weighted_mean=None, median=None
+            )
+        weighted_sum = 0.0
+        total_weight = 0.0
+        confidences: list[float] = []
+        inspection_ids: set[str] = set()
+        for row in rows:
+            # A PRESENT evidence row carries detection_count >= 1; guard
+            # against a zero weight so a single frame still contributes.
+            weight = float(max(int(row["detection_count"]), 1))
+            confidence = float(row["best_confidence"])
+            weighted_sum += confidence * weight
+            total_weight += weight
+            confidences.append(confidence)
+            inspection_ids.add(str(row["inspection_id"]))
+        confidences.sort()
+        midpoint = len(confidences) // 2
+        if len(confidences) % 2 == 1:
+            median = confidences[midpoint]
+        else:
+            median = (confidences[midpoint - 1] + confidences[midpoint]) / 2.0
+        return ConfidencePeriodStats(
+            inspection_count=len(inspection_ids),
+            evidence_count=len(rows),
+            weighted_mean=weighted_sum / total_weight,
+            median=median,
+        )
+
+    def component_confidence_deltas(
+        self,
+        *,
+        today_from_iso: str,
+        today_to_iso: str,
+        baseline_from_iso: str,
+        baseline_to_iso: str,
+        product_code: str | None = None,
+        rule_version_id: str | None = None,
+        component_code: str | None = None,
+    ) -> list[ComponentConfidenceDelta]:
+        """Per-component weighted-mean confidence today versus a baseline.
+
+        Only components observed today are reported, sorted by ``delta``
+        ascending so the largest drop is first. A component missing from the
+        baseline carries ``baseline_weighted_mean=None`` (insufficient
+        baseline evidence rather than a fabricated zero).
+        """
+        clauses = [
+            "ce.best_confidence IS NOT NULL",
+            "i.completed_at >= :today_from AND i.completed_at < :today_to",
+        ]
+        params: dict[str, Any] = {
+            "today_from": today_from_iso,
+            "today_to": today_to_iso,
+        }
+        if product_code is not None:
+            clauses.append("i.product_code = :product_code")
+            params["product_code"] = product_code
+        if rule_version_id is not None:
+            clauses.append("i.rule_version_id = :rule_version_id")
+            params["rule_version_id"] = rule_version_id
+        if component_code is not None:
+            clauses.append("ce.component_code = :component_code")
+            params["component_code"] = component_code
+        query = text(
+            f"""
+            SELECT ce.component_code, ce.best_confidence, ce.detection_count
+            FROM {component_evidence.name} AS ce
+            JOIN {inspections.name} AS i ON i.inspection_id = ce.inspection_id
+            WHERE {" AND ".join(clauses)}
+            """
+        )
+        baseline = text(
+            f"""
+            SELECT ce.component_code, ce.best_confidence, ce.detection_count
+            FROM {component_evidence.name} AS ce
+            JOIN {inspections.name} AS i ON i.inspection_id = ce.inspection_id
+            WHERE ce.best_confidence IS NOT NULL
+              AND i.completed_at >= :baseline_from AND i.completed_at < :baseline_to
+              {"AND i.product_code = :product_code" if product_code is not None else ""}
+              {"AND i.rule_version_id = :rule_version_id" if rule_version_id is not None else ""}
+              {"AND ce.component_code = :component_code" if component_code is not None else ""}
+            """
+        )
+        baseline_params: dict[str, Any] = {
+            "baseline_from": baseline_from_iso,
+            "baseline_to": baseline_to_iso,
+        }
+        if product_code is not None:
+            baseline_params["product_code"] = product_code
+        if rule_version_id is not None:
+            baseline_params["rule_version_id"] = rule_version_id
+        if component_code is not None:
+            baseline_params["component_code"] = component_code
+
+        def aggregate(rows: Any) -> dict[str, tuple[float, float, int]]:
+            """Return component_code -> (weighted_sum, total_weight, count)."""
+            out: dict[str, tuple[float, float, int]] = {}
+            for row in rows:
+                weight = float(max(int(row["detection_count"]), 1))
+                confidence = float(row["best_confidence"])
+                weighted_sum, total_weight, count = out.get(
+                    str(row["component_code"]), (0.0, 0.0, 0)
+                )
+                out[str(row["component_code"])] = (
+                    weighted_sum + confidence * weight,
+                    total_weight + weight,
+                    count + 1,
+                )
+            return out
+
+        with self._engine.connect() as conn:
+            today_rows = conn.execute(query, params).mappings().all()
+            baseline_rows = conn.execute(baseline, baseline_params).mappings().all()
+        today_agg = aggregate(today_rows)
+        baseline_agg = aggregate(baseline_rows)
+        result: list[ComponentConfidenceDelta] = []
+        for component_code, (weighted_sum, total_weight, today_count) in today_agg.items():
+            baseline_entry = baseline_agg.get(component_code)
+            if baseline_entry is None:
+                result.append(
+                    ComponentConfidenceDelta(
+                        component_code=component_code,
+                        today_weighted_mean=weighted_sum / total_weight,
+                        baseline_weighted_mean=None,
+                        today_evidence_count=today_count,
+                        baseline_evidence_count=0,
+                    )
+                )
+                continue
+            base_sum, base_weight, base_count = baseline_entry
+            result.append(
+                ComponentConfidenceDelta(
+                    component_code=component_code,
+                    today_weighted_mean=weighted_sum / total_weight,
+                    baseline_weighted_mean=base_sum / base_weight,
+                    today_evidence_count=today_count,
+                    baseline_evidence_count=base_count,
+                )
+            )
+        result.sort(key=lambda item: item.delta if item.delta is not None else 1.0)
+        return result
 
     def list_by_barcode(self, barcode: str) -> list[InspectionRecord]:
         with self._engine.connect() as conn:

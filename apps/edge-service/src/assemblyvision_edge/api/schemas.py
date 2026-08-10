@@ -352,6 +352,82 @@ class StatisticsSummary(BaseModel):
     pass_rate: float
 
 
+class ConfidencePeriod(BaseModel):
+    """Confidence statistics for one time bucket (design 15.3.6)."""
+
+    from_iso: str
+    to_iso: str
+    inspection_count: int
+    evidence_count: int
+    weighted_mean: float | None
+    median: float | None
+
+
+class ConfidenceComparison(BaseModel):
+    """Today versus one baseline period on the weighted-mean confidence."""
+
+    weighted_mean_delta: float | None
+    weighted_mean_relative_percent: float | None
+    today_evidence_count: int
+    baseline_evidence_count: int
+
+
+class ComponentConfidenceDrift(BaseModel):
+    """Per-component weighted-mean change between today and a baseline."""
+
+    component_code: str
+    today_weighted_mean: float | None
+    baseline_weighted_mean: float | None
+    delta: float | None
+    today_evidence_count: int
+    baseline_evidence_count: int
+
+
+class ConfidenceDriftScope(BaseModel):
+    """The device/product/rule scope a drift report was computed for."""
+
+    device_id: str
+    product_code: str | None = None
+    rule_version_id: str | None = None
+    tz_offset_minutes: int = 0
+    as_of_iso: str
+
+
+class DriftAssessment(BaseModel):
+    """Heuristic label for a confidence drift report (design 15.3.6).
+
+    The label is a decision-support hint derived from the relative change in
+    the weighted-mean confidence; it never claims a root cause or an accuracy
+    value. A persistent drop suggests a possible acquisition-environment
+    change (conveyor, camera focus/angle, lighting) that operators verify
+    against frame quality and media.
+    """
+
+    level: Literal[
+        "stable",
+        "minor_drop",
+        "noticeable_drop",
+        "minor_rise",
+        "noticeable_rise",
+        "insufficient_data",
+    ]
+    detail: str
+
+
+class ConfidenceDriftReport(BaseModel):
+    """Confidence drift analysis for the current device (design 15.3.6).
+
+    Computed under the premise of one product and one rule version so a
+    confidence change is not conflated with a product-rule change.
+    """
+
+    scope: ConfidenceDriftScope
+    periods: dict[str, ConfidencePeriod]
+    comparison: dict[str, ConfidenceComparison]
+    components: list[ComponentConfidenceDrift]
+    assessment: DriftAssessment
+
+
 class InspectionImages(BaseModel):
     """Image slot URLs plus per-slot lifecycle state (F14).
 

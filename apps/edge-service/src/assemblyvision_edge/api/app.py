@@ -220,6 +220,9 @@ def create_app(settings: ServerSettings, *, reconcile: bool = True) -> FastAPI:
     app.state.settings = settings
     app.state.viewer_sessions = {}
     app.state.auth_failures = {}
+    # Injected UTC clock so the confidence-drift endpoint (design 15.3.6) can
+    # compute deterministic local-day buckets in tests.
+    app.state.clock = lambda: datetime.now(UTC)
     # E4a/PR-023 F01: short-lived, single-use WebSocket runtime tickets issued
     # over authenticated REST for cross-origin browser sockets.
     app.state.ws_tickets = {}

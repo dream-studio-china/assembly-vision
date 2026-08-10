@@ -96,6 +96,22 @@ real-time inspection uses the native app / RTSP / camera sources.
 | `POST /api/v1/dev/inspect-frame` | Analyze one uploaded image through an instance pipeline; writes an evidence bundle unless `persist=false`. | Query: optional `barcode` simulated keyboard input; raw image bytes / `InspectionRecord` | `400 INVALID_IMAGE`, `404 INSTANCE_NOT_FOUND`, `413 PAYLOAD_TOO_LARGE`, `503 PIPELINE_UNAVAILABLE` | Deterministic | - | R + dev flag |
 | `POST /api/v1/dev/inspect-video` | Analyze an uploaded video frame by frame (≤30 sampled frames) and return a summary; nothing is persisted. | Raw video bytes / `VideoInspectResult` | `400 INVALID_VIDEO`, `404 INSTANCE_NOT_FOUND`, `413 PAYLOAD_TOO_LARGE`, `503 PIPELINE_UNAVAILABLE` | Deterministic | - | R + dev flag |
 
+### 15.3.6 Confidence Drift (Environment-Change Diagnostics)
+
+`GET /api/v1/statistics/confidence-drift` analyzes detection confidence over
+time under the premise of **the same product and the same rule version on this
+device**, so a change reflects the acquisition environment (conveyor, camera
+focus/angle, lighting) rather than a product-rule switch.
+
+| Aspect | Behavior |
+|---|---|
+| Confidence metric | Per-component `best_confidence` weighted by `detection_count` (equivalent to weighting whole inspections by their total detection count); the evidence-level `median` is reported as a robust reference. Only evidence rows with a recorded confidence contribute. |
+| Periods | `today` = `[local-today 00:00, now)`, `yesterday` = `[local-yesterday 00:00, local-today 00:00)`, `previous_7d` = `[local-today 00:00 - 7 days, local-today 00:00)` (includes yesterday). Day boundaries follow the operator-local timezone given by `tz_offset_minutes` (default UTC). Buckets are half-open `[from, to)`. |
+| Comparison | `today_vs_yesterday` and `today_vs_previous_7d` report the weighted-mean delta, the relative percent change, and both evidence counts. |
+| Components | Per-component weighted means for today versus the previous-7-day baseline, sorted with the largest drop first; a component absent from the baseline carries `baseline_weighted_mean = null` (insufficient baseline evidence, never a fabricated zero). |
+| Assessment | Heuristic label from the relative change versus the previous-7-day mean: `< 2 %` stable, `2–5 %` minor, `> 5 %` noticeable, with drop/rise direction, or `insufficient_data` when either window has no confidence evidence. The label is decision-support only and never claims a root cause or an accuracy value; a persistent drop prompts operators to verify frame quality and media. |
+| Filters | Optional `product_code`, `rule_version_id`, and `component_code`; `tz_offset_minutes` is bounded to `[-840, 840]` (`422` outside). |
+
 ## 15.4 Central API Groups
 
 Roles are abbreviated `V` viewer, `R` reviewer, `C` configuration manager, `F` fleet administrator, `O` organization administrator, and `D` enrolled device.
