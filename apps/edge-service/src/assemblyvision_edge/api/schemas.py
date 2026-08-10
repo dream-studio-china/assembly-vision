@@ -64,6 +64,14 @@ class ComponentCorrectionRequest(BaseModel):
     corrected_state: ComponentCorrectionState
     note: str | None = Field(default=None, max_length=500)
 
+    @field_validator("component_code")
+    @classmethod
+    def _normalize_component_code(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("component_code must be a non-empty component identifier")
+        return value
+
 
 class SubmitReviewRequest(BaseModel):
     """Human disposition for one inspection (design 24.3/24.6).
@@ -104,6 +112,13 @@ class SubmitReviewRequest(BaseModel):
     def _require_reason_when_inconclusive(self) -> SubmitReviewRequest:
         if self.disposition is ReviewDisposition.INCONCLUSIVE and not self.reason:
             raise ValueError("an inconclusive review requires a reason")
+        return self
+
+    @model_validator(mode="after")
+    def _reject_duplicate_component_corrections(self) -> SubmitReviewRequest:
+        codes = [correction.component_code for correction in self.component_corrections]
+        if len(codes) != len(set(codes)):
+            raise ValueError("each component may be corrected at most once")
         return self
 
 

@@ -618,6 +618,37 @@ def test_dev_operations_declare_binary_request_body_and_problem_responses() -> N
             )
 
 
+def test_review_operations_declare_problem_responses() -> None:
+    """Design 15.3.3: the documented review errors are discoverable from OpenAPI.
+
+    The runtime returns these statuses as RFC 7807 problems, so generated
+    clients must be able to type and handle them (PR-031 review finding).
+    """
+    spec = _load_committed_openapi()
+    expectations: dict[str, dict[str, tuple[str, ...]]] = {
+        "/api/v1/reviews": {"get": ("400",)},
+        "/api/v1/inspections/{inspection_id}/reviews": {
+            "get": ("404",),
+            "post": ("404", "409", "422"),
+        },
+    }
+    for path, methods in expectations.items():
+        for method, codes in methods.items():
+            operation = spec["paths"][path][method]
+            for code in codes:
+                response = operation["responses"].get(code)
+                assert response is not None, (
+                    f"{path} {method} must declare the {code} problem response"
+                )
+                media = response["content"].get("application/problem+json") or response[
+                    "content"
+                ].get("application/json")
+                assert media is not None, f"{path} {method} {code} must declare problem content"
+                assert media["schema"]["$ref"] == "#/components/schemas/Problem", (
+                    f"{path} {method} {code} must use the Problem schema"
+                )
+
+
 def test_video_frame_result_schema_exposes_decision_enums() -> None:
     """F12: video decisions must use the canonical OK/NG business result set."""
     spec = _load_committed_openapi()

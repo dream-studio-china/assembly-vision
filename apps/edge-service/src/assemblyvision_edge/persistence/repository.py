@@ -2198,89 +2198,98 @@ class EdgeRepository:
         referenced, so corrections chain without overwriting. The submission
         and the supersede resolution share one transaction.
         """
-        with self._engine.begin() as conn:
-            inspection = (
-                conn.execute(
-                    text(f"SELECT * FROM {inspections.name} WHERE inspection_id = :id"),
-                    {"id": str(record.inspection_id)},
-                )
-                .mappings()
-                .first()
-            )
-            if inspection is None:
-                raise RepositoryError(f"no inspection {record.inspection_id} to review")
-            allowed = allowed_review_dispositions(
-                BusinessResult(inspection["business_result"]),
-                InternalDecision(inspection["internal_decision"]),
-            )
-            if record.disposition not in allowed:
-                raise ReviewDispositionError(
-                    f"disposition {record.disposition.value} is not permitted for machine "
-                    f"outcome {inspection['business_result']}/{inspection['internal_decision']}"
-                )
-            supersedes: UUID | None = record.supersedes_review_id
-            if supersedes is None:
-                previous = (
+        # Supersede resolution is read-then-insert, so the write lock must be
+        # acquired before any read: BEGIN IMMEDIATE serializes concurrent
+        # submissions of one inspection so the reference chain stays linear
+        # instead of forking (PR-031 review finding).
+        with self._engine.connect() as conn:
+            conn.execute(text("BEGIN IMMEDIATE"))
+            try:
+                inspection = (
                     conn.execute(
-                        text(
-                            f"SELECT review_id FROM {review_records.name} "
-                            "WHERE inspection_id = :id "
-                            "ORDER BY created_at DESC, review_id DESC LIMIT 1"
-                        ),
+                        text(f"SELECT * FROM {inspections.name} WHERE inspection_id = :id"),
                         {"id": str(record.inspection_id)},
                     )
                     .mappings()
                     .first()
                 )
-                if previous is not None:
-                    supersedes = UUID(previous["review_id"])
-            if supersedes is not None:
-                owned = conn.execute(
+                if inspection is None:
+                    raise RepositoryError(f"no inspection {record.inspection_id} to review")
+                allowed = allowed_review_dispositions(
+                    BusinessResult(inspection["business_result"]),
+                    InternalDecision(inspection["internal_decision"]),
+                )
+                if record.disposition not in allowed:
+                    raise ReviewDispositionError(
+                        f"disposition {record.disposition.value} is not permitted for machine "
+                        f"outcome {inspection['business_result']}/{inspection['internal_decision']}"
+                    )
+                supersedes: UUID | None = record.supersedes_review_id
+                if supersedes is None:
+                    previous = (
+                        conn.execute(
+                            text(
+                                f"SELECT review_id FROM {review_records.name} "
+                                "WHERE inspection_id = :id "
+                                "ORDER BY created_at DESC, review_id DESC LIMIT 1"
+                            ),
+                            {"id": str(record.inspection_id)},
+                        )
+                        .mappings()
+                        .first()
+                    )
+                    if previous is not None:
+                        supersedes = UUID(previous["review_id"])
+                if supersedes is not None:
+                    owned = conn.execute(
+                        text(
+                            f"SELECT 1 FROM {review_records.name} "
+                            "WHERE review_id = :rid AND inspection_id = :iid"
+                        ),
+                        {"rid": str(supersedes), "iid": str(record.inspection_id)},
+                    ).scalar()
+                    if not owned:
+                        raise ReviewConflictError(
+                            f"review {supersedes} does not belong to inspection {record.inspection_id}"
+                        )
+                conn.execute(
                     text(
-                        f"SELECT 1 FROM {review_records.name} "
-                        "WHERE review_id = :rid AND inspection_id = :iid"
+                        f"""
+                        INSERT INTO {review_records.name} (
+                            review_id, inspection_id, disposition, reason, note,
+                            reviewer, created_at, original_business_result,
+                            original_internal_decision, original_reason_codes,
+                            component_corrections, supersedes_review_id
+                        ) VALUES (
+                            :review_id, :inspection_id, :disposition, :reason, :note,
+                            :reviewer, :created_at, :original_business_result,
+                            :original_internal_decision, :original_reason_codes,
+                            :component_corrections, :supersedes_review_id
+                        )
+                        """
                     ),
-                    {"rid": str(supersedes), "iid": str(record.inspection_id)},
-                ).scalar()
-                if not owned:
-                    raise ReviewConflictError(
-                        f"review {supersedes} does not belong to inspection {record.inspection_id}"
-                    )
-            conn.execute(
-                text(
-                    f"""
-                    INSERT INTO {review_records.name} (
-                        review_id, inspection_id, disposition, reason, note,
-                        reviewer, created_at, original_business_result,
-                        original_internal_decision, original_reason_codes,
-                        component_corrections, supersedes_review_id
-                    ) VALUES (
-                        :review_id, :inspection_id, :disposition, :reason, :note,
-                        :reviewer, :created_at, :original_business_result,
-                        :original_internal_decision, :original_reason_codes,
-                        :component_corrections, :supersedes_review_id
-                    )
-                    """
-                ),
-                {
-                    "review_id": str(record.review_id),
-                    "inspection_id": str(record.inspection_id),
-                    "disposition": record.disposition.value,
-                    "reason": record.reason,
-                    "note": record.note,
-                    "reviewer": record.reviewer,
-                    "created_at": record.created_at.isoformat(),
-                    "original_business_result": record.original_business_result.value,
-                    "original_internal_decision": record.original_internal_decision.value,
-                    "original_reason_codes": json.dumps(record.original_reason_codes),
-                    "component_corrections": json.dumps(
-                        [correction.model_dump() for correction in record.component_corrections]
-                    )
-                    if record.component_corrections
-                    else None,
-                    "supersedes_review_id": str(supersedes) if supersedes is not None else None,
-                },
-            )
+                    {
+                        "review_id": str(record.review_id),
+                        "inspection_id": str(record.inspection_id),
+                        "disposition": record.disposition.value,
+                        "reason": record.reason,
+                        "note": record.note,
+                        "reviewer": record.reviewer,
+                        "created_at": record.created_at.isoformat(),
+                        "original_business_result": record.original_business_result.value,
+                        "original_internal_decision": record.original_internal_decision.value,
+                        "original_reason_codes": json.dumps(record.original_reason_codes),
+                        "component_corrections": json.dumps(
+                            [correction.model_dump() for correction in record.component_corrections]
+                        )
+                        if record.component_corrections
+                        else None,
+                        "supersedes_review_id": str(supersedes) if supersedes is not None else None,
+                    },
+                )
+                conn.commit()
+            finally:
+                conn.rollback()
         log.info(
             # The reviewer name is caller-supplied free text; log it repr-escaped
             # so control characters cannot forge log lines (CWE-117).

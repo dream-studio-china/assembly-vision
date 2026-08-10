@@ -27,6 +27,7 @@ from assemblyvision_edge.api.deps import get_repository
 from assemblyvision_edge.api.problems import ApiProblem
 from assemblyvision_edge.api.schemas import (
     Page,
+    Problem,
     ReviewQueueItem,
     SubmitReviewRequest,
 )
@@ -41,7 +42,11 @@ from assemblyvision_edge.persistence.repository import (
 router = APIRouter(tags=["reviews"])
 
 
-@router.get("/reviews", response_model=Page[ReviewQueueItem])
+@router.get(
+    "/reviews",
+    response_model=Page[ReviewQueueItem],
+    responses={400: {"model": Problem, "description": "Malformed or filter-mismatched cursor"}},
+)
 def list_review_queue(
     business_result: str | None = None,
     internal_decision: str | None = None,
@@ -87,7 +92,11 @@ def list_review_queue(
     )
 
 
-@router.get("/inspections/{inspection_id}/reviews", response_model=list[ReviewRecord])
+@router.get(
+    "/inspections/{inspection_id}/reviews",
+    response_model=list[ReviewRecord],
+    responses={404: {"model": Problem, "description": "Inspection not found"}},
+)
 def list_inspection_reviews(
     inspection_id: str,
     repository: EdgeRepository = Depends(get_repository),
@@ -100,7 +109,18 @@ def list_inspection_reviews(
     return repository.list_reviews(inspection_id)
 
 
-@router.post("/inspections/{inspection_id}/reviews", response_model=ReviewRecord)
+@router.post(
+    "/inspections/{inspection_id}/reviews",
+    response_model=ReviewRecord,
+    responses={
+        404: {"model": Problem, "description": "Inspection not found"},
+        409: {
+            "model": Problem,
+            "description": "Review conflict (supersede targets another inspection)",
+        },
+        422: {"model": Problem, "description": "Invalid disposition or review"},
+    },
+)
 def submit_review(
     inspection_id: str,
     request: SubmitReviewRequest,

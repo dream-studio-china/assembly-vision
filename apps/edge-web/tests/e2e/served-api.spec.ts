@@ -27,7 +27,16 @@ function uuid(): string {
   return randomUUID();
 }
 
-function makeRecord(inspectionId: string): Record<string, unknown> {
+function makeRecord(
+  inspectionId: string,
+  decision: Record<string, unknown> = {
+    internal_decision: "OK",
+    business_result: "OK",
+    missing_components: [],
+    low_confidence_components: [],
+    reason_codes: [],
+  },
+): Record<string, unknown> {
   const now = new Date().toISOString();
   return {
     inspection_id: inspectionId,
@@ -57,14 +66,7 @@ function makeRecord(inspectionId: string): Record<string, unknown> {
     rule_version_id: uuid(),
     aggregation_policy_version: "single-frame-mvp-1",
     evidence: [],
-    decision: {
-      internal_decision: "OK",
-      business_result: "OK",
-      missing_components: [],
-      low_confidence_components: [],
-      reason_codes: [],
-      decided_at: now,
-    },
+    decision: { ...decision, decided_at: now },
     synchronization_status: "LOCAL_ONLY",
     processing_ms: 10,
     media: [
@@ -116,6 +118,21 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
   const directory = join(output, inspectionId);
   mkdirSync(directory);
   writeFileSync(join(directory, "inspection.json"), JSON.stringify(makeRecord(inspectionId)));
+
+  // A second, NG inspection feeds the default review queue (NG/open) so the
+  // queue page can be asserted without changing its filters.
+  const ngInspectionId = uuid();
+  const ngDirectory = join(output, ngInspectionId);
+  mkdirSync(ngDirectory);
+  const ngRecord = makeRecord(ngInspectionId, {
+    internal_decision: "NG",
+    business_result: "NG",
+    missing_components: ["component_a"],
+    low_confidence_components: [],
+    reason_codes: ["COMPONENT_MISSING:component_a"],
+  });
+  ngRecord.barcode_result = { status: "READ", value: "SN-E2E-NG", symbology: null };
+  writeFileSync(join(ngDirectory, "inspection.json"), JSON.stringify(ngRecord));
 
   const port = await freePort();
   const dist = join(repoRoot, "apps", "edge-web", "dist");
@@ -189,6 +206,9 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
     );
     expect(review.status()).toBe(200);
     await page.goto(`http://127.0.0.1:${port}/review`);
+    // The queue loads its default NG/open view on entry (regression: the
+    // initial load was missing and left the queue empty until a filter changed).
+    await expect(page.getByText("SN-E2E-NG")).toBeVisible();
     await page.locator("label.el-radio-button", { hasText: "OK" }).click();
     await page.locator("label.el-radio-button", { hasText: "All states" }).click();
     await expect(page.getByText("SN-E2E-REAL")).toBeVisible();

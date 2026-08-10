@@ -13,7 +13,7 @@ from enum import StrEnum
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 Confidence = Annotated[float, Field(ge=0.0, le=1.0)]
 NonNegativeInt = Annotated[int, Field(ge=0)]
@@ -369,6 +369,14 @@ class ComponentCorrection(APIModel):
     corrected_state: ComponentCorrectionState
     note: str | None = Field(default=None, max_length=500)
 
+    @field_validator("component_code")
+    @classmethod
+    def _normalize_component_code(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("component_code must be a non-empty component identifier")
+        return value
+
 
 class ReviewRecord(APIModel):
     """Append-only human review of one inspection (design 24.7).
@@ -396,6 +404,13 @@ class ReviewRecord(APIModel):
     def _require_reason_when_inconclusive(self) -> ReviewRecord:
         if self.disposition is ReviewDisposition.INCONCLUSIVE and not self.reason:
             raise ValueError("an inconclusive review requires a reason")
+        return self
+
+    @model_validator(mode="after")
+    def _reject_duplicate_component_corrections(self) -> ReviewRecord:
+        codes = [correction.component_code for correction in self.component_corrections]
+        if len(codes) != len(set(codes)):
+            raise ValueError("each component may be corrected at most once")
         return self
 
 

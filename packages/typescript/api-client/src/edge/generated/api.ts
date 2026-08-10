@@ -2112,6 +2112,15 @@ export interface operations {
                     "application/json": components["schemas"]["ReviewRecord"][];
                 };
             };
+            /** @description Inspection not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -2147,13 +2156,31 @@ export interface operations {
                     "application/json": components["schemas"]["ReviewRecord"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Inspection not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Review conflict (supersede targets another inspection) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Invalid disposition or review */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -2242,6 +2269,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_ReviewQueueItem_"];
+                };
+            };
+            /** @description Malformed or filter-mismatched cursor */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
             /** @description Validation Error */

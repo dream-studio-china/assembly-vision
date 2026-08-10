@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import type {
-  BusinessResult,
-  InternalDecision,
-  ReviewDisposition,
-  ReviewRecord,
-} from "@assemblyvision/api-client";
-import { computed, onMounted, ref } from "vue";
-import { getApiClient } from "../services/client";
+import { onMounted } from "vue";
+import type { BusinessResult, InternalDecision, ReviewDisposition } from "@assemblyvision/api-client";
+import { useReviewPanel } from "../composables/useReviewPanel";
 
 // Optional human-in-the-loop review panel (docs/design/24-human-in-the-loop.md).
 // Reviews are append-only dispositions over immutable evidence; they never
@@ -19,16 +14,23 @@ const props = defineProps<{
   internalDecision: InternalDecision;
 }>();
 
-const reviews = ref<ReviewRecord[]>([]);
-const loading = ref(false);
-const submitting = ref(false);
-const submitError = ref<string | null>(null);
-const submitOk = ref(false);
-
-const disposition = ref<ReviewDisposition | null>(null);
-const reviewer = ref("");
-const reason = ref("");
-const note = ref("");
+const {
+  reviews,
+  loading,
+  historyError,
+  submitting,
+  submitError,
+  submitOk,
+  disposition,
+  reviewer,
+  reason,
+  note,
+  allowed,
+  needsReason,
+  canSubmit,
+  load,
+  submit,
+} = useReviewPanel(props.inspectionId, props.businessResult, props.internalDecision);
 
 const DISPOSITION_LABELS: Record<ReviewDisposition, string> = {
   CONFIRMED_NG: "Confirmed NG (defect confirmed)",
@@ -38,66 +40,9 @@ const DISPOSITION_LABELS: Record<ReviewDisposition, string> = {
   REINSPECT: "Reinspect",
 };
 
-const ALLOWED: Record<string, ReviewDisposition[]> = {
-  UNCERTAIN: ["CONFIRMED_NG", "CONFIRMED_OK", "REINSPECT", "INCONCLUSIVE"],
-  NG: ["CONFIRMED_NG", "CONFIRMED_OK", "INCONCLUSIVE"],
-  OK: ["CONFIRMED_OK", "CORRECTED_NG", "INCONCLUSIVE"],
-};
-
-const allowed = computed<ReviewDisposition[]>(() =>
-  props.internalDecision === "UNCERTAIN"
-    ? ALLOWED.UNCERTAIN
-    : props.businessResult === "NG"
-      ? ALLOWED.NG
-      : ALLOWED.OK,
-);
-
-const needsReason = computed(() => disposition.value === "INCONCLUSIVE");
-const canSubmit = computed(
-  () =>
-    disposition.value !== null &&
-    reviewer.value.trim().length > 0 &&
-    (!needsReason.value || reason.value.trim().length > 0),
-);
-
-async function load(): Promise<void> {
-  loading.value = true;
-  try {
-    reviews.value = await getApiClient().listInspectionReviews(props.inspectionId);
-  } catch {
-    // Review is optional; keep the panel usable with an empty history.
-    reviews.value = [];
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function submit(): Promise<void> {
-  if (!canSubmit.value || disposition.value === null) return;
-  submitting.value = true;
-  submitError.value = null;
-  submitOk.value = false;
-  try {
-    await getApiClient().submitReview(props.inspectionId, {
-      disposition: disposition.value,
-      reviewer: reviewer.value.trim(),
-      reason: reason.value.trim() || null,
-      note: note.value.trim() || null,
-    });
-    submitOk.value = true;
-    reviewer.value = "";
-    reason.value = "";
-    note.value = "";
-    disposition.value = null;
-    await load();
-  } catch (err) {
-    submitError.value = err instanceof Error ? err.message : String(err);
-  } finally {
-    submitting.value = false;
-  }
-}
-
-onMounted(load);
+onMounted(() => {
+  void load();
+});
 </script>
 
 <template>
@@ -119,6 +64,22 @@ onMounted(load);
       show-icon
       :closable="false"
     />
+
+    <el-alert
+      v-if="historyError"
+      :title="`Review history could not be loaded: ${historyError}`"
+      type="error"
+      show-icon
+      :closable="false"
+    >
+      <template #default>
+        <p class="review-panel__history-error">
+          The existing dispositions are unknown, so a new review would silently supersede them.
+          Reload the history before submitting.
+        </p>
+        <el-button size="small" :loading="loading" @click="load">Reload review history</el-button>
+      </template>
+    </el-alert>
 
     <div class="review-panel__form">
       <el-select
@@ -184,7 +145,7 @@ onMounted(load);
         <p v-if="review.note" class="review-panel__note">{{ review.note }}</p>
       </li>
     </ul>
-    <p v-else-if="!loading" class="review-panel__empty">No reviews recorded.</p>
+    <p v-else-if="!loading && !historyError" class="review-panel__empty">No reviews recorded.</p>
   </section>
 </template>
 
@@ -232,6 +193,10 @@ onMounted(load);
 .review-panel__reason,
 .review-panel__note {
   margin: 2px 0 0;
+  font-size: 13px;
+}
+.review-panel__history-error {
+  margin: 0 0 8px;
   font-size: 13px;
 }
 .review-panel__empty {

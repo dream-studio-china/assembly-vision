@@ -16,6 +16,8 @@ from uuid import uuid4
 import pytest
 from assemblyvision_domain.models import (
     BusinessResult,
+    ComponentCorrection,
+    ComponentCorrectionState,
     InternalDecision,
     ReviewDisposition,
     ReviewRecord,
@@ -26,8 +28,10 @@ from assemblyvision_edge.persistence.repository import (
     EdgeRepository,
     ReviewConflictError,
     ReviewDispositionError,
+    ReviewSubmissionResult,
 )
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from tests.test_api import _record
 
@@ -198,6 +202,122 @@ class TestReviewRepository:
         with pytest.raises(Exception, match="no inspection"):
             repo.submit_review(review)
 
+    def test_concurrent_review_submissions_chain_linearly(self, tmp_path: Path) -> None:
+        """Two simultaneous submissions of one inspection form one linear chain.
+
+        Supersede resolution is read-then-insert, so it must hold the SQLite
+        write lock before reading; without it both submissions could reference
+        the same (or no) previous review and fork the chain (PR-031 finding).
+        """
+        import threading
+
+        db = tmp_path / "edge.sqlite3"
+        seed = EdgeRepository.open(db)
+        try:
+            record = _record(datetime.now(UTC), business=BusinessResult.NG, barcode="SN-RACE")
+            seed.persist_inspection_and_enqueue_uploads(record)
+        finally:
+            seed.close()
+
+        repo_a = EdgeRepository.open(db)
+        repo_b = EdgeRepository.open(db)
+        barrier = threading.Barrier(2)
+        results: list[ReviewSubmissionResult] = []
+        errors: list[Exception] = []
+        lock = threading.Lock()
+
+        def worker(repo: EdgeRepository) -> None:
+            barrier.wait()
+            try:
+                review = ReviewRecord(
+                    review_id=uuid4(),
+                    inspection_id=record.inspection_id,
+                    disposition=ReviewDisposition.CONFIRMED_NG,
+                    reviewer="operator-race",
+                    created_at=datetime.now(UTC),
+                    original_business_result=record.decision.business_result,
+                    original_internal_decision=record.decision.internal_decision,
+                    original_reason_codes=record.decision.reason_codes,
+                )
+                result = repo.submit_review(review)
+                with lock:
+                    results.append(result)
+            except Exception as exc:  # noqa: BLE001
+                with lock:
+                    errors.append(exc)
+
+        threads = [
+            threading.Thread(target=worker, args=(repo_a,)),
+            threading.Thread(target=worker, args=(repo_b,)),
+        ]
+        try:
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+            assert errors == []
+            assert len(results) == 2
+            history = repo_a.list_reviews(str(record.inspection_id))
+            assert len(history) == 2
+            assert {review.review_id for review in history} == {
+                result.review.review_id for result in results
+            }
+            roots = [review for review in history if review.supersedes_review_id is None]
+            links = [review for review in history if review.supersedes_review_id is not None]
+            assert len(roots) == 1
+            assert len(links) == 1
+            assert links[0].supersedes_review_id == roots[0].review_id
+        finally:
+            repo_a.close()
+            repo_b.close()
+
+    def test_duplicate_component_corrections_are_rejected(self, repo: EdgeRepository) -> None:
+        record = _record(datetime.now(UTC), business=BusinessResult.NG, barcode="SN-DUP")
+        repo.persist_inspection_and_enqueue_uploads(record)
+        with pytest.raises(ValidationError, match="at most once"):
+            ReviewRecord(
+                review_id=uuid4(),
+                inspection_id=record.inspection_id,
+                disposition=ReviewDisposition.CONFIRMED_NG,
+                reviewer="operator-1",
+                created_at=datetime.now(UTC),
+                original_business_result=record.decision.business_result,
+                original_internal_decision=record.decision.internal_decision,
+                component_corrections=[
+                    ComponentCorrection(
+                        component_code="component_a",
+                        corrected_state=ComponentCorrectionState.PRESENT,
+                    ),
+                    ComponentCorrection(
+                        component_code="component_a",
+                        corrected_state=ComponentCorrectionState.MISSING,
+                    ),
+                ],
+            )
+
+    def test_component_corrections_are_normalized(self, repo: EdgeRepository) -> None:
+        record = _record(datetime.now(UTC), business=BusinessResult.NG, barcode="SN-NORM")
+        repo.persist_inspection_and_enqueue_uploads(record)
+        review = ReviewRecord(
+            review_id=uuid4(),
+            inspection_id=record.inspection_id,
+            disposition=ReviewDisposition.CONFIRMED_NG,
+            reviewer="operator-1",
+            created_at=datetime.now(UTC),
+            original_business_result=record.decision.business_result,
+            original_internal_decision=record.decision.internal_decision,
+            component_corrections=[
+                ComponentCorrection(
+                    component_code="  component_a  ",
+                    corrected_state=ComponentCorrectionState.PRESENT,
+                )
+            ],
+        )
+        repo.submit_review(review)
+        stored = repo.get_review(str(review.review_id))
+        assert stored is not None
+        assert stored.component_corrections[0].component_code == "component_a"
+
 
 class TestReviewApi:
     def test_submit_and_list_review_via_api(self, repo: EdgeRepository, tmp_path: Path) -> None:
@@ -275,6 +395,53 @@ class TestReviewApi:
                 json={"disposition": "INCONCLUSIVE", "reviewer": "operator-1"},
             )
             assert response.status_code == 422
+        finally:
+            client.close()
+
+    def test_submit_duplicate_component_corrections_is_422(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        ng = _record(datetime.now(UTC), business=BusinessResult.NG, barcode="SN-DUP-API")
+        repo.persist_inspection_and_enqueue_uploads(ng)
+        client = _client(tmp_path, repo)
+        try:
+            response = client.post(
+                f"/api/v1/inspections/{ng.inspection_id}/reviews",
+                json={
+                    "disposition": "CONFIRMED_NG",
+                    "reviewer": "operator-1",
+                    "component_corrections": [
+                        {"component_code": "component_a", "corrected_state": "PRESENT"},
+                        {"component_code": "component_a", "corrected_state": "MISSING"},
+                    ],
+                },
+            )
+            assert response.status_code == 422
+            assert response.json()["code"] == "VALIDATION_FAILED"
+        finally:
+            client.close()
+
+    def test_submit_padded_duplicate_component_corrections_is_422(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """Whitespace-padded codes normalize before the uniqueness check."""
+        ng = _record(datetime.now(UTC), business=BusinessResult.NG, barcode="SN-DUP-PAD")
+        repo.persist_inspection_and_enqueue_uploads(ng)
+        client = _client(tmp_path, repo)
+        try:
+            response = client.post(
+                f"/api/v1/inspections/{ng.inspection_id}/reviews",
+                json={
+                    "disposition": "CONFIRMED_NG",
+                    "reviewer": "operator-1",
+                    "component_corrections": [
+                        {"component_code": " component_a ", "corrected_state": "PRESENT"},
+                        {"component_code": "component_a", "corrected_state": "MISSING"},
+                    ],
+                },
+            )
+            assert response.status_code == 422
+            assert response.json()["code"] == "VALIDATION_FAILED"
         finally:
             client.close()
 

@@ -3,6 +3,7 @@ import type { BusinessResult, ReviewQueueItem } from "@assemblyvision/api-client
 import { ApiError } from "@assemblyvision/api-client";
 import { formatIsoTime, reasonCodeLabel } from "@assemblyvision/ui";
 import { ref } from "vue";
+import { onMounted } from "vue";
 import { getApiClient } from "../services/client";
 
 // Optional human-in-the-loop review queue (docs/design/24-human-in-the-loop.md
@@ -55,6 +56,10 @@ function filterChanged(): void {
 function loadMore(): void {
   if (nextCursor.value) void load(false);
 }
+
+onMounted(() => {
+  void load(true);
+});
 </script>
 
 <template>
