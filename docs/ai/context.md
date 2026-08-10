@@ -1,6 +1,6 @@
 # AssemblyVision - Full Project Context
 
-> Context snapshot. Last updated: 2026-08-09
+> Context snapshot. Last updated: 2026-08-10
 >
 > Read this file first in a new session to reconstruct the project state quickly.
 
@@ -20,42 +20,44 @@ and verifies that all required assembly components are present.
   for real-time inspection.
 - **Current repository state**: the static train-and-inspect MVP (ADR-011),
   the edge dashboard frontend, the M1 FastAPI + SQLite backend layer, the
-  review-driven hardening, and the real-data baseline tooling are all merged
-  to `main` (PRs #3, #6, #8, #9, #10, #11). The Python uv workspace ships
+  review-driven hardening, the real-data baseline tooling, camera/multi-
+  instance serve, temporal aggregation, the durable upload outbox, E1-E5
+  production gates, and the barcode identity / PLC FIFO trigger contract are
+  all merged to `main` (PRs #3-#30). The Python uv workspace ships
   shared `domain` and `vision-core` packages, a developer-only `av-train`
   training CLI, real two-stage Ultralytics YOLO inspection
   (`assemblyvision inspect`) and held-out verification, plus dataset adapters
   for Roboflow and X-AnyLabeling exports. The frontend pnpm workspace includes
   the Vue 3 + TypeScript operator dashboard (`apps/edge-web`), an Electron
   kiosk shell (`apps/edge-desktop`), a typed `api-client` contract layer, and
-  shared UI primitives. PR #11 (dev -> main) added the real-data baseline
-  tooling: the X-AnyLabeling dataset adapter, the single-product
-  data-acquisition guidance (design §19.17, runbook 11), and README/QUICKSTART
-  updates. Read-only dashboard views display real CLI results through the HTTP
-  client, while the operator workflow actions remain on the mock client.
-  PR #12 (dev -> main) closed the AUDIT-001 findings with acceptance tests
-  (merged 2026-08-09); see section 8.4. PR #14 added camera frame sources,
-  multi-instance `serve`, and the gated web dev test harness (ADR-013/014);
-  PR #15/#16 merged the product-window/temporal aggregation milestone
-  (ADR-010) with production safety; PR #17 merged the durable upload
-  outbox and scheduler (ADR-005); and PRs #18/#19 (E1 observability) and
-  #20 (E2 retention and disk safety) completed the storage and
-  observability gates; see sections 8.5-8.7. The remaining Edge
-  production-candidate work is upload resilience (E3), runtime/WebSocket
-  (E4), deployment and security (E5), and acceptance (E6); the central
+  shared UI primitives. PR #14 added camera frame sources, multi-instance
+  `serve`, and the gated web dev test harness (ADR-013/014); PR #15/#16 merged
+  the product-window/temporal aggregation milestone (ADR-010); PR #17 merged
+  the durable upload outbox and scheduler (ADR-005); PRs #18/#19 (E1) and #20
+  (E2 retention and disk safety) completed the storage/observability gates;
+  PRs #22/#23/#24 merged E3 (upload resilience), E4 (runtime/WebSocket), and
+  E5 (deployment and security); PR #25 delivered E6 acceptance-prep tooling;
+  PRs #26/#27/#28 added the hardened GigE/GenICam source and the
+  production-ready dashboard themes; PR #29 fixed persistence inference
+  metadata; and PR #30 added exact-mapped barcode identity resolution with an
+  opt-in Modbus TCP FIFO trigger contract (ADR-015). The edge-local human
+  review feature (ADR-016, PR #31) is implemented on
+  `feat/edge-local-human-review` with its review recorded in
+  `docs/reviews/PR-031-review.md` and is pending merge. The central
   server is not implemented and stays out of scope until those Edge gates
   pass.
 
 ## 2. Repository State
 
-- Remote: `https://github.com/dream-studio-china/assembly-vision`. PRs #3, #6,
-  #8, #9, #10, #11, #12, #14 (camera/multi-instance/dev harness),
-  #15/#16 (temporal aggregation + production safety), #17 (durable upload
-  outbox/scheduler, ADR-005), #18/#19 (E1 observability), and #20 (E2
-  retention and disk safety) are merged to `main`. E3-E6 remain: upload
-  resilience, runtime/WebSocket, deployment and security, and acceptance;
-  the central server is not implemented yet and is intentionally out of
-  scope until those Edge gates pass.
+- Remote: `https://github.com/dream-studio-china/assembly-vision`. PRs #3-#30
+  are merged to `main`, covering the MVP, dashboard, M1 backend, camera/
+  multi-instance (ADR-013/014), temporal aggregation (ADR-010), durable upload
+  outbox (ADR-005), E1-E5 gates, E6 acceptance prep, GigE/GenICam source,
+  dashboard themes, persistence fixes, and barcode identity / PLC trigger
+  contract (ADR-015). The edge-local human review feature (ADR-016) is
+  implemented on `feat/edge-local-human-review` (PR #31) with review fixes and
+  `docs/reviews/PR-031-review.md` pending merge. The central server is not
+  implemented yet and is intentionally out of scope until the Edge gates pass.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -107,7 +109,7 @@ assembly-vision/
     ├── contributing.md     # Contributor-facing repository rules and precedence
     ├── overrides/main.html # Theme override placeholder
     ├── ai/context.md       # THIS file
-    ├── reviews/            # Reviews: PR-003, PR-008, AUDIT-001 system audit
+    ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
     ├── contracts/          # 11 mandatory engineering contracts + index
     ├── runbooks/           # 11 operational recovery runbooks + index
     ├── design/             # 28 design documents + appendices + decisions/
@@ -156,7 +158,9 @@ assembly-vision/
   upload, ADR-006 REST + WebSocket, ADR-007 monorepo, ADR-008 Docker deployment, ADR-009
    static-image-first MVP, ADR-010 per-component temporal aggregation, ADR-011 labeled
    train-and-inspect MVP, ADR-012 edge API M1 viewer auth, ADR-013 camera frame
-   sources and multi-instance edge, and ADR-014 web dev test harness.
+   sources and multi-instance edge, ADR-014 web dev test harness, ADR-015
+   barcode identity and PLC trigger correlation, and ADR-016 edge-local human
+   review (optional, append-only).
 - [docs/design/appendices.md](../design/appendices.md) holds the canonical terminology, decision consistency checklist,
   global open questions (OQ-001 ... OQ-025), reason-code glossary, and traceability conventions.
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
@@ -677,18 +681,54 @@ Implemented on `feat/e5-deployment-security` (delivery task
   rotation), and 14 (deployment upgrade and rollback) added to the indexed
   runbook set.
 
+## 8.11 Barcode Identity and Edge-Local Human Review (PRs #30/#31)
+
+Merged via PR #30 (dev -> main): exact-mapped barcode identity resolution
+(ADR-015). Implemented on `feat/edge-local-human-review` (PR #31, pending
+merge): optional edge-local human review (ADR-016).
+
+- **Barcode identity (PR #30, ADR-015)**: typed `BarcodeObservation` models,
+  an optional ZXing-cpp visual decoder (`zxing-cpp>=2.3,<3`), an explicitly
+  simulated keyboard input adapter (dev-harness only), and a deterministic
+  resolver mapping complete barcode values to product codes. Resolution fails
+  closed on unreadable, conflicting, unsupported-symbology, unknown, or
+  active-product-mismatched reads. Visual identity runs on the dev upload
+  path and the production single-frame camera loop; unverified identity is
+  always persisted as `NG`. A `barcode_required` rule requires enabled
+  required `identity.barcode` config at load time, and barcode identity with
+  temporal inspection is rejected until windowed correlation exists. The
+  Modbus TCP FIFO trigger adapter (ENTRY/EXIT/ABORT, sequence/heartbeat/
+  overflow/consistency) is delivered as an opt-in contract; live transport
+  stays gated on a site-validated register profile.
+- **Edge-local human review (PR #31, ADR-016)**: optional, additive,
+  append-only review of any inspection (OK or NG) without mutating the
+  machine decision. Domain `ReviewDisposition` (CONFIRMED_NG/CONFIRMED_OK/
+  CORRECTED_NG/INCONCLUSIVE/REINSPECT) constrained per machine outcome,
+  `ReviewRecord` snapshotting the original decision, a `review_records` table
+  (migration 0008) with supersede-by-reference chaining, repository
+  `submit_review`/`list_review_queue`, and endpoints `GET /api/v1/reviews`,
+  `GET/POST /api/v1/inspections/{id}/reviews` (design 15.3.3). The web
+  `ReviewView` queue page and an additive `ReviewPanel` on the inspection
+  detail view surface the workflow; NG detail views prompt review while OK
+  views offer an optional audit path. The four-aspect review (docs,
+  security, decoupling, extensibility) is recorded in
+  `docs/reviews/PR-031-review.md` (RESOLVED); findings fixed include
+  bounded `component_corrections`, machine reason codes in the open-item
+  queue, cursor 400 hardening, log-injection repr, mock/server validation
+  parity, and doc/contract consistency (design 14/15/16/24). Review
+  submission is intentionally exposed through the existing viewer credential
+  (no edge role model yet); local review records do not yet sync to a
+  central server.
+
 ## 9. Open Items / Next Steps
 
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6); **E1
   observability** (PRs #18/#19), **E2 retention and disk safety** (PR #20,
   PR-020 review resolved), **E3 upload resilience** (PR #22, section 8.8),
-   **E4 runtime** (section 8.9), and **E5 deployment and security** (section
-   8.10, PR #24 open) are implemented. **E6-prep tooling** is delivered: the
-   complete acceptance matrix (`docs/tasks/E6-edge-acceptance.md`), typed local
-   evidence runner (`scripts/edge-acceptance-run.py`), report template (design
-   28), and on-site execution checklist (runbook 15). The clock-drift harness
-   remains explicitly `NOT_EXECUTED`; E6 remains open until it and the
-   hardware/customer-data-gated acceptance phase execute:
+   **E4 runtime** (section 8.9), **E5 deployment and security** (section
+   8.10, PR #24), and **E6 acceptance prep** (PR #25) are merged.
+   The clock-drift harness remains explicitly `NOT_EXECUTED`; E6 remains open
+   until it and the hardware/customer-data-gated acceptance phase execute:
    - **E6 on-site acceptance**: resilience and soak evidence on the selected
      hardware, held-out customer model validation, and signed Edge acceptance
      report with hardware prerequisites.
@@ -697,6 +737,9 @@ Implemented on `feat/e5-deployment-security` (delivery task
 - AUDIT-001 is **closed** including the deferred 4.4 authoritative persistence
   item (now delivered by PR #17). Shared model weights are implemented (E4c);
   per-instance pipelines use one registry.
+- **Barcode identity** (PR #30) and **edge-local human review** (PR #31) are
+  implemented; PR #31 (with its review fixes and `docs/reviews/PR-031-review.md`)
+  is pending merge to `main` from `feat/edge-local-human-review`.
 - Real customer data is still required for the baseline: collect and annotate
   with X-AnyLabeling per
   `docs/design/19-training-and-evaluation.md` §19.17 and
@@ -707,14 +750,17 @@ Implemented on `feat/e5-deployment-security` (delivery task
   `av-train` -> `assemblyvision inspect` -> `assemblyvision verify`.
 - Camera acquisition (ADR-013/014) is merged (PR #14) including temporal
   aggregation (PR #15/#16) and the trigger/identity seam (E4b). Remaining
-  hardware-dependent items: vendor SDK camera adapters, real barcode decoding,
-  and physical photo-eye/PLC triggers to replace the mock trigger source and
-  the time-only fallback (which is a development mode, not a production
-  product boundary).
+  hardware-dependent items: vendor SDK camera adapters (GigE/GenICam source
+  merged in PR #26; live validation still required), real barcode decode
+  validation on production samples, and a physical photo-eye/PLC transport to
+  replace the mock trigger source (the Modbus FIFO contract from PR #30 needs
+  a site-validated register profile) and the time-only fallback (which is a
+  development mode, not a production product boundary).
 - The central server (ingestion API, PostgreSQL model, object storage,
-  idempotent receipts, manual review) is **not implemented**; only the
-  edge-side request/receipt contract exists. Central work starts after E1-E6
-  pass and the Edge-to-central contract is frozen.
+  idempotent receipts, central manual review) is **not implemented**; only the
+  edge-side request/receipt contract and edge-local review records exist.
+  Central work starts after E1-E6 pass and the Edge-to-central contract is
+  frozen.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.
