@@ -3093,6 +3093,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#812-review-hardening-documentation-i18n-and-mkdocs-prs-31-36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.12 Review Hardening, Documentation, i18n, and MkDocs (PRs #31-#36)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#813-central-server-m1-foundation-c1a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.13 Central Server M1 Foundation (C1a)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3125,7 +3147,7 @@
 
 <h1 id="assemblyvision-full-project-context">AssemblyVision - Full Project Context<a class="headerlink" href="#assemblyvision-full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Context snapshot. Last updated: 2026-08-10</p>
+<p>Context snapshot. Last updated: 2026-08-11</p>
 <p>Read this file first in a new session to reconstruct the project state quickly.</p>
 </blockquote>
 <hr />
@@ -3162,12 +3184,15 @@ and verifies that all required assembly components are present.</p>
   PRs #26/#27/#28 added the hardened GigE/GenICam source and the
   production-ready dashboard themes; PR #29 fixed persistence inference
   metadata; and PR #30 added exact-mapped barcode identity resolution with an
-  opt-in Modbus TCP FIFO trigger contract (ADR-015). The edge-local human
-  review feature (ADR-016, PR #31) is implemented on
-  <code>feat/edge-local-human-review</code> with its review recorded in
-  <code>docs/reviews/PR-031-review.md</code> and is pending merge. The central
-  server is not implemented and stays out of scope until those Edge gates
-  pass.</li>
+  opt-in Modbus TCP FIFO trigger contract (ADR-015). PR #31 merged the
+  edge-local human review feature (ADR-016), including its review hardening
+  and the documented PR31-T05 viewer-credential trade-off. PRs #32 and #33
+  added issue templates and the industrial README/QUICKSTART/SECURITY refresh;
+  PR #34 added the developer manual; PR #35 added edge-web i18n; and PR #36
+  fixed the MkDocs README-index exclusion. Edge coding is complete through the
+  E6 preparation gate. The central server M1 pilot has started (C1a
+  foundation delivered); its bounded implementation plan is in
+  <code>docs/tasks/C1-central-server-m1.md</code>.</li>
 </ul>
 <h2 id="2-repository-state">2. Repository State<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3176,10 +3201,10 @@ and verifies that all required assembly components are present.</p>
   multi-instance (ADR-013/014), temporal aggregation (ADR-010), durable upload
   outbox (ADR-005), E1-E5 gates, E6 acceptance prep, GigE/GenICam source,
   dashboard themes, persistence fixes, and barcode identity / PLC trigger
-  contract (ADR-015). The edge-local human review feature (ADR-016) is
-  implemented on <code>feat/edge-local-human-review</code> (PR #31) with review fixes and
-  <code>docs/reviews/PR-031-review.md</code> pending merge. The central server is not
-  implemented yet and is intentionally out of scope until the Edge gates pass.</li>
+  contract (ADR-015). PRs #31 through #36 are also merged: edge-local human
+  review, issue templates, documentation refresh, developer manual, edge-web
+  i18n, and the MkDocs manual-index fix. No central-server code exists yet;
+  <code>docs/tasks/C1-central-server-m1.md</code> defines its pilot implementation scope.</li>
 <li><code>.obsidian/</code>, <code>.idea/</code>, and <code>.vscode/</code> are ignored local editor state.</li>
 <li>Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts <code>docs-zh/</code>, <code>site/</code>, <code>mkdocs-en.yml</code>, <code>mkdocs-zh.yml</code> are gitignored.</li>
@@ -3190,56 +3215,62 @@ and verifies that all required assembly components are present.</p>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── QUICKSTART.md           # Developer onboarding: setup, checks, CLI, end-to-end demo
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── LICENSE                 # MIT License (c) 2026 dream-studio-china
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── Makefile                # Quality gates: lint, format, typecheck, test, check
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── scripts/
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── translate-docs.py            # docs/ -&gt; docs-zh/ Chinese translation (deep-translator)
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── e2e-demo.sh                  # full train-&gt;prepare-&gt;train-&gt;inspect-&gt;verify smoke test
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -&gt; two-stage layout
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -&gt; two-stage layout
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   └── tests/                       # tests for the dataset adapters
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── packages/
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│   ├── python/
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   └── typescript/
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── package.json                      # Root pnpm workspace (TypeScript)
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>└── docs/
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    ├── index.md            # MkDocs home page
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    ├── README.md           # Documentation index
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── overrides/main.html # Theme override placeholder
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── ai/context.md       # THIS file
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    ├── runbooks/           # 11 operational recovery runbooks + index
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    ├── design/             # 28 design documents + appendices + decisions/
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    │   └── decisions/      # ADR-001 ... ADR-012 + README
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    └── research/           # 3 external-research reports
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        ├── 01-industrial-inspection-success-rates.md
-<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        ├── 02-yolo-capabilities-and-success-rates.md
-<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        └── 03-imaging-workflow-and-training-cost.md
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── SECURITY.md             # Security policy: position, edge auth, vulnerability reporting
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── Makefile                # Quality gates: lint, format, typecheck, test, check
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>├── scripts/
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── translate-docs.py            # docs/ -&gt; docs-zh/ Chinese translation (deep-translator)
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── e2e-demo.sh                  # full train-&gt;prepare-&gt;train-&gt;inspect-&gt;verify smoke test
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -&gt; two-stage layout
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -&gt; two-stage layout
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   └── tests/                       # tests for the dataset adapters
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── .github/
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   ├── ISSUE_TEMPLATE/              # bug_report / feature_request / security_vulnerability + config
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   └── workflows/                   # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>├── packages/
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   ├── python/
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>│   └── typescript/
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>├── package.json                      # Root pnpm workspace (TypeScript)
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>└── docs/
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── index.md            # MkDocs home page
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── README.md           # Documentation index
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── overrides/main.html # Theme override placeholder
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    ├── ai/context.md       # THIS file
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    ├── images/             # README screenshots (inspection detail, live view)
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    ├── manual/             # Developer manual
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    ├── tasks/              # Delivery tasks, including the Central Server M1 plan
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>    ├── runbooks/           # 15 operational recovery runbooks (01-15) + index
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>    ├── design/             # 28 design documents + appendices + decisions/
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>    │   └── decisions/      # ADR-001 ... ADR-016 + README
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>    └── research/           # 3 external-research reports
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>        ├── 01-industrial-inspection-success-rates.md
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>        ├── 02-yolo-capabilities-and-success-rates.md
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>        └── 03-imaging-workflow-and-training-cost.md
 </code></pre></div>
 <h2 id="4-architecture-summary-from-docsdesign">4. Architecture Summary (from docs/design/)<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3285,9 +3316,11 @@ and verifies that all required assembly components are present.</p>
 <li><code>docs/research/</code>: industry success rates, YOLO capabilities, imaging/workflow/training cost.</li>
 <li><a href="../../contracts/">docs/contracts/</a>: 11 enforceable architecture, safety, API, quality,
   operations, security, change-control, and acceptance contracts.</li>
-<li><a href="../../runbooks/">docs/runbooks/</a>: executable recovery procedures for all contract-required
-  operational scenarios, including model improvement (runbook 10) and data
-  collection and annotation (runbook 11).</li>
+<li><a href="../../runbooks/">docs/runbooks/</a>: 15 executable recovery procedures for all contract-required
+  operational scenarios, including model improvement (runbook 10), data
+  collection and annotation (runbook 11), backup and recovery (12), TLS
+  certificate rotation (13), deployment upgrade and rollback (14), and edge
+  acceptance execution (15).</li>
 </ul>
 <h2 id="6-bilingual-mkdocs-english-chinese">6. Bilingual MkDocs (English + Chinese)<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3307,6 +3340,9 @@ and verifies that all required assembly components are present.</p>
 <li>Known machine-translation quality issues (not script bugs): <code>frames</code> -&gt; 框架 (should be 帧),
   <code>volume</code> -&gt; 音量 (should be 存储卷), <code>poll</code> -&gt; 民意调查 (should be 轮询). Review before publishing.</li>
 <li><code>docs-zh/</code>, <code>site/</code>, and the generated configs are build artifacts, not committed.</li>
+<li><code>exclude_docs</code> must use <code>/README.md</code> (anchored) so the root documentation
+  README is excluded without excluding nested manual, design, contract, and
+  runbook index pages. <code>uv run mkdocs build --strict</code> verifies the site.</li>
 </ul>
 <h2 id="7-conventions-agentsmd">7. Conventions (AGENTS.md)<a class="headerlink" href="#7-conventions-agentsmd" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3790,8 +3826,12 @@ desktop 3), and 12 Playwright e2e.</p>
 </ul>
 <h2 id="811-barcode-identity-and-edge-local-human-review-prs-3031">8.11 Barcode Identity and Edge-Local Human Review (PRs #30/#31)<a class="headerlink" href="#811-barcode-identity-and-edge-local-human-review-prs-3031" title="Permanent link">&para;</a></h2>
 <p>Merged via PR #30 (dev -&gt; main): exact-mapped barcode identity resolution
-(ADR-015). Implemented on <code>feat/edge-local-human-review</code> (PR #31, pending
-merge): optional edge-local human review (ADR-016).</p>
+(ADR-015). PR #31 merged optional edge-local human review (ADR-016), including
+the review hardening recorded in <code>docs/reviews/PR-031-review.md</code>: serialized
+supersede chaining under
+<code>BEGIN IMMEDIATE</code>, unique normalized component corrections, problem+json
+declarations in the regenerated OpenAPI/TS contract, the review-queue initial
+load, and review-panel history-error gating.</p>
 <ul>
 <li><strong>Barcode identity (PR #30, ADR-015)</strong>: typed <code>BarcodeObservation</code> models,
   an optional ZXing-cpp visual decoder (<code>zxing-cpp&gt;=2.3,&lt;3</code>), an explicitly
@@ -3826,6 +3866,87 @@ merge): optional edge-local human review (ADR-016).</p>
   (no edge role model yet); local review records do not yet sync to a
   central server.</li>
 </ul>
+<h2 id="812-review-hardening-documentation-i18n-and-mkdocs-prs-31-36">8.12 Review Hardening, Documentation, i18n, and MkDocs (PRs #31-#36)<a class="headerlink" href="#812-review-hardening-documentation-i18n-and-mkdocs-prs-31-36" title="Permanent link">&para;</a></h2>
+<p>PRs #31 through #36 are merged to <code>main</code>.</p>
+<ul>
+<li><strong>PR #31 review hardening</strong>: PR-031
+  findings F01-F10 are resolved, and follow-up fixes address the residual
+  review findings: <code>submit_review</code> acquires the SQLite write lock before the
+  supersede read (<code>BEGIN IMMEDIATE</code>) so concurrent submissions chain linearly
+  (regression test with two repositories); <code>component_corrections</code> are
+  normalized (whitespace-stripped, non-empty) and duplicate/contradictory
+  codes are rejected at the domain and API boundaries; the review endpoints
+  declare their 404/409/422 RFC 7807 problem responses with the real
+  <code>application/problem+json</code> media type (OpenAPI + TS regenerated); the
+  <code>/review</code> page loads its default NG/open queue on first entry and ignores
+  stale in-flight responses; and the review panel blocks submission until the
+  append-only history loads successfully, surfacing load failures with a
+  retry. The viewer-credential review exception is recorded as accepted
+  trade-off PR31-T05 (deferred until an edge RBAC exists).</li>
+<li><strong>PR #32 issue templates</strong>: completed
+  <code>.github/ISSUE_TEMPLATE/</code> for the current project state - the bug report
+  gained P0-P3 severity, E1-E6 production impact, a related-runbook field, and
+  the camera/barcode/trigger component; the feature request gained the ADR
+  requirement plus documentation-impact and change-control-impact checkboxes
+  (contracts 05/07/09/10); a new security-vulnerability template follows
+  SECURITY.md private reporting; and the chooser links the security policy.
+  The <code>triage</code> and <code>security</code> labels were created.</li>
+<li><strong>PR #33 documentation refresh</strong>: the README
+  was rewritten for an industrial, open-source-presentable tone - badges, an
+  OK/NG false-negative safety framing, side-by-side dashboard screenshots
+  (<code>docs/images/</code>), a vertical Mermaid architecture diagram covering the full
+  edge pipeline and the planned central server, a production status table, and
+  a three-phase roadmap (MVP / Edge / Central) with an outlook toward a
+  complete AI recognition platform. QUICKSTART and SECURITY were aligned with
+  the current state (WebSocket runtime channel, TLS/Docker-secret options, the
+  separate upload credential, <code>gige-vision</code> and the trigger/identity seam,
+  backup/restore, and the PR31-T05 edge review exception).</li>
+<li><strong>PR #34 developer manual</strong>: added an indexed codebase manual.</li>
+<li><strong>PR #35 edge-web i18n</strong>: added <code>vue-i18n</code> catalogs for English,
+  Simplified Chinese, Traditional Chinese, and Japanese. English text is used
+  as the message key; <code>VITE_DEFAULT_LOCALE</code> controls the default; a globe SVG
+  dropdown persists the selected locale; and Element Plus uses the active
+  locale provider. The edge-web checks passed: typecheck, lint, unit tests,
+  build, and 15 Playwright tests.</li>
+<li><strong>PR #36 MkDocs index fix</strong>: changed <code>exclude_docs: README.md</code> to
+  <code>exclude_docs: /README.md</code>, restoring nested <code>README.md</code> index pages such as
+  <code>/manual/</code>, <code>/design/</code>, <code>/contracts/</code>, and <code>/runbooks/</code>.</li>
+<li><strong>Central Server M1 plan</strong>: <code>docs/tasks/C1-central-server-m1.md</code> defines a
+  pilot implementation that remains edge-independent: separate device-upload
+  and admin credentials, PostgreSQL + MinIO, current edge-compatible
+  idempotent uploads and verified receipts, history/media, and append-only
+  central review. OIDC, full RBAC, WebSocket, remote package rollout, and
+  resumable uploads remain deferred.</li>
+</ul>
+<h2 id="813-central-server-m1-foundation-c1a">8.13 Central Server M1 Foundation (C1a)<a class="headerlink" href="#813-central-server-m1-foundation-c1a" title="Permanent link">&para;</a></h2>
+<p>The first central-server delivery (C1a of
+<code>docs/tasks/C1-central-server-m1.md</code>) is implemented and validated:</p>
+<ul>
+<li><strong><code>apps/central-service</code></strong> (uv workspace member <code>assemblyvision-central</code>):
+  FastAPI application with typed <code>AV_CENTRAL_*</code> settings, RFC 7807 problem
+  responses, request-ID correlation, a <code>MinioObjectStorage</code> abstraction with
+  idempotent bucket bootstrap, and an Alembic migration runner. Migrations are
+  a <strong>controlled release step</strong> (<code>python -m central_service migrate</code>); the API
+  never migrates automatically. Baseline migration <code>0001</code> establishes the
+  <code>central_meta</code> marker.</li>
+<li><strong>Health/readiness</strong>: <code>GET /api/v1/health/live</code> (no dependencies) and <code>GET
+  /api/v1/health/ready</code> (503 + problem while PostgreSQL is unreachable, the
+  schema is behind head, the MinIO bucket is unavailable, or the pilot
+  credential is not configured). Probe results are injectable for tests.</li>
+<li><strong><code>apps/admin-web</code></strong> (pnpm workspace): minimal Vue 3 + TypeScript + Pinia +
+  Element Plus pilot shell (overview page, router, Vitest, Playwright e2e)
+  with a Dockerfile serving it behind nginx that proxies <code>/api</code> to the API.</li>
+<li><strong><code>packages/typescript/api-client-central</code></strong>: generated OpenAPI types from
+  the committed <code>apps/central-service/openapi/central-openapi.json</code> with CI
+  drift checks on both sides.</li>
+<li><strong>Compose</strong>: PostgreSQL + MinIO + <code>central-migrate</code> (one-shot) +
+  <code>central-service</code> + <code>admin-web</code>, named volumes, non-root images, health
+  checks, dev-only env defaults in <code>compose.env.example</code>. Verified cold start,
+  readiness, proxied health via admin-web, and restart persistence; CI/Makefile
+  now cover the central OpenAPI drift check and admin-web gates.</li>
+</ul>
+<p>The edge runtime imports no central code; the current edge upload envelope is
+unchanged.</p>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The <strong>upload queue scheduler</strong> gap is closed (PR #17, section 8.6); <strong>E1
@@ -3843,9 +3964,10 @@ merge): optional edge-local human review (ADR-016).</p>
 <li>AUDIT-001 is <strong>closed</strong> including the deferred 4.4 authoritative persistence
   item (now delivered by PR #17). Shared model weights are implemented (E4c);
   per-instance pipelines use one registry.</li>
-<li><strong>Barcode identity</strong> (PR #30) and <strong>edge-local human review</strong> (PR #31) are
-  implemented; PR #31 (with its review fixes and <code>docs/reviews/PR-031-review.md</code>)
-  is pending merge to <code>main</code> from <code>feat/edge-local-human-review</code>.</li>
+<li><strong>Barcode identity</strong> (PR #30), <strong>edge-local human review</strong> (PR #31), issue
+  templates (PR #32), the README/QUICKSTART/SECURITY refresh (PR #33), the
+  developer manual (PR #34), edge-web i18n (PR #35), and the MkDocs index fix
+  (PR #36) are merged (see sections 8.11/8.12).</li>
 <li>Real customer data is still required for the baseline: collect and annotate
   with X-AnyLabeling per
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 and
@@ -3862,11 +3984,15 @@ merge): optional edge-local human review (ADR-016).</p>
   replace the mock trigger source (the Modbus FIFO contract from PR #30 needs
   a site-validated register profile) and the time-only fallback (which is a
   development mode, not a production product boundary).</li>
-<li>The central server (ingestion API, PostgreSQL model, object storage,
-  idempotent receipts, central manual review) is <strong>not implemented</strong>; only the
-  edge-side request/receipt contract and edge-local review records exist.
-  Central work starts after E1-E6 pass and the Edge-to-central contract is
-  frozen.</li>
+<li>The central server M1 pilot is <strong>in progress</strong> (<code>docs/tasks/C1-central-server-m1.md</code>).
+  C1a (workspace, service, Compose, health/readiness, OpenAPI) is delivered:
+  <code>apps/central-service</code> (FastAPI, PostgreSQL, MinIO, controlled schema
+  migrations), <code>apps/admin-web</code> (Vue 3 pilot shell), and
+  <code>packages/typescript/api-client-central</code>. Ingestion with verified receipts,
+  media binding, history, central review, metadata governance, and hardening
+  (C1b–C6) remain. It must preserve the current edge upload envelope and
+  receipt semantics; resumable uploads remain deferred until that contract
+  changes.</li>
 <li>Hardware/conditions still unconfirmed (see <a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.</li>

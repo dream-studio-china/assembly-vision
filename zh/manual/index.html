@@ -3030,7 +3030,7 @@
 <p>本手册是为<strong>开发人员</strong>编写的；对于架构原理，
 工程合同和运营手册均使用权威的
 直接来源（<code>docs/design/</code>、<code>docs/design/decisions/</code>、
-<code>docs/contracts/</code>, <code>docs/runbooks/</code>).当文件冲突时
+<code>docs/contracts/</code>、<code>docs/runbooks/</code>)。当文件冲突时
 优先级是：明确的用户指令 → 接受的 ADR → 工程
 合同→架构设计→现有实施。</p>
 </blockquote>
@@ -3039,17 +3039,17 @@
 <li><a href="01-getting-started/">01-getting-started.md</a> — 克隆、设置、运行
    件、日常工作流程、质量门。</li>
 <li><a href="02-repository-layout/">02-repository-layout.md</a> — 其中每个部分
-   the code lives.</li>
+   代码还活着。</li>
 <li><a href="03-cli-reference/">03-cli-reference.md</a> — 每个 CLI 命令都带有真实的
    调用和准确的输出。</li>
 <li><a href="04-edge-api-reference/">04-edge-api-reference.md</a> — 每个 REST/WS
    具有真实请求/响应示例和curl 调用的端点。</li>
 <li><a href="05-edge-service-internals/">05-edge-service-internals.md</a> — 如何
    图像成为检验记录； <code>serve</code> 如何运行实时检查。</li>
-<li><a href="06-adding-a-rest-endpoint/">06-adding-a-rest-endpoint.md</a> — end-to-end
+<li><a href="06-adding-a-rest-endpoint/">06-adding-a-rest-endpoint.md</a>——端到端
    添加新 API 端点的方法。</li>
 <li><a href="07-database-and-persistence/">07-database-and-persistence.md</a> —
-   SQLite schema, Alembic migrations, repository and outbox patterns.</li>
+   SQLite 模式、Alembic 迁移、存储库和发件箱模式。</li>
 <li><a href="08-camera-sources-and-vision-core/">08-camera-sources-and-vision-core.md</a>
    — <code>FrameSource</code> 协议、ROI 引擎、模型清单、如何添加
    相机来源。</li>
@@ -3060,11 +3060,11 @@
 <li><a href="11-testing-and-quality-gates/">11-testing-and-quality-gates.md</a> —
     测试组织、夹具模式、精确命令、CI。
 12.<a href="12-core-abstractions-and-type-architecture/">12-core-abstractions-and-type-architecture.md</a>
-    — how the codebase abstracts its classes: Pydantic vs dataclass vs
-    <code>Protocol</code>, the domain model graph, error → reason-code mapping, patterns.</li>
+    — 代码库如何抽象其类：Pydantic vs 数据类 vs
+    <code>Protocol</code>，领域模型图，错误 → 原因代码映射，模式。</li>
 <li><a href="13-debugging-and-observability/">13-debugging-and-observability.md</a> —
     如何调试：运行状况/状态表面、常见故障签名、开发
-    tools, logging.</li>
+    工具，日志记录。</li>
 </ol>
 <h2 id="non-negotiable-invariants-know-these-first">不可协商的不变量（首先了解这些）<a class="headerlink" href="#non-negotiable-invariants-know-these-first" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3072,32 +3072,32 @@
   商务<code>NG</code>。切勿因证据不完整/无效而返回 <code>OK</code>。</li>
 <li><strong>没有 100% 准确度声明</strong> — 接受度经过衡量，并提供证据
   仅。</li>
-<li><strong>Edge-first</strong>: inspection runs fully on the edge;中央服务器是
+<li><strong>边缘优先</strong>：检查完全在边缘上运行；中央服务器是
   永远不会在实时路径中。</li>
 <li><strong>原始机器决策是不可变的</strong>；人工审核仅限于追加。</li>
-<li><strong>Never delete local media</strong> until upload + retention conditions hold.</li>
+<li><strong>永远不要删除本地媒体</strong>，直到上传+保留条件成立。</li>
 <li><strong>架构边界</strong>（合约 01）：FastAPI 路由内没有 YOLO；
   探测器内部没有业务规则；规则引擎独立于
   FastAPI/DB/YOLO；边缘代码从不导入 <code>training/</code> 或中心代码。</li>
-<li><strong>Typed everywhere</strong>: Pydantic models for backend contracts, generated
+<li><strong>随处键入</strong>：生成后端合约的 Pydantic 模型
   TypeScript 类型，核心边界处没有 <code>dict[str, Any]</code>； MyPy 严格。</li>
-<li><strong>English only</strong> for code, comments, docs, commits.常规提交
-  (<code>feat:</code>, <code>fix:</code>, <code>docs:</code>, <code>refactor:</code>, <code>test:</code>, <code>build:</code>, <code>ci:</code>,
+<li><strong>仅限英文</strong>，用于代码、评论、文档、提交。常规提交
+  （<code>feat:</code>、<code>fix:</code>、<code>docs:</code>、<code>refactor:</code>、<code>test:</code>、<code>build:</code>、<code>ci:</code>、
   <code>chore:</code>);分支 <code>feat/...</code>、<code>fix/...</code>、<code>docs/...</code>。</li>
 <li>除非明确要求，否则不要承诺或推动。</li>
 </ul>
 <h2 id="repository-state-2026-08-11">存储库状态 (2026-08-11)<a class="headerlink" href="#repository-state-2026-08-11" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>main</code> 包含 PR #3-#33：MVP、仪表板、M1 边缘 API、相机源 +
-  multi-instance serve, temporal aggregation, durable upload outbox, E1-E5
-  production gates, E6 acceptance-prep tooling, GigE/GenICam source,
-  dashboard themes, barcode identity + PLC trigger contract (ADR-015),
-  edge-local human review (ADR-016), issue templates, industrial README.</li>
-<li>Python uv workspace: <code>domain</code>, <code>vision-core</code>, <code>edge-service</code>, <code>training</code>
+  多实例服务、时间聚合、持久上传发件箱、E1-E5
+  生产门、E6 验收准备工具、GigE/GenICam 源、
+  仪表板主题、条形码标识 + PLC 触发合约 (ADR-015)、
+  边缘本地人工审查 (ADR-016)、问题模板、工业自述文件。</li>
+<li>Python uv 工作区：<code>domain</code>、<code>vision-core</code>、<code>edge-service</code>、<code>training</code>
   （仅限开发人员）。 TypeScript pnpm 工作区：<code>api-client</code>、<code>ui</code>、
   <code>eslint-config</code>、<code>edge-web</code>、<code>edge-desktop</code>。</li>
-<li>The central server is <strong>not implemented</strong> and stays out of scope until the
-  Edge gates pass and the Edge-to-central contract is frozen.</li>
+<li>中央服务器<strong>未实现</strong>并且不在范围内，直到
+  边缘门通过，边缘到中心的合约被冻结。</li>
 </ul>
 
 

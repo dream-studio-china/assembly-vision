@@ -3268,7 +3268,7 @@
 <blockquote>
 <p>状态：AssemblyVision 项目的研究综合（两阶段检测：第一阶段全框架产品检测、第二阶段 ROI 上的组件检测）。
 编译日期：2026-08-04
-诚实约定：除非另有说明，下面的所有 mAP/AP 数字均为模型作者或 Ultralytics 发布的 <strong>COCO val 或 LVIS 基准数字</strong>。基准数字是<strong>实验室结果，而不是生产结果</strong>。 FPS/延迟数据由供应商在特定 GPU 上报告（每行注明）。 “截至 2025/2026”受到尊重：涵盖的最新模型是 Ultralytics YOLO26 (2026)。</p>
+诚实约定：除非另有说明，下面的所有 mAP/AP 数字均为模型作者或 Ultralytics 发布的 <strong>COCO val 或 LVIS 基准数字</strong>。基准数字是<strong>实验室结果，而不是生产结果</strong>。 FPS/延迟数据由供应商在特定 GPU 上报告（每行注明）。 “截至 2025/2026”受到尊重：涵盖的最新型号是 Ultralytics YOLO26 (2026)。</p>
 </blockquote>
 <hr />
 <h2 id="1-scope">1.范围<a class="headerlink" href="#1-scope" title="Permanent link">&para;</a></h2>
@@ -3625,7 +3625,7 @@
 <p><strong>案例报告中的跨领域教训：</strong></p>
 <ol>
 <li><strong>对于定义明确、光线充足的工业类别，实现的 mAP50 通常为 0.90-0.99。</strong> 差异来自条件（视角、照明）和评估严格性（mAP50 与 mAP50-95），而不是来自使用 YOLO 版本的情况。</li>
-<li><strong>鲁棒性成本：</strong> 姿态/光照变化确实会消耗几个 mAP 点（VR-YOLO：-4 pp）。设计成像站以最大限度地减少这种情况，并监测漂移。</li>
+<li><strong>鲁棒性成本：</strong> 姿态/光照变化确实会消耗几个 mAP 点（VR-YOLO：-4 pp）。设计成像站以尽量减少这种情况，并监测漂移。</li>
 <li><strong>分类击败二元自动决策：</strong> 法兰和 PCB 工作流程将中等置信度检测路由至人工审核。这直接映射到 AssemblyVision 的 <code>UNCERTAIN</code> 处理（请参阅 <code>[docs/design/02-requirements.md](../design/02-requirements.md)</code>、BR-006）。</li>
 <li><strong>检测器 + 规则 &gt; 单独检测器：</strong> 装配状态工作和 AssemblyVision 的确定性规则引擎一致：永远不要让最终的 OK/NG 仅由原始检测决定。</li>
 </ol>
@@ -3634,7 +3634,7 @@
 <h3 id="61-task-profile-from-the-assemblyvision-design-set">6.1 任务配置文件（来自 AssemblyVision 设计集）<a class="headerlink" href="#61-task-profile-from-the-assemblyvision-design-set" title="Permanent link">&para;</a></h3>
 <ul>
 <li>第 1 阶段：在完整的 ~4MP 帧（大约 2560x1440 或 2448x2048）中准确检测一个 <code>product</code>；投资回报率作物。</li>
-<li>第 2 阶段：检测 ROI 内的 <code>component_a</code>、<code>component_b</code>、...、<code>manual</code>（固定类别）。</li>
+<li>第 2 阶段：检测 ROI 内的 <code>component_a</code>、<code>component_b</code>、...、<code>manual</code>（固定类）。</li>
 <li>数据预算：约300-800张产品图片；每个组件类大约 300-500 个标记实例（参见 <code>[docs/design/19-training-and-evaluation.md](../design/19-training-and-evaluation.md)</code>）。</li>
 <li>运行时：边缘盒（CPU 或适度的 GPU）；产品窗口延迟预算每次检查大约 2.5 秒，包括。多个帧（参见<code>[docs/design/06-ai-detection-pipeline.md](../design/06-ai-detection-pipeline.md)</code>）。</li>
 <li>优先级：NG召回高于吞吐量；故障安全行为。</li>

@@ -3286,7 +3286,7 @@ else 产品无法验证
 deferred：M1静态单帧CLI仅接受<code>product_detection</code>，
 <code>component_detection</code>、<code>components</code> 和 <code>roi</code> 部分并拒绝未知
 键（AUDIT-001）。</p>
-<p>配置在启动时进行架构验证。无效的配置会妨碍检查准备工作。当产品窗口打开时，活动模型、规则和产品配置版本将被固定，并且无法在该窗口内更改。</p>
+<p>配置在启动时进行模式验证。无效的配置会妨碍检查准备工作。当产品窗口打开时，活动模型、规则和产品配置版本将被固定，并且无法在该窗口内更改。</p>
 <h2 id="67-failure-handling">6.7 故障处理<a class="headerlink" href="#67-failure-handling" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3333,7 +3333,7 @@ deferred：M1静态单帧CLI仅接受<code>product_detection</code>，
 <ul>
 <li>单元测试阶段契约、阈值边界、坐标变换和原因代码映射。</li>
 <li>运行黄金图像测试，并将预期检测和决策固定到模型清单上。</li>
-<li>验证每个注入的阶段异常是否都会生成 <code>NG</code> 或阻止就绪，而不是 <code>OK</code>。</li>
+<li>验证每个注入的阶段异常是否都会产生 <code>NG</code> 或阻止就绪，而不会产生 <code>OK</code>。</li>
 <li>在窗口边界测试混合产品类型和版本变化。</li>
 <li>测量平均和 P95 延迟、吞吐量、NG 召回、产品检测成功和每个组件召回。</li>
 <li>在确定性推理支持允许的情况下，从持久输入、配置和版本元数据中再现结果。</li>

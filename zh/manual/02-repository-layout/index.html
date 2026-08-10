@@ -1482,7 +1482,7 @@
   <a href="#package" class="md-nav__link">
     <span class="md-ellipsis">
       
-        packages/python/domain — 包 assemblyvision_domain
+        packages/python/domain — package assemblyvision_domain
       
     </span>
   </a>
@@ -3066,7 +3066,7 @@
   <a href="#package" class="md-nav__link">
     <span class="md-ellipsis">
       
-        packages/python/domain — 包 assemblyvision_domain
+        packages/python/domain — package assemblyvision_domain
       
     </span>
   </a>
@@ -3165,7 +3165,7 @@
 </tr>
 <tr>
 <td><code>Makefile</code></td>
-<td><code>sync</code>、<code>lint</code>、<code>format</code>、<code>typecheck</code>、<code>test</code>、<code>web-install</code>、<code>web-check</code>、<code>check</code></td>
+<td><code>sync</code>, <code>lint</code>, <code>format</code>, <code>typecheck</code>, <code>test</code>, <code>web-install</code>, <code>web-check</code>, <code>check</code></td>
 </tr>
 <tr>
 <td><code>.github/workflows/ci.yml</code></td>
@@ -3211,7 +3211,7 @@
 </tr>
 <tr>
 <td><code>config.py</code></td>
-<td>管道/规则/边缘配置加载+所有验证门；持久规则身份注册</td>
+<td>Pipeline/rule/edge config loading + all validation gates;持久规则身份注册</td>
 </tr>
 <tr>
 <td><code>pipeline.py</code></td>
@@ -3219,7 +3219,7 @@
 </tr>
 <tr>
 <td><code>camera_manager.py</code></td>
-<td><code>CameraSourceManager</code>：每个实例一个捕获线程、有界队列、溢出跟踪</td>
+<td><code>CameraSourceManager</code>: one capture thread per instance, bounded queue, overflow tracking</td>
 </tr>
 <tr>
 <td><code>verify.py</code></td>
@@ -3235,7 +3235,7 @@
 </tr>
 <tr>
 <td><code>barcode/</code></td>
-<td><code>models</code>、<code>protocols</code> (<code>BarcodeDecoder</code>)、<code>zxing</code> (ZXing-cpp)、<code>keyboard</code> (dev sim)、<code>resolver</code> (精确映射)</td>
+<td><code>models</code>, <code>protocols</code> (<code>BarcodeDecoder</code>), <code>zxing</code> (ZXing-cpp), <code>keyboard</code> (dev sim), <code>resolver</code> (exact-mapping)</td>
 </tr>
 <tr>
 <td><code>detection/</code></td>
@@ -3243,7 +3243,7 @@
 </tr>
 <tr>
 <td><code>api/</code></td>
-<td><code>app</code> (<code>create_app</code>)、<code>settings</code> (服务器/上传/存储/保留/完整性扫描)、<code>state</code> (<code>EdgeRuntime</code>/<code>InstanceRuntime</code>)、<code>deps</code> (身份验证)、<code>events</code> (<code>RuntimeEventBus</code>)、<code>problems</code> (RFC 7807)、<code>logging_buffer</code>、<code>schemas</code></td>
+<td><code>app</code> (<code>create_app</code>), <code>settings</code> (Server/Upload/Storage/Retention/IntegrityScan), <code>state</code> (<code>EdgeRuntime</code>/<code>InstanceRuntime</code>), <code>deps</code> (auth), <code>events</code> (<code>RuntimeEventBus</code>), <code>problems</code> (RFC 7807), <code>logging_buffer</code>, <code>schemas</code></td>
 </tr>
 <tr>
 <td><code>api/routers/</code></td>
@@ -3255,7 +3255,7 @@
 </tr>
 <tr>
 <td><code>persistence/</code></td>
-<td><code>schema</code>（SQLAlchemy 核心表）、<code>repository</code>（<code>EdgeRepository</code>）、<code>migrate</code>（Alembic）、<code>reconcile</code>（导入/扫描/隔离）</td>
+<td><code>schema</code> (SQLAlchemy Core tables), <code>repository</code> (<code>EdgeRepository</code>), <code>migrate</code> (Alembic), <code>reconcile</code> (import/scan/quarantine)</td>
 </tr>
 <tr>
 <td><code>retention/</code></td>
@@ -3282,7 +3282,7 @@
 <p>另外：<code>migrations/</code>（Alembic），<code>openapi/edge-openapi.json</code>（承诺，
 漂移检查）、<code>Dockerfile</code>、<code>compose.yaml</code>、<code>pyproject.toml</code>、
 <code>tests/</code>（约 50 个测试文件）。</p>
-<h3 id="package"><code>packages/python/domain</code> — 包 <code>assemblyvision_domain</code><a class="headerlink" href="#package" title="Permanent link">&para;</a></h3>
+<h3 id="package"><code>packages/python/domain</code> — package <code>assemblyvision_domain</code><a class="headerlink" href="#package" title="Permanent link">&para;</a></h3>
 <p>规范 Pydantic 模型、错误、原因代码。唯一的依赖：pydantic。</p>
 <ul>
 <li><code>models.py</code> — <code>APIModel</code> 基础（<code>extra="forbid"</code>、<code>from_attributes=True</code>）；
@@ -3298,14 +3298,14 @@
 <li><code>errors.py</code> — <code>AssemblyVisionError</code> 基础； <code>ConfigError</code>、<code>ImageReadError</code>、
   <code>DetectionError</code>（带有<code>.reason_code</code>），<code>ROIGenerationError</code>，
   <code>RuleEvaluationError</code>、<code>OutputError</code>。</li>
-<li><code>reason_codes.py</code> — 可执行的规范原因代码集。</li>
+<li><code>reason_codes.py</code> — the enforceable canonical reason-code set.</li>
 </ul>
 <h3 id="package"><code>packages/python/vision-core</code> — 包 <code>assemblyvision_vision</code><a class="headerlink" href="#package" title="Permanent link">&para;</a></h3>
 <p>ROI 引擎、帧源、清单加载。可选附加 <code>video</code>、<code>rtsp</code>、
-<code>http</code>、<code>gige</code> 保持集中/轻量级消费者的精简。</p>
+<code>http</code>, <code>gige</code> keep it lean for central/lightweight consumers.</p>
 <ul>
-<li><code>roi/roi_engine.py</code> — <code>ROIConfig</code>、<code>ROIEngine.generate</code>（展开→剪辑→拒绝→裁剪）。</li>
-<li><code>roi/geometry.py</code> — 纯 <code>Box</code>/<code>Transform</code> 助手（<code>expand</code>、<code>clip</code>、
+<li><code>roi/roi_engine.py</code> — <code>ROIConfig</code>, <code>ROIEngine.generate</code> (expand→clip→reject→crop).</li>
+<li><code>roi/geometry.py</code> — pure <code>Box</code>/<code>Transform</code> helpers (<code>expand</code>, <code>clip</code>,
   <code>retained_fraction</code>、<code>translation_transform</code>、<code>inverse_transform</code>、
   <code>apply_transform</code>）。</li>
 <li><code>sources/</code> — <code>FrameSource</code>协议+<code>CapturedFrame</code>； <code>FolderSource</code>，
@@ -3318,10 +3318,10 @@
   <code>model_version_label</code>、<code>sha256_file</code>。</li>
 </ul>
 <h3 id="package-console-script"><code>training</code> — 包 <code>assemblyvision-training</code> （控制台脚本 <code>av-train</code>）<a class="headerlink" href="#package-console-script" title="Permanent link">&para;</a></h3>
-<p>仅限开发人员； <strong>从未由运行时导入</strong>。子命令 <code>product</code>,
-<code>prepare-components</code>、<code>component</code>。模块：<code>cli.py</code>、<code>dataset.py</code>
+<p>Developer-only; <strong>从未由运行时导入</strong>。 Subcommands <code>product</code>,
+<code>prepare-components</code>, <code>component</code>.模块：<code>cli.py</code>、<code>dataset.py</code>
 （验证），<code>prepare_components.py</code>（ROI 数据集生成），
-<code>train.py</code>（Ultralytics 包装器）、<code>artifact.py</code>（不可变的权重/清单/
+<code>train.py</code> (Ultralytics wrapper), <code>artifact.py</code> (immutable weights/manifests/
 运行元数据）。基本权重缓存在 <code>training/.cache/weights/</code> 中。</p>
 <h2 id="typescript-workspace">TypeScript 工作区<a class="headerlink" href="#typescript-workspace" title="Permanent link">&para;</a></h2>
 <table>
@@ -3350,7 +3350,7 @@
 </tr>
 <tr>
 <td><code>apps/edge-desktop</code></td>
-<td>Electron shell（上下文隔离、沙箱、信息亭）；加载构建的边缘网络输出</td>
+<td>Electron shell (context isolation, sandbox, kiosk);加载构建的边缘网络输出</td>
 </tr>
 </tbody>
 </table>
@@ -3365,19 +3365,19 @@
 <tbody>
 <tr>
 <td><code>generate-synthetic-dataset.py</code></td>
-<td>程序两阶段标记数据集（固定种子 2026）</td>
+<td>Procedural two-stage labeled dataset (fixed seed 2026)</td>
 </tr>
 <tr>
 <td><code>adapt-roboflow-dataset.py</code> / <code>adapt-xanylabeling.py</code></td>
-<td>真实导出→两阶段布局，严格验证，原子发布</td>
+<td>Real export → two-stage layout, strict validation, atomic publish</td>
 </tr>
 <tr>
 <td><code>e2e-demo.sh</code></td>
-<td>全程训练→准备→训练→检查→用硬FN门验证烟雾</td>
+<td>Full train→prepare→train→inspect→verify smoke with hard FN gate</td>
 </tr>
 <tr>
 <td><code>generate-edge-openapi.py</code></td>
-<td>重新生成承诺边缘 OpenAPI（CI 漂移检查）</td>
+<td>Regenerate committed edge OpenAPI (CI drift check)</td>
 </tr>
 <tr>
 <td><code>translate-docs.py</code>、<code>generate-mkdocs-configs.py</code>、<code>build-docs.sh</code></td>
@@ -3389,7 +3389,7 @@
 </tr>
 <tr>
 <td><code>tests/</code></td>
-<td>适配器/生成器/验收运行器的 Pytest</td>
+<td>Pytest for adapters/generator/acceptance runner</td>
 </tr>
 </tbody>
 </table>

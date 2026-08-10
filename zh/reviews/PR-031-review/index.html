@@ -3371,7 +3371,7 @@ PR31-T01。现在没有做出任何行为改变；未来的 RBAC ADR
   在一笔交易中原子地进行。</li>
 <li>Auth 接线：在 <code>Depends(require_viewer)</code> 下评论路由器；会话cookie
   <code>HttpOnly</code> + <code>SameSite=strict</code>（无 CSRF 暴露）； 401 测试覆盖。</li>
-<li>迁移安全：附加create-table +索引，FK到<code>inspections</code>，
+<li>迁移安全：附加创建表+索引，FK到<code>inspections</code>，
   schema.py/migration 逐列镜像。</li>
 </ul>
 <h2 id="6-extensibility-assessment">6.可扩展性评估<a class="headerlink" href="#6-extensibility-assessment" title="Permanent link">&para;</a></h2>
@@ -3382,11 +3382,11 @@ PR31-T01。现在没有做出任何行为改变；未来的 RBAC ADR
 <li>Schema进化使用已建立的Alembic链；添加
   <code>adjudication_state</code>/<code>assignment_history</code> 随后跟在 0004/0006 后面
   <code>op.add_column</code> 模式。</li>
-<li>队列排序/抽样（设计24.4优先级和OK审核抽样）是
+<li>队列排序/抽样（设计24.4优先级和OK审计抽样）是
   未来主要变化；键集光标绑定到当前
   <code>(completed_at, inspection_id)</code> 顺序，因此评分排序需要绑定
   将光标移动到新的排序键。</li>
-<li>添加每个组件修正 UI 插槽（<code>ComponentCorrection</code> 是
+<li>添加每个组件校正 UI 插槽（<code>ComponentCorrection</code> 是
   已经进行了端到端建模； UI 尚未发送）。</li>
 <li>OpenAPI + 生成的 TS 经过 CI 漂移检查；手工维护的
   <code>types.ts</code>/<code>validate.ts</code>/client层是剩余的漂移风险（T04）。</li>

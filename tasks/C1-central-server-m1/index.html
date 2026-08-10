@@ -1,0 +1,4171 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/tasks/C1-central-server-m1/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>C1 Central Server M1: Pilot Ingestion, History, and Review - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#c1-central-server-m1-pilot-ingestion-history-and-review" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              C1 Central Server M1: Pilot Ingestion, History, and Review
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/28-edge-acceptance-report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Acceptance Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/01-getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/02-repository-layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/03-cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/04-edge-api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/05-edge-service-internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge-Service Internals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/06-adding-a-rest-endpoint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a REST Endpoint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/07-database-and-persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database and Persistence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/08-camera-sources-and-vision-core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera Sources and Vision-Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/09-training-and-datasets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Datasets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/10-frontend-development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/11-testing-and-quality-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/12-core-abstractions-and-type-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Abstractions and Type Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/13-debugging-and-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Debugging and Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engineering Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Engineering Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contract Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/01-architecture-boundaries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Boundaries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code and Interface Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI, Rule Engine, and Fail-Safe Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge, Storage, and Upload Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data, API, and Versioning Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing, Quality, and CI Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment, Observability, and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security, Permissions, and Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Site and Change Control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model, Rule, Release, and Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minimum Mandatory Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operational Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operational Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/01-camera-disconnection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera Disconnection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/02-model-loading-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model-Loading Failure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/03-low-disk-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Low Disk Space
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/04-upload-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/05-database-recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/06-repeated-container-restart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repeated Container Restart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/07-network-recovery-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network Recovery Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/08-model-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/09-rule-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Collection and Annotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/12-backup-and-recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backup and Recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/13-tls-certificate-rotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TLS Certificate Rotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/14-deployment-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Upgrade and Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/15-edge-acceptance-execution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Acceptance Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributor Documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributor Documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-scope-and-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Scope and Non-Goals
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Scope and Non-Goals">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#in-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-locked-m1-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Locked M1 Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-mandatory-safety-and-compatibility-invariants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Mandatory Safety and Compatibility Invariants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-existing-edge-contract-to-implement-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Existing Edge Contract to Implement First
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Existing Edge Contract to Implement First">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-endpoint-and-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Endpoint and authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-envelope-accepted-in-m1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Envelope accepted in M1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-required-receipt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Required receipt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-status-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Status semantics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-deliberate-m1-transfer-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Deliberate M1 transfer boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-target-architecture-and-code-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Target Architecture and Code Organization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-delivery-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Delivery Pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Delivery Pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c1a-workspace-service-and-compose-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C1a: Workspace, Service, and Compose Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c1b-tenant-device-and-pilot-authentication-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C1b: Tenant, Device, and Pilot Authentication Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c2a-inspection-ingestion-and-verified-receipts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C2a: Inspection Ingestion and Verified Receipts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c2b-minio-media-ingestion-and-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C2b: MinIO Media Ingestion and Binding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c3-history-detail-media-access-and-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C3: History, Detail, Media Access, and Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c4-central-append-only-human-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C4: Central Append-Only Human Review
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c5-initial-metadata-and-manual-configuration-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C5: Initial Metadata and Manual Configuration Governance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c6-m1-hardening-and-operational-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C6: M1 Hardening and Operational Evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-m1-database-and-object-storage-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. M1 Database and Object Storage Rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. M1 Database and Object Storage Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-required-m1-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Required M1 tables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-required-indexes-and-uniqueness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Required indexes and uniqueness
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-object-key-and-lifecycle-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Object key and lifecycle rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-api-type-and-error-contract-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. API, Type, and Error Contract Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-admin-web-m1-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Admin-Web M1 Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Admin-Web M1 Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview (/overview)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inspections-inspections-inspectionsid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspections (/inspections, /inspections/:id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reviews-reviews" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reviews (/reviews)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-mandatory-test-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Mandatory Test Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-quality-security-and-documentation-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Quality, Security, and Documentation Gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-m1-exit-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. M1 Exit Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-risks-dependencies-and-deferred-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Risks, Dependencies, and Deferred Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="c1-central-server-m1-pilot-ingestion-history-and-review">C1 Central Server M1: Pilot Ingestion, History, and Review<a class="headerlink" href="#c1-central-server-m1-pilot-ingestion-history-and-review" title="Permanent link">&para;</a></h1>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>Deliver the first central-server path for AssemblyVision without weakening the
+edge-first architecture. The central server is a management and evidence plane:
+it receives delayed edge uploads, stores selected evidence, provides
+cross-device history and human review, and remains unavailable without changing
+or blocking any production inspection decision at the edge.</p>
+<p>This task implements the central one-month / M1 boundary defined by design 05:</p>
+<ul>
+<li>device-scoped idempotent inspection and media ingestion;</li>
+<li>PostgreSQL inspection history and selected evidence metadata;</li>
+<li>S3-compatible object storage through MinIO;</li>
+<li>pilot device upload authentication and a single administrator path;</li>
+<li>minimal central administration views for overview, history, and review;</li>
+<li>Docker Compose deployment and targeted resilience evidence.</li>
+</ul>
+<p>The work must make E6-A16 (duplicate upload idempotency against a verified
+central receipt) executable. It does not complete E6 on-site acceptance, which
+still requires real hardware, unseen customer data, and customer witnesses.</p>
+<h2 id="2-scope-and-non-goals">2. Scope and Non-Goals<a class="headerlink" href="#2-scope-and-non-goals" title="Permanent link">&para;</a></h2>
+<h3 id="in-scope">In scope<a class="headerlink" href="#in-scope" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A new <code>apps/central-service</code> FastAPI application in the uv workspace.</li>
+<li>A new <code>apps/admin-web</code> Vue 3 + TypeScript application in the pnpm workspace.</li>
+<li>PostgreSQL migrations and a tenant-scoped central persistence model.</li>
+<li>MinIO in the central Compose deployment, accessed through a typed storage
+  abstraction with opaque, tenant-scoped object keys.</li>
+<li>The current edge-compatible single-envelope upload endpoint:
+  <code>POST /api/v1/inspection-uploads</code>.</li>
+<li>Strict verified receipts, idempotent replay, payload-conflict detection, and
+  media-to-inspection binding.</li>
+<li>Central inspection history, detail, and authorized media metadata queries.</li>
+<li>Pilot authentication: separate per-device upload credentials plus a single
+  administrator session/token path for the administration UI.</li>
+<li>Append-only central human review queue and review submission.</li>
+<li>Initial central product/rule/model metadata registration and immutable
+  version publication needed to validate ingested references. Package delivery
+  remains manual at the edge.</li>
+<li>Typed OpenAPI output and generated/synchronized TypeScript central API types.</li>
+<li>Compose health checks, controlled schema migrations, focused backup/restore
+  documentation, and tests required by the repository quality gates.</li>
+</ul>
+<h3 id="out-of-scope">Out of scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Any synchronous central dependency in the edge inspection pipeline.</li>
+<li>OIDC PKCE, external identity-provider integration, complete production RBAC,
+  device mTLS/PKI, credential rotation, or multi-organization self-service.</li>
+<li>Remote configuration/model package distribution, staged rollout, activation,
+  rollback, or acknowledgement flows (CENTRAL-007 production scope).</li>
+<li>Reports/exports, asynchronous report workers, generalized administration,
+  advanced analytics, warehouse/BI integration, or Redis.</li>
+<li><code>WS /api/v1/ws/organization</code>; M1 uses bounded REST refresh/polling.</li>
+<li>Pre-signed uploads, multipart uploads, or resumable/chunked media transfer.
+  The edge <code>media_chunk_bytes</code> setting is a dormant placeholder until the
+  edge-to-central resumable protocol is explicitly frozen and implemented on
+  both sides.</li>
+<li>Central ingestion of edge-local <code>review_records</code>. M1 central reviews are
+  newly created central append-only records for centrally ingested inspections;
+  edge-local review synchronization requires a separate governed contract.</li>
+<li>Central retention automation, lifecycle deletion, data-residency policy, and
+  production backup/DR objectives. M1 preserves sufficient metadata and object
+  lifecycle state for those later controls.</li>
+</ul>
+<h2 id="3-locked-m1-decisions">3. Locked M1 Decisions<a class="headerlink" href="#3-locked-m1-decisions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>M1 choice</th>
+<th>Production follow-up</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Delivery scope</td>
+<td>One-month pilot boundary from design 05</td>
+<td>Full administration, analytics, governance, and fleet rollout</td>
+</tr>
+<tr>
+<td>Repository layout</td>
+<td><code>apps/central-service</code>, <code>apps/admin-web</code>, and <code>packages/typescript/api-client-central</code> in this monorepo</td>
+<td>Keep the same bounded module interfaces</td>
+</tr>
+<tr>
+<td>Data store</td>
+<td>PostgreSQL</td>
+<td>Partitioning/materialized views only after measured volume requires them</td>
+</tr>
+<tr>
+<td>Object store</td>
+<td>MinIO, using an S3-compatible abstraction from the first release</td>
+<td>Customer-selected S3-compatible service / lifecycle policy</td>
+</tr>
+<tr>
+<td>Device authentication</td>
+<td>Per-device pilot upload token, bound to a registered device</td>
+<td>mTLS or short-lived device credentials, rotation, quarantine/re-enrollment</td>
+</tr>
+<tr>
+<td>Human authentication</td>
+<td>One pilot administrator session/token path</td>
+<td>OIDC Authorization Code + PKCE and full organization-scoped RBAC</td>
+</tr>
+<tr>
+<td>Admin UI</td>
+<td>Overview, history/detail, review</td>
+<td>Fleet/configuration/model/report/user/audit screens</td>
+</tr>
+<tr>
+<td>Live updates</td>
+<td>REST refresh and bounded polling</td>
+<td>Best-effort organization WebSocket with REST re-sync</td>
+</tr>
+<tr>
+<td>Media transfer</td>
+<td>Existing small single POST envelope, written by central to MinIO</td>
+<td>Pre-signed/resumable flow only after contract and edge support are delivered</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-mandatory-safety-and-compatibility-invariants">4. Mandatory Safety and Compatibility Invariants<a class="headerlink" href="#4-mandatory-safety-and-compatibility-invariants" title="Permanent link">&para;</a></h2>
+<p>Every implementation and test in this task must preserve these invariants.</p>
+<ol>
+<li>Central unavailability, rejection, slow responses, or maintenance must never
+   block, delay-commit, or alter edge inspection decisions. The edge durable
+   outbox remains authoritative for pending uploads.</li>
+<li>The central server must preserve the original edge inspection record as an
+   immutable fact. Central review records are append-only linked facts and
+   never overwrite the original AI/internal/business decisions, timestamps,
+   model checksums, rule versions, or source media identities.</li>
+<li>The current edge upload wire contract is the M1 compatibility boundary.
+   M1 must accept the existing JSON envelope before requesting any edge upload
+   implementation change.</li>
+<li>A successful receipt is returned only after the relevant metadata has been
+   durably committed. A MEDIA receipt is returned only after bytes are written,
+   size/checksum verified, and bound to the inspection with a durable central
+   object identifier.</li>
+<li><code>(device_id, idempotency_key)</code>, <code>(device_id, inspection_id)</code>, and
+   <code>(device_id, device_sequence)</code> uniqueness protect effectively-once
+   persistence. Identical replay returns the original receipt; a reused key or
+   source identity with a different canonical request hash returns <code>409</code> and
+   preserves the original.</li>
+<li>All tenant-owned database rows carry <code>organization_id</code>; every query scopes
+   it server-side, even though M1 has one administrator and a pilot tenancy.</li>
+<li>Object keys are generated by the central server. The server must never
+   expose storage credentials or accept client-controlled filesystem paths.</li>
+<li>PostgreSQL must not claim media <code>AVAILABLE</code> until the final MinIO object is
+   present and checksum-verified. Partial/orphan object handling is explicit
+   through <code>PENDING</code>, <code>AVAILABLE</code>, <code>FAILED</code>, and later reconciliation.</li>
+<li>Pilot device credentials are distinct from human credentials, never logged,
+   and accepted only over HTTPS outside explicit loopback development.</li>
+<li>Request validation is typed and bounded. Unknown fields are rejected at
+    mutation boundaries; errors use RFC 7807 <code>application/problem+json</code> and
+    never expose credentials, object keys, internal paths, SQL, or stack traces.</li>
+<li>M1 must not silently activate an edge configuration. A desired assignment
+    is not an activation acknowledgement.</li>
+<li>No dashboard metric may present reviewed labels as raw AI predictions or
+    imply an accuracy/recall value without measured sample coverage.</li>
+</ol>
+<h2 id="5-existing-edge-contract-to-implement-first">5. Existing Edge Contract to Implement First<a class="headerlink" href="#5-existing-edge-contract-to-implement-first" title="Permanent link">&para;</a></h2>
+<h3 id="51-endpoint-and-authentication">5.1 Endpoint and authentication<a class="headerlink" href="#51-endpoint-and-authentication" title="Permanent link">&para;</a></h3>
+<p>The existing edge <code>HttpUploadSink</code> posts to:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>POST {AV_EDGE_UPLOAD_BASE_URL}/inspection-uploads
+</code></pre></div>
+<p>The configured edge base URL includes <code>/api/v1</code>; therefore M1 provides:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>POST /api/v1/inspection-uploads
+</code></pre></div>
+<p>The request carries <code>Authorization: Bearer &lt;device-upload-token&gt;</code> and
+<code>Content-Type: application/json</code>. The central service resolves the token to
+exactly one registered active device and rejects a mismatched <code>device_id</code> from
+the decoded inspection payload.</p>
+<h3 id="52-envelope-accepted-in-m1">5.2 Envelope accepted in M1<a class="headerlink" href="#52-envelope-accepted-in-m1" title="Permanent link">&para;</a></h3>
+<p>M1 accepts the edge's current bounded JSON envelope for both <code>INSPECTION</code> and
+<code>MEDIA</code> tasks:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;idempotency_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inspection:{device_id}:{inspection_id}&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;INSPECTION&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;edge-object-uuid&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;inspection_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;edge-inspection-uuid-or-null&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">&quot;checksum_sha256&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256-or-null&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">&quot;size_bytes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="nt">&quot;payload_b64&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;base64-payload&quot;</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">}</span>
+</code></pre></div>
+<p>For <code>INSPECTION</code>, <code>payload_b64</code> decodes to the versioned edge
+<code>InspectionRecord</code>. For <code>MEDIA</code>, it decodes to the raw selected media bytes;
+the inspection upload must already have a verified receipt because the edge
+scheduler enforces metadata-before-media ordering.</p>
+<p>The central boundary adapter must convert this wire envelope into typed central
+commands. The core domain and repository interfaces must use typed models, not
+unstructured dictionaries.</p>
+<h3 id="53-required-receipt">5.3 Required receipt<a class="headerlink" href="#53-required-receipt" title="Permanent link">&para;</a></h3>
+<p>The response body is at most 64 KiB and must include:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;idempotency_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;same value as request&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;same value as request&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;INSPECTION or MEDIA&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">&quot;checksum_sha256&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;same value as request&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">&quot;size_bytes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">&quot;central_object_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;required and non-empty for MEDIA&quot;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">}</span>
+</code></pre></div>
+<p>The edge validates every echoed field before accepting a <code>2xx</code> result. MEDIA
+receipts without <code>central_object_id</code> are permanent <code>INVALID_RECEIPT</code> failures
+at the edge and must never be emitted by central.</p>
+<h3 id="54-status-semantics">5.4 Status semantics<a class="headerlink" href="#54-status-semantics" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Central response</th>
+<th>Edge treatment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>New valid inspection/media persisted</td>
+<td><code>201</code> + verified receipt</td>
+<td>Success</td>
+</tr>
+<tr>
+<td>Same device/key/hash replay</td>
+<td><code>200</code> or <code>201</code> + original receipt</td>
+<td>Success, no duplicate</td>
+</tr>
+<tr>
+<td>Same device/key or source identity, different hash</td>
+<td><code>409 PAYLOAD_CONFLICT</code></td>
+<td>Permanent failure; local evidence remains</td>
+</tr>
+<tr>
+<td>Referenced inspection/version/device invalid</td>
+<td><code>409</code> or typed <code>422</code> problem</td>
+<td>Permanent failure</td>
+</tr>
+<tr>
+<td>Temporary DB/object-store/maintenance failure</td>
+<td><code>503</code> + optional numeric <code>Retry-After</code></td>
+<td>Retryable</td>
+</tr>
+<tr>
+<td>Rate limit / timeout</td>
+<td><code>429</code> / <code>408</code> + optional <code>Retry-After</code></td>
+<td>Retryable</td>
+</tr>
+<tr>
+<td>Authentication/authorization failure</td>
+<td><code>401</code> / <code>403</code></td>
+<td>Permanent until operator/configuration intervention</td>
+</tr>
+<tr>
+<td>Malformed, oversized, or invalid evidence</td>
+<td><code>400</code> / <code>413</code> / <code>422</code> problem</td>
+<td>Permanent failure</td>
+</tr>
+</tbody>
+</table>
+<p>The central implementation must test these semantics against edge-compatible
+request fixtures and receipt validation logic. It must not return <code>202</code> for an
+inspection unless the response explicitly contains a receipt state that is safe
+for the edge to use; normal M1 ingestion commits before success.</p>
+<h3 id="55-deliberate-m1-transfer-boundary">5.5 Deliberate M1 transfer boundary<a class="headerlink" href="#55-deliberate-m1-transfer-boundary" title="Permanent link">&para;</a></h3>
+<p>M1 does <strong>not</strong> implement <code>media-uploads:initiate</code>, <code>complete</code>, direct browser
+upload, pre-signed upload, or media chunking. The currently deployed edge sends
+single Base64 envelopes and does not consume those paths. Prematurely exposing
+an unused alternative would create two incompatible sources of truth.</p>
+<p>After M1 is accepted, a separate contract/ADR may introduce resumable upload:
+stable upload-task identity, zero-based chunk idempotency, total SHA-256 and
+size confirmation, and object-to-inspection binding. Only then may the edge
+consume its reserved <code>media_chunk_bytes</code> setting.</p>
+<h2 id="6-target-architecture-and-code-organization">6. Target Architecture and Code Organization<a class="headerlink" href="#6-target-architecture-and-code-organization" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>apps/
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  central-service/                 # FastAPI API, repositories, migrations, storage
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  admin-web/                       # Vue 3 central administration application
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>packages/
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  python/
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    domain/                        # Existing canonical edge/central inspection models
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  typescript/
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    api-client-central/            # Generated/synchronized central OpenAPI client
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    ui/                            # Existing shared display primitives where appropriate
+</code></pre></div>
+<p><code>central-service</code> starts as one deployable with explicit domain modules:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>central_service/
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  api/             # routers, auth dependencies, problem responses, OpenAPI
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  ingest/          # envelope adapter, canonical hash, receipt service
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>  persistence/     # SQLAlchemy Core schema, Alembic, repositories
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>  storage/         # MinIO/S3 interface, staging/finalization, integrity checks
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  review/          # queue policy and append-only review service
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  query/           # history/detail/dashboard projections
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>  auth/            # pilot administrator/device upload credentials
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>  observability/   # structured logs, metrics, health/readiness
+</code></pre></div>
+<p>No worker, Redis, package-distribution service, or microservice split is added
+without a measured M1 need. Long-running jobs are out of scope for this task.</p>
+<h2 id="7-delivery-pipeline">7. Delivery Pipeline<a class="headerlink" href="#7-delivery-pipeline" title="Permanent link">&para;</a></h2>
+<p>Each phase is independently reviewable and should normally be delivered as one
+or more focused PRs into <code>main</code>.</p>
+<h3 id="c1a-workspace-service-and-compose-foundation">C1a: Workspace, Service, and Compose Foundation<a class="headerlink" href="#c1a-workspace-service-and-compose-foundation" title="Permanent link">&para;</a></h3>
+<p><strong>Implementation</strong></p>
+<ul>
+<li>Add <code>apps/central-service</code> to <code>[tool.uv.workspace].members</code> with Python 3.12
+  compatible FastAPI, SQLAlchemy Core, Alembic, PostgreSQL driver, and typed
+  MinIO/S3 client dependencies.</li>
+<li>Add <code>apps/admin-web</code> to the pnpm workspace with Vue 3, TypeScript, Pinia,
+  Element Plus, ECharts, Vitest, and Playwright conventions aligned to
+  <code>apps/edge-web</code>.</li>
+<li>Add <code>packages/typescript/api-client-central</code> and central OpenAPI generation /
+  drift checks, mirroring the edge API contract discipline.</li>
+<li>Add central Compose services: PostgreSQL, MinIO, <code>central-service</code>, and built
+  <code>admin-web</code>; use named persistent volumes, non-root images, health checks,
+  explicit environment/secret files, and no implicit migration race.</li>
+<li>Add <code>/health/live</code> and <code>/health/ready</code>. Readiness fails when required schema,
+  PostgreSQL, MinIO bucket access, or pilot credential configuration is invalid.</li>
+</ul>
+<p><strong>Exit criteria</strong></p>
+<ul>
+<li>Compose brings up all four services from a clean volume set.</li>
+<li>The API migration command is a controlled release step and is not run by
+  every API replica concurrently.</li>
+<li>OpenAPI is generated, committed, and checked for drift.</li>
+<li>No central dependency is imported by edge runtime code.</li>
+</ul>
+<h3 id="c1b-tenant-device-and-pilot-authentication-foundation">C1b: Tenant, Device, and Pilot Authentication Foundation<a class="headerlink" href="#c1b-tenant-device-and-pilot-authentication-foundation" title="Permanent link">&para;</a></h3>
+<p><strong>Implementation</strong></p>
+<ul>
+<li>Create migrations for <code>organizations</code>, <code>sites</code>, <code>production_lines</code>,
+  <code>devices</code>, pilot administrator identity/session records, device upload token
+  hashes, and minimum <code>audit_logs</code> support.</li>
+<li>Seed or bootstrap exactly one pilot organization, site, line, registered
+  device, upload credential, and administrator through an explicit migration,
+  admin command, or Compose bootstrap flow. No implicit default device is
+  created on an upload request.</li>
+<li>Implement device-upload authentication for ingest routes and a pilot
+  administrator token/session path for the administration UI. Device and human
+  credentials are separate and cannot authorize each other's routes.</li>
+<li>Implement <code>GET /api/v1/auth/me</code>, <code>GET /api/v1/sites</code>, <code>GET /api/v1/lines</code>,
+  and minimal <code>GET /api/v1/devices</code> / <code>GET /api/v1/devices/{id}</code>.</li>
+</ul>
+<p><strong>Exit criteria</strong></p>
+<ul>
+<li>Unknown, disabled, or organization-mismatched device tokens fail closed.</li>
+<li>Device credentials cannot query human administration endpoints.</li>
+<li>Administrator credentials cannot impersonate a device upload.</li>
+<li>Every tenant-owned query is organization-scoped in repository tests.</li>
+</ul>
+<h3 id="c2a-inspection-ingestion-and-verified-receipts">C2a: Inspection Ingestion and Verified Receipts<a class="headerlink" href="#c2a-inspection-ingestion-and-verified-receipts" title="Permanent link">&para;</a></h3>
+<p><strong>Implementation</strong></p>
+<ul>
+<li>Add <code>upload_receipts</code>, <code>inspections</code>, and <code>inspection_components</code> migrations.
+  Preserve edge <code>inspection_id</code>, device sequence, capture/completion times,
+  original decisions, product resolution, reason codes, model/rule/config
+  versions and checksums, inference metadata, and central receive time.</li>
+<li>Implement a strict typed envelope parser for
+  <code>POST /api/v1/inspection-uploads</code>, including bounded Base64 decoding,
+  canonical request hashing, schema-version validation, payload-size limits,
+  device identity matching, and immutable version/reference checks.</li>
+<li>Persist accepted inspection payload, receipt, and audit event in one
+  PostgreSQL transaction. Identical replay returns the original persisted
+  receipt without a second inspection or audit acceptance event.</li>
+<li>Record payload conflict attempts as bounded security/data-integrity audit
+  events without altering the original accepted resource.</li>
+</ul>
+<p><strong>Exit criteria</strong></p>
+<ul>
+<li>Integration tests send the exact current edge inspection envelope.</li>
+<li>Replaying identical bytes returns the same receipt and leaves exactly one
+  inspection row.</li>
+<li>Reusing an idempotency key, inspection ID, or device sequence with a
+  different canonical hash returns <code>409 PAYLOAD_CONFLICT</code> and preserves data.</li>
+<li>A real edge <code>HttpUploadSink</code> test fixture accepts the receipt as verified.</li>
+</ul>
+<h3 id="c2b-minio-media-ingestion-and-binding">C2b: MinIO Media Ingestion and Binding<a class="headerlink" href="#c2b-minio-media-ingestion-and-binding" title="Permanent link">&para;</a></h3>
+<p><strong>Implementation</strong></p>
+<ul>
+<li>Add <code>inspection_media</code> migration with edge source media ID, inspection FK,
+  media kind, content type, bytes, SHA-256, central object ID/key, lifecycle,
+  capture/receive times, and immutable binding fields.</li>
+<li>For the existing <code>MEDIA</code> envelope, validate parent inspection availability,
+  decode within bounded limits, stage to MinIO under a generated tenant-scoped
+  key, calculate/verify size and SHA-256, finalize the object, then transact
+  metadata + receipt + audit event.</li>
+<li>On failure, preserve a <code>PENDING</code> or <code>FAILED</code> lifecycle record only when safe
+  for reconciliation; never report <code>AVAILABLE</code> before final object existence.</li>
+<li>Return <code>central_object_id</code> only after the object is bound and verified.</li>
+<li>Add an idempotent integrity/reconciliation command for staged/orphan objects
+  and rows. It is an M1 maintenance command, not a continuous worker.</li>
+</ul>
+<p><strong>Exit criteria</strong></p>
+<ul>
+<li>MEDIA receipts contain a non-empty central object ID and satisfy edge receipt
+  validation.</li>
+<li>Size/checksum mismatch returns a permanent typed problem and creates no
+  <code>AVAILABLE</code> media row.</li>
+<li>Replayed media uploads create one final object/binding only.</li>
+<li>An end-to-end edge outbox test reaches <code>SYNCED</code> only after all required media
+  receipts are verified; the E6-A16 duplicate-upload acceptance case executes
+  against central rather than a directory sink.</li>
+</ul>
+<h3 id="c3-history-detail-media-access-and-overview">C3: History, Detail, Media Access, and Overview<a class="headerlink" href="#c3-history-detail-media-access-and-overview" title="Permanent link">&para;</a></h3>
+<p><strong>Implementation</strong></p>
+<ul>
+<li>Implement <code>GET /api/v1/inspections</code> with bounded filters: site, line,
+  device, UTC time range, barcode, product, business/internal decision,
+  reason, model/rule version, and review state. Use keyset pagination and bind
+  cursors to normalized filters.</li>
+<li>Implement <code>GET /api/v1/inspections/{id}</code> and media metadata access. Show edge
+  capture/completion time separately from central receive time.</li>
+<li>Implement authorized short-lived MinIO URLs or authorized streaming for media;
+  never return bucket credentials, raw object keys, or permanent public links.</li>
+<li>Implement M1 <code>GET /api/v1/dashboard/summary</code> and
+  <code>GET /api/v1/dashboard/timeseries</code> with explicit scope/time filters, sample
+  counts, and no invented accuracy or recall metric.</li>
+<li>Build <code>admin-web</code> pilot login/session handling, overview page, inspection
+  history with bounded filters/keyset pagination, and inspection detail with
+  evidence/media access.</li>
+</ul>
+<p><strong>Exit criteria</strong></p>
+<ul>
+<li>Cross-device queries cannot escape organization scope and reject invalid
+  cursors/filter ranges with typed problems.</li>
+<li>Media access rejects unauthorized, cross-organization, unavailable, and
+  purged objects.</li>
+<li>Browser e2e proves administrator login, history filtering, detail rendering,
+  and authorized evidence display against Compose services.</li>
+</ul>
+<h3 id="c4-central-append-only-human-review">C4: Central Append-Only Human Review<a class="headerlink" href="#c4-central-append-only-human-review" title="Permanent link">&para;</a></h3>
+<p><strong>Implementation</strong></p>
+<ul>
+<li>Add <code>review_records</code> migration with inspection/reviewer FKs, original
+  decision snapshot, disposition, bounded component corrections, reason code,
+  bounded comment, revision, timestamp, and
+  <code>UNIQUE(inspection_id, revision)</code>.</li>
+<li>Implement a versioned M1 review-routing policy that prioritizes NG and
+  uncertain inspections. It is auditable and does not imply that every NG will
+  always require review after pilot policy is revised.</li>
+<li>Implement <code>GET /api/v1/reviews/queue</code> and
+  <code>POST /api/v1/inspections/{id}/reviews</code>. Submission requires an idempotency
+  key and optimistic review revision (<code>If-Match</code>); concurrent changes return
+  <code>409 REVIEW_CONFLICT</code> without overwriting prior facts.</li>
+<li>Write an audit event for every review append. Corrected outcomes become
+  governed training candidates only as a separate future workflow; they never
+  trigger automatic edge model/rule/threshold updates.</li>
+<li>Build the <code>admin-web</code> review queue and inspection review panel. It presents
+  original machine evidence and decision, then appends a reviewer disposition.</li>
+</ul>
+<p><strong>Exit criteria</strong></p>
+<ul>
+<li>Original inspection decision/version fields remain byte-for-byte unchanged
+  after review submission.</li>
+<li>Parallel review submission tests prove linear append revisions or explicit
+  conflict; no silent replacement occurs.</li>
+<li>The dashboard shows reviewed outcomes distinctly from original automated
+  outcomes.</li>
+</ul>
+<h3 id="c5-initial-metadata-and-manual-configuration-governance">C5: Initial Metadata and Manual Configuration Governance<a class="headerlink" href="#c5-initial-metadata-and-manual-configuration-governance" title="Permanent link">&para;</a></h3>
+<p><strong>Implementation</strong></p>
+<ul>
+<li>Add products/components, product versions, rules/rule versions, model
+  packages/model versions, and desired configuration assignment migrations.</li>
+<li>Implement minimum list/create/draft/publish APIs. Published versions are
+  immutable; changes create a new version. Publication validates component
+  uniqueness, bounded policy values, model/rule compatibility, and actor/reason
+  audit metadata.</li>
+<li>Implement desired configuration recording for one device at a time. M1
+  records desired versions but has no remote download/validation/activation
+  endpoint. UI text must state that packages are installed manually and a
+  desired assignment is not proof of activation.</li>
+<li>Add minimal configuration read views in <code>admin-web</code>; rich editors, rollout
+  previews, artifact upload, and package delivery remain deferred.</li>
+</ul>
+<p><strong>Exit criteria</strong></p>
+<ul>
+<li>Published versions cannot be updated in place.</li>
+<li>Desired assignment does not change edge behavior or claim activation.</li>
+<li>Every publish/assignment path writes an immutable audit event.</li>
+</ul>
+<h3 id="c6-m1-hardening-and-operational-evidence">C6: M1 Hardening and Operational Evidence<a class="headerlink" href="#c6-m1-hardening-and-operational-evidence" title="Permanent link">&para;</a></h3>
+<p><strong>Implementation</strong></p>
+<ul>
+<li>Add request IDs, structured log correlation across device/inspection/media/
+  receipt/audit IDs, bounded request/media limits, safe problem responses,
+  rate limits, and readiness dependency reporting.</li>
+<li>Add controlled PostgreSQL backup and representative restore procedure;
+  document MinIO data backup/restore alignment and M1 limits.</li>
+<li>Add targeted restart, PostgreSQL/MinIO temporary-failure, replay, receipt,
+  media-integrity, and unauthorized-access fault tests.</li>
+<li>Add central runbook sections for ingestion backlog, object-store failure,
+  credential compromise, backup/restore, and pilot upgrade/rollback.</li>
+<li>Update design/status/context documentation and record review evidence.</li>
+</ul>
+<p><strong>Exit criteria</strong></p>
+<ul>
+<li>A Compose restart preserves accepted inspections, objects, and replayable
+  receipts.</li>
+<li>Temporary dependencies yield retryable <code>503</code>/<code>Retry-After</code> behavior without
+  issuing false success receipts.</li>
+<li>A representative backup restore succeeds before M1 is described as
+  operationally ready.</li>
+<li>M1 does not claim production HA, final RPO/RTO, full retention enforcement,
+  OIDC, or remote rollout capability.</li>
+</ul>
+<h2 id="8-m1-database-and-object-storage-rules">8. M1 Database and Object Storage Rules<a class="headerlink" href="#8-m1-database-and-object-storage-rules" title="Permanent link">&para;</a></h2>
+<h3 id="81-required-m1-tables">8.1 Required M1 tables<a class="headerlink" href="#81-required-m1-tables" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Tables</th>
+<th>M1 purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tenant/device</td>
+<td><code>organizations</code>, <code>sites</code>, <code>production_lines</code>, <code>devices</code>, pilot credential/session records</td>
+<td>Scope every request and authenticate edge uploads</td>
+</tr>
+<tr>
+<td>Ingestion</td>
+<td><code>inspections</code>, <code>inspection_components</code>, <code>inspection_media</code>, <code>upload_receipts</code></td>
+<td>Immutable edge facts, evidence, and idempotency</td>
+</tr>
+<tr>
+<td>Review/audit</td>
+<td><code>review_records</code>, <code>audit_logs</code></td>
+<td>Append-only review and accountability</td>
+</tr>
+<tr>
+<td>Initial governance</td>
+<td><code>products</code>, <code>product_components</code>, <code>product_versions</code>, <code>rules</code>, <code>rule_versions</code>, <code>model_packages</code>, <code>model_versions</code>, desired assignments</td>
+<td>Validate/pin metadata; manual package installation only</td>
+</tr>
+</tbody>
+</table>
+<p>Rows must use timezone-aware UTC timestamps. Inspection records preserve both
+edge-observed/captured timestamps and central receive timestamps. JSON is only
+used for bounded immutable snapshots, evidence detail, or audit before/after
+data; it is not a replacement for the filterable columns and uniqueness
+constraints above.</p>
+<h3 id="82-required-indexes-and-uniqueness">8.2 Required indexes and uniqueness<a class="headerlink" href="#82-required-indexes-and-uniqueness" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>UNIQUE(device_id, idempotency_key)</code> on <code>upload_receipts</code>.</li>
+<li><code>UNIQUE(device_id, inspection_id)</code> and <code>UNIQUE(device_id, device_sequence)</code>.</li>
+<li><code>UNIQUE(device_id, source_media_id)</code> for edge-originated media identity.</li>
+<li><code>(organization_id, completed_at DESC, id DESC)</code> and
+  <code>(device_id, completed_at DESC, id DESC)</code> for keyset history pagination.</li>
+<li>Partial barcode index <code>(organization_id, barcode, completed_at DESC)</code> where
+  barcode is non-null; barcode is never globally unique.</li>
+<li>Query indexes for product/result, model/rule versions, pending review, and
+  bounded reason-code filtering only after test/query plans establish need.</li>
+</ul>
+<h3 id="83-object-key-and-lifecycle-rules">8.3 Object key and lifecycle rules<a class="headerlink" href="#83-object-key-and-lifecycle-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Generate opaque keys such as
+  <code>org/{organization_id}/device/{device_id}/{year}/{month}/{media_id}</code>.</li>
+<li>Store no media bytes in PostgreSQL and no edge-provided path as a storage key.</li>
+<li>Stage, verify, finalize, then mark <code>AVAILABLE</code>; retain explicit <code>PENDING</code> /
+  <code>FAILED</code> states for interrupted work.</li>
+<li>M1 does not delete central media automatically. It records lifecycle and
+  retention metadata needed for future governed cleanup.</li>
+<li>Media URLs are authorized and short-lived. Browser/admin users never receive
+  MinIO root credentials or bucket-wide permissions.</li>
+</ul>
+<h2 id="9-api-type-and-error-contract-rules">9. API, Type, and Error Contract Rules<a class="headerlink" href="#9-api-type-and-error-contract-rules" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Central public request/response schemas are typed Pydantic models and have
+  <code>extra="forbid"</code> for mutation bodies.</li>
+<li>FastAPI OpenAPI is committed and drift-checked. <code>api-client-central</code> is
+  generated or synchronized from it; <code>admin-web</code> must not hand-cast server
+  JSON.</li>
+<li>All errors use <code>application/problem+json</code> with bounded
+  <code>type</code>, <code>title</code>, <code>status</code>, <code>detail</code>, <code>code</code>, <code>request_id</code>, and field errors.</li>
+<li>Cursor pagination uses <code>{items, next_cursor}</code> with default 50/max 200 and
+  rejects cursor/filter mismatch.</li>
+<li>Mutating human/admin APIs use <code>If-Match</code> revision checks where concurrent
+  edits matter. Retriable device ingestion uses idempotency keys instead.</li>
+<li>All immutable edge identifiers and original decisions are write-once after
+  accepted ingestion.</li>
+<li>New central fields are additive within a schema version. Removing/changing
+  field meaning requires a new API/schema version and coordinated migration.</li>
+</ul>
+<h2 id="10-admin-web-m1-scope">10. Admin-Web M1 Scope<a class="headerlink" href="#10-admin-web-m1-scope" title="Permanent link">&para;</a></h2>
+<h3 id="overview-overview">Overview (<code>/overview</code>)<a class="headerlink" href="#overview-overview" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Selected site/line/time scope, inspection count, OK/NG/uncertain split,
+  upload delay, oldest pending upload, device last-seen state, and bounded
+  outcome/latency time series.</li>
+<li>Every metric shows scope, period, count/denominator where relevant, and
+  preserves empty data as empty rather than zero.</li>
+</ul>
+<h3 id="inspections-inspections-inspectionsid">Inspections (<code>/inspections</code>, <code>/inspections/:id</code>)<a class="headerlink" href="#inspections-inspections-inspectionsid" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Cross-device bounded filter/search, keyset pagination, inspection/version
+  traceability, original decision/evidence/reasons, receipt state, and
+  authorized selected media display.</li>
+</ul>
+<h3 id="reviews-reviews">Reviews (<code>/reviews</code>)<a class="headerlink" href="#reviews-reviews" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Priority queue of eligible M1 NG/uncertain inspections, original evidence,
+  append-only disposition/reason/comment submission, conflict feedback, and
+  clear separation of machine outcome from reviewed outcome.</li>
+</ul>
+<p>The M1 UI intentionally excludes reports, product/rule/model editors, user
+management, fleet rollout, audit explorer, and organization self-service.</p>
+<h2 id="11-mandatory-test-matrix">11. Mandatory Test Matrix<a class="headerlink" href="#11-mandatory-test-matrix" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Required cases</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Device auth</td>
+<td>valid device upload; unknown/disabled/mismatched token; device cannot access admin routes; admin cannot impersonate device</td>
+</tr>
+<tr>
+<td>Inspection ingestion</td>
+<td>exact edge envelope; valid commit+receipt; same replay; key/hash conflict; duplicate inspection ID; invalid evidence/version/device; body limits</td>
+</tr>
+<tr>
+<td>Media ingestion</td>
+<td>parent required; staged/finalized lifecycle; size/checksum mismatch; one final object on replay; MEDIA central object ID required</td>
+</tr>
+<tr>
+<td>Edge compatibility</td>
+<td>run current edge scheduler/HTTP sink fixtures against central; metadata-before-media; <code>SYNCED</code> only after verified receipts; E6-A16 duplicate replay</td>
+</tr>
+<tr>
+<td>Query/history</td>
+<td>organization isolation; time/filter bounds; cursor tamper/filter mismatch; capture versus receive time; media authorization</td>
+</tr>
+<tr>
+<td>Review</td>
+<td>allowed disposition; immutable machine fields; idempotency; <code>If-Match</code> conflict; append revision; audit event</td>
+</tr>
+<tr>
+<td>Metadata</td>
+<td>immutable publish; invalid policy/compatibility rejected; desired assignment is not activation</td>
+</tr>
+<tr>
+<td>Object store</td>
+<td>temporary MinIO outage maps to retryable response; orphan/staged reconciliation; no object-key/credential leak</td>
+</tr>
+<tr>
+<td>Admin web</td>
+<td>pilot login/session; overview scope; history filters/detail; authorized media; review submit/conflict; no unauthorized routes</td>
+</tr>
+<tr>
+<td>Operations</td>
+<td>Compose cold start; migration control; restart persistence; backup/restore; liveness/readiness; request correlation</td>
+</tr>
+</tbody>
+</table>
+<h2 id="12-quality-security-and-documentation-gates">12. Quality, Security, and Documentation Gates<a class="headerlink" href="#12-quality-security-and-documentation-gates" title="Permanent link">&para;</a></h2>
+<p>Every central PR must run the repository gates applicable to changed code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>uv run ruff check .
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>uv run ruff format --check .
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>uv run mypy .
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>uv run pytest
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>pnpm -r build
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>pnpm -r lint
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>pnpm -r test
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>cd apps/admin-web &amp;&amp; pnpm test:e2e
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>uv run mkdocs build --strict
+</code></pre></div>
+<p>Additional mandatory checks:</p>
+<ul>
+<li>OpenAPI snapshot/drift and generated TypeScript client checks.</li>
+<li>PostgreSQL migration upgrade from an empty database and from every committed
+  predecessor migration.</li>
+<li>MinIO integration tests with checksum/object-binding assertions.</li>
+<li>An end-to-end edge outbox fixture that validates the actual central receipt.</li>
+<li>Security tests for cross-organization access, device/human credential
+  separation, payload limits, unsafe media metadata, and no internal error
+  leakage.</li>
+</ul>
+<p>Update relevant design/status/runbook documentation, OpenAPI artifacts, and
+the central review record whenever an API, persistence schema, configuration,
+or operation changes.</p>
+<h2 id="13-m1-exit-criteria">13. M1 Exit Criteria<a class="headerlink" href="#13-m1-exit-criteria" title="Permanent link">&para;</a></h2>
+<p>M1 is ready for a controlled pilot only when all of the following are true:</p>
+<ol>
+<li>A registered edge device sends current inspection and selected media
+   envelopes over HTTPS; central returns verified compatible receipts.</li>
+<li>Identical replay is duplicate-free and returns the previous receipt;
+   payload conflicts fail closed with <code>409</code> and do not overwrite evidence.</li>
+<li>A real edge scheduler reaches <code>QUEUED</code> → <code>PARTIAL</code> → <code>SYNCED</code> only after
+   required central receipts, making E6-A16 executable against central.</li>
+<li>Central PostgreSQL history and MinIO evidence bindings survive controlled
+   restart and representative backup/restore.</li>
+<li>Pilot administrator UI supports overview, cross-device history/detail, and
+   append-only review while enforcing organization scope.</li>
+<li>Original edge decisions and evidence provenance remain immutable through
+   ingestion and review.</li>
+<li>Compose health/readiness, migration, request/error, authentication, and
+   recovery evidence is recorded; all mandatory quality gates pass.</li>
+<li>Documentation explicitly labels M1 as a controlled pilot and does not claim
+   production HA, final data-residency compliance, complete RBAC, remote
+   rollout, resumable media upload, or universal accuracy.</li>
+</ol>
+<h2 id="14-risks-dependencies-and-deferred-decisions">14. Risks, Dependencies, and Deferred Decisions<a class="headerlink" href="#14-risks-dependencies-and-deferred-decisions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>M1 treatment</th>
+<th>Required before production</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OQ-021 tenancy hierarchy</td>
+<td>Persist org/site/line/device hierarchy, one pilot organization</td>
+<td>Confirm customer tenancy/organization model and enforce final isolation policy</td>
+</tr>
+<tr>
+<td>OQ-022 IdP/device PKI</td>
+<td>Pilot tokens with secret-file/environment support</td>
+<td>OIDC, device credential rotation/revocation, mTLS/PKI, signing policy</td>
+</tr>
+<tr>
+<td>OQ-017 retention/residency</td>
+<td>Preserve media lifecycle metadata, no automatic deletion</td>
+<td>Legal holds, data residency, central retention/deletion/backup policy</td>
+</tr>
+<tr>
+<td>OQ-019 hosting/DR</td>
+<td>Compose pilot on selected controlled host</td>
+<td>Availability topology, RPO/RTO, tested DR, network/proxy/TLS ownership</td>
+</tr>
+<tr>
+<td>OQ-020 scale</td>
+<td>Indexes and bounded filters; no worker/Redis</td>
+<td>Measured media volume, device count, concurrency, partition/worker strategy</td>
+</tr>
+<tr>
+<td>Large media</td>
+<td>Existing bounded envelope only</td>
+<td>File-size measurements, frozen resumable/pre-signed contract, edge implementation</td>
+</tr>
+<tr>
+<td>Edge-local reviews</td>
+<td>Do not ingest them silently</td>
+<td>Separate immutable synchronization/provenance contract if required</td>
+</tr>
+<tr>
+<td>Remote packages</td>
+<td>Manual verified edge install only</td>
+<td>CENTRAL-007 package, validation, activation, acknowledgement, rollback lifecycle</td>
+</tr>
+</tbody>
+</table>
+<h2 id="15-references">15. References<a class="headerlink" href="#15-references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../design/05-central-server-architecture/">Central Server Architecture</a></li>
+<li><a href="../../design/14-data-model-and-database/">Data Model and Database</a></li>
+<li><a href="../../design/15-rest-api-and-events/">REST API and Events</a></li>
+<li><a href="../../design/13-upload-and-synchronization/">Upload and Synchronization</a></li>
+<li><a href="../../design/17-central-admin-dashboard/">Central Admin Dashboard</a></li>
+<li><a href="../../design/24-human-in-the-loop/">Human in the Loop</a></li>
+<li><a href="../../design/21-security-and-source-distribution/">Security and Source Distribution</a></li>
+<li><a href="../../design/25-roadmap/">Roadmap</a></li>
+<li><a href="../../design/26-customer-acceptance/">Customer Acceptance</a></li>
+<li><a href="../../design/27-risks-and-mitigations/">Risks and Mitigations</a></li>
+<li><a href="../../design/appendices/#3-global-open-questions">Appendices: Global Open Questions</a></li>
+<li><a href="../../contracts/04-edge-storage-upload-contracts/">Contract 04: Edge, Storage, and Upload Contracts</a></li>
+<li><a href="../../contracts/05-data-api-and-versioning-contracts/">Contract 05: Data, API, and Versioning</a></li>
+<li><a href="../../contracts/06-testing-quality-and-ci-contracts/">Contract 06: Testing, Quality, and CI</a></li>
+<li><a href="../../contracts/08-security-permissions-and-audit/">Contract 08: Security, Permissions, and Audit</a></li>
+<li><a href="../E3-upload-resilience/">E3 Pipeline: Upload Resilience</a></li>
+<li><a href="../E5-deployment-and-security/">E5 Pipeline: Deployment and Security</a></li>
+<li><a href="../E6-edge-acceptance/">E6 Pipeline: Edge Acceptance</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

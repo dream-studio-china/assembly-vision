@@ -3256,7 +3256,7 @@
 <p><strong>更正 (AUDIT-001)。</strong> PR 中的“100% 测试覆盖率”声明
 描述没有被复制。测量边缘 Python 语句覆盖率
 合并结果约为 99.5% (pytest-cov)；未覆盖的线条
-是查看器会话/无令牌分支、派生图像和统计数据
+是查看者会话/无令牌分支、派生图像和统计信息
 后备、验证空工作分支和无法访问的 IntegrityError
 处理程序。将覆盖率数字视为过时的测量工件，而不是
 保证，并在提出索赔时记录准确的命令/输出。</p>
@@ -3497,82 +3497,82 @@ API。因此 <code>paused_by</code> 被硬编码为 <code>"operator"</code>，�
 - <code>apps/edge-web/src/pages/LiveInspection.vue:125-136</code></p>
 <p><strong>违规：</strong> <code>docs/design/16-edge-dashboard.md:112-116</code>（暂停停止打开
 新产品橱窗； API 拥有活动窗口行为）。</p>
-<p><strong>建议的解决方案：</strong> 通过检查协调员路由暂停/恢复，该协调员
-拥有新产品窗口的准入权；检测器/管道类不应拥有
-操作暂停状态。协调器必须完成或中止活动窗口
-根据明确的政策，简历必须评估类型准备情况
-快照。对于这个只读 M1，较小的有效替代方案是删除或
-禁用突变端点并隐藏控件，直到出现这样的协调器
-存在。</p>
-<p><strong>验收标准：</strong>
-- 对于 M1 删除选项，API 测试断言暂停/恢复返回 404/405 和 UI
-  测试断言没有提出任何控制或有效性声明。
-- 对于协调员选项，集成测试证明暂停准入
-  拒绝和配置的活动窗口完成/中止策略，包括
-  如果适用，对中止的窗口采取保守的 NG 持久性。
-- 对于协调器选项，resume 返回 <code>409 PRECONDITION_FAILED</code> 除非
-  相机、模型、规则、数据库和磁盘先决条件通过，但 UI 未通过
-  在确认之前乐观地渲染<code>READY</code>。</p>
+<p><strong>Proposed solution:</strong> Route pause/resume through an inspection coordinator that
+owns admission of new product windows; detector/pipeline classes should not own
+operational pause state. The coordinator must finish or abort an active window
+according to an explicit policy, and resume must evaluate a typed readiness
+snapshot. For this read-only M1, the smaller valid alternative is to remove or
+disable the mutation endpoints and hide the controls until such a coordinator
+exists.</p>
+<p><strong>Acceptance criteria:</strong>
+- For the M1 removal option, API tests assert pause/resume return 404/405 and UI
+  tests assert that no control or effectiveness claim is rendered.
+- For the coordinator option, integration tests prove paused admission
+  rejection and the configured active-window finish/abort policy, including
+  conservative NG persistence for an aborted window when applicable.
+- For the coordinator option, resume returns <code>409 PRECONDITION_FAILED</code> unless
+  camera, model, rule, database, and disk preconditions pass, and the UI does not
+  optimistically render <code>READY</code> before confirmation.</p>
 <h3 id="f5-the-documented-quickstart-serves-a-mock-backed-dashboard">F5。记录的 <code>serve</code> 快速入门提供模拟支持的仪表板<a class="headerlink" href="#f5-the-documented-quickstart-serves-a-mock-backed-dashboard" title="Permanent link">&para;</a></h3>
-<p><strong>问题：</strong> <code>VITE_API_BASE_URL</code> 在构建时嵌入。快速启动运行
-<code>pnpm --filter edge-web build</code> 没有设置它，所以捆绑包选择
-<code>MockApiClient</code> 和 FastAPI 提供的仪表板显示种子模拟数据
-而不是协调的实际检查。</p>
-<p><strong>地点：</strong>
+<p><strong>Problem:</strong> <code>VITE_API_BASE_URL</code> is embedded at build time. The quickstart runs
+<code>pnpm --filter edge-web build</code> without setting it, so the bundle selects
+<code>MockApiClient</code> and the dashboard served by FastAPI shows seeded mock data
+instead of the reconciled real inspections.</p>
+<p><strong>Location:</strong>
 - <code>QUICKSTART.md:152-162</code>
 - <code>apps/edge-web/src/services/client.ts:14-18</code></p>
-<p><strong>矛盾：</strong> <code>QUICKSTART.md:147-150</code> 和 <code>docs/ai/context.md:276-297</code>。</p>
-<p><strong>建议的解决方案：</strong> 引入显式构建/运行时数据模式，例如
-<code>VITE_API_MODE=mock|http</code>。 HTTP模式下，省略base URL表示同源
-<code>/api/v1</code>；在模拟模式下，确定性演示仍然可用。构建
-以 HTTP 模式提供生产包。添加浏览器到 FastAPI 集成测试
-这证明当构建的捆绑包由以下人员提供服务时，会呈现真实的数据
-<code>assemblyvision serve</code>。</p>
-<p><strong>验收标准：</strong>
-- 遵循快速入门端到端显示历史上的真实检查，
-  详细信息、媒体和统计信息，并显示后端派生的配置/日志。
-- 带有条形码值的单独 HTTP 集成装置证明了可追溯性
-  渲染；不需要默认的静态 MVP 快速入门来制作
-  其 CLI 不产生的 SN。
-- 测试断言所提供的捆绑包与同源 API 进行对话。
-- 仅当选择显式模拟模式时，模拟才保持可用；一个
-  仅缺少 URL 不会在生产构建中默默地选择模拟。</p>
+<p><strong>Contradicts:</strong> <code>QUICKSTART.md:147-150</code> and <code>docs/ai/context.md:276-297</code>.</p>
+<p><strong>Proposed solution:</strong> Introduce an explicit build/runtime data mode such as
+<code>VITE_API_MODE=mock|http</code>. In HTTP mode, an omitted base URL means same-origin
+<code>/api/v1</code>; in mock mode the deterministic demo remains available. Build the
+served production bundle in HTTP mode. Add a browser-to-FastAPI integration test
+that proves real data renders when the built bundle is served by
+<code>assemblyvision serve</code>.</p>
+<p><strong>Acceptance criteria:</strong>
+- Following the quickstart end to end shows real inspections in history,
+  detail, media, and statistics, and shows backend-derived configuration/logs.
+- A separate HTTP integration fixture with a barcode value proves traceability
+  rendering; the default static-MVP quickstart is not required to fabricate an
+  SN that its CLI does not produce.
+- A test asserts the served bundle talks to the same-origin API.
+- The mock remains available only when an explicit mock mode is selected; an
+  absent URL alone does not silently select mock in a production build.</p>
 <hr />
 <h2 id="additional-blocking-findings">额外的阻塞发现<a class="headerlink" href="#additional-blocking-findings" title="Permanent link">&para;</a></h2>
 <h3 id="f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls">F6。实模式将模拟检测结果与真实设备控制相结合<a class="headerlink" href="#f6-real-mode-mixes-simulated-inspection-results-with-real-device-controls" title="Permanent link">&para;</a></h3>
-<p><strong>问题：</strong>当前检查、确认、下一步、手动操作总是
-针对私有 <code>MockApiClient</code> 运行，同时暂停/恢复、状态、日志、
-历史记录和运行时状态使用配置的真实客户端。模拟检查
-然后使用ID来请求真实媒体；失败时，UI 会默默地替换
-合成相机框架。</p>
-<p><strong>地点：</strong>
+<p><strong>Problem:</strong> The current inspection, confirm, next, and manual actions always
+run against a private <code>MockApiClient</code>, while pause/resume, status, logs,
+history, and runtime state use the configured real client. The mock inspection
+ID is then used to request real media; on failure the UI silently substitutes a
+synthetic camera frame.</p>
+<p><strong>Location:</strong>
 - <code>apps/edge-web/src/services/inspectionService.ts:27-51</code>
 - <code>apps/edge-web/src/pages/LiveInspection.vue:46-56</code></p>
-<p><strong>违规：</strong> <code>docs/design/16-edge-dashboard.md:63-73,128-130</code>（
-确定性的最终决定具有权威性；模拟/陈旧数据不得
-查看当前），<code>docs/contracts/03-ai-rule-and-safety-contracts.md</code>。</p>
-<p><strong>建议的解决方案：</strong> 在实模式下，隐藏或禁用模拟工作流程，并且永远不要
-与真实设备状态一起呈现模拟决策；表面缺失的证据
-作为明确的不可用状态而不是合成图像。</p>
-<p><strong>验收标准：</strong>
-- 在实模式下，不会将模拟检查显示为当前结果。
-- 丢失的介质会呈现不可用/已清除的状态，而不是制造的框架。
-- 测试涵盖故障设备场景（合成数据不得与
-  真正的暂停/状态控制）。</p>
+<p><strong>Violation:</strong> <code>docs/design/16-edge-dashboard.md:63-73,128-130</code> (the
+deterministic final decision is authoritative; simulated/stale data must not
+look current), <code>docs/contracts/03-ai-rule-and-safety-contracts.md</code>.</p>
+<p><strong>Proposed solution:</strong> In real mode, hide or disable the mock workflow and never
+render simulated decisions alongside real device state; surface missing evidence
+as an explicit unavailable state instead of synthetic imagery.</p>
+<p><strong>Acceptance criteria:</strong>
+- In real mode no mock inspection is shown as a current result.
+- Missing media renders an unavailable/purged state, not a fabricated frame.
+- A test covers the faulted-device scenario (synthetic data must not appear with
+  real pause/status controls).</p>
 <h3 id="f7-non-square-manifest-inference-size-passed-to-ultralytics-in-wrong-order">F7。非方形明显推断大小以错误的顺序传递给 Ultralytics<a class="headerlink" href="#f7-non-square-manifest-inference-size-passed-to-ultralytics-in-wrong-order" title="Permanent link">&para;</a></h3>
-<p><strong>问题：</strong> 检测器通过 <code>imgsz=(input_width, input_height)</code> 但
-Ultralytics 将二元素 <code>imgsz</code> 解释为 <code>[height, width]</code>。对于一个
-清单声明 1280x736 运行时推断 1280x736 已交换，因此
-预处理不再与已发布的模型配置匹配。</p>
-<p><strong>地点：</strong>
+<p><strong>Problem:</strong> The detectors pass <code>imgsz=(input_width, input_height)</code> but
+Ultralytics interprets a two-element <code>imgsz</code> as <code>[height, width]</code>. For a
+manifest declaring 1280x736 the runtime infers at 1280x736 swapped, so
+preprocessing no longer matches the released model configuration.</p>
+<p><strong>Location:</strong>
 - <code>apps/edge-service/src/assemblyvision_edge/detection/product_detector.py:84-90</code>
 - <code>apps/edge-service/src/assemblyvision_edge/detection/component_detector.py:84-90</code></p>
-<p><strong>测试间隙：</strong> <code>apps/edge-service/tests/test_detectors.py</code> 断言订单
-使用方形夹具，不能暴露缺陷。</p>
-<p><strong>建议的解决方案：</strong> 将 <code>(input_height, input_width)</code> 传递给 Ultralytics 并添加
-断言确切模型调用的非方形清单适配器测试
-论据。保留命名为宽度/高度的清单尺寸；序列化<code>imgsz</code>
-明确为 <code>[height, width]</code> 以避免歧义。</p>
+<p><strong>Test gap:</strong> <code>apps/edge-service/tests/test_detectors.py</code> asserts the order
+using square fixtures, which cannot expose the defect.</p>
+<p><strong>Proposed solution:</strong> Pass <code>(input_height, input_width)</code> to Ultralytics and add
+a non-square manifest adapter test asserting the exact model invocation
+arguments. Keep manifest dimensions named as width/height; serialize <code>imgsz</code>
+explicitly as <code>[height, width]</code> to avoid ambiguity.</p>
 <p><strong>验收标准：</strong>
 - 使用非方形清单的适配器测试断言正确的 <code>[height, width]</code>
   订单。
@@ -3784,7 +3784,7 @@ static-MVP 结果并显式地将 SQLite 视为可重建的读取投影。
 实现调度程序时的幂等性约束和租约字段。</p>
 <p><strong>M1 投影的验收标准：</strong>
 - 协调拒绝重复的组件身份和冲突的媒体
-  无需部分导入检查的路径。</p>
+  路径，无需部分导入检查。</p>
 <p><strong>持久同步激活之前的接受标准：</strong>
 - <code>UNIQUE(relative_path)</code> 和
   <code>UNIQUE(inspection_id, component_code)</code> 由数据库强制执行。
@@ -3863,7 +3863,7 @@ static-MVP 结果并显式地将 SQLite 视为可重建的读取投影。
 </li>
 <li>
 <p><strong>上传重试会忽略资格、幂等性、原因和状态元数据。</strong>
-  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>；
+  <code>apps/edge-service/src/assemblyvision_edge/api/routers/uploads.py:53-64</code>;
   <code>repository.retry_upload</code> 接受任何状态，忽略 <code>Idempotency-Key</code> 和
   原因，并且不更新 <code>updated_at</code>/<code>next_attempt_at</code>。
   <em>解决方案：</em> 因为调度程序超出了 M1 范围，所以删除/禁用

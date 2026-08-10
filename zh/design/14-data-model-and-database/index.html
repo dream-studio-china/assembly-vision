@@ -3306,7 +3306,7 @@
 下面。它可以从同一个包中删除和重建，它不是
 完成/发件箱存储，其模式尚未携带唯一的
 约束、产品配置列或上传所需的租约
-生产设计。权威商店与上传一起构建
+生产设计。权威商店与上传一起搭建
 调度程序；在此之前，该设计描述的是目标，而不是当前
 实施（AUDIT-001）。</p>
 </blockquote>
@@ -3771,7 +3771,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 架构版本。事件 <code>sequence</code> 对于 <code>(source_id, channel)</code> 是单调的，并且仅当
 源身份变更。</p>
 <h2 id="145-edge-schema">14.5 边缘模式<a class="headerlink" href="#145-edge-schema" title="Permanent link">&para;</a></h2>
-<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份短写交易；媒体字节保留在文件系统中。</p>
+<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份简短的写入交易；媒体字节保留在文件系统中。</p>
 <table>
 <thead>
 <tr>
@@ -3798,7 +3798,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 <tr>
 <td><code>local_media_files</code></td>
-<td><code>id</code> PK、<code>inspection_id</code> FK可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
+<td><code>id</code> PK、<code>inspection_id</code> FK 可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
 <td>路径必须相对于配置的媒体根； <code>UNIQUE(relative_path)</code> 和 <code>UNIQUE(sha256, kind)</code> ，其中重复数据删除是安全的。</td>
 </tr>
 <tr>
@@ -3900,7 +3900,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>inspections</code></td>
 <td>UUID PK 匹配边缘 ID、组织/设备 FK、设备序列、生命周期/时间、条形码/产品分辨率、内部决策、业务结果、应用程序/产品模型/组件模型/规则版本和校验和、延迟、接收时间</td>
-<td><code>UNIQUE(device_id, device_sequence)</code>；保留准确的运行时版本。</td>
+<td><code>UNIQUE(device_id, device_sequence)</code>;保留准确的运行时版本。</td>
 </tr>
 <tr>
 <td><code>inspection_components</code></td>
@@ -3934,7 +3934,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 </tbody>
 </table>
-<p>仅在测量的数量证明其合理性后，才对 <code>inspections</code>、<code>device_events</code> 和 <code>audit_logs</code> 使用每月范围分区。过早的分区会使外键和迁移变得复杂。</p>
+<p>仅当测量的数量证明其合理性时，才对 <code>inspections</code>、<code>device_events</code> 和 <code>audit_logs</code> 使用每月范围分区。过早的分区会使外键和迁移变得复杂。</p>
 <h2 id="147-entity-relationships">14.7 实体关系<a class="headerlink" href="#147-entity-relationships" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>erDiagram
     ORGANIZATION ||--o{ SITE :包含
@@ -3942,7 +3942,7 @@ OpenAPI 中的模型。最小注册表是：</p>
     PRODUCTION_LINE ||--o{ DEVICE :运作
     ORGANIZATION ||--o{ USER :有
     USER ||--o{ USER_ROLE :收到
-    ROLE ||--o{ USER_ROLE :赠款
+    ROLE ||--o{ USER_ROLE :补助金
     ORGANIZATION ||--o{ PRODUCT :拥有
     PRODUCT ||--o{ PRODUCT_VERSION :版本
     PRODUCT_VERSION ||--o{ RULE_VERSION :检查者

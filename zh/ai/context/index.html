@@ -3093,6 +3093,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#812-review-hardening-documentation-i18n-and-mkdocs-prs-31-36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.12 查看强化、文档、i18n 和 MkDocs（PR #31-#36）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#813-central-server-m1-foundation-c1a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.13 中央服务器 M1 基础 (C1a)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3125,7 +3147,7 @@
 
 <h1 id="assemblyvision---full-project-context">AssemblyVision - 完整的项目背景<a class="headerlink" href="#assemblyvision---full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>上下文快照。最后更新: 2026-08-10</p>
+<p>上下文快照。最后更新: 2026-08-11</p>
 <p>首先在新会话中读取此文件以快速重建项目状态。</p>
 </blockquote>
 <hr />
@@ -3162,12 +3184,15 @@
   PR #26/#27/#28 添加了强化的 GigE/GenICam 源和
   生产就绪的仪表板主题； PR #29 固定持久性推断
   元数据； PR #30 添加了精确映射的条形码身份解析
-  选择加入 Modbus TCP FIFO 触发合同 (ADR-015)。边缘局部人类
-  审核功能（ADR-016，PR #31）实施于
-  <code>feat/edge-local-human-review</code> 其审核记录在
-  <code>docs/reviews/PR-031-review.md</code> 正在等待合并。中央
-  服务器尚未实现，并且在这些边缘门之前保持在范围之外
-  通过。</li>
+  选择加入 Modbus TCP FIFO 触发合同 (ADR-015)。 PR #31 合并了
+  边缘本地人工审核功能 (ADR-016)，包括其审核强化
+  以及已记录的 PR31-T05 观众凭证权衡。 PR #32 和 #33
+  添加了问题模板和工业自述文件/快速启动/安全更新；
+  PR #34 添加了开发者手册； PR #35 添加了边缘网络 i18n；和公关＃36
+  修复了 MkDocs README 索引排除。边缘编码是通过
+  E6准备门。中央服务器M1试点已经开始（C1a
+  基础已交付）；其有界实施计划是
+  <code>docs/tasks/C1-central-server-m1.md</code>。</li>
 </ul>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3176,10 +3201,10 @@
   多实例 (ADR-013/014)、时间聚合 (ADR-010)、持久上传
   发件箱 (ADR-005)、E1-E5 门、E6 验收准备、GigE/GenICam 源、
   仪表板主题、持久性修复和条形码标识/PLC 触发器
-  合同（ADR-015）。边缘局部人工审核功能 (ADR-016) 是
-  在 <code>feat/edge-local-human-review</code> (PR #31) 上实施，并进行了审查修复
-  <code>docs/reviews/PR-031-review.md</code> 待合并。中央服务器不是
-  尚未实施，并且有意超出范围，直到边缘门通过。</li>
+  合同（ADR-015）。 PR #31 到 #36 也被合并：边缘局部人类
+  审查、问题模板、文档更新、开发人员手册、边缘网络
+  i18n 和 MkDocs 手动索引修复。目前尚不存在中央服务器代码；
+  <code>docs/tasks/C1-central-server-m1.md</code>明确了试点实施范围。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
   吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
@@ -3190,56 +3215,62 @@
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── QUICKSTART.md           # Developer onboarding: setup, checks, CLI, end-to-end demo
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── LICENSE                 # MIT License (c) 2026 dream-studio-china
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── Makefile                # Quality gates: lint, format, typecheck, test, check
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── scripts/
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── translate-docs.py            # docs/ -&gt; docs-zh/ Chinese translation (deep-translator)
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── e2e-demo.sh                  # full train-&gt;prepare-&gt;train-&gt;inspect-&gt;verify smoke test
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -&gt; two-stage layout
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -&gt; two-stage layout
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   └── tests/                       # tests for the dataset adapters
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── .github/workflows/               # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── packages/
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│   ├── python/
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   └── typescript/
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── package.json                      # Root pnpm workspace (TypeScript)
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>└── docs/
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    ├── index.md            # MkDocs home page
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    ├── README.md           # Documentation index
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── overrides/main.html # Theme override placeholder
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── ai/context.md       # THIS file
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    ├── runbooks/           # 11 operational recovery runbooks + index
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    ├── design/             # 28 design documents + appendices + decisions/
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    │   └── decisions/      # ADR-001 ... ADR-012 + README
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    └── research/           # 3 external-research reports
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        ├── 01-industrial-inspection-success-rates.md
-<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        ├── 02-yolo-capabilities-and-success-rates.md
-<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        └── 03-imaging-workflow-and-training-cost.md
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── SECURITY.md             # Security policy: position, edge auth, vulnerability reporting
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── Makefile                # Quality gates: lint, format, typecheck, test, check
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>├── scripts/
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── translate-docs.py            # docs/ -&gt; docs-zh/ Chinese translation (deep-translator)
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── e2e-demo.sh                  # full train-&gt;prepare-&gt;train-&gt;inspect-&gt;verify smoke test
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -&gt; two-stage layout
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -&gt; two-stage layout
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   └── tests/                       # tests for the dataset adapters
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── .github/
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   ├── ISSUE_TEMPLATE/              # bug_report / feature_request / security_vulnerability + config
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   └── workflows/                   # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>├── packages/
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   ├── python/
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>│   └── typescript/
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>├── package.json                      # Root pnpm workspace (TypeScript)
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>└── docs/
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── index.md            # MkDocs home page
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── README.md           # Documentation index
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── overrides/main.html # Theme override placeholder
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    ├── ai/context.md       # THIS file
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    ├── images/             # README screenshots (inspection detail, live view)
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    ├── manual/             # Developer manual
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    ├── tasks/              # Delivery tasks, including the Central Server M1 plan
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>    ├── runbooks/           # 15 operational recovery runbooks (01-15) + index
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>    ├── design/             # 28 design documents + appendices + decisions/
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>    │   └── decisions/      # ADR-001 ... ADR-016 + README
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>    └── research/           # 3 external-research reports
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>        ├── 01-industrial-inspection-success-rates.md
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>        ├── 02-yolo-capabilities-and-success-rates.md
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>        └── 03-imaging-workflow-and-training-cost.md
 </code></pre></div>
 <h2 id="4-architecture-summary-from-docsdesign">4.架构总结（来自docs/design/）<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3249,7 +3280,7 @@
   评估、本地数据库/媒体、带重试的上传队列、运行状况监控、本地 FastAPI、
   本地 Vue 仪表板。在中央/网络中断期间检查仍在继续。</li>
 <li><strong>中央服务器职责</strong>：摄取选定的结果/媒体、历史记录、受管理的
-  元数据、人工审查记录、有界试点状态以及后续管理/报告/审计。
+  元数据、手动审查记录、有界试点状态以及后续管理/报告/审计。
   远程包分发属于生产范围。中央不需要检查。</li>
 <li><strong>两阶段检测</strong>：第一阶段全画幅检测产品；投资回报率引擎
   扩展/剪辑它；第二阶段检测所需的组件（<code>component_a</code>、<code>component_b</code>、
@@ -3285,9 +3316,11 @@
 <li><code>docs/research/</code>：行业成功率、YOLO 能力、成像/工作流程/培训成本。</li>
 <li><a href="../../contracts/">docs/contracts/</a>：11个可执行架构、安全、API、质量、
   运营、安全、变更控制和验收合同。</li>
-<li><a href="../../runbooks/">docs/runbooks/</a>：所有合同要求的可执行恢复程序
-  运营场景，包括模型改进（运行手册 10）和数据
-  收集和注释（运行手册 11）。</li>
+<li><a href="../../runbooks/">docs/runbooks/</a>：15个可执行的恢复程序，适用于所有合同要求的
+  运营场景，包括模型改进（运行手册 10）、数据
+  收集和注释 (Runbook 11)、备份和恢复 (12)、TLS
+  证书轮换 (13)、部署升级和回滚 (14) 以及边缘
+  验收执行（15）。</li>
 </ul>
 <h2 id="6-bilingual-mkdocs-english-chinese">6.双语MkDocs（英文+中文）<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3299,7 +3332,7 @@
   翻译大约需要 15-30 分钟。单文件模式：
   <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>。任何 API 失败时
   保留原始英文块。</li>
-<li>所有内容均已翻译，包括 <code>research/</code> 和美人鱼图标签。美人鱼语法是
+<li>所有内容均已翻译，包括<code>research/</code>和美人鱼图标签。美人鱼语法是
   保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
   被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
 <li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
@@ -3307,6 +3340,9 @@
 <li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
   <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
 <li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
+<li><code>exclude_docs</code> 必须使用 <code>/README.md</code> （锚定），以便根文档
+  自述文件被排除在外，但不排除嵌套的手册、设计、合同和
+  运行手册索引页。 <code>uv run mkdocs build --strict</code> 验证站点。</li>
 </ul>
 <h2 id="7-conventions-agentsmd">7.约定（AGENTS.md）<a class="headerlink" href="#7-conventions-agentsmd" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3327,7 +3363,7 @@
 <li>通过互联网研究创建了<code>docs/research/</code>（3份报告）。</li>
 <li>构建了具有自动翻译功能的双语 MkDocs，改编自 <code>crud-skeleton</code> 项目。</li>
 <li>添加了对 <code>translate-docs.py</code> 的美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
-<li><code>UNCERTAIN</code>决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
+<li><code>UNCERTAIN</code> 决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
 <li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（一个单独的
   边缘工作者/API 分割被推迟，直到测量证明其合理为止）。</li>
 <li>检查分别固定产品检测器和组件检测器模型版本。</li>
@@ -3343,7 +3379,7 @@
   添加了（产品/准备组件/组件）；探测器存根被替换为真实的
   Ultralytics YOLO 适配器可加载清单引用的权重并将 ROI 框映射回完整值
   框架； <code>assemblyvision verify</code> 报告 NG 召回/漏报/误报；和
-  <code>scripts/e2e-demo.sh</code> 在漏报上使用硬门运行整个流程。</li>
+  <code>scripts/e2e-demo.sh</code> 使用针对误报的硬门运行整个流程。</li>
 <li>数据集：<code>scripts/generate-synthetic-dataset.py</code>构建一个带标签的程序集数据集（确切地说
   框、缺少组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
   将 Roboflow YOLOv8 导出转换为两阶段布局，删除通用 <code>missing*</code> 类，
@@ -3394,10 +3430,10 @@
   或坐标、越界框、不良张量形状）转换为
   <code>INFERENCE_ERROR</code> 在适配器边界，而不是转义或错误索引。</li>
 <li>配置：阈值必须是有限的，并且在<code>[0, 1]</code>中，布尔值是严格的，
-  <code>min_area_pixels</code> 必须是正整数，未知的键将被拒绝
+  <code>min_area_pixels</code>必须是正整数，未知的键将被拒绝
   每个部分。</li>
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
-  盒子是致命的；丢失的标签文件无法验证，除非记录了
+  盒子是致命的；丢失的标签文件无法验证，除非已记录
   <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
   底片；成分制备导致 ROI 作物为负数；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
@@ -3504,7 +3540,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   数据和清除媒体渲染。 <code>uv run mkdocs build --strict</code> 通过。</li>
 </ul>
 <h2 id="84-audit-001-closure-and-review-fixes-pr-12">8.4 AUDIT-001 关闭和审查修复（PR #12）<a class="headerlink" href="#84-audit-001-closure-and-review-fixes-pr-12" title="Permanent link">&para;</a></h2>
-<p>只读系统审核 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 为
+<p>只读系统审核 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 是
 经过验证，其结果通过验收测试结束，并通过 PR #12 合并
 （dev -&gt; main，16 次提交；CI 绿色）：</p>
 <ul>
@@ -3520,8 +3556,8 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   包包含和类映射（<code>ConfigError</code>，绝不泄漏）。</li>
 <li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
   覆盖）；日志消息清理绝对路径；失败尝试节流
-  <code>Retry-After</code>;有界会话；光标绑定过滤指纹
-  (<code>400 INVALID_CURSOR</code>);始终清除介质<code>410</code>；非 ASCII 承载 <code>401</code>；
+  <code>Retry-After</code>；有界会话；光标绑定过滤指纹
+  (<code>400 INVALID_CURSOR</code>);净化介质始终<code>410</code>；非 ASCII 承载 <code>401</code>；
   <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
 <li><strong>前端强化</strong>：生产构建失败，除非<code>VITE_API_MODE=http</code>；
   媒体 blob URL 拒绝外国来源； HTTP 模式删除不支持的行
@@ -3531,7 +3567,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   覆盖范围已修正；训练运行的再现性元数据记录在旁边
   体现；设计 14 M1 边界、原因代码、适配器、运行手册和
   快速启动对齐。</li>
-<li><strong>公关审查后续行动 (<code>c634ca5</code>)</strong>：保留记录的同级
+<li><strong>PR 审查后续 (<code>c634ca5</code>)</strong>：保留记录的同级
   包根包含下的 <code>models/manifests</code> + <code>models/weights</code> 布局，
   要求保留测试样品中的独立产品盒，重新验证
   在每个打开的数据库上进行迁移，并将 <code>Retry-After</code> 添加到 auth
@@ -3554,7 +3590,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>rtsp</code>（PyAV + OpenCV 后备），<code>http-image</code>（httpx 轮询）。供应商 SDK
   是未来的协议实现。 <code>opencv-python-headless</code>、<code>av</code>、<code>httpx</code>
   是由边缘服务引入的视觉核心可选附加功能。</li>
-<li><strong>多实例<code>serve</code></strong>：<code>instances:</code>列表在<code>pipeline.yaml</code>中；每个
+<li><strong>多实例<code>serve</code></strong>：<code>pipeline.yaml</code>中的<code>instances:</code>列表；每个
   实例将相机源与其自己的模型/规则/产品配对；公寓
   单配置形式保持向后兼容。 <code>device_id</code> 默认为
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
@@ -3596,7 +3632,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li><strong>仍处于里程碑</strong>：供应商 SDK 适配器、每实例模型
   权重共享（阶段 3），将 REST 预览折叠到 WebSocket 中
   通道和硬件触发/条码相关源
-  <code>window_strategy: identity</code>接缝（仅限时间的后备仍然是
+  <code>window_strategy: identity</code>接缝（仅时间回退仍然是
   开发模式，而不是生产产品边界）。</li>
 <li><strong>审查强化 (PR-014)</strong>：结果 F1-F14 通过回归结束
   测试：无静默帧丢失（有界队列+显式溢出），暂停
@@ -3621,7 +3657,7 @@ ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
   提交不可变的检查、媒体、证据和一项 <code>INSPECTION</code> 任务
   在单个 SQLite 事务中为每个工件加上一个 <code>MEDIA</code> 任务；启动
   调节修复搁浅的<code>LOCAL_ONLY</code>记录。</li>
-<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code> 在一个任务中声明到期任务
+<li><strong>订购的租赁工人</strong>：<code>UploadScheduler</code>在一个任务中声明到期任务
   即时交易； <code>MEDIA</code> 任务只有在检查后才到期
   任务有经过验证的收据；每个声明都带有每个任务的防护令牌
   (<code>lease_owner</code>)，陈旧的<code>IN_PROGRESS</code>任务在租约到期后被回收，
@@ -3678,7 +3714,7 @@ PR-020 审查强化）。交付任务和强制性安全不变量是
   强制持久性探测（探测文件 + fsync 和 <code>BEGIN IMMEDIATE</code>
   写）。设备状态暴露服务器权威阈值和稳定
   警报 (<code>DISK_WARNING</code>/<code>DISK_CRITICAL</code>/<code>DISK_STOP</code>/<code>STORAGE_WRITE_FAULT</code>/
-  <code>STORAGE_INTEGRITY_FAULT</code>/<code>CLEANUP_FAULT</code>），仪表板呈现它们
+  <code>STORAGE_INTEGRITY_FAULT</code>/<code>CLEANUP_FAULT</code>)，仪表板呈现它们
   而不是固定的客户阈值。</li>
 <li><strong>启动完整性 (E2d)</strong>：<code>scan_storage_integrity</code> 验证媒体
   默认情况下存在、大小和校验和（有界确定性采样是
@@ -3695,8 +3731,8 @@ PR-020 审查强化）。交付任务和强制性安全不变量是
 Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-web 30、
 桌面 3) 和 12 名剧作家 e2e。</p>
 <h2 id="88-upload-resilience-e3">8.8 上传弹性（E3）<a class="headerlink" href="#88-upload-resilience-e3" title="Permanent link">&para;</a></h2>
-<p>于<code>feat/e3-upload-resilience</code>实现（投递任务
-<code>docs/tasks/E3-upload-resilience.md</code>，设计13.13/13.14):</p>
+<p>在<code>feat/e3-upload-resilience</code>上实现（投递任务
+<code>docs/tasks/E3-upload-resilience.md</code>，设计13.13/13.14）：</p>
 <ul>
 <li><strong>带宽节流（E3a）</strong>：令牌桶限制器限制网络
   来自 <code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code> 的每秒有效负载字节数
@@ -3710,7 +3746,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   <code>UPLOAD_CIRCUIT_OPEN</code> 警报；持久队列永远不会改变。</li>
 <li><strong>受控手动重试 (E3c)</strong>：<code>POST /api/v1/uploads/{id}/retry</code>
   仅重置 <code>RETRY_WAIT</code>/<code>PERMANENT_FAILURE</code> 任务
-  <code>attempt_count + 1</code>； 404 未知，409 不合格，无突变。</li>
+  <code>attempt_count + 1</code>; 404 未知，409 不合格，无突变。</li>
 <li><strong>长时间停电排水 (E3d)</strong>：离线检查、重新启动和恢复的天数
   使用媒体之前的有序元数据恢复无重复的排空队列
   上传和每次检查<code>SYNCED</code>。</li>
@@ -3780,8 +3816,8 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   比赛。</li>
 <li><strong>备份和恢复（E5c）</strong>：<code>assemblyvision backup</code>采用一致的
   SQLite 在线快照以及受管理的配置/规则/清单文件和挂起的文件
-  将带有 SHA-256 校验和的证据放入 <code>tar.gz</code> 包中； <code>assemblyvision
-  restore</code> 在申请之前验证每个校验和，保留 <code>.pre-restore</code>
+  将具有 SHA-256 校验和的证据放入 <code>tar.gz</code> 捆绑包中； <code>assemblyvision
+  restore</code> 在应用之前验证每个校验和，保留 <code>.pre-restore</code>
   复制，从不覆盖冲突的媒体，并协调存储，以便
   待处理的上传任务将继续存在。</li>
 <li><strong>Runbooks (E5d)</strong>：Runbook 12（备份和恢复）、13（TLS 证书
@@ -3790,8 +3826,12 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 </ul>
 <h2 id="811-barcode-identity-and-edge-local-human-review-prs-3031">8.11 条码身份和边缘本地人工审核（PR #30/#31）<a class="headerlink" href="#811-barcode-identity-and-edge-local-human-review-prs-3031" title="Permanent link">&para;</a></h2>
 <p>通过 PR #30 合并（dev -&gt; main）：精确映射的条形码身份解析
-（ADR-015）。于 <code>feat/edge-local-human-review</code> 实施（PR #31，待定）
-合并）：可选的边缘局部人工审核（ADR-016）。</p>
+（ADR-015）。 PR #31 合并了可选的边缘本地人工审核 (ADR-016)，包括
+<code>docs/reviews/PR-031-review.md</code>中记录的审查强化：已序列化
+取代下的链接
+<code>BEGIN IMMEDIATE</code>，独特的标准化组件修正，问题+json
+重新生成的 OpenAPI/TS 合约中的声明、审查队列初始值
+加载和审查面板历史错误门控。</p>
 <ul>
 <li><strong>条形码标识（PR #30、ADR-015）</strong>：键入 <code>BarcodeObservation</code> 型号，
   一个可选的 ZXing-cpp 视觉解码器（<code>zxing-cpp&gt;=2.3,&lt;3</code>），一个显式的
@@ -3826,6 +3866,87 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   （还没有边缘角色模型）；本地评论记录尚未同步到
   中央服务器。</li>
 </ul>
+<h2 id="812-review-hardening-documentation-i18n-and-mkdocs-prs-31-36">8.12 查看强化、文档、i18n 和 MkDocs（PR #31-#36）<a class="headerlink" href="#812-review-hardening-documentation-i18n-and-mkdocs-prs-31-36" title="Permanent link">&para;</a></h2>
+<p>PR #31 到 #36 合并到 <code>main</code>。</p>
+<ul>
+<li><strong>PR #31 审查强化</strong>：PR-031
+  结果 F01-F10 已解决，后续修复解决了剩余问题
+  审查结果： <code>submit_review</code> 在执行之前获取 SQLite 写锁
+  取代 read (<code>BEGIN IMMEDIATE</code>)，使并发提交线性链
+  （使用两个存储库进行回归测试）； <code>component_corrections</code> 是
+  规范化（删除空格、非空）和重复/矛盾
+  代码在域和 API 边界被拒绝；审查终点
+  声明他们的 404/409/422 RFC 7807 问题响应与真实的
+  <code>application/problem+json</code>媒体类型（OpenAPI + TS重新生成）；的
+  <code>/review</code> 页面在第一个条目上加载其默认 NG/open 队列并忽略
+  飞行中响应陈旧；并且审查小组会阻止提交，直到
+  仅追加历史记录成功加载，使用
+  重试。查看者凭证审核例外记录为已接受
+  权衡 PR31-T05（推迟到存在边缘 RBAC 为止）。</li>
+<li><strong>PR #32 问题模板</strong>：已完成
+  <code>.github/ISSUE_TEMPLATE/</code> 当前项目状态 - 错误报告
+  获得了 P0-P3 严重性、E1-E6 生产影响、相关运行手册字段，以及
+  相机/条形码/触发器组件；该功能请求获得了 ADR
+  需求加上文档影响和变更控制影响复选框
+  （合同 05/07/09/10）；接下来是一个新的安全漏洞模板
+  SECURITY.md 私人报告；选择器链接安全策略。
+  <code>triage</code> 和 <code>security</code> 标签已创建。</li>
+<li><strong>PR #33 文档刷新</strong>：自述文件
+  被重写为工业化、开源化的基调——徽章、
+  OK/NG 假阴性安全框架、并排仪表板屏幕截图
+  (<code>docs/images/</code>)，一个垂直的美人鱼架构图，涵盖了整个
+  边缘管道和计划的中央服务器，生产状态表，以及
+  一个三阶段路线图（MVP / Edge / Central），展望
+  完整的AI识别平台。 QUICKSTART 和 SECURITY 保持一致
+  当前状态（WebSocket 运行时通道、TLS/Docker 秘密选项、
+  单独的上传凭证、<code>gige-vision</code> 和触发器/身份接缝，
+  备份/恢复，以及 PR31-T05 边缘审查例外）。</li>
+<li><strong>PR #34 开发人员手册</strong>：添加了索引代码库手册。</li>
+<li><strong>PR #35 edge-web i18n</strong>：添加了英语 <code>vue-i18n</code> 目录，
+  简体中文、繁体中文和日语。使用英文文本
+  作为消息键； <code>VITE_DEFAULT_LOCALE</code>控制默认；地球仪 SVG
+  下拉菜单保留所选区域设置； Element Plus 使用活性
+  区域设置提供者。边缘网络检查已通过：类型检查、lint、单元测试、
+  构建和 15 个剧作家测试。</li>
+<li><strong>PR #36 MkDocs 索引修复</strong>：将 <code>exclude_docs: README.md</code> 更改为
+  <code>exclude_docs: /README.md</code>，恢复嵌套的<code>README.md</code>索引页，例如
+  <code>/manual/</code>、<code>/design/</code>、<code>/contracts/</code> 和 <code>/runbooks/</code>。</li>
+<li><strong>中央服务器M1计划</strong>：<code>docs/tasks/C1-central-server-m1.md</code>定义了
+  保持边缘独立的试点实施：单独的设备上传
+  和管理凭据、PostgreSQL + MinIO、当前边缘兼容
+  幂等上传和验证收据、历史/媒体和仅附加
+  中央审查。 OIDC、完整 RBAC、WebSocket、远程包推出以及
+  可恢复上传仍被推迟。</li>
+</ul>
+<h2 id="813-central-server-m1-foundation-c1a">8.13 中央服务器 M1 基础 (C1a)<a class="headerlink" href="#813-central-server-m1-foundation-c1a" title="Permanent link">&para;</a></h2>
+<p>第一次中央服务器交付（C1a
+<code>docs/tasks/C1-central-server-m1.md</code>) 已实施并验证：</p>
+<ul>
+<li><strong><code>apps/central-service</code></strong>（uv 工作区成员 <code>assemblyvision-central</code>）：
+  具有类型化 <code>AV_CENTRAL_*</code> 设置的 FastAPI 应用程序，RFC 7807 问题
+  响应、请求 ID 关联、<code>MinioObjectStorage</code> 抽象
+  幂等存储桶引导程序和 Alembic 迁移运行程序。迁移是
+  <strong>受控释放步骤</strong> (<code>python -m central_service migrate</code>)；应用程序接口
+  永远不会自动迁移。基线迁移 <code>0001</code> 建立了
+  <code>central_meta</code> 标记。</li>
+<li><strong>健康/就绪</strong>：<code>GET /api/v1/health/live</code>（无依赖项）和 <code>GET
+  /api/v1/health/ready</code>（503 + 问题，而 PostgreSQL 无法访问，
+  schema 位于 head 后面、MinIO 存储桶不可用或 Pilot
+  未配置凭据）。探测结果可注入进行测试。</li>
+<li><strong><code>apps/admin-web</code></strong>（pnpm 工作区）：最小 Vue 3 + TypeScript + Pinia +
+  Element Plus Pilot shell（概述页面、路由器、Vitest、Playwright e2e）
+  使用 Dockerfile 在 nginx 后面提供服务，将 <code>/api</code> 代理到 API。</li>
+<li><strong><code>packages/typescript/api-client-central</code></strong>：从生成的 OpenAPI 类型
+  与 CI 一起承诺的 <code>apps/central-service/openapi/central-openapi.json</code>
+  两侧进行漂移检查。</li>
+<li><strong>撰写</strong>：PostgreSQL + MinIO + <code>central-migrate</code>（一次性）+
+  <code>central-service</code> + <code>admin-web</code>、命名卷、非根映像、运行状况
+  检查，仅开发环境默认位于 <code>compose.env.example</code> 中。已验证冷启动，
+  准备就绪，通过管理网络代理运行状况，并重新启动持久性； CI/Makefile
+  现在涵盖中央 OpenAPI 偏差检查和管理 Web 门。</li>
+</ul>
+<p>边缘运行时不导入中央代码；当前的边缘上传信封是
+不变。</p>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）； <strong>E1
@@ -3833,7 +3954,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   PR-020 审核已解决），<strong>E3 上传弹性</strong>（PR #22，第 8.8 节），
    <strong>E4 运行时</strong>（第 8.9 节），<strong>E5 部署和安全性</strong>（第 8.9 节）
    8.10、PR #24) 和 <strong>E6 验收准备</strong> (PR #25) 已合并。
-   时钟漂移线束明确保留<code>NOT_EXECUTED</code>； E6保持开放
+   时钟漂移线束仍然明确地保持<code>NOT_EXECUTED</code>； E6保持开放
    直到它和硬件/客户数据门控接受阶段执行：</li>
 <li><strong>E6现场验收</strong>：所选项目的弹性和浸泡证据
      硬件、保留客户模型验证并签署 Edge 验收
@@ -3843,14 +3964,15 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li>AUDIT-001 <strong>已关闭</strong>，包括延迟的 4.4 权威持久性
   项目（现在由 PR #17 交付）。实现共享模型权重（E4c）；
   每个实例管道使用一个注册表。</li>
-<li><strong>条形码身份</strong>（PR #30）和<strong>边缘本地人工审核</strong>（PR #31）
-  已实施； PR #31（及其审查修复和 <code>docs/reviews/PR-031-review.md</code>）
-  正在等待从 <code>feat/edge-local-human-review</code> 合并到 <code>main</code>。</li>
+<li><strong>条形码身份</strong>（PR #30），<strong>边缘本地人工审核</strong>（PR #31），问题
+  模板 (PR #32)、README/QUICKSTART/SECURITY 刷新 (PR #33)、
+  开发人员手册 (PR #34)、edge-web i18n (PR #35) 和 MkDocs 索引修复
+  (PR #36) 被合并（参见第 8.11/8.12 节）。</li>
 <li>基线仍然需要真实的客户数据：收集和注释
   与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
   <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
-  <code>scripts/adapt-xanylabeling.py</code>（书面形式；支持classes.txt/data.yaml，
+  <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
   图像优先和分割优先布局）到
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>
@@ -3862,11 +3984,15 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   替换模拟触发源（PR #30 中的 Modbus FIFO 合约需要
   经站点验证的寄存器配置文件）和仅限时间的后备（这是一个
   开发模式，而不是生产产品边界）。</li>
-<li>中央服务器（摄取 API、PostgreSQL 模型、对象存储、
-  幂等收据，中央手动审核）<strong>未实施</strong>；只有
-  存在边缘侧请求/接收合同和边缘本地审查记录。
-  Central工作在E1-E6通过后开始，Edge-to-central合约是
-  冻结了。</li>
+<li>中央服务器 M1 试点<strong>正在进行</strong> (<code>docs/tasks/C1-central-server-m1.md</code>)。
+  C1a（工作空间、服务、Compose、健康/就绪、OpenAPI）已交付：
+  <code>apps/central-service</code>（FastAPI、PostgreSQL、MinIO、受控模式
+  迁移）、<code>apps/admin-web</code>（Vue 3 试点 shell）和
+  <code>packages/typescript/api-client-central</code>。摄入经核实的收据，
+  媒体绑定、历史、中央审查、元数据治理和强化
+  (C1b–C6) 保留。它必须保留当前的边缘上传信封并且
+  收据语义；可断点续传的上传将一直延迟到合同签订为止
+  变化。</li>
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期限、网络
   可靠性、中央服务器位置、接受阈值。</li>
