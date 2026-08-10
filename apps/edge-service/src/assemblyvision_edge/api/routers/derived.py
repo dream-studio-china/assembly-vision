@@ -106,12 +106,14 @@ def statistics(
     )
 
 
-def _local_day_bounds(now: datetime, tz_offset_minutes: int) -> tuple[datetime, datetime, datetime]:
-    """Return (previous_7d_start, yesterday_start, today_start) in UTC.
+def _local_day_bounds(
+    now: datetime, tz_offset_minutes: int
+) -> tuple[datetime, datetime, datetime, datetime]:
+    """Return (previous_30d_start, previous_7d_start, yesterday_start, today_start) in UTC.
 
     Day boundaries are computed in the operator-local timezone defined by
     ``tz_offset_minutes`` so "today" matches the line's local calendar. All
-    three returned instants are the UTC moments of the local midnight.
+    returned instants are the UTC moments of the local midnight.
     """
     offset = timedelta(minutes=tz_offset_minutes)
     local_now = now + offset
@@ -119,7 +121,8 @@ def _local_day_bounds(now: datetime, tz_offset_minutes: int) -> tuple[datetime, 
     today_start = (local_today_start - offset).astimezone(UTC)
     yesterday_start = today_start - timedelta(days=1)
     previous_7d_start = today_start - timedelta(days=7)
-    return previous_7d_start, yesterday_start, today_start
+    previous_30d_start = today_start - timedelta(days=30)
+    return previous_30d_start, previous_7d_start, yesterday_start, today_start
 
 
 def _relative_drop(today: ConfidencePeriodStats, baseline: ConfidencePeriodStats) -> float | None:
@@ -234,20 +237,23 @@ def confidence_drift(
 ) -> ConfidenceDriftReport:
     """Confidence drift analysis for one product/rule on this device (15.3.6).
 
-    Compares today's weighted-mean detection confidence with yesterday and
-    with the previous 7 days under the premise of the same product and rule
-    version, so a change reflects the acquisition environment rather than a
-    product-rule switch. The assessment is a heuristic hint, not a root-cause
-    or accuracy claim.
+    Compares today's weighted-mean detection confidence with yesterday, the
+    previous 7 days, and the previous 30 days under the premise of the same
+    product and rule version, so a change reflects the acquisition
+    environment rather than a product-rule switch. The assessment is a
+    heuristic hint, not a root-cause or accuracy claim.
     """
     now: datetime = request.app.state.clock()
     if now.tzinfo is None:
         now = now.replace(tzinfo=UTC)
-    previous_7d_start, yesterday_start, today_start = _local_day_bounds(now, tz_offset_minutes)
+    previous_30d_start, previous_7d_start, yesterday_start, today_start = _local_day_bounds(
+        now, tz_offset_minutes
+    )
     now_iso = now.isoformat()
     today_start_iso = today_start.isoformat()
     yesterday_start_iso = yesterday_start.isoformat()
     previous_7d_start_iso = previous_7d_start.isoformat()
+    previous_30d_start_iso = previous_30d_start.isoformat()
 
     today = repository.confidence_period_stats(
         from_iso=today_start_iso,
@@ -265,6 +271,13 @@ def confidence_drift(
     )
     previous_7d = repository.confidence_period_stats(
         from_iso=previous_7d_start_iso,
+        to_iso=today_start_iso,
+        product_code=product_code,
+        rule_version_id=rule_version_id,
+        component_code=component_code,
+    )
+    previous_30d = repository.confidence_period_stats(
+        from_iso=previous_30d_start_iso,
         to_iso=today_start_iso,
         product_code=product_code,
         rule_version_id=rule_version_id,
@@ -293,10 +306,12 @@ def confidence_drift(
             "today": _period_schema(today, today_start_iso, now_iso),
             "yesterday": _period_schema(yesterday, yesterday_start_iso, today_start_iso),
             "previous_7d": _period_schema(previous_7d, previous_7d_start_iso, today_start_iso),
+            "previous_30d": _period_schema(previous_30d, previous_30d_start_iso, today_start_iso),
         },
         comparison={
             "today_vs_yesterday": _comparison(today, yesterday),
             "today_vs_previous_7d": _comparison(today, previous_7d),
+            "today_vs_previous_30d": _comparison(today, previous_30d),
         },
         components=[_component_schema(item) for item in components],
         assessment=assessment,

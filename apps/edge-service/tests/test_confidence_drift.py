@@ -97,6 +97,7 @@ def _seed(root: Path) -> None:
 
     Today: component_a 0.90 (10 frames) and component_b 0.80 (5 frames).
     Yesterday: component_a 0.95. Previous 7 days: component_a 0.94 and 0.96.
+    Previous 30 days (outside the 7-day window): component_a 0.93.
     """
     _write_record(
         root,
@@ -117,6 +118,11 @@ def _seed(root: Path) -> None:
         root,
         datetime(2026, 6, 4, 8, 0, tzinfo=UTC),
         [("component_a", 0.96, 10)],
+    )
+    _write_record(
+        root,
+        datetime(2026, 5, 21, 8, 0, tzinfo=UTC),
+        [("component_a", 0.93, 10)],
     )
 
 
@@ -163,6 +169,12 @@ def test_confidence_drift_weighted_means_and_deltas(tmp_path: Path) -> None:
     assert previous_7d["weighted_mean"] == pytest.approx(0.95)
     assert previous_7d["inspection_count"] == 3
 
+    previous_30d = body["periods"]["previous_30d"]
+    # (0.94 + 0.96 + 0.95 + 0.93) * 10 / 40; the 30-day window also includes
+    # the 2026-05-21 record outside the 7-day window.
+    assert previous_30d["weighted_mean"] == pytest.approx(37.8 / 40.0)
+    assert previous_30d["inspection_count"] == 4
+
     vs_7d = body["comparison"]["today_vs_previous_7d"]
     assert vs_7d["weighted_mean_delta"] == pytest.approx(13.0 / 15.0 - 0.95)
     assert vs_7d["weighted_mean_relative_percent"] == pytest.approx(
@@ -170,6 +182,10 @@ def test_confidence_drift_weighted_means_and_deltas(tmp_path: Path) -> None:
     )
     assert vs_7d["today_evidence_count"] == 2
     assert vs_7d["baseline_evidence_count"] == 3
+
+    vs_30d = body["comparison"]["today_vs_previous_30d"]
+    assert vs_30d["weighted_mean_delta"] == pytest.approx(13.0 / 15.0 - 37.8 / 40.0)
+    assert vs_30d["baseline_evidence_count"] == 4
 
     assessment = body["assessment"]
     assert assessment["level"] == "noticeable_drop"
