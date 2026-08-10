@@ -215,6 +215,14 @@ def test_device_status(client: TestClient) -> None:
     # valid "platform cannot measure" value, never a missing field).
     for key in ("cpu_count", "load_1m", "memory_total_bytes", "memory_available_bytes"):
         assert key in body
+    for key in (
+        "network_rx_bytes_per_sec",
+        "network_tx_bytes_per_sec",
+        "gpu_utilization_percent",
+        "gpu_power_watts",
+        "gpu_power_max_watts",
+    ):
+        assert key in body
     assert body["storage_total_bytes"] >= 0
 
 
