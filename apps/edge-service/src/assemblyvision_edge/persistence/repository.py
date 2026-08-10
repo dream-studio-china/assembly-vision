@@ -2208,8 +2208,11 @@ class EdgeRepository:
         *,
         from_iso: str,
         to_iso: str,
-        product_code: str | None = None,
-        rule_version_id: str | None = None,
+        product_code: str,
+        rule_version_id: str,
+        product_model_version_id: str,
+        component_model_version_id: str,
+        aggregation_policy_version: str,
         component_code: str | None = None,
     ) -> ConfidencePeriodStats:
         """Weighted confidence statistics over evidence rows in ``[from, to)``.
@@ -2220,16 +2223,24 @@ class EdgeRepository:
         """
         clauses = [
             "ce.best_confidence IS NOT NULL",
+            "ce.detection_count > 0",
             "i.completed_at >= :from_iso",
             "i.completed_at < :to_iso",
+            "i.product_code = :product_code",
+            "i.rule_version_id = :rule_version_id",
+            "i.product_model_version_id = :product_model_version_id",
+            "i.component_model_version_id = :component_model_version_id",
+            "i.aggregation_policy_version = :aggregation_policy_version",
         ]
-        params: dict[str, Any] = {"from_iso": from_iso, "to_iso": to_iso}
-        if product_code is not None:
-            clauses.append("i.product_code = :product_code")
-            params["product_code"] = product_code
-        if rule_version_id is not None:
-            clauses.append("i.rule_version_id = :rule_version_id")
-            params["rule_version_id"] = rule_version_id
+        params: dict[str, Any] = {
+            "from_iso": from_iso,
+            "to_iso": to_iso,
+            "product_code": product_code,
+            "rule_version_id": rule_version_id,
+            "product_model_version_id": product_model_version_id,
+            "component_model_version_id": component_model_version_id,
+            "aggregation_policy_version": aggregation_policy_version,
+        }
         if component_code is not None:
             clauses.append("ce.component_code = :component_code")
             params["component_code"] = component_code
@@ -2252,9 +2263,7 @@ class EdgeRepository:
         confidences: list[float] = []
         inspection_ids: set[str] = set()
         for row in rows:
-            # A PRESENT evidence row carries detection_count >= 1; guard
-            # against a zero weight so a single frame still contributes.
-            weight = float(max(int(row["detection_count"]), 1))
+            weight = float(row["detection_count"])
             confidence = float(row["best_confidence"])
             weighted_sum += confidence * weight
             total_weight += weight
@@ -2280,8 +2289,11 @@ class EdgeRepository:
         today_to_iso: str,
         baseline_from_iso: str,
         baseline_to_iso: str,
-        product_code: str | None = None,
-        rule_version_id: str | None = None,
+        product_code: str,
+        rule_version_id: str,
+        product_model_version_id: str,
+        component_model_version_id: str,
+        aggregation_policy_version: str,
         component_code: str | None = None,
     ) -> list[ComponentConfidenceDelta]:
         """Per-component weighted-mean confidence today versus a baseline.
@@ -2293,18 +2305,23 @@ class EdgeRepository:
         """
         clauses = [
             "ce.best_confidence IS NOT NULL",
+            "ce.detection_count > 0",
             "i.completed_at >= :today_from AND i.completed_at < :today_to",
+            "i.product_code = :product_code",
+            "i.rule_version_id = :rule_version_id",
+            "i.product_model_version_id = :product_model_version_id",
+            "i.component_model_version_id = :component_model_version_id",
+            "i.aggregation_policy_version = :aggregation_policy_version",
         ]
         params: dict[str, Any] = {
             "today_from": today_from_iso,
             "today_to": today_to_iso,
+            "product_code": product_code,
+            "rule_version_id": rule_version_id,
+            "product_model_version_id": product_model_version_id,
+            "component_model_version_id": component_model_version_id,
+            "aggregation_policy_version": aggregation_policy_version,
         }
-        if product_code is not None:
-            clauses.append("i.product_code = :product_code")
-            params["product_code"] = product_code
-        if rule_version_id is not None:
-            clauses.append("i.rule_version_id = :rule_version_id")
-            params["rule_version_id"] = rule_version_id
         if component_code is not None:
             clauses.append("ce.component_code = :component_code")
             params["component_code"] = component_code
@@ -2322,20 +2339,25 @@ class EdgeRepository:
             FROM {component_evidence.name} AS ce
             JOIN {inspections.name} AS i ON i.inspection_id = ce.inspection_id
             WHERE ce.best_confidence IS NOT NULL
+              AND ce.detection_count > 0
               AND i.completed_at >= :baseline_from AND i.completed_at < :baseline_to
-              {"AND i.product_code = :product_code" if product_code is not None else ""}
-              {"AND i.rule_version_id = :rule_version_id" if rule_version_id is not None else ""}
+              AND i.product_code = :product_code
+              AND i.rule_version_id = :rule_version_id
+              AND i.product_model_version_id = :product_model_version_id
+              AND i.component_model_version_id = :component_model_version_id
+              AND i.aggregation_policy_version = :aggregation_policy_version
               {"AND ce.component_code = :component_code" if component_code is not None else ""}
             """
         )
         baseline_params: dict[str, Any] = {
             "baseline_from": baseline_from_iso,
             "baseline_to": baseline_to_iso,
+            "product_code": product_code,
+            "rule_version_id": rule_version_id,
+            "product_model_version_id": product_model_version_id,
+            "component_model_version_id": component_model_version_id,
+            "aggregation_policy_version": aggregation_policy_version,
         }
-        if product_code is not None:
-            baseline_params["product_code"] = product_code
-        if rule_version_id is not None:
-            baseline_params["rule_version_id"] = rule_version_id
         if component_code is not None:
             baseline_params["component_code"] = component_code
 
@@ -2343,7 +2365,7 @@ class EdgeRepository:
             """Return component_code -> (weighted_sum, total_weight, count)."""
             out: dict[str, tuple[float, float, int]] = {}
             for row in rows:
-                weight = float(max(int(row["detection_count"]), 1))
+                weight = float(row["detection_count"])
                 confidence = float(row["best_confidence"])
                 weighted_sum, total_weight, count = out.get(
                     str(row["component_code"]), (0.0, 0.0, 0)

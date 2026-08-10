@@ -387,8 +387,11 @@ class ConfidenceDriftScope(BaseModel):
     """The device/product/rule scope a drift report was computed for."""
 
     device_id: str
-    product_code: str | None = None
-    rule_version_id: str | None = None
+    product_code: str
+    rule_version_id: str
+    product_model_version_id: str
+    component_model_version_id: str
+    aggregation_policy_version: str
     tz_offset_minutes: int = 0
     as_of_iso: str
 
@@ -417,8 +420,8 @@ class DriftAssessment(BaseModel):
 class ConfidenceDriftReport(BaseModel):
     """Confidence drift analysis for the current device (design 15.3.6).
 
-    Computed under the premise of one product and one rule version so a
-    confidence change is not conflated with a product-rule change.
+    Computed under one product, rule, detector-version, and aggregation-policy
+    scope so a confidence change is not conflated with a configuration change.
     """
 
     scope: ConfidenceDriftScope

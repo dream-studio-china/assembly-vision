@@ -36,6 +36,16 @@ from assemblyvision_edge.persistence.repository import (
 router = APIRouter(tags=["derived"])
 
 
+def _problem_response(description: str) -> dict[str, object]:
+    """Describe the RFC 7807 media type emitted by the shared handlers."""
+    return {
+        "description": description,
+        "content": {
+            "application/problem+json": {"schema": {"$ref": "#/components/schemas/Problem"}}
+        },
+    }
+
+
 @router.get("/traceability/{sn}", response_model=TraceabilityView)
 def traceability(
     sn: str,
@@ -226,26 +236,32 @@ def _component_schema(item: ComponentConfidenceDelta) -> ComponentConfidenceDrif
     )
 
 
-@router.get("/statistics/confidence-drift", response_model=ConfidenceDriftReport)
+@router.get(
+    "/statistics/confidence-drift",
+    response_model=ConfidenceDriftReport,
+    responses={422: _problem_response("Invalid or incomplete comparison scope")},
+)
 def confidence_drift(
     request: Request,
-    product_code: str | None = None,
-    rule_version_id: str | None = None,
+    product_code: Annotated[str, Query(min_length=1)],
+    rule_version_id: Annotated[str, Query(min_length=1)],
+    product_model_version_id: Annotated[str, Query(min_length=1)],
+    component_model_version_id: Annotated[str, Query(min_length=1)],
+    aggregation_policy_version: Annotated[str, Query(min_length=1)],
     component_code: str | None = None,
     tz_offset_minutes: Annotated[int, Query(ge=-840, le=840)] = 0,
     repository: EdgeRepository = Depends(get_repository),
 ) -> ConfidenceDriftReport:
-    """Confidence drift analysis for one product/rule on this device (15.3.6).
+    """Confidence drift analysis for one stable inference scope (15.3.6).
 
     Compares today's weighted-mean detection confidence with yesterday, the
-    previous 7 days, and the previous 30 days under the premise of the same
-    product and rule version, so a change reflects the acquisition
-    environment rather than a product-rule switch. The assessment is a
-    heuristic hint, not a root-cause or accuracy claim.
+    previous 7 days, and the previous 30 days under the same product, rule,
+    detector-version, and aggregation-policy scope. This prevents a release
+    or policy switch from being presented as an acquisition-environment change.
+    The assessment is a heuristic hint, not a root-cause or accuracy claim.
     """
     now: datetime = request.app.state.clock()
-    if now.tzinfo is None:
-        now = now.replace(tzinfo=UTC)
+    now = now.replace(tzinfo=UTC) if now.tzinfo is None else now.astimezone(UTC)
     previous_30d_start, previous_7d_start, yesterday_start, today_start = _local_day_bounds(
         now, tz_offset_minutes
     )
@@ -260,6 +276,9 @@ def confidence_drift(
         to_iso=now_iso,
         product_code=product_code,
         rule_version_id=rule_version_id,
+        product_model_version_id=product_model_version_id,
+        component_model_version_id=component_model_version_id,
+        aggregation_policy_version=aggregation_policy_version,
         component_code=component_code,
     )
     yesterday = repository.confidence_period_stats(
@@ -267,6 +286,9 @@ def confidence_drift(
         to_iso=today_start_iso,
         product_code=product_code,
         rule_version_id=rule_version_id,
+        product_model_version_id=product_model_version_id,
+        component_model_version_id=component_model_version_id,
+        aggregation_policy_version=aggregation_policy_version,
         component_code=component_code,
     )
     previous_7d = repository.confidence_period_stats(
@@ -274,6 +296,9 @@ def confidence_drift(
         to_iso=today_start_iso,
         product_code=product_code,
         rule_version_id=rule_version_id,
+        product_model_version_id=product_model_version_id,
+        component_model_version_id=component_model_version_id,
+        aggregation_policy_version=aggregation_policy_version,
         component_code=component_code,
     )
     previous_30d = repository.confidence_period_stats(
@@ -281,6 +306,9 @@ def confidence_drift(
         to_iso=today_start_iso,
         product_code=product_code,
         rule_version_id=rule_version_id,
+        product_model_version_id=product_model_version_id,
+        component_model_version_id=component_model_version_id,
+        aggregation_policy_version=aggregation_policy_version,
         component_code=component_code,
     )
     components = repository.component_confidence_deltas(
@@ -290,6 +318,9 @@ def confidence_drift(
         baseline_to_iso=today_start_iso,
         product_code=product_code,
         rule_version_id=rule_version_id,
+        product_model_version_id=product_model_version_id,
+        component_model_version_id=component_model_version_id,
+        aggregation_policy_version=aggregation_policy_version,
         component_code=component_code,
     )
     assessment = _assess_drift(today, previous_7d)
@@ -299,6 +330,9 @@ def confidence_drift(
             device_id=str(device),
             product_code=product_code,
             rule_version_id=rule_version_id,
+            product_model_version_id=product_model_version_id,
+            component_model_version_id=component_model_version_id,
+            aggregation_policy_version=aggregation_policy_version,
             tz_offset_minutes=tz_offset_minutes,
             as_of_iso=now_iso,
         ),

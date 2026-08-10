@@ -568,7 +568,7 @@
         "type": "object"
       },
       "ConfidenceDriftReport": {
-        "description": "Confidence drift analysis for the current device (design 15.3.6).\n\nComputed under the premise of one product and one rule version so a\nconfidence change is not conflated with a product-rule change.",
+        "description": "Confidence drift analysis for the current device (design 15.3.6).\n\nComputed under one product, rule, detector-version, and aggregation-policy\nscope so a confidence change is not conflated with a configuration change.",
         "properties": {
           "assessment": {
             "$ref": "#/components/schemas/DriftAssessment"
@@ -611,8 +611,16 @@
       "ConfidenceDriftScope": {
         "description": "The device/product/rule scope a drift report was computed for.",
         "properties": {
+          "aggregation_policy_version": {
+            "title": "Aggregation Policy Version",
+            "type": "string"
+          },
           "as_of_iso": {
             "title": "As Of Iso",
+            "type": "string"
+          },
+          "component_model_version_id": {
+            "title": "Component Model Version Id",
             "type": "string"
           },
           "device_id": {
@@ -620,26 +628,16 @@
             "type": "string"
           },
           "product_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Product Code"
+            "title": "Product Code",
+            "type": "string"
+          },
+          "product_model_version_id": {
+            "title": "Product Model Version Id",
+            "type": "string"
           },
           "rule_version_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rule Version Id"
+            "title": "Rule Version Id",
+            "type": "string"
           },
           "tz_offset_minutes": {
             "default": 0,
@@ -649,6 +647,11 @@
         },
         "required": [
           "device_id",
+          "product_code",
+          "rule_version_id",
+          "product_model_version_id",
+          "component_model_version_id",
+          "aggregation_policy_version",
           "as_of_iso"
         ],
         "title": "ConfidenceDriftScope",
@@ -4269,39 +4272,57 @@
     },
     "/api/v1/statistics/confidence-drift": {
       "get": {
-        "description": "Confidence drift analysis for one product/rule on this device (15.3.6).\n\nCompares today's weighted-mean detection confidence with yesterday, the\nprevious 7 days, and the previous 30 days under the premise of the same\nproduct and rule version, so a change reflects the acquisition\nenvironment rather than a product-rule switch. The assessment is a\nheuristic hint, not a root-cause or accuracy claim.",
+        "description": "Confidence drift analysis for one stable inference scope (15.3.6).\n\nCompares today's weighted-mean detection confidence with yesterday, the\nprevious 7 days, and the previous 30 days under the same product, rule,\ndetector-version, and aggregation-policy scope. This prevents a release\nor policy switch from being presented as an acquisition-environment change.\nThe assessment is a heuristic hint, not a root-cause or accuracy claim.",
         "operationId": "confidence_drift_api_v1_statistics_confidence_drift_get",
         "parameters": [
           {
             "in": "query",
             "name": "product_code",
-            "required": false,
+            "required": true,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Product Code"
+              "minLength": 1,
+              "title": "Product Code",
+              "type": "string"
             }
           },
           {
             "in": "query",
             "name": "rule_version_id",
-            "required": false,
+            "required": true,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Rule Version Id"
+              "minLength": 1,
+              "title": "Rule Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "product_model_version_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Product Model Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "component_model_version_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Component Model Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "aggregation_policy_version",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Aggregation Policy Version",
+              "type": "string"
             }
           },
           {
@@ -4346,13 +4367,13 @@
           },
           "422": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Invalid or incomplete comparison scope"
           }
         },
         "summary": "Confidence Drift",

@@ -99,18 +99,19 @@ real-time inspection uses the native app / RTSP / camera sources.
 ### 15.3.6 Confidence Drift (Environment-Change Diagnostics)
 
 `GET /api/v1/statistics/confidence-drift` analyzes detection confidence over
-time under the premise of **the same product and the same rule version on this
-device**, so a change reflects the acquisition environment (conveyor, camera
-focus/angle, lighting) rather than a product-rule switch.
+time under one fixed product, rule, product-detector version, component-detector
+version, and aggregation-policy version on this device. This prevents a release
+or policy switch from being presented as an acquisition-environment change
+(conveyor, camera focus/angle, lighting).
 
 | Aspect | Behavior |
 |---|---|
-| Confidence metric | Per-component `best_confidence` weighted by `detection_count` (equivalent to weighting whole inspections by their total detection count); the evidence-level `median` is reported as a robust reference. Only evidence rows with a recorded confidence contribute. |
+| Confidence metric | Per-component `best_confidence` weighted by positive `detection_count` (equivalent to weighting whole inspections by their total detection count); the evidence-level `median` is reported as a robust reference. Only evidence rows with a recorded confidence and at least one detection contribute. |
 | Periods | `today` = `[local-today 00:00, now)`, `yesterday` = `[local-yesterday 00:00, local-today 00:00)`, `previous_7d` = `[local-today 00:00 - 7 days, local-today 00:00)` (includes yesterday), `previous_30d` = `[local-today 00:00 - 30 days, local-today 00:00)` (includes the 7-day window). Day boundaries follow the operator-local timezone given by `tz_offset_minutes` (default UTC). Buckets are half-open `[from, to)`. |
 | Comparison | `today_vs_yesterday`, `today_vs_previous_7d`, and `today_vs_previous_30d` report the weighted-mean delta, the relative percent change, and both evidence counts. |
 | Components | Per-component weighted means for today versus the previous-7-day baseline, sorted with the largest drop first; a component absent from the baseline carries `baseline_weighted_mean = null` (insufficient baseline evidence, never a fabricated zero). |
 | Assessment | Heuristic label from the relative change versus the previous-7-day mean: `< 2 %` stable, `2–5 %` minor, `> 5 %` noticeable, with drop/rise direction, or `insufficient_data` when either window has no confidence evidence. The label is decision-support only and never claims a root cause or an accuracy value; a persistent drop prompts operators to verify frame quality and media. |
-| Filters | Optional `product_code`, `rule_version_id`, and `component_code`; `tz_offset_minutes` is bounded to `[-840, 840]` (`422` outside). |
+| Filters | Required `product_code`, `rule_version_id`, `product_model_version_id`, `component_model_version_id`, and `aggregation_policy_version` define the comparable scope. Optional `component_code` narrows it. `tz_offset_minutes` is bounded to `[-840, 840]` (`422` outside); all validation errors use `application/problem+json`. |
 
 ## 15.4 Central API Groups
 
