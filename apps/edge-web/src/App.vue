@@ -78,6 +78,7 @@ onBeforeUnmount(() => {
         <el-select
           v-model="activeTheme"
           class="app-shell__theme-select"
+          data-testid="theme-selector"
           :teleported="false"
           aria-label="Interface theme"
           @change="selectTheme"
