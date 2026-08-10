@@ -74,7 +74,7 @@ onMounted(async () => {
   gap: 12px;
 }
 .label {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 14px;
 }
 .final {
@@ -82,22 +82,22 @@ onMounted(async () => {
   font-weight: 700;
 }
 .final--pass {
-  color: #1b5e20;
+  color: var(--status-ok);
 }
 .final--ng {
-  color: #b71c1c;
+  color: var(--status-ng);
 }
 .result {
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   padding: 2px 12px;
   font-size: 12px;
 }
 .result--pass {
-  background: #e8f5e9;
-  color: #1b5e20;
+  background: var(--status-ok-soft);
+  color: var(--status-ok);
 }
 .result--ng {
-  background: #fdecea;
-  color: #b71c1c;
+  background: var(--status-ng-soft);
+  color: var(--status-ng);
 }
 </style>

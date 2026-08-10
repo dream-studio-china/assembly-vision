@@ -110,7 +110,7 @@ const isStale = computed(() => {
   height: 100%;
   min-height: 120px;
   overflow: hidden;
-  background: #0f1115;
+  background: var(--surface-inset, #0f1115);
 }
 .detection-viewer__empty {
   position: absolute;
@@ -118,7 +118,7 @@ const isStale = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8b93a1;
+  color: var(--text-faint, #8b93a1);
   font-size: 14px;
 }
 .detection-viewer__image {
@@ -145,11 +145,11 @@ const isStale = computed(() => {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #ff6d00;
-  color: #fff;
+  background: var(--status-warning, #ff6d00);
+  color: var(--shell-text, #fff);
   font-size: 12px;
   font-weight: 600;
   padding: 4px 8px;
-  border-radius: 3px;
+  border-radius: var(--radius-small, 3px);
 }
 </style>

@@ -6,5 +6,7 @@ import "./styles.css";
 
 import App from "./App.vue";
 import { router } from "./router";
+import { initializeTheme } from "./theme";
 
+initializeTheme();
 createApp(App).use(createPinia()).use(router).use(ElementPlus).mount("#app");

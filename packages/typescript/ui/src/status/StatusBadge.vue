@@ -24,26 +24,26 @@ const presentation = computed(() => statusPresentation(props.status));
   align-items: center;
   gap: 6px;
   padding: 2px 10px;
-  border-radius: 3px;
+  border-radius: var(--radius-small, 3px);
   font-weight: 600;
   font-size: 13px;
   line-height: 20px;
   border: 1px solid transparent;
 }
 .status-badge--success {
-  color: #1b5e20;
-  background: #e8f5e9;
-  border-color: #a5d6a7;
+  color: var(--status-ok, #1b5e20);
+  background: var(--status-ok-soft, #e8f5e9);
+  border-color: var(--status-ok, #1b5e20);
 }
 .status-badge--danger {
-  color: #b71c1c;
-  background: #fdecea;
-  border-color: #ef9a9a;
+  color: var(--status-ng, #b71c1c);
+  background: var(--status-ng-soft, #fdecea);
+  border-color: var(--status-ng, #b71c1c);
 }
 .status-badge--warning {
-  color: #e65100;
-  background: #fff3e0;
-  border-color: #ffcc80;
+  color: var(--status-warning, #e65100);
+  background: var(--status-warning-soft, #fff3e0);
+  border-color: var(--status-warning, #e65100);
 }
 .status-badge__icon {
   font-size: 13px;

@@ -3,6 +3,7 @@ import { formatBytes } from "@assemblyvision/ui";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRuntimeStore } from "./stores/runtime";
 import { isHttpMode } from "./services/client";
+import { activeTheme, applyTheme, themes } from "./theme";
 
 const runtime = useRuntimeStore();
 const localTime = ref(new Date());
@@ -10,6 +11,14 @@ let clockTimer: ReturnType<typeof setInterval> | null = null;
 
 const deviceCode = computed(() => runtime.status?.device_id.slice(0, 8).toUpperCase() ?? "LOCAL EDGE");
 const diskWarning = computed(() => runtime.status?.storage_mode !== undefined && runtime.status.storage_mode !== "NORMAL");
+
+function selectTheme(): void {
+  try {
+    applyTheme(activeTheme.value, window.localStorage);
+  } catch {
+    applyTheme(activeTheme.value);
+  }
+}
 
 onMounted(() => {
   void runtime.refresh();
@@ -58,6 +67,15 @@ onBeforeUnmount(() => {
         <time class="app-shell__clock" :datetime="localTime.toISOString()">
           {{ localTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) }}
         </time>
+        <el-select
+          v-model="activeTheme"
+          class="app-shell__theme-select"
+          :teleported="false"
+          aria-label="Interface theme"
+          @change="selectTheme"
+        >
+          <el-option v-for="theme in themes" :key="theme.value" :label="theme.label" :value="theme.value" />
+        </el-select>
       </div>
     </el-header>
     <el-main class="app-shell__main">
@@ -82,25 +100,25 @@ body,
 .app-shell__header {
   display: flex;
   align-items: center;
-  gap: 20px;
-  min-height: 64px;
+  gap: 16px;
+  min-height: 58px;
   height: auto;
-  padding: 10px 20px;
-  background: #12212b;
-  color: #e8f0f3;
-  border-bottom: 3px solid #176b87;
+  padding: 8px 18px;
+  background: var(--shell);
+  color: var(--shell-text);
+  border-bottom: 3px solid var(--accent);
 }
 .app-shell__brand {
   display: flex;
   flex-direction: column;
-  color: #fff;
+  color: var(--shell-text);
   font-weight: 750;
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
 .app-shell__brand small {
   margin-top: 2px;
-  color: #98b0ba;
+  color: var(--shell-muted);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -114,16 +132,16 @@ body,
   overflow-x: auto;
 }
 .app-shell__nav a {
-  color: #c6d5da;
+  color: var(--shell-muted);
   text-decoration: none;
   font-size: 14px;
   white-space: nowrap;
   padding: 7px 9px;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 .app-shell__nav a.router-link-active {
-  color: #fff;
-  background: #245266;
+  color: var(--shell-text);
+  background: var(--accent);
   font-weight: 600;
 }
 .app-shell__telemetry {
@@ -133,13 +151,13 @@ body,
   font-size: 13px;
   white-space: nowrap;
 }
-.app-shell__telemetry-item { color: #b9cbd1; }
+.app-shell__telemetry-item { color: var(--shell-muted); }
 .app-shell__clock {
-  color: #fff;
+  color: var(--shell-text);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
-.app-shell__disk-warning { color: #ffd17f; }
+.app-shell__disk-warning { color: var(--status-warning); }
 .dot {
   width: 10px;
   height: 10px;
@@ -147,23 +165,32 @@ body,
   display: inline-block;
 }
 .dot--ok {
-  background: #43a047;
+  background: var(--status-ok);
 }
 .dot--ng {
-  background: #e53935;
+  background: var(--status-ng);
 }
+.app-shell__theme-select { width: 150px; }
+.app-shell__theme-select :deep(.el-select__wrapper) {
+  background: var(--shell-strong);
+  box-shadow: 0 0 0 1px var(--border-strong) inset !important;
+}
+.app-shell__theme-select :deep(.el-select__selected-item),
+.app-shell__theme-select :deep(.el-select__caret) { color: var(--shell-text); }
 .app-shell__main {
   height: calc(100% - 64px);
   overflow: auto;
-  padding: 20px;
+  padding: var(--page-padding);
 }
 @media (max-width: 1080px) {
   .app-shell__header { gap: 12px; }
   .app-shell__telemetry-item { display: none; }
+  .app-shell__theme-select { width: 128px; }
 }
 @media (max-width: 720px) {
   .app-shell__header { align-items: flex-start; flex-wrap: wrap; padding: 10px 12px; }
   .app-shell__nav { order: 3; flex-basis: 100%; }
   .app-shell__main { padding: 12px; }
+  .app-shell__theme-select { margin-left: auto; }
 }
 </style>

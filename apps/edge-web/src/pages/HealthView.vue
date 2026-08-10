@@ -4,6 +4,7 @@ import * as echarts from "echarts";
 import { computed, onMounted, ref } from "vue";
 import EChart from "../components/EChart.vue";
 import { getApiClient } from "../services/client";
+import { chartTokens } from "../theme";
 import type { DeviceStatus, UploadTask } from "@assemblyvision/api-client";
 
 const status = ref<DeviceStatus | null>(null);
@@ -11,10 +12,11 @@ const uploads = ref<UploadTask[]>([]);
 const error = ref<string | null>(null);
 
   const diskOption = computed<echarts.EChartsOption>(() => {
+  const theme = chartTokens();
   const free = status.value?.disk_free_bytes ?? 0;
   const total = Math.max(free, 50 * 1024 ** 3);
   return {
-    title: { text: "Disk usage", left: "center", textStyle: { fontSize: 14 } },
+    title: { text: "Disk usage", left: "center", textStyle: { fontSize: 14, color: theme.text } },
     series: [
       {
         type: "gauge",
@@ -33,15 +35,16 @@ const error = ref<string | null>(null);
 });
 
 const queueOption = computed<echarts.EChartsOption>(() => {
+  const theme = chartTokens();
   const byState: Record<string, number> = {};
   for (const task of uploads.value) {
     byState[task.status] = (byState[task.status] ?? 0) + 1;
   }
   return {
-    title: { text: "Upload queue by state", left: "center", textStyle: { fontSize: 14 } },
-    xAxis: { type: "category", data: Object.keys(byState) },
-    yAxis: { type: "value", minInterval: 1 },
-    series: [{ type: "bar", data: Object.values(byState), itemStyle: { color: "#409eff" } }],
+    title: { text: "Upload queue by state", left: "center", textStyle: { fontSize: 14, color: theme.text } },
+    xAxis: { type: "category", data: Object.keys(byState), axisLine: { lineStyle: { color: theme.border } }, axisLabel: { color: theme.text } },
+    yAxis: { type: "value", minInterval: 1, splitLine: { lineStyle: { color: theme.border } }, axisLabel: { color: theme.text } },
+    series: [{ type: "bar", data: Object.values(byState), itemStyle: { color: theme.accent } }],
   };
 });
 
