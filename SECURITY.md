@@ -10,8 +10,12 @@ authoritative.
 
 | Version | Status |
 |---|---|
-| `main` | Static train-and-inspect MVP (ADR-011), the read-only M1 edge API (PR #8), the real-data baseline tooling and dataset adapters (PRs #9-#11). Actively developed and supported. |
+| `main` | Edge production-candidate: MVP and dashboard (PRs #3/#6), M1 edge API (PR #8), camera sources and multi-instance `serve` (PR #14), temporal aggregation (PRs #15/#16), durable upload outbox (PR #17), E1–E5 production gates (PRs #18–#24), E6 acceptance-prep tooling (PR #25), GigE/GenICam source and dashboard themes (PRs #26–#28), and barcode identity / PLC trigger contract (PR #30, ADR-015). Actively developed and supported. |
 | `dev` | Development branch, kept in sync with `main`; not a release on its own. |
+
+The edge-local human review feature (ADR-016, PR #31) is implemented on a
+feature branch and pending merge; its security posture is documented below in
+the "Current edge API" section.
 
 ## Reporting a Vulnerability
 
@@ -40,7 +44,7 @@ Scope by phase:
 | Phase | Boundary |
 |---|---|
 | Static MVP | CLIs used only in an isolated development environment with non-production data. Training code, datasets, notebooks, and experiment configuration are developer-only and not distributed. Model encryption and `.pyc`-only packaging are deferred. |
-| One-month target | Local access controls, central authentication, TLS, device credentials, audit logs, non-root containers, controlled artifact distribution. |
+| One-month target | Local access controls, central authentication, TLS, device credentials, audit logs, non-root containers, controlled artifact distribution. Delivered so far (E5, PR #24): non-root read-only-rootfs Docker image, optional local HTTPS, runtime secrets via environment or Docker secrets, and checksummed backup/restore bundles. |
 | Production target | Customer-integrated identity, role-based authorization, certificate lifecycle, signed model/configuration packages, vulnerability management, backup encryption, incident response. |
 
 ## Threat Model Summary
@@ -75,9 +79,26 @@ authentication (design 15.2.1).
   cookie; the served dashboard `/login` provides this one-time entry so neither
   API JSON requests nor media `<img>` requests need the token in browser
   storage.
-- No mutating routes are exposed in M1 (pause/resume, camera reconnect, and
-  upload retry return `404`). An inspection coordinator and operator commands
-  are a later milestone requiring the documented operator/admin role model.
+- The API is **read-only for inspection control**: pause/resume and camera
+  reconnect are not exposed. The controlled upload retry
+  (`POST /api/v1/uploads/{id}/retry`, E3) is the only mutating route on
+  `main`; review submission (`POST /api/v1/inspections/{id}/reviews`,
+  ADR-016, PR #31 pending merge) uses the same viewer credential as a
+  documented deviation (see "Privileged operations" below) until an edge role
+  model exists.
+- Uploads use a separate credential (`AV_EDGE_UPLOAD_TOKEN` /
+  `--upload-base-url`); the viewer token is never reused for uploads. Upload
+  destinations require HTTPS; plaintext HTTP is allowed only for a loopback
+  development host with `--upload-insecure-http`.
+- Optional local HTTPS via `--tls-cert`/`--tls-key` (or `AV_EDGE_TLS_CERT` /
+  `AV_EDGE_TLS_KEY`) with startup validation of existence, private-key
+  permissions, and certificate/key match. Viewer and upload tokens also fall
+  back to Docker secret files under `/run/secrets/` when the environment
+  variables are absent (E5).
+- The WebSocket runtime channel (`WS /api/v1/ws/runtime`, E4) uses the same
+  viewer model as REST: browsers exchange the credential for a short-lived,
+  single-use ticket (`POST /api/v1/ws/runtime/ticket`) sent as the negotiated
+  `Sec-WebSocket-Protocol` value, never in the URL.
 - CORS never uses `*`; only anchored loopback development origins
   (`localhost` / `127.0.0.1`) are allowed. The served dashboard is same-origin.
 - If no token is configured the service runs in an explicit M1 development
@@ -104,8 +125,13 @@ permits.
 
 Model activation, rule publication, threshold changes, data deletion, remote
 device configuration, user management, and human-review actions that append or
-supersede a human disposition require elevated permissions. Review never
-overwrites the immutable edge `internal_decision` or `business_result`.
+supersede a human disposition require elevated permissions. On the current
+edge, the only privileged-class action exposed — review submission — rides the
+single viewer credential (ADR-016 decision 3/7) as a documented operator-
+convenience trade-off until an edge role model exists (PR31-T05); the
+elevated-permission requirement applies to the central and mature designs.
+Review never overwrites the immutable edge `internal_decision` or
+`business_result`.
 
 ### Audit logging (contract 08)
 
@@ -213,6 +239,10 @@ Prescribed recovery procedures (design 21.10):
   from patched pinned dependencies, scan, test, sign, and stage rollout while
   preserving release provenance.
 
+Operational runbooks cover the related recovery paths: runbook 05 (database
+recovery), runbook 12 (backup and recovery), runbook 13 (TLS certificate
+rotation), and runbook 14 (deployment upgrade and rollback).
+
 ## Verification
 
 Security verification includes authorization matrix tests, site isolation
@@ -220,6 +250,12 @@ tests, device revocation, malformed upload handling, dependency and container
 scanning, secret scanning, package signature failure, rollback safety,
 audit-log completeness, backup restoration, and an external penetration test
 before broad deployment where contractually required (design 21.11).
+
+CI enforces the Python and frontend gates (ruff, mypy, pytest, OpenAPI/
+TypeScript contract drift, frontend build/lint/unit, Playwright e2e) on every
+push, and the E6 acceptance runner (`scripts/edge-acceptance-run.py`) executes
+the locally automatable security and operations items while on-site hardware
+items stay `NOT_EXECUTED` (never reported as pass).
 
 ## Open Questions and Validation Required
 

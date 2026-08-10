@@ -1,11 +1,33 @@
 # AssemblyVision
 
-Edge-first industrial AI vision inspection platform powered by YOLO detection and configurable rule engines. Supports automated assembly verification, quality inspection, offline edge inference, and traceable inspection workflows.
+[![CI](https://github.com/dream-studio-china/assembly-vision/actions/workflows/ci.yml/badge.svg)](https://github.com/dream-studio-china/assembly-vision/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.12-blue)](https://github.com/dream-studio-china/assembly-vision)
+[![TypeScript](https://img.shields.io/badge/typescript-5.x-blue)](https://github.com/dream-studio-china/assembly-vision)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-## Current Status
+**AssemblyVision** is an edge-first industrial AI vision inspection platform for
+conveyor-based assembly lines. It verifies that every required component is
+present on a completed product using two-stage YOLO detection and a
+deterministic, versioned rule engine — and it does so **offline**, on an
+industrial edge computer, without any central round-trip in the real-time
+decision path.
 
-The Edge production-candidate gates E1-E5 are implemented; the Central server
-is intentionally not started until the Edge gates and the Edge-to-central
+> **Business output.** Every inspection resolves to `OK` (all required
+> components reliably detected) or `NG` (missing, uncertain, or unverifiable).
+> The quality priority is **minimizing false negatives**: an unverifiable
+> result is always reported as `NG`, never as a default `OK`. The system makes
+> no 100 % accuracy claims; acceptance is based on measured, held-out evidence.
+
+## Screenshots
+
+| Inspection detail view | Live inspection view |
+|:---:|:---:|
+| <img src="docs/images/inspection.jpg" alt="Inspection detail view" width="100%"/> | <img src="docs/images/live.jpg" alt="Live inspection view" width="100%"/> |
+
+## Production Status
+
+The Edge production-candidate gates E1–E5 are merged; the Central server is
+intentionally not started until the Edge gates and the Edge-to-central
 contract are ready.
 
 | Milestone | Status |
@@ -14,8 +36,10 @@ contract are ready.
 | E2 Retention and disk safety | Merged (PR #20) |
 | E3 Upload resilience | Merged (PR #22) |
 | E4 Runtime and live event channel | Merged (PR #23) |
-| E5 Deployment and security | Implemented (PR #24, open) |
-| E6 Edge acceptance | E6-prep tooling delivered; clock-drift harness and on-site acceptance remain open |
+| E5 Deployment and security | Merged (PR #24) |
+| E6 Edge acceptance | E6-prep tooling merged (PR #25); clock-drift harness and on-site acceptance remain open |
+| Barcode identity / PLC FIFO trigger (ADR-015) | Merged (PR #30) |
+| Edge-local human review (ADR-016) | Implemented, pending merge (PR #31) |
 | Central server | Not started (post E6) |
 
 **E6 edge acceptance** is split into two phases. The **E6-prep** deliverables
@@ -24,27 +48,96 @@ need no real environment and are delivered: the acceptance test matrix
 (`scripts/edge-acceptance-run.py`) that emits a machine-readable evidence
 manifest with `NOT_EXECUTED` entries for on-site items, the acceptance report
 template (`docs/design/28-edge-acceptance-report.md`), and the on-site
-execution plan. The **on-site acceptance** phase cannot run in this repository's
-environment: it requires customer-approved targets, real edge hardware
-(camera/SDK, barcode, PLC/photo-eye trigger, GPU), unseen customer data, and
-executed resilience/soak evidence. Until that evidence exists the acceptance
-report stays a template with `NOT_MEASURED` metrics; no fabricated pass results
-are ever recorded. The runner also records the unimplemented clock-drift
-harness as `NOT_EXECUTED`/incomplete rather than claiming local coverage.
+execution plan. The **on-site acceptance** phase cannot run in this
+repository's environment: it requires customer-approved targets, real edge
+hardware (camera/SDK, barcode, PLC/photo-eye trigger, GPU), unseen customer
+data, and executed resilience/soak evidence. Until that evidence exists the
+acceptance report stays a template with `NOT_MEASURED` metrics; no fabricated
+pass results are ever recorded.
 
 ## Features
 
-- **Two-stage detection** — product localization → ROI extraction → component presence check
-- **Deterministic rule engine** — versioned, model-independent, always fail-safe
-- **Edge-first architecture** — offline inspection; no central round-trip required
-- **Full traceability** — every decision records model, rule, and configuration versions
-- **Atomic evidence output** — JSON records + annotated images with SHA-256 checksums
-- **Durable upload outbox** — transactional queue with retry/backoff, idempotency keys, and verified receipts (ADR-005)
-- **Retention and disk safety** — receipt-gated cleanup with lease fencing, startup integrity scanning/quarantine, and a fail-safe stop gate that never returns an unrecorded `OK`
-- **Python monorepo** — uv workspace, strict typing (MyPy), Pydantic domain models
-- **Edge dashboard** — Vue 3 + TypeScript operator UI (current inspection, live view, history, traceability, statistics, device status, images, upload queue, health), decoupled from the backend via a typed API client
-- **Edge desktop** — Electron shell that runs the dashboard as a local desktop/kiosk app
-- **Frontend workspace** — pnpm workspace with a typed `api-client` (synchronized from the domain models) and shared UI primitives
+**Decision integrity**
+
+- **Two-stage detection** — stage one localizes the product in the full frame, the ROI engine expands and clips it, stage two verifies each required component inside the ROI
+- **Per-component temporal aggregation** — evidence is combined across product-window frames per required component (no whole-product majority voting), improving robustness without changing single-frame model accuracy
+- **Deterministic rule engine** — versioned, model-independent, and fail-safe: only complete, valid evidence may produce `OK`; `UNCERTAIN` always maps to business `NG`
+- **Full traceability** — every decision pins the product/component model versions and checksums, the rule version, and the product configuration version
+
+**Edge-first operations**
+
+- **Offline inspection** — all production-critical inference and decisions run on the edge industrial computer; inspection continues through central and network outages
+- **Durable upload outbox** — transactional queue with retry/backoff, idempotency keys, verified receipts, bandwidth throttling, and a circuit breaker (ADR-005, E3)
+- **Retention and disk safety** — receipt-gated cleanup with lease fencing, startup integrity scanning/quarantine, and a fail-safe stop gate under disk pressure that never returns an unrecorded `OK` (E2)
+- **Live event channel** — WebSocket runtime feed (`inspection.started`/`completed`, `device.status_changed`, `upload.changed`) with bounded buffers that disconnect slow consumers instead of blocking the runtime (E4)
+- **Barcode identity and PLC trigger** — exact-mapped barcode identity resolution and an opt-in Modbus TCP FIFO trigger contract that correlate physical products to windows (ADR-015)
+- **Edge-local human review** — optional, append-only review of any inspection (OK or NG) that never rewrites the immutable machine decision (ADR-016)
+
+**Plant integration**
+
+- **Camera sources** — folder, video, OpenCV device, RTSP, HTTP-image, and a hardened GigE/GenICam source; multi-instance `serve` pairs each camera with its own models/rule/product
+- **Operator dashboard** — Vue 3 + TypeScript UI (inspection detail, live view, history, traceability, statistics, device status, images, upload queue, review queue, health) decoupled from the backend by a typed API client
+- **Edge desktop** — Electron shell running the dashboard as a local desktop/kiosk app
+
+**Engineering**
+
+- **Python monorepo** — uv workspace, strict typing (MyPy), Pydantic domain models shared between `domain` and `vision-core`
+- **Frontend workspace** — pnpm workspace with a generated TypeScript API contract and shared UI primitives
+- **Bilingual documentation** — English/Chinese MkDocs site generated from `docs/` (design, ADRs, contracts, runbooks)
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Line["Production line"]
+        CAM["Industrial camera / trigger"] --> FRAME["Frame source<br/>(GigE · RTSP · video · folder)"]
+    end
+
+    subgraph Edge["Edge industrial computer"]
+        direction TB
+        subgraph Pipeline1["Acquisition · identity · localization"]
+            direction LR
+            FRAME --> WIN["Product window + identity<br/>(barcode · PLC FIFO)"]
+            WIN --> QUAL["Frame quality gate"]
+            QUAL --> P1["Stage 1: product detector (YOLO)"]
+            P1 --> ROI["ROI engine<br/>(expand · clip · transform)"]
+        end
+        subgraph Pipeline2["Component verification · decision"]
+            direction LR
+            P2["Stage 2: component detector (YOLO)"] --> CHK["Optional OpenCV checks"]
+            CHK --> AGG["Temporal aggregation<br/>(per component)"]
+            AGG --> RULE["Deterministic rule engine"]
+            RULE --> RES{"OK / NG"}
+        end
+        ROI --> P2
+        RES --> DB[("SQLite index")]
+        DB --> DASH["Edge dashboard (Vue)"]
+        RES --> MEDIA[("Evidence volume<br/>(checksummed media)")]
+        MEDIA --> OUTBOX["Durable upload outbox"]
+        OUTBOX --> SCHED["Upload scheduler<br/>(retry · backoff · circuit breaker)"]
+        RES --> REVIEW["Edge-local human review<br/>(append-only)"]
+        REVIEW --> DB
+    end
+
+    subgraph Central["Central server (planned)"]
+        API["Central API"] --> CDB[("PostgreSQL")]
+        API --> OBJ[("Object storage")]
+        API --> ADMIN["Fleet · review · administration"]
+    end
+
+    SCHED -->|"HTTPS · idempotent · checksummed"| API
+    REVIEW -.->|"future sync"| API
+```
+
+The edge makes every inspection decision; the central server is never in the
+real-time path. The edge runs as a CLI (`assemblyvision inspect`/`verify`) and
+as a local FastAPI service (`assemblyvision serve`) that serves the Vue
+dashboard through a decoupled typed client. The service persists every
+inspection and its upload tasks atomically, retries uploads from a durable
+queue with idempotency and verified receipts, enforces receipt-gated retention
+cleanup, and fails closed under disk pressure or integrity faults — an
+unrecorded `OK` is never possible. Human-review dispositions are recorded
+locally (ADR-016) and never rewrite the machine decision.
 
 ## Quickstart
 
@@ -103,29 +196,6 @@ media. Per-image machine-readable output:
 ```text
 img/product_001.jpg  NG  INFERENCE_ERROR,GATE_FAILED:product_detected,...  <inspection_id>
 ```
-
-## Architecture
-
-```text
- Industrial Camera → Edge Client (inspection runtime)
-                         ├── Product Detector (YOLO)
-                         ├── ROI Engine
-                         ├── Component Detector (YOLO)
-                         ├── Rule Engine
-                         └── Local Evidence + Upload Queue
-                                │
-                                ▼ (delayed, idempotent)
-                         Central Server (history, review, admin)
-```
-
-The edge makes every inspection decision. Central is never in the real-time
-path. The edge runs as a CLI (`assemblyvision inspect`/`verify`) and as a local
-FastAPI service (`assemblyvision serve`) that serves the Vue dashboard
-(`apps/edge-web`) through a decoupled typed client. The service persists every
-inspection and its upload tasks atomically, retries uploads from a durable
-queue with idempotency and verified receipts, enforces receipt-gated retention
-cleanup, and fails closed under disk pressure or integrity faults — an
-unrecorded `OK` is never possible.
 
 ## Project Structure
 
@@ -201,19 +271,30 @@ the native app / RTSP / camera sources. See [QUICKSTART](QUICKSTART.md) §4.8.
 
 | Phase | Status |
 |---|---|
-| **Static train-and-inspect MVP** | Done — merged to `main` (PR #3) |
-| **Edge dashboard + desktop** | Done — merged to `main` (PR #6) |
-| **Edge backend layer (M1)** | Done — merged to `main` (PR #8) — `assemblyvision serve`, SQLite index, read-only API |
-| **Camera frame sources + multi-instance serve** | Done — merged to `main` (PR #14) — folder/video/OpenCV/RTSP/HTTP sources, web dev test harness |
-| **Temporal aggregation (product windows)** | Done — merged to `main` (PRs #15/#16) — per-component aggregation, identity-sealed windows |
-| **Durable upload outbox + scheduler** | Done — merged to `main` (PR #17) — transactional outbox, leased worker, verified receipts |
-| **Observability (E1)** | Done — merged to `main` (PRs #18/#19) — log capture, upload-queue device status |
-| **Retention and disk safety (E2)** | Done — merged to `main` (PR #20) — receipt-gated cleanup, storage-pressure fail-safe, startup integrity scan |
-| **Upload resilience (E3)** | Done — merged to `main` (PR #22) — bandwidth throttling, circuit breaker, controlled manual retry, long-outage drain |
-| **Runtime/WebSocket (E4)** | Done — merged to `main` (PR #23) — WebSocket runtime channel, trigger/barcode/identity seams, shared model weights |
-| **Deployment and security (E5)** | Implemented — PR #24 (open) — Docker packaging, runtime secrets/TLS, backup/restore, deployment runbooks |
-| **Edge acceptance (E6)** | E6-prep tooling delivered (matrix, runner, report template, on-site plan); clock-drift harness and on-site acceptance remain open |
-| **Central server** | Not started — begins after the Edge gates and the Edge-to-central contract are ready |
+| **Phase 1 — MVP** | Delivered — static train-and-inspect pipeline, operator dashboard, and the read-only M1 edge API are on `main` (PRs #3/#6/#8) |
+| **Phase 2 — Edge production readiness** | E1–E5 production gates, camera sources, temporal aggregation, upload outbox, barcode identity / PLC trigger (ADR-015), and edge-local human review (ADR-016, PR #31, pending merge) are implemented; E6 on-site acceptance remains open |
+| **Phase 3 — Central server** | Not started — begins after the Edge gates pass and the Edge-to-central contract is frozen |
+
+### Outlook
+
+AssemblyVision is designed to grow from a component-presence inspector into a
+complete AI recognition platform for production lines:
+
+- **Hardware adaptation** — the vendor-neutral frame-source protocol already
+  ships GigE/GenICam; future adapters can add USB3 Vision and CoaXPress cameras,
+  additional barcode symbologies and readers, and PLC/MES fieldbus transports
+  (PROFINET, EtherNet/IP) alongside the Modbus TCP FIFO contract.
+- **Inspection breadth** — beyond component-presence: surface-defect detection,
+  OCR and label verification, dimensional measurement, and assembly-sequence
+  validation — each feeding the same deterministic rule engine with full
+  traceability and fail-safe semantics.
+- **Platform extensibility** — pluggable frame sources, detector adapters, and
+  rule operators; per-instance model weighting; staged, checksum-governed model
+  and rule rollout; and a governed training backlog driven by review
+  corrections.
+- **Fleet and integration** — centralized fleet monitoring and analytics,
+  MES/ERP integration for closed-loop quality management, and reporting that
+  turns accumulated inspection evidence into process improvement.
 
 ## License
 
