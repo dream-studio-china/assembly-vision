@@ -20,8 +20,20 @@ body:
         - api-client / ui (TypeScript packages)
         - domain / vision-core (Python packages)
         - training (av-train CLI)
+        - camera / barcode / trigger (GigE/GenICam, ZXing decode, Modbus FIFO)
         - scripts (dataset adapters, e2e demo)
         - docs (design, contracts, runbooks, reviews)
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Severity
+      description: Match the P0-P3 finding convention used in docs/reviews/.
+      options:
+        - "P0: blocks the current milestone or is a safety-critical defect"
+        - "P1: high impact, should be fixed soon"
+        - "P2: moderate impact"
+        - "P3: low impact or cosmetic"
     validations:
       required: true
   - type: dropdown
@@ -32,6 +44,17 @@ body:
         - "None: developer tooling or cosmetics only"
         - "Uncertain: may affect decision correctness"
         - "Yes: can produce incorrect OK/NG or raise false-negative risk"
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Production impact
+      description: Which production gate or acceptance phase does this affect (E1-E6)?
+      options:
+        - "None: developer tooling, tests, or cosmetics"
+        - "E1-E5: runtime, storage, upload, observability, or deployment behavior"
+        - "E6: on-site acceptance evidence or held-out customer model validation"
+        - "Uncertain"
     validations:
       required: true
   - type: textarea
@@ -62,6 +85,11 @@ body:
       label: Model and rule versions
       description: Model manifest names/versions and the rule id/version in use, if applicable.
       placeholder: "product: v1.2.0, components: v1.0.1, rule: sample-rule/1"
+  - type: input
+    attributes:
+      label: Related runbook
+      description: If this is an operational failure, which runbook scenario applies (docs/runbooks/01..15)?
+      placeholder: "runbook 05 (database recovery)"
   - type: textarea
     attributes:
       label: Environment
@@ -79,8 +107,9 @@ body:
         - label: "`make check` (ruff, mypy, pytest, frontend gates)"
         - label: "OpenAPI / TypeScript contract drift checks"
         - label: "Playwright e2e"
+        - label: "`uv run mkdocs build --strict` (docs)"
   - type: textarea
     attributes:
       label: Additional context
-      description: Any related design document, ADR, contract, runbook, or prior review finding (PR-003/PR-008).
+      description: Any related design document, ADR, contract, runbook, open question (OQ-XXX), or prior review finding (PR-003..PR-031, AUDIT-001).
 ---
