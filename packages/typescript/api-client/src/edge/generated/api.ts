@@ -369,10 +369,11 @@ export interface paths {
          *     transition is compare-and-set in the repository so a concurrent worker
          *     claim or a second retry cannot report a false success (PR-022 F03). It
          *     preserves attempt history by incrementing ``attempt_count`` and clears
-         *     terminal/retry fields. Unknown tasks return 404 and non-eligible tasks
-         *     return 409 with their current state, so an operator action can never reset
-         *     a task that is succeeded, leased by the worker, or cancelled (E3 task
-         *     invariant 3).
+         *     terminal/retry fields. The optional ``reason`` body records the operator's
+         *     confirmation for the retry in the repository audit log (design 15.3.3).
+         *     Unknown tasks return 404 and non-eligible tasks return 409 with their
+         *     current state, so an operator action can never reset a task that is
+         *     succeeded, leased by the worker, or cancelled (E3 task invariant 3).
          */
         post: operations["retry_upload_api_v1_uploads__upload_task_id__retry_post"];
         delete?: never;
@@ -1230,6 +1231,19 @@ export interface components {
             /** Reason Code */
             reason_code: string;
         };
+        /**
+         * RetryUploadRequest
+         * @description Operator confirmation for a manual upload retry (design 15.3.3).
+         *
+         *     ``reason`` is optional so legacy callers that retry without a body keep
+         *     working; the dashboard always sends a non-empty operator reason, which is
+         *     stripped of surrounding whitespace before it reaches the repository audit
+         *     log.
+         */
+        RetryUploadRequest: {
+            /** Reason */
+            reason?: string | null;
+        };
         /** RuleSnapshot */
         RuleSnapshot: {
             /** Product Type */
@@ -1764,6 +1778,7 @@ export interface operations {
                 internal_decision?: string | null;
                 barcode?: string | null;
                 product?: string | null;
+                sn?: string | null;
                 from?: string | null;
                 to?: string | null;
                 cursor?: string | null;
@@ -2064,7 +2079,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RetryUploadRequest"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

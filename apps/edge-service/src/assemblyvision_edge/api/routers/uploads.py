@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends
 
 from assemblyvision_edge.api.deps import get_repository
 from assemblyvision_edge.api.problems import ApiProblem
-from assemblyvision_edge.api.schemas import Page
+from assemblyvision_edge.api.schemas import Page, RetryUploadRequest
 from assemblyvision_edge.persistence.repository import EdgeRepository
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
@@ -28,6 +28,7 @@ def list_uploads(
 @router.post("/{upload_task_id}/retry", response_model=UploadTask)
 def retry_upload(
     upload_task_id: str,
+    request: RetryUploadRequest | None = None,
     repository: EdgeRepository = Depends(get_repository),
 ) -> UploadTask:
     """Reset one eligible upload task to ``PENDING`` for a manual retry (E3c).
@@ -36,12 +37,16 @@ def retry_upload(
     transition is compare-and-set in the repository so a concurrent worker
     claim or a second retry cannot report a false success (PR-022 F03). It
     preserves attempt history by incrementing ``attempt_count`` and clears
-    terminal/retry fields. Unknown tasks return 404 and non-eligible tasks
-    return 409 with their current state, so an operator action can never reset
-    a task that is succeeded, leased by the worker, or cancelled (E3 task
-    invariant 3).
+    terminal/retry fields. The optional ``reason`` body records the operator's
+    confirmation for the retry in the repository audit log (design 15.3.3).
+    Unknown tasks return 404 and non-eligible tasks return 409 with their
+    current state, so an operator action can never reset a task that is
+    succeeded, leased by the worker, or cancelled (E3 task invariant 3).
     """
-    result = repository.retry_upload(upload_task_id, "manual", datetime.now(UTC).isoformat())
+    reason = request.reason if request is not None else None
+    result = repository.retry_upload(
+        upload_task_id, "manual", datetime.now(UTC).isoformat(), reason=reason
+    )
     if result.outcome == "NOT_FOUND":
         raise ApiProblem(
             status_code=404,

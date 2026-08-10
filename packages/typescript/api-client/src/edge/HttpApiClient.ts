@@ -16,6 +16,7 @@ import type {
   MediaMetadata,
   Page,
   Problem,
+  RetryUploadRequest,
   StatisticsFilter,
   StatisticsSummary,
   TraceabilityView,
@@ -167,10 +168,15 @@ export class HttpApiClient implements ApiClient {
     return this.#request(`/uploads${qs ? `?${qs}` : ""}`, undefined, validators.uploadPage);
   }
 
-  retryUpload(uploadTaskId: string): Promise<UploadTask> {
+  retryUpload(uploadTaskId: string, request?: RetryUploadRequest): Promise<UploadTask> {
+    const init: RequestInit = { method: "POST" };
+    if (request) {
+      init.body = JSON.stringify({ reason: request.reason ?? null });
+      init.headers = { "Content-Type": "application/json" };
+    }
     return this.#request(
       `/uploads/${encodeURIComponent(uploadTaskId)}/retry`,
-      { method: "POST" },
+      init,
       validators.uploadTask,
     );
   }

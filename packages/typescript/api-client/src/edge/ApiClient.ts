@@ -11,6 +11,7 @@ import type {
   LogEvent,
   MediaMetadata,
   Page,
+  RetryUploadRequest,
   StatisticsFilter,
   StatisticsSummary,
   TraceabilityView,
@@ -50,8 +51,10 @@ export interface ApiClient {
    * Only `RETRY_WAIT` and `PERMANENT_FAILURE` tasks are eligible; the
    * transition is atomic server-side (PR-022 F03). Unknown tasks reject with
    * 404 `NOT_FOUND`; non-eligible tasks reject with 409 `TASK_NOT_RETRYABLE`.
+   * The optional request carries the operator confirmation reason, which the
+   * server records in its audit log (design 15.3.3).
    */
-  retryUpload(uploadTaskId: string): Promise<UploadTask>;
+  retryUpload(uploadTaskId: string, request?: RetryUploadRequest): Promise<UploadTask>;
   getEffectiveConfiguration(): Promise<EffectiveConfiguration>;
   listLogs(cursor?: string, limit?: number): Promise<Page<LogEvent>>;
 

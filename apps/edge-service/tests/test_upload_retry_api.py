@@ -8,6 +8,7 @@ idempotently.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -76,6 +77,62 @@ class TestManualRetry:
             assert body["upload_task_id"] == str(task.upload_task_id)
         finally:
             client.close()
+
+    def test_retry_with_reason_succeeds_and_logs_operator_reason(
+        self, repo: EdgeRepository, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """E3c: a manual retry carries an optional operator reason (audit log)."""
+        task = _seed_task(repo, "RETRY_WAIT")
+        client = _client(tmp_path, repo)
+        try:
+            with caplog.at_level(logging.INFO, logger="assemblyvision.repository"):
+                response = client.post(
+                    f"/api/v1/uploads/{task.upload_task_id}/retry",
+                    json={"reason": "  operator cleared conveyor jam  "},
+                )
+            assert response.status_code == 200
+            body = response.json()
+            assert body["status"] == "PENDING"
+            assert body["attempt_count"] == task.attempt_count + 1
+            # Whitespace is stripped and the reason reaches the repository log.
+            assert "operator cleared conveyor jam" in caplog.text
+        finally:
+            client.close()
+
+    def test_retry_without_body_is_backward_compatible(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """E3c: a legacy retry with no body still succeeds with an empty reason."""
+        task = _seed_task(repo, "RETRY_WAIT")
+        client = _client(tmp_path, repo)
+        try:
+            response = client.post(
+                f"/api/v1/uploads/{task.upload_task_id}/retry",
+                headers={"Content-Type": "application/json"},
+            )
+            assert response.status_code == 200
+            assert response.json()["status"] == "PENDING"
+        finally:
+            client.close()
+
+    def test_retry_with_too_long_reason_is_422_without_mutation(
+        self, repo: EdgeRepository, tmp_path: Path
+    ) -> None:
+        """A reason over the schema bound is rejected before any transition."""
+        task = _seed_task(repo, "RETRY_WAIT")
+        client = _client(tmp_path, repo)
+        try:
+            response = client.post(
+                f"/api/v1/uploads/{task.upload_task_id}/retry",
+                json={"reason": "x" * 201},
+            )
+            assert response.status_code == 422
+        finally:
+            client.close()
+        refreshed = repo.get_upload_task(str(task.upload_task_id))
+        assert refreshed is not None
+        assert refreshed.status == "RETRY_WAIT"
+        assert refreshed.attempt_count == task.attempt_count
 
     def test_retry_permanent_failure_is_eligible(
         self, repo: EdgeRepository, tmp_path: Path

@@ -2025,6 +2025,26 @@
         "title": "ReasonCount",
         "type": "object"
       },
+      "RetryUploadRequest": {
+        "additionalProperties": false,
+        "description": "Operator confirmation for a manual upload retry (design 15.3.3).\n\n``reason`` is optional so legacy callers that retry without a body keep\nworking; the dashboard always sends a non-empty operator reason, which is\nstripped of surrounding whitespace before it reaches the repository audit\nlog.",
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "RetryUploadRequest",
+        "type": "object"
+      },
       "RuleSnapshot": {
         "properties": {
           "product_type": {
@@ -2968,6 +2988,22 @@
           },
           {
             "in": "query",
+            "name": "sn",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sn"
+            }
+          },
+          {
+            "in": "query",
             "name": "from",
             "required": false,
             "schema": {
@@ -3462,7 +3498,7 @@
     },
     "/api/v1/uploads/{upload_task_id}/retry": {
       "post": {
-        "description": "Reset one eligible upload task to ``PENDING`` for a manual retry (E3c).\n\nOnly ``RETRY_WAIT`` and ``PERMANENT_FAILURE`` tasks are eligible; the\ntransition is compare-and-set in the repository so a concurrent worker\nclaim or a second retry cannot report a false success (PR-022 F03). It\npreserves attempt history by incrementing ``attempt_count`` and clears\nterminal/retry fields. Unknown tasks return 404 and non-eligible tasks\nreturn 409 with their current state, so an operator action can never reset\na task that is succeeded, leased by the worker, or cancelled (E3 task\ninvariant 3).",
+        "description": "Reset one eligible upload task to ``PENDING`` for a manual retry (E3c).\n\nOnly ``RETRY_WAIT`` and ``PERMANENT_FAILURE`` tasks are eligible; the\ntransition is compare-and-set in the repository so a concurrent worker\nclaim or a second retry cannot report a false success (PR-022 F03). It\npreserves attempt history by incrementing ``attempt_count`` and clears\nterminal/retry fields. The optional ``reason`` body records the operator's\nconfirmation for the retry in the repository audit log (design 15.3.3).\nUnknown tasks return 404 and non-eligible tasks return 409 with their\ncurrent state, so an operator action can never reset a task that is\nsucceeded, leased by the worker, or cancelled (E3 task invariant 3).",
         "operationId": "retry_upload_api_v1_uploads__upload_task_id__retry_post",
         "parameters": [
           {
@@ -3475,6 +3511,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RetryUploadRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Request"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "content": {

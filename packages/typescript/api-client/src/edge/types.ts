@@ -241,6 +241,11 @@ export type UploadTask = {
   completed_at: ISODateTime | null;
 };
 
+/** Operator confirmation body for a manual upload retry (design 15.3.3). */
+export type RetryUploadRequest = {
+  reason?: string | null;
+};
+
 export type DeviceStatus = {
   device_id: UUID;
   observed_at: ISODateTime;

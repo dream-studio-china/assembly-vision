@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
@@ -34,6 +35,8 @@ from assemblyvision_edge.persistence.schema import (
     upload_tasks,
 )
 from assemblyvision_edge.retention.policy import RetentionPolicy
+
+log = logging.getLogger("assemblyvision.repository")
 
 _PAGE_DEFAULT_LIMIT = 50
 _PAGE_MAX_LIMIT = 200
@@ -1036,7 +1039,14 @@ class EdgeRepository:
             )
             return result.rowcount == 1
 
-    def retry_upload(self, upload_task_id: str, reason: str, now_iso: str) -> UploadRetryResult:
+    def retry_upload(
+        self,
+        upload_task_id: str,
+        actor: str,
+        now_iso: str,
+        *,
+        reason: str | None = None,
+    ) -> UploadRetryResult:
         """Atomically reset one eligible task to ``PENDING`` (PR-022 F03).
 
         Only ``RETRY_WAIT`` / ``PERMANENT_FAILURE`` tasks are eligible. The
@@ -1045,6 +1055,9 @@ class EdgeRepository:
         or a second manual retry can never report a false success. The
         transition clears terminal/retry/lease fields and recomputes the
         inspection's aggregate synchronization state in the same transaction.
+        ``actor`` identifies the source of the retry (always ``manual`` from
+        the API); the optional ``reason`` carries the operator's free-text
+        confirmation and is written to the audit log, never the database.
         """
         with self._engine.begin() as conn:
             row = (
@@ -1099,6 +1112,12 @@ class EdgeRepository:
             )
             if updated is not None and updated["inspection_id"] is not None:
                 self._refresh_inspection_sync(conn, str(updated["inspection_id"]))
+            log.info(
+                "manual upload retry accepted task=%s actor=%s reason=%r",
+                upload_task_id,
+                actor,
+                reason,
+            )
             return UploadRetryResult(
                 outcome="RETRIED",
                 task=self._upload_task(updated) if updated is not None else None,
