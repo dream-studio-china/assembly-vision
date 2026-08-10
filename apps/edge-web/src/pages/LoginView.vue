@@ -1,13 +1,19 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { createViewerSession, isHttpMode } from "../services/client";
+import { useSessionStore } from "../stores/session";
 
 const route = useRoute();
 const router = useRouter();
+const session = useSessionStore();
 const token = ref("");
 const error = ref<string | null>(null);
 const submitting = ref(false);
+
+const nextPath = computed(() =>
+  typeof route.query.next === "string" && route.query.next.startsWith("/") ? route.query.next : "/",
+);
 
 async function signIn(): Promise<void> {
   error.value = null;
@@ -15,8 +21,8 @@ async function signIn(): Promise<void> {
   try {
     await createViewerSession(token.value);
     token.value = "";
-    const next = route.query.next;
-    await router.replace(typeof next === "string" && next.startsWith("/") ? next : "/");
+    await session.check();
+    await router.replace(nextPath.value);
   } catch (reason) {
     error.value = reason instanceof Error ? reason.message : "Sign-in failed.";
   } finally {
@@ -33,6 +39,9 @@ async function signIn(): Promise<void> {
       same-origin session and is not stored by the dashboard.
     </p>
     <p v-else>Sign-in is only required when the dashboard uses the HTTP edge API.</p>
+    <p v-if="isHttpMode() && nextPath !== '/'" class="login__destination">
+      After signing in you will return to <code>{{ nextPath }}</code>.
+    </p>
     <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" />
     <el-form v-if="isHttpMode()" @submit.prevent="signIn">
       <el-form-item label="Viewer token">
@@ -50,5 +59,8 @@ async function signIn(): Promise<void> {
   max-width: 480px;
   display: grid;
   gap: 16px;
+}
+.login__destination {
+  color: var(--shell-muted);
 }
 </style>
