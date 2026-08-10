@@ -13,10 +13,6 @@
         <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/tasks/E2-retention-and-disk-safety/">
       
       
-        <link rel="prev" href="../../source-brief/">
-      
-      
-        <link rel="next" href="../E3-upload-resilience/">
       
       
         
@@ -31,7 +27,7 @@
     
     
       
-        <title>E2：保留和磁盘安全 - AssemblyVision</title>
+        <title>E2 管道：保留和磁盘安全 - AssemblyVision</title>
       
     
     
@@ -118,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              E2：保留和磁盘安全
+              E2 管道：保留和磁盘安全
             
           </span>
         </div>
@@ -343,448 +339,6 @@
       
   
   
-    
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    交付任务
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    交付任务
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    E2：保留和磁盘安全
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    E2：保留和磁盘安全
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-purpose" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. 目的
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-scope-and-non-goals" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. 范围和非目标
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. 范围和非目标">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#in-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        范围内
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        超出范围
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-safety-invariants" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 安全不变量
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-required-decisions-before-production-enablement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. 生产启用前所需的决策
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-delivery-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. 交付管道
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. 交付管道">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#e2a-durable-retention-state-and-eligibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        E2a：持久保留状态和资格
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#e2b-cleanup-worker-and-audited-deletion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        E2b：清理工作人员和审核删除
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#e2c-storage-pressure-and-fail-safe-runtime-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        E2c：存储压力和故障安全运行时行为
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#e2d-startup-integrity-recovery-and-operational-acceptance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        E2d：启动完整性、恢复和运营验收
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-mandatory-test-matrix" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 强制测试矩阵
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-merge-and-release-gates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. 合并和释放门
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. 合并和释放门">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#code-merge-gate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        代码合并门
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#e2-completion-gate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        E2完成门
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 参考文献
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../E3-upload-resilience/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    E3：上传弹性
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../E4-runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    E4：运行时
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../E5-deployment-and-security/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    E5：部署和安全
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../E6-edge-acceptance/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    E6：边缘验收
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
   
   
     
@@ -803,10 +357,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -824,8 +378,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1703,8 +1257,15 @@
 
               
             
-              
-                
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
   
   
   
@@ -1714,25 +1275,28 @@
     
     
       
+        
+        
+      
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_32" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_4_32" id="__nav_4_32_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
     
   
-    架构决策
+    开发者手册
   
 
     
@@ -1743,12 +1307,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_32_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_32">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    架构决策
+    开发者手册
   
 
           </label>
@@ -1761,14 +1325,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/" class="md-nav__link">
+      <a href="../../manual/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR 索引
+    手册索引
   
 
     
@@ -1789,14 +1353,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+      <a href="../../manual/01-getting-started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-001：边缘优先检测
+    入门
   
 
     
@@ -1817,14 +1381,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
+      <a href="../../manual/02-repository-layout/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-002：Python 后端
+    存储库布局
   
 
     
@@ -1845,14 +1409,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+      <a href="../../manual/03-cli-reference/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-003：Vue 3 与 TypeScript 前端
+    CLI 参考
   
 
     
@@ -1873,14 +1437,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+      <a href="../../manual/04-edge-api-reference/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-004：两阶段检测
+    边缘 API 参考
   
 
     
@@ -1901,14 +1465,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+      <a href="../../manual/05-edge-service-internals/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-005：本地优先存储与延迟上传
+    边缘服务内部结构
   
 
     
@@ -1929,14 +1493,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+      <a href="../../manual/06-adding-a-rest-endpoint/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-006：REST 与 WebSocket
+    添加 REST 端点
   
 
     
@@ -1957,14 +1521,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
+      <a href="../../manual/07-database-and-persistence/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-007：Monorepo
+    数据库和持久化
   
 
     
@@ -1985,14 +1549,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
+      <a href="../../manual/08-camera-sources-and-vision-core/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-008：Docker 部署
+    相机来源和视觉核心
   
 
     
@@ -2013,14 +1577,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+      <a href="../../manual/09-training-and-datasets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-009：静态图像优先 MVP
+    训练和数据集
   
 
     
@@ -2041,14 +1605,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+      <a href="../../manual/10-frontend-development/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-010：按组件时序聚合
+    前端开发
   
 
     
@@ -2069,14 +1633,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+      <a href="../../manual/11-testing-and-quality-gates/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-011：标记为训练和检查 MVP
+    测试和质量门
   
 
     
@@ -2097,14 +1661,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+      <a href="../../manual/12-core-abstractions-and-type-architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    核心抽象和类型架构
   
 
     
@@ -2125,14 +1689,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+      <a href="../../manual/13-debugging-and-observability/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-013：相机帧源和多实例边缘
+    调试和可观察性
   
 
     
@@ -2141,42 +1705,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-014：Web 开发测试工具
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3127,7 +2655,7 @@
   <span class="md-ellipsis">
     
   
-    Reviews
+    调研
   
 
     
@@ -3140,151 +2668,6 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Reviews
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../reviews/AUDIT-001-system-audit/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    系统审核 (AUDIT-001)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../reviews/PR-003-review/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    PR-003 评论
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../reviews/PR-008-review/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    PR-008 评论
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    调研
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3407,10 +2790,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
           
-          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -3428,8 +2811,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_9">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3454,34 +2837,6 @@
     
   
     贡献指南
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../ai/context/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    AI 上下文快照
   
 
     
