@@ -3026,7 +3026,7 @@
 <p>后端必须集成工业相机、OpenCV、Ultralytics YOLO、条形码库、数值/图像处理、API、持久性和模型评估。实施团队需要运行时视觉代码和训练/评估代码之间的共享语言，同时保留类型化模式和生产质量测试。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
 <p>使用Python 3.12作为边缘和中央后端服务。使用 FastAPI、Pydantic、SQLAlchemy、Alembic、Uvicorn 或适当的中央进程管理器、Pytest、Ruff 和 MyPy。视觉集成使用 Ultralytics YOLO 和 OpenCV。 SQLite 最初允许在边缘使用； PostgreSQL 是集中使用的，并且在证据表明有需要后，对于大型边缘安装来说是可选的。</p>
-<p>对性能敏感的工作应首先使用优化的模型运行时、OpenCV/数值库、仅在延迟允许的情况下进行批处理以及分析。仅针对测量到的瓶颈引入本机扩展或单独的服务。</p>
+<p>对性能敏感的工作应首先使用优化的模型运行时、OpenCV/数值库、仅在延迟允许的情况下进行批处理以及分析。仅针对可测量的瓶颈引入本机扩展或单独的服务。</p>
 <h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
 <p>该决策涵盖应用程序后端、边缘决策运行时、可重用视觉包、命令行工具、培训和评估。它不需要 Python 来实现 Vue 前端、Nginx、数据库、相机固件或未来的所有集成。</p>
 <h2 id="5-consequences">5. 后果<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
@@ -3041,7 +3041,7 @@
 <ul>
 <li>Python 打包、本机依赖项、GPU 驱动程序和供应商 SDK 需要仔细构建映像。</li>
 <li>如果在优化库之外编写，受 CPU 限制的 Python 代码可能会成为瓶颈。</li>
-<li>字节码分发并没有强有力地保护源逻辑。</li>
+<li>字节码分发没有强有力地保护源逻辑。</li>
 <li>静态类型是部分的，取决于严格的 MyPy/Pydantic 使用。</li>
 </ul>
 <h2 id="6-alternatives">6.替代方案<a class="headerlink" href="#6-alternatives" title="Permanent link">&para;</a></h2>

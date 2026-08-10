@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/tasks/E6-edge-acceptance/">
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/design/decisions/">
       
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>E6 管道：边缘验收 - AssemblyVision</title>
+        <title>AssemblyVision Architecture Decisions - AssemblyVision</title>
       
     
     
@@ -78,8 +78,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#e6-pipeline-edge-acceptance" class="md-skip">
-          跳转至
+        <a href="#assemblyvision-architecture-decisions" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -93,7 +93,7 @@
   
 
 <header class="md-header md-header--shadow" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
+  <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
   
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              E6 管道：边缘验收
+              AssemblyVision Architecture Decisions
             
           </span>
         </div>
@@ -154,7 +154,7 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
@@ -188,16 +188,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -210,7 +210,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -222,7 +222,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -256,7 +256,7 @@
 
 
 
-<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
@@ -268,7 +268,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -295,7 +295,7 @@
   <span class="md-ellipsis">
     
   
-    首页
+    Home
   
 
     
@@ -322,7 +322,7 @@
   <span class="md-ellipsis">
     
   
-    原始需求
+    Source Brief
   
 
     
@@ -367,7 +367,7 @@
   <span class="md-ellipsis">
     
   
-    架构设计
+    Architecture Design
   
 
     
@@ -383,7 +383,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    架构设计
+    Architecture Design
   
 
           </label>
@@ -396,14 +396,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    设计索引
+    Design Index
   
 
     
@@ -424,14 +424,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+      <a href="../00-cover-and-status/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    封面与状态
+    Cover and Status
   
 
     
@@ -452,14 +452,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/01-introduction/" class="md-nav__link">
+      <a href="../01-introduction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    简介
+    Introduction
   
 
     
@@ -480,14 +480,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/02-requirements/" class="md-nav__link">
+      <a href="../02-requirements/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    需求
+    Requirements
   
 
     
@@ -508,14 +508,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+      <a href="../03-architecture-overview/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    架构概览
+    Architecture Overview
   
 
     
@@ -536,14 +536,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+      <a href="../04-edge-client-architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    边缘端架构
+    Edge Client Architecture
   
 
     
@@ -564,14 +564,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+      <a href="../05-central-server-architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    中心端架构
+    Central Server Architecture
   
 
     
@@ -592,14 +592,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    AI 检测流水线
+    AI Detection Pipeline
   
 
     
@@ -620,14 +620,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    相机与图像采集
+    Camera and Image Acquisition
   
 
     
@@ -648,14 +648,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+      <a href="../08-product-detection-and-roi/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    产品检测与 ROI
+    Product Detection and ROI
   
 
     
@@ -676,14 +676,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/09-component-detection/" class="md-nav__link">
+      <a href="../09-component-detection/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    组件检测
+    Component Detection
   
 
     
@@ -704,14 +704,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+      <a href="../10-temporal-aggregation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    时序聚合
+    Temporal Aggregation
   
 
     
@@ -732,14 +732,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/11-rule-engine/" class="md-nav__link">
+      <a href="../11-rule-engine/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    规则引擎
+    Rule Engine
   
 
     
@@ -760,14 +760,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+      <a href="../12-local-storage-and-retention/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    本地存储与保留
+    Local Storage and Retention
   
 
     
@@ -788,14 +788,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+      <a href="../13-upload-and-synchronization/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    上传与同步
+    Upload and Synchronization
   
 
     
@@ -816,14 +816,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+      <a href="../14-data-model-and-database/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    数据模型与数据库
+    Data Model and Database
   
 
     
@@ -844,14 +844,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+      <a href="../15-rest-api-and-events/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    REST API 与事件
+    REST API and Events
   
 
     
@@ -872,14 +872,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+      <a href="../16-edge-dashboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    边缘端看板
+    Edge Dashboard
   
 
     
@@ -900,14 +900,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+      <a href="../17-central-admin-dashboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    中心管理看板
+    Central Admin Dashboard
   
 
     
@@ -928,14 +928,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+      <a href="../18-monorepo-and-code-organization/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Monorepo 与代码组织
+    Monorepo and Code Organization
   
 
     
@@ -956,14 +956,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+      <a href="../19-training-and-evaluation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    训练与评估
+    Training and Evaluation
   
 
     
@@ -984,14 +984,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+      <a href="../20-deployment-and-operations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    部署与运维
+    Deployment and Operations
   
 
     
@@ -1012,14 +1012,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+      <a href="../21-security-and-source-distribution/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    安全与源码分发
+    Security and Source Distribution
   
 
     
@@ -1040,14 +1040,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    测试与质量保证
+    Testing and Quality Assurance
   
 
     
@@ -1068,14 +1068,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+      <a href="../23-observability-and-support/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    可观测性与支持
+    Observability and Support
   
 
     
@@ -1096,14 +1096,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+      <a href="../24-human-in-the-loop/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    人在回路
+    Human in the Loop
   
 
     
@@ -1124,14 +1124,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/25-roadmap/" class="md-nav__link">
+      <a href="../25-roadmap/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    路线图
+    Roadmap
   
 
     
@@ -1152,14 +1152,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+      <a href="../26-customer-acceptance/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    客户验收
+    Customer Acceptance
   
 
     
@@ -1180,14 +1180,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+      <a href="../27-risks-and-mitigations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    风险与缓解
+    Risks and Mitigations
   
 
     
@@ -1208,14 +1208,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/28-edge-acceptance-report/" class="md-nav__link">
+      <a href="../28-edge-acceptance-report/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    边缘验收报告
+    Edge Acceptance Report
   
 
     
@@ -1236,14 +1236,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/appendices/" class="md-nav__link">
+      <a href="../appendices/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    附录
+    Appendices
   
 
     
@@ -1296,7 +1296,7 @@
   <span class="md-ellipsis">
     
   
-    开发者手册
+    Developer Manual
   
 
     
@@ -1312,7 +1312,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    开发者手册
+    Developer Manual
   
 
           </label>
@@ -1332,7 +1332,7 @@
   <span class="md-ellipsis">
     
   
-    手册索引
+    Manual Index
   
 
     
@@ -1360,7 +1360,7 @@
   <span class="md-ellipsis">
     
   
-    入门
+    Getting Started
   
 
     
@@ -1388,7 +1388,7 @@
   <span class="md-ellipsis">
     
   
-    存储库布局
+    Repository Layout
   
 
     
@@ -1416,7 +1416,7 @@
   <span class="md-ellipsis">
     
   
-    CLI 参考
+    CLI Reference
   
 
     
@@ -1444,7 +1444,7 @@
   <span class="md-ellipsis">
     
   
-    边缘 API 参考
+    Edge API Reference
   
 
     
@@ -1472,7 +1472,7 @@
   <span class="md-ellipsis">
     
   
-    边缘服务内部结构
+    Edge-Service Internals
   
 
     
@@ -1500,7 +1500,7 @@
   <span class="md-ellipsis">
     
   
-    添加 REST 端点
+    Adding a REST Endpoint
   
 
     
@@ -1528,7 +1528,7 @@
   <span class="md-ellipsis">
     
   
-    数据库和持久化
+    Database and Persistence
   
 
     
@@ -1556,7 +1556,7 @@
   <span class="md-ellipsis">
     
   
-    相机来源和视觉核心
+    Camera Sources and Vision-Core
   
 
     
@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    训练和数据集
+    Training and Datasets
   
 
     
@@ -1612,7 +1612,7 @@
   <span class="md-ellipsis">
     
   
-    前端开发
+    Frontend Development
   
 
     
@@ -1640,7 +1640,7 @@
   <span class="md-ellipsis">
     
   
-    测试和质量门
+    Testing and Quality Gates
   
 
     
@@ -1668,7 +1668,7 @@
   <span class="md-ellipsis">
     
   
-    核心抽象和类型架构
+    Core Abstractions and Type Architecture
   
 
     
@@ -1696,7 +1696,7 @@
   <span class="md-ellipsis">
     
   
-    调试和可观察性
+    Debugging and Observability
   
 
     
@@ -1749,7 +1749,7 @@
   <span class="md-ellipsis">
     
   
-    工程合同
+    Engineering Contracts
   
 
     
@@ -1765,7 +1765,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    工程合同
+    Engineering Contracts
   
 
           </label>
@@ -1785,7 +1785,7 @@
   <span class="md-ellipsis">
     
   
-    合同索引
+    Contract Index
   
 
     
@@ -1813,7 +1813,7 @@
   <span class="md-ellipsis">
     
   
-    架构边界
+    Architecture Boundaries
   
 
     
@@ -1841,7 +1841,7 @@
   <span class="md-ellipsis">
     
   
-    代码与接口合同
+    Code and Interface Contracts
   
 
     
@@ -1869,7 +1869,7 @@
   <span class="md-ellipsis">
     
   
-    AI、规则引擎与故障安全合同
+    AI, Rule Engine, and Fail-Safe Contracts
   
 
     
@@ -1897,7 +1897,7 @@
   <span class="md-ellipsis">
     
   
-    边缘端、存储与上传合同
+    Edge, Storage, and Upload Contracts
   
 
     
@@ -1925,7 +1925,7 @@
   <span class="md-ellipsis">
     
   
-    数据、API 与版本合同
+    Data, API, and Versioning Contracts
   
 
     
@@ -1953,7 +1953,7 @@
   <span class="md-ellipsis">
     
   
-    测试、质量与 CI 合同
+    Testing, Quality, and CI Contracts
   
 
     
@@ -1981,7 +1981,7 @@
   <span class="md-ellipsis">
     
   
-    部署、可观测性与运维
+    Deployment, Observability, and Operations
   
 
     
@@ -2009,7 +2009,7 @@
   <span class="md-ellipsis">
     
   
-    安全、权限与审计
+    Security, Permissions, and Audit
   
 
     
@@ -2037,7 +2037,7 @@
   <span class="md-ellipsis">
     
   
-    工业现场与变更控制
+    Industrial Site and Change Control
   
 
     
@@ -2065,7 +2065,7 @@
   <span class="md-ellipsis">
     
   
-    模型、规则、发布与验收
+    Model, Rule, Release, and Acceptance
   
 
     
@@ -2093,7 +2093,7 @@
   <span class="md-ellipsis">
     
   
-    最低强制合同
+    Minimum Mandatory Contracts
   
 
     
@@ -2146,7 +2146,7 @@
   <span class="md-ellipsis">
     
   
-    运维手册
+    Operational Runbooks
   
 
     
@@ -2162,7 +2162,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    运维手册
+    Operational Runbooks
   
 
           </label>
@@ -2182,7 +2182,7 @@
   <span class="md-ellipsis">
     
   
-    运行手册索引
+    Runbook Index
   
 
     
@@ -2210,7 +2210,7 @@
   <span class="md-ellipsis">
     
   
-    相机断开
+    Camera Disconnection
   
 
     
@@ -2238,7 +2238,7 @@
   <span class="md-ellipsis">
     
   
-    模型加载失败
+    Model-Loading Failure
   
 
     
@@ -2266,7 +2266,7 @@
   <span class="md-ellipsis">
     
   
-    磁盘空间不足
+    Low Disk Space
   
 
     
@@ -2294,7 +2294,7 @@
   <span class="md-ellipsis">
     
   
-    上传积压
+    Upload Backlog
   
 
     
@@ -2322,7 +2322,7 @@
   <span class="md-ellipsis">
     
   
-    数据库恢复
+    Database Recovery
   
 
     
@@ -2350,7 +2350,7 @@
   <span class="md-ellipsis">
     
   
-    容器反复重启
+    Repeated Container Restart
   
 
     
@@ -2378,7 +2378,7 @@
   <span class="md-ellipsis">
     
   
-    网络恢复同步
+    Network Recovery Synchronization
   
 
     
@@ -2406,7 +2406,7 @@
   <span class="md-ellipsis">
     
   
-    模型回滚
+    Model Rollback
   
 
     
@@ -2434,7 +2434,7 @@
   <span class="md-ellipsis">
     
   
-    规则回滚
+    Rule Rollback
   
 
     
@@ -2462,7 +2462,7 @@
   <span class="md-ellipsis">
     
   
-    模型改进
+    Model Improvement
   
 
     
@@ -2490,7 +2490,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -2518,7 +2518,7 @@
   <span class="md-ellipsis">
     
   
-    备份与恢复
+    Backup and Recovery
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2574,7 +2574,7 @@
   <span class="md-ellipsis">
     
   
-    部署升级和回滚
+    Deployment Upgrade and Rollback
   
 
     
@@ -2602,7 +2602,7 @@
   <span class="md-ellipsis">
     
   
-    边缘验收执行
+    Edge Acceptance Execution
   
 
     
@@ -2655,7 +2655,7 @@
   <span class="md-ellipsis">
     
   
-    调研
+    Research
   
 
     
@@ -2671,7 +2671,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    调研
+    Research
   
 
           </label>
@@ -2691,7 +2691,7 @@
   <span class="md-ellipsis">
     
   
-    工业检测成功率
+    Industrial Inspection Success Rates
   
 
     
@@ -2719,7 +2719,7 @@
   <span class="md-ellipsis">
     
   
-    YOLO 能力与成功率
+    YOLO Capabilities and Success Rates
   
 
     
@@ -2747,7 +2747,7 @@
   <span class="md-ellipsis">
     
   
-    成像流程与训练成本
+    Imaging Workflow and Training Cost
   
 
     
@@ -2800,7 +2800,7 @@
   <span class="md-ellipsis">
     
   
-    贡献者文档
+    Contributor Documentation
   
 
     
@@ -2816,7 +2816,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    贡献者文档
+    Contributor Documentation
   
 
           </label>
@@ -2836,7 +2836,7 @@
   <span class="md-ellipsis">
     
   
-    贡献指南
+    Contributing
   
 
     
@@ -2870,197 +2870,12 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
     
   
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-purpose" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. 目的
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-scope-and-non-goals" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. 范围和非目标
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. 范围和非目标">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#in-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        范围内
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        超出范围
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-safety-invariants" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 安全不变量
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-required-decisions-before-on-site-acceptance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. 现场验收前所需的决定
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-delivery-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. 交付管道
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. 交付管道">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#e6a-acceptance-test-matrix" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        E6a：验收测试矩阵
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#e6b-local-automation-runner" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        E6b：本地自动化运行器
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#e6c-edge-acceptance-report-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        E6c：边缘验收报告模板
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#e6d-on-site-acceptance-execution-plan" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        E6d：现场验收执行计划
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-mandatory-test-matrix" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 强制测试矩阵
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-mandatory-evidence-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. 强制性证据要求
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-merge-and-release-gates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 合并和释放门
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. 参考文献
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -3080,444 +2895,82 @@
   
 
 
-<h1 id="e6-pipeline-edge-acceptance">E6 管道：边缘验收<a class="headerlink" href="#e6-pipeline-edge-acceptance" title="Permanent link">&para;</a></h1>
-<h2 id="1-purpose">1. 目的<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
-<p>E6 为特定客户建立边缘运行时的测量适应性
-生产线、型号/规则发布、相机设置和操作程序。里程碑
-E1-E4 合并。 E5 在开放 PR #24 中实现，未合并。 E6是
-Edge 交付工作和最后一个 Edge 之后的验收门
-中央工作开始前的生产候选门。满
-在当前环境下无法完成验收，因为它需要
-真实的客户站点、选定的硬件和看不见的客户数据。 E6是
-因此分为两个阶段：</p>
-<ul>
-<li><strong>E6-prep</strong>：不需要真实环境并且可以构建的可交付成果，
-  已测试，现已合并。这些是验收测试矩阵（第 6 节）、
-  本地自动化运行程序（E6b）、验收报告模板（E6c）和
-  现场执行计划及其运行手册/清单更新 (E6d)。</li>
-<li><strong>现场验收</strong>：执行验收的单独门控阶段
-  矩阵、弹性和浸泡证据以及真实硬件和看不见的指标
-  客户数据 (E6d)。</li>
-</ul>
-<p>如果没有真实的硬件、未见过的客户数据以及
-执行现场恢复并浸泡证据。没有伪造的通过结果
-曾经记录过：缺失的真实环境输入被报告为<code>NOT_EXECUTED</code>，
-从来不作为通行证。本文档是 E6 的真实来源，并取代任何
-非正式验收索赔。</p>
-<h2 id="2-scope-and-non-goals">2. 范围和非目标<a class="headerlink" href="#2-scope-and-non-goals" title="Permanent link">&para;</a></h2>
-<h3 id="in-scope">范围内<a class="headerlink" href="#in-scope" title="Permanent link">&para;</a></h3>
-<ul>
-<li>E6a：验收测试矩阵（第 6 节），涵盖行为、弹性、
-  性能和稳定性断言，并对内容进行诚实分类
-  每个项目都需要。</li>
-<li>E6b：<code>scripts/edge-acceptance-run.py</code>，本地自动化运行器
-  执行每个本地可自动化的矩阵项并发出机器可读的
-  证据明显；现场项目作为 <code>NOT_EXECUTED</code> 发出
-  记录所需的环境。</li>
-<li>E6c：边缘验收报告模板
-  <code>docs/design/28-edge-acceptance-report.md</code> 包含版本/环境、矩阵
-  结果、指标、证据链接、偏差、风险和签核字段。</li>
-<li>E6d：<a href="../../runbooks/15-edge-acceptance-execution/">Runbook 15: Edge Acceptance
-  Execution</a>中的现场验收执行计划（门控阶段，
-  此处记录但未在此环境中执行）。</li>
-</ul>
-<h3 id="out-of-scope">超出范围<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h3>
-<ul>
-<li>进行现场验收、获取客户数据或生成最终结果
-  指标：基于硬件和看不见的客户数据（E6d）。</li>
-<li>中央服务器（摄取 API、PostgreSQL、对象存储、手动审核）：
-  在边缘门通过之前，未实施并故意超出范围。</li>
-<li>声称通用的准确性保证或采用未经测量的指标
-  证据：仅包含分子、分母和置信度的测量结果
-  报告治疗情况（设计 22.7，合同 10）。</li>
-<li>使用验收数据进行模型训练、阈值调整或规则选择
-  （设计 26.4）。</li>
-</ul>
-<h2 id="3-safety-invariants">3. 安全不变量<a class="headerlink" href="#3-safety-invariants" title="Permanent link">&para;</a></h2>
-<p>在每个 E6 更改和测试中，以下不变量是强制性的：</p>
-<ol>
-<li>当检验证据不完整、无效或
-   无法验证；不完整的证据映射到<code>NG</code>或采用的
-   根据政策的不确定/手动路径（设计 11、22.6）。</li>
-<li>缺少真实环境输入（硬件、看不见的客户数据、中央
-   server) 被报告为 <code>NOT_EXECUTED</code> 以及所需的环境
-   记录，从来不作为通行证，也不作为<code>OK</code>。</li>
-<li>从未声称 100% 准确；仅测量回忆和
-   报告假阴性结果（设计 22.7，合同 10）。</li>
-<li>验收数据从不用于训练、阈值调整、检查点
-   选择，或验收运行前的规则选择（设计26.4）。</li>
-<li>原始人工智能决策在人工审核过程中保持不变；
-   更正结果单独存储，绝不会覆盖原始决定
-   （设计 24，合同 10 §5）。</li>
-<li>证据是不可变的或受校验和保护并通过
-   检查标识符（设计 26.6）。</li>
-<li>在代表性恢复完成之前，备份才被视为可操作。
-   成功了（设计20.10）。</li>
-<li>现场执行绝不会删除或更改证据、待上传或
-   可追溯性所需的数据库记录（设计 20.11）。</li>
-</ol>
-<h2 id="4-required-decisions-before-on-site-acceptance">4. 现场验收前所需的决定<a class="headerlink" href="#4-required-decisions-before-on-site-acceptance" title="Permanent link">&para;</a></h2>
-<p>以下决定仍然悬而未决，并记录在接受中
-报告直至客户和供应商同意为止。它们不是在这里发明的
-（设计22.13、26.11）：</p>
-<ul>
-<li>客户 TLS 终止选择：边缘服务本地 TLS 与现有的
-  工厂反向代理、证书来源和轮换所有者（设计
-  20.6，合同 08)。</li>
-<li>与备份目标、计划、保留和恢复 RPO/RTO 达成一致
-  客户；确切的频率是接受决定（设计20.10）。</li>
-<li>硬件设备映射：GigE Vision / GenICam相机系列，GenTL生产商，
-  NIC/交换机路径和可选的巨型帧配置，或 USB UVC 驱动程序和
-  设备路径；加上 GPU 设备和硬件/软件触发接口
-  客户现场要求（设计 20.2、20.13）。</li>
-<li>接受阈值：主要 NG 召回目标、允许的漏报和
-  升级/重新测试政策、误报和人工审核预期，
-  以及<code>UNCERTAIN</code>和的统计置信方法和处理
-  不确定的基本事实（设计 26.3）。</li>
-<li>条形码标准以及对不可读和未知代码的预期处理
-  （设计 22.13、26.11）。</li>
-<li>传送带速度、预期吞吐量、延迟预算、占空比和
-  长时间运行的测试持续时间（设计 22.9、26.11）。</li>
-<li>事实真相所有者、裁决者、证人、签名者和重新测试
-  责任（设计 26.3、26.11）。</li>
-</ul>
-<h2 id="5-delivery-pipeline">5. 交付管道<a class="headerlink" href="#5-delivery-pipeline" title="Permanent link">&para;</a></h2>
-<p>每个门都可以独立审查。</p>
-<h3 id="e6a-acceptance-test-matrix">E6a：验收测试矩阵<a class="headerlink" href="#e6a-acceptance-test-matrix" title="Permanent link">&para;</a></h3>
-<p>完整的强制矩阵位于第 6 节。它是
-E6 必须展示的真相、什么是本地可自动化的以及什么是
-由硬件、客户数据或中央服务器控制。</p>
-<p><strong>退出标准</strong></p>
-<ul>
-<li>设计 26.5 和 22.8 所需的每个场景都带有分类
-  以及本地跑步者报道答案；没有需要的场景是默默的
-  当需要真实环境时自动本地化。</li>
-</ul>
-<h3 id="e6b-local-automation-runner">E6b：本地自动化运行器<a class="headerlink" href="#e6b-local-automation-runner" title="Permanent link">&para;</a></h3>
-<p><strong>实施</strong></p>
-<ul>
-<li><code>scripts/edge-acceptance-run.py</code> 锁定应用程序、产品型号、
-  组件模型、规则和配置工件通过提供
-  <code>--artifact</code>，加上通过提供的验收清单
-  <code>--acceptance-manifest</code>，执行前。缺少必需的工件使得
-  运行不完整且非零，而不是成功。</li>
-<li>运行程序为每个可运行对象执行显式的目标 pytest 断言
-  行为矩阵行，记录其证据清单中的每个矩阵行，以及
-  记录每个执行行的断言和锁定工件校验和。</li>
-<li>对于每个矩阵项目，发出机器可读的证据清单条目
-  包含：矩阵ID、场景、状态、不需要时所需的环境
-  已执行、已执行断言、证据链接、时间戳和工件
-  校验和。</li>
-<li>切勿为所需环境不可用的项目发出 <code>PASS</code> 或
-  不支持本地执行；将其记录为 <code>NOT_EXECUTED</code> 或
-  <code>INCOMPLETE</code>，缺少输入或限制（硬件、客户数据、
-  中央服务器或不受支持的本地功能）。</li>
-<li>场景将本地可自动化的行为断言与
-  门控接受度量，记录执行的行为断言和
-  接受项本身为<code>NOT_EXECUTED</code>。</li>
-</ul>
-<p><strong>退出标准</strong></p>
-<ul>
-<li>运行程序针对当前存储库完成，无需外部
-  硬件、客户数据或中央服务，并记录每个矩阵行。
-  硬件/客户/中央项目和不可用或不受支持的本地项目
-  是 <code>NOT_EXECUTED</code> 或 <code>INCOMPLETE</code>，而不是 <code>PASS</code>。</li>
-<li>测试涵盖跑步者的明显排放；输入清单模式并
-  版本化。</li>
-</ul>
-<h3 id="e6c-edge-acceptance-report-template">E6c：边缘验收报告模板<a class="headerlink" href="#e6c-edge-acceptance-report-template" title="Permanent link">&para;</a></h3>
-<p><strong>实施</strong></p>
-<ul>
-<li>添加 <code>docs/design/28-edge-acceptance-report.md</code> 以及以下字段：</li>
-<li>发布和环境：应用程序、模型、规则和配置
-    版本和校验和、硬件、摄像头、网络和设备 ID；</li>
-<li>矩阵结果：每个矩阵 ID 一行，带有状态和证据链接；</li>
-<li>指标：NG召回率、假阴性率、假阳性率、
-    每个组件召回、每个产品召回、产品检测成功、
-    ROI 生成成功、条码读取成功、平均和 P95 延迟、
-    吞吐量、按连接性分段的上传延迟、审核率和
-    稳定性，每个都有分子、分母和置信度处理
-    （设计26.7，合同10）；</li>
-<li>证据链接、偏差、残余风险以及角色和签名
-    残余风险批准（设计 26.8 步骤 10）。</li>
-<li>任何没有客户数据的指标都记录为 <code>NOT_MEASURED</code>，而不是记录为
-  零、占位符或通行证。</li>
-</ul>
-<p><strong>退出标准</strong></p>
-<ul>
-<li>MkDocs严格通过新的设计文档；模板是
-  从运行手册/清单更新和此任务交叉引用。</li>
-</ul>
-<h3 id="e6d-on-site-acceptance-execution-plan">E6d：现场验收执行计划<a class="headerlink" href="#e6d-on-site-acceptance-execution-plan" title="Permanent link">&para;</a></h3>
-<p>这是门控阶段；它无法在当前环境中运行。的
-程序遵循设计 26.8：</p>
-<ol>
-<li>批准验收协议、领域、角色、目标设定方法以及
-   停止条件；将第 4 节的决定记录为已解决或明确记录
-   打开。</li>
-<li>验证相机安装、对焦、曝光、照明、边缘硬件、时间
-   同步、磁盘容量和网络设置；记录设备
-   映射。</li>
-<li>锁定应用程序/模型/规则/配置工件并对其进行校验和
-   验收清单。</li>
-<li>运行校准和烟雾案例，而不使用验收结果进行调整
-   锁定的候选人。</li>
-<li>在见证下执行随机或生产代表性案件，
-   记录所有证据。</li>
-<li>练习离线、恢复、重启和持续时间（浸泡）场景。</li>
-<li>核对产品数量、重复和缺失检查、介质、日志、
-   并上传收据。</li>
-<li>只审理预先宣判的未决案件，不改变原案
-   记录。</li>
-<li>生成分段指标并将其与联合批准的指标进行比较
-   协议。</li>
-<li>记录批准、限制批准、补救/重新测试或拒绝
-    签名和剩余风险。</li>
-</ol>
-<p>如果发现释放阻塞问题，则保留运行；修复创造了
-新的候选版本和受控的重新运行，并且历史故障不是
-被覆盖（设计26.8）。</p>
-<p><strong>退出标准</strong></p>
-<ul>
-<li><a href="../../runbooks/15-edge-acceptance-execution/">Runbook 15: Edge Acceptance Execution</a>
-  和 <a href="../../design/28-edge-acceptance-report/">edge acceptance report template</a>
-  可以从该计划中执行；没有E6-prep门被E6d阻挡，并且E6是
-  直到 E6d 出示已执行的现场证据后才宣布完成。</li>
-</ul>
-<h2 id="6-mandatory-test-matrix">6. 强制测试矩阵<a class="headerlink" href="#6-mandatory-test-matrix" title="Permanent link">&para;</a></h2>
-<p>列语义：分类是验收运行最严格的环境
-需要 (<code>automated-local</code>、<code>hardware-required</code>、<code>customer-data-required</code>、
-<code>central-required</code>）。当运行程序执行时，本地运行程序覆盖率为 <code>yes</code>
-矩阵行的显式目标 pytest 断言或 Docker 重启检查；
-证据清单记录了确切的断言，因此跳过或失败
-断言永远不会产生<code>PASS</code>。否则它是 <code>no</code> 并且跑步者发出
-<code>NOT_EXECUTED</code> 具有所需的环境。断电，真正的条码解码，
-真实相机断开连接、GPU/加速器故障、长时间浸泡以及任何
-客户数据场景永远不会<code>automated-local</code>。</p>
+<h1 id="assemblyvision-architecture-decisions">AssemblyVision Architecture Decisions<a class="headerlink" href="#assemblyvision-architecture-decisions" title="Permanent link">&para;</a></h1>
 <table>
 <thead>
 <tr>
-<th>身份证</th>
-<th>场景</th>
-<th>所需的断言/行为</th>
-<th>分类</th>
-<th>本地跑者报道</th>
-<th>笔记</th>
+<th>ADR</th>
+<th>Decision</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>E6-A1</td>
-<td>产品类型（每种适用）</td>
-<td>正确的产品映射、适用的版本化规则、组件级结果；按类型分段的指标</td>
-<td>需要客户数据</td>
-<td>没有</td>
-<td>指标和验收证据需要看不见的客户数据</td>
+<td><a href="ADR-001-edge-first-inspection/">ADR-001</a></td>
+<td>Edge-first inspection</td>
 </tr>
 <tr>
-<td>E6-A2</td>
-<td>每个缺失的组件</td>
-<td>NG或采用不确定/手动路径，纠正缺失原因和证据</td>
-<td>需要客户数据</td>
-<td>没有</td>
-<td>在客户队伍中上演案例；阶段性缺陷与自然发生的缺陷分别报告 (22.10)</td>
+<td><a href="ADR-002-python-backend/">ADR-002</a></td>
+<td>Python backend</td>
 </tr>
 <tr>
-<td>E6-A3</td>
-<td>缺少手册</td>
-<td>缺失手册原因及溯源</td>
-<td>需要客户数据</td>
-<td>没有</td>
-<td>文件存在情况 (26.5)</td>
+<td><a href="ADR-003-vue-3-and-typescript-frontend/">ADR-003</a></td>
+<td>Vue 3 and TypeScript frontend</td>
 </tr>
 <tr>
-<td>E6-A4</td>
-<td>条码故障</td>
-<td>错误、未知或不可读的产品映射下没有未经验证的 OK</td>
-<td>所需硬件</td>
-<td>没有</td>
-<td>需要真正的条形码解码（22.5）；本地模拟不是验收证据</td>
+<td><a href="ADR-004-two-stage-detection/">ADR-004</a></td>
+<td>Two-stage detection</td>
 </tr>
 <tr>
-<td>E6-A5</td>
-<td>产品定位转变</td>
-<td>可用的 ROI 或明确的 NG/不确定/错误；没有固定坐标假设</td>
-<td>需要客户数据</td>
-<td>没有</td>
-<td>需要在批准的操作范围内进行看不见的捕获</td>
+<td><a href="ADR-005-local-first-storage-and-delayed-upload/">ADR-005</a></td>
+<td>Local-first storage and delayed upload</td>
 </tr>
 <tr>
-<td>E6-A6</td>
-<td>正常生产变化</td>
-<td>代表领域的分段质量和延迟结果</td>
-<td>需要客户数据</td>
-<td>没有</td>
-<td>代表性生产流程</td>
+<td><a href="ADR-006-rest-plus-websocket/">ADR-006</a></td>
+<td>REST plus WebSocket</td>
 </tr>
 <tr>
-<td>E6-A7</td>
-<td>连续OK产品</td>
-<td>每件产品一次正确检验；没有重复或帧混合</td>
-<td>需要客户数据</td>
-<td>没有</td>
-<td>操作流程指标需要客户生产序列</td>
+<td><a href="ADR-007-monorepo/">ADR-007</a></td>
+<td>Monorepo</td>
 </tr>
 <tr>
-<td>E6-A8</td>
-<td>连续NG产品</td>
-<td>每件产品一次正确检验并说明理由；持续审核并上传</td>
-<td>需要客户数据</td>
-<td>没有</td>
-<td>操作流程指标需要客户生产序列</td>
+<td><a href="ADR-008-docker-deployment/">ADR-008</a></td>
+<td>Docker deployment</td>
 </tr>
 <tr>
-<td>E6-A9</td>
-<td>混合产品类型</td>
-<td>每个物理产品的正确版本规则</td>
-<td>需要客户数据</td>
-<td>没有</td>
-<td>需要客户混合产品生产序列</td>
+<td><a href="ADR-009-static-image-first-mvp/">ADR-009</a></td>
+<td>Static-image-first MVP</td>
 </tr>
 <tr>
-<td>E6-A10</td>
-<td>没有产品</td>
-<td>明确无产品处理或不打开窗口；从来都不是捏造的好吧</td>
-<td>自动化本地</td>
-<td>是的</td>
-<td>确定性无产品框架 (22.6)</td>
+<td><a href="ADR-010-per-component-temporal-aggregation/">ADR-010</a></td>
+<td>Per-component temporal aggregation</td>
 </tr>
 <tr>
-<td>E6-A11</td>
-<td>多种产品</td>
-<td>窗口完整性：明确的 NG 或错误，而不是混合证据</td>
-<td>自动化本地</td>
-<td>是的</td>
-<td>多产品夹具 (22.6)</td>
+<td><a href="ADR-011-labeled-train-and-inspect-mvp/">ADR-011</a></td>
+<td>Labeled train-and-inspect MVP</td>
 </tr>
 <tr>
-<td>E6-A12</td>
-<td>离线操作</td>
-<td>地方检查、证据和持久的队列在没有中央的情况下继续进行自动化本地</td>
-<td>是的</td>
-<td>中央独立（ADR-001，22.8）</td>
-<td></td>
+<td><a href="ADR-012-edge-api-m1-viewer-auth/">ADR-012</a></td>
+<td>Edge API M1 viewer auth and read-only boundary</td>
 </tr>
 <tr>
-<td>E6-A13</td>
-<td>网络中断</td>
-<td>地方决定继续进行；队列仍然存在；无数据丢失</td>
-<td>自动化本地</td>
-<td>是的</td>
-<td>阻塞端点模拟</td>
+<td><a href="ADR-013-camera-frame-sources-and-multi-instance/">ADR-013</a></td>
+<td>Camera frame sources and multi-instance edge</td>
 </tr>
 <tr>
-<td>E6-A14</td>
-<td>反复网络断开（抖动）</td>
-<td>无中心往返；队列仍然存在；抖动回退和断路器限制流量；无数据丢失或重复上传；积压排水</td>
-<td>自动化本地</td>
-<td>是的</td>
-<td>振荡连接 (22.8)</td>
+<td><a href="ADR-014-web-dev-test-harness/">ADR-014</a></td>
+<td>Web dev test harness (file-based, not production acquisition)</td>
 </tr>
 <tr>
-<td>E6-A15</td>
-<td>中央停电</td>
-<td>带抖动的退避；没有决策障碍</td>
-<td>自动化本地</td>
-<td>是的</td>
-<td>边缘行为；一旦存在中央，就需要端到端的中央对账</td>
+<td><a href="ADR-015-barcode-identity-and-plc-trigger/">ADR-015</a></td>
+<td>Barcode identity and PLC trigger correlation</td>
 </tr>
 <tr>
-<td>E6-A16</td>
-<td>重复上传幂等性</td>
-<td>每个幂等密钥进行一次集中检查和一致收据</td>
-<td>中央要求</td>
-<td>没有</td>
-<td>针对接收器的边缘重放是本地执行的；验证中央收据需要尚未实现的中央服务器</td>
-</tr>
-<tr>
-<td>E6-A17</td>
-<td>应用程序重启</td>
-<td>不得捏造或重复；显式处理的不完整窗口；状态恢复</td>
-<td>自动化本地</td>
-<td>是的</td>
-<td>在捕获、决策和上传状态期间重新启动</td>
-</tr>
-<tr>
-<td>E6-A18</td>
-<td>断电</td>
-<td>数据库和队列恢复；不明确的窗口未标记为“OK”；无证据丢失</td>
-<td>所需硬件</td>
-<td>没有</td>
-<td>在选定状态下杀死主机/进程；需要硬件环境(22.8)</td>
-</tr>
-<tr>
-<td>E6-A19</td>
-<td>磁盘已满/压力</td>
-<td>警报、安全清理、在失去可追溯性之前暂停； NG 证据依然存在</td>
-<td>自动化本地</td>
-<td>是的</td>
-<td>配额或已填满的测试量 (22.8)</td>
+<td><a href="ADR-016-edge-local-human-review/">ADR-016</a></td>
+<td>Edge-local human review (optional, append-only)</td>
 </tr>
 </tbody>
 </table>
-<p>| E6-A20 | GPU/加速器故障 |没有捏造就OK；可恢复的故障重新加载或切换到具有相同清单的经过验证的 CPU 运行时并记录切换；不可恢复故障故障和块检查|所需硬件 |没有|恢复路径有单位覆盖；真正的加速器故障需要硬件（22.8，设计 09.7）|
-| E6-A21 |数据库故障/损坏 |安全地失败、保留诊断、执行测试的恢复路径 |自动化本地 |是的 |一次性测试数据库(22.8) |
-| E6-A22 |备份+恢复|代表恢复成功；悬而未决的证据和上传任务继续存在|自动化本地 |是的 |恢复成功之前不可操作 (20.10) |
-| E6-A23 |容器重启 |监督恢复，无需重复产品决策 |自动化本地 |是的 |需要 Docker；在可用的地方运行 |
-| E6-A24 |时钟漂移|保持单调排序和相关性；漂移警报|自动化本地 |没有|需要专用的时钟漂移线束；在此之前，跑步者记录 <code>NOT_EXECUTED</code> |
-| E6-A25 |校验和失败 |拒绝工件并保留可恢复的任务或版本 |自动化本地 |是的 |更改媒体或包字节 (22.8) |
-| E6-A26 |长时间浸泡|没有无限制的资源、文件描述符或队列增长；无数据丢失；在客户同意的限度内实现稳定的延迟|所需硬件 |没有|根据实际操作模式商定的持续时间和工作量 (22.9) |
-| E6-A27 |相机断开连接 |没有捏造就OK；报警、重新连接并安全恢复 |所需硬件 |没有|真实设备移除；适配器一致性套件涵盖基于模拟器的重新连接 (22.5) |</p>
-<h2 id="7-mandatory-evidence-requirements">7. 强制性证据要求<a class="headerlink" href="#7-mandatory-evidence-requirements" title="Permanent link">&para;</a></h2>
-<p>每个执行的测试都会保留（设计 26.6，合同 10 §6）：</p>
-<ul>
-<li>检查结果和原因代码。</li>
-<li>原始和选定的图像证据，加上注释/ROI 证据
-  配置。</li>
-<li>事实真相和裁决来源。</li>
-<li>应用程序、模型、规则、产品配置和审查策略版本
-  和校验和。</li>
-<li>源和接收时间戳以及设备标识符。</li>
-<li>条形码和产品映射结果。</li>
-<li>相关结构化日志、运行状况事件和阶段时间安排。</li>
-<li>上传任务和中央收据/校验和，其中同步在范围内。</li>
-<li>审阅者结果，其中人工验证是程序的一部分。</li>
-</ul>
-<p>证据是不可变的或受校验和保护并通过检查链接
-标识符。 <code>NOT_EXECUTED</code>条目记录所需的环境而不是
-证据。报告的指标包括分子、分母、排除和
-不确定的计数、有意义的置信区间以及细分
-发布版本（设计26.7）。</p>
-<h2 id="8-merge-and-release-gates">8. 合并和释放门<a class="headerlink" href="#8-merge-and-release-gates" title="Permanent link">&para;</a></h2>
-<ul>
-<li>通过类型化接口和类型化、版本化的 Pydantic 进行重点更改
-  体现出来。</li>
-<li>对每个更改的安全不变量进行回归测试。</li>
-<li>通过强制性质量命令：<code>ruff check</code>、<code>ruff format --check</code>、
-  <code>mypy</code>、<code>pytest</code>、<code>mkdocs build --strict</code>、<code>pnpm -r build/lint/test</code> 和
-  边缘网络 e2e。</li>
-<li>现场有证据后才出具边缘验收报告；一个
-  模板或仅准备状态永远不会被视为已接受。</li>
-<li>在代表性恢复完成之前，备份不被视为可操作
-  成功了（设计20.10）。</li>
-</ul>
-<h2 id="9-references">9. 参考文献<a class="headerlink" href="#9-references" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="../../design/26-customer-acceptance/">Customer Acceptance</a>，部分
-  26.3-26.8。</li>
-<li><a href="../../design/22-testing-and-quality-assurance/">Testing and Quality Assurance</a>，
-  第 22.7-22.9 节。</li>
-<li><a href="../../contracts/10-model-rule-release-and-acceptance/">Contract 10: Model, Rule Release, and Acceptance</a>。</li>
-<li><a href="../../design/20-deployment-and-operations/">Deployment and Operations</a>，
-  第 20.10 节。</li>
-<li><a href="../E5-deployment-and-security/">E5: Deployment and Security</a>。</li>
-<li><a href="../../runbooks/15-edge-acceptance-execution/">Runbook 15: Edge Acceptance Execution</a>。</li>
-<li><a href="../../design/28-edge-acceptance-report/">Edge acceptance report template</a>。</li>
-<li><code>scripts/edge-acceptance-run.py</code>（本地自动化运行器发出
-  证据明显）。</li>
-<li><a href="../../ai/context/">Full project context</a>，第 9 节（未清项目和当前项目
-  状态）。</li>
-</ul>
+<p>All records are currently <code>Accepted</code>. ADR-011 supersedes ADR-009 only for the MVP training exclusion and two-day scope. Superseding a decision requires a new ADR and explicit links from the affected record and design documents.</p>
 
 
 
@@ -3543,7 +2996,7 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -3575,7 +3028,7 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

@@ -3420,7 +3420,7 @@
 
 <h1 id="04-edge-api-reference">04 — 边缘 API 参考<a class="headerlink" href="#04-edge-api-reference" title="Permanent link">&para;</a></h1>
 <p>边缘 API 如何<strong>真正被调用</strong>：基本 URL、身份验证流程、每个端点
-具有真实的请求/响应 JSON 和curl 示例、WebSocket 协议、错误
+具有真实请求/响应 JSON 和curl 示例、WebSocket 协议、错误
 约定和代码清单。权威合同是
 提交的 OpenAPI 文档 (<code>apps/edge-service/openapi/edge-openapi.json</code>,
 使用 <code>uv run python scripts/generate-edge-openapi.py</code> 重新生成）。</p>
@@ -3430,7 +3430,7 @@
   --config ... --rule ... --static apps/edge-web/dist --host 127.0.0.1
   --port 8000</code>。基本URL <code>http://127.0.0.1:8000</code>，下的所有路由
   <code>/api/v1</code>。</li>
-<li>JSON 无处不在； <code>snake_case</code>字段； ISO-8601 UTC 时间戳；通用唯一识别码
+<li>JSON 无处不在； <code>snake_case</code>字段； ISO-8601 UTC 时间戳；通用唯一标识符
   字符串。</li>
 <li>每个响应都带有安全标头（<code>Content-Security-Policy</code>、
   <code>X-Content-Type-Options: nosniff</code>、<code>Referrer-Policy: same-origin</code>）。</li>
@@ -3458,7 +3458,7 @@
 <ul>
 <li>204 无内容； cookie <code>Max-Age=28800</code>（8 小时）、<code>HttpOnly</code>、<code>SameSite=strict</code>、
   <code>Secure</code> 当使用 HTTPS 时；最多 500 个会话。</li>
-<li>错误的令牌 → 401;速率限制 → 429。</li>
+<li>错误的令牌 → 401；速率限制 → 429。</li>
 </ul>
 <h3 id="websocket-ticket-flow">WebSocket 票证流程<a class="headerlink" href="#websocket-ticket-flow" title="Permanent link">&para;</a></h3>
 <p>浏览器套接字无法设置 <code>Authorization</code> 标头，因此仪表板
@@ -3921,7 +3921,7 @@ PERMANENT_FAILURE | CANCELLED</code>; <code>kind</code> = <code>INSPECTION | MED
 <p>每台机器结果允许的配置（服务器强制执行）：
 <code>UNCERTAIN</code>→<code>CONFIRMED_NG, CONFIRMED_OK, REINSPECT, INCONCLUSIVE</code>；
 业务<code>NG</code>→<code>CONFIRMED_NG, CONFIRMED_OK, INCONCLUSIVE</code>；
-<code>OK</code>→<code>CONFIRMED_OK, CORRECTED_NG, INCONCLUSIVE</code>。</p>
+<code>OK</code> → <code>CONFIRMED_OK, CORRECTED_NG, INCONCLUSIVE</code>。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://127.0.0.1:8000/api/v1/inspections/<span class="nv">$INSPECTION_ID</span>/reviews<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;disposition&quot;:&quot;CONFIRMED_NG&quot;,&quot;reason&quot;:&quot;defect visible&quot;,&quot;reviewer&quot;:&quot;operator-1&quot;}&#39;</span>

@@ -3518,7 +3518,7 @@
     Persist --&gt; Media[(媒体音量)]
     Persist --&gt; Upload[(持久上传任务)]
     Upload --&gt; Sync[上传调度程序]
-    Sync --&gt;|当可用时| Central[中央摄取API]
+    Sync --&gt;|当可用时| Central[中央摄取 API]
     API[本地FastAPI] --&gt; Persist
     API --&gt; Coordinator
     Web[本地Vue应用程序] --&gt; API
@@ -3596,14 +3596,14 @@
 </ol>
 <p>SQLite 使用 Alembic 迁移、外键、WAL 模式（如果在所选文件系统上进行验证）、有界繁忙超时、定期完整性检查和支持的备份过程。单个存储库编写器或短事务可以减少锁争用。</p>
 <h3 id="62-retention-and-disk-pressure">6.2 保留和磁盘压力<a class="headerlink" href="#62-retention-and-disk-pressure" title="Permanent link">&para;</a></h3>
-<p>保留类别针对完整/滚动视频、关键帧、NG 剪辑、带注释的图像、ROI 图像、日志和数据库记录进行独立配置。清理从过期的、成功上传的、未受保护的工件到价值较低的数据。它必须尊重参考资料、法律/审查保留、待处理/失败的上传以及最低证据政策。警告和严重水印会触发原因编码的健康事件；无法保留强制性证据的缺陷或保守地终止检查。</p>
+<p>保留类别针对完整/滚动视频、关键帧、NG 剪辑、带注释的图像、ROI 图像、日志和数据库记录进行独立配置。清理从过期的、成功上传的、未受保护的工件到价值较低的数据。它必须遵守参考资料、法律/审查保留、待处理/失败的上传以及最低证据政策。警告和严重水印会触发原因编码的健康事件；无法保留强制性证据的缺陷或保守地终止检查。</p>
 <p>确切的持续时间和水印有意未指定，以待容量和策略验证。</p>
 <h2 id="7-upload-scheduler">7. 上传调度程序<a class="headerlink" href="#7-upload-scheduler" title="Permanent link">&para;</a></h2>
 <p>上传任务包含任务 ID、检查 ID、工件类型、适用的本地路径、校验和、有效负载哈希、尝试计数、下次尝试时间和状态。幂等性密钥在重试后保持稳定。指数退避使用抖动和配置的上限；永久性验证/身份验证失败会停止自动重试并引发可操作事件，而暂时性网络/5xx 故障仍会排队。</p>
 <p>元数据在媒体清单之前或与媒体清单一起接受。当测量的大小需要时，大型媒体应使用服务器发出的上传会话或有界多部分协议。中央耐用收据标志着成功。清理不能仅仅因为传输了字节而删除受保护的本地证据；它需要收据和到期政策。</p>
 <h2 id="8-local-api-and-web-application">8. 本地API和Web应用程序<a class="headerlink" href="#8-local-api-and-web-application" title="Permanent link">&para;</a></h2>
 <p>版本化本地 API 组为 <code>/api/v1/health</code>、<code>/api/v1/device</code>、<code>/api/v1/camera</code>、<code>/api/v1/inspection</code>、<code>/api/v1/inspections</code>、<code>/api/v1/media</code>、<code>/api/v1/uploads</code>、<code>/api/v1/configuration</code>、<code>/api/v1/logs</code> 和 <code>/api/v1/ws/runtime</code>，详细信息请参见 <a href="../15-rest-api-and-events/">REST API and Events</a>。变异调用使用适合本地威胁模型的授权、验证、审计条目和重试时的幂等性。 WebSocket 事件是建议性的；重新连接后，UI 通过 REST 恢复真实情况。</p>
-<p>Vue 应用程序显示摄像头预览、当前身份/产品、最新结果/证据叠加、延迟、摄像头/模型/磁盘/网络/中央状态、队列深度、最近记录、本地日志和重试控件。它仅使用本地端点并在离线状态下仍然有用。预览交付必须受到速率限制，并且不得阻碍推理。</p>
+<p>Vue 应用程序显示摄像头预览、当前身份/产品、最新结果/证据叠加、延迟、摄像头/模型/磁盘/网络/中央状态、队列深度、最近记录、本地日志和重试控件。它仅使用本地端点，并且在离线状态下仍然有用。预览交付必须受到速率限制，并且不得阻碍推理。</p>
 <h2 id="9-process-concurrency-and-backpressure">9. 进程、并发和背压<a class="headerlink" href="#9-process-concurrency-and-backpressure" title="Permanent link">&para;</a></h2>
 <ul>
 <li>根据经过验证的窗口策略，有界捕获缓冲区有利于最近的帧；禁止无界队列。</li>

@@ -969,6 +969,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1622-interface-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2.2 界面语言
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3200,6 +3211,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1622-interface-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2.2 界面语言
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3471,7 +3493,26 @@
 不影响检查决策、审核记录、上传或设备状态。
 每个主题的语义含义保持稳定：绿色表示正常/正常，红色表示
 表示 NG/警报，琥珀色表示警告/不确定，蓝色表示信息。
-颜色总是补充文本和图像，而不是取代它。</p>
+颜色总是补充文本和图像，而不是取代它们。</p>
+<h3 id="1622-interface-language">16.2.2 界面语言<a class="headerlink" href="#1622-interface-language" title="Permanent link">&para;</a></h3>
+<p>仪表板 UI 已国际化，以英语作为源语言环境，
+默认，加上简体中文（中国大陆，<code>zh-CN</code>）、繁体中文
+（香港，<code>zh-HK</code>）和日语（<code>ja</code>）。每个消息键都是英文文本
+本身 - <code>t("History")</code> - 因此代码保持可读并且语言环境目录
+(<code>src/i18n/locales/</code>) 翻译相同的键。丢失的钥匙会回落到
+通过 vue-i18n 的后备语言环境提供英语；消息值必须转义
+英文文本时的链接消息前缀 (<code>{'@'}</code>) 和复数管道语法
+包含这些字符。</p>
+<p>构建时默认语言可通过 <code>VITE_DEFAULT_LOCALE</code> 配置
+在 <code>.env.development</code> / <code>.env.production</code> (<code>en | zh-CN | zh-HK | ja</code>) 中；一个
+未设置或不受支持的值回退为英语。运营商切换直播
+标题中地球图标下拉菜单中的语言；选择被保留
+在浏览器存储 (<code>assemblyvision.edge.locale</code>) 中并且始终胜过
+构建默认值。所选的区域设置驱动仪表板字符串和
+Element Plus 组件区域设置通过 <code>el-config-provider</code>。该文件
+<code>lang</code> 属性遵循区域设置，以便屏幕阅读器和浏览器翻译
+行为正确。语言选择永远不会影响检查决策、审核
+记录、上传或设备状态。</p>
 <h2 id="163-information-architecture">16.3 信息架构<a class="headerlink" href="#163-information-architecture" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3539,9 +3580,9 @@
 <p>桌面使用主摄像头/证据窗格和固定宽度的决策窗格。在 1280 像素及以上，两者均可见，无需垂直滚动。平板电脑/移动设备堆栈首先是决策，然后是证据，最后是诊断；暂停/恢复仍然可以访问，但不是可以意外触发的浮动控件。</p>
 <p>屏幕包括：</p>
 <ul>
-<li>相机预览包含缩放、源分辨率、捕获时间戳和陈旧帧标记。</li>
+<li>相机预览包含缩放、源分辨率、捕获时间戳和过时帧标记。</li>
 <li>从源坐标映射的可选产品和组件边界框，从不预先缩放服务器坐标。</li>
-<li>最终的 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code> 面板，包含检查 ID、条形码、产品类型、处理延迟和完成时间。</li>
+<li>最终的 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code> 面板，包含检验 ID、条形码、产品类型、处理延迟和完成时间。</li>
 <li>所需组件矩阵：存在、缺失、不确定、最佳置信度、支持框架计数和政策原因。</li>
 <li>相机、模型、规则、本地数据库、磁盘和检查引擎的就绪条。</li>
 <li>连接条分隔本地 API、网络接口、DNS/中央可达性和上传积压。</li>
@@ -3572,7 +3613,7 @@
 <p>清除的媒体显示元数据和清除原因，而不是损坏的图像。视频使用范围请求并提供静态后备关键帧。</p>
 <h2 id="166-upload-queue">16.6 上传队列<a class="headerlink" href="#166-upload-queue" title="Permanent link">&para;</a></h2>
 <p>队列页面组 <code>PENDING</code>、<code>IN_PROGRESS</code>、<code>RETRY_WAIT</code>、<code>PERMANENT_FAILURE</code>、<code>CANCELLED</code> 和 <code>SUCCEEDED</code> 计数。默认行显示未完成的任务、下一次尝试、尝试计数、对象类型、检查链接、字节和已清理的错误代码。仪表板解释说，在页面未打开的情况下会继续重试。</p>
-<p>手动重试仅针对重试/死信任务启用，需要确认和原因，并发送幂等密钥。它不会创建第二个任务。批量重试被推迟，直到操作证据表明有必要；无限制的批量重试可能会在中断后使中央服务器过载。</p>
+<p>仅对重试/死信任务启用手动重试，需要确认和原因，并发送幂等密钥。它不会创建第二个任务。批量重试被推迟，直到操作证据表明有必要；无限制的批量重试可能会在中断后使中央服务器过载。</p>
 <h2 id="167-health-and-alerts">16.7 健康状况和警报<a class="headerlink" href="#167-health-and-alerts" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3634,13 +3675,13 @@
 <li>编辑包含字段级单位、范围和说明的草稿。
 3.通过API验证，无需激活。</li>
 <li>显示语义差异和需要重新启动或检查暂停的影响。</li>
-<li>需要管理员确认并说明理由。</li>
-<li>使用<code>If-Match</code>提交；如果发生冲突，请故意重新加载并重新应用。</li>
+<li>需要管理员确认并说明理由。
+6、使用<code>If-Match</code>提交；如果发生冲突，请故意重新加载并重新应用。</li>
 <li>显示激活结果和审核/事件标识符。</li>
 </ol>
 <p>切勿在生产中向操作员提供任意 JSON 编辑。</p>
 <h2 id="169-pause-and-resume-safety">16.9 暂停和恢复安全<a class="headerlink" href="#169-pause-and-resume-safety" title="Permanent link">&para;</a></h2>
-<p>暂停意味着停止打开新产品窗口。 API 拥有活动窗口的行为：安全完成或根据配置的策略标记为中止。确认确定了结果并捕获了原因。在相机、模型、规则、数据库和磁盘先决条件通过之前，恢复将保持禁用状态。 UI 显示 API 拒绝详细信息，并且在确认之前一定不能乐观地显示 <code>READY</code>。</p>
+<p>暂停意味着停止打开新产品窗口。 API 拥有活动窗口的行为：安全完成或根据配置的策略标记为中止。确认确定了结果并捕获了原因。在相机、模型、规则、数据库和磁盘先决条件通过之前，恢复将保持禁用状态。 UI 显示 API 拒绝详细信息，并且在确认之前不得乐观地显示 <code>READY</code>。</p>
 <p>紧急机器停止是工厂安全控制问题，不得以网络按钮表示，除非与经过验证的机械控制集成。仪表板暂停是应用程序级检查控制，而不是紧急停止。</p>
 <h2 id="1610-state-and-data-flow">16.10 状态和数据流<a class="headerlink" href="#1610-state-and-data-flow" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3658,7 +3699,7 @@
 <ul>
 <li>键盘操作、焦点、对比度、标签、对话框、表格和非颜色状态指示器符合 WCAG 2.1 AA。</li>
 <li>仅虚拟化已证明较大的表；光标分页是第一个控件。</li>
-<li>延迟加载视频和高级查看器代码。保持初始实时屏幕资源对于目标边缘硬件而言足够小。</li>
+<li>延迟加载视频和高级查看器代码。保持初始实时屏幕资源对于目标边缘硬件来说足够小。</li>
 <li>清理文件名和日志文本，禁止原始 HTML，并使用限制性内容安全策略。</li>
 <li>在使用会话的地方使用安全、仅限 HTTP、同站点 cookie；保护突变免受 CSRF 的影响。</li>
 <li>不要在分析中放置令牌、条形码或媒体 URL。本地仪表板不应依赖于第三方 CDN。</li>

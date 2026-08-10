@@ -969,6 +969,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1622-interface-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2.2 Interface Language
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3200,6 +3211,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#1622-interface-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2.2 Interface Language
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3472,6 +3494,25 @@ does not affect inspection decisions, audit records, uploads, or device state.
 Semantic meaning remains stable in every theme: green means normal/OK, red
 means NG/alarm, amber means warning/uncertain, and blue means informational.
 Color always supplements text and iconography rather than replacing it.</p>
+<h3 id="1622-interface-language">16.2.2 Interface Language<a class="headerlink" href="#1622-interface-language" title="Permanent link">&para;</a></h3>
+<p>The dashboard UI is internationalized with English as the source locale and
+default, plus Simplified Chinese (Mainland China, <code>zh-CN</code>), Traditional Chinese
+(Hong Kong, <code>zh-HK</code>), and Japanese (<code>ja</code>). Each message key is the English text
+itself — <code>t("History")</code> — so code remains readable and the locale catalogs
+(<code>src/i18n/locales/</code>) translate the same keys. Missing keys fall back to
+English via vue-i18n's fallback locale; message values must escape the
+linked-message prefix (<code>{'@'}</code>) and plural pipe syntax when the English text
+contains those characters.</p>
+<p>The build-time default language is configurable through <code>VITE_DEFAULT_LOCALE</code>
+in <code>.env.development</code> / <code>.env.production</code> (<code>en | zh-CN | zh-HK | ja</code>); an
+unset or unsupported value falls back to English. Operators switch the live
+language from a globe-icon dropdown in the header; the selection is persisted
+in browser storage (<code>assemblyvision.edge.locale</code>) and always wins over the
+build default. The chosen locale drives both the dashboard strings and the
+Element Plus component locale through <code>el-config-provider</code>. The document
+<code>lang</code> attribute follows the locale so screen readers and browser translation
+behave correctly. Language choice never affects inspection decisions, audit
+records, uploads, or device state.</p>
 <h2 id="163-information-architecture">16.3 Information Architecture<a class="headerlink" href="#163-information-architecture" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

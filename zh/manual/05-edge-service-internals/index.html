@@ -1598,7 +1598,7 @@
   <a href="#persistenceuploadretention-see-also-07" class="md-nav__link">
     <span class="md-ellipsis">
       
-        持久性/上传/保留（另见 07）
+        Persistence/upload/retention (see also 07)
       
     </span>
   </a>
@@ -3081,7 +3081,7 @@
   <a href="#persistenceuploadretention-see-also-07" class="md-nav__link">
     <span class="md-ellipsis">
       
-        持久性/上传/保留（另见 07）
+        Persistence/upload/retention (see also 07)
       
     </span>
   </a>
@@ -3204,7 +3204,7 @@ fsync dir → 将 staging 重命名为 <code>&lt;output&gt;/&lt;inspection_id&gt
 6.<code>next_frame(instance_id)</code>：
    - <code>None</code>→<code>window_manager.expire(now)</code>；过期窗口 → <code>inspect_window</code>
      → <code>_persist_projection</code>。
-   - 框架→<code>correlator.annotate(frame)</code>印记<code>product_identity</code>；那么
+   - 框架→<code>correlator.annotate(frame)</code>印记<code>product_identity</code>；然后
      - <strong>颞分支</strong>：<code>pipeline.frame_observations(frame)</code> →
        <code>window_manager.feed(observation, frame.monotonic_ts_ns/1e9)</code>
        （采集时间单调时钟）；新窗口 → 发布
@@ -3239,7 +3239,7 @@ fsync dir → 将 staging 重命名为 <code>&lt;output&gt;/&lt;inspection_id&gt
   <code>_register_rule_identity</code>：进程本地注册表键控
   <code>(rule_id, rule_version)</code> 反对规范 JSON 的 SHA-256；重新加载
   相同身份不同内容→<code>ConfigError</code>；然后是耐用的
-  回调到 SQLite <code>rule_identities</code>（如果不匹配则为 <code>RepositoryError</code>）。
+  回调到 SQLite <code>rule_identities</code> （<code>RepositoryError</code> 不匹配时）。
 - <code>load_edge_config</code>：每个实例的门 - 唯一的<code>instance_id</code>； <code>device_id</code>
   解析为 UUID；相机源类型特定的必填字段； <code>fps &gt; 0</code>；
   <code>reconnect.maximum_delay_ms &gt;= initial_delay_ms</code>； <code>gige-vision</code> 需要
@@ -3324,7 +3324,7 @@ required_components)</code>：
   （超解预测器保持可变状态；不同的工件/设备
   从不分享）。</li>
 </ul>
-<h2 id="persistenceuploadretention-see-also-07">持久性/上传/保留（另见 07）<a class="headerlink" href="#persistenceuploadretention-see-also-07" title="Permanent link">&para;</a></h2>
+<h2 id="persistenceuploadretention-see-also-07">Persistence/upload/retention (see also 07)<a class="headerlink" href="#persistenceuploadretention-see-also-07" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>persist_inspection_and_enqueue_uploads</code> — 一笔交易：不可变
   检查+证据+媒体+发件箱任务。</li>

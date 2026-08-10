@@ -3152,19 +3152,19 @@
   
 
 
-<h1 id="06-adding-a-rest-endpoint-end-to-end-recipe">06 — 添加 REST 端点（端到端配方）<a class="headerlink" href="#06-adding-a-rest-endpoint-end-to-end-recipe" title="Permanent link">&para;</a></h1>
+<h1 id="06-adding-a-rest-endpoint-end-to-end-recipe">06 — Adding a REST Endpoint (End-to-End Recipe)<a class="headerlink" href="#06-adding-a-rest-endpoint-end-to-end-recipe" title="Permanent link">&para;</a></h1>
 <p>这是添加新边缘 API 端点的规范方法，基于
-现有的 <code>reviews</code> 和 <code>uploads</code> 路由器。遵循每一步； CI漂移
+现有的 <code>reviews</code> 和 <code>uploads</code> 路由器。 Follow every step; the CI drift
 如果合同部分不同步，检查将失败。</p>
 <h2 id="step-1-domain-model-if-a-new-shape-is-needed">第 1 步 - 域模型（如果需要新形状）<a class="headerlink" href="#step-1-domain-model-if-a-new-shape-is-needed" title="Permanent link">&para;</a></h2>
 <p>在 <code>packages/python/domain/src/
 assemblyvision_domain/models.py</code> 中添加/重用 Pydantic 模型（基础 <code>APIModel</code>、<code>extra="forbid"</code>）。
 仅适用于 API 的价值/请求模型
-<code>apps/edge-service/src/assemblyvision_edge/api/schemas.py</code>。</p>
+<code>apps/edge-service/src/assemblyvision_edge/api/schemas.py</code>.</p>
 <h2 id="step-2-repository-method-if-persistence-is-needed">步骤 2 — 存储库方法（如果需要持久性）<a class="headerlink" href="#step-2-repository-method-if-persistence-is-needed" title="Permanent link">&para;</a></h2>
 <p>将查询/突变添加到 <code>EdgeRepository</code> 中
-<code>persistence/repository.py</code>。遵循现有模式：
-- 读取查询返回键入的行/摘要；使用 <code>WHERE ... AND</code> 作为过滤器
+<code>persistence/repository.py</code>.遵循现有模式：
+- 读取查询返回键入的行/摘要； use <code>WHERE ... AND</code> for filters
   和键集分页<code>(sort_key, id) &lt; (:cursor, :id)</code>。
 - 突变使用短 <code>begin()</code>/立即事务
   比较并设置状态转换（例如 <code>UPDATE upload_tasks SET status=?
@@ -3191,20 +3191,20 @@ assemblyvision_domain/models.py</code> 中添加/重用 Pydantic 模型（基础
 </code></pre></div>
 <ul>
 <li>使用 <code>Depends(require_viewer)</code> 作为查看者验证的路由（所有内容
-  除了<code>/health/live</code>）。没有单独的操作员/管理员依赖
+  except <code>/health/live</code>).没有单独的操作员/管理员依赖
   边缘尚未（ADR-012/016）；仅管理<em>页面</em>在
-  前端。</li>
+  frontend.</li>
 <li>错误：从 <code>problems.py</code> 引发 <code>ApiProblem(status_code, code, detail)</code>
   （呈现 <code>application/problem+json</code>），或仅使用 <code>HTTPException</code>
-  FastAPI 原生 422s。切勿返回原始堆栈跟踪或路径。</li>
+  FastAPI-native 422s.切勿返回原始堆栈跟踪或路径。</li>
 </ul>
 <h2 id="step-4-wire-the-dependency-and-register-the-router">第 4 步 — 连接依赖项并注册路由器<a class="headerlink" href="#step-4-wire-the-dependency-and-register-the-router" title="Permanent link">&para;</a></h2>
 <ul>
 <li>在 <code>api/deps.py</code> 中：如果您需要新的访问器，请添加
   <code>get_your_resource</code>依赖镜像<code>get_repository</code>/<code>get_runtime</code>
-  （他们读<code>request.app.state.*</code>）。</li>
-<li>在 <code>api/app.py</code> 中：<code>from assemblyvision_edge.api.routers import your_resource</code>
-  和<code>app.include_router(your_resource.router)</code>。设置路由器，使其
+  (they read <code>request.app.state.*</code>).</li>
+<li>In <code>api/app.py</code>: <code>from assemblyvision_edge.api.routers import your_resource</code>
+  and <code>app.include_router(your_resource.router)</code>. Set the router up so its
   路由在 SPA 回退之前添加（<code>/api/*</code> 404 防护是
   在路由器之后注册）。</li>
 </ul>
@@ -3214,7 +3214,7 @@ assemblyvision_domain/models.py</code> 中添加/重用 Pydantic 模型（基础
 </code></pre></div>
 <p>CI 运行两者并在 <code>git diff</code> 漂移上失败，因此提交重新生成的文件。</p>
 <h2 id="step-6-api-client-frontend-contract">第 6 步 — API 客户端（前端合约）<a class="headerlink" href="#step-6-api-client-frontend-contract" title="Permanent link">&para;</a></h2>
-<p>在 <code>packages/typescript/api-client/src/edge/</code> 中：</p>
+<p>In <code>packages/typescript/api-client/src/edge/</code>:</p>
 <ol>
 <li><code>ApiClient.ts</code> — 添加带有引用设计的 JSDoc 的方法签名
    doc（界面是仪表板导入的唯一内容）。</li>
@@ -3225,10 +3225,10 @@ assemblyvision_domain/models.py</code> 中添加/重用 Pydantic 模型（基础
 <li><code>validate.ts</code> — 添加一个 <code>validate*</code> 函数检查 UI 的每个字段
    读取（帮助器：<code>expectRecord</code>，<code>hasString</code>，<code>hasNumber</code>，<code>hasBoolean</code>，
    <code>hasOneOf</code>、<code>hasArray</code>、<code>hasRecord</code>、<code>pageOf</code>）并将其注册在
-   <code>validators</code>记录。这是 F9 运行时防护 — 漂移的有效负载
+   <code>validators</code> record.这是 F9 运行时防护 — 漂移的有效负载
    变成 <code>ApiError(0, "INVALID_RESPONSE", ...)</code> 而不是静默强制转换。</li>
 <li><code>types.ts</code> — 如果暴露了新的有效负载形状，则添加手部类型（复制
-   <code>ReviewRecord</code>/<code>SubmitReviewRequest</code>块；与 Pydantic 保持同步
+   <code>ReviewRecord</code>/<code>SubmitReviewRequest</code> block;与 Pydantic 保持同步
    模型）。</li>
 <li><code>MockApiClient.ts</code> — 使用 <strong>确定性</strong> 数据实现该方法，并且
    <strong>镜像服务器的验证和错误代码</strong>（例如 <code>404
@@ -3237,7 +3237,7 @@ assemblyvision_domain/models.py</code> 中添加/重用 Pydantic 模型（基础
 </ol>
 <h2 id="step-7-frontend-consumption-optional">第 7 步 — 前端消费（可选）<a class="headerlink" href="#step-7-frontend-consumption-optional" title="Permanent link">&para;</a></h2>
 <p>遵循分层模式（详细信息参见<code>10-frontend-development.md</code>）：
-视图 → 可组合/存储 → 服务 → <code>getApiClient()</code>。添加路由条目
+视图 → 可组合/存储 → 服务 → <code>getApiClient()</code>。 Add the route entry in
 <code>apps/edge-web/src/router/index.ts</code>（元<code>requiresAuth</code>，<code>admin</code>用于管理
 页）和 <code>App.vue</code> 中的导航链接（如果需要）。</p>
 <h2 id="step-8-tests">第 8 步 — 测试<a class="headerlink" href="#step-8-tests" title="Permanent link">&para;</a></h2>
@@ -3246,23 +3246,23 @@ assemblyvision_domain/models.py</code> 中添加/重用 Pydantic 模型（基础
   <code>TestClient(create_app(ServerSettings(...)))</code> 带有 tmp 输出根；
   使用 <code>headers={"Authorization": "Bearer test-edge-token"}</code> 进行身份验证；
   断言成功主体和问题响应（状态 + <code>code</code>）。
-  持久性行为测试与存储库测试一起进行。</li>
+  Persistence behavior tests go with the repository tests.</li>
 <li><strong>TypeScript</strong>：扩展 <code>packages/typescript/api-client/tests/</code> （模拟
-  奇偶校验 + <code>HttpApiClient</code> URL/错误映射与存根 <code>fetch</code>) 和
+  parity + <code>HttpApiClient</code> URL/error mapping with a stubbed <code>fetch</code>) and
   <code>apps/edge-web/tests/</code> 用于任何存储/可组合逻辑。</li>
 <li><strong>E2E</strong>（可选）：扩展<code>apps/edge-web/tests/e2e/served-api.spec.ts</code>，
-  它产生真正的服务并驱动浏览器。</li>
+  which spawns the real service and drives the browser.</li>
 </ul>
 <h2 id="checklist">清单<a class="headerlink" href="#checklist" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] <code>domain</code> 或 <code>schemas.py</code> (<code>extra="forbid"</code>) 中的 Pydantic 模型</li>
-<li>[ ] 具有 CAS 转换 + 测试的存储库方法</li>
-<li>[ ] 具有 <code>require_viewer</code> + 键入响应 + <code>ApiProblem</code> 错误的路由器</li>
+<li>[ ] Pydantic model in <code>domain</code> or <code>schemas.py</code> (<code>extra="forbid"</code>)</li>
+<li>[ ] Repository method with CAS transitions + tests</li>
+<li>[ ] Router with <code>require_viewer</code> + typed responses + <code>ApiProblem</code> errors</li>
 <li>[ ] 在 <code>app.py</code> 中注册的路由器</li>
-<li>[ ] OpenAPI 重新生成 + 提交（漂移检查）</li>
-<li>[ ] TS 类型重新生成 + 提交（漂移检查）</li>
-<li>[ ] <code>ApiClient</code>接口+Http+Mock+验证器+手型</li>
-<li>[ ] 前端路由/视图/服务有线（如果面向 UI）</li>
+<li>[ ] OpenAPI regenerated + committed (drift check)</li>
+<li>[ ] TS types regenerated + committed (drift check)</li>
+<li>[ ] <code>ApiClient</code> interface + Http + Mock + validators + hand types</li>
+<li>[ ] Frontend route/view/service wired (if UI-facing)</li>
 <li>[ ] Python + TS 测试； <code>ruff</code>/<code>mypy</code>/<code>pytest</code>/<code>pnpm</code> 登机口通行证</li>
 </ul>
 

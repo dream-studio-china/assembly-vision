@@ -3900,7 +3900,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>inspections</code></td>
 <td>UUID PK 匹配边缘 ID、组织/设备 FK、设备序列、生命周期/时间、条形码/产品分辨率、内部决策、业务结果、应用程序/产品模型/组件模型/规则版本和校验和、延迟、接收时间</td>
-<td><code>UNIQUE(device_id, device_sequence)</code>;保留准确的运行时版本。</td>
+<td><code>UNIQUE(device_id, device_sequence)</code>；保留准确的运行时版本。</td>
 </tr>
 <tr>
 <td><code>inspection_components</code></td>
@@ -3934,7 +3934,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 </tbody>
 </table>
-<p>仅当测量的数量证明其合理性时，才对 <code>inspections</code>、<code>device_events</code> 和 <code>audit_logs</code> 使用每月范围分区。过早的分区会使外键和迁移变得复杂。</p>
+<p>仅在测量的数量证明其合理性后，才对 <code>inspections</code>、<code>device_events</code> 和 <code>audit_logs</code> 使用每月范围分区。过早的分区会使外键和迁移变得复杂。</p>
 <h2 id="147-entity-relationships">14.7 实体关系<a class="headerlink" href="#147-entity-relationships" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>erDiagram
     ORGANIZATION ||--o{ SITE :包含
