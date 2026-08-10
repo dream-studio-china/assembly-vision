@@ -4,12 +4,14 @@ import { ApiError } from "@assemblyvision/api-client";
 import { DetectionViewer, StatusBadge, formatBytes, formatIsoTime, formatLatency, reasonCodeLabel, toDecisionStatus } from "@assemblyvision/ui";
 import type { ViewerBox } from "@assemblyvision/ui";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import ReviewPanel from "../components/ReviewPanel.vue";
 import { getApiClient, isCrossOriginHttp, isMockMode } from "../services/client";
 import { buildMediaUrl, inspectionService } from "../services/inspectionService";
 import { placeholderFrame } from "../services/placeholder";
 
+const { t } = useI18n();
 const route = useRoute();
 const record = ref<InspectionRecord | null>(null);
 const media = ref<MediaMetadata[]>([]);
@@ -85,10 +87,10 @@ const mediaTabs = computed<MediaTab[]>(() => {
   const tabs: MediaTab[] = [];
   for (const kind of IMAGE_KINDS) {
     const item = firstAvailable(kind);
-    if (item) tabs.push({ key: `img-${kind}`, label: KIND_LABELS[kind], kinds: [kind], media: item, isVideo: false });
+    if (item) tabs.push({ key: `img-${kind}`, label: t(KIND_LABELS[kind]), kinds: [kind], media: item, isVideo: false });
   }
   const clip = CLIP_KINDS.map(firstAvailable).find((m) => m !== undefined);
-  if (clip) tabs.push({ key: "clip", label: "Clip", kinds: [...CLIP_KINDS], media: clip, isVideo: true });
+  if (clip) tabs.push({ key: "clip", label: t("Clip"), kinds: [...CLIP_KINDS], media: clip, isVideo: true });
   return tabs;
 });
 
@@ -148,7 +150,7 @@ function selectMedia(m: MediaMetadata): void {
 }
 
 function mediaKindLabel(kind: MediaKind): string {
-  return KIND_LABELS[kind];
+  return t(KIND_LABELS[kind]);
 }
 
 const sourceLabel = computed<string>(() => {
@@ -159,8 +161,8 @@ const sourceLabel = computed<string>(() => {
 const qualityLabel = computed<string>(() => {
   const q = record.value?.product_detection?.quality;
   if (!q) return "-";
-  if (q.usable) return `usable · blur ${q.blur_score.toFixed(1)}`;
-  return q.reason_codes.length ? `rejected · ${q.reason_codes.join(", ")}` : "rejected";
+  if (q.usable) return t("usable · blur {score}", { score: q.blur_score.toFixed(1) });
+  return q.reason_codes.length ? t("rejected · {codes}", { codes: q.reason_codes.join(", ") }) : t("rejected");
 });
 </script>
 
@@ -170,13 +172,13 @@ const qualityLabel = computed<string>(() => {
 
     <template v-else-if="record">
       <div class="detail__head">
-        <h2>Inspection {{ record.inspection_id }}</h2>
+        <h2>{{ t("Inspection {id}", { id: record.inspection_id }) }}</h2>
         <StatusBadge :status="toDecisionStatus(record.decision.business_result, record.decision.internal_decision)" />
       </div>
 
       <div class="detail__grid">
         <section class="detail__panel">
-          <h3>Evidence</h3>
+          <h3>{{ t("Evidence") }}</h3>
           <div class="detail__viewer">
             <div v-if="mediaTabs.length" class="detail__tabs" role="tablist">
               <button
@@ -212,68 +214,68 @@ const qualityLabel = computed<string>(() => {
               <img
                 v-else
                 :src="evidenceImageUrl"
-                alt="clip key-frame fallback"
+                :alt="t('clip key-frame fallback')"
                 class="detail__clip-fallback"
               />
             </div>
 
             <div class="detail__viewer-controls">
-              <el-checkbox v-model="showProduct" label="Product box" />
-              <el-checkbox v-model="showRoi" label="ROI" />
+              <el-checkbox v-model="showProduct" :label="t('Product box')" />
+              <el-checkbox v-model="showRoi" :label="t('ROI')" />
             </div>
           </div>
 
-          <h3>Reason codes</h3>
+          <h3>{{ t("Reason codes") }}</h3>
           <ul class="detail__reasons">
-            <li v-for="code in record.decision.reason_codes" :key="code">{{ reasonCodeLabel(code) }}</li>
-            <li v-if="!record.decision.reason_codes.length">None</li>
+            <li v-for="code in record.decision.reason_codes" :key="code">{{ t(reasonCodeLabel(code)) }}</li>
+            <li v-if="!record.decision.reason_codes.length">{{ t("None") }}</li>
           </ul>
 
-          <h3>Components</h3>
+          <h3>{{ t("Components") }}</h3>
           <el-table :data="record.evidence" size="small">
-            <el-table-column prop="component_code" label="Component" />
-            <el-table-column prop="state" label="State" width="100">
+            <el-table-column prop="component_code" :label="t('Component')" />
+            <el-table-column prop="state" :label="t('State')" width="100">
               <template #default="{ row }">
                 <span class="pill" :class="`pill--${row.state.toLowerCase()}`">{{ row.state }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="best_confidence" label="Confidence" width="100">
+            <el-table-column prop="best_confidence" :label="t('Confidence')" width="100">
               <template #default="{ row }">{{ row.best_confidence?.toFixed(2) ?? "-" }}</template>
             </el-table-column>
-            <el-table-column prop="detection_count" label="Detections" width="100" />
+            <el-table-column prop="detection_count" :label="t('Detections')" width="100" />
           </el-table>
         </section>
 
         <aside class="detail__side">
-          <h3>Identity</h3>
+          <h3>{{ t("Identity") }}</h3>
           <dl class="detail__dl">
-            <dt>Completed</dt>
+            <dt>{{ t("Completed") }}</dt>
             <dd>{{ formatIsoTime(record.completed_at) }}</dd>
-            <dt>Product</dt>
+            <dt>{{ t("Product") }}</dt>
             <dd>{{ record.product_resolution.product_code ?? "-" }}</dd>
-            <dt>Latency</dt>
+            <dt>{{ t("Latency") }}</dt>
             <dd>{{ formatLatency(record.processing_ms) }}</dd>
-            <dt>Upload</dt>
+            <dt>{{ t("Upload") }}</dt>
             <dd>{{ record.synchronization_status }}</dd>
-            <dt>Source</dt>
+            <dt>{{ t("Source") }}</dt>
             <dd>{{ sourceLabel }}</dd>
-            <dt>Frame quality</dt>
+            <dt>{{ t("Frame quality") }}</dt>
             <dd>{{ qualityLabel }}</dd>
           </dl>
 
-          <h3>Versions</h3>
+          <h3>{{ t("Versions") }}</h3>
           <dl class="detail__dl">
-            <dt>App</dt>
+            <dt>{{ t("App") }}</dt>
             <dd>{{ record.application_version }}</dd>
-            <dt>Product model</dt>
+            <dt>{{ t("Product model") }}</dt>
             <dd>{{ record.product_model_version_id }}</dd>
-            <dt>Component model</dt>
+            <dt>{{ t("Component model") }}</dt>
             <dd>{{ record.component_model_version_id }}</dd>
-            <dt>Rule</dt>
+            <dt>{{ t("Rule") }}</dt>
             <dd>{{ record.rule_version_id }}</dd>
           </dl>
 
-          <h3>Media</h3>
+          <h3>{{ t("Media") }}</h3>
           <ul class="detail__media">
             <li v-for="m in media" :key="m.media_id">
               <button
@@ -289,15 +291,15 @@ const qualityLabel = computed<string>(() => {
               <div v-else class="detail__media-row detail__media-row--muted">
                 <span class="detail__media-kind">{{ mediaKindLabel(m.kind) }}</span>
                 <span class="detail__media-size">{{ formatBytes(m.size_bytes) }}</span>
-                <span v-if="m.lifecycle === 'PURGED'" class="pill pill--warn">purged</span>
-                <span v-else-if="m.lifecycle === 'FAILED'" class="pill pill--failed">failed</span>
-                <span v-else-if="m.lifecycle === 'PENDING'" class="pill pill--pending">pending</span>
-                <span v-else class="pill pill--present">available</span>
+                <span v-if="m.lifecycle === 'PURGED'" class="pill pill--warn">{{ t("purged") }}</span>
+                <span v-else-if="m.lifecycle === 'FAILED'" class="pill pill--failed">{{ t("failed") }}</span>
+                <span v-else-if="m.lifecycle === 'PENDING'" class="pill pill--pending">{{ t("pending") }}</span>
+                <span v-else class="pill pill--present">{{ t("available") }}</span>
               </div>
-              <p v-if="m.lifecycle === 'PURGED'" class="detail__media-note">Content is not retained</p>
-              <p v-if="m.lifecycle === 'FAILED'" class="detail__media-note">Capture or storage failed</p>
+              <p v-if="m.lifecycle === 'PURGED'" class="detail__media-note">{{ t("Content is not retained") }}</p>
+              <p v-if="m.lifecycle === 'FAILED'" class="detail__media-note">{{ t("Capture or storage failed") }}</p>
             </li>
-            <li v-if="!media.length">No media</li>
+            <li v-if="!media.length">{{ t("No media") }}</li>
           </ul>
         </aside>
       </div>
@@ -310,7 +312,7 @@ const qualityLabel = computed<string>(() => {
       />
     </template>
 
-    <el-empty v-else description="Loading" />
+    <el-empty v-else :description="t('Loading')" />
   </div>
 </template>
 

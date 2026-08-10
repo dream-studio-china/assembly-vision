@@ -39,6 +39,28 @@ Semantic meaning remains stable in every theme: green means normal/OK, red
 means NG/alarm, amber means warning/uncertain, and blue means informational.
 Color always supplements text and iconography rather than replacing it.
 
+### 16.2.2 Interface Language
+
+The dashboard UI is internationalized with English as the source locale and
+default, plus Simplified Chinese (Mainland China, `zh-CN`), Traditional Chinese
+(Hong Kong, `zh-HK`), and Japanese (`ja`). Each message key is the English text
+itself — `t("History")` — so code remains readable and the locale catalogs
+(`src/i18n/locales/`) translate the same keys. Missing keys fall back to
+English via vue-i18n's fallback locale; message values must escape the
+linked-message prefix (`{'@'}`) and plural pipe syntax when the English text
+contains those characters.
+
+The build-time default language is configurable through `VITE_DEFAULT_LOCALE`
+in `.env.development` / `.env.production` (`en | zh-CN | zh-HK | ja`); an
+unset or unsupported value falls back to English. Operators switch the live
+language from a globe-icon dropdown in the header; the selection is persisted
+in browser storage (`assemblyvision.edge.locale`) and always wins over the
+build default. The chosen locale drives both the dashboard strings and the
+Element Plus component locale through `el-config-provider`. The document
+`lang` attribute follows the locale so screen readers and browser translation
+behave correctly. Language choice never affects inspection decisions, audit
+records, uploads, or device state.
+
 ## 16.3 Information Architecture
 
 | Route | Primary purpose | Roles | Data source |

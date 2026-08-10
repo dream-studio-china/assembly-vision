@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { getApiClient } from "../services/client";
 import type { EffectiveConfiguration } from "@assemblyvision/api-client";
 
+const { t } = useI18n();
 const config = ref<EffectiveConfiguration | null>(null);
 const error = ref<string | null>(null);
 
@@ -17,21 +19,21 @@ onMounted(async () => {
 
 <template>
   <div class="configuration">
-    <h2>Configuration</h2>
+    <h2>{{ t("Configuration") }}</h2>
     <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" />
     <el-alert
       v-else
       type="info"
-      title="Read-only view. Local override editing and logs are administrator-only late-MVP features."
+      :title="t('Read-only view. Local override editing and logs are administrator-only late-MVP features.')"
       :closable="false"
       show-icon
     />
     <template v-if="config">
-      <p>Revision: {{ config.revision }}</p>
-      <p>Checksum: {{ config.checksum_sha256 }}</p>
+      <p>{{ t("Revision: {revision}", { revision: config.revision }) }}</p>
+      <p>{{ t("Checksum: {checksum}", { checksum: config.checksum_sha256 }) }}</p>
       <el-table :data="Object.entries(config.managed).map(([key, value]) => ({ key, value }))">
-        <el-table-column prop="key" label="Key" />
-        <el-table-column prop="value" label="Value">
+        <el-table-column prop="key" :label="t('Key')" />
+        <el-table-column prop="value" :label="t('Value')">
           <template #default="{ row }">
             <code>{{ JSON.stringify(row.value) }}</code>
           </template>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import LogsView from "./LogsView.vue";
 import { getApiClient, isHttpMode } from "../services/client";
 import { productBoxStyle } from "../services/devOverlay";
 import { useDevInspectSession } from "../services/useDevInspectSession";
 
+const { t } = useI18n();
 const activeTab = ref("test");
 const instanceId = ref("");
 const persist = ref(true);
@@ -45,38 +47,38 @@ function onFileSelected(event: Event, kind: "image" | "video"): void {
 
 <template>
   <div class="dev-tools">
-    <h2>Developer Tools</h2>
+    <h2>{{ t("Developer Tools") }}</h2>
     <el-alert
       v-if="!isHttpMode()"
-      title="Web dev test tools require HTTP mode"
-      description="Run the dashboard with VITE_API_MODE=http and start serve with --enable-web-test (ADR-014)."
+      :title="t('Web dev test tools require HTTP mode')"
+      :description="t('Run the dashboard with VITE_API_MODE=http and start serve with --enable-web-test (ADR-014).')"
       type="info"
       show-icon
       :closable="false"
     />
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="Test" name="test">
+      <el-tab-pane :label="t('Test')" name="test">
         <div class="dev-tools__controls">
-          <el-input v-model="instanceId" placeholder="Instance id (default: first instance)" />
+          <el-input v-model="instanceId" :placeholder="t('Instance id (default: first instance)')" />
           <el-input
             v-model="simulatedBarcode"
-            aria-label="Simulated barcode input"
-            placeholder="Simulated barcode input (development only)"
+            :aria-label="t('Simulated barcode input')"
+            :placeholder="t('Simulated barcode input (development only)')"
           />
-          <el-checkbox v-model="persist">Persist evidence bundle</el-checkbox>
-          <el-input-number v-model="step" :min="1" label="Video step" />
+          <el-checkbox v-model="persist">{{ t("Persist evidence bundle") }}</el-checkbox>
+          <el-input-number v-model="step" :min="1" :label="t('Video step')" />
         </div>
         <div class="dev-tools__inputs">
           <label class="dev-tools__file">
-            Take photo
+            {{ t("Take photo") }}
             <input type="file" accept="image/*" capture="environment" @change="onFileSelected($event, 'image')" />
           </label>
           <label class="dev-tools__file">
-            Upload image
+            {{ t("Upload image") }}
             <input type="file" accept="image/*" @change="onFileSelected($event, 'image')" />
           </label>
           <label class="dev-tools__file">
-            Upload video
+            {{ t("Upload video") }}
             <input type="file" accept="video/*" @change="onFileSelected($event, 'video')" />
           </label>
         </div>
@@ -84,50 +86,64 @@ function onFileSelected(event: Event, kind: "image" | "video"): void {
         <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" />
         <el-alert
           v-if="record?.decision.reason_codes.some((code) => code.startsWith('BARCODE_') || code.startsWith('PRODUCT_'))"
-          title="Identity verification failed: manual review required"
+          :title="t('Identity verification failed: manual review required')"
           :description="record.decision.reason_codes.join(', ')"
           type="error"
           show-icon
           :closable="false"
         />
-        <div v-if="busy" class="dev-tools__busy">Analyzing…</div>
+        <div v-if="busy" class="dev-tools__busy">{{ t("Analyzing…") }}</div>
 
         <div v-if="record" class="dev-tools__result">
           <div class="dev-tools__badge" :class="record.decision.business_result === 'OK' ? 'is-ok' : 'is-ng'">
             {{ record.decision.business_result }}
           </div>
           <p>
-            Decision: {{ record.decision.internal_decision }} · Reasons:
-            {{ record.decision.reason_codes.join(", ") || "none" }} · Missing:
-            {{ record.decision.missing_components.join(", ") || "none" }}
+            {{
+              t("Decision: {decision} · Reasons: {reasons} · Missing: {missing}", {
+                decision: record.decision.internal_decision,
+                reasons: record.decision.reason_codes.join(", ") || t("none"),
+                missing: record.decision.missing_components.join(", ") || t("none"),
+              })
+            }}
           </p>
           <p>
-            Barcode: {{ record.barcode_result.status }} {{ record.barcode_result.value ?? "—" }} ·
-            Product resolution: {{ record.product_resolution.status }}
-            {{ record.product_resolution.product_code ?? "—" }}
+            {{
+              t("Barcode: {status} {value} · Product resolution: {resolution} {code}", {
+                status: record.barcode_result.status,
+                value: record.barcode_result.value ?? "—",
+                resolution: record.product_resolution.status,
+                code: record.product_resolution.product_code ?? "—",
+              })
+            }}
           </p>
           <div v-if="imageUrl" class="dev-tools__preview">
-            <img :src="imageUrl" alt="Uploaded test image" />
+            <img :src="imageUrl" :alt="t('Uploaded test image')" />
             <div v-if="overlayBox" class="dev-tools__box" :style="overlayStyle" />
           </div>
         </div>
 
         <div v-if="videoResult" class="dev-tools__result">
           <p>
-            Analyzed {{ videoResult.analyzed_frames }} frames · OK {{ videoResult.ok_count }} ·
-            NG {{ videoResult.ng_count }}
+            {{
+              t("Analyzed {count} frames · OK {ok} · NG {ng}", {
+                count: videoResult.analyzed_frames,
+                ok: videoResult.ok_count,
+                ng: videoResult.ng_count,
+              })
+            }}
           </p>
           <el-table :data="videoResult.frames" max-height="360">
-            <el-table-column prop="index" label="Frame" width="90" />
-            <el-table-column prop="business_result" label="Result" width="110" />
-            <el-table-column prop="internal_decision" label="Internal" width="120" />
-            <el-table-column label="Reasons">
+            <el-table-column prop="index" :label="t('Frame')" width="90" />
+            <el-table-column prop="business_result" :label="t('Result')" width="110" />
+            <el-table-column prop="internal_decision" :label="t('Internal')" width="120" />
+            <el-table-column :label="t('Reasons')">
               <template #default="{ row }">{{ (row.reason_codes as string[]).join(", ") }}</template>
             </el-table-column>
           </el-table>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Logs" name="logs">
+      <el-tab-pane :label="t('Logs')" name="logs">
         <LogsView />
       </el-tab-pane>
     </el-tabs>

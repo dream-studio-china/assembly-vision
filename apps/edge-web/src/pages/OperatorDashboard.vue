@@ -7,11 +7,13 @@ import { DetectionViewer, StatusBadge, formatIsoTime, formatLatency } from "@ass
 import type { ViewerBox } from "@assemblyvision/ui";
 import { ElMessage } from "element-plus";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useInspectionStore } from "../stores/inspection";
 import { isMockMode } from "../services/client";
 import { inspectionService } from "../services/inspectionService";
 import { mockCameraFrame } from "../mock/images";
 
+const { t } = useI18n();
 const store = useInspectionStore();
 
 // The operator workflow (current inspection, confirm, continue, manual) is a
@@ -46,7 +48,7 @@ const overlayBoxes = computed<ViewerBox[]>(() => {
     boxes.push({
       id: "manual",
       kind: "component",
-      label: "manual (missing)",
+      label: t("manual (missing)"),
       box: { x_min: 500, y_min: 420, x_max: 620, y_max: 480 },
       frameId: id,
     });
@@ -54,7 +56,7 @@ const overlayBoxes = computed<ViewerBox[]>(() => {
     boxes.push({
       id: "product",
       kind: "product",
-      label: "product",
+      label: t("product"),
       box: { x_min: 120, y_min: 90, x_max: 680, y_max: 520 },
       frameId: id,
     });
@@ -62,7 +64,7 @@ const overlayBoxes = computed<ViewerBox[]>(() => {
   boxes.push({
     id: "roi",
     kind: "roi",
-    label: "ROI",
+    label: t("ROI"),
     box: { x_min: 80, y_min: 60, x_max: 720, y_max: 550 },
     frameId: id,
   });
@@ -112,7 +114,7 @@ onMounted(async () => {
     <template v-if="operatorWorkflow">
       <div class="dashboard__top">
       <section class="panel">
-        <h2 class="dashboard__panel-title">Current product image</h2>
+        <h2 class="dashboard__panel-title">{{ t("Current product image") }}</h2>
         <div class="dashboard__image">
           <DetectionViewer
             :image-url="images?.detection ?? fallback"
@@ -126,21 +128,21 @@ onMounted(async () => {
 
       <section class="dashboard__status panel">
         <div class="dashboard__status-row">
-          <span class="dashboard__label">Current status</span>
+          <span class="dashboard__label">{{ t("Current status") }}</span>
           <StatusBadge :status="badgeStatus" />
           <span class="dashboard__raw-status">{{ statusLabel }}</span>
         </div>
         <div class="dashboard__meta">
           <dl>
-            <dt>Product SN</dt>
+            <dt>{{ t("Product SN") }}</dt>
             <dd>{{ store.current?.sn ?? "—" }}</dd>
-            <dt>Product</dt>
+            <dt>{{ t("Product") }}</dt>
             <dd>{{ store.current?.product_code || "—" }}</dd>
-            <dt>Inspection time</dt>
+            <dt>{{ t("Inspection time") }}</dt>
             <dd>{{ formatIsoTime(store.current?.started_at) }}</dd>
-            <dt>Duration</dt>
+            <dt>{{ t("Duration") }}</dt>
             <dd>{{ formatLatency(store.current?.duration_ms) }}</dd>
-            <dt>Operator</dt>
+            <dt>{{ t("Operator") }}</dt>
             <dd>{{ store.current?.operator ?? "—" }}</dd>
           </dl>
         </div>
@@ -154,15 +156,15 @@ onMounted(async () => {
     </div>
 
     <section class="panel">
-      <h2>Inspection rules</h2>
+      <h2>{{ t("Inspection rules") }}</h2>
       <el-table :data="store.current?.rules ?? []" size="large" v-loading="store.loading">
-        <el-table-column prop="name" label="Rule" min-width="220" />
-        <el-table-column label="Status" width="130">
+        <el-table-column prop="name" :label="t('Rule')" min-width="220" />
+        <el-table-column :label="t('Status')" width="130">
           <template #default="{ row }">
             <span class="rule" :class="`rule--${row.status.toLowerCase()}`">{{ row.status }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="result_message" label="Result message" min-width="260" />
+        <el-table-column prop="result_message" :label="t('Result message')" min-width="260" />
       </el-table>
     </section>
 
@@ -174,26 +176,26 @@ onMounted(async () => {
         :loading="isBusy"
         @click="confirm"
       >
-        Confirm result
+        {{ t("Confirm result") }}
       </el-button>
       <el-button type="primary" size="large" :loading="isBusy" @click="next">
-        Continue next inspection
+        {{ t("Continue next inspection") }}
       </el-button>
       <el-button size="large" :loading="isBusy" @click="manual">
-        Trigger manual inspection
+        {{ t("Trigger manual inspection") }}
       </el-button>
     </section>
     </template>
 
     <section v-else class="panel dashboard__real-mode">
-      <h2>Operator workflow is a mock demonstration</h2>
+      <h2>{{ t("Operator workflow is a mock demonstration") }}</h2>
       <p>
-        The confirm / continue / manual actions and the current-inspection
-        status are deterministic mock data and are hidden while the dashboard is
-        connected to the live read-only API (ADR-012). Use
-        <router-link to="/history">History</router-link>,
-        <router-link to="/live">Live inspection</router-link>, and
-        <router-link to="/statistics">Statistics</router-link> for real data.
+        {{ t("The confirm / continue / manual actions and the current-inspection status are deterministic mock data and are hidden while the dashboard is connected to the live read-only API (ADR-012). Use") }}
+        <router-link to="/history">{{ t("History") }}</router-link>,
+        <router-link to="/live">{{ t("Live inspection") }}</router-link>,
+        {{ t("and") }}
+        <router-link to="/statistics">{{ t("Statistics") }}</router-link>
+        {{ t("for real data.") }}
       </p>
     </section>
   </div>

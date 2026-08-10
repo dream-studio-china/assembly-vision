@@ -4,9 +4,11 @@
 
 import { StatusBadge, formatIsoTime, toDecisionStatus } from "@assemblyvision/ui";
 import { onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { inspectionService } from "../services/inspectionService";
 import type { InspectionFilter, InspectionSummary } from "@assemblyvision/api-client";
 
+const { t } = useI18n();
 const PAGE_SIZE = 25;
 
 const items = ref<InspectionSummary[]>([]);
@@ -71,61 +73,61 @@ onMounted(load);
 
 <template>
   <div class="history">
-    <h2>Inspection history</h2>
+    <h2>{{ t("Inspection history") }}</h2>
 
     <div class="history__filters">
       <el-input
         v-model="snFilter"
-        placeholder="Search by SN"
+        :placeholder="t('Search by SN')"
         clearable
-        aria-label="SN filter"
+        :aria-label="t('SN filter')"
         @input="scheduleSearch"
         style="width: 220px"
       />
       <el-select
         v-model="resultFilter"
-        placeholder="All results"
+        :placeholder="t('All results')"
         clearable
-        aria-label="Inspection result filter"
+        :aria-label="t('Inspection result filter')"
         @change="onResultChange"
         style="width: 160px"
       >
         <el-option label="PASS" value="OK" />
         <el-option label="NG" value="NG" />
       </el-select>
-      <span class="history__count">{{ items.length }} rows</span>
+      <span class="history__count">{{ t("{count} rows", { count: items.length }) }}</span>
     </div>
 
-    <el-table :data="items" v-loading="loading" empty-text="No inspections found">
-      <el-table-column prop="sn" label="SN" width="140">
+    <el-table :data="items" v-loading="loading" :empty-text="t('No inspections found')">
+      <el-table-column prop="sn" :label="t('SN')" width="140">
         <template #default="{ row }">
           <router-link v-if="row.sn" :to="`/traceability/${row.sn}`">{{ row.sn }}</router-link>
           <span v-else>—</span>
         </template>
       </el-table-column>
-      <el-table-column prop="completed_at" label="Timestamp" min-width="170">
+      <el-table-column prop="completed_at" :label="t('Timestamp')" min-width="170">
         <template #default="{ row }">{{ formatIsoTime(row.completed_at) }}</template>
       </el-table-column>
-      <el-table-column label="Result" width="110">
+      <el-table-column :label="t('Result')" width="110">
         <template #default="{ row }">
           <StatusBadge :status="toDecisionStatus(row.business_result, row.internal_decision)" />
         </template>
       </el-table-column>
-      <el-table-column prop="reason_summary" label="Failure reason" min-width="200">
+      <el-table-column prop="reason_summary" :label="t('Failure reason')" min-width="200">
         <template #default="{ row }">
           <span v-if="row.reason_summary.length">{{ row.reason_summary.join(", ") }}</span>
           <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="Images" width="120">
+      <el-table-column :label="t('Images')" width="120">
         <template #default="{ row }">
-          <router-link :to="`/images/${row.inspection_id}`">view</router-link>
+          <router-link :to="`/images/${row.inspection_id}`">{{ t("view") }}</router-link>
         </template>
       </el-table-column>
     </el-table>
 
     <div class="history__more">
-      <el-button v-if="nextCursor" :loading="loadingMore" @click="loadMore">Load more</el-button>
+      <el-button v-if="nextCursor" :loading="loadingMore" @click="loadMore">{{ t("Load more") }}</el-button>
     </div>
   </div>
 </template>

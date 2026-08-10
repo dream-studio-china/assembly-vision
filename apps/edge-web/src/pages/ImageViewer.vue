@@ -8,12 +8,14 @@ import type { InspectionRecord, MediaKind, MediaMetadata } from "@assemblyvision
 import { ApiError } from "@assemblyvision/api-client";
 import { formatBytes, formatIsoTime } from "@assemblyvision/ui";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import { getApiClient, isCrossOriginHttp, isMockMode } from "../services/client";
 import { buildMediaUrl, inspectionService } from "../services/inspectionService";
 import { mockCameraFrame } from "../mock/images";
 import { placeholderFrame } from "../services/placeholder";
 
+const { t } = useI18n();
 const route = useRoute();
 const record = ref<InspectionRecord | null>(null);
 const media = ref<MediaMetadata[]>([]);
@@ -63,10 +65,10 @@ const mediaTabs = computed<MediaTab[]>(() => {
   const tabs: MediaTab[] = [];
   for (const kind of IMAGE_KINDS) {
     const item = firstAvailable(kind);
-    if (item) tabs.push({ key: `img-${kind}`, label: KIND_LABELS[kind], kinds: [kind], media: item, isVideo: false });
+    if (item) tabs.push({ key: `img-${kind}`, label: t(KIND_LABELS[kind]), kinds: [kind], media: item, isVideo: false });
   }
   const clip = CLIP_KINDS.map(firstAvailable).find((m) => m !== undefined);
-  if (clip) tabs.push({ key: "clip", label: "Clip", kinds: [...CLIP_KINDS], media: clip, isVideo: true });
+  if (clip) tabs.push({ key: "clip", label: t("Clip"), kinds: [...CLIP_KINDS], media: clip, isVideo: true });
   return tabs;
 });
 
@@ -134,7 +136,7 @@ watch(keyFrameMedia, async (m) => {
 const fallbackSrc = computed<string>(() => keyFrameSrc.value ?? placeholderFrame(800, 600));
 
 function mediaKindLabel(kind: MediaKind): string {
-  return KIND_LABELS[kind];
+  return t(KIND_LABELS[kind]);
 }
 
 function selectMedia(m: MediaMetadata): void {
@@ -146,9 +148,9 @@ function selectMedia(m: MediaMetadata): void {
 <template>
   <div class="images">
     <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" />
-    <h2>Inspection media</h2>
+    <h2>{{ t("Inspection media") }}</h2>
     <p class="images__meta">
-      Inspection {{ route.params.id }}
+      {{ t("Inspection {id}", { id: route.params.id }) }}
       <template v-if="record">
         · {{ record.decision.business_result }} · {{ formatIsoTime(record.completed_at) }}
       </template>
@@ -180,26 +182,26 @@ function selectMedia(m: MediaMetadata): void {
       <img
         v-else-if="activeTab && !activeTab.isVideo && activeSrc"
         :src="activeSrc"
-        alt="inspection media"
+        :alt="t('inspection media')"
         class="images__img"
       />
       <el-empty
         v-else-if="activeTab && !activeTab.isVideo && activeImageFailed"
-        description="Media content unavailable"
+        :description="t('Media content unavailable')"
       />
-      <el-empty v-else-if="activeTab && activeIsVideo && videoFailed && !keyFrameSrc" description="Media content unavailable" />
+      <el-empty v-else-if="activeTab && activeIsVideo && videoFailed && !keyFrameSrc" :description="t('Media content unavailable')" />
       <img
         v-else-if="activeTab && activeIsVideo && videoFailed"
         :src="fallbackSrc"
-        alt="inspection media fallback"
+        :alt="t('inspection media fallback')"
         class="images__img"
       />
-      <el-empty v-else-if="activeTab" description="Loading media…" />
-      <el-empty v-else description="No available media" />
+      <el-empty v-else-if="activeTab" :description="t('Loading media…')" />
+      <el-empty v-else :description="t('No available media')" />
     </div>
-    <el-empty v-else description="No media" />
+    <el-empty v-else :description="t('No media')" />
 
-    <h3>Media</h3>
+    <h3>{{ t("Media") }}</h3>
     <ul class="images__media">
       <li v-for="m in media" :key="m.media_id">
         <button
@@ -215,15 +217,15 @@ function selectMedia(m: MediaMetadata): void {
         <div v-else class="images__media-row images__media-row--muted">
           <span class="images__media-kind">{{ mediaKindLabel(m.kind) }}</span>
           <span class="images__media-size">{{ formatBytes(m.size_bytes) }}</span>
-          <span v-if="m.lifecycle === 'PURGED'" class="pill pill--warn">purged</span>
-          <span v-else-if="m.lifecycle === 'FAILED'" class="pill pill--failed">failed</span>
-          <span v-else-if="m.lifecycle === 'PENDING'" class="pill pill--pending">pending</span>
-          <span v-else class="pill pill--present">available</span>
+          <span v-if="m.lifecycle === 'PURGED'" class="pill pill--warn">{{ t("purged") }}</span>
+          <span v-else-if="m.lifecycle === 'FAILED'" class="pill pill--failed">{{ t("failed") }}</span>
+          <span v-else-if="m.lifecycle === 'PENDING'" class="pill pill--pending">{{ t("pending") }}</span>
+          <span v-else class="pill pill--present">{{ t("available") }}</span>
         </div>
-        <p v-if="m.lifecycle === 'PURGED'" class="images__media-note">Content is not retained</p>
-        <p v-if="m.lifecycle === 'FAILED'" class="images__media-note">Capture or storage failed</p>
+        <p v-if="m.lifecycle === 'PURGED'" class="images__media-note">{{ t("Content is not retained") }}</p>
+        <p v-if="m.lifecycle === 'FAILED'" class="images__media-note">{{ t("Capture or storage failed") }}</p>
       </li>
-      <li v-if="!media.length">No media</li>
+      <li v-if="!media.length">{{ t("No media") }}</li>
     </ul>
   </div>
 </template>
