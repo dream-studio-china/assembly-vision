@@ -74,7 +74,7 @@ real-time inspection uses the native app / RTSP / camera sources.
 
 | Method and endpoint | Purpose | Request / response | Errors | Idempotency | Pagination | Authorization |
 |---|---|---|---|---|---|---|
-| `POST /api/v1/dev/inspect-frame` | Analyze one uploaded image through an instance pipeline; writes an evidence bundle unless `persist=false`. | Raw image bytes / `InspectionRecord` | `400 INVALID_IMAGE`, `404 INSTANCE_NOT_FOUND`, `413 PAYLOAD_TOO_LARGE`, `503 PIPELINE_UNAVAILABLE` | Deterministic | - | R + dev flag |
+| `POST /api/v1/dev/inspect-frame` | Analyze one uploaded image through an instance pipeline; writes an evidence bundle unless `persist=false`. | Query: optional `barcode` simulated keyboard input; raw image bytes / `InspectionRecord` | `400 INVALID_IMAGE`, `404 INSTANCE_NOT_FOUND`, `413 PAYLOAD_TOO_LARGE`, `503 PIPELINE_UNAVAILABLE` | Deterministic | - | R + dev flag |
 | `POST /api/v1/dev/inspect-video` | Analyze an uploaded video frame by frame (≤30 sampled frames) and return a summary; nothing is persisted. | Raw video bytes / `VideoInspectResult` | `400 INVALID_VIDEO`, `404 INSTANCE_NOT_FOUND`, `413 PAYLOAD_TOO_LARGE`, `503 PIPELINE_UNAVAILABLE` | Deterministic | - | R + dev flag |
 
 ## 15.4 Central API Groups

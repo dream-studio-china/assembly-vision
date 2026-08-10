@@ -211,3 +211,13 @@ Rolling video writes segmented files to limit corruption after power loss. Media
 - Confirm whether a hardware trigger, PLC signal, photoelectric sensor, or vision-only trigger is available.
 - Validate lighting stability, glare, motion blur, and acceptable camera-shift tolerances.
 - Confirm the barcode reader topology and timing relative to image capture.
+
+## 7.11 Development Barcode Identity
+
+The single-pipeline web development upload path may enable exact barcode identity
+mapping under `identity.barcode`. It decodes the uploaded image with ZXing-cpp
+and may receive explicit simulated keyboard input. A configured barcode mapping
+is a YAML mapping of complete barcode values to product codes; prefix or pattern
+matching is not used. Conflicting, unreadable, unsupported-symbology, unknown,
+or active-rule-product-mismatched evidence is unverified and fails closed when
+barcode identity is required.
