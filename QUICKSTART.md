@@ -190,26 +190,36 @@ uv run assemblyvision serve \
 ```
 
 Endpoints: the design 15.3 read routes `GET /api/v1/health/live`, `GET
-/api/v1/health/ready`, `GET
-/api/v1/inspections`, `GET /api/v1/inspections/{id}`, `GET
-/api/v1/inspections/{id}/media`, `GET /api/v1/media/{id}/content` (Range
-supported), `GET /api/v1/device/status`, `GET /api/v1/inspection/state`,
-`GET /api/v1/uploads`, `GET
-/api/v1/configuration/effective`, and `GET /api/v1/logs`, plus the M1 derived
+/api/v1/health/ready`, `GET /api/v1/inspections`, `GET
+/api/v1/inspections/{id}`, `GET /api/v1/inspections/{id}/media`, `GET
+/api/v1/media/{id}/content` (Range supported), `GET /api/v1/device/status`,
+`GET /api/v1/inspection/state`, `GET /api/v1/uploads`, `GET
+/api/v1/configuration/effective`, and `GET /api/v1/logs`, plus the derived
 endpoints `GET /api/v1/traceability/{sn}` and `GET /api/v1/statistics` (not
-part of design 15.3).
+part of design 15.3). The live event channel (E4) streams inspection and
+device events over `WS /api/v1/ws/runtime` (ticket at `POST
+/api/v1/ws/runtime/ticket`, counters at `GET /api/v1/ws/runtime/stats`).
 
-The API is **read-only for mutation** (ADR-012): operator controls such as
-`POST /api/v1/inspection/{pause,resume}` and camera reconnect are not exposed.
-The upload queue is visible at `GET /api/v1/uploads`, and E3 adds a controlled
-manual retry at `POST /api/v1/uploads/{id}/retry` (resets `RETRY_WAIT` and
-`PERMANENT_FAILURE` tasks only). When `AV_EDGE_API_TOKEN` (or `--api-token`) is
-configured, every route except
-`GET /api/v1/health/live` requires
+The API is **read-only for inspection control** (ADR-012): operator commands
+such as `POST /api/v1/inspection/{pause,resume}` and camera reconnect are not
+exposed. The only mutating route on `main` is the controlled upload retry
+`POST /api/v1/uploads/{id}/retry` (E3; resets `RETRY_WAIT` and
+`PERMANENT_FAILURE` tasks only). Review submission (`POST
+/api/v1/inspections/{id}/reviews`, ADR-016) arrives with PR #31 and, like the
+upload retry, uses the viewer credential — a documented trade-off until an
+edge role model exists. When `AV_EDGE_API_TOKEN` (or `--api-token`) is
+configured, every route except `GET /api/v1/health/live` requires
 `Authorization: Bearer <token>` or an authenticated same-origin viewer session.
-Open `/login` in the served dashboard and enter the configured token once; it is
-exchanged for an HttpOnly, same-origin session cookie and is never bundled or
-stored by the dashboard.
+Open `/login` in the served dashboard and enter the configured token once; it
+is exchanged for an HttpOnly, same-origin session cookie and is never bundled
+or stored by the dashboard.
+
+`serve` can expose local HTTPS with `--tls-cert`/`--tls-key` (or
+`AV_EDGE_TLS_CERT`/`AV_EDGE_TLS_KEY`; the private key must not be readable by
+group or others). The viewer and upload tokens also fall back to Docker secret
+files under `/run/secrets/` when the environment variables are absent (E5).
+Uploads always use a separate credential (`AV_EDGE_UPLOAD_TOKEN`), never the
+viewer token.
 
 #### Upload, storage, and retention configuration (E1/E2)
 
@@ -278,6 +288,15 @@ uv run assemblyvision serve \
   `source: http-image` for remote TCP/IP inputs. A local camera or a virtual
   camera driver (Linux `v4l2loopback`, OBS Virtual Camera) plugs in as
   `source: opencv-device`.
+- Industrial cameras: `source: gige-vision` uses the hardened GigE Vision /
+  GenICam source (PR #26) and requires `serial` and `gentl_producer` in the
+  instance config plus a vendor GenICam producer at runtime; live validation
+  on the target camera is still pending.
+- Trigger/identity seam (E4b, ADR-015): an instance `trigger:` block enables
+  the deterministic mock trigger source for development; the opt-in Modbus TCP
+  FIFO trigger contract is the production path once a site-validated register
+  profile exists. Barcode identity resolution runs on the dev harness and the
+  production single-frame camera loop (PR #30).
 - Each instance defaults to `device_id = uuid5(namespace, instance_id)` so
   records stay traceable per line across restarts; set `device_id` explicitly
   to override.
@@ -304,13 +323,34 @@ phone camera, upload an image, or upload a short video. Image tests write an
 evidence bundle that appears in History (disable with the *persist* checkbox);
 video tests return a per-frame summary without persisting. The endpoints are:
 
-- `POST /api/v1/dev/inspect-frame` — image bytes → `InspectionRecord`
+- `POST /api/v1/dev/inspect-frame` — image bytes → `InspectionRecord`; an
+  optional `barcode` query parameter simulates a keyboard scanner input for
+  barcode identity resolution (ADR-015, PR #30)
 - `POST /api/v1/dev/inspect-video` — video bytes → `VideoInspectResult`
   (≤ 30 analyzed frames, < 100 MB)
 
 This is a developer test harness, not a production acquisition path: it never
 streams video and must not be enabled on production hosts. Production
 real-time inspection uses the native app / RTSP / camera sources (ADR-014).
+
+### 4.9 Backup and restore (E5)
+
+`assemblyvision backup` takes a consistent SQLite snapshot plus the governed
+config/rule/manifest files and pending evidence with SHA-256 checksums into a
+`.tar.gz` bundle; `assemblyvision restore` verifies every checksum before
+applying, keeps a `.pre-restore` copy, never overwrites conflicting media, and
+reconciles the store so pending upload tasks survive:
+
+```bash
+uv run assemblyvision backup --output out/ --db out/edge.sqlite3 \
+  --config config/examples/pipeline.yaml --rule config/examples/product-rule.yaml \
+  --dest /backups/edge-$(date +%Y%m%d).tar.gz
+
+uv run assemblyvision restore --backup /backups/edge-YYYYMMDD.tar.gz \
+  --output out/ --db out/edge.sqlite3
+```
+
+See runbook 12 (backup and recovery) for the full procedure.
 
 ---
 
@@ -546,6 +586,14 @@ Next work items:
 - **On-site acceptance** — once hardware and customer data are available,
   execute `docs/tasks/E6-edge-acceptance.md` §E6d and produce the report from
   `docs/design/28-edge-acceptance-report.md`.
+- **Barcode identity / PLC trigger (ADR-015)** — merged (PR #30): ZXing-based
+  barcode decoding on the dev harness and the production single-frame loop,
+  plus the opt-in Modbus TCP FIFO trigger contract. Live decode validation on
+  production samples and a site-validated register profile remain.
+- **Edge-local human review (ADR-016)** — implemented on
+  `feat/edge-local-human-review` (PR #31, pending merge): append-only review
+  of any inspection through the viewer credential, with the `/review` queue
+  page and review panel in the dashboard.
 - **Central server** — not started; ingestion API, PostgreSQL model, object
   storage, idempotent receipts, and manual review begin after the Edge gates
   and the Edge-to-central contract are ready. The edge uploader already
