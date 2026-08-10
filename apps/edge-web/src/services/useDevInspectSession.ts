@@ -8,7 +8,12 @@ export interface DevInspectSession {
   record: Ref<InspectionRecord | null>;
   videoResult: Ref<VideoInspectResult | null>;
   imageUrl: Ref<string | null>;
-  inspectFrame(client: ApiClient, instanceId: string, file: File, opts?: { persist?: boolean }): Promise<void>;
+  inspectFrame(
+    client: ApiClient,
+    instanceId: string,
+    file: File,
+    opts?: { persist?: boolean; barcode?: string },
+  ): Promise<void>;
   inspectVideo(client: ApiClient, instanceId: string, file: File, opts?: { step?: number }): Promise<void>;
 }
 
@@ -41,7 +46,7 @@ export function useDevInspectSession(
     client: ApiClient,
     instanceId: string,
     file: File,
-    opts?: { persist?: boolean },
+    opts?: { persist?: boolean; barcode?: string },
   ): Promise<void> {
     const requestId = ++latestRequestId;
     resetResult();

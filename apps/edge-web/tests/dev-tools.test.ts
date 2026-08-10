@@ -105,6 +105,27 @@ describe("devInspectSession request sequencing (F10)", () => {
     expect(session.busy.value).toBe(false);
     expect(session.record.value?.decision.business_result).toBe("NG");
   });
+
+  it("forwards simulated barcode input with the uploaded image", async () => {
+    const response = deferred<InspectionRecord>();
+    const client = clientWithFrameRequests([response]);
+    const session = useDevInspectSession((file) => `blob:${file.name}`);
+
+    const settled = session.inspectFrame(
+      client,
+      "line-1",
+      new File(["image"], "board.png"),
+      { persist: true, barcode: "instance-001" },
+    );
+    response.resolve(frameRecord("OK"));
+    await settled;
+
+    expect(client.devInspectFrame).toHaveBeenCalledWith(
+      "line-1",
+      expect.any(File),
+      { persist: true, barcode: "instance-001" },
+    );
+  });
 });
 
 function recordWithBox(box: {
