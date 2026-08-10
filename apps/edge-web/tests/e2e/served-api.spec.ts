@@ -176,7 +176,9 @@ test("served dashboard shows a real reconciled inspection from the same-origin A
     // An unavailable camera renders an explicit state, never a fabricated frame.
     await page.goto(`http://127.0.0.1:${port}/live`);
     await expect(page.getByText("No camera feed available")).toBeVisible();
-    await expect(page.locator('img[alt="camera preview"]')).not.toBeVisible();
+    // The camera pane must stay empty; the detection-result pane may still show
+    // a historical media frame, so the assertion is scoped to the camera pane.
+    await expect(page.locator(".live-inspection__camera-viewer img[alt='camera preview']")).not.toBeVisible();
 
     await page.goto(`http://127.0.0.1:${port}/images/${inspectionId}`);
     // Purged media renders an explicit purged state, never a broken image (F14).
