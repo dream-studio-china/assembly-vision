@@ -1156,6 +1156,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="16.2 Design Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1621-theme-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2.1 Theme System
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3569,6 +3586,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="16.2 Design Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1621-theme-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2.1 Theme System
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3798,6 +3832,45 @@
 <li>Use text, iconography, and color together. Red/green alone is not sufficient.</li>
 <li>Avoid displaying a high-confidence detection as proof of overall OK; the final deterministic decision is authoritative.</li>
 </ol>
+<h3 id="1621-theme-system">16.2.1 Theme System<a class="headerlink" href="#1621-theme-system" title="Permanent link">&para;</a></h3>
+<p>The dashboard provides a persisted, local UI preference with three professional
+themes. Theme choice changes visual tokens only: routes, component structure,
+spacing scale, type scale, interaction patterns, safety labels, and API behavior
+remain identical.</p>
+<table>
+<thead>
+<tr>
+<th>Theme</th>
+<th>Intended environment</th>
+<th>Visual characteristics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Industrial Minimal (default)</td>
+<td>Shop-floor HMI and maintenance terminals</td>
+<td>Sharp rectangular surfaces, compact density, strong separators, restrained elevation, neutral steel palette</td>
+</tr>
+<tr>
+<td>Modern Light</td>
+<td>Engineering review and management workstations</td>
+<td>Bright surfaces, moderate radius, measured whitespace, subtle elevation, enterprise-blue accent</td>
+</tr>
+<tr>
+<td>Modern Dark</td>
+<td>Long-running monitoring and control rooms</td>
+<td>Graphite surfaces, high contrast text, subdued borders, readable non-neon status indicators</td>
+</tr>
+</tbody>
+</table>
+<p>CSS custom properties are the single token source for backgrounds, surfaces,
+text, borders, focus, semantic status colors, density, radius, and Element Plus
+variables. ECharts consumes the active token palette explicitly because canvas
+charts do not inherit CSS variables. The selected theme is stored locally and
+does not affect inspection decisions, audit records, uploads, or device state.
+Semantic meaning remains stable in every theme: green means normal/OK, red
+means NG/alarm, amber means warning/uncertain, and blue means informational.
+Color always supplements text and iconography rather than replacing it.</p>
 <h2 id="163-information-architecture">16.3 Information Architecture<a class="headerlink" href="#163-information-architecture" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

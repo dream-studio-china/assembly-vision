@@ -3796,7 +3796,7 @@ loop 到期排队任务
 <p>按状态显示队列计数和字节数、最早的挂起时间、尝试率、成功/失败率、上传延迟、吞吐量、电路状态和上次成功联系。手动重试仅重置符合条件的任务并保留尝试历史记录。</p>
 <h2 id="1310-verification">13.10 验证<a class="headerlink" href="#1310-verification" title="Permanent link">&para;</a></h2>
 <ul>
-<li>在每个服务器提交边界超时后集成测试幂等重放。</li>
+<li>在每个服务器提交边界超时后集成测试幂等重播。</li>
 <li>测试重复的任务交付、无序检查、重复的介质以及冲突的校验和。</li>
 <li>故障注入 DNS 失败、连接重置、响应缓慢、<code>429</code>、<code>5xx</code>、<code>401</code>、<code>409</code> 和工作线程终止。</li>
 <li>运行长时间的离线测试，继续检查，重新启动边缘，恢复网络，并验证完全耗尽而没有重复。</li>
@@ -3824,7 +3824,7 @@ loop 到期排队任务
   （设计12.4步骤3+4）。启动协调应用相同的操作
   每个有效的包，修复搁浅的 <code>LOCAL_ONLY</code> 记录而不是
   跳过它们。</li>
-<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code>在一个任务中声明到期任务
+<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code> 在一个任务中声明到期任务
   即时交易； <code>MEDIA</code> 任务只有在检查后才到期
   任务保存经过验证的成功收据，因此元数据始终先于媒体。
   每个声明都带有一个每个任务的防护令牌（<code>lease_owner</code>），并且陈旧

@@ -3917,7 +3917,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tbody>
 <tr>
 <td>M1</td>
-<td>已关闭（7d987e7）。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
+<td>已关闭 (7d987e7)。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
 <td>将路径构建/解析期间引发的 <code>ValueError</code> 视为格式错误的媒体并跳过该记录。隔离单个包中的错误。</td>
 <td>包含 NUL 字节媒体路径的协调测试会导入有效的同级包，跳过格式错误的包，返回正确的导入计数，并发出警告而不引发警告。</td>
 </tr>
@@ -3989,7 +3989,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
   或多写入器部署，为权威添加 Alembic 迁移
   模式，保留一个非空的受控产品配置版本，并制作
   等内容并发检查更新插入幂等返回<code>unchanged</code>。</li>
-<li><strong>接受：</strong> 边界文件指出了投影的非权威性
+<li><strong>接受：</strong> 边界文件指出投影的非权威性
   限制。权威商店测试验证所有合同 04/05 约束，
   租赁字段、产品版本追溯、并发等内容
   更新插入返回<code>unchanged</code>；不同的内容必须在没有突变的情况下失败。</li>
@@ -4006,37 +4006,37 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tbody>
 <tr>
 <td>无token非环回服务</td>
-<td>已关闭（056e712）。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
+<td>已关闭 (056e712)。 ADR-012 允许明确的 M1 开发模式，但表示它不是生产认证。</td>
 <td>没有令牌的非环回绑定启动失败，或者需要记录高严重性警告的显式开发覆盖。测试环回/dev、非环回/拒绝和非环回/显式覆盖路径。</td>
 </tr>
 <tr>
 <td>经过身份验证的日志端点公开异常消息/路径</td>
-<td>已关闭（056e712）。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
+<td>已关闭 (056e712)。 <code>LogBuffer</code> 存储 <code>record.getMessage()</code>，全局处理程序捕获 <code>log.exception</code> 输出。</td>
 <td>从查看器记录中排除回溯/绝对路径或将端点限制为更高的特权角色。测试引发的异常是否不会在 <code>/logs</code> 中产生回溯或绝对路径。</td>
 </tr>
 <tr>
 <td>会话交换缺乏限制，会话存储没有扫描/上限</td>
-<td>已关闭（056e712）。</td>
+<td>已关闭 (056e712)。</td>
 <td>添加有界的每个源失败尝试限制和有界会话存储以及到期清除；文件 M1 限制。测试重复失败、冷却后成功交换、过期清理和容量行为。</td>
 </tr>
 <tr>
 <td>光标错误和过滤器绑定</td>
-<td>已关闭（056e712）。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
+<td>已关闭 (056e712)。无效的游标成为一般存储库故障，并且游标不包含过滤器指纹。</td>
 <td>将格式错误的光标映射到 <code>400 INVALID_CURSOR</code>；将游标绑定到规范过滤器哈希。测试必须拒绝没有 500 的格式错误/不匹配的游标，并为匹配的过滤器保留稳定的分页。</td>
 </tr>
 <tr>
 <td>如果文件仍然存在，则可以对已清除的媒体进行流式传输</td>
-<td>已关闭（056e712）。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
+<td>已关闭 (056e712)。 <code>media.py:110-114</code> 在生命周期之前检查文件。</td>
 <td>首先检查 <code>PURGED</code> 并始终返回 <code>410 MEDIA_PURGED</code>。使用幸存的文件添加测试。</td>
 </tr>
 <tr>
 <td>非 ASCII 承载标头可以从 <code>compare_digest</code></td>
-<td>引发已关闭（056e712）。</td>
+<td>引发已关闭 (056e712)。</td>
 <td>将比较类型/编码失败视为无效凭证并返回 <code>401</code>。添加具有非 ASCII 授权输入的 API 测试。</td>
 </tr>
 <tr>
 <td><code>/api</code> 可能会落入 SPA</td>
-<td>已关闭（056e712）。守卫仅匹配<code>api/</code>。</td>
+<td>已关闭 (056e712)。守卫仅匹配<code>api/</code>。</td>
 <td>在 SPA 回退之前保留 <code>api</code> 和 <code>api/</code>。测试 <code>/api</code>、<code>/api/unknown</code> 和正常的客户端路由。</td>
 </tr>
 <tr>
@@ -4051,7 +4051,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </tr>
 <tr>
 <td>缺少 CSP</td>
-<td>已关闭（056e712）。</td>
+<td>已关闭 (056e712)。</td>
 <td>添加与本地服务的仪表板兼容的最低权限 CSP 并测试响应标头。</td>
 </tr>
 <tr>
@@ -4125,16 +4125,16 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tr>
 <td>Design 14 描述了一个权威的可操作 SQLite 存储，而不是 M1 可重建投影</td>
 <td>已关闭 (5488804)。</td>
-<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作联系起来。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
+<td>更新范围、表格和恢复语言；将权威商店设计作为未来的工作。根据 ADR-012 和上下文第 8.3 节进行审查。</td>
 </tr>
 <tr>
-<td>附录 原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
+<td>附录原因代码术语表和设计 11.5 省略/矛盾发出的代码</td>
 <td>已关闭 (5488804)。</td>
 <td>使 <code>reason_codes.py</code> 成为显式规范列表或从中生成术语表。测试必须比较所有声明的静态代码和记录的参数化前缀。</td>
 </tr>
 <tr>
 <td>承保范围索赔</td>
-<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍需要基于来源的验证。</td>
+<td>已关闭 (5488804)。 <code>context.md</code> 目前表示大约为 99.5%，因此其声称的 99.6% 差异是 ~~STALE~~；公关审查声明仍然需要基于来源的验证。</td>
 <td>将数字声明替换为带日期的命令/输出参考，或更新来自一个 CI 工件的所有源。</td>
 </tr>
 <tr>

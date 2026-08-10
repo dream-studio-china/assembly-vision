@@ -3711,7 +3711,7 @@
 <h1 id="e3-pipeline-upload-resilience">E3 管道：上传弹性<a class="headerlink" href="#e3-pipeline-upload-resilience" title="Permanent link">&para;</a></h1>
 <h2 id="1-purpose">1. 目的<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
 <p>使边缘上传路径在退化网络和长中心网络下具有弹性
-中断，而不削弱边缘优先、故障安全检查合同。 E3
+在不削弱边缘优先、故障安全检查合同的情况下实现停电。 E3
 添加带宽限制、断路器、受控手动重试、长
 停电排水测试，以及可恢复的大媒体客户合同
 PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
@@ -3798,7 +3798,7 @@ PR #17（设计 13，ADR-005）提供耐用的发件箱和调度程序。</p>
 <p><strong>实施</strong></p>
 <ul>
 <li>添加类型化电路设置（<code>failure_threshold</code>、<code>open_seconds</code>）
-  <code>UploadSettings</code>;默认关闭。</li>
+  <code>UploadSettings</code>；默认关闭。</li>
 <li>跟踪连续失败（传输错误和可重试的 HTTP 状态）。
   当达到阈值时，电路打开：调度程序停止
   要求/尝试任务。 <code>open_seconds</code>后，它半开并允许

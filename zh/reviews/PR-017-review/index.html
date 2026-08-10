@@ -3541,7 +3541,7 @@
   单独的 <code>AV_EDGE_UPLOAD_TOKEN</code> 凭据，而不是查看者 <code>api_token</code>，
   测试证明查看者凭据从未发送（<code>406150e</code>）。</li>
 <li><strong>F8</strong> - 注入的时钟锚定响应/失败的每个转换
-  时间，因此缓慢的请求无法侵蚀<code>Retry-After</code>；确定性测试
+  时间，因此缓慢的请求不会侵蚀<code>Retry-After</code>；确定性测试
   验证 <code>next_attempt_at = response_time + 60</code> (<code>81fc6f4</code>)。</li>
 <li><strong>决议后强化</strong> - 最终审查弥补了四个小差距
   原始修复：收据现在需要匹配的尺寸/校验和和介质
@@ -3648,7 +3648,7 @@
   协调后，只有一项检查任务和每个媒体项目一项任务。</li>
 <li>在原始投影提交之后和入队之前模拟崩溃，
   然后重新启动，将发件箱修复一次。</li>
-<li>完全排队记录的协调不会创建重复任务。</li>
+<li>完全排队的记录的协调不会创建重复的任务。</li>
 </ul>
 <h3 id="f3-lease-expiry-has-no-ownertoken-fencing-so-a-late-worker-can-overwrite-a-newer-worker">F3。租约到期没有所有者/令牌围栏，因此迟到的工作人员可以覆盖较新的工作人员<a class="headerlink" href="#f3-lease-expiry-has-no-ownertoken-fencing-so-a-late-worker-can-overwrite-a-newer-worker" title="Permanent link">&para;</a></h3>
 <p><strong>严重性：</strong> P1/高</p>
@@ -3706,7 +3706,7 @@
 <ol>
 <li>明确地建模依赖关系：媒体任务仅在其父任务之后到期
    检验任务已验证成功收货，或使用单
-   检查会话状态机，在发布媒体之前上传元数据
+   在发布媒体之前上传元数据的检查会话状态机
    工作。</li>
 <li>将媒体保留在 <code>PENDING</code> 中（有依赖性原因），而不是处理
    预元数据服务器响应作为永久证据失败。</li>
@@ -3739,7 +3739,7 @@
 已达到<code>PERMANENT_FAILURE</code>。</p>
 <p>这违反了合同 04 第 6 节（验证完成、存储中心对象
 标识符，仅在确认成功后更新）并滥用记录的
-设计14中的<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>同步状态。它还使得
+设计14中的<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>同步状态。它也使得
 未来的保留无法证明每个所需的工件都收到了
 已验证收据。</p>
 <p><strong>解决：</strong></p>

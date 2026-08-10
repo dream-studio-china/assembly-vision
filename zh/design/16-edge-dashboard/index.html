@@ -1156,6 +1156,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="16.2 设计原则">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1621-theme-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2.1 主题系统
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3569,6 +3586,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="16.2 设计原则">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1621-theme-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2.1 主题系统
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3798,6 +3832,45 @@
 <li>结合使用文字、图像和颜色。仅红/绿是不够的。</li>
 <li>避免将高置信度检测显示为整体正常的证明；最终的决定性决定具有权威性。</li>
 </ol>
+<h3 id="1621-theme-system">16.2.1 主题系统<a class="headerlink" href="#1621-theme-system" title="Permanent link">&para;</a></h3>
+<p>仪表板提供持久的本地 UI 首选项，包含三个专业的
+主题。主题选择仅更改视觉标记：路线、组件结构、
+间距比例、字体比例、交互模式、安全标签和 API 行为
+保持相同。</p>
+<table>
+<thead>
+<tr>
+<th>主题</th>
+<th>预期环境</th>
+<th>视觉特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工业最小（默认）</td>
+<td>车间 HMI 和维护终端</td>
+<td>锐利的矩形表面、紧凑的密度、坚固的分隔物、有限的标高、中性钢调色板</td>
+</tr>
+<tr>
+<td>现代灯</td>
+<td>工程评审及管理工作站</td>
+<td>明亮的表面，适中的半径，测量的空白，微妙的高度，企业蓝色口音</td>
+</tr>
+<tr>
+<td>现代黑暗</td>
+<td>长时间运行的监控室</td>
+<td>石墨表面、高对比度文本、柔和的边框、可读的非霓虹灯状态指示器</td>
+</tr>
+</tbody>
+</table>
+<p>CSS 自定义属性是背景、表面、
+文本、边框、焦点、语义状态颜色、密度、半径和 Element Plus
+变量。 ECharts 显式使用活动令牌调色板，因为画布
+图表不继承 CSS 变量。所选主题存储在本地并
+不影响检查决策、审核记录、上传或设备状态。
+每个主题的语义含义保持稳定：绿色表示正常/正常，红色表示
+表示 NG/警报，琥珀色表示警告/不确定，蓝色表示信息。
+颜色总是补充文本和图像，而不是取代它们。</p>
 <h2 id="163-information-architecture">16.3 信息架构<a class="headerlink" href="#163-information-architecture" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3859,7 +3932,7 @@
 <p>桌面使用主摄像头/证据窗格和固定宽度的决策窗格。在 1280 像素及以上，两者均可见，无需垂直滚动。平板电脑/移动设备堆栈首先是决策，然后是证据，最后是诊断；暂停/恢复仍然可以访问，但不是可以意外触发的浮动控件。</p>
 <p>屏幕包括：</p>
 <ul>
-<li>相机预览包含缩放、源分辨率、捕获时间戳和过时帧标记。</li>
+<li>相机预览包含缩放、源分辨率、捕获时间戳和陈旧帧标记。</li>
 <li>从源坐标映射的可选产品和组件边界框，从不预先缩放服务器坐标。</li>
 <li>最终的 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code> 面板，包含检查 ID、条形码、产品类型、处理延迟和完成时间。</li>
 <li>所需组件矩阵：存在、缺失、不确定、最佳置信度、支持框架计数和政策原因。</li>
