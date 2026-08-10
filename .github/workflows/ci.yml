@@ -42,6 +42,11 @@ jobs:
           uv run python scripts/generate-edge-openapi.py
           git diff --exit-code -- apps/edge-service/openapi/edge-openapi.json
 
+      - name: Central OpenAPI drift check
+        run: |
+          uv run python scripts/generate-central-openapi.py
+          git diff --exit-code -- apps/central-service/openapi/central-openapi.json
+
   web:
     runs-on: ubuntu-latest
     steps:
@@ -72,6 +77,20 @@ jobs:
           pnpm --filter @assemblyvision/api-client generate:types
           git diff --exit-code -- packages/typescript/api-client/src/edge/generated/api.ts
 
+      - name: Central TypeScript contract drift check
+        run: |
+          pnpm --filter @assemblyvision/api-client-central generate:types
+          git diff --exit-code -- packages/typescript/api-client-central/src/central/generated/api.ts
+
+      - name: Build admin-web
+        run: cd apps/admin-web && pnpm build
+
+      - name: Lint admin-web
+        run: cd apps/admin-web && pnpm lint
+
+      - name: Unit tests admin-web
+        run: cd apps/admin-web && pnpm test
+
       - name: Lint
         run: pnpm -r lint
 
@@ -84,5 +103,8 @@ jobs:
       - name: Playwright install
         run: cd apps/edge-web && pnpm exec playwright install --with-deps chromium
 
-      - name: E2E tests
+      - name: E2E tests (edge-web)
         run: cd apps/edge-web && pnpm test:e2e
+
+      - name: E2E tests (admin-web)
+        run: cd apps/admin-web && pnpm test:e2e

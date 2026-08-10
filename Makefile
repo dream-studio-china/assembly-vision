@@ -23,5 +23,9 @@ web-check:
 	pnpm -r lint
 	pnpm -r test
 	cd apps/edge-web && pnpm test:e2e
+	cd apps/admin-web && pnpm build
+	cd apps/admin-web && pnpm lint
+	cd apps/admin-web && pnpm test
+	cd apps/admin-web && pnpm test:e2e
 
 check: lint format typecheck test web-check
