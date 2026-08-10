@@ -1542,6 +1542,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#2414-edge-local-review-adr-016" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        24.14 Edge-Local Review (ADR-016)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3698,6 +3709,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#2414-edge-local-review-adr-016" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        24.14 Edge-Local Review (ADR-016)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3721,6 +3743,11 @@
 <h1 id="24-human-in-the-loop-operations">24. Human-in-the-Loop Operations<a class="headerlink" href="#24-human-in-the-loop-operations" title="Permanent link">&para;</a></h1>
 <h2 id="241-purpose-and-safety-position">24.1 Purpose and Safety Position<a class="headerlink" href="#241-purpose-and-safety-position" title="Permanent link">&para;</a></h2>
 <p>Human review is a controlled quality process for cautious rollout, ambiguous evidence, NG disposition, and continuous improvement. It does not conceal model limitations or change the original machine decision. AssemblyVision prioritizes high NG recall: early operation accepts additional false NG decisions because they can be reviewed, while a real NG incorrectly released as OK is the principal quality risk.</p>
+<p>Review is <strong>optional and additive</strong> (ADR-016): it is never required to run an
+inspection, never mutates the immutable machine decision, and never changes the
+existing inspection endpoints or projections. Any inspection — <code>OK</code> or <code>NG</code> —
+may be reviewed locally on the edge; NG detail views surface a review entry
+point while OK views offer an optional audit path.</p>
 <h2 id="242-scope-by-phase">24.2 Scope by Phase<a class="headerlink" href="#242-scope-by-phase" title="Permanent link">&para;</a></h2>
 <h3 id="2421-initial-production-phase">24.2.1 Initial Production Phase<a class="headerlink" href="#2421-initial-production-phase" title="Permanent link">&para;</a></h3>
 <ul>
@@ -3758,7 +3785,7 @@
 <tr>
 <td><code>NG</code></td>
 <td>Confirm real defect or false NG</td>
-<td>Confirmed NG, corrected OK, inconclusive</td>
+<td>Confirmed NG, confirmed OK, inconclusive</td>
 </tr>
 <tr>
 <td>Business <code>NG</code>, internal <code>UNCERTAIN</code></td>
@@ -3777,6 +3804,11 @@
 </tr>
 </tbody>
 </table>
+<p>An <code>NG</code> corrected to <code>OK</code> and a sampled <code>OK</code> confirmed share the <code>CONFIRMED_OK</code>
+disposition; the original machine outcome on the review record distinguishes
+them. The "system exception" row (including the operational-fault disposition)
+is outside edge-local review scope and is deferred until central review exists
+(ADR-016).</p>
 <p>A correction does not rewrite the edge decision. It records reviewer, time, reason, ground-truth component states, evidence used, and relationship to the original inspection.</p>
 <h2 id="244-review-queue-policy">24.4 Review Queue Policy<a class="headerlink" href="#244-review-queue-policy" title="Permanent link">&para;</a></h2>
 <p>Routing policy is versioned and auditable. Priority factors include:</p>
@@ -3872,6 +3904,13 @@
 <li><a href="../26-customer-acceptance/">Customer Acceptance</a></li>
 <li><a href="../20-deployment-and-operations/#208-model-and-rule-update-sequence">Model update sequence</a></li>
 </ul>
+<h2 id="2414-edge-local-review-adr-016">24.14 Edge-Local Review (ADR-016)<a class="headerlink" href="#2414-edge-local-review-adr-016" title="Permanent link">&para;</a></h2>
+<p>While the mature design routes review through the central server (section
+24.5), the edge stores append-only local review records so the process keeps
+working while offline (section 24.11) and before a central server exists.
+See <a href="../decisions/ADR-016-edge-local-human-review/">ADR-016</a> for the scope
+decisions: optional per-inspection review, disposition compatibility, local
+reviewer identity, supersede chaining, and the web review queue.</p>
 
 
 

@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/design/10-temporal-aggregation/">
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/reviews/PR-031-review/">
       
       
-        <link rel="prev" href="../09-component-detection/">
-      
-      
-        <link rel="next" href="../11-rule-engine/">
       
       
         
@@ -31,7 +27,7 @@
     
     
       
-        <title>时序聚合 - AssemblyVision</title>
+        <title>PR-031 Review: Edge-Local Human Review (Optional, ADR-016) - AssemblyVision</title>
       
     
     
@@ -82,8 +78,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#10-temporal-aggregation" class="md-skip">
-          跳转至
+        <a href="#pr-031-review-edge-local-human-review-optional-adr-016" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -97,7 +93,7 @@
   
 
 <header class="md-header md-header--shadow" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
+  <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
   
@@ -118,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              时序聚合
+              PR-031 Review: Edge-Local Human Review (Optional, ADR-016)
             
           </span>
         </div>
@@ -158,7 +154,7 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
@@ -192,16 +188,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -214,7 +210,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -226,7 +222,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -260,7 +256,7 @@
 
 
 
-<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
       
@@ -272,7 +268,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/dream-studio-china/assembly-vision" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -299,7 +295,7 @@
   <span class="md-ellipsis">
     
   
-    首页
+    Home
   
 
     
@@ -326,7 +322,7 @@
   <span class="md-ellipsis">
     
   
-    原始需求
+    Source Brief
   
 
     
@@ -371,7 +367,7 @@
   <span class="md-ellipsis">
     
   
-    交付任务
+    Delivery Tasks
   
 
     
@@ -387,7 +383,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    交付任务
+    Delivery Tasks
   
 
           </label>
@@ -407,7 +403,7 @@
   <span class="md-ellipsis">
     
   
-    E2：保留和磁盘安全
+    E2: Retention and Disk Safety
   
 
     
@@ -435,7 +431,7 @@
   <span class="md-ellipsis">
     
   
-    E3：上传弹性
+    E3: Upload Resilience
   
 
     
@@ -463,7 +459,7 @@
   <span class="md-ellipsis">
     
   
-    E4：运行时
+    E4: Runtime
   
 
     
@@ -491,7 +487,7 @@
   <span class="md-ellipsis">
     
   
-    E5：部署和安全
+    E5: Deployment and Security
   
 
     
@@ -519,7 +515,7 @@
   <span class="md-ellipsis">
     
   
-    E6：边缘验收
+    E6: Edge Acceptance
   
 
     
@@ -544,8 +540,6 @@
       
   
   
-    
-  
   
   
     
@@ -558,11 +552,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
@@ -572,7 +568,7 @@
   <span class="md-ellipsis">
     
   
-    架构设计
+    Architecture Design
   
 
     
@@ -583,12 +579,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    架构设计
+    Architecture Design
   
 
           </label>
@@ -601,14 +597,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    设计索引
+    Design Index
   
 
     
@@ -629,14 +625,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../00-cover-and-status/" class="md-nav__link">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    封面与状态
+    Cover and Status
   
 
     
@@ -657,14 +653,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../01-introduction/" class="md-nav__link">
+      <a href="../../design/01-introduction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    简介
+    Introduction
   
 
     
@@ -685,14 +681,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../02-requirements/" class="md-nav__link">
+      <a href="../../design/02-requirements/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    需求
+    Requirements
   
 
     
@@ -713,14 +709,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../03-architecture-overview/" class="md-nav__link">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    架构概览
+    Architecture Overview
   
 
     
@@ -741,14 +737,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../04-edge-client-architecture/" class="md-nav__link">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    边缘端架构
+    Edge Client Architecture
   
 
     
@@ -769,14 +765,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../05-central-server-architecture/" class="md-nav__link">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    中心端架构
+    Central Server Architecture
   
 
     
@@ -797,14 +793,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../06-ai-detection-pipeline/" class="md-nav__link">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    AI 检测流水线
+    AI Detection Pipeline
   
 
     
@@ -825,14 +821,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../07-camera-and-image-acquisition/" class="md-nav__link">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    相机与图像采集
+    Camera and Image Acquisition
   
 
     
@@ -853,14 +849,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../08-product-detection-and-roi/" class="md-nav__link">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    产品检测与 ROI
+    Product Detection and ROI
   
 
     
@@ -881,249 +877,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../09-component-detection/" class="md-nav__link">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    组件检测
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    时序聚合
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    时序聚合
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#101-purpose" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.1 目的
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#102-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.2 范围
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#103-core-invariants" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.3 核心不变量
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#104-component-state-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.4 组件状态模型
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#105-temporal-aggregation-sequence" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.5 时间聚合序列
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#106-default-policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.6 默认策略
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#107-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.7 配置
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#1071-implementation-status-adr-010-product-window-milestone" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.7.1 实施状态（ADR-010，产品窗口里程碑）
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#108-window-integrity-and-failure-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.8 窗口完整性和故障处理
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#109-persistence-and-observability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.9 持久性和可观察性
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#1010-verification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.10 验证
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#1011-open-questions-and-validation-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.11 未解决的问题和需要验证
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../11-rule-engine/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    规则引擎
+    Component Detection
   
 
     
@@ -1144,14 +905,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../12-local-storage-and-retention/" class="md-nav__link">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    本地存储与保留
+    Temporal Aggregation
   
 
     
@@ -1172,14 +933,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../13-upload-and-synchronization/" class="md-nav__link">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    上传与同步
+    Rule Engine
   
 
     
@@ -1200,14 +961,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../14-data-model-and-database/" class="md-nav__link">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    数据模型与数据库
+    Local Storage and Retention
   
 
     
@@ -1228,14 +989,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../15-rest-api-and-events/" class="md-nav__link">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    REST API 与事件
+    Upload and Synchronization
   
 
     
@@ -1256,14 +1017,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../16-edge-dashboard/" class="md-nav__link">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    边缘端看板
+    Data Model and Database
   
 
     
@@ -1284,14 +1045,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../17-central-admin-dashboard/" class="md-nav__link">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    中心管理看板
+    REST API and Events
   
 
     
@@ -1312,14 +1073,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../18-monorepo-and-code-organization/" class="md-nav__link">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Monorepo 与代码组织
+    Edge Dashboard
   
 
     
@@ -1340,14 +1101,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../19-training-and-evaluation/" class="md-nav__link">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    训练与评估
+    Central Admin Dashboard
   
 
     
@@ -1368,14 +1129,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../20-deployment-and-operations/" class="md-nav__link">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    部署与运维
+    Monorepo and Code Organization
   
 
     
@@ -1396,14 +1157,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../21-security-and-source-distribution/" class="md-nav__link">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    安全与源码分发
+    Training and Evaluation
   
 
     
@@ -1424,14 +1185,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../22-testing-and-quality-assurance/" class="md-nav__link">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    测试与质量保证
+    Deployment and Operations
   
 
     
@@ -1452,14 +1213,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../23-observability-and-support/" class="md-nav__link">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    可观测性与支持
+    Security and Source Distribution
   
 
     
@@ -1480,14 +1241,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../24-human-in-the-loop/" class="md-nav__link">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    人在回路
+    Testing and Quality Assurance
   
 
     
@@ -1508,14 +1269,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../25-roadmap/" class="md-nav__link">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    路线图
+    Observability and Support
   
 
     
@@ -1536,14 +1297,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../26-customer-acceptance/" class="md-nav__link">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    客户验收
+    Human in the Loop
   
 
     
@@ -1564,14 +1325,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../27-risks-and-mitigations/" class="md-nav__link">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    风险与缓解
+    Roadmap
   
 
     
@@ -1592,14 +1353,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../28-edge-acceptance-report/" class="md-nav__link">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    边缘验收报告
+    Customer Acceptance
   
 
     
@@ -1620,14 +1381,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../appendices/" class="md-nav__link">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    附录
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/28-edge-acceptance-report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Acceptance Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
   
 
     
@@ -1670,7 +1487,7 @@
   <span class="md-ellipsis">
     
   
-    架构决策
+    Architecture Decisions
   
 
     
@@ -1686,7 +1503,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    架构决策
+    Architecture Decisions
   
 
           </label>
@@ -1699,14 +1516,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/" class="md-nav__link">
+      <a href="../../design/decisions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR 索引
+    ADR Index
   
 
     
@@ -1727,14 +1544,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-001-edge-first-inspection/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-001：边缘优先检测
+    ADR-001: Edge-First Inspection
   
 
     
@@ -1755,14 +1572,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-002-python-backend/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-002-python-backend/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-002：Python 后端
+    ADR-002: Python Backend
   
 
     
@@ -1783,14 +1600,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-003-vue-3-and-typescript-frontend/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-003：Vue 3 与 TypeScript 前端
+    ADR-003: Vue 3 and TypeScript Frontend
   
 
     
@@ -1811,14 +1628,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-004-two-stage-detection/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-004-two-stage-detection/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-004：两阶段检测
+    ADR-004: Two-Stage Detection
   
 
     
@@ -1839,14 +1656,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-005-local-first-storage-and-delayed-upload/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-005：本地优先存储与延迟上传
+    ADR-005: Local-First Storage and Delayed Upload
   
 
     
@@ -1867,14 +1684,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-006-rest-plus-websocket/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-006：REST 与 WebSocket
+    ADR-006: REST Plus WebSocket
   
 
     
@@ -1895,14 +1712,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-007-monorepo/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-007-monorepo/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-007：Monorepo
+    ADR-007: Monorepo
   
 
     
@@ -1923,14 +1740,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-008-docker-deployment/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-008-docker-deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-008：Docker 部署
+    ADR-008: Docker Deployment
   
 
     
@@ -1951,14 +1768,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-009-static-image-first-mvp/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-009：静态图像优先 MVP
+    ADR-009: Static-Image-First MVP
   
 
     
@@ -1979,14 +1796,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-010-per-component-temporal-aggregation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-010：按组件时序聚合
+    ADR-010: Per-Component Temporal Aggregation
   
 
     
@@ -2007,14 +1824,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-011-labeled-train-and-inspect-mvp/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-011：标记为训练和检查 MVP
+    ADR-011: Labeled Train-and-Inspect MVP
   
 
     
@@ -2035,14 +1852,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-012-edge-api-m1-viewer-auth/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-012：Edge API M1 查看器身份验证
+    ADR-012: Edge API M1 Viewer Auth
   
 
     
@@ -2063,14 +1880,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-013-camera-frame-sources-and-multi-instance/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-013：相机帧源和多实例边缘
+    ADR-013: Camera Frame Sources and Multi-Instance Edge
   
 
     
@@ -2091,14 +1908,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
+      <a href="../../design/decisions/ADR-014-web-dev-test-harness/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    ADR-014：Web 开发测试工具
+    ADR-014: Web Dev Test Harness
   
 
     
@@ -2159,7 +1976,7 @@
   <span class="md-ellipsis">
     
   
-    工程合同
+    Engineering Contracts
   
 
     
@@ -2175,7 +1992,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    工程合同
+    Engineering Contracts
   
 
           </label>
@@ -2195,7 +2012,7 @@
   <span class="md-ellipsis">
     
   
-    合同索引
+    Contract Index
   
 
     
@@ -2223,7 +2040,7 @@
   <span class="md-ellipsis">
     
   
-    架构边界
+    Architecture Boundaries
   
 
     
@@ -2251,7 +2068,7 @@
   <span class="md-ellipsis">
     
   
-    代码与接口合同
+    Code and Interface Contracts
   
 
     
@@ -2279,7 +2096,7 @@
   <span class="md-ellipsis">
     
   
-    AI、规则引擎与故障安全合同
+    AI, Rule Engine, and Fail-Safe Contracts
   
 
     
@@ -2307,7 +2124,7 @@
   <span class="md-ellipsis">
     
   
-    边缘端、存储与上传合同
+    Edge, Storage, and Upload Contracts
   
 
     
@@ -2335,7 +2152,7 @@
   <span class="md-ellipsis">
     
   
-    数据、API 与版本合同
+    Data, API, and Versioning Contracts
   
 
     
@@ -2363,7 +2180,7 @@
   <span class="md-ellipsis">
     
   
-    测试、质量与 CI 合同
+    Testing, Quality, and CI Contracts
   
 
     
@@ -2391,7 +2208,7 @@
   <span class="md-ellipsis">
     
   
-    部署、可观测性与运维
+    Deployment, Observability, and Operations
   
 
     
@@ -2419,7 +2236,7 @@
   <span class="md-ellipsis">
     
   
-    安全、权限与审计
+    Security, Permissions, and Audit
   
 
     
@@ -2447,7 +2264,7 @@
   <span class="md-ellipsis">
     
   
-    工业现场与变更控制
+    Industrial Site and Change Control
   
 
     
@@ -2475,7 +2292,7 @@
   <span class="md-ellipsis">
     
   
-    模型、规则、发布与验收
+    Model, Rule, Release, and Acceptance
   
 
     
@@ -2503,7 +2320,7 @@
   <span class="md-ellipsis">
     
   
-    最低强制合同
+    Minimum Mandatory Contracts
   
 
     
@@ -2556,7 +2373,7 @@
   <span class="md-ellipsis">
     
   
-    运维手册
+    Operational Runbooks
   
 
     
@@ -2572,7 +2389,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    运维手册
+    Operational Runbooks
   
 
           </label>
@@ -2592,7 +2409,7 @@
   <span class="md-ellipsis">
     
   
-    运行手册索引
+    Runbook Index
   
 
     
@@ -2620,7 +2437,7 @@
   <span class="md-ellipsis">
     
   
-    相机断开
+    Camera Disconnection
   
 
     
@@ -2648,7 +2465,7 @@
   <span class="md-ellipsis">
     
   
-    模型加载失败
+    Model-Loading Failure
   
 
     
@@ -2676,7 +2493,7 @@
   <span class="md-ellipsis">
     
   
-    磁盘空间不足
+    Low Disk Space
   
 
     
@@ -2704,7 +2521,7 @@
   <span class="md-ellipsis">
     
   
-    上传积压
+    Upload Backlog
   
 
     
@@ -2732,7 +2549,7 @@
   <span class="md-ellipsis">
     
   
-    数据库恢复
+    Database Recovery
   
 
     
@@ -2760,7 +2577,7 @@
   <span class="md-ellipsis">
     
   
-    容器反复重启
+    Repeated Container Restart
   
 
     
@@ -2788,7 +2605,7 @@
   <span class="md-ellipsis">
     
   
-    网络恢复同步
+    Network Recovery Synchronization
   
 
     
@@ -2816,7 +2633,7 @@
   <span class="md-ellipsis">
     
   
-    模型回滚
+    Model Rollback
   
 
     
@@ -2844,7 +2661,7 @@
   <span class="md-ellipsis">
     
   
-    规则回滚
+    Rule Rollback
   
 
     
@@ -2872,7 +2689,7 @@
   <span class="md-ellipsis">
     
   
-    模型改进
+    Model Improvement
   
 
     
@@ -2900,7 +2717,7 @@
   <span class="md-ellipsis">
     
   
-    数据收集和注释
+    Data Collection and Annotation
   
 
     
@@ -2928,7 +2745,7 @@
   <span class="md-ellipsis">
     
   
-    备份与恢复
+    Backup and Recovery
   
 
     
@@ -2956,7 +2773,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2984,7 +2801,7 @@
   <span class="md-ellipsis">
     
   
-    部署升级和回滚
+    Deployment Upgrade and Rollback
   
 
     
@@ -3012,7 +2829,7 @@
   <span class="md-ellipsis">
     
   
-    边缘验收执行
+    Edge Acceptance Execution
   
 
     
@@ -3094,14 +2911,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reviews/AUDIT-001-system-audit/" class="md-nav__link">
+      <a href="../AUDIT-001-system-audit/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    系统审核 (AUDIT-001)
+    System Audit (AUDIT-001)
   
 
     
@@ -3122,14 +2939,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reviews/PR-003-review/" class="md-nav__link">
+      <a href="../PR-003-review/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    PR-003 评论
+    PR-003 Review
   
 
     
@@ -3150,14 +2967,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reviews/PR-008-review/" class="md-nav__link">
+      <a href="../PR-008-review/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    PR-008 评论
+    PR-008 Review
   
 
     
@@ -3210,7 +3027,7 @@
   <span class="md-ellipsis">
     
   
-    调研
+    Research
   
 
     
@@ -3226,7 +3043,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    调研
+    Research
   
 
           </label>
@@ -3246,7 +3063,7 @@
   <span class="md-ellipsis">
     
   
-    工业检测成功率
+    Industrial Inspection Success Rates
   
 
     
@@ -3274,7 +3091,7 @@
   <span class="md-ellipsis">
     
   
-    YOLO 能力与成功率
+    YOLO Capabilities and Success Rates
   
 
     
@@ -3302,7 +3119,7 @@
   <span class="md-ellipsis">
     
   
-    成像流程与训练成本
+    Imaging Workflow and Training Cost
   
 
     
@@ -3355,7 +3172,7 @@
   <span class="md-ellipsis">
     
   
-    贡献者文档
+    Contributor Documentation
   
 
     
@@ -3371,7 +3188,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    贡献者文档
+    Contributor Documentation
   
 
           </label>
@@ -3391,7 +3208,7 @@
   <span class="md-ellipsis">
     
   
-    贡献指南
+    Contributing
   
 
     
@@ -3419,7 +3236,7 @@
   <span class="md-ellipsis">
     
   
-    AI 上下文快照
+    AI Context Snapshot
   
 
     
@@ -3453,7 +3270,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -3462,15 +3279,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#101-purpose" class="md-nav__link">
+  <a href="#1-review-decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.1 目的
+        1. Review Decision
       
     </span>
   </a>
@@ -3478,10 +3295,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#102-scope" class="md-nav__link">
+  <a href="#2-scope-and-evidence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.2 范围
+        2. Scope and Evidence
       
     </span>
   </a>
@@ -3489,10 +3306,226 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#103-core-invariants" class="md-nav__link">
+  <a href="#3-required-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.3 核心不变量
+        3. Required Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Required Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-fixed-during-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Fixed During Review
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 Fixed During Review">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f01-p2-documented-422-code-review_validation_failed-was-dead-code-and-a-construction-could-500" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F01 - P2: Documented 422 code REVIEW_VALIDATION_FAILED was dead code and a construction could 500
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f02-p2-design-243-corrected-ok-terminology-diverged-from-the-implemented-disposition-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F02 - P2: Design 24.3 "corrected OK" terminology diverged from the implemented disposition set
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f03-p2-edge-review-queue-showed-empty-reason-codes-for-open-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F03 - P2: Edge review queue showed empty reason codes for open items
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f04-p2-unbounded-component_corrections-list-security-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F04 - P2: Unbounded component_corrections list (security hardening)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f05-p2-design-14-did-not-document-the-edge-review_records-table-or-the-edge-review-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F05 - P2: Design 14 did not document the edge review_records table or the edge review model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f06-p2-ts-nullabilityrequest-type-divergence-between-hand-written-and-generated-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F06 - P2: TS nullability/request-type divergence between hand-written and generated contracts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f07-p2-malformed-review-queue-cursor-could-return-500-instead-of-400" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F07 - P2: Malformed review-queue cursor could return 500 instead of 400
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f08-p2-mock-client-diverged-from-server-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F08 - P2: Mock client diverged from server validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f09-p3-log-injection-via-reviewer-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F09 - P3: Log injection via reviewer name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-f10-p3-documentation-gaps-closed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-F10 - P3: Documentation gaps closed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-accepted-trade-offs-and-deferred-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Accepted Trade-offs and Deferred Work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 Accepted Trade-offs and Deferred Work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pr31-t01-p2-reviewer-identity-is-caller-supplied-free-text-impersonation-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-T01 - P2: Reviewer identity is caller-supplied free text (impersonation surface)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-t02-p2-review-records-have-no-uploadsync-plumbing-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-T02 - P2: Review records have no upload/sync plumbing yet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-t03-p3-no-review-retention-policy-or-submission-rate-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-T03 - P3: No review retention policy or submission rate limit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-t04-p3-disposition-evolution-touches-8-hand-maintained-locations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-T04 - P3: Disposition evolution touches ~8 hand-maintained locations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr31-t05-p3-review-submission-is-exposed-through-the-viewer-credential-contract-08-deviation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR31-T05 - P3: Review submission is exposed through the viewer credential (contract 08 deviation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-confirmed-non-invasive-and-decoupled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Confirmed Non-Invasive and Decoupled
       
     </span>
   </a>
@@ -3500,10 +3533,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#104-component-state-model" class="md-nav__link">
+  <a href="#5-security-assessment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.4 组件状态模型
+        5. Security Assessment
       
     </span>
   </a>
@@ -3511,10 +3544,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#105-temporal-aggregation-sequence" class="md-nav__link">
+  <a href="#6-extensibility-assessment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.5 时间聚合序列
+        6. Extensibility Assessment
       
     </span>
   </a>
@@ -3522,76 +3555,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#106-default-policy" class="md-nav__link">
+  <a href="#7-files-changed-review-pass" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.6 默认策略
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#107-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.7 配置
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#1071-implementation-status-adr-010-product-window-milestone" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.7.1 实施状态（ADR-010，产品窗口里程碑）
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#108-window-integrity-and-failure-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.8 窗口完整性和故障处理
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#109-persistence-and-observability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.9 持久性和可观察性
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#1010-verification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.10 验证
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#1011-open-questions-and-validation-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.11 未解决的问题和需要验证
+        7. Files Changed (Review Pass)
       
     </span>
   </a>
@@ -3618,216 +3585,228 @@
   
 
 
-<h1 id="10-temporal-aggregation">10. 时间聚合<a class="headerlink" href="#10-temporal-aggregation" title="Permanent link">&para;</a></h1>
-<h2 id="101-purpose">10.1 目的<a class="headerlink" href="#101-purpose" title="Permanent link">&para;</a></h2>
-<p>时间聚合器将 <a href="../09-component-detection/">component detection</a> 的帧级观察结果转换为 <a href="../11-rule-engine/">rule engine</a> 的产品级证据。 YOLO 仍然处理单个帧。聚合通过组合观察结果来提高系统的鲁棒性；它不会提高模型的单帧精度。</p>
-<h2 id="102-scope">10.2 范围<a class="headerlink" href="#102-scope" title="Permanent link">&para;</a></h2>
-<p>静态训练和检查 MVP 不包括时间聚合。生产目标在一个有限的实物产品窗口内汇总证据。未来的跟踪可能支持更复杂的重叠场景，但证据隔离仍然是强制性的。</p>
-<h2 id="103-core-invariants">10.3 核心不变量<a class="headerlink" href="#103-core-invariants" title="Permanent link">&para;</a></h2>
-<ol>
-<li>证据按 <code>inspection_id</code>、所需组件密钥和固定模型/配置版本进行分区。</li>
-<li>各个所需组件独立聚合；禁止整体产品多数投票。</li>
-<li>被拒绝的、陈旧的、重复的或错误的窗口框架不会做出贡献。</li>
-<li>一个高置信度观察或多个中等置信度观察只能根据该组件的配置策略来建立存在。</li>
-<li>不确定、矛盾或不充分的证据不能成为<code>OK</code>。</li>
-<li>关闭窗口是最终决定；迟到的帧会被记录为丢弃，并且不会改变其决定。</li>
-</ol>
-<h2 id="104-component-state-model">10.4 组件状态模型<a class="headerlink" href="#104-component-state-model" title="Permanent link">&para;</a></h2>
-<p>每个必需的组件均以以下证据状态之一结尾：</p>
-<table>
-<thead>
-<tr>
-<th>状态</th>
-<th>意义</th>
-<th>规则引擎后果</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>PRESENT</code></td>
-<td>满足配置的积极证据政策</td>
-<td>有资格满足该组件</td>
-</tr>
-<tr>
-<td><code>MISSING</code></td>
-<td>存在足够的有效机会，但没有可接受的积极证据</td>
-<td><code>NG</code></td>
-</tr>
-<tr>
-<td><code>UNCERTAIN</code></td>
-<td>存在一些证据，但质量、一致性或数量不足</td>
-<td><code>NG</code></td>
-</tr>
-<tr>
-<td><code>UNVERIFIABLE</code></td>
-<td>管道/窗口无法提供有效的检查机会</td>
-<td><code>NG</code></td>
-</tr>
-</tbody>
-</table>
-<p>即使外部业务接口仅公开 <code>OK</code> 和 <code>NG</code>，<code>UNCERTAIN</code> 和 <code>UNVERIFIABLE</code> 也会以诊断方式保留。</p>
-<h2 id="105-temporal-aggregation-sequence">10.5 时间聚合序列<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Window as 产品展示
-    participant Quality as 框架质量门
-    participant Detector as 元件检测器
-    participant Aggregate as 每个组件聚合器
-    participant Rules as 规则引擎
-    Window-&gt;&gt;Aggregate:打开检查所需的组件
-loop 每个相关帧
-        Window-&gt;&gt;Quality:验证框架
-alt 帧有效
-            Quality-&gt;&gt;Detector:产品投资回报率
-            Detector--&gt;&gt;Aggregate:按组件键控的观察结果
-            Aggregate-&gt;&gt;Aggregate:对每个组件进行重复数据删除和更新
-else 帧无效
-            Quality--&gt;&gt;Aggregate:仅拒绝原因
-        end
-    end
-    Window-&gt;&gt;Aggregate:关闭窗口
-loop 每个必需的组件
-        Aggregate-&gt;&gt;Aggregate:解决现有、缺失、不确定或无法验证的问题
-    end
-    Aggregate--&gt;&gt;Rules:不可变组件证据集
-    Rules--&gt;&gt;Window:仅当所有必需的组件都存在时才可以</code></pre>
-<h2 id="106-default-policy">10.6 默认策略<a class="headerlink" href="#106-default-policy" title="Permanent link">&para;</a></h2>
-<p>实用的初始策略接受不同相邻有效帧中的一个高置信度观察或至少两个中等置信度观察。它还需要足够的有效检查机会和可选的可见性约束。</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="n">evidence</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">valid</span> <span class="o">=</span> <span class="n">deduplicate</span><span class="p">(</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">evidence</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">frame_quality</span><span class="o">.</span><span class="n">accepted</span><span class="p">)</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid</span><span class="o">.</span><span class="n">opportunities</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">policy</span><span class="o">.</span><span class="n">minimum_valid_frames</span><span class="p">:</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        <span class="k">return</span> <span class="n">UNVERIFIABLE</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">confidence</span> <span class="o">&gt;=</span> <span class="n">policy</span><span class="o">.</span><span class="n">high_confidence</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">valid</span><span class="o">.</span><span class="n">detections</span><span class="p">):</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="k">return</span> <span class="n">PRESENT</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">medium</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">valid</span><span class="o">.</span><span class="n">detections</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">confidence</span> <span class="o">&gt;=</span> <span class="n">policy</span><span class="o">.</span><span class="n">medium_confidence</span><span class="p">]</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">if</span> <span class="n">has_adjacent_distinct_frames</span><span class="p">(</span><span class="n">medium</span><span class="p">,</span> <span class="n">policy</span><span class="o">.</span><span class="n">max_frame_gap</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">medium</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">policy</span><span class="o">.</span><span class="n">medium_hits</span><span class="p">:</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="k">return</span> <span class="n">PRESENT</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="k">if</span> <span class="n">medium</span> <span class="ow">or</span> <span class="n">valid</span><span class="o">.</span><span class="n">low_confidence_detections</span><span class="p">:</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="k">return</span> <span class="n">UNCERTAIN</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">return</span> <span class="n">MISSING</span>
+<h1 id="pr-031-review-edge-local-human-review-optional-adr-016">PR-031 Review: Edge-Local Human Review (Optional, ADR-016)<a class="headerlink" href="#pr-031-review-edge-local-human-review-optional-adr-016" title="Permanent link">&para;</a></h1>
+<h2 id="1-review-decision">1. Review Decision<a class="headerlink" href="#1-review-decision" title="Permanent link">&para;</a></h2>
+<p><strong>Status: RESOLVED</strong></p>
+<p>The edge-local human review feature (<code>feat/edge-local-human-review</code>) is a
+strictly additive, optional capability that satisfies the requested properties:
+it is non-invasive (no existing record, endpoint, flow, contract, or frontend
+logic changed), decoupled across the established layers, and built on an
+append-only model that extends cleanly toward the future central review flow.</p>
+<p>The review found no P1 blockers. One P2 security hardening item (unbounded
+<code>component_corrections</code> list), one P2 functional gap (review queue showing
+empty reason codes for open items), and a set of P2 documentation/contract
+consistency issues were identified and fixed in the review pass (section 3).
+Remaining accepted trade-offs (self-asserted reviewer identity, no review
+upload-sync yet, no review retention policy) are explicit in ADR-016 and
+section 4 below.</p>
+<h2 id="2-scope-and-evidence">2. Scope and Evidence<a class="headerlink" href="#2-scope-and-evidence" title="Permanent link">&para;</a></h2>
+<p>Reviewed branch: <code>feat/edge-local-human-review</code> (into <code>main</code>), 7 commits plus
+the review-pass fixes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>8061c0b feat(domain): add append-only human review models
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>019d271 feat(edge): persist append-only human review records
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>4abd58d feat(edge): add review queue and submission API
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>88560b3 test(edge): cover review repository and API
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>96e35df feat(api-client): expose review queue and submission
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>749cb52 feat(edge-web): add review queue page and inspection review panel
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>e918b5f docs(edge): record ADR-016 edge-local human review
 </code></pre></div>
-<p>帧邻接使用捕获序列和最大经过时间限制。除非规则明确基于计数，否则一帧中的多个框将计为一次临时命中。</p>
-<h2 id="107-configuration">10.7 配置<a class="headerlink" href="#107-configuration" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">temporal</span><span class="p">:</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">window_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">identity</span><span class="w">   </span><span class="c1"># identity (validated correlation) or time (dev fallback)</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">minimum_valid_frames</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">maximum_window_ms</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2500</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">reject_duplicate_frame_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">components</span><span class="p">:</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">manual</span><span class="p">:</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.85</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.65</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="nt">component_a</span><span class="p">:</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="nt">high_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.90</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="nt">medium_confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.70</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span><span class="nt">medium_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">      </span><span class="nt">require_adjacent_hits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<p>Review method: four parallel sub-agent reviews covering documentation/contract
+consistency, security, decoupling/non-invasiveness, and extensibility, followed
+by a consolidated fix pass.</p>
+<p>Primary requirements:</p>
+<ul>
+<li><a href="../../design/24-human-in-the-loop/">Human-in-the-Loop Operations</a>, sections
+  24.1-24.14.</li>
+<li><a href="../../design/decisions/ADR-016-edge-local-human-review/">ADR-016: Edge-Local Human Review</a>.</li>
+<li><a href="../../design/15-rest-api-and-events/">REST API and Events</a>, section 15.3.3.</li>
+<li><a href="../../design/14-data-model-and-database/">Data Model and Database</a>, sections
+  14.3/14.5.</li>
+<li><a href="../../contracts/01-architecture-boundaries/">Contract 01: Architecture Boundaries</a>.</li>
+<li><a href="../../contracts/05-data-api-and-versioning-contracts/">Contract 05: Data, API, and Versioning</a>.</li>
+</ul>
+<p>Verification executed during the review pass (all passed): <code>ruff check/format</code>,
+<code>mypy</code> (173 files), <code>pytest</code> (exit 0), api-client build/lint/test (60 tests),
+edge-web build/lint/test (49 tests), edge-web Playwright e2e (15 passed),
+<code>mkdocs build --strict</code>, and <code>git diff --check</code>.</p>
+<h2 id="3-required-findings">3. Required Findings<a class="headerlink" href="#3-required-findings" title="Permanent link">&para;</a></h2>
+<h3 id="31-fixed-during-review">3.1 Fixed During Review<a class="headerlink" href="#31-fixed-during-review" title="Permanent link">&para;</a></h3>
+<h4 id="pr31-f01-p2-documented-422-code-review_validation_failed-was-dead-code-and-a-construction-could-500">PR31-F01 - P2: Documented 422 code <code>REVIEW_VALIDATION_FAILED</code> was dead code and a construction could 500<a class="headerlink" href="#pr31-f01-p2-documented-422-code-review_validation_failed-was-dead-code-and-a-construction-could-500" title="Permanent link">&para;</a></h4>
+<p>The <code>ReviewRecord</code> construction sat outside the <code>try</code> in
+<code>api/routers/reviews.py</code>, so a domain-level validation error would surface as
+an internal 500 instead of a documented 422. Fixed by moving the construction
+inside the <code>try</code> that maps <code>ValidationError</code> to <code>422 REVIEW_VALIDATION_FAILED</code>
+(the request-body path keeps the global <code>VALIDATION_FAILED</code>, matching the
+documented 15.3.3 errors).</p>
+<h4 id="pr31-f02-p2-design-243-corrected-ok-terminology-diverged-from-the-implemented-disposition-set">PR31-F02 - P2: Design 24.3 "corrected OK" terminology diverged from the implemented disposition set<a class="headerlink" href="#pr31-f02-p2-design-243-corrected-ok-terminology-diverged-from-the-implemented-disposition-set" title="Permanent link">&para;</a></h4>
+<p>Design 24.3 listed "corrected OK" for an <code>NG</code> outcome while the implementation
+(and ADR-016/15.3.3) uses <code>CONFIRMED_OK</code> for both an <code>NG</code>-to-<code>OK</code> correction and
+an <code>OK</code> confirmation; there is no <code>CORRECTED_OK</code> value. Updated design 24.3 to
+"confirmed OK" and documented that the original machine outcome on the record
+distinguishes the two cases. Disposition sets were verified identical across
+<code>allowed_review_dispositions()</code>, <code>ReviewPanel.vue</code>, and
+<code>MockApiClient.allowedDispositions()</code>.</p>
+<h4 id="pr31-f03-p2-edge-review-queue-showed-empty-reason-codes-for-open-items">PR31-F03 - P2: Edge review queue showed empty reason codes for open items<a class="headerlink" href="#pr31-f03-p2-edge-review-queue-showed-empty-reason-codes-for-open-items" title="Permanent link">&para;</a></h4>
+<p><code>list_review_queue</code> sourced <code>reason_summary</code> from the latest review's snapshot,
+which is empty before any review exists — exactly the triage data a reviewer
+needs for open <code>NG</code> items. Fixed to read the inspection's own machine reason
+codes (<code>_decision_reasons</code>), consistent with the mock client. Also adds a
+<code>test_review_queue_reports_review_state</code> assertion for the open-item codes.</p>
+<h4 id="pr31-f04-p2-unbounded-component_corrections-list-security-hardening">PR31-F04 - P2: Unbounded <code>component_corrections</code> list (security hardening)<a class="headerlink" href="#pr31-f04-p2-unbounded-component_corrections-list-security-hardening" title="Permanent link">&para;</a></h4>
+<p><code>SubmitReviewRequest</code> and <code>ReviewRecord.component_corrections</code> accepted an
+unbounded list; a large body would be buffered and stored in one <code>TEXT</code> cell
+with read amplification. Added <code>max_length=64</code> at both the API schema and
+domain model; OpenAPI and generated TS regenerated.</p>
+<h4 id="pr31-f05-p2-design-14-did-not-document-the-edge-review_records-table-or-the-edge-review-model">PR31-F05 - P2: Design 14 did not document the edge <code>review_records</code> table or the edge review model<a class="headerlink" href="#pr31-f05-p2-design-14-did-not-document-the-edge-review_records-table-or-the-edge-review-model" title="Permanent link">&para;</a></h4>
+<p>Design 14 documented only the central <code>ReviewRecord</code> (user FK, revision chain),
+while the edge table (migration 0008) is a distinct append-only model. Added the
+<code>review_records</code> row to the §14.5 edge schema table and a note in §14.3
+distinguishing the edge (caller-supplied reviewer, <code>supersedes_review_id</code>) from
+the future central model.</p>
+<h4 id="pr31-f06-p2-ts-nullabilityrequest-type-divergence-between-hand-written-and-generated-contracts">PR31-F06 - P2: TS nullability/request-type divergence between hand-written and generated contracts<a class="headerlink" href="#pr31-f06-p2-ts-nullabilityrequest-type-divergence-between-hand-written-and-generated-contracts" title="Permanent link">&para;</a></h4>
+<p><code>types.ts</code> treated <code>reason</code>/<code>note</code>/<code>original_reason_codes</code>/
+<code>component_corrections</code>/<code>supersedes_review_id</code> as always present while the
+generated <code>api.ts</code> marked them optional, and <code>SubmitReviewRequest</code> reused
+<code>ComponentCorrection</code> instead of the generated <code>ComponentCorrectionRequest</code>.
+Added the <code>ComponentCorrectionRequest</code> alias in <code>types.ts</code> (the hand-written
+types remain the accurate wire contract; the generated looseness is accepted
+and now documented in <code>types.ts</code>).</p>
+<h4 id="pr31-f07-p2-malformed-review-queue-cursor-could-return-500-instead-of-400">PR31-F07 - P2: Malformed review-queue cursor could return 500 instead of 400<a class="headerlink" href="#pr31-f07-p2-malformed-review-queue-cursor-could-return-500-instead-of-400" title="Permanent link">&para;</a></h4>
+<p><code>_decode_cursor</code> did not reject non-dict JSON payloads or catch <code>TypeError</code>, so
+a crafted <code>?cursor=</code> on <code>GET /reviews</code> escaped <code>InvalidCursorError</code>. Fixed in
+the shared helper (also hardening <code>list_inspections</code>/<code>list_uploads</code>), now
+raising <code>400 INVALID_CURSOR</code>.</p>
+<h4 id="pr31-f08-p2-mock-client-diverged-from-server-validation">PR31-F08 - P2: Mock client diverged from server validation<a class="headerlink" href="#pr31-f08-p2-mock-client-diverged-from-server-validation" title="Permanent link">&para;</a></h4>
+<p><code>MockApiClient.submitReview</code> did not enforce the non-empty reviewer or
+<code>INCONCLUSIVE</code>-requires-reason rules the server applies. Added identical checks
+(422 <code>VALIDATION_FAILED</code>) plus a consistency contract test asserting every
+documented disposition is a known <code>REVIEW_DISPOSITIONS</code> value.</p>
+<h4 id="pr31-f09-p3-log-injection-via-reviewer-name">PR31-F09 - P3: Log injection via reviewer name<a class="headerlink" href="#pr31-f09-p3-log-injection-via-reviewer-name" title="Permanent link">&para;</a></h4>
+<p><code>repository.submit_review</code> logged the free-text reviewer with <code>%s</code>, allowing
+control characters to forge log lines (CWE-117). Changed to <code>%r</code>
+(repr-escaped), matching the <code>retry_upload</code> pattern.</p>
+<h4 id="pr31-f10-p3-documentation-gaps-closed">PR31-F10 - P3: Documentation gaps closed<a class="headerlink" href="#pr31-f10-p3-documentation-gaps-closed" title="Permanent link">&para;</a></h4>
+<ul>
+<li>§15.2.1 general auth rule now names the ADR-016 review-submission exception
+  to the "mutating routes require operator/edge_admin" statement.</li>
+<li>§15.3.3 idempotency cell changed from the meaningless "Deterministic per
+  review_id" to "None: each call appends a new review", and <code>409
+  REVIEW_CONFLICT</code> is documented to also cover a <code>supersedes_review_id</code> that
+  names no review of that inspection.</li>
+<li>§16.3 information-architecture table gained the <code>/review</code> route row.</li>
+<li>ADR-016 decision 2 now explicitly defers the design 24.3 "system exception"
+  row (and operational-fault disposition) until central review exists.</li>
+</ul>
+<h3 id="32-accepted-trade-offs-and-deferred-work">3.2 Accepted Trade-offs and Deferred Work<a class="headerlink" href="#32-accepted-trade-offs-and-deferred-work" title="Permanent link">&para;</a></h3>
+<h4 id="pr31-t01-p2-reviewer-identity-is-caller-supplied-free-text-impersonation-surface">PR31-T01 - P2: Reviewer identity is caller-supplied free text (impersonation surface)<a class="headerlink" href="#pr31-t01-p2-reviewer-identity-is-caller-supplied-free-text-impersonation-surface" title="Permanent link">&para;</a></h4>
+<p>Anyone holding the single viewer credential can record a review attributed to
+any reviewer name; the API does not bind the name to the authenticated session.
+This is the explicit, accepted ADR-016 decision 3/7 (no edge role model), and
+the audit log uses repr-escaped identity. A server-derived operator identity or
+trusted-operator allow-list is the documented future hardening.</p>
+<h4 id="pr31-t02-p2-review-records-have-no-uploadsync-plumbing-yet">PR31-T02 - P2: Review records have no upload/sync plumbing yet<a class="headerlink" href="#pr31-t02-p2-review-records-have-no-uploadsync-plumbing-yet" title="Permanent link">&para;</a></h4>
+<p><code>review_records</code> has no <code>device_id</code>/<code>synchronization_status</code>/<code>payload_hash</code>, and
+no <code>upload_tasks</code> rows are created for reviews. ADR-016 §5 records this as an
+open question and design 24.11 allows "review items synchronize later". Because
+reviews are append-only with a locally generated <code>review_id</code>, future sync maps
+directly onto the existing outbox pattern (idempotency key
+<code>review:{device_id}:{review_id}</code>) without the inspection content-hash
+machinery. Deferred, not blocking.</p>
+<h4 id="pr31-t03-p3-no-review-retention-policy-or-submission-rate-limit">PR31-T03 - P3: No review retention policy or submission rate limit<a class="headerlink" href="#pr31-t03-p3-no-review-retention-policy-or-submission-rate-limit" title="Permanent link">&para;</a></h4>
+<p><code>review_records</code> grows without bound (append-only) and submissions are not
+rate-limited; <code>list_inspection_reviews</code> is unpaginated. Acceptable at MVP
+scale; a retention/compaction policy and rate limiting are future hardening.</p>
+<h4 id="pr31-t04-p3-disposition-evolution-touches-8-hand-maintained-locations">PR31-T04 - P3: Disposition evolution touches ~8 hand-maintained locations<a class="headerlink" href="#pr31-t04-p3-disposition-evolution-touches-8-hand-maintained-locations" title="Permanent link">&para;</a></h4>
+<p>Adding a disposition requires edits in the domain enum, <code>allowed_review_dispositions</code>,
+generated OpenAPI/TS (CI-checked), <code>types.ts</code>, <code>validate.ts</code>,
+<code>MockApiClient.allowedDispositions</code>, and two Vue components. The review added a
+consistency contract test; deriving <code>REVIEW_DISPOSITIONS</code> from the generated
+schemas is the recommended next refactor.</p>
+<h4 id="pr31-t05-p3-review-submission-is-exposed-through-the-viewer-credential-contract-08-deviation">PR31-T05 - P3: Review submission is exposed through the viewer credential (contract 08 deviation)<a class="headerlink" href="#pr31-t05-p3-review-submission-is-exposed-through-the-viewer-credential-contract-08-deviation" title="Permanent link">&para;</a></h4>
+<p>Contract 08 §3 lists "human-review actions that append or supersede a human
+disposition" among operations requiring elevated permissions, but edge review
+submission intentionally uses the existing single viewer credential per
+ADR-016 decision 3/7 (no edge role model). The viewer permission is a
+deliberate operator-convenience decision: the reviewer must be able to
+disposition <code>NG</code> cases directly from the operator dashboard without an
+additional credential, and the edge has no role system to enforce a separate
+<code>reviewer</code> role. This is the same accepted impersonation surface as
+PR31-T01. No behavior change is made now; a future RBAC ADR
+(<code>reviewer</code> role on the edge, or a separately approved PLC/MES disposition
+contract) resolves the deviation, and design 15 §15.2.1 already documents the
+exception.</p>
+<h2 id="4-confirmed-non-invasive-and-decoupled">4. Confirmed Non-Invasive and Decoupled<a class="headerlink" href="#4-confirmed-non-invasive-and-decoupled" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Domain</strong>: only additive models appended after <code>ModelManifest</code>;
+  <code>InspectionRecord</code> untouched.</li>
+<li><strong>Persistence</strong>: <code>inspections</code> table untouched; new <code>review_records</code> table +
+  migration 0008 (<code>down_revision=0007</code>) appended; repository methods added,
+  existing methods byte-identical.</li>
+<li><strong>API</strong>: 12 existing routers untouched (0-line diffs); <code>app.py</code> gained one
+  import + one <code>include_router</code> entry; OpenAPI diff has 0 removed lines.</li>
+<li><strong>Inspection flow</strong>: <code>pipeline.py</code>, <code>state.py</code>, <code>config.py</code>, rules, engine:
+  0-line diffs. Inspect-frame/video, persistence, upload, and retention
+  behavior unchanged.</li>
+<li><strong>Frontend</strong>: <code>InspectionDetailView.vue</code> +8 lines (one import, one additive
+  <code>&lt;ReviewPanel&gt;</code>); <code>App.vue</code> +1 nav link; <code>router/index.ts</code> +1 route. New
+  components import only <code>@assemblyvision/api-client</code>, <code>@assemblyvision/ui</code>,
+  <code>vue</code>, and the existing client factory — no edge-web → edge-service imports.</li>
+<li><strong>api-client</strong>: three new methods/types/validators; existing signatures and
+  mock data untouched.</li>
+<li><strong>Dependency direction</strong> respects architecture boundaries (domain → edge
+  service → api-client → web).</li>
+</ul>
+<h2 id="5-security-assessment">5. Security Assessment<a class="headerlink" href="#5-security-assessment" title="Permanent link">&para;</a></h2>
+<ul>
+<li>SQL injection: clean (all values bound; f-strings only over module-level
+  table-name constants).</li>
+<li>Cursor filter bypass: clean (SHA-256 filter fingerprint embedded in cursor).</li>
+<li>Input bounds: clean after F04 (<code>reason</code> 200, <code>note</code> 2000, <code>reviewer</code> 128,
+  <code>component_corrections</code> ≤ 64; <code>extra="forbid"</code>; strip validators).</li>
+<li>XSS: clean (no <code>v-html</code>; all reviewer/reason/note/disposition rendered via
+  escaped Vue interpolation; CSP <code>script-src 'self'</code>).</li>
+<li>Tamper resistance: <code>original_business_result</code>/<code>internal_decision</code>/
+  <code>reason_codes</code> are server-derived from the stored inspection, never the
+  request; disposition compatibility and supersede ownership re-checked
+  atomically in one transaction.</li>
+<li>Auth wiring: reviews router under <code>Depends(require_viewer)</code>; session cookie
+  <code>HttpOnly</code> + <code>SameSite=strict</code> (no CSRF exposure); 401 covered by tests.</li>
+<li>Migration safety: additive create-table + indexes, FK to <code>inspections</code>,
+  schema.py/migration mirrored column-for-column.</li>
+</ul>
+<h2 id="6-extensibility-assessment">6. Extensibility Assessment<a class="headerlink" href="#6-extensibility-assessment" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Append-only record semantics and a single authoritative domain disposition
+  policy make future adjudication/reassignment additive (new record kinds or
+  columns), never in-place updates (design 24.6/24.7).</li>
+<li>Schema evolution uses the established Alembic chain; adding
+  <code>adjudication_state</code>/<code>assignment_history</code> later follows the 0004/0006
+  <code>op.add_column</code> pattern.</li>
+<li>Queue ordering/sampling (design 24.4 priority and OK audit sampling) is the
+  main future change; the keyset cursor is bound to the current
+  <code>(completed_at, inspection_id)</code> order, so a scored ordering requires binding
+  the cursor to new sort keys.</li>
+<li>Per-component correction UI slots in additively (<code>ComponentCorrection</code> is
+  already modeled end-to-end; the UI does not send it yet).</li>
+<li>OpenAPI + generated TS are CI-drift-checked; the hand-maintained
+  <code>types.ts</code>/<code>validate.ts</code>/client layer is the remaining drift risk (T04).</li>
+</ul>
+<h2 id="7-files-changed-review-pass">7. Files Changed (Review Pass)<a class="headerlink" href="#7-files-changed-review-pass" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>apps/edge-service/src/assemblyvision_edge/api/routers/reviews.py
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>apps/edge-service/src/assemblyvision_edge/api/schemas.py
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>apps/edge-service/src/assemblyvision_edge/persistence/repository.py
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>apps/edge-service/openapi/edge-openapi.json
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>packages/python/domain/src/assemblyvision_domain/models.py
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>packages/typescript/api-client/src/edge/types.ts
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>packages/typescript/api-client/src/edge/MockApiClient.ts
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>packages/typescript/api-client/src/edge/generated/api.ts
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>packages/typescript/api-client/tests/client.test.ts
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>docs/design/14-data-model-and-database.md
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>docs/design/15-rest-api-and-events.md
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>docs/design/16-edge-dashboard.md
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>docs/design/24-human-in-the-loop.md
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>docs/design/decisions/ADR-016-edge-local-human-review.md
 </code></pre></div>
-<p>策略按型号和产品类型进行版本控制和验证。配置的阈值必须遵循严格不等式的<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>，并且启用的时间配置必须为每个规则所需的组件声明一个策略。 <code>medium_confidence</code> 以下的检测永远不会满足计数或空间规则。</p>
-<h2 id="1071-implementation-status-adr-010-product-window-milestone">10.7.1 实施状态（ADR-010，产品窗口里程碑）<a class="headerlink" href="#1071-implementation-status-adr-010-product-window-milestone" title="Permanent link">&para;</a></h2>
-<p>每个组件的时间聚合器和边缘产品窗口管理器是
-为实时摄像机路径实现。每个声明一个实例
-其管道配置中的 <code>temporal:</code> 块运行一个产品窗口：frames
-分组直到帧间间隙或配置的 <code>maximum_window_ms</code>
-关闭窗口，聚合器解析每个组件的一个证据集
-规则引擎只计算一次。因关机而关闭的窗口是
-记录为中断 NG，未从未记录的日志中重建证据
-记忆（10.8）。对于基于计数的规则，<code>detection_count</code> 是最大数量
-在单个有效帧中观察到的实例数；实例跨帧分割
-不满足没有共现的精确<code>expected_count</code>。</p>
-<p>审查修复强制执行的窗口分组、质量和策略行为
-(PR-015 F1-F7)：</p>
-<ul>
-<li><strong>捕获时间分组</strong>：窗口成员资格和持续时间使用帧的
-  获取单调时间戳（<code>CapturedFrame.monotonic_ts_ns</code>），从不
-  推理后处理时间，因此队列积压或推理缓慢无法
-  改变产品边界。无序时间戳被删除并计为
-  陈旧（10.8）。空闲到期后，管理器保留捕获时间
-  边界，因此排队的到期前帧无法重新打开最终产品
-  窗口。</li>
-<li><strong>空闲到期</strong>：运行时将活动窗口最终确定为 <code>GAP</code>
-  空闲时间过去了，因此决定了流结束时的最终产品
-  通常，而不是等待稍后的帧或关闭（10.8）。</li>
-<li><strong>窗口策略</strong>：<code>window_strategy: identity</code>需要经过验证
-  每帧产品标识（跟踪器、触发器或条形码关联）和
-  将每个窗口密封到一种产品。缺失的身份，窗口中的身份
-  过渡，或已确认的多产品框架（包括
-  <code>ProductDetector</code> <code>MULTIPLE_PRODUCTS</code> 结果）关闭窗口
-  完整性违规 (<code>PRODUCT_IDENTITY_MISSING</code>,
-  <code>PRODUCT_IDENTITY_TRANSITION</code>, <code>MULTIPLE_PRODUCTS</code>) 永远无法释放
-  <code>OK</code>。 <code>window_strategy: time</code> 仍然是一个明确的开发后备方案；它
-  并不能证明相邻产品不能重叠，所以生产时间上
-  检查必须使用 <code>identity</code> 或其他经过验证的关联机制。
-  配置拒绝带有时间策略的<code>inspection.enabled: true</code>。</li>
-<li><strong>最大持续时间</strong>：当身份密封窗口达到时
-  <code>maximum_window_ms</code> 当该身份保持连续时，它会关闭为
-  <code>NG</code> 与 <code>WINDOW_MAX_DURATION_EXCEEDED</code>。身份被隔离
-  无法开始另一个窗口，直到不同的经过验证的身份证明
-  产品转型。</li>
-<li><strong>框架质量</strong>：产品检测质量门报告的框架
-  不可用不会造成任何检测，也没有有效的机会；它的质量
-  原因被保留为帧诊断。</li>
-<li><strong>决定原因</strong>：每帧拒绝原因仅用于诊断，并且
-  不能否决一个其汇总证据满足所有规则的窗口。仅
-  窗口完整性违规（中断、身份混合、身份丢失、
-  规则评估失败）独立强制<code>NG</code>。</li>
-<li><strong>故障关闭策略</strong>：启用的临时配置必须提供
-  对于每个规则所需的组件只有一个策略（在
-  规则加载）；缺失的策略防御性地解析为 <code>UNVERIFIABLE</code>
-  <code>COMPONENT_POLICY_MISSING</code>。 <code>medium_confidence</code> 必须严格小于
-  <code>high_confidence</code>。</li>
-<li><strong>策略身份</strong>：每个临时记录都保留完整的 SHA-256
-  <code>aggregation_policy_version</code> 中的规范政策文件。该文件
-  包括聚合格式、窗口策略、窗口参数等
-  每个组件阈值/命中规则，因此历史决策仍然存在
-  配置更改后可重现。</li>
-<li><strong>计数证据</strong>：<code>detection_count</code>、方框区域和中心摘要包括
-  仅检测到等于或高于计数证据阈值（策略
-  <code>medium_confidence</code> 至少），因此低置信度误报不能
-  膨胀一个精确的<code>expected_count</code>。</li>
-</ul>
-<h2 id="108-window-integrity-and-failure-handling">10.8 窗口完整性和故障处理<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
-<ul>
-<li>触发超时将窗口视为不完整而关闭；未解析的组件变为 <code>UNVERIFIABLE</code>。</li>
-<li>重复的帧 ID 将被忽略并进行计数。</li>
-<li>过时的无序捕获时间戳被忽略并计数；他们从不
-  改变窗口。</li>
-<li>空闲窗口在捕获时间后由运行时最终确定为 <code>GAP</code>
-  间隙过去了，无需等待后面的帧。</li>
-<li>身份密封窗口在丢失身份、中间窗口身份时中止
-  过渡或已确认的多产品框架；他们的框架从不混合
-  另一种产品的证据。</li>
-<li>超过<code>maximum_window_ms</code>的身份被关闭
-  <code>WINDOW_MAX_DURATION_EXCEEDED</code> 并被隔离，直到经过不同的验证
-  身份到达；它不能被分割成独立可释放的窗口。</li>
-<li>窗外的框架或检查 ID 不匹配的框架将与证据隔离。</li>
-<li>多个产品或身份切换使窗口无效，除非经过验证的跟踪器证明连续性。</li>
-<li>Worker 重新启动会关闭恢复的打开窗口作为中断<code>NG</code>；它不会从部分记忆中重建证据，除非所有状态都被持久地记录下来。</li>
-<li>队列丢失或推理错误会减少有效机会，并且只能将证据移向<code>UNCERTAIN</code>或<code>UNVERIFIABLE</code>。</li>
-<li>默认情况下禁用早期<code>OK</code>最终确定，因为后面的帧可能会显示歧义；可选的提前完成需要生产验证，并且仍然必须满足每个组件的要求。</li>
-</ul>
-<h2 id="109-persistence-and-observability">10.9 持久性和可观察性<a class="headerlink" href="#109-persistence-and-observability" title="Permanent link">&para;</a></h2>
-<p>保留帧机会、接受/拒绝状态、观察、重复数据删除决策、最终组件状态、阈值、命中帧 ID、置信度摘要和关闭原因。指标包括窗口打开/关闭/超时、帧混合尝试、每个组件状态计数、每个窗口的有效帧以及聚合延迟。</p>
-<h2 id="1010-verification">10.10 验证<a class="headerlink" href="#1010-verification" title="Permanent link">&para;</a></h2>
-<ul>
-<li>表测试阈值相等、一次高命中、重复同一帧命中、相邻/不相邻中等命中、无命中以及仅低置信度证据。</li>
-<li>属性测试添加无效证据不能将组件更改为<code>PRESENT</code>。</li>
-<li>属性测试，证明组件 A 的证据不能改变组件 B。</li>
-<li>测试延迟帧、重复 ID、超时、重启、版本更改和混合检查 ID。</li>
-<li>重放记录的生产窗口并确定性地比较每个组件的结果。</li>
-<li>使用产品级 NG 召回和每个组件召回来验证策略，而不仅仅是帧级准确性。</li>
-</ul>
-<h2 id="1011-open-questions-and-validation-required">10.11 未解决的问题和需要验证<a class="headerlink" href="#1011-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
-<ul>
-<li>选择权威的产品窗口机制并证明框架与产品的隔离。</li>
-<li>测量典型和最坏情况下的有效帧计数和帧间时序。</li>
-<li>校准特定于组件的高/中阈值和邻接要求。</li>
-<li>确定任何组件是否需要计数、可见性或空间一致性聚合。</li>
-<li>根据窗口持续时间和断电风险来确定持久的窗口中日志记录是否合理。</li>
-</ul>
 
 
 
@@ -3853,7 +3832,7 @@ loop 每个必需的组件
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -3885,7 +3864,7 @@ loop 每个必需的组件
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>

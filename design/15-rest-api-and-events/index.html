@@ -1204,10 +1204,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
+  <a href="#1533-review-queue-design-24-adr-016" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.3 Upload Queue and Configuration
+        15.3.3 Review Queue (design 24, ADR-016)
       
     </span>
   </a>
@@ -1215,10 +1215,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1534-web-dev-test-harness-adr-014" class="md-nav__link">
+  <a href="#1534-upload-queue-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.4 Web Dev Test Harness (ADR-014)
+        15.3.4 Upload Queue and Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1535-web-dev-test-harness-adr-014" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.5 Web Dev Test Harness (ADR-014)
       
     </span>
   </a>
@@ -3668,10 +3679,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
+  <a href="#1533-review-queue-design-24-adr-016" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.3 Upload Queue and Configuration
+        15.3.3 Review Queue (design 24, ADR-016)
       
     </span>
   </a>
@@ -3679,10 +3690,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1534-web-dev-test-harness-adr-014" class="md-nav__link">
+  <a href="#1534-upload-queue-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.4 Web Dev Test Harness (ADR-014)
+        15.3.4 Upload Queue and Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1535-web-dev-test-harness-adr-014" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.5 Web Dev Test Harness (ADR-014)
       
     </span>
   </a>
@@ -3838,7 +3860,7 @@
 <h2 id="152-common-behavior">15.2 Common Behavior<a class="headerlink" href="#152-common-behavior" title="Permanent link">&para;</a></h2>
 <h3 id="1521-authentication-and-authorization">15.2.1 Authentication and Authorization<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Edge UI requests originate on the local management network. MVP may use a local operator session, but mutating routes require <code>operator</code> or <code>edge_admin</code>; read-only health is deliberately limited. Do not treat localhost as authentication.</li>
+<li>Edge UI requests originate on the local management network. MVP may use a local operator session, but mutating routes require <code>operator</code> or <code>edge_admin</code>; read-only health is deliberately limited. Do not treat localhost as authentication. The one exception is review submission (<code>POST /api/v1/inspections/{id}/reviews</code>), which is intentionally exposed through the existing viewer credential per ADR-016 until an edge role model exists.</li>
 <li>Device-to-central calls use mutually authenticated TLS or short-lived device credentials bound to <code>device_id</code>.</li>
 <li>Central users authenticate through OIDC Authorization Code with PKCE. API authorization uses organization-scoped roles: <code>viewer</code>, <code>reviewer</code>, <code>config_manager</code>, <code>fleet_admin</code>, and <code>org_admin</code>.</li>
 <li>Media authorization is checked before issuing a short-lived download URL.</li>
@@ -4016,7 +4038,59 @@
 </tr>
 </tbody>
 </table>
-<h3 id="1533-upload-queue-and-configuration">15.3.3 Upload Queue and Configuration<a class="headerlink" href="#1533-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
+<h3 id="1533-review-queue-design-24-adr-016">15.3.3 Review Queue (design 24, ADR-016)<a class="headerlink" href="#1533-review-queue-design-24-adr-016" title="Permanent link">&para;</a></h3>
+<p>Human-in-the-loop review is optional and additive: any inspection may be
+reviewed, and a disposition never rewrites the machine decision. Records are
+append-only; a later review supersedes an earlier one by reference.</p>
+<table>
+<thead>
+<tr>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/reviews</code></td>
+<td>List the review queue with each inspection's review state.</td>
+<td>Query: business_result, internal_decision, reviewed, cursor, limit / <code>Page[ReviewQueueItem]</code></td>
+<td><code>400 INVALID_CURSOR</code></td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}/reviews</code></td>
+<td>Append-only review history of one inspection (oldest first).</td>
+<td>Path UUID / <code>list[ReviewRecord]</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code></td>
+<td>Safe GET</td>
+<td>-</td>
+<td>R</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/inspections/{inspection_id}/reviews</code></td>
+<td>Append one human disposition.</td>
+<td><code>SubmitReviewRequest</code> / <code>ReviewRecord</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code>, <code>409 REVIEW_CONFLICT</code>, <code>422 REVIEW_DISPOSITION_INVALID</code> / <code>REVIEW_VALIDATION_FAILED</code></td>
+<td>None: each call appends a new review</td>
+<td>-</td>
+<td>R</td>
+</tr>
+</tbody>
+</table>
+<p><code>SubmitReviewRequest</code> requires <code>disposition</code> and a non-empty <code>reviewer</code>;
+<code>INCONCLUSIVE</code> requires a <code>reason</code>. The disposition must be permitted for the
+machine outcome (design 24.3): <code>UNCERTAIN</code> may be confirmed NG/OK, reinspected,
+or inconclusive; plain <code>NG</code> may be confirmed NG/OK or inconclusive; sampled
+<code>OK</code> may be confirmed OK, corrected to NG, or inconclusive. <code>409 REVIEW_CONFLICT</code>
+also covers a <code>supersedes_review_id</code> that names no review of that inspection.</p>
+<h3 id="1534-upload-queue-and-configuration">15.3.4 Upload Queue and Configuration<a class="headerlink" href="#1534-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4086,7 +4160,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="1534-web-dev-test-harness-adr-014">15.3.4 Web Dev Test Harness (ADR-014)<a class="headerlink" href="#1534-web-dev-test-harness-adr-014" title="Permanent link">&para;</a></h3>
+<h3 id="1535-web-dev-test-harness-adr-014">15.3.5 Web Dev Test Harness (ADR-014)<a class="headerlink" href="#1535-web-dev-test-harness-adr-014" title="Permanent link">&para;</a></h3>
 <p>These file-based endpoints are <strong>disabled by default</strong> and return
 <code>404 DEV_TOOLS_DISABLED</code> unless <code>serve</code> runs with <code>--enable-web-test</code>. They are
 a developer test harness, not a production acquisition path; production

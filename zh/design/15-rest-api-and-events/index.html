@@ -1135,7 +1135,7 @@
   <a href="#1521-authentication-and-authorization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.2.1 认证与授权
+        15.2.1 认证和授权
       
     </span>
   </a>
@@ -1204,10 +1204,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
+  <a href="#1533-review-queue-design-24-adr-016" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.3 上传队列和配置
+        15.3.3 审核队列（设计 24，ADR-016）
       
     </span>
   </a>
@@ -1215,10 +1215,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1534-web-dev-test-harness-adr-014" class="md-nav__link">
+  <a href="#1534-upload-queue-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.4 Web 开发测试工具 (ADR-014)
+        15.3.4 上传队列和配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1535-web-dev-test-harness-adr-014" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.5 Web 开发测试工具 (ADR-014)
       
     </span>
   </a>
@@ -3599,7 +3610,7 @@
   <a href="#1521-authentication-and-authorization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.2.1 认证与授权
+        15.2.1 认证和授权
       
     </span>
   </a>
@@ -3668,10 +3679,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1533-upload-queue-and-configuration" class="md-nav__link">
+  <a href="#1533-review-queue-design-24-adr-016" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.3 上传队列和配置
+        15.3.3 审核队列（设计 24，ADR-016）
       
     </span>
   </a>
@@ -3679,10 +3690,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#1534-web-dev-test-harness-adr-014" class="md-nav__link">
+  <a href="#1534-upload-queue-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.4 Web 开发测试工具 (ADR-014)
+        15.3.4 上传队列和配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1535-web-dev-test-harness-adr-014" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3.5 Web 开发测试工具 (ADR-014)
       
     </span>
   </a>
@@ -3836,17 +3858,17 @@
 <p>模式在 <a href="../14-data-model-and-database/">Data Model and Database</a> 中定义。 UI 消费者在 <a href="../16-edge-dashboard/">Edge Dashboard</a> 和 <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a> 中描述。</p>
 <p>所有 JSON 均使用 UTF-8、snake_case 字段、ISO 8601 UTC 时间戳、UUID 字符串和 <code>application/problem+json</code> 错误。问题响应包括<code>type</code>、<code>title</code>、<code>status</code>、<code>detail</code>、<code>code</code>、<code>request_id</code>和可选字段<code>errors</code>。</p>
 <h2 id="152-common-behavior">15.2 常见行为<a class="headerlink" href="#152-common-behavior" title="Permanent link">&para;</a></h2>
-<h3 id="1521-authentication-and-authorization">15.2.1 认证与授权<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
+<h3 id="1521-authentication-and-authorization">15.2.1 认证和授权<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Edge UI 请求源自本地管理网络。 MVP 可以使用本地操作员会话，但改变路由需要 <code>operator</code> 或 <code>edge_admin</code>；只读健康状况被故意限制。不要将 localhost 视为身份验证。</li>
+<li>Edge UI 请求源自本地管理网络。 MVP 可以使用本地操作员会话，但改变路由需要 <code>operator</code> 或 <code>edge_admin</code>；只读健康状况被故意限制。不要将 localhost 视为身份验证。一个例外是审查提交 (<code>POST /api/v1/inspections/{id}/reviews</code>)，它是根据 ADR-016 通过现有查看者凭证有意公开的，直到存在边缘角色模型。</li>
 <li>设备到中心的调用使用相互验证的 TLS 或绑定到 <code>device_id</code> 的短期设备凭据。</li>
 <li>中央用户通过 OIDC 授权码和 PKCE 进行身份验证。 API 授权使用组织范围的角色：<code>viewer</code>、<code>reviewer</code>、<code>config_manager</code>、<code>fleet_admin</code> 和 <code>org_admin</code>。</li>
 <li>在发布短期下载 URL 之前检查媒体授权。</li>
 </ul>
 <h3 id="1522-idempotency-and-concurrency">15.2.2 幂等性和并发性<a class="headerlink" href="#1522-idempotency-and-concurrency" title="Permanent link">&para;</a></h3>
-<p><code>PUT</code> 和 <code>DELETE</code> 自然是幂等的。可重试的中央 <code>POST</code> 摄取请求需要 <code>Idempotency-Key</code>。服务器存储<code>(device_id, key, request_hash, response)</code>；相同的密钥/相同的散列重播结果，而相同的密钥/不同的散列返回<code>409 IDEMPOTENCY_CONFLICT</code>。管理更新将 <code>If-Match</code> 与 ETag/revision 结合使用，并在过时写入时返回 <code>412 REVISION_MISMATCH</code>。</p>
+<p><code>PUT</code> 和 <code>DELETE</code> 自然是幂等的。可重试的中央 <code>POST</code> 摄取请求需要 <code>Idempotency-Key</code>。服务器存储<code>(device_id, key, request_hash, response)</code>；相同的密钥/相同的散列重播结果，而相同的密钥/不同的散列返回<code>409 IDEMPOTENCY_CONFLICT</code>。管理更新将 <code>If-Match</code> 与 ETag/revision 一起使用，并在过时写入时返回 <code>412 REVISION_MISMATCH</code>。</p>
 <h3 id="1523-pagination-and-filtering">15.2.3 分页和过滤<a class="headerlink" href="#1523-pagination-and-filtering" title="Permanent link">&para;</a></h3>
-<p>历史记录端点使用带有 <code>limit</code> （默认 50，最大 200）和不透明 <code>cursor</code> 的键集分页。响应为<code>{items, next_cursor}</code>。过滤器是显式查询参数；游标绑定标准化过滤器集，如果与不同的过滤器重用，则游标会被拒绝。小型配置列表可以使用相同的信封而不带光标。</p>
+<p>历史记录端点使用带有 <code>limit</code> （默认 50，最大 200）和不透明 <code>cursor</code> 的键集分页。响应是<code>{items, next_cursor}</code>。过滤器是显式查询参数；游标绑定标准化过滤器集，如果与不同的过滤器重用，则游标会被拒绝。小型配置列表可以使用相同的信封而不带光标。</p>
 <h2 id="153-edge-api-groups">15.3 边缘 API 组<a class="headerlink" href="#153-edge-api-groups" title="Permanent link">&para;</a></h2>
 <p>在表中，<code>R</code> 表示经过身份验证的边缘查看器、<code>O</code> 操作员和 <code>A</code> 边缘管理员。分页下的<code>-</code>表示不适用。</p>
 <h3 id="1531-runtime-camera-and-health">15.3.1 运行时、相机和健康状况<a class="headerlink" href="#1531-runtime-camera-and-health" title="Permanent link">&para;</a></h3>
@@ -4016,7 +4038,59 @@
 </tr>
 </tbody>
 </table>
-<h3 id="1533-upload-queue-and-configuration">15.3.3 上传队列和配置<a class="headerlink" href="#1533-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
+<h3 id="1533-review-queue-design-24-adr-016">15.3.3 审核队列（设计 24，ADR-016）<a class="headerlink" href="#1533-review-queue-design-24-adr-016" title="Permanent link">&para;</a></h3>
+<p>人机交互审查是可选的和附加的：任何检查都可以
+经过审查，处置永远不会重写机器决策。记录是
+仅附加；后来的评论通过引用取代了早期的评论。</p>
+<table>
+<thead>
+<tr>
+<th>方法和终点</th>
+<th>目的</th>
+<th>请求/响应</th>
+<th>错误</th>
+<th>幂等性</th>
+<th>分页</th>
+<th>授权</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/v1/reviews</code></td>
+<td>列出审核队列以及每个检查的审核状态。</td>
+<td>查询：business_result、internal_decision、reviewed、cursor、limit / <code>Page[ReviewQueueItem]</code></td>
+<td><code>400 INVALID_CURSOR</code></td>
+<td>安全获取</td>
+<td>光标</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/inspections/{inspection_id}/reviews</code></td>
+<td>一次检查的仅附加审查历史记录（最旧的第一个）。</td>
+<td>路径 UUID / <code>list[ReviewRecord]</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code></td>
+<td>安全获取</td>
+<td>-</td>
+<td>右</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/inspections/{inspection_id}/reviews</code></td>
+<td>附加一项人类性格。</td>
+<td><code>SubmitReviewRequest</code> / <code>ReviewRecord</code></td>
+<td><code>404 INSPECTION_NOT_FOUND</code>、<code>409 REVIEW_CONFLICT</code>、<code>422 REVIEW_DISPOSITION_INVALID</code> / <code>REVIEW_VALIDATION_FAILED</code></td>
+<td>无：每次调用都会附加一条新评论</td>
+<td>-</td>
+<td>右</td>
+</tr>
+</tbody>
+</table>
+<p><code>SubmitReviewRequest</code> 需要 <code>disposition</code> 和非空 <code>reviewer</code>；
+<code>INCONCLUSIVE</code> 需要 <code>reason</code>。该处置必须获得许可
+机器结果（设计 24.3）：<code>UNCERTAIN</code> 可能被确认为 NG/OK，重新检查，
+或不确定；简单的 <code>NG</code> 可能会被确认为 NG/OK 或不确定；采样的
+<code>OK</code> 可能被确认为 OK、更正为 NG 或不确定。 <code>409 REVIEW_CONFLICT</code>
+还涵盖了<code>supersedes_review_id</code>，其中没有提及对该检查的审查。</p>
+<h3 id="1534-upload-queue-and-configuration">15.3.4 上传队列和配置<a class="headerlink" href="#1534-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4086,7 +4160,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="1534-web-dev-test-harness-adr-014">15.3.4 Web 开发测试工具 (ADR-014)<a class="headerlink" href="#1534-web-dev-test-harness-adr-014" title="Permanent link">&para;</a></h3>
+<h3 id="1535-web-dev-test-harness-adr-014">15.3.5 Web 开发测试工具 (ADR-014)<a class="headerlink" href="#1535-web-dev-test-harness-adr-014" title="Permanent link">&para;</a></h3>
 <p>这些基于文件的端点<strong>默认禁用</strong>并返回
 <code>404 DEV_TOOLS_DISABLED</code> 除非 <code>serve</code> 与 <code>--enable-web-test</code> 一起运行。他们是
 开发人员测试工具，而不是生产获取路径；生产
@@ -4553,7 +4627,7 @@
 <td><code>400 INVALID_FILTER</code></td>
 <td>安全获取</td>
 <td>光标</td>
-<td>O/审计员</td>
+<td>O/审计师</td>
 </tr>
 </tbody>
 </table>
@@ -4583,7 +4657,7 @@
 </tr>
 </tbody>
 </table>
-<p>WebSocket 身份验证使用现有的安全会话 cookie 或通过 REST 获取的短期、单一用途票证。令牌不得出现在 URL 查询日志中。浏览器 WebSocket 无法设置 <code>Authorization</code> 标头，因此跨源仪表板将其查看者凭证交换为 <code>POST /api/v1/ws/runtime/ticket</code> 处的一次性票证，并将其作为协商的 <code>Sec-WebSocket-Protocol</code> 值发送；该票证在接受过程中会被自动消耗，几秒钟内就会过期，并且永远不会被记录。</p>
+<p>WebSocket 身份验证使用现有的安全会话 cookie 或通过 REST 获取的短期、单一用途票证。令牌不得出现在 URL 查询日志中。浏览器 WebSocket 无法设置 <code>Authorization</code> 标头，因此跨源仪表板将其查看者凭证交换为 <code>POST /api/v1/ws/runtime/ticket</code> 处的一次性票据，并将其作为协商的 <code>Sec-WebSocket-Protocol</code> 值发送；该票证在接受过程中会被自动消耗，几秒钟内就会过期，并且永远不会被记录。</p>
 <h2 id="156-event-envelope-and-evolution">15.6 事件包络和演化<a class="headerlink" href="#156-event-envelope-and-evolution" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;event_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span>

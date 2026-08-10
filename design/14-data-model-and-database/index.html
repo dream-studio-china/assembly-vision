@@ -4086,6 +4086,11 @@ implementation (AUDIT-001).</p>
 <a id="__codelineno-0-328" name="__codelineno-0-328" href="#__codelineno-0-328"></a>    <span class="n">reviewed_at</span><span class="p">:</span> <span class="n">datetime</span>
 <a id="__codelineno-0-329" name="__codelineno-0-329" href="#__codelineno-0-329"></a>    <span class="n">revision</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
 </code></pre></div>
+<p>The model above is the <strong>central</strong> review record (user FK, revision chain). The
+edge-local review record (ADR-016) is a distinct append-only model: it stores a
+caller-supplied <code>reviewer</code> string, the five-value
+<code>ReviewDisposition</code>/<code>ComponentCorrectionState</code> enums, and <code>supersedes_review_id</code>
+for chaining, and is persisted in the edge <code>review_records</code> table (§14.5).</p>
 <p>The 15 required public models are <code>BoundingBox</code>, <code>Detection</code>, <code>FrameQuality</code>, <code>ProductDetection</code>, <code>ROIResult</code>, <code>ComponentDetection</code>, <code>AggregatedComponentEvidence</code>, <code>InspectionDecision</code>, <code>InspectionRecord</code>, <code>UploadTask</code>, <code>DeviceStatus</code>, <code>ProductConfiguration</code>, <code>RuleConfiguration</code>, <code>ModelManifest</code>, and <code>ReviewRecord</code>. Barcode, resolution, lifecycle, media, dataset, metric, and correction types are supporting value objects and are still part of the generated API contract.</p>
 <h2 id="144-matching-typescript-types">14.4 Matching TypeScript Types<a class="headerlink" href="#144-matching-typescript-types" title="Permanent link">&para;</a></h2>
 <p>These interfaces show the expected generated shape. Frontends should import generated types, not maintain this block manually. UUIDs and date-times remain branded aliases at application boundaries because JSON carries strings.</p>
@@ -4220,6 +4225,11 @@ source identity changes.</p>
 <td><code>rule_installations</code></td>
 <td><code>rule_version_id</code> PK, product version ID, document JSON, checksum, state, installed/activated times</td>
 <td>Activation validates compatible model classes and product version.</td>
+</tr>
+<tr>
+<td><code>review_records</code></td>
+<td><code>review_id</code> PK, <code>inspection_id</code> FK, disposition, reason, note, reviewer, created time, original business/internal decision and reason JSON, component-corrections JSON, supersedes review id</td>
+<td>Append-only (ADR-016, migration 0008); disposition is constrained per machine outcome; a later review supersedes by reference and never overwrites.</td>
 </tr>
 </tbody>
 </table>

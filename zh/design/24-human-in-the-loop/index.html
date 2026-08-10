@@ -1542,6 +1542,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#2414-edge-local-review-adr-016" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        24.14 边缘本地审查 (ADR-016)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3698,6 +3709,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#2414-edge-local-review-adr-016" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        24.14 边缘本地审查 (ADR-016)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3721,11 +3743,16 @@
 <h1 id="24-human-in-the-loop-operations">24. 人机交互操作<a class="headerlink" href="#24-human-in-the-loop-operations" title="Permanent link">&para;</a></h1>
 <h2 id="241-purpose-and-safety-position">24.1 目的和安全位置<a class="headerlink" href="#241-purpose-and-safety-position" title="Permanent link">&para;</a></h2>
 <p>人工审核是一个受控的质量流程，旨在谨慎推出、模糊证据、NG 处理和持续改进。它不会隐藏模型限制或改变原始机器决策。 AssemblyVision 优先考虑高 NG 召回率：早期操作接受额外的错误 NG 决策，因为它们可以进行审查，而错误地发布为 OK 的真正 NG 是主要的质量风险。</p>
+<p>审核是<strong>可选且附加的</strong> (ADR-016)：运行
+检查，永远不会改变不可变的机器决策，并且永远不会改变
+现有的检查终点或预测。任何检查 — <code>OK</code> 或 <code>NG</code> —
+可以在边缘进行本地审查； NG 详细视图显示评论条目
+OK 视图提供了可选的审核路径。</p>
 <h2 id="242-scope-by-phase">24.2 阶段范围<a class="headerlink" href="#242-scope-by-phase" title="Permanent link">&para;</a></h2>
 <h3 id="2421-initial-production-phase">24.2.1 初始生产阶段<a class="headerlink" href="#2421-initial-production-phase" title="Permanent link">&para;</a></h3>
 <ul>
 <li>使所有 NG 检查可供审查。</li>
-<li>路由其内部决定为<code>UNCERTAIN</code>的业务<code>NG</code>案例作为独特的解释类别进行审查。</li>
+<li>路由内部决定为<code>UNCERTAIN</code>的业务<code>NG</code>案例作为独特的解释类别进行审查。</li>
 <li>审核 OK 检查的代表性样本。</li>
 <li>保留原始证据、模型/规则/配置版本和机器原因代码。</li>
 <li>将审阅者的更正和确认的错误分类存储到受管理的培训待办事项中。</li>
@@ -3758,7 +3785,7 @@
 <tr>
 <td><code>NG</code></td>
 <td>确认真缺陷或假NG</td>
-<td>确认 NG，已更正 OK，尚无定论</td>
+<td>确认NG、确认OK、尚无定论</td>
 </tr>
 <tr>
 <td>业务<code>NG</code>，内部<code>UNCERTAIN</code></td>
@@ -3777,6 +3804,11 @@
 </tr>
 </tbody>
 </table>
+<p><code>NG</code> 更正为 <code>OK</code>，采样 <code>OK</code> 确认共享 <code>CONFIRMED_OK</code>
+处置；审查记录上的原始机器结果区分
+他们。 “系统异常”行（包括操作故障处理）
+超出边缘本地审查范围，并推迟到中央审查存在
+（ADR-016）。</p>
 <p>修正不会重写边缘决策。它记录审查者、时间、原因、真实成分状态、使用的证据以及与原始检查的关系。</p>
 <h2 id="244-review-queue-policy">24.4 查看队列策略<a class="headerlink" href="#244-review-queue-policy" title="Permanent link">&para;</a></h2>
 <p>路由策略是版本化且可审计的。优先因素包括：</p>
@@ -3872,6 +3904,13 @@ else 机器决策确认
 <li><a href="../26-customer-acceptance/">Customer Acceptance</a></li>
 <li><a href="../20-deployment-and-operations/#208-model-and-rule-update-sequence">Model update sequence</a></li>
 </ul>
+<h2 id="2414-edge-local-review-adr-016">24.14 边缘本地审查 (ADR-016)<a class="headerlink" href="#2414-edge-local-review-adr-016" title="Permanent link">&para;</a></h2>
+<p>虽然成熟的设计通过中央服务器进行审查（部分
+24.5），边缘存储仅附加的本地审查记录，因此该过程保留
+在离线状态下工作（第 24.11 节）并且在中央服务器存在之前。
+范围参见<a href="../decisions/ADR-016-edge-local-human-review/">ADR-016</a>
+决定：可选的每次检查审查、处置兼容性、本地
+审阅者身份、取代链接和网络审阅队列。</p>
 
 
 

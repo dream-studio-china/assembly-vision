@@ -3489,6 +3489,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#811-barcode-identity-and-edge-local-human-review-prs-3031" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.11 条码身份和边缘本地人工审核（PR #30/#31）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3740,6 +3751,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#811-barcode-identity-and-edge-local-human-review-prs-3031" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.11 条码身份和边缘本地人工审核（PR #30/#31）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3772,7 +3794,7 @@
 
 <h1 id="assemblyvision---full-project-context">AssemblyVision - 完整的项目背景<a class="headerlink" href="#assemblyvision---full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>上下文快照。最后更新: 2026-08-09</p>
+<p>上下文快照。最后更新: 2026-08-10</p>
 <p>首先在新会话中读取此文件以快速重建项目状态。</p>
 </blockquote>
 <hr />
@@ -3789,42 +3811,44 @@
   用于实时检查。</li>
 <li><strong>当前存储库状态</strong>：静态训练和检查 MVP (ADR-011)，
   边缘仪表板前端、M1 FastAPI + SQLite 后端层、
-  审查驱动的强化，真实数据基线工具全部合并
-  到 <code>main</code> （PR #3、#6、#8、#9、#10、#11）。 Python uv 工作区发布
+  审查驱动的强化、真实数据基线工具、相机/多
+  实例服务、时间聚合、持久上传发件箱、E1-E5
+  生产门、条码身份/PLC FIFO 触发合约
+  全部合并到 <code>main</code> （PR #3-#30）。 Python uv 工作区发布
   共享 <code>domain</code> 和 <code>vision-core</code> 包，仅限开发人员使用 <code>av-train</code>
   训练CLI，真正的两阶段Ultralytics YOLO检查
   (<code>assemblyvision inspect</code>) 和保留验证，以及数据集适配器
   用于 Roboflow 和 X-AnyLabeling 导出。前端 pnpm 工作区包括
   Vue 3 + TypeScript 操作员仪表板 (<code>apps/edge-web</code>)，一个 Electron
   kiosk shell (<code>apps/edge-desktop</code>)，类型化的 <code>api-client</code> 合约层，以及
-  共享 UI 原语。 PR #11（dev -&gt; main）添加了真实数据基线
-  工具：X-AnyLabeling 数据集适配器、单一产品
-  数据采集指南（设计§19.17，运行手册 11）和自述文件/快速入门
-  更新。只读仪表板视图通过 HTTP 显示真实的 CLI 结果
-  客户端，而操作员工作流操作保留在模拟客户端上。
-  PR #12（开发 -&gt; 主要）通过验收测试结束了 AUDIT-001 的调查结果
-  （2026年8月9日合并）；参见第 8.4 节。 PR #14 添加了相机帧源，
-  多实例 <code>serve</code> 和门控 Web 开发测试工具 (ADR-013/014)；
-  PR #15/#16 合并了产品窗口/时间聚合里程碑
-  （ADR-010）与安全生产； PR #17 合并了持久上传
-  发件箱和调度程序（ADR-005）；和 PR #18/#19（E1 可观测性）和
-  #20（E2保留和磁盘安全）完成存储并
-  可观测性门；参见第 8.5-8.7 节。剩余边数
-  生产候选工作是上传弹性（E3）、运行时/WebSocket
-  （E4）、部署和安全（E5）以及验收（E6）；中央
+  共享 UI 原语。 PR #14 添加了相机帧源、多实例
+  <code>serve</code>，以及门控网络开发测试工具 (ADR-013/014)； PR #15/#16 已合并
+  产品窗口/时间聚合里程碑（ADR-010）； PR #17 已合并
+  持久上传发件箱和调度程序（ADR-005）； PR #18/#19 (E1) 和 #20
+  （E2 保留和磁盘安全）完成了存储/可观察性门；
+  PR #22/#23/#24 合并了 E3（上传弹性）、E4（运行时/WebSocket）和
+  E5（部署和安全）； PR #25 交付了 E6 验收准备工具；
+  PR #26/#27/#28 添加了强化的 GigE/GenICam 源和
+  生产就绪的仪表板主题； PR #29 固定持久性推断
+  元数据； PR #30 添加了精确映射的条形码身份解析
+  选择加入 Modbus TCP FIFO 触发合同 (ADR-015)。边缘局部人类
+  审核功能（ADR-016，PR #31）实施于
+  <code>feat/edge-local-human-review</code> 其审核记录在
+  <code>docs/reviews/PR-031-review.md</code> 正在等待合并。中央
   服务器尚未实现，并且在这些边缘门之前保持在范围之外
   通过。</li>
 </ul>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
-<li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。 PR #3、#6、
-  #8、#9、#10、#11、#12、#14（相机/多实例/开发工具）、
-  #15/#16（时间聚合+生产安全），#17（持久上传
-  发件箱/调度程序，ADR-005）、#18/#19（E1 可观察性）和#20（E2
-  保留和磁盘安全）合并到<code>main</code>。 E3-E6 保留：上传
-  弹性、运行时/WebSocket、部署和安全性以及验收；
-  中央服务器尚未实现，并且是故意退出的
-  范围，直到那些边缘门通过。</li>
+<li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。 PR #3-#30
+  合并到<code>main</code>，涵盖MVP、仪表板、M1后端、摄像头/
+  多实例 (ADR-013/014)、时间聚合 (ADR-010)、持久上传
+  发件箱 (ADR-005)、E1-E5 门、E6 验收准备、GigE/GenICam 源、
+  仪表板主题、持久性修复和条形码标识/PLC 触发器
+  合同（ADR-015）。边缘局部人工审核功能 (ADR-016) 是
+  在 <code>feat/edge-local-human-review</code> (PR #31) 上实施，并进行了审查修复
+  <code>docs/reviews/PR-031-review.md</code> 待合并。中央服务器不是
+  尚未实施，并且有意超出范围，直到边缘门通过。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
   吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
@@ -3874,7 +3898,7 @@
 <a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
 <a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── overrides/main.html # Theme override placeholder
 <a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── ai/context.md       # THIS file
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── reviews/            # Reviews: PR-003, PR-008, AUDIT-001 system audit
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
 <a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
 <a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    ├── runbooks/           # 11 operational recovery runbooks + index
 <a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    ├── design/             # 28 design documents + appendices + decisions/
@@ -3894,7 +3918,7 @@
   评估、本地数据库/媒体、带重试的上传队列、运行状况监控、本地 FastAPI、
   本地 Vue 仪表板。在中央/网络中断期间检查仍在继续。</li>
 <li><strong>中央服务器职责</strong>：摄取选定的结果/媒体、历史记录、受管理的
-  元数据、人工审查记录、有界试点状态以及后续管理/报告/审计。
+  元数据、手动审查记录、有界试点状态以及后续管理/报告/审计。
   远程包分发属于生产范围。中央不需要检查。</li>
 <li><strong>两阶段检测</strong>：第一阶段全画幅检测产品；投资回报率引擎
   扩展/剪辑它；第二阶段检测所需的组件（<code>component_a</code>、<code>component_b</code>、
@@ -3922,7 +3946,9 @@
   上传、ADR-006 REST + WebSocket、ADR-007 monorepo、ADR-008 Docker 部署、ADR-009
    静态图像优先 MVP，ADR-010 每个组件时间聚合，ADR-011 标记
    训练和检查 MVP、ADR-012 边缘 API M1 查看器身份验证、ADR-013 相机框架
-   源和多实例边缘，以及 ADR-014 Web 开发测试工具。</li>
+   源和多实例边缘，ADR-014 Web 开发测试工具，ADR-015
+   条形码身份和 PLC 触发关联，以及 ADR-016 边缘局部人类
+   审查（可选，仅附加）。</li>
 <li><a href="../../design/appendices/">docs/design/appendices.md</a> 保存规范术语、决策一致性检查表、
   全局开放问题 (OQ-001 ... OQ-025)、原因代码术语表和可追溯性约定。</li>
 <li><code>docs/research/</code>：行业成功率、YOLO 能力、成像/工作流程/培训成本。</li>
@@ -3938,11 +3964,11 @@
   <code>pymdownx.superfences</code> 自定义围栏，<code>extra.alternate</code> 语言切换器）。</li>
 <li><code>scripts/build-docs.sh</code> 管道：<code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
   <code>generate-mkdocs-configs.py</code> （生成 mkdocs-en.yml + mkdocs-zh.yml）-&gt; 构建 site/ 和 site/zh/。</li>
-<li>翻译使用<code>deep-translator</code> GoogleTranslator（免费，无API密钥）。限速；一个完整的
+<li>翻译使用 <code>deep-translator</code> GoogleTranslator（免费，无 API 密钥）。限速；一个完整的
   翻译大约需要 15-30 分钟。单文件模式：
   <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>。任何 API 失败时
   保留原始英文块。</li>
-<li>所有内容均已翻译，包括<code>research/</code>和美人鱼图标签。美人鱼语法是
+<li>所有内容均已翻译，包括 <code>research/</code> 和美人鱼图标签。美人鱼语法是
   保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
   被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
 <li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
@@ -3967,9 +3993,9 @@
 <ul>
 <li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 12 个 ADR +
   附录）来自<a href="../../source-brief/">docs/source-brief.md</a>（以前的<code>docs/doc-task.md</code>）。</li>
-<li>通过互联网研究创建<code>docs/research/</code>（3份报告）。</li>
-<li>构建了具有自动翻译功能的双语MkDocs，改编自<code>crud-skeleton</code>项目。</li>
-<li>向<code>translate-docs.py</code>添加了美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
+<li>通过互联网研究创建了<code>docs/research/</code>（3份报告）。</li>
+<li>构建了具有自动翻译功能的双语 MkDocs，改编自 <code>crud-skeleton</code> 项目。</li>
+<li>添加了对 <code>translate-docs.py</code> 的美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
 <li><code>UNCERTAIN</code>决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
 <li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（一个单独的
   边缘工作者/API 分割被推迟，直到测量证明其合理为止）。</li>
@@ -3986,7 +4012,7 @@
   添加了（产品/准备组件/组件）；探测器存根被替换为真实的
   Ultralytics YOLO 适配器可加载清单引用的权重并将 ROI 框映射回完整值
   框架； <code>assemblyvision verify</code> 报告 NG 召回/漏报/误报；和
-  <code>scripts/e2e-demo.sh</code> 使用针对误报的硬门运行整个流程。</li>
+  <code>scripts/e2e-demo.sh</code> 在漏报上使用硬门运行整个流程。</li>
 <li>数据集：<code>scripts/generate-synthetic-dataset.py</code>构建一个带标签的程序集数据集（确切地说
   框、缺少组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
   将 Roboflow YOLOv8 导出转换为两阶段布局，删除通用 <code>missing*</code> 类，
@@ -4037,15 +4063,15 @@
   或坐标、越界框、不良张量形状）转换为
   <code>INFERENCE_ERROR</code> 在适配器边界，而不是转义或错误索引。</li>
 <li>配置：阈值必须是有限的，并且在<code>[0, 1]</code>中，布尔值是严格的，
-  <code>min_area_pixels</code>必须是正整数，未知的键将被拒绝
+  <code>min_area_pixels</code> 必须是正整数，未知的键将被拒绝
   每个部分。</li>
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
   盒子是致命的；丢失的标签文件无法验证，除非已记录
   <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
-  底片；成分制备导致 ROI 作物为负数；并发表
+  底片；成分制备导致 ROI 作物为负值；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
 <li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code> 和
-  <code>pytest</code> 现在覆盖整个存储库（边缘、包、培训、脚本
+  <code>pytest</code> 现在覆盖整个存储库（边缘、包、训练、脚本
   测试）通过 Makefile 和新的 <code>.github/workflows/ci.yml</code>。</li>
 </ul>
 <h2 id="82-edge-dashboard-and-operator-prototype-pr-6">8.2 边缘仪表板和操作员原型（PR #6）<a class="headerlink" href="#82-edge-dashboard-and-operator-prototype-pr-6" title="Permanent link">&para;</a></h2>
@@ -4084,7 +4110,7 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
 <p><code>dev</code> 上的 FastAPI + SQLite 后端层提供真实的只读仪表板视图
 CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 阻塞结果 (F1-F14) 和 M1 条件项 (C1-C4)
-<code>docs/reviews/PR-008-review.md</code> 于 <code>dev</code> 得到解决和验证。</p>
+<code>docs/reviews/PR-008-review.md</code> 在 <code>dev</code> 上得到解决和验证。</p>
 <ul>
 <li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
   将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
@@ -4147,7 +4173,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   数据和清除媒体渲染。 <code>uv run mkdocs build --strict</code> 通过。</li>
 </ul>
 <h2 id="84-audit-001-closure-and-review-fixes-pr-12">8.4 AUDIT-001 关闭和审查修复（PR #12）<a class="headerlink" href="#84-audit-001-closure-and-review-fixes-pr-12" title="Permanent link">&para;</a></h2>
-<p>只读系统审核 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 是
+<p>只读系统审核 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 为
 经过验证，其结果通过验收测试结束，并通过 PR #12 合并
 （dev -&gt; main，16 次提交；CI 绿色）：</p>
 <ul>
@@ -4155,26 +4181,26 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   标签、词干碰撞、Roboflow <code>valid</code> -&gt; <code>val</code>)、发布
   数据集相对 <code>data.yaml</code> 路径，<code>av-train</code> 解析绝对路径
   Ultralytics 项目目录并断言 <code>best.pt</code> 存在。</li>
-<li><strong>M1-M3</strong>：协调跳过 NUL 字节媒体路径；规则身份
+<li><strong>M1-M3</strong>：协调跳过 NUL 字节媒体路径； rule-identity
   注册可以解决并发竞赛而不会泄漏<code>IntegrityError</code>；
   首次打开的 SQLite 迁移是跨线程和进程序列化的。</li>
 <li><strong>规则/清单故障安全</strong>：规则引擎拒绝非有限几何并且
-  现有证据不完整；清单验证强制执行运行时、工件
+  incomplete PRESENT evidence;清单验证强制执行运行时、工件
   包包含和类映射（<code>ConfigError</code>，绝不泄漏）。</li>
 <li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
   覆盖）；日志消息清理绝对路径；失败尝试节流
-  <code>Retry-After</code>；有界会话；光标绑定过滤指纹
+  <code>Retry-After</code>;有界会话；光标绑定过滤指纹
   (<code>400 INVALID_CURSOR</code>);始终清除介质<code>410</code>；非 ASCII 承载 <code>401</code>；
   <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
 <li><strong>前端强化</strong>：生产构建失败，除非<code>VITE_API_MODE=http</code>；
-  媒体 blob URL 拒绝外国来源； HTTP 模式删除不支持的行
-  过滤器； WebSocket 间隙已发出信号；嵌套记录经过验证；的
-  未路由的重复实时视图已被删除。</li>
+  media blob URLs reject foreign origins; HTTP 模式删除不支持的行
+  过滤器； WebSocket gaps are signalled;嵌套记录经过验证；的
+  unrouted duplicate live view was removed.</li>
 <li><strong>工具/文档</strong>：合成发电机旋转几何形状和场景
   覆盖范围已修正；训练运行的再现性元数据记录在旁边
-  体现；设计 14 M1 边界、原因代码、适配器、运行手册和
+  体现； design 14 M1 boundary, reason codes, adapters, runbooks, and
   快速启动对齐。</li>
-<li><strong>PR 审查后续 (<code>c634ca5</code>)</strong>：保留记录的同级
+<li><strong>公关审查后续行动 (<code>c634ca5</code>)</strong>：保留记录的同级
   包根包含下的 <code>models/manifests</code> + <code>models/weights</code> 布局，
   要求保留测试样品中的独立产品盒，重新验证
   在每个打开的数据库上进行迁移，并将 <code>Retry-After</code> 添加到 auth
@@ -4184,8 +4210,8 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   上传调度程序里程碑。</li>
 </ul>
 <h2 id="85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14">8.5 相机帧源、多实例边缘和 Web 开发测试工具（ADR-013/014、PR #14）<a class="headerlink" href="#85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14" title="Permanent link">&para;</a></h2>
-<p>通过 PR #14 合并（dev -&gt; main）。审查驱动的强化过程记录在
-<code>docs/reviews/PR-014-review.md</code>;结果 F1-F14 通过回归得到解决
+<p>通过 PR #14 合并（dev -&gt; main）。 The review-driven hardening pass is recorded in
+<code>docs/reviews/PR-014-review.md</code>；结果 F1-F14 通过回归得到解决
 测试。设计：</p>
 <ul>
 <li><strong><code>vision-core</code></strong>中的<code>FrameSource</code>协议（设计07§7.3）：<code>open /
@@ -4197,22 +4223,22 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>rtsp</code>（PyAV + OpenCV 后备），<code>http-image</code>（httpx 轮询）。供应商 SDK
   是未来的协议实现。 <code>opencv-python-headless</code>、<code>av</code>、<code>httpx</code>
   是由边缘服务引入的视觉核心可选附加功能。</li>
-<li><strong>多实例<code>serve</code></strong>：<code>pipeline.yaml</code>中的<code>instances:</code>列表；每个
+<li><strong>多实例<code>serve</code></strong>：<code>instances:</code>列表在<code>pipeline.yaml</code>中；每个
   实例将相机源与其自己的模型/规则/产品配对；公寓
   单配置形式保持向后兼容。 <code>device_id</code> 默认为
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
   <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
   保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界的每个实例检查队列
+  实例使用显式的有界每个实例检查队列
   溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
-  <code>EdgeRuntime.load_instances</code>开始独立的单帧检查
+  <code>EdgeRuntime.load_instances</code>开始独立单帧检查
   当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
 <li><strong>WebSocket 之前的预览</strong>：<code>GET /api/v1/camera/{instance_id}/preview</code>
   （速率受限的最新帧 JPEG；404 未知实例，503 未就绪）和
   每个实例<code>camera_state</code>； WebSocket 运行时通道稍后取代
   预览。</li>
 <li><strong>Web 开发测试工具 (ADR-014)</strong>：门控 <code>/api/v1/dev/inspect-frame</code> 和
-  <code>/api/v1/dev/inspect-video</code>（404除非<code>serve --enable-web-test</code>）让
+  <code>/api/v1/dev/inspect-video</code>（404，除非<code>serve --enable-web-test</code>）让
   浏览器拍照（移动操作系统相机）、上传图像或上传短片
   录像并做出检查决定； <code>/dev</code> 仪表板页面将
   带有日志选项卡和客户端产品 bbox 覆盖层的工具。图像测试
@@ -4223,7 +4249,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   其管道配置中的 <code>temporal:</code> 块将捕获的帧分组为
   每个产品窗口并发出一次 <code>per-component-temporal-v1</code> 检查
   通过确定性的每个组件聚合器记录每个窗口（设计 10）。
-  默认的单帧模式不变。 <code>UNVERIFIABLE</code> 添加为
+  默认的单帧模式不变。 <code>UNVERIFIABLE</code> 已添加为
   汇总证据状态；有效帧产量不足
   <code>UNVERIFIABLE</code>/<code>INSUFFICIENT_VALID_FRAMES</code>，中断的窗口关闭
   与 <code>INSPECTION_INTERRUPTED</code> 一样为 NG，并且 OpenAPI/TypeScript 合约是
@@ -4239,7 +4265,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li><strong>仍处于里程碑</strong>：供应商 SDK 适配器、每实例模型
   权重共享（阶段 3），将 REST 预览折叠到 WebSocket 中
   通道和硬件触发/条码相关源
-  <code>window_strategy: identity</code>接缝（仅时间回退仍然是
+  <code>window_strategy: identity</code>接缝（仅限时间的后备仍然是
   开发模式，而不是生产产品边界）。</li>
 <li><strong>审查强化 (PR-014)</strong>：结果 F1-F14 通过回归结束
   测试：无静默帧丢失（有界队列+显式溢出），暂停
@@ -4257,7 +4283,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
 ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
 项目。审查驱动的强化过程记录在
-<code>docs/reviews/PR-017-review.md</code>;结果 F1-F8 加上决议后通过
+<code>docs/reviews/PR-017-review.md</code>；结果 F1-F8 加上决议后通过
 通过回归测试解决：</p>
 <ul>
 <li><strong>原子投影和发件箱</strong>：<code>persist_inspection_and_enqueue_uploads</code>
@@ -4267,10 +4293,10 @@ ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
 <li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code> 在一个任务中声明到期任务
   即时交易； <code>MEDIA</code> 任务只有在检查后才到期
   任务有经过验证的收据；每个声明都带有每个任务的防护令牌
-  (<code>lease_owner</code>)，陈旧的<code>IN_PROGRESS</code>任务在租约到期后被回收，
+  (<code>lease_owner</code>), stale <code>IN_PROGRESS</code> tasks are reclaimed after lease expiry,
   终端更新需要匹配的令牌。</li>
 <li><strong>故障分类</strong>：传输错误和<code>408/429/5xx</code>时间表
-  从响应时间起遵守 <code>Retry-After</code> 的全抖动退避；失踪/
+  从响应时间起遵守<code>Retry-After</code>的全抖动退避；失踪/
   证据损坏、校验和/大小不匹配以及服务器冲突变得
   永久性故障，同时保留本地证据。</li>
 <li><strong>验证收据</strong>：仅当有界打字收据时，2xx 才是成功
@@ -4321,7 +4347,7 @@ PR-020 审查强化）。交付任务和强制性安全不变量是
   强制持久性探测（探测文件 + fsync 和 <code>BEGIN IMMEDIATE</code>
   写）。设备状态暴露服务器权威阈值和稳定
   警报 (<code>DISK_WARNING</code>/<code>DISK_CRITICAL</code>/<code>DISK_STOP</code>/<code>STORAGE_WRITE_FAULT</code>/
-  <code>STORAGE_INTEGRITY_FAULT</code>/<code>CLEANUP_FAULT</code>)，仪表板呈现它们
+  <code>STORAGE_INTEGRITY_FAULT</code>/<code>CLEANUP_FAULT</code>），仪表板呈现它们
   而不是固定的客户阈值。</li>
 <li><strong>启动完整性 (E2d)</strong>：<code>scan_storage_integrity</code> 验证媒体
   默认情况下存在、大小和校验和（有界确定性采样是
@@ -4338,7 +4364,7 @@ PR-020 审查强化）。交付任务和强制性安全不变量是
 Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-web 30、
 桌面 3) 和 12 名剧作家 e2e。</p>
 <h2 id="88-upload-resilience-e3">8.8 上传弹性（E3）<a class="headerlink" href="#88-upload-resilience-e3" title="Permanent link">&para;</a></h2>
-<p>在<code>feat/e3-upload-resilience</code>上实现（投递任务
+<p>于<code>feat/e3-upload-resilience</code>实现（投递任务
 <code>docs/tasks/E3-upload-resilience.md</code>，设计13.13/13.14):</p>
 <ul>
 <li><strong>带宽节流（E3a）</strong>：令牌桶限制器限制网络
@@ -4353,7 +4379,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   <code>UPLOAD_CIRCUIT_OPEN</code> 警报；持久队列永远不会改变。</li>
 <li><strong>受控手动重试 (E3c)</strong>：<code>POST /api/v1/uploads/{id}/retry</code>
   仅重置 <code>RETRY_WAIT</code>/<code>PERMANENT_FAILURE</code> 任务
-  <code>attempt_count + 1</code>; 404 未知，409 不合格，无突变。</li>
+  <code>attempt_count + 1</code>； 404 未知，409 不合格，无突变。</li>
 <li><strong>长时间停电排水 (E3d)</strong>：离线检查、重新启动和恢复的天数
   使用媒体之前的有序元数据恢复无重复的排空队列
   上传和每次检查<code>SYNCED</code>。</li>
@@ -4423,26 +4449,61 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   比赛。</li>
 <li><strong>备份和恢复（E5c）</strong>：<code>assemblyvision backup</code>采用一致的
   SQLite 在线快照以及受管理的配置/规则/清单文件和挂起的文件
-  将具有 SHA-256 校验和的证据放入 <code>tar.gz</code> 捆绑包中； <code>assemblyvision
-  restore</code> 在应用之前验证每个校验和，保留 <code>.pre-restore</code>
+  将带有 SHA-256 校验和的证据放入 <code>tar.gz</code> 包中； <code>assemblyvision
+  restore</code> 在申请之前验证每个校验和，保留 <code>.pre-restore</code>
   复制，从不覆盖冲突的媒体，并协调存储，以便
   待处理的上传任务将继续存在。</li>
 <li><strong>Runbooks (E5d)</strong>：Runbook 12（备份和恢复）、13（TLS 证书
   旋转），并将 14（部署升级和回滚）添加到索引中
   运行手册集。</li>
 </ul>
+<h2 id="811-barcode-identity-and-edge-local-human-review-prs-3031">8.11 条码身份和边缘本地人工审核（PR #30/#31）<a class="headerlink" href="#811-barcode-identity-and-edge-local-human-review-prs-3031" title="Permanent link">&para;</a></h2>
+<p>通过 PR #30 合并（dev -&gt; main）：精确映射的条形码身份解析
+（ADR-015）。于 <code>feat/edge-local-human-review</code> 实施（PR #31，待定）
+合并）：可选的边缘局部人工审核（ADR-016）。</p>
+<ul>
+<li><strong>条形码标识（PR #30、ADR-015）</strong>：键入 <code>BarcodeObservation</code> 型号，
+  一个可选的 ZXing-cpp 视觉解码器（<code>zxing-cpp&gt;=2.3,&lt;3</code>），一个显式的
+  模拟键盘输入适配器（仅限开发线束）和确定性
+  解析器将完整的条形码值映射到产品代码。解析失败
+  关闭不可读、冲突、不支持的符号、未知或
+  活性产品不匹配的读取。视觉识别在开发上传上运行
+  路径和生产单帧相机循环；未经验证的身份是
+  始终保留为 <code>NG</code>。 <code>barcode_required</code> 规则需要启用
+  加载时需要 <code>identity.barcode</code> 配置，以及条形码标识
+  时间检查被拒绝，直到存在窗口相关性。的
+  Modbus TCP FIFO 触发适配器（ENTRY/EXIT/ABORT、序列/心跳/
+  溢出/一致性）作为选择加入合同交付；现场交通
+  保留在经过站点验证的注册配置文件上。</li>
+<li><strong>边缘本地人工审查（PR #31，ADR-016）</strong>：可选，附加，
+  对任何检查（OK 或 NG）进行仅附加审查，而不改变
+  机器决定。域 <code>ReviewDisposition</code> (CONFIRMED_NG/CONFIRMED_OK/
+  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的约束，
+  <code>ReviewRecord</code> 快照原始决策，一个 <code>review_records</code> 表
+  （迁移 0008）使用引用链接取代、存储库
+  <code>submit_review</code>/<code>list_review_queue</code>，和端点<code>GET /api/v1/reviews</code>，
+  <code>GET/POST /api/v1/inspections/{id}/reviews</code>（设计15.3.3）。网络
+  <code>ReviewView</code>队列页面和检查上的附加<code>ReviewPanel</code>
+  详细视图表面的工作流程； NG详细视图提示审核，同时OK
+  视图提供可选的审核路径。四方面审查（文档，
+  安全性、解耦性、可扩展性）记录在
+  <code>docs/reviews/PR-031-review.md</code>（已解决）；已确定的调查结果包括
+  有界 <code>component_corrections</code>，未清项目中的机器原因代码
+  队列、游标 400 强化、日志注入 repr、模拟/服务器验证
+  平等，以及文档/合同一致性（设计 14/15/16/24）。评论
+  故意通过现有查看者凭证暴露提交内容
+  （还没有边缘角色模型）；本地评论记录尚未同步到
+  中央服务器。</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）； <strong>E1
   可观察性</strong>（PR #18/#19），<strong>E2 保留和磁盘安全性</strong>（PR #20，
   PR-020 审核已解决），<strong>E3 上传弹性</strong>（PR #22，第 8.8 节），
-   <strong>E4 运行时</strong>（第 8.9 节）和 <strong>E5 部署和安全性</strong>（第 8.9 节）
-   8.10，PR #24 开放）已实施。 <strong>E6-prep 工具</strong>已交付：
-   完整的接受矩阵（<code>docs/tasks/E6-edge-acceptance.md</code>），本地输入
-   证据运行器（<code>scripts/edge-acceptance-run.py</code>），报告模板（设计
-   28) 和现场执行检查表（运行手册 15）。时钟漂移线束
-   明确保留 <code>NOT_EXECUTED</code>； E6 保持打开状态，直到它和
-   硬件/客户数据门控接受阶段执行：</li>
+   <strong>E4 运行时</strong>（第 8.9 节），<strong>E5 部署和安全性</strong>（第 8.9 节）
+   8.10、PR #24) 和 <strong>E6 验收准备</strong> (PR #25) 已合并。
+   时钟漂移线束明确保留<code>NOT_EXECUTED</code>； E6保持开放
+   直到它和硬件/客户数据门控接受阶段执行：</li>
 <li><strong>E6现场验收</strong>：所选项目的弹性和浸泡证据
      硬件、保留客户模型验证并签署 Edge 验收
      报告与硬件先决条件。</li>
@@ -4451,28 +4512,34 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li>AUDIT-001 <strong>已关闭</strong>，包括延迟的 4.4 权威持久性
   项目（现在由 PR #17 交付）。实现共享模型权重（E4c）；
   每个实例管道使用一个注册表。</li>
+<li><strong>条形码身份</strong>（PR #30）和<strong>边缘本地人工审核</strong>（PR #31）
+  已实施； PR #31（及其审查修复和 <code>docs/reviews/PR-031-review.md</code>）
+  正在等待从 <code>feat/edge-local-human-review</code> 合并到 <code>main</code>。</li>
 <li>基线仍然需要真实的客户数据：收集和注释
   与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
   <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
-  <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
+  <code>scripts/adapt-xanylabeling.py</code>（书面形式；支持classes.txt/data.yaml，
   图像优先和分割优先布局）到
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>
 <li>相机采集 (ADR-013/014) 被合并 (PR #14)，包括时间
   聚合（PR #15/#16）和触发/身份接缝（E4b）。剩余
-  硬件相关项目：供应商 SDK 相机适配器、真实条形码解码、
-  和物理光电眼/PLC 触发器来替换模拟触发源
-  仅时间后备（这是一种开发模式，而不是生产模式）
-  产品边界）。</li>
+  硬件相关项目：供应商 SDK 相机适配器（GigE/GenICam 源
+  合并到 PR #26；仍需要实时验证），真实条形码解码
+  对生产样品进行验证，并通过物理光电眼/PLC 传输到
+  替换模拟触发源（PR #30 中的 Modbus FIFO 合约需要
+  经站点验证的寄存器配置文件）和仅限时间的后备（这是一个
+  开发模式，而不是生产产品边界）。</li>
 <li>中央服务器（摄取 API、PostgreSQL 模型、对象存储、
-  幂等收据，人工审核）<strong>未实现</strong>；只有
-  存在边缘侧请求/接收合同。中央工作在E1-E6之后开始
-  通过并且边缘到中心合约被冻结。</li>
+  幂等收据，中央手动审核）<strong>未实施</strong>；只有
+  存在边缘侧请求/接收合同和边缘本地审查记录。
+  Central工作在E1-E6通过后开始，Edge-to-central合约是
+  冻结了。</li>
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
-  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期限、网络
+  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。</li>
-<li><code>.obsidian/</code> 根据选择保持不被跟踪；在更改该决定之前通知用户。</li>
+<li><code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
 
 

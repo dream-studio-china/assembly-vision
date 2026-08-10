@@ -4086,6 +4086,11 @@
 <a id="__codelineno-0-328" name="__codelineno-0-328" href="#__codelineno-0-328"></a>    <span class="n">reviewed_at</span><span class="p">:</span> <span class="n">datetime</span>
 <a id="__codelineno-0-329" name="__codelineno-0-329" href="#__codelineno-0-329"></a>    <span class="n">revision</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
 </code></pre></div>
+<p>上面的模型是<strong>中央</strong>审查记录（用户FK，修订链）。的
+边缘本地审查记录（ADR-016）是一个独特的仅附加模型：它存储
+调用者提供的 <code>reviewer</code> 字符串，五值
+<code>ReviewDisposition</code>/<code>ComponentCorrectionState</code> 枚举，以及 <code>supersedes_review_id</code>
+用于链接，并保留在边缘 <code>review_records</code> 表中（第 14.5 节）。</p>
 <p>15 个必需的公共模型是 <code>BoundingBox</code>、<code>Detection</code>、<code>FrameQuality</code>、<code>ProductDetection</code>、<code>ROIResult</code>、<code>ComponentDetection</code>、<code>AggregatedComponentEvidence</code>、<code>InspectionDecision</code>、<code>InspectionRecord</code>、<code>UploadTask</code>、<code>DeviceStatus</code>、<code>ProductConfiguration</code>、<code>RuleConfiguration</code>、<code>ModelManifest</code> 和 <code>ReviewRecord</code>。条形码、分辨率、生命周期、媒体、数据集、指标和校正类型支持值对象，并且仍然是生成的 API 合约的一部分。</p>
 <h2 id="144-matching-typescript-types">14.4 匹配 TypeScript 类型<a class="headerlink" href="#144-matching-typescript-types" title="Permanent link">&para;</a></h2>
 <p>这些界面显示了预期生成的形状。前端应该导入生成的类型，而不是手动维护此块。 UUID 和日期时间在应用程序边界仍然是品牌别名，因为 JSON 携带字符串。</p>
@@ -4189,16 +4194,16 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>local_component_evidence</code></td>
 <td><code>id</code> PK、<code>inspection_id</code> FK、组件代码、状态、置信度/计数字段、原因 JSON</td>
-<td><code>UNIQUE(inspection_id, component_code)</code>;最终每个组件的证据。</td>
+<td><code>UNIQUE(inspection_id, component_code)</code>；最终每个组件的证据。</td>
 </tr>
 <tr>
 <td><code>local_media_files</code></td>
-<td><code>id</code> PK、<code>inspection_id</code> FK 可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
+<td><code>id</code> PK、<code>inspection_id</code> FK可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
 <td>路径必须相对于配置的媒体根； <code>UNIQUE(relative_path)</code> 和 <code>UNIQUE(sha256, kind)</code> ，其中重复数据删除是安全的。</td>
 </tr>
 <tr>
 <td><code>upload_tasks</code></td>
-<td><code>id</code> PK、设备/检查/对象 ID、种类、有效负载哈希、校验和、幂等性密钥、规范状态、尝试、租约所有者/到期、下次尝试、时间戳、错误</td>
+<td><code>id</code> PK、设备/检查/对象 ID、种类、有效负载哈希、校验和、幂等密钥、规范状态、尝试、租约所有者/到期、下次尝试、时间戳、错误</td>
 <td><code>UNIQUE(device_id, idempotency_key)</code>；具有可恢复租约的持久发件箱。</td>
 </tr>
 <tr>
@@ -4220,6 +4225,11 @@ OpenAPI 中的模型。最小注册表是：</p>
 <td><code>rule_installations</code></td>
 <td><code>rule_version_id</code> PK、产品版本 ID、文档 JSON、校验和、状态、安装/激活次数</td>
 <td>激活验证兼容的模型类和产品版本。</td>
+</tr>
+<tr>
+<td><code>review_records</code></td>
+<td><code>review_id</code> PK、<code>inspection_id</code> FK、处置、原因、注释、审阅者、创建时间、原始业务/内部决策和原因 JSON、组件更正 JSON、取代审阅 ID</td>
+<td>仅附加（ADR-016，迁移 0008）；每个机器结果的配置受到限制；后来的评论将通过引用取代，并且永远不会覆盖。</td>
 </tr>
 </tbody>
 </table>
@@ -4290,7 +4300,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>inspections</code></td>
 <td>UUID PK 匹配边缘 ID、组织/设备 FK、设备序列、生命周期/时间、条形码/产品分辨率、内部决策、业务结果、应用程序/产品模型/组件模型/规则版本和校验和、延迟、接收时间</td>
-<td><code>UNIQUE(device_id, device_sequence)</code>；保留准确的运行时版本。</td>
+<td><code>UNIQUE(device_id, device_sequence)</code>;保留准确的运行时版本。</td>
 </tr>
 <tr>
 <td><code>inspection_components</code></td>
@@ -4360,7 +4370,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>使用键集分页 <code>(completed_at, id) &lt; (:cursor_time, :cursor_id)</code> 来获取历史记录。偏移分页仅适用于小型配置列表。</li>
 </ul>
 <h2 id="149-media-metadata-and-integrity">14.9 媒体元数据和完整性<a class="headerlink" href="#149-media-metadata-and-integrity" title="Permanent link">&para;</a></h2>
-<p>数据库存储媒体元数据，而不是大图像/视频 blob。 Edge 写入临时路径（在支持的情况下<code>fsync</code>），自动重命名、计算 SHA-256，然后提交元数据及其上传任务。集中上传使用暂存对象密钥； API 在标记媒体可用之前验证大小和校验和。在最终对象存在之前，数据库行不得声明 <code>AVAILABLE</code>。</p>
+<p>数据库存储媒体元数据，而不是大图像/视频 blob。 Edge 写入临时路径（支持的情况下），自动重命名、计算 SHA-256，然后提交元数据及其上传任务。集中上传使用暂存对象密钥； API 在标记媒体可用之前验证大小和校验和。在最终对象存在之前，数据库行不得声明 <code>AVAILABLE</code>。</p>
 <p>对象键是不透明的且具有租户范围，例如 <code>org/{organization_id}/device/{device_id}/2026/08/04/{media_id}.jpg</code>。 API 响应发出授权的短期 URL，而不是公开存储凭据。</p>
 <h2 id="1410-retention-and-safe-cleanup">14.10 保留和安全清理<a class="headerlink" href="#1410-retention-and-safe-cleanup" title="Permanent link">&para;</a></h2>
 <p>保留值是部署配置，而不是硬编码的默认值。清理工人应用此命令：</p>
@@ -4388,7 +4398,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <h2 id="1413-openapi-synchronization-strategy">14.13 OpenAPI同步策略<a class="headerlink" href="#1413-openapi-synchronization-strategy" title="Permanent link">&para;</a></h2>
 <ol>
 <li>共享Python域包中的Pydantic模型由FastAPI请求和响应声明直接引用。</li>
-<li>CI 启动/导入每个 API，并使用固定的 FastAPI/Pydantic 工具链发出确定性的 <code>edge-openapi.json</code> 和 <code>central-openapi.json</code>。</li>
+<li>CI 启动/导入每个 API，并使用固定的 FastAPI/Pydantic 工具链发出确定性 <code>edge-openapi.json</code> 和 <code>central-openapi.json</code>。</li>
 <li>CI 验证每个文档并检查提交/生成的工件是否存在偏差。</li>
 <li><code>openapi-typescript</code> 或 Orval 生成 TypeScript 模式和客户端到 <code>packages/typescript/api-client/generated</code> 中；生成的文件不需手动编辑。</li>
 <li>前端包装器添加了身份验证和错误映射等传输问题，而无需重新定义有效负载。</li>
@@ -4405,7 +4415,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>确认租户隔离要求以及 PostgreSQL 行级安全性是否是强制性的。</li>
 <li>确认客户时钟同步能力和可接受的时钟漂移处理。</li>
 <li>验证所选 Python 和 PostgreSQL 版本中的 UUIDv7 库/工具支持。</li>
-<li>定义内部 <code>UNCERTAIN</code> 状态是否作为解释性细节在外部可见；其业务和物理路径仍然是<code>NG</code>。</li>
+<li>定义内部<code>UNCERTAIN</code>状态是否作为解释性细节在外部可见；其业务和物理路径仍然是<code>NG</code>。</li>
 </ul>
 
 
