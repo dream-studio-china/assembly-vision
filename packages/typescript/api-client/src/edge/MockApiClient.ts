@@ -606,6 +606,14 @@ export class MockApiClient implements ApiClient {
   async submitReview(inspectionId: string, request: SubmitReviewRequest): Promise<ReviewRecord> {
     const record = this.#records.find((r) => r.inspection_id === inspectionId);
     if (!record) throw new ApiError(404, "INSPECTION_NOT_FOUND", `no inspection ${inspectionId}`);
+    // Mirror the server's request validation (design 24.6, ADR-016 decision 5):
+    // the reviewer must be non-empty and INCONCLUSIVE requires a reason.
+    if (!request.reviewer || !request.reviewer.trim()) {
+      throw new ApiError(422, "VALIDATION_FAILED", "reviewer must be a non-empty name");
+    }
+    if (request.disposition === "INCONCLUSIVE" && !request.reason?.trim()) {
+      throw new ApiError(422, "VALIDATION_FAILED", "an inconclusive review requires a reason");
+    }
     const allowed = allowedDispositions(
       record.decision.business_result,
       record.decision.internal_decision,

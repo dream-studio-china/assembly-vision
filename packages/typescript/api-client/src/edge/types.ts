@@ -265,6 +265,13 @@ export type ComponentCorrection = {
   note?: string | null;
 };
 
+/** Per-component ground truth submitted with a review (design 24.6). */
+export type ComponentCorrectionRequest = {
+  component_code: string;
+  corrected_state: ComponentCorrectionState;
+  note?: string | null;
+};
+
 /** Append-only human review of one inspection (design 24.7). */
 export type ReviewRecord = {
   review_id: UUID;
@@ -288,7 +295,7 @@ export type SubmitReviewRequest = {
   note?: string | null;
   reviewer: string;
   supersedes_review_id?: UUID | null;
-  component_corrections?: ComponentCorrection[];
+  component_corrections?: ComponentCorrectionRequest[];
 };
 
 /** One inspection row of the review queue with its review state (24.4). */

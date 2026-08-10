@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ApiError } from "../src/edge/ApiError";
 import { HttpApiClient } from "../src/edge/HttpApiClient";
 import { MockApiClient } from "../src/edge/MockApiClient";
+import { REVIEW_DISPOSITIONS } from "../src/edge/types";
 
 function fakeFetch(status: number, body: unknown): typeof fetch {
   return (async () =>
@@ -158,6 +159,28 @@ describe("MockApiClient", () => {
         reviewer: "operator-1",
       }),
     ).rejects.toMatchObject({ code: "INSPECTION_NOT_FOUND", status: 404 });
+  });
+
+  it("mock client enforces reviewer and inconclusive-reason validation", async () => {
+    const client = new MockApiClient();
+    const ng = (await client.listInspections({ business_result: "NG" })).items[0];
+    await expect(
+      client.submitReview(ng.inspection_id, { disposition: "INCONCLUSIVE", reviewer: "op" }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED", status: 422 });
+    await expect(
+      client.submitReview(ng.inspection_id, {
+        disposition: "CONFIRMED_NG",
+        reviewer: "   ",
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED", status: 422 });
+  });
+
+  it("every documented disposition is a known review disposition", () => {
+    const known = new Set<string>(REVIEW_DISPOSITIONS);
+    for (const disposition of ["CONFIRMED_NG", "CONFIRMED_OK", "CORRECTED_NG", "INCONCLUSIVE", "REINSPECT"]) {
+      expect(known.has(disposition)).toBe(true);
+    }
+    expect(known.size).toBe(5);
   });
 });
 
