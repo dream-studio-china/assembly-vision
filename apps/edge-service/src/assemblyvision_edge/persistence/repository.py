@@ -588,8 +588,8 @@ class EdgeRepository:
                 "decision": json.dumps(decision),
                 "synchronization_status": record.synchronization_status,
                 "processing_ms": record.processing_ms,
-                "inference_metadata": json.dumps(record.inference_metadata)
-                if record.inference_metadata
+                "inference_metadata": json.dumps(payload["inference_metadata"])
+                if payload["inference_metadata"]
                 else None,
                 "content_sha256": content_hash,
                 "business_result": record.decision.business_result.value,
