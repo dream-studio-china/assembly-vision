@@ -784,6 +784,17 @@
             "title": "Cleanup Purged Count",
             "type": "integer"
           },
+          "cpu_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cpu Count"
+          },
           "current_component_model_version_id": {
             "anyOf": [
               {
@@ -887,6 +898,39 @@
             "title": "Integrity Verify Checksums",
             "type": "boolean"
           },
+          "load_1m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Load 1M"
+          },
+          "memory_available_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory Available Bytes"
+          },
+          "memory_total_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory Total Bytes"
+          },
           "model_loaded": {
             "title": "Model Loaded",
             "type": "boolean"
@@ -944,6 +988,11 @@
             "default": 0.0,
             "title": "Storage Stop Free Percent",
             "type": "number"
+          },
+          "storage_total_bytes": {
+            "default": 0,
+            "title": "Storage Total Bytes",
+            "type": "integer"
           },
           "storage_warning_free_percent": {
             "default": 0.0,

@@ -180,8 +180,15 @@ class DeviceStatus(BaseModel):
     # server is the single authority for thresholds and mode; the dashboard
     # renders these instead of duplicating a fixed warning threshold.
     storage_mode: str = "NORMAL"
+    storage_total_bytes: int = 0
     storage_free_bytes: int = 0
     storage_free_percent: float = 0.0
+    # Host system metrics for the device health view (design 15.3.1); None
+    # means the platform cannot provide the value.
+    cpu_count: int | None = None
+    load_1m: float | None = None
+    memory_total_bytes: int | None = None
+    memory_available_bytes: int | None = None
     storage_free_inodes: int = 0
     storage_inode_percent: float = 0.0
     storage_warning_free_percent: float = 0.0

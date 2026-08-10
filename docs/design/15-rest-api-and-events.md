@@ -35,7 +35,7 @@ In the tables, `R` means authenticated edge viewer, `O` operator, and `A` edge a
 |---|---|---|---|---|---|---|
 | `GET /api/v1/health/live` | Process liveness only. | None / `{status}` | `503` only during shutdown | Safe GET | - | Unauthenticated, no internals |
 | `GET /api/v1/health/ready` | Camera/model/database readiness. | None / `DeviceStatus` summary | `503 NOT_READY` | Safe GET | - | R |
-| `GET /api/v1/device/status` | Full device, disk, network, and queue status. | None / `DeviceStatus` | `503 STATUS_UNAVAILABLE` | Safe GET | - | R |
+| `GET /api/v1/device/status` | Full device, disk, network, and queue status. Includes host system metrics for the health view: CPU count, 1-minute load average, memory total/available bytes, and the storage volume total/free bytes. Metric values unavailable on a platform are `null`, never fabricated. | None / `DeviceStatus` | `503 STATUS_UNAVAILABLE` | Safe GET | - | R |
 | `GET /api/v1/camera/state` | Camera connection and capture settings, excluding secrets. | None / `CameraState` | `503 CAMERA_ADAPTER_ERROR` | Safe GET | - | R |
 | `GET /api/v1/camera/{instance_id}/preview` | Latest captured frame as a rate-limited JPEG for the configured instance (interim REST preview, ADR-013). | Path instance ID / JPEG bytes | `404 INSTANCE_NOT_FOUND`, `503 CAMERA_UNAVAILABLE` | Safe GET | - | R |
 | `POST /api/v1/camera/reconnect` | Request a supervised camera reconnect. | `{reason}` / `OperationAccepted` | `409 INSPECTION_ACTIVE`, `503 CAMERA_ADAPTER_ERROR` | `Idempotency-Key` | - | A |
