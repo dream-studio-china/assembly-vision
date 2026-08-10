@@ -10,8 +10,9 @@ apps get their own section instead of blurring this document.
 | [Edge inspection CLI](#4-app-edge-inspection-cli-appsedge-service) | `assemblyvision` / `av-train`: train, inspect, verify |
 | [Edge dashboard](#5-app-edge-dashboard-appsedge-web) | Vue 3 web UI for inspection history, live view, queue, health |
 | [Edge desktop](#6-app-edge-desktop-appsedge-desktop) | Electron shell that runs the dashboard as a local kiosk app |
+| [Central server](#7-app-central-server-appscentral-service) | M1 pilot: delayed edge upload ingestion, PostgreSQL history, MinIO evidence, admin-web |
 
-Future apps (e.g. a central API or worker) add a numbered section here.
+Future apps add a numbered section here.
 
 ---
 
@@ -37,8 +38,8 @@ This prepares both workspaces:
 
 | Layer | Tool | Contents |
 |---|---|---|
-| Python | uv | `assemblyvision-domain`, `assemblyvision-vision`, `assemblyvision-edge` |
-| TypeScript | pnpm | `@assemblyvision/api-client`, `@assemblyvision/ui`, `edge-web` |
+| Python | uv | `assemblyvision-domain`, `assemblyvision-vision`, `assemblyvision-edge`, `assemblyvision-central` |
+| TypeScript | pnpm | `@assemblyvision/api-client`, `@assemblyvision/api-client-central`, `@assemblyvision/ui`, `edge-web`, `admin-web` |
 
 ## 3. Verify the toolchain
 
@@ -473,7 +474,65 @@ pnpm --filter edge-desktop kiosk    # fullscreen, no application menu
 pnpm --filter edge-desktop test     # Vitest (load-target resolution)
 ```
 
-## 7. Shared packages (`packages/`)
+---
+
+## 7. App: Central server (`apps/central-service`)
+
+The central M1 pilot is a management and evidence plane: it receives delayed
+edge inspection and media uploads, stores history in PostgreSQL and evidence
+in MinIO, and hosts the pilot administration UI. It is **never** required for
+edge inspection decisions, and it preserves the current edge upload envelope
+and verified-receipt semantics (`docs/tasks/C1-central-server-m1.md`). The
+C1a foundation (workspace, service, Compose, health, OpenAPI) is delivered;
+C1b–C6 are in progress.
+
+### 7.1 Run the pilot stack (Docker Compose)
+
+PostgreSQL, MinIO, the API (`central-service`), the one-shot migration step
+(`central-migrate`), and the built admin UI (`admin-web`) start together:
+
+```bash
+cp apps/central-service/compose.env.example apps/central-service/.env   # dev defaults; override secrets for real use
+docker compose -f apps/central-service/compose.yaml up -d --build
+curl http://localhost:8080/api/v1/health/live     # admin-web proxies /api to the API
+```
+
+- The API container health check uses `/api/v1/health/ready`; readiness
+  returns `503` while PostgreSQL is unreachable, the schema is behind head,
+  the MinIO bucket is unavailable, or the pilot credential is not configured.
+- Schema migrations are a **controlled release step** run by the one-shot
+  `central-migrate` service (`python -m central_service migrate`); the API
+  never migrates automatically.
+
+### 7.2 Run without Docker
+
+Requires a PostgreSQL database and an S3-compatible object store:
+
+```bash
+export AV_CENTRAL_DATABASE_URL=postgresql+psycopg://central:secret@127.0.0.1:5432/assemblyvision
+export AV_CENTRAL_MINIO_ENDPOINT=127.0.0.1:9000
+export AV_CENTRAL_MINIO_ACCESS_KEY=minioadmin
+export AV_CENTRAL_MINIO_SECRET_KEY=minioadmin
+export AV_CENTRAL_ADMIN_TOKEN='<pilot-admin-token>'   # at least 16 characters
+
+uv run python -m central_service migrate        # controlled schema release step
+uv run python -m central_service serve --host 127.0.0.1 --port 8000
+```
+
+Health endpoints: `GET /api/v1/health/live` (liveness, no dependencies) and
+`GET /api/v1/health/ready` (dependency readiness naming each checked
+dependency in the `checks` map).
+
+### 7.3 Tests
+
+```bash
+uv run pytest apps/central-service/tests        # health, readiness, settings
+cd apps/admin-web && pnpm test:e2e              # pilot UI smoke test
+```
+
+---
+
+## 8. Shared packages (`packages/`)
 
 Used by multiple apps; you normally consume them through the app sections
 above, not run them directly.
@@ -483,9 +542,10 @@ above, not run them directly.
 | `packages/python/domain` | Canonical Pydantic models, errors, reason codes |
 | `packages/python/vision-core` | ROI engine, image sources, manifest loading |
 | `packages/typescript/api-client` | Edge API contract (types, Mock/HTTP client) |
+| `packages/typescript/api-client-central` | Central API contract (generated types) |
 | `packages/typescript/ui` | Shared UI primitives (detection viewer, status, formatters) |
 
-## 8. Quality gates
+## 9. Quality gates
 
 Run all Python + TypeScript gates together:
 
@@ -502,10 +562,17 @@ uv run pytest                                          # Python tests
 pnpm -r build && pnpm -r lint && pnpm -r test          # TypeScript
 ```
 
+`make check` additionally runs the Playwright smoke tests for both `edge-web`
+and `admin-web`. CI enforces the OpenAPI drift checks
+(`uv run python scripts/generate-central-openapi.py` and the edge equivalent)
+and the generated client drift checks (`pnpm --filter @assemblyvision/api-client-central generate:types`,
+edge equivalent included), so a schema change must be committed with its
+regenerated artifacts.
+
 See [SECURITY.md](SECURITY.md) for the security policy, the M1
 authentication boundary, and how to report a vulnerability.
 
-### 8.1 E6 edge acceptance evidence
+### 9.1 E6 edge acceptance evidence
 
 The E6-prep acceptance runner executes every supported locally automatable E6
 acceptance item (Python/frontend/docs gates, compose render, optional Docker image
@@ -542,12 +609,14 @@ acceptance matrix and
 [docs/design/28-edge-acceptance-report.md](docs/design/28-edge-acceptance-report.md)
 for the report template.
 
-## 9. Project layout
+## 10. Project layout
 
 ```text
 pyproject.toml                  # root uv workspace (Python)
 package.json + pnpm-workspace.yaml  # root pnpm workspace (TypeScript)
 apps/
+  central-service/              # central M1 API (FastAPI · PostgreSQL · MinIO)
+  admin-web/                    # central administration UI (Vue 3)
   edge-service/                 # inspection runtime (CLI, pipeline, rules, detectors)
   edge-web/                     # Vue 3 edge dashboard (Vite)
   edge-desktop/                 # Electron shell for the dashboard (desktop/kiosk)
@@ -555,6 +624,7 @@ packages/
   python/domain/                # shared domain models, errors, reason codes
   python/vision-core/           # shared ROI engine, image sources, manifests
   typescript/api-client/        # edge API contract (types, Mock/HTTP client)
+  typescript/api-client-central/# central API contract (generated types)
   typescript/ui/                # shared UI primitives (detection viewer, status)
 config/examples/                # example pipeline, rule, and manifest config
 models/manifests/               # model metadata (weights outside Git)
@@ -562,7 +632,7 @@ tests/fixtures/                 # small non-sensitive test fixtures
 docs/                           # architecture, contracts, ADRs, runbooks
 ```
 
-## 10. What's next
+## 11. What's next
 
 Milestones E1-E5 are implemented: observability (PRs #18/#19), retention and
 disk safety (PR #20), upload resilience (PR #22), runtime/WebSocket (PR #23),
@@ -570,7 +640,7 @@ and deployment and security (E5, PR #24). The remaining Edge gate is E6, split
 into two phases:
 
 - **E6-prep tooling (delivered)** — acceptance test matrix, the local runner
-  (`scripts/edge-acceptance-run.py`, section 8.1), the acceptance report
+  (`scripts/edge-acceptance-run.py`, section 9.1), the acceptance report
   template, and the on-site execution plan. The clock-drift harness remains an
   explicit incomplete local item; the runner reports it as `NOT_EXECUTED`.
 - **On-site acceptance (gated)** — requires customer-approved targets, real
@@ -590,12 +660,16 @@ Next work items:
   barcode decoding on the dev harness and the production single-frame loop,
   plus the opt-in Modbus TCP FIFO trigger contract. Live decode validation on
   production samples and a site-validated register profile remain.
-- **Edge-local human review (ADR-016)** — implemented on
-  `feat/edge-local-human-review` (PR #31, pending merge): append-only review
+- **Edge-local human review (ADR-016)** — merged (PR #31): append-only review
   of any inspection through the viewer credential, with the `/review` queue
   page and review panel in the dashboard.
-- **Central server** — not started; ingestion API, PostgreSQL model, object
-  storage, idempotent receipts, and manual review begin after the Edge gates
-  and the Edge-to-central contract are ready. The edge uploader already
-  implements the outbox, idempotency keys, checksums, and verified-receipt
-  semantics the central ingestion contract will consume.
+- **Central server M1 pilot** — in progress
+  (`docs/tasks/C1-central-server-m1.md`). C1a (workspace, service, Compose,
+  health/readiness, OpenAPI) is delivered: `apps/central-service`,
+  `apps/admin-web`, and `packages/typescript/api-client-central`. Next steps:
+  C1b tenant/device/pilot authentication, C2a inspection ingestion with
+  verified receipts, C2b MinIO media binding, C3 history/detail/overview,
+  C4 append-only review, C5 metadata governance, C6 hardening and operational
+  evidence. The edge uploader already implements the outbox, idempotency
+  keys, checksums, and verified-receipt semantics the central ingestion
+  contract consumes.
