@@ -3640,7 +3640,7 @@
 </ul>
 <h2 id="97-failure-handling">9.7 故障处理<a class="headerlink" href="#97-failure-handling" title="Permanent link">&para;</a></h2>
 <p>推理超时、内存不足、输出格式错误、模型进程崩溃、转换失败或版本不匹配会使受影响的帧无效。如果无法提供所需证据，则最终结果为<code>NG</code>。实现绝不能从另一个框架、ROI、产品或模型调用中进行检测。</p>
-<p>在可恢复的加速器故障后，工作线程可以重新加载或使用经过验证的 CPU 运行时（如果已配置）。后备运行时必须使用相同的清单并单独进行性能测试；记录切换运行时间。服务器连接对本地推理没有影响。加速器/GPU 故障根据弹性矩阵 (22.8) 进行故障注入：可恢复故障可能会回退，不可恢复故障必须故障并阻止检查，永远不会从不完整的证据中产生 <code>OK</code>。</p>
+<p>在可恢复的加速器故障后，工作线程可以重新加载或使用经过验证的 CPU 运行时（如果已配置）。回退运行时必须使用相同的清单并单独进行性能测试；记录切换运行时间。服务器连接对本地推理没有影响。加速器/GPU 故障根据弹性矩阵 (22.8) 进行故障注入：可恢复故障可能会回退，不可恢复故障必须故障并阻止检查，永远不会从不完整的证据中产生 <code>OK</code>。</p>
 <h2 id="98-performance-and-concurrency">9.8 性能和并发性<a class="headerlink" href="#98-performance-and-concurrency" title="Permanent link">&para;</a></h2>
 <p>保持模型实例正常运行并将并发绑定到测量的 GPU/CPU 容量。背压必须是明确的。仅在测量每个组件的 NG 召回率后才优化输入大小、运行时间或帧采样；禁止默默地丢弃帧以满足吞吐量。采样必须保留最低有效帧要求和产品窗口标识。</p>
 <h2 id="99-verification">9.9 验证<a class="headerlink" href="#99-verification" title="Permanent link">&para;</a></h2>

@@ -3918,7 +3918,7 @@
   评估、本地数据库/媒体、带重试的上传队列、运行状况监控、本地 FastAPI、
   本地 Vue 仪表板。在中央/网络中断期间检查仍在继续。</li>
 <li><strong>中央服务器职责</strong>：摄取选定的结果/媒体、历史记录、受管理的
-  元数据、手动审查记录、有界试点状态以及后续管理/报告/审计。
+  元数据、人工审查记录、有界试点状态以及后续管理/报告/审计。
   远程包分发属于生产范围。中央不需要检查。</li>
 <li><strong>两阶段检测</strong>：第一阶段全画幅检测产品；投资回报率引擎
   扩展/剪辑它；第二阶段检测所需的组件（<code>component_a</code>、<code>component_b</code>、
@@ -4068,7 +4068,7 @@
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
   盒子是致命的；丢失的标签文件无法验证，除非已记录
   <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
-  底片；成分制备导致 ROI 作物为负值；并发表
+  底片；成分制备导致 ROI 作物为负数；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
 <li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code> 和
   <code>pytest</code> 现在覆盖整个存储库（边缘、包、训练、脚本
@@ -4181,11 +4181,11 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   标签、词干碰撞、Roboflow <code>valid</code> -&gt; <code>val</code>)、发布
   数据集相对 <code>data.yaml</code> 路径，<code>av-train</code> 解析绝对路径
   Ultralytics 项目目录并断言 <code>best.pt</code> 存在。</li>
-<li><strong>M1-M3</strong>：协调跳过 NUL 字节媒体路径； rule-identity
-  注册可以解决并发竞赛而不会泄漏<code>IntegrityError</code>；
+<li><strong>M1-M3</strong>：协调跳过 NUL 字节媒体路径；规则身份
+  注册解决并发竞赛而不泄漏<code>IntegrityError</code>；
   首次打开的 SQLite 迁移是跨线程和进程序列化的。</li>
 <li><strong>规则/清单故障安全</strong>：规则引擎拒绝非有限几何并且
-  incomplete PRESENT evidence;清单验证强制执行运行时、工件
+  现有证据不完整；清单验证强制执行运行时、工件
   包包含和类映射（<code>ConfigError</code>，绝不泄漏）。</li>
 <li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
   覆盖）；日志消息清理绝对路径；失败尝试节流
@@ -4193,12 +4193,12 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   (<code>400 INVALID_CURSOR</code>);始终清除介质<code>410</code>；非 ASCII 承载 <code>401</code>；
   <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
 <li><strong>前端强化</strong>：生产构建失败，除非<code>VITE_API_MODE=http</code>；
-  media blob URLs reject foreign origins; HTTP 模式删除不支持的行
-  过滤器； WebSocket gaps are signalled;嵌套记录经过验证；的
-  unrouted duplicate live view was removed.</li>
+  媒体 blob URL 拒绝外国来源； HTTP 模式删除不支持的行
+  过滤器； WebSocket 间隙已发出信号；嵌套记录经过验证；的
+  未路由的重复实时视图已被删除。</li>
 <li><strong>工具/文档</strong>：合成发电机旋转几何形状和场景
   覆盖范围已修正；训练运行的再现性元数据记录在旁边
-  体现； design 14 M1 boundary, reason codes, adapters, runbooks, and
+  体现；设计 14 M1 边界、原因代码、适配器、运行手册和
   快速启动对齐。</li>
 <li><strong>公关审查后续行动 (<code>c634ca5</code>)</strong>：保留记录的同级
   包根包含下的 <code>models/manifests</code> + <code>models/weights</code> 布局，
@@ -4210,7 +4210,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   上传调度程序里程碑。</li>
 </ul>
 <h2 id="85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14">8.5 相机帧源、多实例边缘和 Web 开发测试工具（ADR-013/014、PR #14）<a class="headerlink" href="#85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14" title="Permanent link">&para;</a></h2>
-<p>通过 PR #14 合并（dev -&gt; main）。 The review-driven hardening pass is recorded in
+<p>通过 PR #14 合并（dev -&gt; main）。审查驱动的强化过程记录在
 <code>docs/reviews/PR-014-review.md</code>；结果 F1-F14 通过回归得到解决
 测试。设计：</p>
 <ul>
@@ -4229,7 +4229,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
   <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
   保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界每个实例检查队列
+  实例使用显式的有界的每个实例检查队列
   溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
   <code>EdgeRuntime.load_instances</code>开始独立单帧检查
   当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
@@ -4293,7 +4293,7 @@ ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
 <li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code> 在一个任务中声明到期任务
   即时交易； <code>MEDIA</code> 任务只有在检查后才到期
   任务有经过验证的收据；每个声明都带有每个任务的防护令牌
-  (<code>lease_owner</code>), stale <code>IN_PROGRESS</code> tasks are reclaimed after lease expiry,
+  (<code>lease_owner</code>)，陈旧的<code>IN_PROGRESS</code>任务在租约到期后被回收，
   终端更新需要匹配的令牌。</li>
 <li><strong>故障分类</strong>：传输错误和<code>408/429/5xx</code>时间表
   从响应时间起遵守<code>Retry-After</code>的全抖动退避；失踪/
@@ -4478,7 +4478,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li><strong>边缘本地人工审查（PR #31，ADR-016）</strong>：可选，附加，
   对任何检查（OK 或 NG）进行仅附加审查，而不改变
   机器决定。域 <code>ReviewDisposition</code> (CONFIRMED_NG/CONFIRMED_OK/
-  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的约束，
+  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的限制，
   <code>ReviewRecord</code> 快照原始决策，一个 <code>review_records</code> 表
   （迁移 0008）使用引用链接取代、存储库
   <code>submit_review</code>/<code>list_review_queue</code>，和端点<code>GET /api/v1/reviews</code>，
@@ -4537,7 +4537,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   Central工作在E1-E6通过后开始，Edge-to-central合约是
   冻结了。</li>
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
-  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
+  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期限、网络
   可靠性、中央服务器位置、接受阈值。</li>
 <li><code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</li>
 </ul>
