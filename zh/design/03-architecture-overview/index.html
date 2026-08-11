@@ -597,12 +597,12 @@
   <a href="#3-logical-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Logical Architecture
+        3. 逻辑架构
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Logical Architecture">
+    <nav class="md-nav" aria-label="3. 逻辑架构">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -758,7 +758,7 @@
   <a href="#104-future" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.4 Future
+        10.4 未来
       
     </span>
   </a>
@@ -774,7 +774,7 @@
   <a href="#11-assumptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11. Assumptions
+        11. 假设
       
     </span>
   </a>
@@ -1856,7 +1856,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2818,7 +2818,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3181,12 +3181,12 @@
   <a href="#3-logical-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Logical Architecture
+        3. 逻辑架构
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Logical Architecture">
+    <nav class="md-nav" aria-label="3. 逻辑架构">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3342,7 +3342,7 @@
   <a href="#104-future" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.4 Future
+        10.4 未来
       
     </span>
   </a>
@@ -3358,7 +3358,7 @@
   <a href="#11-assumptions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11. Assumptions
+        11. 假设
       
     </span>
   </a>
@@ -3406,12 +3406,12 @@
     Camera[工业相机和可选的扫描仪或传感器] --&gt;|框架和事件| Edge
     Operator[线路操作员] &lt;--&gt;|本地状态和控制| Edge
     Edge --&gt;|通过批准的集成输出 OK 或 NG| Line[外线流程]
-    Edge &lt;--&gt;|延迟元数据媒体配置和运行状况| Central[AssemblyVision central server]
-    Reviewer[质量审核员] &lt;--&gt;|review and corrections| Central
+    Edge &lt;--&gt;|延迟元数据媒体配置和运行状况| Central[AssemblyVision 中央服务器]
+    Reviewer[质量审核员] &lt;--&gt;|审查和更正| Central
     Admin[系统管理员] &lt;--&gt;|设备用户规则模型和报告| Central
-    Vision[视觉工程师] --&gt;|approved manifests and packages| Central</code></pre>
+    Vision[视觉工程师] --&gt;|批准的舱单和包裹| Central</code></pre>
 <p>外线工艺以边界显示；确切的机制以及 AssemblyVision 是否驱动设备尚未确定。中央服务器从不同步参与检查决策。</p>
-<h2 id="3-logical-architecture">3. Logical Architecture<a class="headerlink" href="#3-logical-architecture" title="Permanent link">&para;</a></h2>
+<h2 id="3-logical-architecture">3. 逻辑架构<a class="headerlink" href="#3-logical-architecture" title="Permanent link">&para;</a></h2>
 <h3 id="31-edge-decision-plane">3.1 边缘决策平面<a class="headerlink" href="#31-edge-decision-plane" title="Permanent link">&para;</a></h3>
 <p>边缘决策平面拥有采集、产品窗口关联、条形码/产品分辨率、帧质量、产品检测、ROI 生成、组件检测、可选 OpenCV 检查、每个组件时间聚合、确定性规则评估和持久本地记录。它公开本地状态并对选定的记录进行排队以供上传。参见<a href="../04-edge-client-architecture/">Edge Client Architecture</a>。</p>
 <h3 id="32-central-management-plane">3.2 中央管理平面<a class="headerlink" href="#32-central-management-plane" title="Permanent link">&para;</a></h3>
@@ -3424,7 +3424,7 @@
         HW[相机扫描仪或触发硬件]
         subgraph Host[工业边缘计算机]
             ProxyE[本地反向代理或静态服务器]
-            WebE[Vue edge Web assets]
+            WebE[Vue 边缘 Web 资产]
             ServiceE[边缘服务 API 和检查运行时]
             DbE[(SQLite 最初)]
             MediaE[(本地媒体音量)]
@@ -3445,7 +3445,7 @@
         JobC[后台工作者仅用于异步作业]
         DbC[(PostgreSQL)]
         ObjC[(S3 兼容或文件系统媒体存储)]
-        RedisC[(Redis when justified)]
+        RedisC[(Redis 合理时)]
         ProxyC --&gt; WebC
         ProxyC --&gt; ApiC
         ApiC --&gt; DbC
@@ -3456,7 +3456,7 @@
         JobC -. 可选代理或缓存 .-&gt; RedisC
     end
 
-    QueueE --&gt;|HTTPS retry with idempotency and checksum| ProxyC
+    QueueE --&gt;|具有幂等性和校验和的 HTTPS 重试| ProxyC
     ServiceE &lt;--&gt;|民意调查或批准的推送渠道| ProxyC</code></pre>
 <p>Docker Compose 是边缘和中心的部署基线。边缘服务使用显式持久卷并且不依赖于 Kubernetes。 Central Kubernetes 仍然是未来的扩展选项，而不是架构先决条件。</p>
 <h2 id="5-primary-data-flow">5. 主要数据流<a class="headerlink" href="#5-primary-data-flow" title="Permanent link">&para;</a></h2>
@@ -3465,7 +3465,7 @@
 2.条码解码和其他配置的身份源解析产品类型；保守地记录分歧。</li>
 <li>框架质量门禁不可用的框架。第一阶段 YOLO 在每个可用的全帧中检测产品。</li>
 <li>ROI 引擎展开并裁剪产品框，记录坐标变换，并可选择应用经过验证的方向/视角标准化。</li>
-<li>第二阶段 YOLO 检测 ROI 中的配置组件；可选的 OpenCV 检查添加类型化证据，而不是默默地覆盖模型输出。
+<li>第二阶段 YOLO 检测 ROI 中的配置组件；可选的 OpenCV 检查添加类型证据，而不是默默地覆盖模型输出。
 6.时间聚合器使用活动版本化策略来组合每个所需组件的证据。
 7.确定性规则引擎产生内部状态、业务结果、组件列表和原因代码。只有完整有效的证据才能产生<code>OK</code>。
 8.本地事务记录元数据和媒体引用。在相关上传任务准备就绪之前，媒体将通过校验和完成。</li>
@@ -3519,7 +3519,7 @@
 </tr>
 </tbody>
 </table>
-<p>OpenAPI 是生成的 TypeScript API 客户端的来源。领域事件有效负载使用显式模式版本；数据库行不会直接作为 API 合约公开。</p>
+<p>OpenAPI 是生成的 TypeScript API 客户端的来源。领域事件有效负载使用显式架构版本；数据库行不会直接作为 API 合约公开。</p>
 <h2 id="7-technology-baseline">7. 技术基线<a class="headerlink" href="#7-technology-baseline" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3583,9 +3583,9 @@
 <p>在有界任务中运行捕获和决策工作，可以选择在监督推理子流程中运行，因此 UI/API 负载在不提前添加第二个边缘部署单元的情况下无法阻止捕获。添加硬件适配器、产品窗口、SQLite/媒体卷、队列调度程序、本地 Web 资产、中央摄取/历史记录和初始管理。使用 Compose 进行部署并练习中断并重新启动恢复。</p>
 <h3 id="103-production-target">10.3 生产目标<a class="headerlink" href="#103-production-target" title="Permanent link">&para;</a></h3>
 <p>强化凭证、审计、包升级/回滚、备份、保留、介质完整性、可观察性、警报、支持程序、模式迁移、浸泡/故障测试和受控部署。接受门是证据驱动的。</p>
-<h3 id="104-future">10.4 Future<a class="headerlink" href="#104-future" title="Permanent link">&para;</a></h3>
+<h3 id="104-future">10.4 未来<a class="headerlink" href="#104-future" title="Permanent link">&para;</a></h3>
 <p>根据测量扩展中央工作人员/存储；可选择采用 Kubernetes、边缘 PostgreSQL、桌面包装、外部集成和批准的再培训自动化。保留边缘决策边界。</p>
-<h2 id="11-assumptions">11. Assumptions<a class="headerlink" href="#11-assumptions" title="Permanent link">&para;</a></h2>
+<h2 id="11-assumptions">11. 假设<a class="headerlink" href="#11-assumptions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>HTTPS 连接间歇性地可用于同步，但不假定可靠性级别。</li>
 <li>可以通过批准的流程来配置设备身份和凭证。</li>

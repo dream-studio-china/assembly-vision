@@ -848,7 +848,7 @@
   <a href="#1071-implementation-status-adr-010-product-window-milestone" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.7.1 Implementation Status (ADR-010, product-window milestone)
+        10.7.1 实施状态（ADR-010，产品窗口里程碑）
       
     </span>
   </a>
@@ -1767,7 +1767,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2729,7 +2729,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3147,7 +3147,7 @@
   <a href="#1071-implementation-status-adr-010-product-window-milestone" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10.7.1 Implementation Status (ADR-010, product-window milestone)
+        10.7.1 实施状态（ADR-010，产品窗口里程碑）
       
     </span>
   </a>
@@ -3230,7 +3230,7 @@
 <li>被拒绝的、陈旧的、重复的或错误的窗口框架不会做出贡献。</li>
 <li>一个高置信度观察或多个中等置信度观察只能根据该组件的配置策略来建立存在。</li>
 <li>不确定、矛盾或不充分的证据不能成为<code>OK</code>。</li>
-<li>关闭窗口是最终决定；迟到的帧会被记录为丢弃，并且不会改变其决定。</li>
+<li>关闭窗口是最终决定；迟到的帧被记录为丢弃，并且永远不会改变其决定。</li>
 </ol>
 <h2 id="104-component-state-model">10.4 组件状态模型<a class="headerlink" href="#104-component-state-model" title="Permanent link">&para;</a></h2>
 <p>每个必需的组件均以以下证据状态之一结尾：</p>
@@ -3269,12 +3269,12 @@
 <h2 id="105-temporal-aggregation-sequence">10.5 时间聚合序列<a class="headerlink" href="#105-temporal-aggregation-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Window as 产品展示
-    participant Quality as Frame Quality Gate
+    participant Quality as 框架质量门
     participant Detector as 元件检测器
-    participant Aggregate as Per-Component Aggregator
+    participant Aggregate as 每个组件聚合器
     participant Rules as 规则引擎
-    Window-&gt;&gt;Aggregate:Open inspection with required components
-loop Each correlated frame
+    Window-&gt;&gt;Aggregate:打开检查所需的组件
+loop 每个相关帧
         Window-&gt;&gt;Quality:验证框架
 alt 帧有效
             Quality-&gt;&gt;Detector:产品投资回报率
@@ -3327,7 +3327,7 @@ loop 每个必需的组件
 <a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">      </span><span class="nt">max_frame_gap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </code></pre></div>
 <p>策略按型号和产品类型进行版本控制和验证。配置的阈值必须遵循严格不等式的<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>，并且启用的时间配置必须为每个规则所需的组件声明一个策略。 <code>medium_confidence</code> 以下的检测永远不会满足计数或空间规则。</p>
-<h2 id="1071-implementation-status-adr-010-product-window-milestone">10.7.1 Implementation Status (ADR-010, product-window milestone)<a class="headerlink" href="#1071-implementation-status-adr-010-product-window-milestone" title="Permanent link">&para;</a></h2>
+<h2 id="1071-implementation-status-adr-010-product-window-milestone">10.7.1 实施状态（ADR-010，产品窗口里程碑）<a class="headerlink" href="#1071-implementation-status-adr-010-product-window-milestone" title="Permanent link">&para;</a></h2>
 <p>每个组件的时间聚合器和边缘产品窗口管理器是
 为实时摄像机路径实现。每个声明一个实例
 其管道配置中的 <code>temporal:</code> 块运行一个产品窗口：frames

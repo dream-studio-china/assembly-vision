@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -2887,7 +2887,7 @@
   <a href="#scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scope
+        范围
       
     </span>
   </a>
@@ -3064,7 +3064,7 @@
 
 
 <h1 id="pr-015-review-per-component-temporal-aggregation-and-product-windows">PR-015 评论：每个组件的时间聚合和产品窗口<a class="headerlink" href="#pr-015-review-per-component-temporal-aggregation-and-product-windows" title="Permanent link">&para;</a></h1>
-<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<h2 id="scope">范围<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
 <p>针对 <code>main</code> 对 <code>feat/temporal-aggregation</code> 进行代码审查（PR #15）。的
 审查涵盖 ADR-010 产品窗口和每个组件的聚合
 实现、其边缘运行时集成、配置、生成的 API
@@ -3204,7 +3204,7 @@
 </ol>
 <p><strong>验收标准：</strong></p>
 <ul>
-<li>集成测试从两个方面进行互补的所需组件检测
+<li>集成测试对两个组件进行互补的所需组件检测
   一个持续时间/间隙间隔内的不同产品标识并进行验证
   这两种产品都不产生<code>OK</code>。</li>
 <li>身份转换、边界信号缺失和已确认的多产品
@@ -3343,70 +3343,70 @@ available <code>ProductDetection.quality.usable</code> 携带实际的质量门
 <li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:127-164</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/config.py:599-622</code></li>
 </ul>
-<p>Required components need not have a temporal policy. The aggregator substitutes
-<code>1.0</code> for both thresholds when a policy is absent, and uses inclusive <code>&gt;=</code>, so
-an exact-confidence <code>1.0</code> detection can become <code>PRESENT</code> without a configured,
-versioned policy. The configuration parser also allows
-<code>medium_confidence == high_confidence</code>, despite the design 10 requirement
-<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>.</p>
-<p><strong>Resolution:</strong></p>
+<p>必需的组件不需要有临时策略。聚合器替代
+当策略不存在时，<code>1.0</code> 用于两个阈值，并使用包容性 <code>&gt;=</code>，因此
+精确置信度 <code>1.0</code> 检测可以变为 <code>PRESENT</code>，无需配置，
+版本化策略。配置解析器还允许
+<code>medium_confidence == high_confidence</code>，尽管有设计 10 的要求
+<code>observation_threshold &lt;= medium_confidence &lt; high_confidence</code>。</p>
+<p><strong>分辨率：</strong></p>
 <ol>
-<li>After loading the rule, reject an enabled temporal configuration unless it
-   supplies exactly one policy for every required component and no unknown
-   component keys.</li>
-<li>Enforce <code>medium_confidence &lt; high_confidence</code> in both
-   <code>ComponentTemporalPolicy</code> and configuration parsing.</li>
-<li>Defensively resolve missing policies to <code>UNVERIFIABLE</code> with an explicit
-   configuration reason if invalid configuration reaches the aggregator.</li>
+<li>加载规则后，拒绝启用的临时配置，除非
+   为每个必需的组件提供准确的策略，并且没有未知的组件
+   组件键。</li>
+<li>在两者中强制执行 <code>medium_confidence &lt; high_confidence</code>
+   <code>ComponentTemporalPolicy</code>和配置解析。</li>
+<li>通过明确的方式防御性地解决 <code>UNVERIFIABLE</code> 缺失的策略
+   如果无效配置到达聚合器，则配置原因。</li>
 </ol>
-<p><strong>Acceptance criteria:</strong></p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>Configuration loading rejects missing required policies, extra policy keys,
-  and equal medium/high thresholds.</li>
-<li>An aggregation unit test proves that an absent policy cannot yield <code>PRESENT</code>,
-  including for confidence <code>1.0</code>.</li>
-<li>A valid complete policy retains the documented high-hit and medium-hit paths.</li>
+<li>配置加载拒绝缺少所需的策略、额外的策略密钥、
+  和相同的中/高阈值。</li>
+<li>聚合单元测试证明不存在的策略不能产生<code>PRESENT</code>，
+  包括信心<code>1.0</code>。</li>
+<li>有效的完整策略保留记录的高命中和中命中路径。</li>
 </ul>
 <h3 id="f7-below-threshold-detections-can-satisfy-exact-component-counts">F7。低于阈值的检测可以满足精确的元件计数<a class="headerlink" href="#f7-below-threshold-detections-can-satisfy-exact-component-counts" title="Permanent link">&para;</a></h3>
-<p><strong>Severity:</strong> P1 / High</p>
-<p><strong>Locations:</strong></p>
+<p><strong>严重性：</strong> P1/高</p>
+<p><strong>地点：</strong></p>
 <ul>
 <li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:159-164</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/temporal/aggregator.py:201-240</code></li>
 </ul>
-<p>Once a high-confidence or qualifying medium hit establishes <code>PRESENT</code>,
-<code>_present()</code> computes <code>detection_count</code>, boxes, and centers from every raw
-detection for that component in the selected frame. A low-confidence false
-positive can therefore inflate a frame from one qualifying detection to the
-rule's exact expected count. For example, with <code>expected_count=2</code>, detections
-at <code>0.95</code> and <code>0.50</code> in one frame can report <code>detection_count=2</code> after the
-<code>0.95</code> detection establishes presence.</p>
-<p><strong>Resolution:</strong></p>
+<p>一旦建立了高置信度或合格的中等命中<code>PRESENT</code>，
+<code>_present()</code> 从每个原始数据中计算 <code>detection_count</code>、框和中心
+检测所选帧中的该组件。低置信度错误
+因此，阳性可以将一个帧从一个合格的检测膨胀到
+规则的确切预期计数。例如，对于 <code>expected_count=2</code>，检测
+在一帧中的<code>0.95</code>和<code>0.50</code>可以在之后报告<code>detection_count=2</code>
+<code>0.95</code> 检测表明存在。</p>
+<p><strong>分辨率：</strong></p>
 <ol>
-<li>Define and document a count-evidence confidence threshold; at minimum it
-   must be <code>medium_confidence</code>.</li>
-<li>Pass only qualifying detections to the count, area-ratio, and center summary
-   used by count/spatial rules.</li>
-<li>Keep below-threshold observations available in diagnostics if needed, but
-   never use them to satisfy a business rule.</li>
+<li>定义并记录计数证据置信度阈值；至少它
+   必须是<code>medium_confidence</code>。</li>
+<li>仅将合格检测传递给计数、面积比和中心摘要
+   由计数/空间规则使用。</li>
+<li>如果需要，在诊断中保留低于阈值的观察结果，但是
+   切勿使用它们来满足业务规则。</li>
 </ol>
-<p><strong>Acceptance criteria:</strong></p>
+<p><strong>验收标准：</strong></p>
 <ul>
-<li>One high-confidence detection plus one below-medium detection reports a
-  count of one and fails an <code>expected_count=2</code> rule as <code>NG</code>.</li>
-<li>Two qualifying detections in one valid frame satisfy an <code>expected_count=2</code>
-  rule.</li>
-<li>Area and spatial evidence used for count-based rules comes only from the same
-  qualifying set as the count.</li>
+<li>一项高置信度检测加上一项低于中等的检测报告
+  计数为 1 并且未满足 <code>expected_count=2</code> 规则，如 <code>NG</code>。</li>
+<li>一个有效帧中的两个合格检测满足 <code>expected_count=2</code>
+  规则。</li>
+<li>用于基于计数的规则的面积和空间证据仅来自相同的
+  排位赛设为计数。</li>
 </ul>
 <h2 id="residual-review-notes">剩余审查说明<a class="headerlink" href="#residual-review-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The OpenAPI enum, generated TypeScript type, and runtime validator correctly
-  include <code>UNVERIFIABLE</code>.</li>
-<li>The aggregation unit tests cover many threshold, duplicate, adjacency, and
-  component-isolation cases. They need the product-isolation, idle-expiry,
-  acquisition-time, quality-gate, missing-policy, and count-confidence cases
-  specified above before the implementation is safe to merge.</li>
+<li>OpenAPI 枚举、生成的 TypeScript 类型和运行时验证器正确
+  包括<code>UNVERIFIABLE</code>。</li>
+<li>聚合单元测试涵盖许多阈值、重复、邻接和
+  组件隔离案例。他们需要产品隔离、闲置到期、
+  采集时间、质量门、缺失策略和计数置信度案例
+  上面指定的实现之前可以安全地合并。</li>
 </ul>
 
 

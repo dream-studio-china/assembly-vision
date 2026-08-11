@@ -1756,7 +1756,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2718,7 +2718,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3281,15 +3281,15 @@ UTC 仍然是可追溯性元数据。 PTP 只能在稍后启用
 <pre class="mermaid"><code>sequenceDiagram
     participant Sensor as 触发器或传感器
     participant Capture as 相机适配器
-    participant Window as Product Window Manager
-    participant Vision as Vision Pipeline
+    participant Window as 产品窗口管理器
+    participant Vision as 愿景管道
     participant Aggregate as 时间聚合器
     participant Rules as 规则引擎
-    participant Store as Local Storage
+    participant Store as 本地存储
     participant Upload as 上传队列
     Sensor-&gt;&gt;Window:产品入驻活动
     Window-&gt;&gt;Window:创建检查和引脚版本
-loop Until exit or timeout
+loop 直到退出或超时
         Capture-&gt;&gt;Window:带时间戳的帧
         Window-&gt;&gt;Vision:相关框架
         Vision--&gt;&gt;Aggregate:每个组件的框架证据
@@ -3298,7 +3298,7 @@ loop Until exit or timeout
     Window-&gt;&gt;Aggregate:关闭检查窗口
     Aggregate--&gt;&gt;Rules:每个所需组件的证据
     Rules--&gt;&gt;Store:OK 或 NG 以及原因代码
-    Store--&gt;&gt;Upload:Enqueue persisted result and media
+    Store--&gt;&gt;Upload:将持久结果和媒体入队
     Note over Store,Upload:上传是异步的，不能阻塞检查</code></pre>
 <p>每个实例独立地将其最新捕获的帧公开为
 速率限制的 JPEG 预览 (<code>GET /api/v1/camera/{instance_id}/preview</code>,
@@ -3394,10 +3394,10 @@ ADR-013）。预览是仪表板的 REST 权宜之计，直到 WebSocket
 开发以及任何经过验证的低风险部署。 USB3 Vision 相机
 公开 GenICam 使用 <code>gige-vision</code>/GenTL 样式适配器而不是
 默默降级到OpenCV。电话摄像头和低成本以太网摄像头
-不按价格或连接器分类：电话可以通过经过验证的使用
+不按价格或连接器分类：电话可以通过经过验证的设备使用
 用于开发的 UVC、RTSP 或 HTTP 源，而以太网摄像头必须证明
 GigE Vision / GenICam 支持才可以使用生产适配器。一个
-仅暴露 RTSP/ONVIF 的摄像机仍然是 RTSP 兼容源，并且不会
+仅公开 RTSP/ONVIF 的摄像机仍然是 RTSP 兼容源，并且不会
 未获得工业触发保证。</p>
 <h2 id="78-recovery-and-failure-handling">7.8 恢复和故障处理<a class="headerlink" href="#78-recovery-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>

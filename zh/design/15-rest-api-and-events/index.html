@@ -934,7 +934,7 @@
   <a href="#1521-authentication-and-authorization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.2.1 认证与授权
+        15.2.1 认证和授权
       
     </span>
   </a>
@@ -1006,7 +1006,7 @@
   <a href="#1533-review-queue-design-24-adr-016" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.3 Review Queue (design 24, ADR-016)
+        15.3.3 审核队列（设计 24，ADR-016）
       
     </span>
   </a>
@@ -1039,7 +1039,7 @@
   <a href="#1536-confidence-drift-environment-change-diagnostics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.6 Confidence Drift (Environment-Change Diagnostics)
+        15.3.6 置信度漂移（环境变化诊断）
       
     </span>
   </a>
@@ -1078,7 +1078,7 @@
   <a href="#1542-inspection-ingestion-and-history" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.4.2 Inspection Ingestion and History
+        15.4.2 检查摄入和历史记录
       
     </span>
   </a>
@@ -1089,7 +1089,7 @@
   <a href="#1543-review-products-rules-and-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.4.3 Review, Products, Rules, and Models
+        15.4.3 审查、产品、规则和模型
       
     </span>
   </a>
@@ -1149,7 +1149,7 @@
   <a href="#157-failure-handling-and-limits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.7 Failure Handling and Limits
+        15.7 故障处理和限制
       
     </span>
   </a>
@@ -1895,7 +1895,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2857,7 +2857,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3221,7 +3221,7 @@
   <a href="#1521-authentication-and-authorization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.2.1 认证与授权
+        15.2.1 认证和授权
       
     </span>
   </a>
@@ -3293,7 +3293,7 @@
   <a href="#1533-review-queue-design-24-adr-016" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.3 Review Queue (design 24, ADR-016)
+        15.3.3 审核队列（设计 24，ADR-016）
       
     </span>
   </a>
@@ -3326,7 +3326,7 @@
   <a href="#1536-confidence-drift-environment-change-diagnostics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.6 Confidence Drift (Environment-Change Diagnostics)
+        15.3.6 置信度漂移（环境变化诊断）
       
     </span>
   </a>
@@ -3365,7 +3365,7 @@
   <a href="#1542-inspection-ingestion-and-history" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.4.2 Inspection Ingestion and History
+        15.4.2 检查摄入和历史记录
       
     </span>
   </a>
@@ -3376,7 +3376,7 @@
   <a href="#1543-review-products-rules-and-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.4.3 Review, Products, Rules, and Models
+        15.4.3 审查、产品、规则和模型
       
     </span>
   </a>
@@ -3436,7 +3436,7 @@
   <a href="#157-failure-handling-and-limits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.7 Failure Handling and Limits
+        15.7 故障处理和限制
       
     </span>
   </a>
@@ -3480,7 +3480,7 @@
 <p>模式在 <a href="../14-data-model-and-database/">Data Model and Database</a> 中定义。 UI 消费者在 <a href="../16-edge-dashboard/">Edge Dashboard</a> 和 <a href="../17-central-admin-dashboard/">Central Admin Dashboard</a> 中描述。</p>
 <p>所有 JSON 均使用 UTF-8、snake_case 字段、ISO 8601 UTC 时间戳、UUID 字符串和 <code>application/problem+json</code> 错误。问题响应包括<code>type</code>、<code>title</code>、<code>status</code>、<code>detail</code>、<code>code</code>、<code>request_id</code>和可选字段<code>errors</code>。</p>
 <h2 id="152-common-behavior">15.2 常见行为<a class="headerlink" href="#152-common-behavior" title="Permanent link">&para;</a></h2>
-<h3 id="1521-authentication-and-authorization">15.2.1 认证与授权<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
+<h3 id="1521-authentication-and-authorization">15.2.1 认证和授权<a class="headerlink" href="#1521-authentication-and-authorization" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Edge UI 请求源自本地管理网络。 MVP 可以使用本地操作员会话，但改变路由需要 <code>operator</code> 或 <code>edge_admin</code>；只读健康状况被故意限制。不要将 localhost 视为身份验证。一个例外是审查提交 (<code>POST /api/v1/inspections/{id}/reviews</code>)，它是根据 ADR-016 通过现有查看者凭证有意公开的，直到存在边缘角色模型。</li>
 <li>设备到中心的调用使用相互验证的 TLS 或绑定到 <code>device_id</code> 的短期设备凭据。</li>
@@ -3527,7 +3527,7 @@
 </tr>
 <tr>
 <td><code>GET /api/v1/device/status</code></td>
-<td>完整的设备、磁盘、网络和队列状态。 Includes host system metrics for the health view: CPU count, 1-minute load average, memory total/available bytes, storage volume total/free bytes, network receive/transmit rates (bytes/second), and NVIDIA GPU utilization and power.平台上不可用的指标值是<code>null</code>，绝不是捏造的。</td>
+<td>完整的设备、磁盘、网络和队列状态。包括健康视图的主机系统指标：CPU 计数、1 分钟平均负载、内存总/可用字节、存储卷总/可用字节、网络接收/传输速率（字节/秒）以及 NVIDIA GPU 利用率和功率。平台上不可用的指标值是<code>null</code>，绝不是捏造的。</td>
 <td>无 / <code>DeviceStatus</code></td>
 <td><code>503 STATUS_UNAVAILABLE</code></td>
 <td>安全获取</td>
@@ -3547,7 +3547,7 @@
 <td><code>GET /api/v1/camera/{instance_id}/preview</code></td>
 <td>最新捕获的帧为已配置实例的速率限制 JPEG（临时 REST 预览，ADR-013）。</td>
 <td>路径实例 ID / JPEG 字节</td>
-<td><code>404 INSTANCE_NOT_FOUND</code>, <code>503 CAMERA_UNAVAILABLE</code></td>
+<td><code>404 INSTANCE_NOT_FOUND</code>、<code>503 CAMERA_UNAVAILABLE</code></td>
 <td>安全获取</td>
 <td>-</td>
 <td>右</td>
@@ -3556,7 +3556,7 @@
 <td><code>POST /api/v1/camera/reconnect</code></td>
 <td>请求重新连接受监控的摄像机。</td>
 <td><code>{reason}</code> / <code>OperationAccepted</code></td>
-<td><code>409 INSPECTION_ACTIVE</code>, <code>503 CAMERA_ADAPTER_ERROR</code></td>
+<td><code>409 INSPECTION_ACTIVE</code>、<code>503 CAMERA_ADAPTER_ERROR</code></td>
 <td><code>Idempotency-Key</code></td>
 <td>-</td>
 <td>一个</td>
@@ -3573,7 +3573,7 @@
 <tr>
 <td><code>GET /api/v1/ws/runtime/stats</code></td>
 <td>运行时事件通道计数器：活动连接、按类型发布的事件、慢速消费者断开连接、传递失败。</td>
-<td>None / <code>RuntimeEventStats</code></td>
+<td>无 / <code>RuntimeEventStats</code></td>
 <td><code>401 UNAUTHENTICATED</code></td>
 <td>安全获取</td>
 <td>-</td>
@@ -3601,7 +3601,7 @@
 <td><code>POST /api/v1/inspection/resume</code></td>
 <td>准备就绪检查后恢复。</td>
 <td><code>{reason}</code> / <code>InspectionRuntimeState</code></td>
-<td><code>409 PRECONDITION_FAILED</code>, <code>503 CONTROL_ERROR</code></td>
+<td><code>409 PRECONDITION_FAILED</code>、<code>503 CONTROL_ERROR</code></td>
 <td>重复期望的状态成功</td>
 <td>-</td>
 <td>哦</td>
@@ -3625,7 +3625,7 @@
 <tr>
 <td><code>GET /api/v1/inspections</code></td>
 <td>查询最近的本地检查。</td>
-<td>Query: business_result, internal_decision, barcode, product, from/to, cursor, limit / <code>Page[InspectionSummary]</code></td>
+<td>查询：business_result、internal_decision、条形码、产品、from/to、cursor、limit / <code>Page[InspectionSummary]</code></td>
 <td><code>400 INVALID_FILTER</code></td>
 <td>安全获取</td>
 <td>光标</td>
@@ -3634,7 +3634,7 @@
 <tr>
 <td><code>GET /api/v1/inspections/{inspection_id}</code></td>
 <td>返回完整的本地结果/证据。</td>
-<td>Path UUID / <code>InspectionRecord</code></td>
+<td>路径 UUID / <code>InspectionRecord</code></td>
 <td><code>404 INSPECTION_NOT_FOUND</code></td>
 <td>安全获取</td>
 <td>-</td>
@@ -3653,14 +3653,14 @@
 <td><code>GET /api/v1/media/{media_id}/content</code></td>
 <td>流式传输本地图像或剪辑并支持范围。</td>
 <td><code>Range</code> 可选 / 字节</td>
-<td><code>404 MEDIA_NOT_FOUND</code>, <code>410 MEDIA_PURGED</code>, <code>416 INVALID_RANGE</code></td>
+<td><code>404 MEDIA_NOT_FOUND</code>、<code>410 MEDIA_PURGED</code>、<code>416 INVALID_RANGE</code></td>
 <td>安全获取</td>
 <td>-</td>
 <td>右</td>
 </tr>
 </tbody>
 </table>
-<h3 id="1533-review-queue-design-24-adr-016">15.3.3 Review Queue (design 24, ADR-016)<a class="headerlink" href="#1533-review-queue-design-24-adr-016" title="Permanent link">&para;</a></h3>
+<h3 id="1533-review-queue-design-24-adr-016">15.3.3 审核队列（设计 24，ADR-016）<a class="headerlink" href="#1533-review-queue-design-24-adr-016" title="Permanent link">&para;</a></h3>
 <p>人机交互审查是可选的和附加的：任何检查都可以
 经过审查，处置永远不会重写机器决策。记录是
 仅附加；后来的评论通过引用取代了早期的评论。</p>
@@ -3680,7 +3680,7 @@
 <tr>
 <td><code>GET /api/v1/reviews</code></td>
 <td>列出审核队列以及每个检查的审核状态。</td>
-<td>Query: business_result, internal_decision, reviewed, cursor, limit / <code>Page[ReviewQueueItem]</code></td>
+<td>查询：business_result、internal_decision、reviewed、cursor、limit / <code>Page[ReviewQueueItem]</code></td>
 <td><code>400 INVALID_CURSOR</code></td>
 <td>安全获取</td>
 <td>光标</td>
@@ -3689,7 +3689,7 @@
 <tr>
 <td><code>GET /api/v1/inspections/{inspection_id}/reviews</code></td>
 <td>一次检查的仅附加审查历史记录（最旧的第一个）。</td>
-<td>Path UUID / <code>list[ReviewRecord]</code></td>
+<td>路径 UUID / <code>list[ReviewRecord]</code></td>
 <td><code>404 INSPECTION_NOT_FOUND</code></td>
 <td>安全获取</td>
 <td>-</td>
@@ -3710,7 +3710,7 @@
 <code>INCONCLUSIVE</code> 需要 <code>reason</code>。该处置必须获得许可
 机器结果（设计 24.3）：<code>UNCERTAIN</code> 可能被确认为 NG/OK，重新检查，
 或不确定；简单的 <code>NG</code> 可能会被确认为 NG/OK 或不确定；采样的
-<code>OK</code> may be confirmed OK, corrected to NG, or inconclusive. <code>409 REVIEW_CONFLICT</code>
+<code>OK</code> 可能被确认为 OK、更正为 NG 或不确定。 <code>409 REVIEW_CONFLICT</code>
 还涵盖了<code>supersedes_review_id</code>，其中没有提及对该检查的审查。</p>
 <h3 id="1534-upload-queue-and-configuration">15.3.4 上传队列和配置<a class="headerlink" href="#1534-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
 <table>
@@ -3739,15 +3739,15 @@
 <td><code>POST /api/v1/uploads/{upload_task_id}/retry</code></td>
 <td>在操作员解决后，将符合条件的重试等待或永久失败工作移至到期状态。</td>
 <td><code>{reason}</code> / <code>UploadTask</code></td>
-<td><code>404 TASK_NOT_FOUND</code>, <code>409 TASK_ACTIVE</code></td>
-<td><code>Idempotency-Key</code>;重复返回相同状态</td>
+<td><code>404 TASK_NOT_FOUND</code>、<code>409 TASK_ACTIVE</code></td>
+<td><code>Idempotency-Key</code>；重复返回相同状态</td>
 <td>-</td>
 <td>哦</td>
 </tr>
 <tr>
 <td><code>GET /api/v1/configuration/effective</code></td>
 <td>有效的配置加上源/修订/校验和。</td>
-<td>None / <code>EffectiveConfiguration</code></td>
+<td>无 / <code>EffectiveConfiguration</code></td>
 <td><code>503 CONFIG_UNAVAILABLE</code></td>
 <td>安全获取</td>
 <td>-</td>
@@ -3820,10 +3820,10 @@
 </tr>
 </tbody>
 </table>
-<h3 id="1536-confidence-drift-environment-change-diagnostics">15.3.6 Confidence Drift (Environment-Change Diagnostics)<a class="headerlink" href="#1536-confidence-drift-environment-change-diagnostics" title="Permanent link">&para;</a></h3>
+<h3 id="1536-confidence-drift-environment-change-diagnostics">15.3.6 置信度漂移（环境变化诊断）<a class="headerlink" href="#1536-confidence-drift-environment-change-diagnostics" title="Permanent link">&para;</a></h3>
 <p><code>GET /api/v1/statistics/confidence-drift</code> 分析检测置信度
 一种固定产品、规则、产品检测器版本、组件检测器下的时间
-version, and aggregation-policy version on this device. This prevents a release
+版本，以及该设备上的聚合策略版本。这可以防止释放
 或政策转变不再表现为收购环境的变化
 （传送带、相机焦距/角度、照明）。</p>
 <table>
@@ -3835,24 +3835,24 @@ version, and aggregation-policy version on this device. This prevents a release
 </thead>
 <tbody>
 <tr>
-<td>Confidence metric</td>
-<td>每个组件<code>best_confidence</code>按正<code>detection_count</code>加权（相当于按总检测计数对整个检查进行加权）；证据级别 <code>median</code> 被报告为可靠的参考。 Only evidence rows with a recorded confidence and at least one detection contribute.</td>
+<td>置信度指标</td>
+<td>每个组件<code>best_confidence</code>按正<code>detection_count</code>加权（相当于按总检测计数对整个检查进行加权）；证据级别 <code>median</code> 被报告为可靠的参考。只有具有记录的置信度和至少一次检测的证据行才会起作用。</td>
 </tr>
 <tr>
-<td>Periods</td>
-<td><code>today</code> = <code>[local-today 00:00, now)</code>, <code>yesterday</code> = <code>[local-yesterday 00:00, local-today 00:00)</code>, <code>previous_7d</code> = <code>[local-today 00:00 - 7 days, local-today 00:00)</code> (includes yesterday), <code>previous_30d</code> = <code>[local-today 00:00 - 30 days, local-today 00:00)</code> (includes the 7-day window).日期边界遵循 <code>tz_offset_minutes</code> 指定的运营商本地时区（默认 UTC）。桶半开<code>[from, to)</code>。</td>
+<td>期间</td>
+<td><code>today</code> = <code>[local-today 00:00, now)</code>、<code>yesterday</code> = <code>[local-yesterday 00:00, local-today 00:00)</code>、<code>previous_7d</code> = <code>[local-today 00:00 - 7 days, local-today 00:00)</code>（包括昨天）、<code>previous_30d</code> = <code>[local-today 00:00 - 30 days, local-today 00:00)</code>（包括 7 天窗口）。日期边界遵循 <code>tz_offset_minutes</code> 指定的运营商本地时区（默认 UTC）。桶半开<code>[from, to)</code>。</td>
 </tr>
 <tr>
 <td>比较</td>
-<td><code>today_vs_yesterday</code>, <code>today_vs_previous_7d</code>, and <code>today_vs_previous_30d</code> report the weighted-mean delta, the relative percent change, and both evidence counts.</td>
+<td><code>today_vs_yesterday</code>、<code>today_vs_previous_7d</code> 和 <code>today_vs_previous_30d</code> 报告加权平均增量、相对百分比变化以及两个证据计数。</td>
 </tr>
 <tr>
 <td>组件</td>
-<td>今天与前 7 天基线相比的每个成分加权平均值，按降幅最大的在前排序； a component absent from the baseline carries <code>baseline_weighted_mean = null</code> (insufficient baseline evidence, never a fabricated zero).</td>
+<td>今天与前 7 天基线相比的每个成分加权平均值，按降幅最大的在前排序；基线中缺少的组件带有<code>baseline_weighted_mean = null</code>（基线证据不足，绝不是捏造的零）。</td>
 </tr>
 <tr>
 <td>评估</td>
-<td>Heuristic label from the relative change versus the previous-7-day mean: <code>&lt; 2 %</code> stable, <code>2–5 %</code> minor, <code>&gt; 5 %</code> noticeable, with drop/rise direction, or <code>insufficient_data</code> when either window has no confidence evidence.该标签仅用于决策支持，从不声称根本原因或准确性值；持续下降会提示操作员验证帧质量和媒体。</td>
+<td>相对变化与前 7 天平均值的启发式标签：<code>&lt; 2 %</code> 稳定，<code>2–5 %</code> 较小，<code>&gt; 5 %</code> 明显，有下降/上升方向，或 <code>insufficient_data</code>（当任一窗口没有置信证据时）。该标签仅用于决策支持，从不声称根本原因或准确性值；持续下降会提示操作员验证帧质量和媒体。</td>
 </tr>
 <tr>
 <td>过滤器</td>
@@ -3861,7 +3861,7 @@ version, and aggregation-policy version on this device. This prevents a release
 </tbody>
 </table>
 <h2 id="154-central-api-groups">15.4 中央 API 组<a class="headerlink" href="#154-central-api-groups" title="Permanent link">&para;</a></h2>
-<p>Roles are abbreviated <code>V</code> viewer, <code>R</code> reviewer, <code>C</code> configuration manager, <code>F</code> fleet administrator, <code>O</code> organization administrator, and <code>D</code> enrolled device.</p>
+<p>角色缩写为 <code>V</code> 查看者、<code>R</code> 审阅者、<code>C</code> 配置管理员、<code>F</code> 队列管理员、<code>O</code> 组织管理员和 <code>D</code> 注册设备。</p>
 <h3 id="1541-identity-fleet-and-events">15.4.1 身份、车队和事件<a class="headerlink" href="#1541-identity-fleet-and-events" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3959,7 +3959,7 @@ version, and aggregation-policy version on this device. This prevents a release
 </tr>
 </tbody>
 </table>
-<h3 id="1542-inspection-ingestion-and-history">15.4.2 Inspection Ingestion and History<a class="headerlink" href="#1542-inspection-ingestion-and-history" title="Permanent link">&para;</a></h3>
+<h3 id="1542-inspection-ingestion-and-history">15.4.2 检查摄入和历史记录<a class="headerlink" href="#1542-inspection-ingestion-and-history" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4003,7 +4003,7 @@ version, and aggregation-policy version on this device. This prevents a release
 <tr>
 <td><code>GET /api/v1/inspections</code></td>
 <td>跨设备历史搜索。</td>
-<td>Filters: site, line, device, time, barcode, product, business_result, internal_decision, model, rule, reason, review state, cursor / <code>Page[InspectionSummary]</code></td>
+<td>过滤器：站点、线路、设备、时间、条形码、产品、业务结果、内部决策、模型、规则、原因、审核状态、光标 / <code>Page[InspectionSummary]</code></td>
 <td><code>400 INVALID_FILTER</code></td>
 <td>安全获取</td>
 <td>光标</td>
@@ -4029,7 +4029,7 @@ version, and aggregation-policy version on this device. This prevents a release
 </tr>
 </tbody>
 </table>
-<h3 id="1543-review-products-rules-and-models">15.4.3 Review, Products, Rules, and Models<a class="headerlink" href="#1543-review-products-rules-and-models" title="Permanent link">&para;</a></h3>
+<h3 id="1543-review-products-rules-and-models">15.4.3 审查、产品、规则和模型<a class="headerlink" href="#1543-review-products-rules-and-models" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4092,7 +4092,7 @@ version, and aggregation-policy version on this device. This prevents a release
 <td><code>POST /api/v1/product-versions/{id}/publish</code></td>
 <td>验证并不可更改地发布。</td>
 <td><code>{reason}</code> / <code>ProductConfiguration</code></td>
-<td><code>409 ALREADY_PUBLISHED</code>, <code>422 INVALID_CONFIG</code></td>
+<td><code>409 ALREADY_PUBLISHED</code>、<code>422 INVALID_CONFIG</code></td>
 <td>重复发布返回已发布资源</td>
 <td>-</td>
 <td>C</td>
@@ -4306,20 +4306,20 @@ version, and aggregation-policy version on this device. This prevents a release
 </thead>
 <tbody>
 <tr>
-<td>Edge <code>WS /api/v1/ws/runtime</code></td>
+<td>边缘 <code>WS /api/v1/ws/runtime</code></td>
 <td><code>device.status_changed</code>、<code>inspection.started</code>、<code>inspection.updated</code>、<code>inspection.completed</code>、<code>upload.changed</code>、<code>alert.raised</code>、<code>alert.cleared</code></td>
 <td>尽最大努力，按连接排序，有界缓冲区；缓慢的客户端断开连接</td>
 <td>应用暂时预览更新；在序列间隙重新获取资源</td>
 </tr>
 <tr>
-<td>Central <code>WS /api/v1/ws/organization</code></td>
+<td>中环 <code>WS /api/v1/ws/organization</code></td>
 <td><code>device.changed</code>、<code>inspection.received</code>、<code>review.changed</code>、<code>job.changed</code>、<code>configuration.assignment_changed</code></td>
 <td>授权过滤后尽力而为； MVP 中没有持久的重播</td>
 <td>无效/重新获取受影响的 REST 查询</td>
 </tr>
 </tbody>
 </table>
-<p>WebSocket 身份验证使用现有的安全会话 cookie 或通过 REST 获取的短期、单一用途票证。令牌不得出现在 URL 查询日志中。 Browser WebSocket cannot set an <code>Authorization</code> header, so a cross-origin dashboard exchanges its viewer credential for a one-time ticket at <code>POST /api/v1/ws/runtime/ticket</code> and sends it as the negotiated <code>Sec-WebSocket-Protocol</code> value;该票证在接受过程中会被自动消耗，几秒钟内就会过期，并且永远不会被记录。</p>
+<p>WebSocket 身份验证使用现有的安全会话 cookie 或通过 REST 获取的短期、单一用途票证。令牌不得出现在 URL 查询日志中。浏览器 WebSocket 无法设置 <code>Authorization</code> 标头，因此跨源仪表板将其查看者凭证交换为 <code>POST /api/v1/ws/runtime/ticket</code> 处的一次性票据，并将其作为协商的 <code>Sec-WebSocket-Protocol</code> 值发送；该票证在接受过程中会被自动消耗，几秒钟内就会过期，并且永远不会被记录。</p>
 <h2 id="156-event-envelope-and-evolution">15.6 事件包络和演化<a class="headerlink" href="#156-event-envelope-and-evolution" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;event_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span>
@@ -4332,14 +4332,14 @@ version, and aggregation-policy version on this device. This prevents a release
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;inspection_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01989...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;business_result&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NG&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;internal_decision&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;UNCERTAIN&quot;</span><span class="p">}</span>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span>
 </code></pre></div>
-<p>事件有效负载故意较小。模式版本中允许添加字段；删除，意味着更改或类型更改需要新版本。事件使用者允许未知的附加有效负载字段，而请求主体保持严格。 <code>sequence</code> is monotonic per <code>(source_id, channel)</code>;客户端在间隙时重新获取 REST 状态。未知的事件类型将被忽略并记录。心跳 ping/pong 是传输级别的； <code>DeviceStatus</code> snapshots remain REST resources.</p>
-<h2 id="157-failure-handling-and-limits">15.7 Failure Handling and Limits<a class="headerlink" href="#157-failure-handling-and-limits" title="Permanent link">&para;</a></h2>
+<p>事件有效负载故意较小。模式版本中允许添加字段；删除，意味着更改或类型更改需要新版本。事件使用者允许未知的附加有效负载字段，而请求主体保持严格。 <code>sequence</code> 与 <code>(source_id, channel)</code> 相比是单调的；客户端在间隙时重新获取 REST 状态。未知的事件类型将被忽略并记录。心跳 ping/pong 是传输级别的； <code>DeviceStatus</code> 快照仍然是 REST 资源。</p>
+<h2 id="157-failure-handling-and-limits">15.7 故障处理和限制<a class="headerlink" href="#157-failure-handling-and-limits" title="Permanent link">&para;</a></h2>
 <ul>
 <li>返回 <code>429</code> 和 <code>Retry-After</code> 进行速率限制，并返回 <code>503</code> 和针对临时依赖失败的有限重试指导。</li>
 <li>限制请求主体、事件批次、媒体大小、过滤器范围和 WebSocket 消息/缓冲区大小。</li>
-<li>A central ingestion <code>202</code> means accepted for asynchronous verification, not fully persisted, only where the response explicitly includes a receipt state.正常检查元数据摄取应在 <code>201</code> 之前提交。</li>
+<li>集中摄取<code>202</code>意味着接受异步验证，不完全持久，仅当响应明确包含接收状态时。正常检查元数据摄取应在 <code>201</code> 之前提交。</li>
 <li>切勿在没有幂等密钥的情况下自动重试非幂等调用。</li>
-<li>Propagate <code>X-Request-ID</code>;边缘上传尝试还携带检查和任务关联 ID。</li>
+<li>传播<code>X-Request-ID</code>；边缘上传尝试还携带检查和任务关联 ID。</li>
 <li>对大型媒体使用预签名对象上传；除非存储限制需要，否则不要通过 API Worker 代理视频。</li>
 </ul>
 <h2 id="158-open-questions-and-validation-required">15.8 未解决的问题和需要验证<a class="headerlink" href="#158-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>

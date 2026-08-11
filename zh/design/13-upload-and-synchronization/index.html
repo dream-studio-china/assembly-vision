@@ -888,7 +888,7 @@
   <a href="#134-upload-and-retry-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.4 Upload and Retry Sequence
+        13.4 上传和重试顺序
       
     </span>
   </a>
@@ -1789,7 +1789,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2751,7 +2751,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3125,7 +3125,7 @@
   <a href="#134-upload-and-retry-sequence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13.4 Upload and Retry Sequence
+        13.4 上传和重试顺序
       
     </span>
   </a>
@@ -3272,14 +3272,14 @@
 <p>一项检查具有稳定的客户端生成的 <code>inspection_id</code> 和清单校验和。每个上传任务都有一个稳定的 <code>upload_task_id</code>、设备 ID、可为空的检查 ID、工件身份、有效负载哈希、SHA-256 校验和（如果适用）、字节大小、尝试计数、下次尝试时间、时间戳、租用和状态。规范状态包括 <code>PENDING</code>、<code>IN_PROGRESS</code>、<code>RETRY_WAIT</code>、<code>SUCCEEDED</code>、<code>PERMANENT_FAILURE</code> 和 <code>CANCELLED</code>。</p>
 <p>元数据摄取使用稳定的幂等键<code>inspection:{device_id}:{inspection_id}</code>。架构和清单版本保留在散列有效负载内，而不是更改密钥。中央服务器强制 <code>(device_id, inspection_id)</code> 和 <code>(device_id, idempotency_key)</code> 的唯一性，使用接受的元数据自动存储收据，并将其返回以进行相同的重播。具有不同不可变内容的重播会返回冲突并被隔离而不是被覆盖。</p>
 <p>大型媒体应在合理的情况下使用可恢复或预签名的对象上传。仅在服务器确认预期大小/校验和并将对象绑定到检查后才接受完成。</p>
-<h2 id="134-upload-and-retry-sequence">13.4 Upload and Retry Sequence<a class="headerlink" href="#134-upload-and-retry-sequence" title="Permanent link">&para;</a></h2>
+<h2 id="134-upload-and-retry-sequence">13.4 上传和重试顺序<a class="headerlink" href="#134-upload-and-retry-sequence" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant Inspect as 检验管道
     participant DB as 本地数据库
     participant Worker as 上传工人
     participant Server as 中央API
     participant Objects as 对象存储
-    Inspect-&gt;&gt;DB:Commit inspection, media, and upload tasks
+    Inspect-&gt;&gt;DB:提交检查、媒体和上传任务
     Worker-&gt;&gt;DB:租赁下一个到期任务
     Worker-&gt;&gt;Server:使用幂等密钥 POST /api/v1/inspection-uploads
 alt 服务器接受或返回相同的收据
@@ -3290,13 +3290,13 @@ loop 所需媒体
             Worker-&gt;&gt;Server:确认物品收货
             Server--&gt;&gt;Worker:校验和已验证
         end
-        Worker-&gt;&gt;DB:Mark succeeded and store receipt
-else Transient network or server failure
+        Worker-&gt;&gt;DB:标记成功并存储收据
+else 短暂的网络或服务器故障
         Server--xWorker:超时或可重试状态
-        Worker-&gt;&gt;DB:Schedule backoff with attempt details
+        Worker-&gt;&gt;DB:安排回退并包含尝试详细信息
 else 永久验证或内容冲突
-        Server--&gt;&gt;Worker:Non-retryable error
-        Worker-&gt;&gt;DB:Mark permanent failure and alert
+        Server--&gt;&gt;Worker:不可重试的错误
+        Worker-&gt;&gt;DB:标记永久性故障并发出警报
     end</code></pre>
 <h2 id="135-retry-policy">13.5 重试策略<a class="headerlink" href="#135-retry-policy" title="Permanent link">&para;</a></h2>
 <p>重试连接失败、超时、HTTP <code>408</code>、<code>429</code> 和 <code>5xx</code>，在配置的范围内遵守 <code>Retry-After</code>。不要无限期地自动重试身份验证/授权失败、架构不兼容、校验和冲突或无效内容。使用具有完全抖动的指数退避：</p>
@@ -3308,13 +3308,13 @@ else 永久验证或内容冲突
     participant Camera
     participant Edge as 边缘检测
     participant Store as 本地存储
-    participant Queue as Persistent Upload Queue
+    participant Queue as 持久上传队列
     participant Server as 中央服务器
     Server--xQueue:网络不可用
 loop 停电期间的每个实物产品
         Camera-&gt;&gt;Edge:本地帧和触发器
         Edge-&gt;&gt;Edge:本地检测、聚合和决策
-        Edge-&gt;&gt;Store:Atomically commit decision, evidence, and upload tasks
+        Edge-&gt;&gt;Store:原子提交决策、证据和上传任务
         Queue-&gt;&gt;Queue:保留任务并安排退避
     end
     Note over Edge,Queue:在没有服务器的情况下继续检查
@@ -3398,7 +3398,7 @@ loop 到期排队任务
 <ul>
 <li>在每个服务器提交边界超时后集成测试幂等重放。</li>
 <li>测试重复的任务交付、无序检查、重复的介质以及冲突的校验和。</li>
-<li>故障注入 DNS 失败、连接重置、响应缓慢、<code>429</code>、<code>5xx</code>、<code>401</code>、<code>409</code> 和工作线程终止。</li>
+<li>故障注入 DNS 失败、连接重置、响应缓慢、<code>429</code>、<code>5xx</code>、<code>401</code>、<code>409</code> 和工作进程终止。</li>
 <li>运行长时间的离线测试，继续检查，重新启动边缘，恢复网络，并验证完全耗尽而没有重复。</li>
 <li>验证上传负载不能违反检查延迟/资源限制。</li>
 <li>验证保留不会在验证收据之前删除所需的工件。</li>
@@ -3408,7 +3408,7 @@ loop 到期排队任务
 <ul>
 <li>确认中央服务器位置、API 所有权、身份验证方法和证书配置过程。</li>
 <li>定义最大预期中断持续时间和积压，以调整本地存储和服务器摄取容量。</li>
-<li>商定哪些媒体是结果强制的以及哪些媒体可以采样。</li>
+<li>商定哪些媒体是结果强制的以及哪些媒体可以抽样。</li>
 <li>在文件大小测量后选择直接 API 上传与预签名的 S3 兼容分段上传。</li>
 <li>定义带宽限制、上传调度窗口以及客户网络代理/防火墙要求。</li>
 <li>定义永久上传失败的操作所有权和解决目标。</li>

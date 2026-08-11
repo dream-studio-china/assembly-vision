@@ -676,7 +676,7 @@
   <a href="#32-media-transfer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 媒体传输
+        3.2 Media Transfer
       
     </span>
   </a>
@@ -742,7 +742,7 @@
   <a href="#6-manual-review-and-reporting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Manual Review and Reporting
+        6. 人工审核和报告
       
     </span>
   </a>
@@ -869,7 +869,7 @@
   <a href="#13-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13. Open Questions and Validation Required
+        13. 开放性问题和需要验证
       
     </span>
   </a>
@@ -1884,7 +1884,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2846,7 +2846,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3232,7 +3232,7 @@
   <a href="#32-media-transfer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 媒体传输
+        3.2 Media Transfer
       
     </span>
   </a>
@@ -3298,7 +3298,7 @@
   <a href="#6-manual-review-and-reporting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Manual Review and Reporting
+        6. 人工审核和报告
       
     </span>
   </a>
@@ -3425,7 +3425,7 @@
   <a href="#13-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13. Open Questions and Validation Required
+        13. 开放性问题和需要验证
       
     </span>
   </a>
@@ -3458,11 +3458,11 @@
 <p>最初的自动化决策是来自边缘的仅附加事实。中央审查和更正是相互关联的事实；它们不会覆盖原始结果。请参阅<a href="../03-architecture-overview/">Architecture Overview</a>和<a href="../04-edge-client-architecture/">Edge Client Architecture</a>。</p>
 <h2 id="2-central-component-architecture">2. 中心组件架构<a class="headerlink" href="#2-central-component-architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
-    Edge[Edge upload clients] --&gt; Gateway[Nginx 和中央 FastAPI]
+    Edge[边缘上传客户端] --&gt; Gateway[Nginx 和中央 FastAPI]
     Admin[Vue 管理应用程序] --&gt; Gateway
     Gateway --&gt; Auth[身份与授权]
     Gateway --&gt; Ingest[检查摄取]
-    Gateway --&gt; Query[历史记录和仪表板查询]
+    Gateway --&gt; Query[History and dashboard queries]
     Gateway --&gt; Config[设备产品规则和型号管理]
     Gateway --&gt; Review[人工审核]
     Ingest --&gt; DB[(PostgreSQL)]
@@ -3483,7 +3483,7 @@
 <h3 id="31-inspection-envelope">3.1 检验范围<a class="headerlink" href="#31-inspection-envelope" title="Permanent link">&para;</a></h3>
 <p>边缘发布一个版本化信封，其中包含身份、时间戳、产品解决方案、业务/内部结果、组件和聚合证据、原因代码、框架/投资回报率摘要、不可变版本和媒体清单。服务器对设备进行身份验证，验证架构和大小，验证设备所有权/状态和兼容引用，计算规范的有效负载哈希，并保留在事务中。</p>
 <p><code>(device_id, inspection_id)</code> 和幂等键是唯一的。相同的重试将返回先前的收据。具有不同规范散列的重用身份/密钥返回 <code>409 Conflict</code>，记录安全/数据完整性事件，并保留原始事件。收据包括中央记录 ID、接受的模式版本、服务器接收时间和媒体上传状态。</p>
-<h3 id="32-media-transfer">3.2 媒体传输<a class="headerlink" href="#32-media-transfer" title="Permanent link">&para;</a></h3>
+<h3 id="32-media-transfer">3.2 Media Transfer<a class="headerlink" href="#32-media-transfer" title="Permanent link">&para;</a></h3>
 <p>OK通常会贡献一帧代表性的帧。 NG 提供多个关键帧、注释、ROI 以及可选的简短事件剪辑。例外情况只能提供有限的诊断证据。 API最初可以直接接受小媒体；生产应使用经过验证的大小限制，并可选择为较大对象发出上传会话。</p>
 <p>字节被暂存、校验和/大小验证，然后在不透明的存储密钥下最终确定。 PostgreSQL 存储媒体类型、校验和、大小、内容类型、状态、保留类别和对象密钥，而不是公共文件系统路径。部分/孤立上传是异步协调的。根据安全模型，检索使用授权的 API 流或限时链接。</p>
 <h2 id="4-domain-and-persistence-model">4. 领域和持久化模型<a class="headerlink" href="#4-domain-and-persistence-model" title="Permanent link">&para;</a></h2>
@@ -3503,7 +3503,7 @@
 <h3 id="52-distribution-lifecycle">5.2 分发生命周期<a class="headerlink" href="#52-distribution-lifecycle" title="Permanent link">&para;</a></h3>
 <p>包会经历草稿、验证、批准、分配、下载、边缘验证、激活和确认状态。不可变内容收到新版本而不是就地编辑。在更广泛的分配之前，推出支持较小的设备群。边缘保留最后一次已知良好的包裹，并仅在检查之间激活。中心地位将分配与实际确认区分开来；任何仪表板都不应暗示仅通过分配即可激活。</p>
 <p>模型和远程配置/规则交付是生产目标功能。一个月的演示者可以集中注册所需的版本，同时在边缘手动安装软件包；安装仍会在本地验证不可变内容、校验和、兼容性和最后一次正确的回滚。分配绝不能显示为激活。</p>
-<h2 id="6-manual-review-and-reporting">6. Manual Review and Reporting<a class="headerlink" href="#6-manual-review-and-reporting" title="Permanent link">&para;</a></h2>
+<h2 id="6-manual-review-and-reporting">6. 人工审核和报告<a class="headerlink" href="#6-manual-review-and-reporting" title="Permanent link">&para;</a></h2>
 <p>审核呈现原始图像、覆盖图、投资回报率、组件证据、自动原因和固定版本。审核者记录已确认的<code>OK</code>、已确认的<code>NG</code>、不可审核或其他已批准的分类法，以及更正原因和注释。原始自动化结果保持不变。并发审查使用声明/版本检查来防止静默覆盖；每个转换都经过审核。</p>
 <p>报告将自动计数与经过审查的真实情况分开，并清楚地说明样本覆盖范围。所需的视图包括 OK/NG 趋势、缺失组件、条形码故障、产品/系列/设备故障、模型/规则版本性能、设备运行状况/上次查看、上传延迟、审核率和纠正率。估计的假阴性指标需要抽样 OK 审核或独立标记的验收数据；未经审查不能被解释为正确性。</p>
 <h2 id="7-api-and-web-architecture">7. API 和 Web 架构<a class="headerlink" href="#7-api-and-web-architecture" title="Permanent link">&para;</a></h2>
@@ -3542,7 +3542,7 @@
 <li>设备/产品标识符可以集中管理，无需在检查期间进行集中查找。</li>
 <li>只有在标签批准和数据集治理之后，审核结果才可以用作培训候选。</li>
 </ul>
-<h2 id="13-open-questions-and-validation-required">13. Open Questions and Validation Required<a class="headerlink" href="#13-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="13-open-questions-and-validation-required">13. 开放性问题和需要验证<a class="headerlink" href="#13-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ol>
 <li>系统是单客户还是多租户，什么组织/站点/线路层次结构是真实的？</li>
 <li>中央托管在哪里，适用哪些可用性/恢复目标，以及允许哪些连接路径？</li>

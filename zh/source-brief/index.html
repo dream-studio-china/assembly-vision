@@ -1598,7 +1598,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2560,7 +2560,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -2909,90 +2909,90 @@
   
 
 
-<h1 id="task-generate-the-complete-assemblyvision-software-architecture-documentation">Task: Generate the Complete AssemblyVision Software Architecture Documentation<a class="headerlink" href="#task-generate-the-complete-assemblyvision-software-architecture-documentation" title="Permanent link">&para;</a></h1>
+<h1 id="task-generate-the-complete-assemblyvision-software-architecture-documentation">任务：生成完整的 AssemblyVision 软件架构文档<a class="headerlink" href="#task-generate-the-complete-assemblyvision-software-architecture-documentation" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><strong>Status:</strong> Historical input. Accepted ADRs, engineering contracts, and the current design set are
-normative when this brief contains older naming or scope assumptions.</p>
+<p><strong>状态：</strong> 历史输入。已接受的 ADR、工程合同和当前设计集
+当本简报包含较旧的命名或范围假设时，为规范。</p>
 </blockquote>
-<p>You are a principal software architect, industrial computer-vision engineer, MLOps engineer, and full-stack technical writer.</p>
-<p>Your task is to generate a complete, internally consistent, implementation-oriented software architecture document set for an industrial AI inspection platform named <strong>AssemblyVision</strong>.</p>
-<p>Do not produce a superficial README or generic AI-generated overview. Produce a practical engineering blueprint that a small software team can use to begin implementation immediately.</p>
-<p>The documentation must describe both the initial MVP and the target production architecture.</p>
+<p>您是首席软件架构师、工业计算机视觉工程师、MLOps 工程师和全栈技术作家。</p>
+<p>您的任务是为名为 <strong>AssemblyVision</strong> 的工业 AI 检测平台生成完整的、内部一致的、面向实施的软件架构文档集。</p>
+<p>不要生成肤浅的自述文件或人工智能生成的通用概述。制作一个实用的工程蓝图，小型软件团队可以使用该蓝图立即开始实施。</p>
+<p>该文档必须描述初始 MVP 和目标生产架构。</p>
 <hr />
 <h1 id="1-project-context">1. 项目背景<a class="headerlink" href="#1-project-context" title="Permanent link">&para;</a></h1>
 <h2 id="11-project-name">1.1 项目名称<a class="headerlink" href="#11-project-name" title="Permanent link">&para;</a></h2>
-<p><strong>AssemblyVision</strong></p>
-<p>Full title:</p>
-<p><strong>AssemblyVision — Industrial Assembly Inspection System</strong></p>
+<p><strong>装配愿景</strong></p>
+<p>完整标题：</p>
+<p><strong>AssemblyVision — 工业装配检测系统</strong></p>
 <h2 id="12-business-purpose">1.2 商业目的<a class="headerlink" href="#12-business-purpose" title="Permanent link">&para;</a></h2>
-<p>AssemblyVision is an industrial computer-vision system used on a conveyor-based production line.</p>
-<p>The system inspects completed products and verifies whether all required assembly components are present.</p>
-<p>The inspection targets include:</p>
+<p>AssemblyVision 是一种用于基于传送带的生产线的工业计算机视觉系统。</p>
+<p>该系统检查已完成的产品并验证是否存在所有必需的装配组件。</p>
+<p>检查目标包括：</p>
 <ul>
-<li>The complete product</li>
-<li>Several large assembly components</li>
-<li>Product manuals or instruction sheets</li>
-<li>Product barcodes</li>
-<li>Product model or product type</li>
+<li>完整的产品</li>
+<li>几个大型装配部件</li>
+<li>产品手册或说明书</li>
+<li>产品条形码</li>
+<li>产品型号或产品类型</li>
 </ul>
-<p>The primary business output is:</p>
+<p>主要业务产出为：</p>
 <ul>
-<li><code>OK</code>: all required components are reliably detected</li>
-<li><code>NG</code>: one or more required components are missing, uncertain, or cannot be reliably verified</li>
+<li><code>OK</code>：可靠地检测到所有必需的组件</li>
+<li><code>NG</code>：一个或多个所需组件缺失、不确定或无法可靠验证</li>
 </ul>
 <h2 id="13-quality-priority">1.3 质量优先<a class="headerlink" href="#13-quality-priority" title="Permanent link">&para;</a></h2>
-<p>The system must prioritize reducing false negatives.</p>
-<p>A false negative in this project means:</p>
+<p>系统必须优先考虑减少漏报。</p>
+<p>该项目中的假阴性意味着：</p>
 <blockquote>
-<p>A real defective or incomplete product is incorrectly classified as OK.</p>
+<p>真正有缺陷或不完整的产品被错误地分类为合格产品。</p>
 </blockquote>
-<p>The business accepts a certain number of false NG results during the early production phases, because those products can be manually reviewed.</p>
-<p>The engineering priority is therefore:</p>
+<p>企业在早期生产阶段接受一定数量的错误 NG 结果，因为这些产品可以进行手动审核。</p>
+<p>因此，工程优先级是：</p>
 <ol>
-<li>Minimize false negatives</li>
-<li>Maintain traceability</li>
-<li>Improve robustness</li>
-<li>Gradually reduce false positives</li>
-<li>Improve operational efficiency</li>
+<li>最大限度地减少漏报</li>
+<li>保持可追溯性</li>
+<li>提高稳健性</li>
+<li>逐步减少误报
+5、提高运营效率</li>
 </ol>
-<p>Do not describe the system as guaranteeing 100% accuracy.</p>
-<p>Use language such as:</p>
+<p>不要将系统描述为保证 100% 的准确性。</p>
+<p>使用以下语言：</p>
 <ul>
-<li>extremely low false-negative rate</li>
-<li>near-zero missed NG cases as an engineering objective</li>
-<li>production acceptance based on measured validation data</li>
-<li>high NG recall</li>
-<li>cautious rollout with human verification</li>
+<li>极低的假阴性率</li>
+<li>以接近零遗漏 NG 案例作为工程目标</li>
+<li>基于测量验证数据的生产验收</li>
+<li>高NG召回率</li>
+<li>谨慎推出人工验证</li>
 </ul>
 <hr />
 <h1 id="2-confirmed-production-conditions">2. 确认的生产条件<a class="headerlink" href="#2-confirmed-production-conditions" title="Permanent link">&para;</a></h1>
-<p>The current physical environment has the following characteristics:</p>
+<p>当前的物理环境具有以下特点：</p>
 <ul>
-<li>Industrial camera with approximately four megapixels</li>
-<li>Fixed lighting</li>
-<li>Fixed camera during normal production</li>
-<li>Controlled inspection environment</li>
-<li>Products may shift slightly within the image</li>
-<li>Product position is not perfectly fixed</li>
-<li>Products do not normally undergo large uncontrolled rotations</li>
-<li>Inspection targets are large components</li>
-<li>No micro-component or tiny screw inspection is currently required</li>
-<li>The inspection task focuses primarily on component presence</li>
-<li>The system must implement camera capture itself</li>
-<li>The system must implement barcode recognition itself</li>
-<li>The system must implement image and video storage itself</li>
-<li>The system must implement inspection result storage itself</li>
-<li>The client machine must continue inspecting while disconnected from the central server</li>
+<li>约四百万像素的工业相机</li>
+<li>固定照明</li>
+<li>修复了正常生产期间的相机问题</li>
+<li>受控的检查环境</li>
+<li>产品可能在图像内略有移动</li>
+<li>产品位置不完全固定</li>
+<li>产品通常不会进行大幅度的不受控制的旋转</li>
+<li>检查对象是大型部件</li>
+<li>目前不需要微型部件或微小螺钉检查</li>
+<li>检查任务主要集中于组件的存在</li>
+<li>系统必须自行实现相机捕获</li>
+<li>系统必须自行实现条码识别</li>
+<li>系统必须自行实现图像和视频存储</li>
+<li>系统必须自行实现检验结果存储</li>
+<li>客户端计算机在与中央服务器断开连接时必须继续检查</li>
 </ul>
-<p>Do not state that image saving or barcode recording already exists.</p>
-<p>These capabilities must be implemented as part of AssemblyVision.</p>
+<p>不要声明图像保存或条形码记录已经存在。</p>
+<p>这些功能必须作为 AssemblyVision 的一部分来实现。</p>
 <hr />
 <h1 id="3-final-architecture-decision">3. 最终架构决策<a class="headerlink" href="#3-final-architecture-decision" title="Permanent link">&para;</a></h1>
-<p>AssemblyVision uses an <strong>edge-client and central-server architecture</strong>.</p>
-<p>All production-critical image processing and inspection decisions must happen on the client-side industrial computer.</p>
-<p>The central server must not be required for real-time inspection.</p>
+<p>AssemblyVision 使用 <strong>边缘客户端和中央服务器架构</strong>。</p>
+<p>所有生产关键型图像处理和检查决策都必须在客户端工业计算机上进行。</p>
+<p>不一定需要中央服务器进行实时检查。</p>
 <h2 id="31-edge-client-responsibilities">3.1 边缘客户端职责<a class="headerlink" href="#31-edge-client-responsibilities" title="Permanent link">&para;</a></h2>
-<p>The edge client runs inside the customer’s factory and is responsible for:</p>
+<p>边缘客户端在客户工厂内部运行，负责：</p>
 <ul>
 <li>工业相机集成</li>
 <li>视频流或帧捕获</li>
@@ -3176,115 +3176,115 @@ normative when this brief contains older naming or scope assumptions.</p>
 <li>重启政策</li>
 </ul>
 <p>边缘部署不能依赖于Kubernetes。</p>
-<p>The central server may support Kubernetes as a future option, but the initial design should remain Docker Compose friendly.</p>
+<p>中央服务器可能会支持 Kubernetes 作为未来的选项，但最初的设计应该保持 Docker Compose 友好。</p>
 <hr />
 <h1 id="5-detection-architecture">5. 检测架构<a class="headerlink" href="#5-detection-architecture" title="Permanent link">&para;</a></h1>
-<p>Use a two-stage detection pipeline.</p>
-<h2 id="51-stage-one-product-detection">5.1 Stage One: Product Detection<a class="headerlink" href="#51-stage-one-product-detection" title="Permanent link">&para;</a></h2>
-<p>The first detector locates the complete product.</p>
-<p>Input:</p>
+<p>使用两级检测管道。</p>
+<h2 id="51-stage-one-product-detection">5.1 第一阶段：产品检测<a class="headerlink" href="#51-stage-one-product-detection" title="Permanent link">&para;</a></h2>
+<p>第一个检测器定位完整的产品。</p>
+<p>输入：</p>
 <ul>
-<li>Full camera frame</li>
+<li>全相机框架</li>
 </ul>
-<p>Output:</p>
+<p>输出：</p>
 <ul>
-<li>Product class</li>
-<li>Bounding box</li>
-<li>Confidence</li>
-<li>Optional tracking information</li>
+<li>产品类别</li>
+<li>边界框</li>
+<li>信心</li>
+<li>可选的跟踪信息</li>
 </ul>
-<p>Purpose:</p>
+<p>目的：</p>
 <ul>
-<li>Handle slight product position changes</li>
-<li>Avoid relying on a hard-coded absolute ROI</li>
-<li>Normalize the input for component inspection</li>
+<li>处理轻微的产品位置变化</li>
+<li>避免依赖硬编码的绝对投资回报率</li>
+<li>标准化组件检查的输入</li>
 </ul>
 <h2 id="52-roi-extraction">5.2 ROI提取<a class="headerlink" href="#52-roi-extraction" title="Permanent link">&para;</a></h2>
-<p>The ROI engine:</p>
+<p>投资回报率引擎：</p>
 <ul>
-<li>Receives the product bounding box</li>
-<li>Expands it using configurable margins</li>
-<li>Clips the coordinates to image boundaries</li>
-<li>Crops the product region</li>
-<li>Records the mapping between full-frame and ROI coordinates</li>
-<li>Optionally normalizes orientation or perspective</li>
+<li>接收产品边界框</li>
+<li>使用可配置的边距扩展它</li>
+<li>将坐标剪切到图像边界</li>
+<li>裁剪产品区域</li>
+<li>记录全帧和ROI坐标之间的映射</li>
+<li>可选择标准化方向或视角</li>
 </ul>
-<p>Do not assume that the product location is perfectly fixed.</p>
-<p>A hard-coded full-frame ROI may be available as a fallback or coarse capture zone, but the final product ROI should be generated from product detection.</p>
+<p>不要假设产品位置是完全固定的。</p>
+<p>硬编码的全帧 ROI 可用作后备或粗略捕获区域，但最终产品 ROI 应从产品检测中生成。</p>
 <h2 id="53-stage-two-component-detection">5.3 第二阶段：组件检测<a class="headerlink" href="#53-stage-two-component-detection" title="Permanent link">&para;</a></h2>
-<p>The second detector processes the product ROI.</p>
-<p>Possible classes include:</p>
+<p>第二个检测器处理产品 ROI。</p>
+<p>可能的课程包括：</p>
 <ul>
 <li><code>component_a</code></li>
 <li><code>component_b</code></li>
 <li><code>component_c</code></li>
 <li><code>manual</code></li>
-<li>Other configured components</li>
+<li>其他配置组件</li>
 </ul>
-<p>The specific required component list depends on product type.</p>
-<p>The system should detect required components rather than train an abstract global <code>missing_component</code> class.</p>
+<p>具体所需的组件列表取决于产品类型。</p>
+<p>系统应该检测所需的组件，而不是训练抽象的全局 <code>missing_component</code> 类。</p>
 <h2 id="54-barcode-recognition">5.4 条码识别<a class="headerlink" href="#54-barcode-recognition" title="Permanent link">&para;</a></h2>
-<p>Barcode recognition must be implemented as a separate capability.</p>
-<p>It may use:</p>
+<p>条形码识别必须作为单独的功能来实现。</p>
+<p>它可能会使用：</p>
 <ul>
-<li>Industrial scanner SDK</li>
-<li>OpenCV barcode APIs</li>
-<li>pyzbar or ZXing-compatible solutions</li>
-<li>A vendor-specific camera or scanner SDK</li>
+<li>工业扫描仪SDK</li>
+<li>OpenCV 条形码 API</li>
+<li>pyzbar 或 ZXing 兼容解决方案</li>
+<li>供应商特定的相机或扫描仪 SDK</li>
 </ul>
-<p>Barcode recognition must not be implemented as a YOLO classification task unless YOLO is only used to locate a barcode region.</p>
-<p>The barcode identifies or helps resolve:</p>
+<p>条形码识别不得作为 YOLO 分类任务实现，除非 YOLO 仅用于定位条形码区域。</p>
+<p>条形码可识别或帮助解决：</p>
 <ul>
-<li>Product identity</li>
-<li>Product type</li>
-<li>Required inspection rule</li>
-<li>Traceability record</li>
+<li>产品标识</li>
+<li>产品类型</li>
+<li>必要的检验规则</li>
+<li>追溯记录</li>
 </ul>
-<h2 id="55-rule-engine">5.5 Rule Engine<a class="headerlink" href="#55-rule-engine" title="Permanent link">&para;</a></h2>
-<p>The rule engine must be deterministic and independent from the AI model.</p>
-<p>Example:</p>
+<h2 id="55-rule-engine">5.5 规则引擎<a class="headerlink" href="#55-rule-engine" title="Permanent link">&para;</a></h2>
+<p>规则引擎必须是确定性的并且独立于人工智能模型。</p>
+<p>示例：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">product_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model_a</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">required_components</span><span class="p">:</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">component_a</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">component_b</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">manual</span>
 </code></pre></div>
-<p>The rule engine evaluates the aggregated detection evidence and returns:</p>
+<p>规则引擎评估聚合的检测证据并返回：</p>
 <ul>
 <li><code>OK</code></li>
 <li><code>NG</code></li>
-<li><code>UNCERTAIN</code>, if such a state is adopted</li>
-<li>Missing component list</li>
-<li>Low-confidence component list</li>
-<li>Failure reason codes</li>
+<li><code>UNCERTAIN</code>，如果采用这样的状态</li>
+<li>缺少组件列表</li>
+<li>低置信度成分列表</li>
+<li>失败原因代码</li>
 </ul>
-<p>The rule engine must store:</p>
+<p>规则引擎必须存储：</p>
 <ul>
-<li>Rule version</li>
-<li>Product configuration version</li>
-<li>Model version</li>
+<li>规则版本</li>
+<li>产品配置版本</li>
+<li>型号版本</li>
 </ul>
 <hr />
 <h1 id="6-video-and-temporal-aggregation">6. 视频和时间聚合<a class="headerlink" href="#6-video-and-temporal-aggregation" title="Permanent link">&para;</a></h1>
-<p>YOLO processes video as individual frames.</p>
-<p>The business decision, however, is made per physical product.</p>
-<p>Introduce a temporal aggregator between frame-level detection and final rule evaluation.</p>
+<p>YOLO 将视频作为单独的帧进行处理。</p>
+<p>然而，业务决策是根据实际产品做出的。</p>
+<p>在帧级检测和最终规则评估之间引入时间聚合器。</p>
 <h2 id="61-product-inspection-window">6.1 产品检验窗口<a class="headerlink" href="#61-product-inspection-window" title="Permanent link">&para;</a></h2>
-<p>The system must group frames belonging to the same physical product.</p>
-<p>Possible mechanisms include:</p>
+<p>系统必须对属于同一物理产品的帧进行分组。</p>
+<p>可能的机制包括：</p>
 <ul>
-<li>Hardware trigger</li>
-<li>Barcode event</li>
-<li>Product tracking</li>
-<li>Entry and exit detection zones</li>
-<li>Time-bounded inspection windows</li>
-<li>Conveyor sensor integration</li>
+<li>硬件触发</li>
+<li>条形码事件</li>
+<li>产品追踪</li>
+<li>进入和退出检测区域</li>
+<li>有时间限制的检查窗口</li>
+<li>输送机传感器集成</li>
 </ul>
-<p>Discuss the trade-offs.</p>
+<p>讨论权衡。</p>
 <h2 id="62-aggregation-policy">6.2 聚合策略<a class="headerlink" href="#62-aggregation-policy" title="Permanent link">&para;</a></h2>
-<p>Do not use simple whole-product majority voting.</p>
-<p>Aggregate evidence per required component.</p>
-<p>Example:</p>
+<p>不要使用简单的整体产品多数投票。</p>
+<p>每个所需组件的汇总证据。</p>
+<p>示例：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>component_a:
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>frame 1: detected at 0.91
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>frame 2: not detected
@@ -3297,63 +3297,63 @@ normative when this brief contains older naming or scope assumptions.</p>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>frame 3: not detected
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>final state: missing
 </code></pre></div>
-<p>Support configurable policies such as:</p>
+<p>支持可配置的策略，例如：</p>
 <ul>
-<li>One high-confidence detection</li>
-<li>Two medium-confidence detections</li>
-<li>Detection in adjacent frames</li>
-<li>Minimum visible-area requirements</li>
-<li>Minimum frame-quality requirements</li>
-<li>Exclusion of blurred or unusable frames</li>
+<li>一次高置信度检测</li>
+<li>两次中等置信度检测</li>
+<li>相邻帧检测</li>
+<li>最小可见面积要求</li>
+<li>最低框架质量要求</li>
+<li>排除模糊或不可用的帧</li>
 </ul>
-<p>Explain clearly:</p>
+<p>解释清楚：</p>
 <blockquote>
-<p>Temporal aggregation does not increase the underlying YOLO model’s single-frame accuracy. It increases system-level robustness by combining evidence across frames.</p>
+<p>时间聚合不会提高底层 YOLO 模型的单帧精度。它通过跨框架结合证据来提高系统级的稳健性。</p>
 </blockquote>
 <hr />
 <h1 id="7-local-storage-architecture">7. 本地存储架构<a class="headerlink" href="#7-local-storage-architecture" title="Permanent link">&para;</a></h1>
-<p>The edge client must maintain local persistent storage.</p>
-<p>Store:</p>
+<p>边缘客户端必须维护本地持久存储。</p>
+<p>商店：</p>
 <ul>
-<li>Inspection metadata</li>
-<li>Barcode</li>
-<li>Product type</li>
-<li>Frame timestamps</li>
-<li>Final result</li>
-<li>Detected components</li>
-<li>Missing components</li>
-<li>Confidence values</li>
-<li>Product bounding box</li>
-<li>ROI metadata</li>
-<li>Model version</li>
-<li>Rule version</li>
-<li>Key-frame paths</li>
-<li>Annotated-image paths</li>
-<li>Video-clip paths</li>
-<li>Upload status</li>
-<li>Retry count</li>
-<li>Error information</li>
+<li>检查元数据</li>
+<li>条形码</li>
+<li>产品类型</li>
+<li>帧时间戳</li>
+<li>最终结果</li>
+<li>检测到的组件</li>
+<li>缺少组件</li>
+<li>置信度值</li>
+<li>产品边界框</li>
+<li>投资回报率元数据</li>
+<li>型号版本</li>
+<li>规则版本</li>
+<li>关键帧路径</li>
+<li>带注释的图像路径</li>
+<li>视频剪辑路径</li>
+<li>上传状态</li>
+<li>重试次数</li>
+<li>错误信息</li>
 </ul>
-<p>The local system must support:</p>
+<p>本地系统必须支持：</p>
 <ul>
-<li>Power-loss recovery</li>
-<li>Restart recovery</li>
-<li>Upload resume</li>
-<li>Disk-space monitoring</li>
-<li>Configurable data retention</li>
-<li>Safe cleanup</li>
-<li>Protection against deleting files still waiting for upload</li>
+<li>断电恢复</li>
+<li>重新启动恢复</li>
+<li>上传简历</li>
+<li>磁盘空间监控</li>
+<li>可配置的数据保留</li>
+<li>安全清理</li>
+<li>防止删除仍在等待上传的文件</li>
 </ul>
-<p>Define a storage policy for:</p>
+<p>定义存储策略：</p>
 <ul>
-<li>Full video</li>
-<li>Rolling video</li>
-<li>Key frames</li>
-<li>NG clips</li>
-<li>Annotated images</li>
-<li>ROI images</li>
-<li>Logs</li>
-<li>Database records</li>
+<li>完整视频</li>
+<li>滚动视频</li>
+<li>关键帧</li>
+<li>NG剪辑</li>
+<li>带注释的图像</li>
+<li>投资回报率图像</li>
+<li>日志</li>
+<li>数据库记录</li>
 </ul>
 <hr />
 <h1 id="8-frontend-architecture">8. 前端架构<a class="headerlink" href="#8-frontend-architecture" title="Permanent link">&para;</a></h1>
@@ -3381,7 +3381,7 @@ normative when this brief contains older naming or scope assumptions.</p>
 <li>如果操作适当，紧急检查暂停或恢复</li>
 </ul>
 <p>仪表板在离线时必须保持可用。</p>
-<h2 id="82-central-administration-dashboard">8.2 Central Administration Dashboard<a class="headerlink" href="#82-central-administration-dashboard" title="Permanent link">&para;</a></h2>
+<h2 id="82-central-administration-dashboard">8.2 中央管理仪表板<a class="headerlink" href="#82-central-administration-dashboard" title="Permanent link">&para;</a></h2>
 <p>中央仪表板应包括：</p>
 <ul>
 <li>多设备概览</li>
@@ -3560,7 +3560,7 @@ normative when this brief contains older naming or scope assumptions.</p>
 </ul>
 <p>不要假设这些数字保证了目标准确性。</p>
 <p>将它们描述为必须根据测量的验证性能进行调整的起点。</p>
-<h2 id="113-data-splitting">11.3 Data Splitting<a class="headerlink" href="#113-data-splitting" title="Permanent link">&para;</a></h2>
+<h2 id="113-data-splitting">11.3 数据分割<a class="headerlink" href="#113-data-splitting" title="Permanent link">&para;</a></h2>
 <p>避免相邻视频帧泄漏。</p>
 <p>通过以下方式分割数据集：</p>
 <ul>
@@ -3588,7 +3588,7 @@ normative when this brief contains older naming or scope assumptions.</p>
 <ul>
 <li>AI执行自动检查</li>
 <li>所有 NG 结果均可供人工审核</li>
-<li>低可信度案件可能会被审查</li>
+<li>低可信度案例可能会被审查</li>
 <li>可以审核 OK 结果的样本</li>
 <li>存储更正</li>
 <li>错误分类的案例被添加到培训积压中</li>
@@ -3937,154 +3937,154 @@ normative when this brief contains older naming or scope assumptions.</p>
 </ul>
 <p>不要使用总体准确性作为唯一的成功指标。</p>
 <hr />
-<h1 id="20-risk-requirements">20. Risk Requirements<a class="headerlink" href="#20-risk-requirements" title="Permanent link">&para;</a></h1>
+<h1 id="20-risk-requirements">20. 风险要求<a class="headerlink" href="#20-risk-requirements" title="Permanent link">&para;</a></h1>
 <p>包括风险登记册，内容包括：</p>
 <ul>
-<li>Camera shift</li>
-<li>Camera disconnection</li>
-<li>Incorrect exposure</li>
-<li>Motion blur</li>
-<li>Reflection</li>
-<li>Product occlusion</li>
-<li>Product-position variation</li>
-<li>Barcode-read failure</li>
-<li>Wrong product-type mapping</li>
-<li>Wrong rule configuration</li>
-<li>Model and rule version mismatch</li>
-<li>Multiple products in one inspection window</li>
-<li>Duplicate inspection</li>
-<li>Frame mixing between products</li>
-<li>Network outage</li>
-<li>Central-server outage</li>
-<li>Upload duplication</li>
-<li>Local disk full</li>
-<li>Local database corruption</li>
-<li>Container restart</li>
-<li>Client power loss</li>
-<li>Clock drift</li>
-<li>Model drift</li>
-<li>Insufficient NG samples</li>
-<li>Customer changing the camera angle</li>
-<li>Unauthorized configuration changes</li>
+<li>相机移位</li>
+<li>相机断线</li>
+<li>曝光不正确</li>
+<li>运动模糊</li>
+<li>反思</li>
+<li>产品遮挡</li>
+<li>产品定位变化</li>
+<li>条码读取失败</li>
+<li>错误的产品类型映射</li>
+<li>错误的规则配置</li>
+<li>模型和规则版本不匹配</li>
+<li>一个检查窗口中包含多种产品</li>
+<li>重复检查</li>
+<li>产品之间的框架混合</li>
+<li>网络中断</li>
+<li>中央服务器中断</li>
+<li>上传重复项</li>
+<li>本地磁盘已满</li>
+<li>本地数据库损坏</li>
+<li>容器重启</li>
+<li>客户端断电</li>
+<li>时钟漂移</li>
+<li>模型漂移</li>
+<li>NG样本不足</li>
+<li>顾客改变拍摄角度</li>
+<li>未经授权的配置更改</li>
 </ul>
-<p>For each risk provide:</p>
+<p>对于每个风险，提供：</p>
 <ul>
-<li>Cause</li>
-<li>Impact</li>
-<li>Detection method</li>
-<li>Prevention</li>
-<li>Recovery</li>
-<li>Residual risk</li>
+<li>原因</li>
+<li>影响</li>
+<li>检测方法</li>
+<li>预防</li>
+<li>恢复</li>
+<li>剩余风险</li>
 </ul>
 <hr />
 <h1 id="21-customer-acceptance-requirements">21. 客户验收要求<a class="headerlink" href="#21-customer-acceptance-requirements" title="Permanent link">&para;</a></h1>
-<p>The acceptance plan must use customer production data that was not used for model training.</p>
-<p>Test separately by:</p>
+<p>验收计划必须使用未用于模型训练的客户生产数据。</p>
+<p>分别测试：</p>
 <ul>
-<li>Product type</li>
-<li>Missing component</li>
-<li>Missing manual</li>
-<li>Barcode failure</li>
-<li>Product-position shift</li>
-<li>Normal production variation</li>
-<li>Consecutive OK products</li>
-<li>Consecutive NG products</li>
-<li>Mixed product types</li>
-<li>Offline operation</li>
-<li>Network recovery</li>
-<li>Application restart</li>
-<li>Long-running operation</li>
+<li>产品类型</li>
+<li>缺少组件</li>
+<li>缺少手册</li>
+<li>条形码故障</li>
+<li>产品定位转移</li>
+<li>正常生产变化</li>
+<li>连续OK产品</li>
+<li>连续NG产品</li>
+<li>混合产品类型</li>
+<li>离线操作</li>
+<li>网络恢复</li>
+<li>应用程序重新启动</li>
+<li>长时间运行</li>
 </ul>
-<p>Each test must preserve:</p>
+<p>每个测试必须保留：</p>
 <ul>
-<li>Inspection result</li>
-<li>Image evidence</li>
-<li>Model version</li>
-<li>Rule version</li>
-<li>Timestamp</li>
-<li>Device identifier</li>
-<li>Relevant logs</li>
+<li>检查结果</li>
+<li>图像证据</li>
+<li>型号版本</li>
+<li>规则版本</li>
+<li>时间戳</li>
+<li>设备标识符</li>
+<li>相关日志</li>
 </ul>
-<p>The primary acceptance metric is real NG recall.</p>
-<p>Do not define an unvalidated numerical guarantee.</p>
-<p>Instead, provide a framework for agreeing target values with the customer after baseline evaluation.</p>
+<p>主要的验收指标是真实的 NG 召回率。</p>
+<p>不要定义未经验证的数字保证。</p>
+<p>相反，应提供一个框架，用于在基线评估后与客户就目标值达成一致。</p>
 <hr />
 <h1 id="22-writing-and-quality-requirements">22. 写作和质量要求<a class="headerlink" href="#22-writing-and-quality-requirements" title="Permanent link">&para;</a></h1>
-<p>The generated documents must:</p>
+<p>生成的文档必须：</p>
 <ul>
-<li>Be written in professional technical English</li>
-<li>Use Markdown</li>
-<li>Use numbered sections</li>
-<li>Use consistent terminology</li>
-<li>Avoid contradictions</li>
-<li>Avoid unsupported claims</li>
-<li>Avoid vague phrases such as “use AI to improve accuracy”</li>
-<li>Explain every major architectural decision</li>
-<li>Separate current scope, MVP scope, production target, and future scope</li>
-<li>Clearly mark assumptions</li>
-<li>Clearly mark unresolved decisions</li>
-<li>Clearly mark optional components</li>
-<li>Include implementation-oriented examples</li>
-<li>Include pseudocode where useful</li>
-<li>Include configuration examples</li>
-<li>Include API examples</li>
-<li>Include Pydantic examples</li>
-<li>Include TypeScript examples</li>
-<li>Include SQL schema guidance</li>
-<li>Include Docker Compose examples</li>
-<li>Include Nginx examples</li>
-<li>Include test cases</li>
-<li>Include operational runbooks</li>
-<li>Include failure-handling behavior</li>
-<li>Include observability requirements</li>
-<li>Include retention and cleanup policies</li>
+<li>以专业技术英语书写</li>
+<li>使用 Markdown</li>
+<li>使用编号部分</li>
+<li>使用一致的术语</li>
+<li>避免矛盾</li>
+<li>避免无依据的主张</li>
+<li>避免使用模糊的短语，例如“使用人工智能来提高准确性”</li>
+<li>解释每一个主要的架构决策</li>
+<li>分离当前范围、MVP 范围、生产目标和未来范围</li>
+<li>清楚地标记假设</li>
+<li>清楚地标记未解决的决定</li>
+<li>清楚地标记可选组件</li>
+<li>包括面向实施的示例</li>
+<li>包括有用的伪代码</li>
+<li>包括配置示例</li>
+<li>包括 API 示例</li>
+<li>包括 Pydantic 示例</li>
+<li>包括 TypeScript 示例</li>
+<li>包括 SQL 架构指导</li>
+<li>包括 Docker Compose 示例</li>
+<li>包括 Nginx 示例</li>
+<li>包括测试用例</li>
+<li>包括操作手册</li>
+<li>包括故障处理行为</li>
+<li>包括可观察性要求</li>
+<li>包括保留和清理政策</li>
 </ul>
-<p>Do not invent factory details that are not provided.</p>
-<p>When information is unknown, create an explicit section named:</p>
+<p>不要捏造未提供的工厂详细信息。</p>
+<p>当信息未知时，创建一个显式部分，名为：</p>
 <p><code>Open Questions and Validation Required</code></p>
-<p>Do not silently assume:</p>
+<p>不要默默地假设：</p>
 <ul>
-<li>Conveyor speed</li>
-<li>Camera vendor</li>
-<li>Camera SDK</li>
-<li>GPU model</li>
-<li>Operating system</li>
-<li>Exact barcode standard</li>
-<li>Exact component classes</li>
-<li>Exact product count</li>
-<li>Exact retention period</li>
-<li>Exact central-server location</li>
-<li>Exact network reliability</li>
-<li>Exact customer acceptance threshold</li>
+<li>输送机速度</li>
+<li>相机供应商</li>
+<li>相机SDK</li>
+<li>GPU模型</li>
+<li>操作系统</li>
+<li>精确的条形码标准</li>
+<li>精确的组件类</li>
+<li>准确的产品数量</li>
+<li>准确的保留期限</li>
+<li>准确的中央服务器位置</li>
+<li>精确的网络可靠性</li>
+<li>准确的客户接受门槛</li>
 </ul>
 <hr />
 <h1 id="23-generation-workflow">23. 生成工作流程<a class="headerlink" href="#23-generation-workflow" title="Permanent link">&para;</a></h1>
-<p>Perform the task in this order:</p>
+<p>按此顺序执行任务：</p>
 <ol>
-<li>Create the final documentation file tree.</li>
-<li>Create a terminology and decision consistency checklist.</li>
-<li>Generate the top-level README.</li>
-<li>Generate the architecture overview.</li>
-<li>Generate edge-client documents.</li>
-<li>Generate central-server documents.</li>
-<li>Generate AI-pipeline documents.</li>
-<li>Generate data and API documents.</li>
-<li>Generate frontend documents.</li>
-<li>Generate deployment and operations documents.</li>
-<li>Generate testing, acceptance, and risk documents.</li>
-<li>Generate ADR files.</li>
-<li>Review all generated documents for contradictions.</li>
-<li>Fix inconsistent terminology.</li>
-<li>Verify Mermaid syntax.</li>
-<li>Verify links between Markdown files.</li>
-<li>Verify that every file referenced in the documentation tree exists.</li>
-<li>Produce a final summary of generated files and unresolved questions.</li>
+<li>创建最终的文档文件树。</li>
+<li>创建术语和决策一致性检查表。</li>
+<li>生成顶层自述文件。</li>
+<li>生成架构概述。</li>
+<li>生成边缘客户端文档。</li>
+<li>生成中央服务器文档。</li>
+<li>生成AI-pipeline文档。</li>
+<li>生成数据和API文档。</li>
+<li>生成前端文档。</li>
+<li>生成部署和操作文档。</li>
+<li>生成测试、验收和风险文件。</li>
+<li>生成ADR 文件。</li>
+<li>检查所有生成的文档是否存在矛盾。
+14.修复不一致的术语。</li>
+<li>验证 Mermaid 语法。</li>
+<li>验证 Markdown 文件之间的链接。</li>
+<li>验证文档树中引用的每个文件是否存在。</li>
+<li>生成生成文件和未解决问题的最终摘要。</li>
 </ol>
-<p>Do not stop after generating an outline.</p>
-<p>Generate the complete content for every required file.</p>
+<p>生成轮廓后不要停止。</p>
+<p>生成每个所需文件的完整内容。</p>
 <hr />
 <h1 id="24-repository-editing-instructions">24. 存储库编辑说明<a class="headerlink" href="#24-repository-editing-instructions" title="Permanent link">&para;</a></h1>
-<p>If operating inside a repository:</p>
+<p>如果在存储库内操作：</p>
 <ul>
 <li>创建文件之前检查现有存储库。</li>
 <li>保留现有文件，除非明确需要替换。</li>

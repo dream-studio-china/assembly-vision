@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3248,7 +3248,7 @@
   协调后，只有一项检查任务和每个媒体项目一项任务。</li>
 <li>在原始投影提交之后和入队之前模拟崩溃，
   然后重新启动，将发件箱修复一次。</li>
-<li>完全排队的记录的协调不会创建重复的任务。</li>
+<li>完全排队记录的协调不会创建重复任务。</li>
 </ul>
 <h3 id="f3-lease-expiry-has-no-ownertoken-fencing-so-a-late-worker-can-overwrite-a-newer-worker">F3。租约到期没有所有者/令牌围栏，因此迟到的工作人员可以覆盖较新的工作人员<a class="headerlink" href="#f3-lease-expiry-has-no-ownertoken-fencing-so-a-late-worker-can-overwrite-a-newer-worker" title="Permanent link">&para;</a></h3>
 <p><strong>严重性：</strong> P1/高</p>
@@ -3296,11 +3296,11 @@
 <li><code>apps/edge-service/src/assemblyvision_edge/persistence/repository.py:829-866</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/upload/scheduler.py:207-238</code></li>
 </ul>
-<p>检查和所有媒体任务都会收到相同的<code>created_at</code>。然后声称
+<p>检查和所有媒体任务都会收到相同的 <code>created_at</code>。然后声称
 按随机 <code>upload_task_id</code> 排序关系，因此可以先发送媒体任务。的
 设计序列需要在媒体绑定之前摄取元数据（设计
 13.4/13.7）。正确拒绝未知检查介质的中央端点
-具有 <code>404</code> 的将被 <code>HttpUploadSink</code> 归类为永久故障，即使
+<code>404</code> 将被 <code>HttpUploadSink</code> 归类为永久故障，即使
 尽管元数据稍后会在同一批中成功。</p>
 <p><strong>分辨率：</strong></p>
 <ol>
@@ -3339,7 +3339,7 @@
 已达到<code>PERMANENT_FAILURE</code>。</p>
 <p>这违反了合同 04 第 6 节（验证完成、存储中心对象
 标识符，仅在确认成功后更新）并滥用记录的
-设计14中的<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>同步状态。它也使得
+设计14中的<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>同步状态。它还使得
 未来的保留无法证明每个所需的工件都收到了
 已验证收据。</p>
 <p><strong>解决：</strong></p>

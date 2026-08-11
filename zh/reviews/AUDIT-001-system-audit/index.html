@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -2931,12 +2931,12 @@
   <a href="#3-high-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. HIGH Findings
+        3. 高发现
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. HIGH Findings">
+    <nav class="md-nav" aria-label="3. 高发现">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3015,7 +3015,7 @@
   <a href="#42-rule-engine-fail-safe-gaps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.2 Rule engine fail-safe gaps
+        4.2 规则引擎故障安全差距
       
     </span>
   </a>
@@ -3026,7 +3026,7 @@
   <a href="#43-manifest-validation-gaps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4.3 Manifest validation gaps
+        4.3 明显的验证差距
       
     </span>
   </a>
@@ -3169,7 +3169,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 权威持久性工作不得将其当前模式视为令人满意的
 那个生产合同。</p>
 <hr />
-<h2 id="3-high-findings">3. HIGH Findings<a class="headerlink" href="#3-high-findings" title="Permanent link">&para;</a></h2>
+<h2 id="3-high-findings">3. 高发现<a class="headerlink" href="#3-high-findings" title="Permanent link">&para;</a></h2>
 <h3 id="h1-missing-label-files-fabricate-ground-truth">H1。丢失的标签文件伪造了真实情况<a class="headerlink" href="#h1-missing-label-files-fabricate-ground-truth" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>状态：</strong> 关闭 (3ce3147)。</li>
@@ -3209,7 +3209,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <h3 id="h3-relative-can-select-the-wrong-ultralytics-run-path">H3。相对<code>--out-weights</code>可以选择错误的Ultralytics运行路径<a class="headerlink" href="#h3-relative-can-select-the-wrong-ultralytics-run-path" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>状态：</strong> 关闭 (fcfcf7c)。</li>
-<li><strong>证据：</strong> <code>cli.py:226,313</code> 通过了潜在的亲戚
+<li><strong>证据：</strong> <code>cli.py:226,313</code> 通过了潜在的亲属
   <code>weights_path.parent / ".train-runs"</code>； <code>train.py:71-77</code> 然后假设
   固定返回路径。这与记录的相对路径命令不同
   并且可能与 Ultralytics 对相关项目的处理发生冲突。</li>
@@ -3263,64 +3263,64 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </tr>
 </tbody>
 </table>
-<h3 id="42-rule-engine-fail-safe-gaps">4.2 Rule engine fail-safe gaps<a class="headerlink" href="#42-rule-engine-fail-safe-gaps" title="Permanent link">&para;</a></h3>
+<h3 id="42-rule-engine-fail-safe-gaps">4.2 规则引擎故障安全差距<a class="headerlink" href="#42-rule-engine-fail-safe-gaps" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Status:</strong> CLOSED (653a850).</li>
-<li><strong>Evidence:</strong> <code>_spatial_violation</code> does not reject non-finite ratios or
-  centers (<code>rule_engine.py:110-123</code>); comparisons with <code>NaN</code> are false. Also,
-  <code>PRESENT</code> evidence is accepted without a usable frame, confidence, or
-  supporting frame (<code>147-168</code>). This violates contract 03.5's prohibition on
-  <code>OK</code> from incomplete result data/no usable frames and design 11.2's evidence
-  requirement.</li>
-<li><strong>Required change:</strong> Explicitly reject non-finite geometry. Before a PRESENT
-  component can satisfy a requirement, require <code>usable_frame_count &gt;= 1</code>, a
-  finite <code>best_confidence</code>, a non-empty supporting-frame list, and coherent
-  detection/supporting-frame counts. Decide and document whether every
-  detection needs geometry when no spatial constraint is declared.</li>
-<li><strong>Acceptance:</strong> Table-driven tests inject <code>NaN</code>, <code>inf</code>, zero usable frames,
-  absent/non-finite confidence, and empty supporting IDs into otherwise-valid
-  evidence. Every case returns business <code>NG</code> with a stable reason code; no test
-  may obtain <code>OK</code> from incomplete evidence. Existing valid evidence must still
-  return <code>OK</code>.</li>
+<li><strong>状态：</strong> 关闭 (653a850)。</li>
+<li><strong>证据：</strong> <code>_spatial_violation</code>不拒绝非有限比率或
+  中心（<code>rule_engine.py:110-123</code>）；与 <code>NaN</code> 的比较是错误的。另外，
+  <code>PRESENT</code> 证据在没有可用框架、置信度或
+  支撑框架（<code>147-168</code>）。这违反了合同03.5的禁令
+  <code>OK</code>来自不完整的结果数据/没有可用的框架和设计11.2的证据
+  要求。</li>
+<li><strong>需要更改：</strong> 明确拒绝非有限几何。礼物之前
+  组件可以满足一个要求，需要<code>usable_frame_count &gt;= 1</code>，a
+  有限<code>best_confidence</code>，非空支撑框架列表，并且一致
+  检测/支持帧计数。决定并记录是否每个
+  当没有声明空间约束时，检测需要几何形状。</li>
+<li><strong>接受：</strong> 表驱动测试注入 <code>NaN</code>、<code>inf</code>、零可用帧、
+  缺乏/非有限置信度，并将支持 ID 清空为其他有效的 ID
+  证据。每个案例都会返回带有稳定原因码的业务<code>NG</code>；没有测试
+  可以从不完整的证据中获得<code>OK</code>。现有有效证据仍须
+  返回<code>OK</code>。</li>
 </ul>
-<h3 id="43-manifest-validation-gaps">4.3 Manifest validation gaps<a class="headerlink" href="#43-manifest-validation-gaps" title="Permanent link">&para;</a></h3>
+<h3 id="43-manifest-validation-gaps">4.3 明显的验证差距<a class="headerlink" href="#43-manifest-validation-gaps" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Status:</strong> CLOSED (16448b5).</li>
-<li><strong>Evidence:</strong> <code>runtime</code> is not constrained before detector construction;
-  <code>verify_manifest_artifact</code> rejects only leading slash/backslash and permits
-  traversal or URI-like artifact paths; <code>verify_model_class_map</code> assumes
-  contiguous mapping keys and can leak <code>KeyError</code>.</li>
-<li><strong>Required change:</strong> Require <code>runtime == "ultralytics"</code> at the manifest
-  loading boundary, reject non-file URI schemes, resolve the artifact and
-  require containment below the model bundle root (which permits the
-  documented <code>models/manifests</code> and sibling <code>models/weights</code> layout), and
-  translate malformed/non-contiguous class maps to <code>ConfigError</code>.</li>
-<li><strong>Acceptance:</strong> Tests reject <code>runtime="other"</code>, paths escaping the model
-  bundle, encoded or scheme URI forms accepted by the path parser, symlink
-  escape, and a non-contiguous <code>{1: "component"}</code> map with <code>ConfigError</code>. A
-  valid relative artifact, including documented sibling weights, and a
-  contiguous mapping continue to load and checksum-verify.</li>
+<li><strong>状态：</strong> 关闭 (16448b5)。</li>
+<li><strong>证据：</strong> <code>runtime</code>在探测器构造之前不受约束；
+  <code>verify_manifest_artifact</code> 仅拒绝前导斜杠/反斜杠并允许
+  遍历或类似 URI 的工件路径； <code>verify_model_class_map</code> 假设
+  连续的映射键并且可能泄漏<code>KeyError</code>。</li>
+<li><strong>需要更改：</strong> 清单中需要 <code>runtime == "ultralytics"</code>
+  加载边界、拒绝非文件 URI 方案、解析工件并
+  需要包含在模型束根以下（这允许
+  记录了 <code>models/manifests</code> 和同级 <code>models/weights</code> 布局），以及
+  将格式错误/不连续的类映射转换为 <code>ConfigError</code>。</li>
+<li><strong>接受：</strong> 测试拒绝 <code>runtime="other"</code>，逃离模型的路径
+  路径解析器、符号链接接受的包、编码或方案 URI 形式
+  escape，以及与 <code>ConfigError</code> 不连续的 <code>{1: "component"}</code> 映射。一个
+  有效的相对工件，包括记录的同级权重，以及
+  连续映射继续加载并进行校验和验证。</li>
 </ul>
 <h3 id="44-persistence-and-contract-boundary">4.4 持久化和契约边界<a class="headerlink" href="#44-persistence-and-contract-boundary" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Status:</strong> PARTIAL. The M1 boundary is documented (5488804); the
-  authoritative schema, product-configuration version, and concurrent
-  equal-content upsert behavior remain future work gated on the upload
-  scheduler. Not a claim that M1 already implements the production outbox.</li>
-<li><strong>Evidence:</strong> The current projection schema lacks the uniqueness constraints,
-  product-configuration column, and upload leases specified by design 14 and
-  contracts 04/05. <code>pipeline.py:303-305</code> creates a <code>ProductResolution</code> without
-  <code>product_version_id</code>. <code>upsert_inspection</code> remains check-then-insert, although
-  its outer <code>IntegrityError</code> translation prevents raw SQLAlchemy leakage.</li>
-<li><strong>Required change:</strong> First update design 14 to distinguish the M1 rebuildable
-  projection from the future authoritative store. Before any upload scheduler
-  or multi-writer deployment, add an Alembic migration for the authoritative
-  schema, persist a non-null governed product-configuration version, and make
-  equal-content concurrent inspection upserts idempotently return <code>unchanged</code>.</li>
-<li><strong>Acceptance:</strong> The boundary document names the projection's non-authoritative
-  limitations. Authoritative-store tests verify all contract 04/05 constraints,
-  lease fields, product version traceability, and concurrent equal-content
-  upserts returning <code>unchanged</code>; differing content must fail without mutation.</li>
+<li><strong>状态：</strong> 部分。 M1 边界已记录 (5488804)；的
+  权威模式、产品配置版本和并发
+  等内容更新插入行为仍然是上传的未来工作
+  调度程序。并不是说 M1 已经实现了生产发件箱。</li>
+<li><strong>证据：</strong> 当前的投影模式缺乏唯一性约束，
+  产品配置列，并上传设计14指定的租约和
+  合同 04/05。 <code>pipeline.py:303-305</code> 创建一个 <code>ProductResolution</code> 没有
+  <code>product_version_id</code>。 <code>upsert_inspection</code> 仍然是先检查后插入，尽管
+  其外部 <code>IntegrityError</code> 翻译可防止原始 SQLAlchemy 泄漏。</li>
+<li><strong>需要更改：</strong> 首先更新设计 14 以区分 M1 可重建
+  来自未来权威商店的投影。在任何上传调度程序之前
+  或多写入器部署，为权威添加 Alembic 迁移
+  模式，保留一个非空的受控产品配置版本，并制作
+  等内容并发检查更新插入幂等返回<code>unchanged</code>。</li>
+<li><strong>接受：</strong> 边界文件指出投影的非权威性
+  限制。权威商店测试验证所有合同 04/05 约束，
+  租赁字段、产品版本追溯、并发等内容
+  更新插入返回<code>unchanged</code>；不同的内容必须在没有突变的情况下失败。</li>
 </ul>
 <h3 id="45-api-and-frontend-hardening">4.5 API和前端强化<a class="headerlink" href="#45-api-and-frontend-hardening" title="Permanent link">&para;</a></h3>
 <table>

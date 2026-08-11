@@ -1584,7 +1584,7 @@
   <span class="md-ellipsis">
     
   
-    Training and Datasets
+    训练和数据集
   
 
     
@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -2964,7 +2964,7 @@
   <a href="#8-latest-session-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Latest Session Decisions
+        8. 最新会议决定
       
     </span>
   </a>
@@ -2986,7 +2986,7 @@
   <a href="#82-edge-dashboard-and-operator-prototype-pr-6" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.2 Edge Dashboard and Operator Prototype (PR #6)
+        8.2 边缘仪表板和操作员原型（PR #6）
       
     </span>
   </a>
@@ -2997,7 +2997,7 @@
   <a href="#83-edge-backend-layer-m1-pr-8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.3 Edge Backend Layer (M1, PR #8)
+        8.3 边缘后端层（M1，PR #8）
       
     </span>
   </a>
@@ -3030,7 +3030,7 @@
   <a href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.6 Durable Upload Outbox and Scheduler (PR #17, ADR-005)
+        8.6 持久上传发件箱和调度程序（PR #17，ADR-005）
       
     </span>
   </a>
@@ -3115,6 +3115,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#814-confidence-drift-and-device-health-observability-prs-3839" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.14 置信度漂移和设备健康状况可观测性（PR #38/#39）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#815-central-server-m1-tenant-and-pilot-authentication-foundation-c1b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.15 中央服务器M1租户和试点认证基础（C1b）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3188,10 +3210,14 @@
   边缘本地人工审核功能 (ADR-016)，包括其审核强化
   以及已记录的 PR31-T05 观众凭证权衡。 PR #32 和 #33
   添加了问题模板和工业自述文件/快速启动/安全更新；
-  PR #34 添加了开发者手册； PR #35 添加了边缘网络 i18n；和公关＃36
-  修复了 MkDocs README 索引排除。边缘编码是通过
-  E6准备门。中央服务器M1试点已经开始（C1a
-  基础已交付）；其有界实施计划是
+  PR #34 添加了开发者手册； PR #35 添加了边缘网络 i18n；公关＃36
+  修复了 MkDocs README 索引排除； PR #37 合并了中央服务器
+  M1基础（C1a）； PR #38 添加了置信度漂移统计数据
+  （设计15.3.6）及其仪表板； PR #39 添加了实时网络
+  设备运行状况页面的流量和 GPU 指标。边缘编码完成
+  通过E6准备门。中央服务器M1试点已启动
+  （已交付 C1a 基础和 C1b 租户/凭证基础）；它的
+  有界实施计划在
   <code>docs/tasks/C1-central-server-m1.md</code>。</li>
 </ul>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
@@ -3201,10 +3227,14 @@
   多实例 (ADR-013/014)、时间聚合 (ADR-010)、持久上传
   发件箱 (ADR-005)、E1-E5 门、E6 验收准备、GigE/GenICam 源、
   仪表板主题、持久性修复和条形码标识/PLC 触发器
-  合同（ADR-015）。 PR #31 到 #36 也被合并：边缘局部人类
+  合同（ADR-015）。 PR #31 到 #39 也被合并：边缘局部人类
   审查、问题模板、文档更新、开发人员手册、边缘网络
-  i18n 和 MkDocs 手动索引修复。目前尚不存在中央服务器代码；
-  <code>docs/tasks/C1-central-server-m1.md</code>明确了试点实施范围。</li>
+  i18n、MkDocs 手动索引修复、中央服务器 M1 基础
+  （C1a，PR #37），中央试点租户/设备/凭证基础
+  (C1b)、置信度漂移统计数据 (PR #38) 和设备
+  健康可观测层（PR #39）。 <code>docs/tasks/C1-central-server-m1.md</code>
+  明确中央试点范围；摄取、病史、中央审查和
+  硬化（C2a-C6）仍然存在。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
   吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
@@ -3280,7 +3310,7 @@
   评估、本地数据库/媒体、带重试的上传队列、运行状况监控、本地 FastAPI、
   本地 Vue 仪表板。在中央/网络中断期间检查仍在继续。</li>
 <li><strong>中央服务器职责</strong>：摄取选定的结果/媒体、历史记录、受管理的
-  元数据、人工审查记录、有界试点状态以及后续管理/报告/审计。
+  元数据、手动审查记录、有界试点状态以及后续管理/报告/审计。
   远程包分发属于生产范围。中央不需要检查。</li>
 <li><strong>两阶段检测</strong>：第一阶段全画幅检测产品；投资回报率引擎
   扩展/剪辑它；第二阶段检测所需的组件（<code>component_a</code>、<code>component_b</code>、
@@ -3336,7 +3366,7 @@
   保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
   被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
 <li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
-  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
+  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也可以使用中文。</li>
 <li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
   <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
 <li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
@@ -3356,7 +3386,7 @@
   AI模型中的业务规则；边缘不能依赖于中央服务器；运行测试 + Ruff +
   我的Py；切勿在未执行的情况下声称测试已通过；永远不要声称 100% 准确。</li>
 </ul>
-<h2 id="8-latest-session-decisions">8. Latest Session Decisions<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
+<h2 id="8-latest-session-decisions">8. 最新会议决定<a class="headerlink" href="#8-latest-session-decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 12 个 ADR +
   附录）来自<a href="../../source-brief/">docs/source-brief.md</a>（以前的<code>docs/doc-task.md</code>）。</li>
@@ -3381,7 +3411,7 @@
   框架； <code>assemblyvision verify</code> 报告 NG 召回/漏报/误报；和
   <code>scripts/e2e-demo.sh</code> 使用针对误报的硬门运行整个流程。</li>
 <li>数据集：<code>scripts/generate-synthetic-dataset.py</code>构建一个带标签的程序集数据集（确切地说
-  框、缺少组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
+  框、缺失组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
   将 Roboflow YOLOv8 导出转换为两阶段布局，删除通用 <code>missing*</code> 类，
   并且需要一个独立注释的完整产品类（组件盒的联合是
   被拒绝）。源 <code>test</code> 分割仅成为保留的验证集；从来没有
@@ -3433,7 +3463,7 @@
   <code>min_area_pixels</code>必须是正整数，未知的键将被拒绝
   每个部分。</li>
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
-  盒子是致命的；丢失的标签文件无法验证，除非记录了
+  盒子是致命的；丢失的标签文件无法验证，除非已记录
   <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
   底片；成分制备导致 ROI 作物为负数；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
@@ -3441,7 +3471,7 @@
   <code>pytest</code> 现在覆盖整个存储库（边缘、包、训练、脚本
   测试）通过 Makefile 和新的 <code>.github/workflows/ci.yml</code>。</li>
 </ul>
-<h2 id="82-edge-dashboard-and-operator-prototype-pr-6">8.2 Edge Dashboard and Operator Prototype (PR #6)<a class="headerlink" href="#82-edge-dashboard-and-operator-prototype-pr-6" title="Permanent link">&para;</a></h2>
+<h2 id="82-edge-dashboard-and-operator-prototype-pr-6">8.2 边缘仪表板和操作员原型（PR #6）<a class="headerlink" href="#82-edge-dashboard-and-operator-prototype-pr-6" title="Permanent link">&para;</a></h2>
 <p>前端被构建为一个解耦的 Vue3+TypeScript 层，共享一个
 pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</code>：</p>
 <ul>
@@ -3473,7 +3503,7 @@ pnpm 工作区与现有的 Python uv 工作区，然后合并到 <code>main</cod
 <li><strong>文档</strong>：QUICKSTART 对每个应用程序进行了重组，并具有可扩展的编号
   部分；自述文件更新了新功能、项目结构和路线图。</li>
 </ul>
-<h2 id="83-edge-backend-layer-m1-pr-8">8.3 Edge Backend Layer (M1, PR #8)<a class="headerlink" href="#83-edge-backend-layer-m1-pr-8" title="Permanent link">&para;</a></h2>
+<h2 id="83-edge-backend-layer-m1-pr-8">8.3 边缘后端层（M1，PR #8）<a class="headerlink" href="#83-edge-backend-layer-m1-pr-8" title="Permanent link">&para;</a></h2>
 <p><code>dev</code> 上的 FastAPI + SQLite 后端层提供真实的只读仪表板视图
 CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 阻塞结果 (F1-F14) 和 M1 条件项 (C1-C4)
@@ -3643,49 +3673,49 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   具有二进制主体和问题响应的规范业务/内部枚举
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
-<p><code>assemblyvision_edge</code> now ships <code>py.typed</code> so the strict mypy gate passes
-  repo-wide; the current suite is 635 Python tests, 91 TypeScript unit tests
-  (api-client 45, ui 13, edge-web 30, desktop 3), and 12 Playwright e2e.</p>
-<h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 Durable Upload Outbox and Scheduler (PR #17, ADR-005)<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
-<p>Merged via PR #17 (dev -&gt; main, 10 commits). Implements the persistent upload
-queue required by ADR-005 and closes the deferred AUDIT-001 4.4 persistence
-item. The review-driven hardening pass is recorded in
-<code>docs/reviews/PR-017-review.md</code>; findings F1-F8 plus a post-resolution pass
-are resolved with regression tests:</p>
+<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code> 因此严格的 mypy 门会通过
+  回购范围内；当前套件有 635 个 Python 测试，91 个 TypeScript 单元测试
+  （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
+<h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
+<p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
+ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
+项目。审查驱动的强化过程记录在
+<code>docs/reviews/PR-017-review.md</code>；结果 F1-F8 加上决议后通过
+通过回归测试解决：</p>
 <ul>
-<li><strong>Atomic projection and outbox</strong>: <code>persist_inspection_and_enqueue_uploads</code>
-  commits the immutable inspection, media, evidence, and one <code>INSPECTION</code> task
-  plus one <code>MEDIA</code> task per artifact in a single SQLite transaction; startup
-  reconciliation repairs stranded <code>LOCAL_ONLY</code> records.</li>
-<li><strong>Ordered, leased worker</strong>: <code>UploadScheduler</code> claims due tasks in an
-  immediate transaction; <code>MEDIA</code> tasks become due only after their inspection
-  task has a verified receipt; each claim carries a per-task fencing token
-  (<code>lease_owner</code>), stale <code>IN_PROGRESS</code> tasks are reclaimed after lease expiry,
-  and terminal updates require the matching token.</li>
-<li><strong>Failure classification</strong>: transport errors and <code>408/429/5xx</code> schedule
-  full-jitter backoff honoring <code>Retry-After</code> from the response time; missing/
-  corrupt evidence, checksum/size mismatch, and server conflicts become
-  permanent failures while local evidence is preserved.</li>
-<li><strong>Verified receipts</strong>: a 2xx is success only when the bounded typed receipt
-  echoes idempotency key, object, kind, size, and checksum; media receipts
-  require a central object ID; receipts are persisted and inspection
-  synchronization is <code>QUEUED</code>/<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code> from all tasks.</li>
-<li><strong>Configuration and security</strong>: <code>UploadSettings</code> + <code>AV_EDGE_UPLOAD_*</code> wiring
-  through <code>serve</code> (endpoint or local sink, separate credential, tunables);
-  central endpoints require HTTPS (development HTTP loopback-only), and the
-  viewer <code>api_token</code> is never reused for uploads.</li>
+<li><strong>原子投影和发件箱</strong>：<code>persist_inspection_and_enqueue_uploads</code>
+  提交不可变的检查、媒体、证据和一项 <code>INSPECTION</code> 任务
+  在单个 SQLite 事务中为每个工件加上一个 <code>MEDIA</code> 任务；启动
+  调节修复搁浅的<code>LOCAL_ONLY</code>记录。</li>
+<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code>在一个任务中声明到期任务
+  即时交易； <code>MEDIA</code> 任务只有在检查后才到期
+  任务有经过验证的收据；每个声明都带有每个任务的防护令牌
+  (<code>lease_owner</code>)，陈旧的<code>IN_PROGRESS</code>任务在租约到期后被回收，
+  终端更新需要匹配的令牌。</li>
+<li><strong>故障分类</strong>：传输错误和<code>408/429/5xx</code>时间表
+  从响应时间起遵守<code>Retry-After</code>的全抖动退避；失踪/
+  证据损坏、校验和/大小不匹配以及服务器冲突变得
+  永久性故障，同时保留本地证据。</li>
+<li><strong>验证收据</strong>：仅当有界打字收据时，2xx 才是成功
+  回显幂等键、对象、种类、大小和校验和；媒体收据
+  需要一个中心对象 ID；保留收据并进行检查
+  所有任务的同步为 <code>QUEUED</code>/<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>。</li>
+<li><strong>配置和安全</strong>：<code>UploadSettings</code> + <code>AV_EDGE_UPLOAD_*</code>接线
+  通过 <code>serve</code> （端点或本地接收器、单独的凭据、可调参数）；
+  中央端点需要 HTTPS（仅开发 HTTP 环回），并且
+  查看器 <code>api_token</code> 永远不会重复用于上传。</li>
 </ul>
 <h2 id="87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20">8.7 可观察性 (E1) 以及保留和磁盘安全性 (E2)（PR #18/#19、#20）<a class="headerlink" href="#87-observability-e1-and-retention-and-disk-safety-e2-prs-1819-20" title="Permanent link">&para;</a></h2>
-<p>Observability merged via PRs #18 and #19 (dev -&gt; main): the Alembic
-<code>fileConfig</code> side effect that disabled <code>assemblyvision.*</code> loggers after
-migration is fixed so <code>/api/v1/logs</code> captures application records, and device
-status now exposes upload queue bytes, oldest pending age, attempt/success/
-failure counters, failure rate, last contact, and <code>UPLOAD_BLOCKED</code>/
-<code>UPLOAD_FAILING</code> alerts.</p>
-<p>Retention and disk safety merged via PR #20 (dev -&gt; main, E2a-E2d plus the
-PR-020 review hardening). The delivery task and mandatory safety invariants are
-in <code>docs/tasks/E2-retention-and-disk-safety.md</code>; the review and its per-finding
-resolutions are recorded in <code>docs/reviews/PR-020-review.md</code> (RESOLVED):</p>
+<p>通过 PR #18 和 #19 合并的可观测性（dev -&gt; main）：Alembic
+<code>fileConfig</code> 副作用，禁用 <code>assemblyvision.*</code> 记录器
+迁移已修复，因此 <code>/api/v1/logs</code> 捕获应用程序记录和设备
+状态现在公开上传队列字节、最早的挂起年龄、尝试/成功/
+失败计数器、失败率、上次联系和 <code>UPLOAD_BLOCKED</code>/
+<code>UPLOAD_FAILING</code> 警报。</p>
+<p>通过 PR #20 合并保留和磁盘安全（dev -&gt; main、E2a-E2d 加上
+PR-020 审查强化）。交付任务和强制性安全不变量是
+在 <code>docs/tasks/E2-retention-and-disk-safety.md</code> 中；审查及其结果
+决议记录在<code>docs/reviews/PR-020-review.md</code>中（已解决）：</p>
 <ul>
 <li><strong>持久保留状态 (E2a)</strong>：迁移 0007 添加介质 <code>created_at</code>，
   <code>retention_eligible_at</code>，保留状态，删除声明/租赁/防护列，
@@ -3849,7 +3879,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li><strong>边缘本地人工审查（PR #31，ADR-016）</strong>：可选，附加，
   对任何检查（OK 或 NG）进行仅附加审查，而不改变
   机器决定。域 <code>ReviewDisposition</code> (CONFIRMED_NG/CONFIRMED_OK/
-  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的限制，
+  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的约束，
   <code>ReviewRecord</code> 快照原始决策，一个 <code>review_records</code> 表
   （迁移 0008）使用引用链接取代、存储库
   <code>submit_review</code>/<code>list_review_queue</code>，和端点<code>GET /api/v1/reviews</code>，
@@ -3947,6 +3977,99 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 </ul>
 <p>边缘运行时不导入中央代码；当前的边缘上传信封是
 不变。</p>
+<h2 id="814-confidence-drift-and-device-health-observability-prs-3839">8.14 置信度漂移和设备健康状况可观测性（PR #38/#39）<a class="headerlink" href="#814-confidence-drift-and-device-health-observability-prs-3839" title="Permanent link">&para;</a></h2>
+<p>PR #38 和 #39 合并到 <code>main</code>。</p>
+<ul>
+<li><strong>置信度漂移（PR #38，设计 15.3.6）</strong>：<code>GET
+  /api/v1/statistics/confidence-drift</code> 比较今天的加权平均值
+  每个组件 <code>best_confidence</code> （按正 <code>detection_count</code> 加权）
+  与昨天、前 7 天和前 30 天相比。的
+  比较范围是强制性的 - <code>product_code</code>、<code>rule_version_id</code>、
+  <code>product_model_version_id</code>、<code>component_model_version_id</code> 和
+  <code>aggregation_policy_version</code> - 所以发布或策略切换永远不会
+  误报为采购环境变化；不完整范围返回
+  <code>422 application/problem+json</code>。日期边界遵循运营商本地
+  时区（<code>tz_offset_minutes</code>，有界<code>[-840, 840]</code>），桶是半开的
+  <code>[from, to)</code>，并且感知注入时钟标准化为 UTC。
+  零检测证据行被排除在加权聚合之外。
+  据报道，每个成分今天与 7 天的增量首先出现最大跌幅
+  <code>null</code> 当基线证据缺失时（绝不是捏造的零）。的
+  启发式评估 (<code>stable</code> / <code>minor_drop</code> / <code>noticeable_drop</code> /
+  <code>minor_rise</code> / <code>noticeable_rise</code> / <code>insufficient_data</code>) 7天锚定
+  基线，仅作为决策支持，绝不是根本原因或准确性声明。
+  统计仪表板面板从最新完成的数据中得出范围
+  检查，传递浏览器本地UTC偏移量，并渲染有效
+  范围； api-client 类型、运行时验证和模拟得到了扩展，并且
+  重新生成 OpenAPI/TS 合约。</li>
+<li><strong>设备运行状况页面（系统指标通过 PR #38，网络/GPU 通过 PR #39）</strong>：
+  运行状况视图显示负载（作为 CPU 核心的份额）、内存和磁盘
+  作为百分比圆形仪表，加上实时梯度堆积面积图
+  上传/下载流量（每秒一个样本，60点滑动窗口）
+  和 GPU 负载/功率计。后端指标来自无依赖
+  <code>assemblyvision_edge/system.py</code>：CPU计数/负载和内存通过
+  <code>/proc/meminfo</code>（sysconf 后备）；通过区分网络速率
+  累积<code>/proc/net/dev</code>计数器（第一次轮询<code>null</code>直到基线）；
+  通过 <code>nvidia-smi</code> 的 NVIDIA GPU 利用率/功率（路径解析、2 秒超时、
+  5秒结果缓存）。当平台关闭时，每个指标都无法接近 <code>null</code>
+  无法提供它，并且不会影响决策路径。仪表卡和两者
+  图表共享一个四列网格模板，因此行保持严格对齐
+  ECharts 画布随窗口缩小（网格项带有
+  <code>min-width: 0</code> 而不是继承画布固有宽度）。的
+  served-api e2e 将无摄像头断言范围限定为摄像头窗格，这
+  已与检测结果窗格的历史媒体帧相匹配。</li>
+</ul>
+<h2 id="815-central-server-m1-tenant-and-pilot-authentication-foundation-c1b">8.15 中央服务器M1租户和试点认证基础（C1b）<a class="headerlink" href="#815-central-server-m1-tenant-and-pilot-authentication-foundation-c1b" title="Permanent link">&para;</a></h2>
+<p>第二次中心服务器交付（C1b
+<code>docs/tasks/C1-central-server-m1.md</code>) 在 <code>dev</code> 上实现：</p>
+<ul>
+<li><strong>租户/设备/凭证架构（迁移 0002）</strong>：<code>organizations</code>，
+  <code>sites</code>、<code>production_lines</code>、<code>devices</code>（每个边缘标识都是唯一的）
+  组织、<code>ACTIVE</code>/<code>DISABLED</code> 状态、哈希上传凭据）、
+  <code>administrators</code>（散列引导令牌），<code>admin_sessions</code>（分割
+  查找/散列秘密会话令牌，<code>organization_id</code>范围），以及
+  最小<code>audit_logs</code>表。复合材料生产线及设备
+  将 <code>organization_id</code> 绑定到其组织的外键
+  引用的站点/线路，因此跨租户层次结构行会被拒绝
+  数据库。相同的架构被定义为 SQLAlchemy Core 表
+  (<code>central_service/persistence/schema.py</code>) 所以存储库测试创建它
+  强制执行外键的 SQLite； Alembic 迁移反映了它的
+  PostgreSQL。</li>
+<li><strong>幂等引导</strong>：<code>central-service bootstrap</code> (CLI) 和新的
+  编写一次性 <code>central-bootstrap</code> 服务创建一个飞行员
+  组织/站点/线路/设备/管理员；现有行被重用
+  名称/身份和注册设备或管理员永远不会重新输入密钥。
+  凭证始终通过显式提供
+  <code>AV_CENTRAL_ADMIN_TOKEN</code> / <code>AV_CENTRAL_DEVICE_UPLOAD_TOKEN</code> （或 CLI
+  options) - 引导程序永远不会生成或打印秘密，所以不会
+  凭证可以访问进程/容器日志 - 以及注册及其
+  强制 <code>PILOT_BOOTSTRAP</code> 审核事件在一个事务中提交。上传
+  请求永远不能隐式创建设备。</li>
+<li><strong>双路径认证（严格分离）</strong>：<code>CentralRepository</code>
+  通过解析管理员凭据/会话和设备上传令牌
+  单独的查找，因此设备令牌永远不会授权管理路由和
+  管理令牌从不验证设备上传。禁用设备失败
+  关闭。浏览器会话是短暂的 HttpOnly SameSite=strict cookie
+  （<code>POST /api/v1/auth/session</code>交换，<code>admin_session_ttl_minutes</code>，默认
+  8小时）； <code>Secure</code> 属性来自 <code>AV_CENTRAL_SECURE_COOKIES</code>
+  （默认 true）而不是请求方案，因为 TLS 已终止
+  API 之外。</li>
+<li><strong>管理端点</strong>：<code>GET /api/v1/auth/me</code>、<code>GET /api/v1/sites</code>、
+  <code>GET /api/v1/lines</code>（可选<code>site_id</code>），以及
+  <code>GET /api/v1/devices</code> / <code>GET /api/v1/devices/{id}</code>。每个查询都有范围
+  服务器端到经过身份验证的管理员组织；凭证
+  永远不会暴露。 OpenAPI 声明 <code>PilotBearer</code> 安全方案并
+  RFC 7807 <code>401</code>/<code>404</code> 响应（问题模式），以及
+  <code>api-client-central</code> 类型已重新生成。</li>
+<li><strong>准备就绪</strong>：凭证探针现在验证持久凭证
+  商店已启动（≥1 个管理员和 ≥1 个活动注册设备）
+  而不是检查环境令牌；准备失败关闭，而
+  Pilot 未引导或无法访问商店。</li>
+<li><strong>Compose</strong>：<code>central-bootstrap</code> 在 <code>central-migrate</code> 之后和之前运行
+  <code>central-service</code>；管理/设备令牌没有默认值（撰写失败
+  未设置时关闭），<code>admin-web</code> 默认绑定到环回，并且
+  <code>CENTRAL_SECURE_COOKIES</code> 位于 <code>compose.env.example</code> 中。边缘运行时
+  仍然不导入中央代码，边缘上传信封不变。</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）； <strong>E1
@@ -3954,7 +4077,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   PR-020 审核已解决），<strong>E3 上传弹性</strong>（PR #22，第 8.8 节），
    <strong>E4 运行时</strong>（第 8.9 节），<strong>E5 部署和安全性</strong>（第 8.9 节）
    8.10、PR #24) 和 <strong>E6 验收准备</strong> (PR #25) 已合并。
-   时钟漂移线束仍然明确地保持<code>NOT_EXECUTED</code>； E6保持开放
+   时钟漂移线束明确保留<code>NOT_EXECUTED</code>； E6保持开放
    直到它和硬件/客户数据门控接受阶段执行：</li>
 <li><strong>E6现场验收</strong>：所选项目的弹性和浸泡证据
      硬件、保留客户模型验证并签署 Edge 验收
@@ -3967,12 +4090,14 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li><strong>条形码身份</strong>（PR #30），<strong>边缘本地人工审核</strong>（PR #31），问题
   模板 (PR #32)、自述文件/快速启动/安全刷新 (PR #33)、
   开发人员手册 (PR #34)、edge-web i18n (PR #35) 和 MkDocs 索引修复
-  (PR #36) 被合并（参见第 8.11/8.12 节）。</li>
+  (PR #36) 被合并（参见第 8.11/8.12 节）；中央C1a基金会
+  (PR #37)、置信度漂移 (PR #38) 和设备运行状况可观察性
+  (PR #39) 也被合并（参见第 8.13/8.14 节）。</li>
 <li>基线仍然需要真实的客户数据：收集和注释
   与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
   <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
-  <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
+  <code>scripts/adapt-xanylabeling.py</code>（书面形式；支持classes.txt/data.yaml，
   图像优先和分割优先布局）到
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>
@@ -3985,14 +4110,18 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   经站点验证的寄存器配置文件）和仅限时间的后备（这是一个
   开发模式，而不是生产产品边界）。</li>
 <li>中央服务器 M1 试点<strong>正在进行</strong> (<code>docs/tasks/C1-central-server-m1.md</code>)。
-  C1a（工作空间、服务、Compose、健康/就绪、OpenAPI）已交付：
-  <code>apps/central-service</code>（FastAPI、PostgreSQL、MinIO、受控模式
-  迁移）、<code>apps/admin-web</code>（Vue 3 试点 shell）和
+  C1a（工作空间、服务、Compose、运行状况/就绪性、OpenAPI）已合并
+  （PR #37）和 C1b（租户/设备/凭证模式、幂等引导程序、
+  分离的设备/管理身份验证、管理端点）是在
+  <code>dev</code>（第 8.15 节）：<code>apps/central-service</code>（FastAPI、PostgreSQL、MinIO、
+  受控模式迁移）、<code>apps/admin-web</code>（Vue 3 试点 shell）和
   <code>packages/typescript/api-client-central</code>。摄入经核实的收据，
   媒体绑定、历史、中央审查、元数据治理和强化
-  (C1b–C6) 保留。它必须保留当前的边缘上传信封并且
-  收据语义；可断点续传的上传将一直延迟到合同签订为止
-  变化。</li>
+  (C2a-C6)保留； C2a（检查摄取和验证收据）是
+  下一次交付并消耗设备身份验证缝和
+  <code>(device_id, idempotency_key)</code> 来自 C1b 的唯一性。它必须保留
+  当前边缘上传信封和收据语义；保留断点续传上传
+  推迟到合同发生变化为止。</li>
 <li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
   相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期限、网络
   可靠性、中央服务器位置、接受阈值。</li>
