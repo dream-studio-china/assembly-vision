@@ -23,11 +23,13 @@ from central_service.api.readiness import (
     ReadinessResult,
     compute_readiness,
 )
-from central_service.api.routers import health
+from central_service.api.routers import auth, health, tenant
+from central_service.api.schemas import Problem
 from central_service.api.settings import CentralSettings
 from central_service.observability.logging import configure_logging
 from central_service.persistence.engine import create_database_engine
 from central_service.persistence.migrate import applied_revision, current_head
+from central_service.persistence.repository import CentralRepository
 from central_service.storage.object_store import MinioObjectStorage, ObjectStorageSettings
 
 log = logging.getLogger("central_service.api")
@@ -59,11 +61,17 @@ _CSP = (
 ReadinessProvider = Callable[[], ReadinessResult]
 
 
-def create_app(settings: CentralSettings, *, readiness: ReadinessProvider | None = None) -> FastAPI:
+def create_app(
+    settings: CentralSettings,
+    *,
+    readiness: ReadinessProvider | None = None,
+    repository: CentralRepository | None = None,
+) -> FastAPI:
     """Build the central FastAPI application.
 
-    ``readiness`` may be injected in tests; the default probes the live
-    engine, object store, and credential configuration on every call.
+    ``readiness`` and ``repository`` may be injected in tests; the default
+    readiness probes the live engine, object store, and credential store, and
+    the default repository wraps the configured PostgreSQL engine.
     """
     configure_logging()
     settings.validate_settings()
@@ -102,7 +110,8 @@ def create_app(settings: CentralSettings, *, readiness: ReadinessProvider | None
         app.state.engine = engine
         app.state.storage = storage
         app.state.settings = settings
-        app.state.readiness = readiness or (lambda: compute_readiness(engine, storage, settings))
+        app.state.repository = repository or CentralRepository(engine)
+        app.state.readiness = readiness or (lambda: compute_readiness(engine, storage))
         yield
         engine.dispose()
 
@@ -124,6 +133,7 @@ def create_app(settings: CentralSettings, *, readiness: ReadinessProvider | None
 
     install_problem_handlers(app)
     _install_exception_handler(app)
+    _install_security_scheme(app)
 
     @app.middleware("http")
     async def _correlate_request(
@@ -139,6 +149,8 @@ def create_app(settings: CentralSettings, *, readiness: ReadinessProvider | None
         return response
 
     app.include_router(health.router, prefix="/api/v1")
+    app.include_router(auth.router, prefix="/api/v1")
+    app.include_router(tenant.router, prefix="/api/v1")
     return app
 
 
@@ -153,6 +165,35 @@ def _install_exception_handler(app: FastAPI) -> None:
             media_type="application/problem+json",
             headers={"X-Request-ID": request_id},
         )
+
+
+def _install_security_scheme(app: FastAPI) -> None:
+    """Declare the pilot bearer/session scheme in the generated OpenAPI.
+
+    The routes reference ``PilotBearer`` via ``openapi_extra``; FastAPI does
+    not auto-register schemes that are not ``Security()`` dependencies, so the
+    scheme is injected when the schema is generated (contract 05 section 9).
+    """
+    original_openapi = app.openapi
+
+    def _openapi_with_security() -> dict[str, object]:
+        schema = original_openapi()
+        components = schema.setdefault("components", {})
+        schemes = components.setdefault("securitySchemes", {})
+        schemes["PilotBearer"] = {
+            "type": "http",
+            "scheme": "bearer",
+            "description": (
+                "Pilot administrator bearer credential (or a short-lived "
+                "browser session cookie exchanged via POST /auth/session)"
+            ),
+        }
+        # The Problem model is referenced by the declared 4xx responses but is
+        # not a request/response model, so FastAPI does not register it.
+        components["schemas"]["Problem"] = Problem.model_json_schema()
+        return schema
+
+    app.openapi = _openapi_with_security  # type: ignore[method-assign]
 
 
 def app_factory() -> FastAPI:

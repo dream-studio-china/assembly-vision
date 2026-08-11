@@ -1,6 +1,95 @@
 {
   "components": {
     "schemas": {
+      "AdminMe": {
+        "additionalProperties": false,
+        "description": "The authenticated pilot administrator (``GET /api/v1/auth/me``).",
+        "properties": {
+          "administrator_id": {
+            "title": "Administrator Id",
+            "type": "integer"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "administrator_id",
+          "organization_id",
+          "username"
+        ],
+        "title": "AdminMe",
+        "type": "object"
+      },
+      "DeviceOut": {
+        "additionalProperties": false,
+        "description": "A registered edge device; credentials are never exposed.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "production_line_id": {
+            "title": "Production Line Id",
+            "type": "integer"
+          },
+          "site_id": {
+            "title": "Site Id",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "site_id",
+          "production_line_id",
+          "device_id",
+          "name",
+          "status",
+          "created_at"
+        ],
+        "title": "DeviceOut",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
       "HealthLive": {
         "additionalProperties": false,
         "description": "Liveness response; never blocks on dependencies.",
@@ -15,6 +104,93 @@
           "status"
         ],
         "title": "HealthLive",
+        "type": "object"
+      },
+      "LineOut": {
+        "additionalProperties": false,
+        "description": "A production line within the administrator's organization.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "site_id": {
+            "title": "Site Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "site_id",
+          "organization_id",
+          "name",
+          "created_at"
+        ],
+        "title": "LineOut",
+        "type": "object"
+      },
+      "Problem": {
+        "additionalProperties": false,
+        "description": "RFC 7807 error body (contract 05 section 6).\n\n``request_id`` correlates the response with the request log; ``errors``\ncarries bounded per-field validation details. Credentials, object keys,\ninternal paths, SQL, and stack traces are never included.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "errors": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "code",
+          "request_id",
+          "errors"
+        ],
+        "title": "Problem",
         "type": "object"
       },
       "ReadinessReport": {
@@ -40,6 +216,84 @@
         ],
         "title": "ReadinessReport",
         "type": "object"
+      },
+      "SiteOut": {
+        "additionalProperties": false,
+        "description": "A production site within the administrator's organization.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "created_at"
+        ],
+        "title": "SiteOut",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "PilotBearer": {
+        "description": "Pilot administrator bearer credential (or a short-lived browser session cookie exchanged via POST /auth/session)",
+        "scheme": "bearer",
+        "type": "http"
       }
     }
   },
@@ -49,6 +303,180 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/auth/me": {
+      "get": {
+        "description": "Return the authenticated pilot administrator identity.",
+        "operationId": "get_me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMe"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Me",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/session": {
+      "post": {
+        "description": "Exchange a pilot administrator bearer credential for a session cookie.",
+        "operationId": "create_admin_session_api_v1_auth_session_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Create Admin Session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/devices": {
+      "get": {
+        "operationId": "list_devices_api_v1_devices_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceOut"
+                  },
+                  "title": "Response List Devices Api V1 Devices Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Devices",
+        "tags": [
+          "tenant"
+        ]
+      }
+    },
+    "/api/v1/devices/{device_row_id}": {
+      "get": {
+        "operationId": "get_device_api_v1_devices__device_row_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_row_id",
+            "required": true,
+            "schema": {
+              "title": "Device Row Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Device",
+        "tags": [
+          "tenant"
+        ]
+      }
+    },
     "/api/v1/health/live": {
       "get": {
         "description": "Process liveness only; never blocks on dependencies.",
@@ -90,6 +518,114 @@
         "summary": "Health Ready",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/api/v1/lines": {
+      "get": {
+        "operationId": "list_lines_api_v1_lines_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "site_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LineOut"
+                  },
+                  "title": "Response List Lines Api V1 Lines Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Lines",
+        "tags": [
+          "tenant"
+        ]
+      }
+    },
+    "/api/v1/sites": {
+      "get": {
+        "operationId": "list_sites_api_v1_sites_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SiteOut"
+                  },
+                  "title": "Response List Sites Api V1 Sites Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Sites",
+        "tags": [
+          "tenant"
         ]
       }
     }

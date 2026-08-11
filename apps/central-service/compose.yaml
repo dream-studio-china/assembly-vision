@@ -1,11 +1,14 @@
-# AssemblyVision central pilot compose deployment (design 05 section 10, C1a).
+# AssemblyVision central pilot compose deployment (design 05 section 10, C1a/C1b).
 #
-# Services: PostgreSQL, MinIO, central-service (API), central-migrate
-# (one-shot controlled schema release step), and admin-web (built pilot UI).
+# Services: PostgreSQL, MinIO, central-migrate (one-shot controlled schema
+# release step), central-bootstrap (one-shot pilot credential provisioning),
+# central-service (API), and admin-web (built pilot UI).
 #
 # Credentials below are DEVELOPMENT defaults only. Copy this file's variable
 # block into a private `.env` next to this compose file (Compose reads `.env`
-# automatically) and override every `${VAR}` to deploy a real pilot.
+# automatically). The admin/device tokens have NO defaults: Compose refuses to
+# start the bootstrap until they are set. The admin web port binds to loopback
+# only; publish it explicitly behind TLS for remote access.
 #
 # Run: docker compose -f apps/central-service/compose.yaml up --build
 
@@ -52,6 +55,23 @@ services:
         condition: service_healthy
     restart: "no"
 
+  central-bootstrap:
+    build:
+      context: ../..
+      dockerfile: apps/central-service/Dockerfile
+    command: ["bootstrap"]
+    environment:
+      AV_CENTRAL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-central}:${POSTGRES_PASSWORD:-assemblyvision-dev}@postgres:5432/${POSTGRES_DB:-assemblyvision}
+      # Tokens are mandatory (no dev defaults): the bootstrap fails closed
+      # rather than provisioning a publicly known credential. Copy
+      # compose.env.example to .env and set both variables.
+      AV_CENTRAL_ADMIN_TOKEN: ${CENTRAL_ADMIN_TOKEN:?set CENTRAL_ADMIN_TOKEN in the .env file}
+      AV_CENTRAL_DEVICE_UPLOAD_TOKEN: ${CENTRAL_DEVICE_UPLOAD_TOKEN:?set CENTRAL_DEVICE_UPLOAD_TOKEN in the .env file}
+    depends_on:
+      central-migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
   central-service:
     build:
       context: ../..
@@ -63,13 +83,17 @@ services:
       AV_CENTRAL_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-assemblyvision-dev}
       AV_CENTRAL_MINIO_BUCKET: ${MINIO_BUCKET:-assemblyvision-central}
       AV_CENTRAL_MINIO_SECURE: "false"
-      AV_CENTRAL_ADMIN_TOKEN: ${CENTRAL_ADMIN_TOKEN:-assemblyvision-admin-dev}
+      # Secure session cookies are the safe default. Plain-HTTP loopback
+      # development must opt out in the .env file.
+      AV_CENTRAL_SECURE_COOKIES: ${CENTRAL_SECURE_COOKIES:-true}
     depends_on:
       postgres:
         condition: service_healthy
       minio:
         condition: service_healthy
       central-migrate:
+        condition: service_completed_successfully
+      central-bootstrap:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "python", "-m", "central_service.healthcheck", "http://127.0.0.1:8000/api/v1/health/ready"]
@@ -86,8 +110,11 @@ services:
     depends_on:
       central-service:
         condition: service_healthy
+    # Loopback-only by default: the pilot admin API carries credentials, so
+    # it is never published to all interfaces over plain HTTP. Expose
+    # explicitly (e.g. "8080:80") only behind TLS termination.
     ports:
-      - "${ADMIN_WEB_PORT:-8080}:80"
+      - "127.0.0.1:${ADMIN_WEB_PORT:-8080}:80"
     restart: unless-stopped
 
 volumes:

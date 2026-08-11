@@ -1,4 +1,4 @@
-"""Readiness probe unit tests (C1a)."""
+"""Readiness probe unit tests (C1a/C1b)."""
 
 from __future__ import annotations
 
@@ -11,19 +11,33 @@ from central_service.api.readiness import (
     probe_object_store,
 )
 from central_service.api.settings import CentralSettings
+from central_service.persistence.bootstrap import resolve_plan, run_bootstrap
+from central_service.persistence.repository import CentralRepository
+from central_service.persistence.schema import metadata
 from central_service.storage.object_store import ObjectStorage
 from pydantic import ValidationError
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.pool import StaticPool
 
-_PILOT_TOKEN = "pilot-admin-token-0123456789abcdef"  # noqa: S105 - test fixture credential
+# Test fixtures carry their own credential strings; these are never real.
+_ADMIN_TOKEN = "test-admin-token-0123456789abcdef"  # noqa: S105
+_DEVICE_TOKEN = "test-device-token-0123456789abcdef"  # noqa: S105
 
 
 def _make_settings(**overrides: object) -> CentralSettings:
-    values: dict[str, object] = {
-        "database_url": "postgresql+psycopg://u:p@h:1/db",
-        "admin_token": _PILOT_TOKEN,
-    }
+    values: dict[str, object] = {"database_url": "postgresql+psycopg://u:p@h:1/db"}
     values.update(overrides)
     return CentralSettings(**values)  # type: ignore[arg-type]
+
+
+def _sqlite_engine() -> Engine:
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    metadata.create_all(engine)
+    return engine
 
 
 class _FakeStorage(ObjectStorage):
@@ -45,22 +59,41 @@ class _RaisingStorage(ObjectStorage):
         raise RuntimeError("storage unavailable")
 
 
-def test_probe_credentials_ok() -> None:
-    check = probe_credentials(_make_settings())
-    assert check.ok
-    assert check.name == "credentials"
+def test_probe_credentials_ok_after_bootstrap() -> None:
+    engine = _sqlite_engine()
+    try:
+        repository = CentralRepository(engine)
+        run_bootstrap(
+            repository,
+            resolve_plan(
+                _make_settings(), admin_token=_ADMIN_TOKEN, device_upload_token=_DEVICE_TOKEN
+            ),
+        )
+        check = probe_credentials(engine)
+        assert check.ok
+        assert check.name == "credentials"
+    finally:
+        engine.dispose()
 
 
-def test_probe_credentials_fails_when_unset() -> None:
-    check = probe_credentials(_make_settings(admin_token=None))
-    assert not check.ok
+def test_probe_credentials_fails_without_administrator() -> None:
+    engine = _sqlite_engine()
+    try:
+        check = probe_credentials(engine)
+        assert not check.ok
+        assert "not bootstrapped" in check.detail
+    finally:
+        engine.dispose()
 
 
-def test_probe_credentials_fails_when_short() -> None:
-    check = probe_credentials(
-        _make_settings(admin_token="short")  # noqa: S106 - test fixture credential
-    )
-    assert not check.ok
+def test_probe_credentials_fails_when_database_unavailable() -> None:
+    engine = create_engine("postgresql+psycopg://unused:unused@127.0.0.1:1/unused")
+    try:
+        check = probe_credentials(engine)
+        assert not check.ok
+        assert check.detail == "credential store unavailable"
+    finally:
+        engine.dispose()
 
 
 def test_probe_object_store_ok() -> None:
@@ -99,11 +132,10 @@ def test_readiness_result_requires_all_checks() -> None:
 @pytest.mark.parametrize(
     ("database_url", "token", "expect_error"),
     [
-        ("postgresql+psycopg://u:p@h:1/db", _PILOT_TOKEN, False),
-        ("", _PILOT_TOKEN, True),
         ("postgresql+psycopg://u:p@h:1/db", None, False),
+        ("", None, True),
         ("postgresql+psycopg://u:p@h:1/db", "short", True),
-        ("sqlite:///x.db", _PILOT_TOKEN, True),
+        ("sqlite:///x.db", None, True),
     ],
 )
 def test_settings_validation(database_url: str, token: str | None, expect_error: bool) -> None:
@@ -119,3 +151,9 @@ def test_settings_validation(database_url: str, token: str | None, expect_error:
 def test_settings_requires_postgresql_dialect() -> None:
     with pytest.raises(ValidationError):
         _make_settings(database_url="sqlite:///x.db")
+
+
+def test_settings_rejects_short_device_token() -> None:
+    with pytest.raises(ConfigError):
+        settings = _make_settings(device_upload_token="short")  # noqa: S106 - test credential
+        settings.validate_settings()

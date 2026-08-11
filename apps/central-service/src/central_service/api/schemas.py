@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Literal
 
 from assemblyvision_domain.models import APIModel
@@ -13,6 +14,23 @@ class HealthLive(APIModel):
     status: Literal["ok"]
 
 
+class Problem(APIModel):
+    """RFC 7807 error body (contract 05 section 6).
+
+    ``request_id`` correlates the response with the request log; ``errors``
+    carries bounded per-field validation details. Credentials, object keys,
+    internal paths, SQL, and stack traces are never included.
+    """
+
+    type: str
+    title: str
+    status: int
+    detail: str
+    code: str
+    request_id: str
+    errors: list[dict[str, str]]
+
+
 class ReadinessReport(APIModel):
     """Readiness response naming each checked dependency.
 
@@ -22,3 +40,43 @@ class ReadinessReport(APIModel):
 
     status: Literal["ok"]
     checks: dict[str, str]
+
+
+class AdminMe(APIModel):
+    """The authenticated pilot administrator (``GET /api/v1/auth/me``)."""
+
+    administrator_id: int
+    organization_id: int
+    username: str
+
+
+class SiteOut(APIModel):
+    """A production site within the administrator's organization."""
+
+    id: int
+    organization_id: int
+    name: str
+    created_at: datetime
+
+
+class LineOut(APIModel):
+    """A production line within the administrator's organization."""
+
+    id: int
+    site_id: int
+    organization_id: int
+    name: str
+    created_at: datetime
+
+
+class DeviceOut(APIModel):
+    """A registered edge device; credentials are never exposed."""
+
+    id: int
+    organization_id: int
+    site_id: int
+    production_line_id: int
+    device_id: str
+    name: str
+    status: str
+    created_at: datetime

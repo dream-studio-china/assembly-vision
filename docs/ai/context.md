@@ -44,10 +44,14 @@ and verifies that all required assembly components are present.
   edge-local human review feature (ADR-016), including its review hardening
   and the documented PR31-T05 viewer-credential trade-off. PRs #32 and #33
   added issue templates and the industrial README/QUICKSTART/SECURITY refresh;
-  PR #34 added the developer manual; PR #35 added edge-web i18n; and PR #36
-  fixed the MkDocs README-index exclusion. Edge coding is complete through the
-  E6 preparation gate. The central server M1 pilot has started (C1a
-  foundation delivered); its bounded implementation plan is in
+  PR #34 added the developer manual; PR #35 added edge-web i18n; PR #36
+  fixed the MkDocs README-index exclusion; PR #37 merged the central server
+  M1 foundation (C1a); PR #38 added the confidence-drift statistics
+  (design 15.3.6) and its dashboard panel; and PR #39 added live network
+  traffic and GPU metrics to the device health page. Edge coding is complete
+  through the E6 preparation gate. The central server M1 pilot has started
+  (C1a foundation and C1b tenant/credential foundation delivered); its
+  bounded implementation plan is in
   `docs/tasks/C1-central-server-m1.md`.
 
 ## 2. Repository State
@@ -57,10 +61,14 @@ and verifies that all required assembly components are present.
   multi-instance (ADR-013/014), temporal aggregation (ADR-010), durable upload
   outbox (ADR-005), E1-E5 gates, E6 acceptance prep, GigE/GenICam source,
   dashboard themes, persistence fixes, and barcode identity / PLC trigger
-  contract (ADR-015). PRs #31 through #36 are also merged: edge-local human
+  contract (ADR-015). PRs #31 through #39 are also merged: edge-local human
   review, issue templates, documentation refresh, developer manual, edge-web
-  i18n, and the MkDocs manual-index fix. No central-server code exists yet;
-  `docs/tasks/C1-central-server-m1.md` defines its pilot implementation scope.
+  i18n, the MkDocs manual-index fix, the central server M1 foundation
+  (C1a, PR #37), the central pilot tenant/device/credential foundation
+  (C1b), the confidence-drift statistics (PR #38), and the device
+  health observability layer (PR #39). `docs/tasks/C1-central-server-m1.md`
+  defines the central pilot scope; ingestion, history, central review, and
+  hardening (C2a-C6) remain.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -822,6 +830,101 @@ The first central-server delivery (C1a of
 The edge runtime imports no central code; the current edge upload envelope is
 unchanged.
 
+## 8.14 Confidence Drift and Device Health Observability (PRs #38/#39)
+
+PRs #38 and #39 are merged to `main`.
+
+- **Confidence drift (PR #38, design 15.3.6)**: `GET
+  /api/v1/statistics/confidence-drift` compares today's weighted-mean
+  per-component `best_confidence` (weighted by positive `detection_count`)
+  against yesterday, the previous 7 days, and the previous 30 days. The
+  comparison scope is mandatory - `product_code`, `rule_version_id`,
+  `product_model_version_id`, `component_model_version_id`, and
+  `aggregation_policy_version` - so a release or policy switch is never
+  misreported as an acquisition-environment change; incomplete scopes return
+  `422 application/problem+json`. Day boundaries follow the operator-local
+  timezone (`tz_offset_minutes`, bounded `[-840, 840]`), buckets are half-open
+  `[from, to)`, and an aware injected clock is normalized to UTC.
+  Zero-detection evidence rows are excluded from the weighted aggregate.
+  Per-component today-vs-7-day deltas are reported largest drop first with
+  `null` when baseline evidence is missing (never a fabricated zero). The
+  heuristic assessment (`stable` / `minor_drop` / `noticeable_drop` /
+  `minor_rise` / `noticeable_rise` / `insufficient_data`) anchors on the 7-day
+  baseline and is decision support only, never a root-cause or accuracy claim.
+  The statistics dashboard panel derives the scope from the latest completed
+  inspection, passes the browser's local UTC offset, and renders the effective
+  scope; api-client types, runtime validation, and mocks were extended and the
+  OpenAPI/TS contract regenerated.
+- **Device health page (system metrics via PR #38, network/GPU via PR #39)**:
+  the health view shows load (as a share of the CPU cores), memory, and disk
+  as percentage circular gauges, plus a live gradient stacked area chart of
+  upload/download traffic (one sample per second, 60-point sliding window)
+  and GPU load/power gauges. Backend metrics come from the dependency-free
+  `assemblyvision_edge/system.py`: CPU count/load and memory via
+  `/proc/meminfo` (sysconf fallback); network rates by differencing the
+  cumulative `/proc/net/dev` counters (first poll `null` until a baseline);
+  NVIDIA GPU utilization/power via `nvidia-smi` (PATH-resolved, 2s timeout,
+  5s result cache). Every metric fails closed to `null` when the platform
+  cannot provide it, and none affect decision paths. The gauge cards and both
+  charts share one four-column grid template so rows stay strictly aligned
+  and the ECharts canvases shrink with the window (grid items carry
+  `min-width: 0` instead of inheriting the canvas intrinsic width). The
+  served-api e2e scopes the no-camera assertion to the camera pane, which
+  had been matching the detection-result pane's historical media frame.
+
+## 8.15 Central Server M1 Tenant and Pilot Authentication Foundation (C1b)
+
+The second central-server delivery (C1b of
+`docs/tasks/C1-central-server-m1.md`) is implemented on `dev`:
+
+- **Tenant/device/credential schema (migration 0002)**: `organizations`,
+  `sites`, `production_lines`, `devices` (edge identity unique per
+  organization, `ACTIVE`/`DISABLED` status, hashed upload credential),
+  `administrators` (hashed pilot token), `admin_sessions` (split
+  lookup/hashed-secret session tokens, `organization_id` scoped), and a
+  minimum `audit_logs` table. Production lines and devices carry composite
+  foreign keys that bind `organization_id` to the organization of their
+  referenced site/line, so a cross-tenant hierarchy row is rejected by the
+  database. The same schema is defined as SQLAlchemy Core tables
+  (`central_service/persistence/schema.py`) so repository tests create it on
+  SQLite with foreign keys enforced; the Alembic migration mirrors it for
+  PostgreSQL.
+- **Idempotent bootstrap**: `central-service bootstrap` (CLI) and the new
+  Compose one-shot `central-bootstrap` service create exactly one pilot
+  organization/site/line/device/administrator; existing rows are reused by
+  name/identity and a registered device or administrator is never re-keyed.
+  Credentials are always supplied explicitly via
+  `AV_CENTRAL_ADMIN_TOKEN` / `AV_CENTRAL_DEVICE_UPLOAD_TOKEN` (or CLI
+  options) - the bootstrap never generates or prints secrets, so no
+  credential can reach process/container logs - and the enrollment plus its
+  mandatory `PILOT_BOOTSTRAP` audit event commit in one transaction. Upload
+  requests can never create a device implicitly.
+- **Dual-path authentication (strictly separated)**: `CentralRepository`
+  resolves administrator credentials/sessions and device upload tokens through
+  separate lookups, so a device token never authorizes admin routes and an
+  admin token never authenticates a device upload. Disabled devices fail
+  closed. Browser sessions are short-lived HttpOnly SameSite=strict cookies
+  (`POST /api/v1/auth/session` exchange, `admin_session_ttl_minutes`, default
+  8 h); the `Secure` attribute comes from `AV_CENTRAL_SECURE_COOKIES`
+  (default true) rather than the request scheme, because TLS is terminated
+  outside the API.
+- **Admin endpoints**: `GET /api/v1/auth/me`, `GET /api/v1/sites`,
+  `GET /api/v1/lines` (optional `site_id`), and
+  `GET /api/v1/devices` / `GET /api/v1/devices/{id}`. Every query is scoped
+  server-side to the authenticated administrator's organization; credentials
+  are never exposed. OpenAPI declares the `PilotBearer` security scheme and
+  the RFC 7807 `401`/`404` responses (Problem schema), and
+  `api-client-central` types were regenerated.
+- **Readiness**: the credentials probe now verifies the durable credential
+  store is bootstrapped (≥1 administrator and ≥1 active registered device)
+  instead of checking an environment token; readiness fails closed while the
+  pilot is not bootstrapped or the store is unreachable.
+- **Compose**: `central-bootstrap` runs after `central-migrate` and before
+  `central-service`; the admin/device tokens have no defaults (Compose fails
+  closed when unset), `admin-web` binds to loopback by default, and
+  `CENTRAL_SECURE_COOKIES` is in `compose.env.example`. The edge runtime
+  still imports no central code and the edge upload envelope is unchanged.
+
 ## 9. Open Items / Next Steps
 
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6); **E1
@@ -842,7 +945,9 @@ unchanged.
 - **Barcode identity** (PR #30), **edge-local human review** (PR #31), issue
   templates (PR #32), the README/QUICKSTART/SECURITY refresh (PR #33), the
   developer manual (PR #34), edge-web i18n (PR #35), and the MkDocs index fix
-  (PR #36) are merged (see sections 8.11/8.12).
+  (PR #36) are merged (see sections 8.11/8.12); the central C1a foundation
+  (PR #37), confidence drift (PR #38), and device health observability
+  (PR #39) are merged too (see sections 8.13/8.14).
 - Real customer data is still required for the baseline: collect and annotate
   with X-AnyLabeling per
   `docs/design/19-training-and-evaluation.md` §19.17 and
@@ -860,14 +965,18 @@ unchanged.
   a site-validated register profile) and the time-only fallback (which is a
   development mode, not a production product boundary).
 - The central server M1 pilot is **in progress** (`docs/tasks/C1-central-server-m1.md`).
-  C1a (workspace, service, Compose, health/readiness, OpenAPI) is delivered:
-  `apps/central-service` (FastAPI, PostgreSQL, MinIO, controlled schema
-  migrations), `apps/admin-web` (Vue 3 pilot shell), and
+  C1a (workspace, service, Compose, health/readiness, OpenAPI) is merged
+  (PR #37), and C1b (tenant/device/credential schema, idempotent bootstrap,
+  separated device/admin authentication, admin endpoints) is implemented on
+  `dev` (section 8.15): `apps/central-service` (FastAPI, PostgreSQL, MinIO,
+  controlled schema migrations), `apps/admin-web` (Vue 3 pilot shell), and
   `packages/typescript/api-client-central`. Ingestion with verified receipts,
   media binding, history, central review, metadata governance, and hardening
-  (C1b–C6) remain. It must preserve the current edge upload envelope and
-  receipt semantics; resumable uploads remain deferred until that contract
-  changes.
+  (C2a-C6) remain; C2a (inspection ingestion and verified receipts) is the
+  next delivery and consumes the device-authentication seam and the
+  `(device_id, idempotency_key)` uniqueness from C1b. It must preserve the
+  current edge upload envelope and receipt semantics; resumable uploads remain
+  deferred until that contract changes.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.
