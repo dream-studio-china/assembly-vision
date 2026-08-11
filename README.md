@@ -31,7 +31,7 @@ decision path.
 ## Production Status
 
 The Edge production-candidate gates E1–E5 are merged, and the Central server
-M1 pilot has started (C1a foundation delivered; C1b–C6 pending). Central
+M1 pilot has started (C1a and C1b foundations delivered; C2a–C6 pending). Central
 never appears in the real-time inspection path, and M1 preserves the current
 Edge upload envelope and verified-receipt semantics.
 
@@ -45,7 +45,7 @@ Edge upload envelope and verified-receipt semantics.
 | E6 Edge acceptance | E6-prep tooling merged (PR #25); clock-drift harness and on-site acceptance remain open |
 | Barcode identity / PLC FIFO trigger (ADR-015) | Merged (PR #30) |
 | Edge-local human review (ADR-016) | Merged (PR #31) |
-| Central server (M1 pilot) | In progress — C1a workspace/service/Compose foundation delivered; C1b–C6 pending ([plan](docs/tasks/C1-central-server-m1.md)) |
+| Central server (M1 pilot) | In progress — C1a workspace/service/Compose foundation and C1b tenant/device/credential foundation delivered; C2a–C6 pending ([plan](docs/tasks/C1-central-server-m1.md)) |
 
 **E6 edge acceptance** is split into two phases. The **E6-prep** deliverables
 need no real environment and are delivered: the acceptance test matrix
@@ -306,7 +306,7 @@ the native app / RTSP / camera sources. See [QUICKSTART](QUICKSTART.md) §4.8.
 |---|---|
 | **Phase 1 — MVP** | Delivered — static train-and-inspect pipeline, operator dashboard, and the read-only M1 edge API are on `main` (PRs #3/#6/#8) |
 | **Phase 2 — Edge production readiness** | E1–E5 production gates, camera sources, temporal aggregation, upload outbox, barcode identity / PLC trigger (ADR-015), and edge-local human review (ADR-016, PR #31) are implemented; E6 on-site acceptance remains open |
-| **Phase 3 — Central server** | M1 pilot in progress — C1a workspace/service/Compose foundation delivered; C1b–C6 pending ([C1 plan](docs/tasks/C1-central-server-m1.md)) |
+| **Phase 3 — Central server** | M1 pilot in progress — C1a workspace/service/Compose foundation and C1b tenant/device/credential foundation delivered; C2a–C6 pending ([C1 plan](docs/tasks/C1-central-server-m1.md)) |
 
 ### Outlook
 

@@ -34,9 +34,23 @@ class CentralSettings(BaseSettings):
     minio_bucket: str = "assemblyvision-central"
     minio_secure: bool = False
 
-    # Single pilot administrator token path (C1b replaces this with the
-    # durable credential store; readiness fails while it is unset).
+    # Bootstrap-only pilot credentials (C1b). They are consumed once by
+    # `central-service bootstrap` / the Compose bootstrap service to create
+    # salted hashes in the durable credential store; the API never uses them
+    # at runtime and never persists the plaintext. When either is unset the
+    # bootstrap generates a token and prints it exactly once.
     admin_token: str | None = None
+    device_upload_token: str | None = None
+
+    # Browser session lifetime for pilot administrators (design 05 auth).
+    admin_session_ttl_minutes: int = 480
+
+    # Mark the administrator session cookie Secure. Defaults to True; local
+    # loopback development over plain HTTP must set
+    # AV_CENTRAL_SECURE_COOKIES=false explicitly. The attribute is deployment-
+    # controlled because the API sits behind the admin-web proxy and cannot
+    # infer the externally terminated TLS scheme.
+    secure_cookies: bool = True
 
     @field_validator("database_url")
     @classmethod
@@ -53,5 +67,9 @@ class CentralSettings(BaseSettings):
             raise ConfigError("central: port must be in [1, 65535]")
         if self.admin_token is not None and len(self.admin_token) < 16:
             raise ConfigError("central: admin_token must be at least 16 characters")
+        if self.device_upload_token is not None and len(self.device_upload_token) < 16:
+            raise ConfigError("central: device_upload_token must be at least 16 characters")
+        if not (1 <= self.admin_session_ttl_minutes <= 1440):
+            raise ConfigError("central: admin_session_ttl_minutes must be in [1, 1440]")
         if self.minio_bucket.strip() == "":
             raise ConfigError("central: minio_bucket must not be empty")

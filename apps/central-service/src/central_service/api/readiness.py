@@ -13,11 +13,8 @@ from dataclasses import dataclass
 from sqlalchemy import Engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
-from central_service.api.settings import CentralSettings
 from central_service.persistence.migrate import current_head
 from central_service.storage.object_store import ObjectStorage
-
-_CREDENTIAL_MIN_LENGTH = 16
 
 
 @dataclass(frozen=True)
@@ -67,19 +64,36 @@ def probe_object_store(storage: ObjectStorage) -> ReadinessCheck:
     return ReadinessCheck(name="object_store", ok=True, detail="ok")
 
 
-def probe_credentials(settings: CentralSettings) -> ReadinessCheck:
-    """Check the pilot credential configuration is valid (C1a)."""
-    if settings.admin_token is None or len(settings.admin_token) < _CREDENTIAL_MIN_LENGTH:
+def probe_credentials(engine: Engine) -> ReadinessCheck:
+    """Check the pilot credential store is bootstrapped (C1b).
+
+    The durable store must contain at least one administrator and one active
+    registered device; the API authenticates against hashes in PostgreSQL, so
+    an un-bootstrapped pilot is not ready. Fails closed on DB errors.
+    """
+    try:
+        with engine.connect() as connection:
+            admin_count = connection.execute(
+                text("SELECT COUNT(*) FROM administrators")
+            ).scalar_one()
+            device_count = connection.execute(
+                text("SELECT COUNT(*) FROM devices WHERE status = 'ACTIVE'")
+            ).scalar_one()
+    except SQLAlchemyError:
+        return ReadinessCheck(name="credentials", ok=False, detail="credential store unavailable")
+    if int(admin_count) == 0:
         return ReadinessCheck(
-            name="credentials", ok=False, detail="pilot admin token not configured"
+            name="credentials", ok=False, detail="pilot not bootstrapped (no administrator)"
+        )
+    if int(device_count) == 0:
+        return ReadinessCheck(
+            name="credentials", ok=False, detail="pilot not bootstrapped (no registered device)"
         )
     return ReadinessCheck(name="credentials", ok=True, detail="ok")
 
 
-def compute_readiness(
-    engine: Engine, storage: ObjectStorage, settings: CentralSettings
-) -> ReadinessResult:
+def compute_readiness(engine: Engine, storage: ObjectStorage) -> ReadinessResult:
     """Run every probe against the live dependencies."""
     return ReadinessResult(
-        checks=(probe_database(engine), probe_object_store(storage), probe_credentials(settings))
+        checks=(probe_database(engine), probe_object_store(storage), probe_credentials(engine))
     )
