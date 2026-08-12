@@ -34,40 +34,60 @@ const lines = ref<Line[]>([]);
 const devices = ref<Device[]>([]);
 const page = ref<InspectionPage | null>(null);
 const error = ref<string | null>(null);
+const loading = ref(false);
 // Cursor used to reach each visited page; the first entry is the initial
 // page (no cursor), so popping walks back one page at a time.
 const cursorHistory = ref<(string | undefined)[]>([undefined]);
+// Monotonic request generation: a stale in-flight response (e.g. a slow
+// "next" that resolves after a filter reset) is discarded, so the table
+// never shows data that disagrees with the cursor history.
+let requestGeneration = 0;
 
 async function load(cursor?: string): Promise<void> {
   error.value = null;
+  const generation = ++requestGeneration;
   const params: InspectionQuery = { ...query, limit: query.limit };
   if (cursor) {
     params.cursor = cursor;
   }
+  loading.value = true;
   try {
-    page.value = await apiClient.listInspections(params);
+    const result = await apiClient.listInspections(params);
+    if (generation !== requestGeneration) {
+      return; // superseded by a newer load
+    }
+    page.value = result;
   } catch (err) {
+    if (generation !== requestGeneration) {
+      return;
+    }
     error.value = err instanceof Error ? err.message : t("failed to load inspections");
+  } finally {
+    if (generation === requestGeneration) {
+      loading.value = false;
+    }
   }
 }
 
 function apply(): void {
   cursorHistory.value = [undefined];
-  load();
+  void load();
 }
 
 function next(): void {
-  if (page.value?.next_cursor) {
-    cursorHistory.value.push(page.value.next_cursor);
-    load(page.value.next_cursor);
+  if (loading.value || !page.value?.next_cursor) {
+    return;
   }
+  cursorHistory.value.push(page.value.next_cursor);
+  void load(page.value.next_cursor);
 }
 
 function previous(): void {
-  if (cursorHistory.value.length > 1) {
-    cursorHistory.value.pop();
-    load(cursorHistory.value[cursorHistory.value.length - 1]);
+  if (loading.value || cursorHistory.value.length <= 1) {
+    return;
   }
+  cursorHistory.value.pop();
+  void load(cursorHistory.value[cursorHistory.value.length - 1]);
 }
 
 onMounted(async () => {
@@ -215,11 +235,12 @@ async function onSiteChange(siteId?: number): Promise<void> {
         </el-table-column>
       </el-table>
       <div class="pager">
-        <el-button :disabled="cursorHistory.length === 0" @click="previous">{{ t("Previous") }}</el-button>
+        <el-button :disabled="cursorHistory.length <= 1" @click="previous">{{ t("Previous") }}</el-button>
         <el-button
           v-if="page?.next_cursor"
           type="primary"
           plain
+          :loading="loading"
           @click="next"
         >
           {{ t("Next page") }}
