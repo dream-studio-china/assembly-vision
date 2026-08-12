@@ -3025,36 +3025,36 @@
 <h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
 <p>边缘和中央应用程序需要可查询的资源和命令以及及时的状态更新。检查历史记录、设备、规则、模型、上传、评论和配置适合面向资源的 API。相机/检查/设备/队列状态受益于推送更新，但推送交付本身并不是可靠的记录来源。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
-<p>使用版本化的 JSON REST API 进行权威查询、命令、提取、分页和媒体元数据。使用经过身份验证的 WebSocket 通道进行临时检查并向仪表板发送设备状态通知。连接或重新连接时，客户端通过 REST 检索权威状态； WebSocket 消息携带标识符、序列/版本信息，并提示客户端更新状态。</p>
-<p>从 FastAPI OpenAPI 生成 TypeScript API 客户端/类型。上传端点使用稳定的检查标识符和幂等性密钥。大型媒体在必要时使用有界多部分/可恢复行为，而不是 WebSocket 传输。</p>
+<p>使用版本化的 JSON REST API 进行权威查询、命令、提取、分页和媒体元数据。使用经过身份验证的 WebSocket 通道进行临时检查并向仪表板发送设备状态通知。 On connection or reconnection, clients retrieve authoritative state through REST; WebSocket 消息携带标识符、序列/版本信息，并提示客户端更新状态。</p>
+<p>Generate the TypeScript API client/types from FastAPI OpenAPI. Upload endpoints use stable inspection identifiers and idempotency keys. Large media uses bounded multipart/resumable behavior when validated as necessary rather than WebSocket transfer.</p>
 <h2 id="4-scope">4.范围<a class="headerlink" href="#4-scope" title="Permanent link">&para;</a></h2>
-<p>这适用于浏览器到边缘、浏览器到中心以及边缘到中心应用程序接口。使用 REST 或 WebSocket 不需要相机 SDK 回调和内部进程内事件。</p>
+<p>This applies to browser-to-edge, browser-to-central, and edge-to-central application interfaces. Camera SDK callbacks and internal in-process events are not required to use REST or WebSocket.</p>
 <h2 id="5-consequences">5. 后果<a class="headerlink" href="#5-consequences" title="Permanent link">&para;</a></h2>
 <h3 id="51-positive">5.1 正面<a class="headerlink" href="#51-positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>传统的、可测试的 API，具有强大的工具和类型化客户端生成。</li>
+<li>Conventional, testable APIs with strong tooling and typed client generation.</li>
 <li>仪表板及时接收状态，无需积极轮询。</li>
-<li>REST 协调处理错过或重新排序的推送事件。</li>
-<li>HTTP 幂等性和代理行为很好理解。</li>
+<li>REST reconciliation handles missed or reordered push events.</li>
+<li>HTTP idempotency and proxy behavior are well understood.</li>
 </ul>
 <h3 id="52-negative-and-trade-offs">5.2 负面和权衡<a class="headerlink" href="#52-negative-and-trade-offs" title="Permanent link">&para;</a></h3>
 <ul>
 <li>两种通信模式需要一致的身份验证和版本控制。</li>
-<li>WebSocket 重新连接、背压、授权到期和排序需要测试。</li>
-<li>REST 并不适合每个大容量内部事件流。</li>
-<li>生成的客户端必须作为合同变更的一部分进行更新。</li>
+<li>WebSocket reconnect, backpressure, authorization expiry, and ordering need tests.</li>
+<li>REST is not ideal for every high-volume internal event stream.</li>
+<li>Generated clients must be updated as part of contract changes.</li>
 </ul>
 <h2 id="6-alternatives">6.替代方案<a class="headerlink" href="#6-alternatives" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>仅限 REST 轮询：</strong> 更简单，但不太及时，并且对于实时状态来说更浪费。</li>
 <li><strong>所有操作的 WebSocket：</strong> 被拒绝，因为状态恢复、命令、分页和幂等上传通过 REST 更加清晰。</li>
-<li><strong>GraphQL 订阅：</strong> 由于已知 API 组不必要的架构/运行时复杂性而被拒绝。</li>
-<li><strong>gRPC 无处不在：</strong> 强大的服务契约，但在没有既定需求的情况下增加了浏览器/代理的复杂性；可以针对测量的内部用例重新考虑。</li>
-<li><strong>边缘和中央之间的消息代理：</strong>初始延迟上传不需要；中央后台作业可以使用代理，其中特定的异步作业证明它是合理的。</li>
+<li><strong>GraphQL subscriptions:</strong> rejected as unnecessary schema/runtime complexity for known API groups.</li>
+<li><strong>gRPC 无处不在：</strong> 强大的服务契约，但在没有既定需求的情况下增加了浏览器/代理的复杂性； may be reconsidered for a measured internal use case.</li>
+<li><strong>边缘和中央之间的消息代理：</strong>初始延迟上传不需要； central background jobs may use a broker where specific asynchronous jobs justify it.</li>
 </ul>
 <h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>对 WebSocket 和空闲超时设置的客户代理/防火墙支持。</li>
+<li>Customer proxy/firewall support for WebSocket and idle timeout settings.</li>
 <li>API 兼容性/支持窗口和可恢复媒体阈值。</li>
 <li>长时间离线使用期间的本地边缘身份验证/会话行为。</li>
 </ul>

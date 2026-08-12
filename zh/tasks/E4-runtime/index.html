@@ -3124,7 +3124,7 @@
    身份接缝仅提供经过验证的身份；模拟来源是
    仅用于开发/测试，切勿将硬件歪曲为生产数据。</li>
 <li>共享模型权重由不可变的清单校验和作为密钥；仅
-   相同的工件被重用，并且缓存从不共享可变的
+   重复使用相同的工件，并且缓存从不共享可变的
    实例之间的推理状态。</li>
 <li>仅时间窗口回退显然仍然是一种开发模式，并且是
    从未声称为生产产品边界。</li>
@@ -3150,7 +3150,7 @@
   非浏览器/同源客户端的令牌或会话 cookie，加上
   通过经过身份验证的 REST 颁发的短期、一次性票据
   (<code>POST /api/v1/ws/runtime/ticket</code>) 并按协商发送
-  <code>Sec-WebSocket-Protocol</code> 跨源浏览器套接字的值；发出
+  <code>Sec-WebSocket-Protocol</code> 跨域浏览器套接字的值；发出
   设计 15.6 信封（<code>event_id</code>、<code>type</code>、<code>schema_version</code>、<code>occurred_at</code>、
   <code>source_id</code>、<code>sequence</code>、<code>correlation_id</code>、<code>data</code>）。票已消耗
   在接受过程中以原子方式进行，很快就会过期，并且永远不会出现在 URL 中。</li>

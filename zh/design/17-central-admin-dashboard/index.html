@@ -1093,6 +1093,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="17.12 前端架构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#17121-interface-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17.12.1 界面语言
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3240,6 +3257,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="17.12 前端架构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#17121-interface-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17.12.1 界面语言
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3309,7 +3343,7 @@
 <h1 id="17-central-administration-dashboard">17. 中央管理仪表板<a class="headerlink" href="#17-central-administration-dashboard" title="Permanent link">&para;</a></h1>
 <h2 id="171-purpose-and-boundary">17.1 目的和边界<a class="headerlink" href="#171-purpose-and-boundary" title="Permanent link">&para;</a></h2>
 <p>中央管理仪表板提供整个车队的历史记录、审查、配置、模型生命周期可见性、报告、用户和审计。它不执行生产检查，并且不能是边缘设备的运行时依赖项。</p>
-<p>Vue 3 应用程序使用 <a href="../15-rest-api-and-events/">REST API and Events</a> 中的中心契约、<a href="../14-data-model-and-database/">Data Model and Database</a> 中的架构以及 <a href="../19-training-and-evaluation/">Training and Evaluation</a> 中的求值语义。</p>
+<p>Vue 3 应用程序使用 <a href="../15-rest-api-and-events/">REST API and Events</a> 中的中心契约、<a href="../14-data-model-and-database/">Data Model and Database</a> 中的模式以及 <a href="../19-training-and-evaluation/">Training and Evaluation</a> 中的求值语义。</p>
 <h2 id="172-roles-and-permissions">17.2 角色和权限<a class="headerlink" href="#172-roles-and-permissions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3515,6 +3549,26 @@
 <li>中央 WebSocket 使活动设备、检查、审查和报告查询无效。 REST刷新是权威的。</li>
 <li>长过滤器值在 URL 中可预测地序列化；敏感标记和评论永远不会放在那里。</li>
 </ul>
+<h3 id="17121-interface-language">17.12.1 界面语言<a class="headerlink" href="#17121-interface-language" title="Permanent link">&para;</a></h3>
+<p>管理仪表板 UI 已国际化，以英语作为源语言环境，
+默认，加上简体中文（中国大陆，<code>zh-CN</code>）、繁体中文
+（香港，<code>zh-HK</code>）和日语（<code>ja</code>），遵循与
+边缘仪表板（设计 16.2.2）。每个消息键都是英文文本本身 -
+<code>t("Overview")</code> — 因此代码保持可读并且语言环境目录
+(<code>src/i18n/locales/</code>) 翻译相同的键。丢失的钥匙会回落到
+通过 vue-i18n 的后备语言环境提供英语。</p>
+<p>构建时默认语言可通过 <code>VITE_DEFAULT_LOCALE</code> 配置
+在 <code>.env.development</code> / <code>.env.production</code> (<code>en | zh-CN | zh-HK | ja</code>) 中；一个
+未设置或不受支持的值回退为英语。管理员切换
+标题中地球图标下拉菜单中的实时语言；选择是
+持久保存在浏览器存储中（<code>assemblyvision.admin.locale</code>，保持独立
+从边缘仪表板键，以便两个仪表板记住自己的选择）和
+总是胜过构建默认值。所选的区域设置驱动
+仪表板字符串和 Element Plus 组件区域设置通过
+<code>el-config-provider</code>。文档 <code>lang</code> 属性遵循区域设置，因此
+屏幕阅读器和浏览器翻译运行正常。语言选择
+绝不会影响检查记录、审查处置、上传或设备
+状态。</p>
 <h2 id="1713-performance-resilience-and-security">17.13 性能、弹性和安全性<a class="headerlink" href="#1713-performance-resilience-and-security" title="Permanent link">&para;</a></h2>
 <ul>
 <li>延迟加载路由包、媒体查看器和图表模块。使用服务器聚合而不是下载原始检查来计算图表。</li>

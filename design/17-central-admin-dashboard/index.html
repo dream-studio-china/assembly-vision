@@ -1093,6 +1093,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="17.12 Frontend Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#17121-interface-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17.12.1 Interface Language
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3240,6 +3257,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="17.12 Frontend Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#17121-interface-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17.12.1 Interface Language
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3515,6 +3549,26 @@
 <li>Central WebSocket invalidates active device, inspection, review, and report queries. REST refresh is authoritative.</li>
 <li>Long filter values are serialized predictably in the URL; sensitive tokens and comments are never placed there.</li>
 </ul>
+<h3 id="17121-interface-language">17.12.1 Interface Language<a class="headerlink" href="#17121-interface-language" title="Permanent link">&para;</a></h3>
+<p>The admin dashboard UI is internationalized with English as the source locale and
+default, plus Simplified Chinese (Mainland China, <code>zh-CN</code>), Traditional Chinese
+(Hong Kong, <code>zh-HK</code>), and Japanese (<code>ja</code>), following the same pattern as the
+edge dashboard (design 16.2.2). Each message key is the English text itself —
+<code>t("Overview")</code> — so code remains readable and the locale catalogs
+(<code>src/i18n/locales/</code>) translate the same keys. Missing keys fall back to
+English via vue-i18n's fallback locale.</p>
+<p>The build-time default language is configurable through <code>VITE_DEFAULT_LOCALE</code>
+in <code>.env.development</code> / <code>.env.production</code> (<code>en | zh-CN | zh-HK | ja</code>); an
+unset or unsupported value falls back to English. Administrators switch the
+live language from a globe-icon dropdown in the header; the selection is
+persisted in browser storage (<code>assemblyvision.admin.locale</code>, kept separate
+from the edge dashboard key so both dashboards remember their own choice) and
+always wins over the build default. The chosen locale drives both the
+dashboard strings and the Element Plus component locale through
+<code>el-config-provider</code>. The document <code>lang</code> attribute follows the locale so
+screen readers and browser translation behave correctly. Language choice
+never affects inspection records, review dispositions, uploads, or device
+state.</p>
 <h2 id="1713-performance-resilience-and-security">17.13 Performance, Resilience, and Security<a class="headerlink" href="#1713-performance-resilience-and-security" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Lazy-load route bundles, media viewer, and chart modules. Use server aggregation rather than downloading raw inspections to calculate charts.</li>

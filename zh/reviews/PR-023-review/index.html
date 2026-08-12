@@ -3074,7 +3074,7 @@
 <p><strong>状态：已解决</strong></p>
 <p>PR #23 具有预期的 E4 结构：瞬态服务器端运行时事件，
 显式模拟触发接缝，以及校验和/设备键控共享模型
-注册表。实施正确地保持检查持久性领先
+注册表。实施正确地保持检查持续性领先
 <code>inspection.completed</code> 发布并序列化共享的推理
 超解预测器。</p>
 <p>初步审查发现了三个阻止运行时通道的 P1 问题
@@ -3119,7 +3119,7 @@
 <li><code>docs/design/15-rest-api-and-events.md:157-160</code></li>
 </ul>
 <p><strong>问题</strong></p>
-<p>对于支持的跨域开发设置，<code>VITE_API_BASE_URL</code> 是
+<p>对于支持的跨源开发设置，<code>VITE_API_BASE_URL</code> 是
 边缘原点，例如 <code>http://edge-host:8000</code>。 <code>runtimeWsUrl()</code> 将其转换为
 <code>ws://edge-host:8000/ws/runtime</code>，但服务器端点是
 <code>/api/v1/ws/runtime</code>；连接在身份验证之前收到 404
@@ -3128,7 +3128,7 @@
 <code>api_token</code>已配置。现有的跨源流有意保留
 内存中的查看者承载令牌并将其添加到 <code>fetch</code> 请求中。浏览器
 <code>WebSocket</code> 无法设置 <code>Authorization</code> 标头，跨域模式不会
-接收同源会话 cookie，并且禁止查询字符串令牌。
+接收同源会话 cookie，并且禁止查询字符串标记。
 因此，服务器使用 <code>4401</code> 关闭每个此类套接字。</p>
 <p>这使得 E4 实时更新路径在文档中不可用
 受令牌保护的 Vite-to-edge 开发配置。也违反了
@@ -3459,7 +3459,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <tr>
 <td>票证发行/消费可以同时访问 <code>app.state.ws_tickets</code>，因为同步 REST 处理程序可能在工作线程中运行，而 WebSocket 握手在 ASGI 循环上运行</td>
 <td>进程本地锁现在序列化票证清理、发行和原子消耗，防止并发字典突变，同时保留一次性语义</td>
-<td>现有票据发行/消费/重播/过期测试；运行时事件测试套件</td>
+<td>现有票证发行/消费/重播/过期测试；运行时事件测试套件</td>
 </tr>
 <tr>
 <td>异步票证提供程序可以在仪表板断开连接或更新的连接启动后完成，从而允许过时的套接字或其关闭回调更改当前的连接状态</td>

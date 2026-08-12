@@ -3256,7 +3256,7 @@
 <p><strong>更正 (AUDIT-001)。</strong> PR 中的“100% 测试覆盖率”声明
 描述没有被复制。测量边缘 Python 语句覆盖率
 合并结果约为 99.5% (pytest-cov)；未覆盖的线条
-是查看者会话/无令牌分支、派生图像和统计数据
+是查看器会话/无令牌分支、派生图像和统计数据
 后备、验证空工作分支和无法访问的 IntegrityError
 处理程序。将覆盖率数字视为过时的测量工件，而不是
 保证，并在提出索赔时记录准确的命令/输出。</p>
@@ -3265,37 +3265,37 @@
 <p><code>dev</code> -&gt; <code>main</code> PR #8 (<code>feat(edge): FastAPI local API, SQLite
 index, runtime hardening, and test coverage</code>) 的代码审查。 PR 连线边缘
 仪表板到真实后端（<code>assemblyvision serve</code>、<code>/api/v1</code>），添加 SQLite
-具有 Alembic 迁移和幂等 CLI 输出协调的索引，适用
+index with Alembic migration and idempotent CLI-output reconciliation, applies
 PR-003 运行时强化，并扩展了 Python 覆盖范围。</p>
-<p>本文件记录了调查结果、建议的解决方案和验收标准
+<p>This document records the findings, proposed solutions, and acceptance criteria
 对于合并之前必须修复的项目以及非阻塞后续操作
 工作。</p>
 <h2 id="merge-decision">合并决策<a class="headerlink" href="#merge-decision" title="Permanent link">&para;</a></h2>
-<p><strong>在下面的 F1-F14 解决之前不要合并。</strong>
-GitHub CI、CodeQL 和本地质量门都通过了，但有几个关键的
-当前测试套件不涵盖缺陷和合同违规行为。</p>
-<p>C1-C4 是有条件的生产持久性要求，而不是阻碍
+<p><strong>Do not merge until F1-F14 below are resolved.</strong>
+GitHub CI, CodeQL, and the local quality gates all pass, but several critical
+defects and contract violations are not covered by the current test suite.</p>
+<p>C1-C4 are conditional production-persistence requirements, not blockers for
 显式限制的只读 M1 索引。如果此 PR 被阻止，他们就会成为阻碍者
 被描述或用作权威的生产持久/上传子系统。</p>
 <h2 id="resolution-status">解决状态<a class="headerlink" href="#resolution-status" title="Permanent link">&para;</a></h2>
-<p>本次审查中的所有发现均已在 <code>dev</code> 上得到修复和验证：</p>
+<p>All findings in this review have been fixed and validated on <code>dev</code>:</p>
 <ul>
 <li><strong>F1-F14</strong>（阻塞）已解决。每个提交都进行了回归测试；的
   全套通行证和边缘 Python 覆盖率通过以下方式测量和记录
   pytest-cov（合并结果的语句覆盖率约为 99.5%；请参阅
   上面的更正说明）。</li>
-<li><strong>C1-C4</strong>（条件生产持久性）针对 M1：SQLite 是
-  记录为具有重建等效测试的可重建读取投影，
+<li><strong>C1-C4</strong> (conditional production-persistence) addressed for M1: SQLite is
+  documented as a rebuildable read projection with a rebuild-equivalence test,
   迁移头验证、重复子项拒绝和隔离
   崩溃左侧暂存包。</li>
-<li><strong>P2</strong> 项目已解决：未知 <code>/api</code> 路径返回问题 404，请求
-  ID 传播，媒体流受到有效的 416 问题的限制，
-  <code>verify --expected</code> 禁用文件名回退并拒绝重复
-  身份、推理元数据按每个阶段的可追溯性、规则进行分类
-  身份无法使用不同的内容重新激活，并且快速入门/
+<li><strong>P2</strong> items addressed: unknown <code>/api</code> paths return a problem 404, request
+  IDs propagate, media streaming is bounded with a valid 416 problem,
+  <code>verify --expected</code> disables filename fallback and rejects duplicate
+  identities, inference metadata is typed with per-stage traceability, rule
+  identities cannot be reactivated with different content, and the quickstart/
   上下文文档与实现的 M1 边界相匹配。</li>
-<li>剩余路线图范围（上传队列调度程序、WebSocket 通道、摄像头/
-  条形码适配器、时间聚合、Docker 打包、权威
+<li>Remaining roadmap scope (upload queue scheduler, WebSocket channel, camera/
+  barcode adapters, temporal aggregation, Docker packaging, authoritative
   SQLite 持久化/发件箱）被记录为下一个里程碑，并且不
   阻止此 PR。</li>
 </ul>
