@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
@@ -50,11 +51,43 @@ def build_record(
     inspection_id: UUID | None = None,
     device_sequence: int = 1,
     business: BusinessResult = BusinessResult.NG,
+    media_content: bytes | None = None,
 ) -> InspectionRecord:
-    """A realistic edge InspectionRecord matching the edge test fixtures."""
+    """A realistic edge InspectionRecord matching the edge test fixtures.
+
+    With ``media_content`` set, the manifest entry describes exactly those
+    bytes (real SHA-256 and size), which is what C2b media ingestion
+    cross-checks against.
+    """
     completed_at = datetime.now(UTC)
+    inspection_uuid = inspection_id or uuid4()
+    media_id = uuid4()
+    if media_content is not None:
+        media_entries = [
+            MediaMetadata(
+                media_id=media_id,
+                kind="KEY_FRAME",
+                lifecycle=MediaLifecycle.AVAILABLE,
+                relative_path=f"{inspection_uuid}/key_frame.jpg",
+                mime_type="image/jpeg",
+                size_bytes=len(media_content),
+                checksum_sha256=hashlib.sha256(media_content).hexdigest(),
+            )
+        ]
+    else:
+        media_entries = [
+            MediaMetadata(
+                media_id=media_id,
+                kind="KEY_FRAME",
+                lifecycle=MediaLifecycle.AVAILABLE,
+                relative_path=f"{inspection_uuid}/key_frame.jpg",
+                mime_type="image/jpeg",
+                size_bytes=10,
+                checksum_sha256="0" * 64,
+            )
+        ]
     return InspectionRecord(
-        inspection_id=inspection_id or uuid4(),
+        inspection_id=inspection_uuid,
         device_id=device_id,
         device_sequence=device_sequence,
         lifecycle_status=InspectionLifecycle.COMPLETED,
@@ -97,17 +130,7 @@ def build_record(
         ),
         synchronization_status="LOCAL_ONLY",
         processing_ms=12,
-        media=[
-            MediaMetadata(
-                media_id=uuid4(),
-                kind="KEY_FRAME",
-                lifecycle=MediaLifecycle.AVAILABLE,
-                relative_path=f"{inspection_id or uuid4()}/key_frame.jpg",
-                mime_type="image/jpeg",
-                size_bytes=10,
-                checksum_sha256="0" * 64,
-            )
-        ],
+        media=media_entries,
     )
 
 
@@ -134,12 +157,18 @@ def build_envelope(
     return json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
-def build_media_envelope(record: InspectionRecord, *, bytes_content: bytes) -> bytes:
-    """A MEDIA envelope carrying arbitrary raw bytes (C2b boundary test)."""
+def build_media_envelope(
+    record: InspectionRecord,
+    *,
+    source_media_id: UUID,
+    bytes_content: bytes,
+    idempotency_key: str | None = None,
+) -> bytes:
+    """A MEDIA envelope carrying raw bytes matching one manifest entry."""
     body = {
-        "idempotency_key": f"media:{record.device_id}:{uuid4()}",
+        "idempotency_key": idempotency_key or f"media:{record.device_id}:{source_media_id}",
         "kind": "MEDIA",
-        "object_id": str(uuid4()),
+        "object_id": str(source_media_id),
         "inspection_id": str(record.inspection_id),
         "checksum_sha256": hashlib.sha256(bytes_content).hexdigest(),
         "size_bytes": len(bytes_content),
@@ -151,12 +180,28 @@ def build_media_envelope(record: InspectionRecord, *, bytes_content: bytes) -> b
 class NoopObjectStorage:
     """In-memory object-store stub for tests (no MinIO dependency).
 
-    Satisfies the ``ObjectStorage`` protocol so the application lifespan can
-    bootstrap without a running MinIO service.
+    Satisfies the ``ObjectStorage`` protocol so the application lifespan and
+    media ingestion can run without a MinIO service. Objects are kept in a
+    dict keyed by object key so binding/replay assertions can inspect them.
     """
+
+    def __init__(self) -> None:
+        self.objects: dict[str, bytes] = {}
 
     def ensure_bucket(self) -> None:
         return None
 
     def bucket_ready(self) -> bool:
         return True
+
+    def put_object(self, key: str, data: bytes, content_type: str) -> None:
+        self.objects[key] = data
+
+    def object_exists(self, key: str) -> bool:
+        return key in self.objects
+
+    def remove_object(self, key: str) -> None:
+        self.objects.pop(key, None)
+
+    def list_objects(self, prefix: str) -> Iterator[str]:
+        yield from sorted(key for key in self.objects if key.startswith(prefix))

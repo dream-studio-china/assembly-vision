@@ -58,7 +58,8 @@ class ParsedEnvelope:
     kind: Literal["INSPECTION", "MEDIA"]
     object_id: str
     inspection_id: str | None
-    checksum_sha256: str | None
+    # Always set: an absent declared checksum falls back to the computed hash.
+    checksum_sha256: str
     size_bytes: int
     payload: bytes
     request_hash: str

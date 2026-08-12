@@ -10,6 +10,7 @@ half so resolution is one indexed query.
 
 from __future__ import annotations
 
+import json
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -27,6 +28,7 @@ from central_service.persistence.schema import (
     audit_logs,
     devices,
     inspection_components,
+    inspection_media,
     inspections,
     organizations,
     production_lines,
@@ -68,6 +70,8 @@ _CONFLICT_CONSTRAINTS = frozenset(
         "uq_upload_receipts_device_key",
         "uq_inspections_device_inspection",
         "uq_inspections_device_sequence",
+        "uq_inspection_media_device_media",
+        "uq_inspection_media_object_key",
     }
 )
 
@@ -152,6 +156,32 @@ class UploadReceiptRow:
     status: str
     response_code: int
     created_at: datetime
+
+
+@dataclass(frozen=True)
+class MediaManifestEntry:
+    """One media item from the parent inspection manifest (C2b cross-check)."""
+
+    media_kind: str
+    mime_type: str
+    size_bytes: int
+    checksum_sha256: str
+
+
+@dataclass(frozen=True)
+class MediaBindingRow:
+    """One persisted inspection_media binding for reconciliation (C2b)."""
+
+    id: int
+    organization_id: int
+    device_row_id: int
+    inspection_row_id: int
+    source_media_id: str
+    object_key: str
+    central_object_id: str
+    lifecycle: str
+    size_bytes: int
+    checksum_sha256: str
 
 
 class PayloadConflictError(Exception):
@@ -655,11 +685,8 @@ class CentralRepository:
             # target_id is the bounded 36-char inspection identity; the
             # idempotency key (which embeds two UUIDs) would exceed the
             # audit target_id column on PostgreSQL, so it goes in detail.
-            self.write_audit(
-                organization_id=device.organization_id,
-                actor_type="DEVICE",
-                actor_id=device.id,
-                action="UPLOAD_PAYLOAD_CONFLICT",
+            self.record_payload_conflict(
+                device=device,
                 target_type="inspection-upload",
                 target_id=inspection_id,
                 detail=f"idempotency_key={idempotency_key} reason={exc.reason}",
@@ -671,11 +698,8 @@ class CentralRepository:
             # the same payload-conflict contract (409), never a 500.
             if _integrity_constraint(exc) not in _CONFLICT_CONSTRAINTS:
                 raise
-            self.write_audit(
-                organization_id=device.organization_id,
-                actor_type="DEVICE",
-                actor_id=device.id,
-                action="UPLOAD_PAYLOAD_CONFLICT",
+            self.record_payload_conflict(
+                device=device,
                 target_type="inspection-upload",
                 target_id=inspection_id,
                 detail="concurrent duplicate identity rejected by the database",
@@ -685,11 +709,246 @@ class CentralRepository:
                 idempotency_key=idempotency_key,
             ) from exc
 
+    def record_payload_conflict(
+        self,
+        *,
+        device: DeviceRow,
+        target_type: str,
+        target_id: str,
+        detail: str,
+    ) -> None:
+        """Append one payload-conflict audit event (C2a/C2b, contract 08)."""
+        self.write_audit(
+            organization_id=device.organization_id,
+            actor_type="DEVICE",
+            actor_id=device.id,
+            action="UPLOAD_PAYLOAD_CONFLICT",
+            target_type=target_type,
+            target_id=target_id,
+            detail=detail,
+        )
+
     def get_receipt(self, device: DeviceRow, idempotency_key: str) -> UploadReceiptRow | None:
         """Return the persisted receipt for one device/key, or None."""
         with self._engine.connect() as connection:
             row = self._receipt_by_key(connection, device.id, idempotency_key)
         return self._receipt_from_row(row) if row is not None else None
+
+    # -- media binding (C2b) --------------------------------------------------
+
+    def get_inspection_media_manifest(
+        self, device_row_id: int, inspection_id: str
+    ) -> tuple[int, datetime, dict[str, MediaManifestEntry]] | None:
+        """Return ``(inspection_row_id, capture_at, manifest)`` for a parent.
+
+        The manifest is parsed from the accepted immutable payload so the
+        incoming MEDIA bytes can be cross-checked against the media metadata
+        the edge recorded in the inspection; ``capture_at`` is the edge
+        capture clock of the parent inspection (design 14 media row). Returns
+        None when the inspection is not accepted for this device or its
+        payload cannot be decoded.
+        """
+        with self._engine.connect() as connection:
+            row = (
+                connection.execute(
+                    select(
+                        inspections.c.id, inspections.c.started_at, inspections.c.payload_json
+                    ).where(
+                        and_(
+                            inspections.c.device_row_id == device_row_id,
+                            inspections.c.inspection_id == inspection_id,
+                        )
+                    )
+                )
+                .mappings()
+                .first()
+            )
+        if row is None:
+            return None
+        try:
+            payload = json.loads(str(row["payload_json"]))
+        except (ValueError, TypeError):
+            return None
+        media_items = payload.get("media", []) if isinstance(payload, dict) else []
+        manifest: dict[str, MediaManifestEntry] = {}
+        for item in media_items:
+            if not isinstance(item, dict):
+                continue
+            source_id = str(item.get("media_id") or "")
+            if not source_id:
+                continue
+            manifest[source_id] = MediaManifestEntry(
+                media_kind=str(item.get("kind") or ""),
+                mime_type=str(item.get("mime_type") or ""),
+                size_bytes=int(item.get("size_bytes") or 0),
+                checksum_sha256=str(item.get("checksum_sha256") or ""),
+            )
+        return int(row["id"]), _utc(row["started_at"]), manifest
+
+    def persist_media(
+        self,
+        *,
+        device: DeviceRow,
+        inspection_row_id: int,
+        idempotency_key: str,
+        request_hash: str,
+        object_id: str,
+        inspection_id: str,
+        central_object_id: str,
+        object_key: str,
+        media_kind: str,
+        mime_type: str,
+        size_bytes: int,
+        checksum_sha256: str,
+        capture_at: datetime,
+        received_at: datetime,
+    ) -> tuple[UploadReceiptRow, bool]:
+        """Persist one accepted media binding with its receipt and audit event.
+
+        Returns ``(receipt, replayed)``. Identical replay returns the original
+        receipt without a second binding or audit row; reusing the media
+        identity with different content raises :class:`PayloadConflictError`
+        after recording the attempt as an audit event. The object is written to
+        the store by the caller *before* this transaction; a failure here
+        leaves a staged object for the reconciliation command.
+        """
+        try:
+            with self._engine.begin() as connection:
+                existing_receipt = self._receipt_by_key(connection, device.id, idempotency_key)
+                if existing_receipt is not None:
+                    if existing_receipt["request_hash"] == request_hash:
+                        return self._receipt_from_row(existing_receipt), True
+                    raise _ConflictDetected(
+                        f"idempotency key {idempotency_key} was accepted with different content"
+                    )
+                existing_binding = connection.execute(
+                    select(inspection_media.c.id).where(
+                        and_(
+                            inspection_media.c.device_row_id == device.id,
+                            inspection_media.c.source_media_id == object_id,
+                        )
+                    )
+                ).first()
+                if existing_binding is not None:
+                    raise _ConflictDetected(
+                        f"source media id {object_id} was already bound for this device"
+                    )
+                connection.execute(
+                    inspection_media.insert().values(
+                        organization_id=device.organization_id,
+                        device_row_id=device.id,
+                        inspection_row_id=inspection_row_id,
+                        source_media_id=object_id,
+                        media_kind=media_kind,
+                        mime_type=mime_type,
+                        size_bytes=size_bytes,
+                        checksum_sha256=checksum_sha256,
+                        object_key=object_key,
+                        central_object_id=central_object_id,
+                        lifecycle="AVAILABLE",
+                        capture_at=capture_at,
+                        received_at=received_at,
+                    )
+                )
+                receipt_row = (
+                    connection.execute(
+                        upload_receipts.insert()
+                        .values(
+                            organization_id=device.organization_id,
+                            device_row_id=device.id,
+                            idempotency_key=idempotency_key,
+                            request_hash=request_hash,
+                            kind="MEDIA",
+                            object_id=object_id,
+                            inspection_id=inspection_id,
+                            central_object_id=central_object_id,
+                            size_bytes=size_bytes,
+                            status="ACCEPTED",
+                            response_code=201,
+                        )
+                        .returning(*upload_receipts.c)
+                    )
+                    .mappings()
+                    .one()
+                )
+                connection.execute(
+                    audit_logs.insert().values(
+                        organization_id=device.organization_id,
+                        actor_type="DEVICE",
+                        actor_id=device.id,
+                        action="MEDIA_ACCEPTED",
+                        target_type="inspection-media",
+                        target_id=object_id,
+                        detail=f"inspection_id={inspection_id}",
+                    )
+                )
+            return self._receipt_from_row(receipt_row), False
+        except _ConflictDetected as exc:
+            # target_id is the bounded 36-char source media identity.
+            self.record_payload_conflict(
+                device=device,
+                target_type="media-upload",
+                target_id=object_id,
+                detail=f"idempotency_key={idempotency_key} reason={exc.reason}",
+            )
+            raise PayloadConflictError(reason=exc.reason, idempotency_key=idempotency_key) from exc
+        except IntegrityError as exc:
+            if _integrity_constraint(exc) not in _CONFLICT_CONSTRAINTS:
+                raise
+            self.record_payload_conflict(
+                device=device,
+                target_type="media-upload",
+                target_id=object_id,
+                detail="concurrent duplicate media identity rejected by the database",
+            )
+            raise PayloadConflictError(
+                reason="a concurrent duplicate media upload was rejected by the database",
+                idempotency_key=idempotency_key,
+            ) from exc
+
+    def list_media_bindings(self) -> list[MediaBindingRow]:
+        """Return every persisted media binding (reconciliation command)."""
+        with self._engine.connect() as connection:
+            rows = connection.execute(select(inspection_media).order_by(inspection_media.c.id))
+            return [self._media_binding_from_row(row) for row in rows.mappings()]
+
+    def get_media_binding(self, device_row_id: int, source_media_id: str) -> MediaBindingRow | None:
+        """Return the binding for one device/source media id, or None.
+
+        Lets the ingest service detect a media-identity conflict before
+        writing an object, avoiding a staged orphan for the common retry
+        path (the persisted check inside ``persist_media`` remains the
+        concurrent backstop).
+        """
+        with self._engine.connect() as connection:
+            row = (
+                connection.execute(
+                    select(inspection_media).where(
+                        and_(
+                            inspection_media.c.device_row_id == device_row_id,
+                            inspection_media.c.source_media_id == source_media_id,
+                        )
+                    )
+                )
+                .mappings()
+                .first()
+            )
+        return self._media_binding_from_row(row) if row is not None else None
+
+    @staticmethod
+    def _media_binding_from_row(row: RowMapping) -> MediaBindingRow:
+        return MediaBindingRow(
+            id=int(row["id"]),
+            organization_id=int(row["organization_id"]),
+            device_row_id=int(row["device_row_id"]),
+            inspection_row_id=int(row["inspection_row_id"]),
+            source_media_id=str(row["source_media_id"]),
+            object_key=str(row["object_key"]),
+            central_object_id=str(row["central_object_id"]),
+            lifecycle=str(row["lifecycle"]),
+            size_bytes=int(row["size_bytes"]),
+            checksum_sha256=str(row["checksum_sha256"]),
+        )
 
     @staticmethod
     def _receipt_by_key(

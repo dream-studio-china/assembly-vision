@@ -209,9 +209,15 @@ The persistent upload outbox and its worker are implemented in
   alerts. Task payload sizes are recorded at enqueue so queue bytes need no
   media reads.
 
-Remaining for the connected pilot: the central ingestion endpoint and its
-server-side receipt contract, media binding confirmations, and retention
-gating on verified receipts.
+Remaining for the connected pilot: central retention gating on verified
+receipts (edge-side cleanup already gates on the persisted central object
+identifier) and the frozen resumable large-media protocol. The central
+inspection ingestion endpoint with its server-side receipt contract is
+implemented in `assemblyvision-central` (C2a: `POST /api/v1/inspection-uploads`
+with idempotent inspection ingestion and verified receipts), and media binding
+into MinIO with manifest cross-checking is implemented too (C2b:
+`inspection_media` bindings, tenant-scoped object keys, replay-safe binding,
+and the `central-service reconcile-media` maintenance command).
 
 ## 13.13 Implementation Status (upload resilience, E3)
 

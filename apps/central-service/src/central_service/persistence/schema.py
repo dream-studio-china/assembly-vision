@@ -297,6 +297,50 @@ inspection_components = Table(
     ),
 )
 
+# Media evidence bytes are stored only in the object store under a central
+# generated opaque key; PostgreSQL holds the binding metadata (design 05 3.2).
+# The object is finalized and verified before a row may report AVAILABLE
+# (C1 invariant 8); central_object_id is the stable identifier echoed in the
+# edge MEDIA receipt and is separate from the object key.
+inspection_media = Table(
+    "inspection_media",
+    metadata,
+    Column("id", _BigIntId, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "device_row_id",
+        ForeignKey("devices.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "inspection_row_id",
+        ForeignKey("inspections.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    # Edge media identity (``MediaMetadata.media_id`` in the inspection
+    # manifest); unique per device so a replay cannot create a second binding.
+    Column("source_media_id", String(36), nullable=False),
+    Column("media_kind", String(16), nullable=False),
+    Column("mime_type", String(64), nullable=False),
+    Column("size_bytes", Integer, nullable=False),
+    Column("checksum_sha256", String(64), nullable=False),
+    Column("object_key", String(256), nullable=False),
+    Column("central_object_id", String(36), nullable=False),
+    Column("lifecycle", String(16), nullable=False, server_default="PENDING"),
+    # Edge-observed capture time (inherited from the parent inspection, which
+    # carries the edge capture clock) and the central receive time (design 14).
+    Column("capture_at", DateTime(timezone=True), nullable=False),
+    Column("received_at", DateTime(timezone=True), nullable=False),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("device_row_id", "source_media_id", name="uq_inspection_media_device_media"),
+    UniqueConstraint("object_key", name="uq_inspection_media_object_key"),
+    UniqueConstraint("central_object_id", name="uq_inspection_media_central_object"),
+)
+
 # Keyset history pagination (design 14 section 8.2) and the partial barcode
 # index; barcode is never globally unique.
 Index(
@@ -320,3 +364,6 @@ Index(
 )
 Index("ix_upload_receipts_device", upload_receipts.c.device_row_id)
 Index("ix_inspection_components_inspection", inspection_components.c.inspection_id)
+Index("ix_inspection_media_inspection", inspection_media.c.inspection_row_id)
+Index("ix_inspection_media_device", inspection_media.c.device_row_id)
+Index("ix_inspection_media_lifecycle", inspection_media.c.lifecycle)

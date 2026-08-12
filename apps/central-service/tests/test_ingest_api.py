@@ -81,7 +81,9 @@ def _settings(**overrides: object) -> CentralSettings:
 
 
 def _app(
-    repository: CentralRepository, settings_overrides: dict[str, object] | None = None
+    repository: CentralRepository,
+    settings_overrides: dict[str, object] | None = None,
+    storage: NoopObjectStorage | None = None,
 ) -> FastAPI:
     readiness = ReadinessResult(
         checks=(
@@ -95,8 +97,26 @@ def _app(
         settings,
         readiness=lambda: readiness,
         repository=repository,
-        storage=NoopObjectStorage(),
+        storage=storage or NoopObjectStorage(),
     )
+
+
+def _media_client(
+    repository: CentralRepository,
+    storage: NoopObjectStorage,
+    settings_overrides: dict[str, object] | None = None,
+) -> TestClient:
+    """Bootstrapped client sharing a caller-visible object store (C2b tests)."""
+    run_bootstrap(
+        repository,
+        resolve_plan(
+            _settings(**(settings_overrides or {})),
+            admin_token=_ADMIN_TOKEN,
+            device_upload_token=_DEVICE_TOKEN,
+            device_id=str(_DEVICE_ID),
+        ),
+    )
+    return TestClient(_app(repository, settings_overrides, storage))
 
 
 def _admin_headers() -> dict[str, str]:
@@ -206,6 +226,7 @@ def test_ingest_oversized_body_returns_413(
     small: dict[str, object] = {
         "max_envelope_body_bytes": 1024,
         "max_inspection_payload_bytes": 1024,
+        "max_media_payload_bytes": 1024,
     }
     run_bootstrap(
         repository,
@@ -244,13 +265,136 @@ def test_ingest_oversized_inspection_payload_returns_413(
     assert response.json()["code"] == "PAYLOAD_TOO_LARGE"
 
 
-def test_media_ingestion_returns_retryable_503(client: TestClient) -> None:
-    record = _record()
-    envelope = build_media_envelope(record, bytes_content=b"fake-jpeg-bytes")
-    response = client.post(_INGEST_URL, content=envelope, headers=_device_headers())
-    assert response.status_code == 503
-    assert response.json()["code"] == "MEDIA_INGESTION_UNAVAILABLE"
-    assert response.headers.get("Retry-After") == "5"
+def test_media_ingestion_binds_object_and_returns_central_object_id(
+    repository: CentralRepository,
+) -> None:
+    media_bytes = b"fake-jpeg-bytes"
+    record = _record(media_content=media_bytes)
+    storage = NoopObjectStorage()
+    with _media_client(repository, storage) as client:
+        inspection = client.post(
+            _INGEST_URL, content=build_envelope(record), headers=_device_headers()
+        )
+        assert inspection.status_code == 201
+        media_id = record.media[0].media_id
+        envelope = build_media_envelope(record, source_media_id=media_id, bytes_content=media_bytes)
+        response = client.post(_INGEST_URL, content=envelope, headers=_device_headers())
+    assert response.status_code == 201
+    body = response.json()
+    assert body["kind"] == "MEDIA"
+    assert body["object_id"] == str(media_id)
+    assert body["central_object_id"]
+    assert body["size_bytes"] == len(media_bytes)
+    assert any(storage.object_exists(key) for key in storage.list_objects("org/"))
+
+
+def test_media_identical_replay_returns_original_receipt(
+    repository: CentralRepository,
+) -> None:
+    media_bytes = b"fake-jpeg-bytes"
+    record = _record(media_content=media_bytes)
+    storage = NoopObjectStorage()
+    with _media_client(repository, storage) as client:
+        client.post(_INGEST_URL, content=build_envelope(record), headers=_device_headers())
+        media_id = record.media[0].media_id
+        envelope = build_media_envelope(record, source_media_id=media_id, bytes_content=media_bytes)
+        first = client.post(_INGEST_URL, content=envelope, headers=_device_headers())
+        second = client.post(_INGEST_URL, content=envelope, headers=_device_headers())
+    assert first.status_code == 201
+    assert second.status_code == 200
+    assert second.json() == first.json()
+    assert len(list(storage.list_objects("org/"))) == 1  # one final object only
+
+
+def test_media_content_conflict_returns_409(repository: CentralRepository) -> None:
+    media_bytes = b"fake-jpeg-bytes"
+    record = _record(media_content=media_bytes)
+    storage = NoopObjectStorage()
+    with _media_client(repository, storage) as client:
+        client.post(_INGEST_URL, content=build_envelope(record), headers=_device_headers())
+        media_id = record.media[0].media_id
+        first = client.post(
+            _INGEST_URL,
+            content=build_media_envelope(
+                record, source_media_id=media_id, bytes_content=media_bytes
+            ),
+            headers=_device_headers(),
+        )
+        assert first.status_code == 201
+        # The same media id re-uploaded under a different idempotency key
+        # (identical bytes, so the manifest check passes) collides with the
+        # existing binding and is a payload conflict detected before any
+        # object write.
+        different = client.post(
+            _INGEST_URL,
+            content=build_media_envelope(
+                record,
+                source_media_id=media_id,
+                bytes_content=media_bytes,
+                idempotency_key=f"media:{record.device_id}:{media_id}:retry",
+            ),
+            headers=_device_headers(),
+        )
+    assert different.status_code == 409
+    assert different.json()["code"] == "PAYLOAD_CONFLICT"
+    # The conflict was detected before staging, so no orphan object exists.
+    assert len(list(storage.list_objects("org/"))) == 1  # only the accepted binding
+
+
+def test_media_manifest_mismatch_returns_422_without_available_row(
+    repository: CentralRepository,
+) -> None:
+    media_bytes = b"fake-jpeg-bytes"
+    record = _record(media_content=media_bytes)
+    storage = NoopObjectStorage()
+    with _media_client(repository, storage) as client:
+        client.post(_INGEST_URL, content=build_envelope(record), headers=_device_headers())
+        media_id = record.media[0].media_id
+        # Bytes that do not match the manifest checksum/size.
+        envelope = build_media_envelope(record, source_media_id=media_id, bytes_content=b"tampered")
+        response = client.post(_INGEST_URL, content=envelope, headers=_device_headers())
+    assert response.status_code == 422
+    assert response.json()["code"] == "MEDIA_MANIFEST_MISMATCH"
+    assert list(storage.list_objects("org/")) == []
+
+
+def test_media_parent_inspection_missing_returns_422(repository: CentralRepository) -> None:
+    record = _record(media_content=b"fake-jpeg-bytes")
+    storage = NoopObjectStorage()
+    with _media_client(repository, storage) as client:
+        media_id = record.media[0].media_id
+        envelope = build_media_envelope(
+            record, source_media_id=media_id, bytes_content=b"fake-jpeg-bytes"
+        )
+        response = client.post(_INGEST_URL, content=envelope, headers=_device_headers())
+    assert response.status_code == 422
+    assert response.json()["code"] == "INSPECTION_NOT_FOUND"
+
+
+def test_media_id_not_in_manifest_returns_422(repository: CentralRepository) -> None:
+    media_bytes = b"fake-jpeg-bytes"
+    record = _record(media_content=media_bytes)
+    storage = NoopObjectStorage()
+    with _media_client(repository, storage) as client:
+        client.post(_INGEST_URL, content=build_envelope(record), headers=_device_headers())
+        envelope = build_media_envelope(record, source_media_id=uuid4(), bytes_content=media_bytes)
+        response = client.post(_INGEST_URL, content=envelope, headers=_device_headers())
+    assert response.status_code == 422
+    assert response.json()["code"] == "MEDIA_NOT_IN_MANIFEST"
+
+
+def test_media_oversized_payload_returns_413(repository: CentralRepository) -> None:
+    media_bytes = b"fake-jpeg-bytes"
+    record = _record(media_content=media_bytes)
+    storage = NoopObjectStorage()
+    small: dict[str, object] = {"max_media_payload_bytes": 4}
+    with _media_client(repository, storage, small) as client:
+        client.post(_INGEST_URL, content=build_envelope(record), headers=_device_headers())
+        media_id = record.media[0].media_id
+        envelope = build_media_envelope(record, source_media_id=media_id, bytes_content=media_bytes)
+        response = client.post(_INGEST_URL, content=envelope, headers=_device_headers())
+    assert response.status_code == 413
+    assert response.json()["code"] == "PAYLOAD_TOO_LARGE"
 
 
 def test_ingest_rejects_wrong_content_kind_for_payload(client: TestClient) -> None:
