@@ -516,6 +516,15 @@ or more focused PRs into `main`.
 - M1 remains labeled a controlled pilot: no claim of production HA, final
   RPO/RTO, full retention enforcement, OIDC, or remote rollout (section 13
   exit criterion 8).
+- E6-A16 delivered (`scripts/tests/test_edge_central_e2e.py`): the real edge
+  `UploadScheduler` and `HttpUploadSink` run against a live in-process
+  central FastAPI server (no mocked central, no stub sink). The outbox drains
+  in metadata-before-media order to `QUEUED -> PARTIAL -> SYNCED` only after
+  verified central receipts; the media binding is `AVAILABLE`; and duplicate
+  replay of the exact payload returns the original receipt with exactly one
+  central row per identity. This closes the mandatory-matrix item "an
+  end-to-end edge outbox fixture that validates the actual central receipt"
+  (section 11) and exit criterion 3's executable evidence.
 
 ## 8. M1 Database and Object Storage Rules
 
