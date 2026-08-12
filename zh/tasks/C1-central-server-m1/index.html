@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2603,6 +2603,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3365,7 +3505,7 @@
   管理 UI 的管理员会话/令牌路径。</li>
 <li>仅附加中央人工审核队列和审核提交。</li>
 <li>初始中心产品/规则/模型元数据注册和不可变
-  需要发布版本来验证引用的内容。包裹递送
+  需要发布版本来验证引用的引用。包裹递送
   边缘仍然是手动的。</li>
 <li>类型化 OpenAPI 输出和生成/同步的 TypeScript 中央 API 类型。</li>
 <li>编写健康检查、受控模式迁移、集中备份/恢复
@@ -3737,7 +3877,7 @@
 <li>实现<code>GET /api/v1/inspections/{id}</code>和媒体元数据访问。显示边缘
   捕获/完成时间与中央接收时间分开。</li>
 <li>实施授权的短期 MinIO URL 或授权的媒体流；
-  永远不要返回存储桶凭据、原始对象密钥或永久公共链接。</li>
+  绝不返回存储桶凭据、原始对象密钥或永久公共链接。</li>
 <li>实施 M1 <code>GET /api/v1/dashboard/summary</code> 和
   <code>GET /api/v1/dashboard/timeseries</code> 具有明确的范围/时间过滤器，示例
   计数，并且没有发明准确性或召回指标。</li>
@@ -3854,6 +3994,35 @@
 <li>M1 不主张生产 HA、最终 RPO/RTO、完全保留执行、
   OIDC，即远程部署功能。</li>
 </ul>
+<p><strong>实施情况</strong></p>
+<ul>
+<li>交付的强化：结构化日志关联（每个请求 <code>request_id</code>
+  通过上下文变量绑定并附加到每个记录；摄取日志
+  线路承载设备/检查/对象/收据相关性并与
+  <code>audit_logs.request_id</code>)，每个客户端滑动窗口速率限制
+  （<code>429 RATE_LIMITED</code> + <code>Retry-After</code>，健康端点豁免，
+  <code>AV_CENTRAL_RATE_LIMIT_REQUESTS_PER_MINUTE</code>，0禁用）和数据库
+  连接失败映射到可重试 <code>503 DATABASE_UNAVAILABLE</code> +
+  <code>Retry-After</code>（约束违规保持其显式冲突
+  语义）。请求正文和负载上限 (<code>413</code>) 已存在于
+  C2a/C2b 并保持在测试范围内。</li>
+<li>添加了故障测试：对象存储中断返回 <code>503 OBJECT_STORE_UNAVAILABLE</code>
+  没有收据或绑定持续存在；数据库中断返回
+  <code>503 DATABASE_UNAVAILABLE</code>；受控重启（发动机处置和
+  重新打开）保留检查、媒体装订、收据和审计行，
+  并且收据保持可重播；代表性备份/恢复往返
+  （作为新数据库打开的一致快照）保留相同的内容
+  不变量。一个真正的 PostgreSQL <code>pg_dump</code>/<code>pg_restore</code> 往返到一个新鲜的
+  数据库已执行并验证（头部模式，行完整）作为
+  代表恢复退出标准4的证据。</li>
+<li>添加了中央运行手册：摄取积压 (C1)、对象存储故障 (C2)、
+  凭证泄露 (C3)、备份/恢复 (C4) 和试点升级/回滚
+  (C5)，全部在 <code>docs/runbooks/README.md</code> 和 mkdocs nav 中索引
+  （<code>uv run mkdocs build --strict</code> 通过）。</li>
+<li>M1 仍然被标记为受控飞行员：没有声称生产 HA，最终
+  RPO/RTO、完全保留实施、OIDC 或远程部署（第 13 节
+  退出标准 8)。</li>
+</ul>
 <h2 id="8-m1-database-and-object-storage-rules">8. M1数据库和对象存储规则<a class="headerlink" href="#8-m1-database-and-object-storage-rules" title="Permanent link">&para;</a></h2>
 <h3 id="81-required-m1-tables">8.1 所需的 M1 表<a class="headerlink" href="#81-required-m1-tables" title="Permanent link">&para;</a></h3>
 <table>
@@ -3908,11 +4077,11 @@
 <ul>
 <li>生成不透明的密钥，例如
   <code>org/{organization_id}/device/{device_id}/{year}/{month}/{media_id}</code>。</li>
-<li>在 PostgreSQL 中不存储媒体字节，也不将边缘提供的路径作为存储键。</li>
+<li>在 PostgreSQL 中不存储媒体字节，也不存储边缘提供的路径作为存储键。</li>
 <li>暂存、验证、最终确定，然后标记<code>AVAILABLE</code>；保留明确的 <code>PENDING</code> /
   <code>FAILED</code> 表示工作中断。</li>
 <li>M1 不会自动删除中央媒体。它记录生命周期和
-  保留未来受控清理所需的元数据。</li>
+  保留未来受治理清理所需的元数据。</li>
 <li>媒体 URL 是经过授权的且短暂的。浏览器/管理员用户永远不会收到
   MinIO 根凭据或存储桶范围的权限。</li>
 </ul>
@@ -3920,15 +4089,15 @@
 <ul>
 <li>中央公共请求/响应模式是 Pydantic 模型类型，并且具有
   <code>extra="forbid"</code> 用于突变体。</li>
-<li>FastAPI OpenAPI 已提交并进行了偏差检查。 <code>api-client-central</code> 是
-  由其生成或同步； <code>admin-web</code>不得手投服务器
+<li>FastAPI OpenAPI 已提交并进行了偏差检查。 <code>api-client-central</code>是
+  由其生成或同步； <code>admin-web</code> 不得手投服务器
   JSON。</li>
 <li>所有错误都使用有界的 <code>application/problem+json</code>
   <code>type</code>、<code>title</code>、<code>status</code>、<code>detail</code>、<code>code</code>、<code>request_id</code> 和字段错误。</li>
 <li>光标分页使用 <code>{items, next_cursor}</code> 默认 50/最大 200 和
   拒绝游标/过滤器不匹配。</li>
 <li>变异的人类/管理员 API 在并发情况下使用 <code>If-Match</code> 修订检查
-  编辑很重要。可重试设备摄取使用幂等密钥代替。</li>
+  编辑很重要。可重试的设备摄取使用幂等性密钥来代替。</li>
 <li>所有不可变的边缘标识符和原始决策都是在之后写入一次
   接受摄入。</li>
 <li>新的中心字段是在模式版本中添加的。删除/更改

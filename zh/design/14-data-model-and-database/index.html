@@ -2768,7 +2768,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2825,6 +2825,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3306,7 +3446,7 @@
 下面。它可以从同一个包中删除和重建，它不是
 完成/发件箱存储，其模式尚未携带唯一的
 约束、产品配置列或上传所需的租约
-生产设计。权威商店与上传一起构建
+生产设计。权威商店与上传一起搭建
 调度程序；在此之前，该设计描述的是目标，而不是当前
 实施（AUDIT-001）。</p>
 </blockquote>
@@ -3798,7 +3938,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 <tr>
 <td><code>local_media_files</code></td>
-<td><code>id</code> PK、<code>inspection_id</code> FK可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
+<td><code>id</code> PK、<code>inspection_id</code> FK 可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
 <td>路径必须相对于配置的媒体根； <code>UNIQUE(relative_path)</code> 和 <code>UNIQUE(sha256, kind)</code> ，其中重复数据删除是安全的。</td>
 </tr>
 <tr>
@@ -3954,7 +4094,7 @@ OpenAPI 中的模型。最小注册表是：</p>
     MODEL_VERSION ||--o{ INSPECTION :运行
     INSPECTION ||--o{ INSPECTION_COMPONENT :包含
     INSPECTION ||--o{ INSPECTION_MEDIA :有
-    INSPECTION ||--o{ REVIEW_RECORD :reviewed_by
+    INSPECTION ||--o{ REVIEW_RECORD :评论者
     DEVICE ||--o{ DEVICE_EVENT :发出
     DEVICE ||--o{ UPLOAD_RECEIPT :上传
     ORGANIZATION ||--o{ AUDIT_LOG :记录</code></pre>

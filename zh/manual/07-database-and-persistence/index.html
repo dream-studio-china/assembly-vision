@@ -2680,7 +2680,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2737,6 +2737,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3168,7 +3308,7 @@ schema.py</code>中定义的表：</p>
 <tr>
 <td><code>rule_identities</code></td>
 <td>持久规则身份注册</td>
-<td><code>(rule_id, rule_version)</code> 唯一，<code>content_sha256</code> — 重用具有不同内容的身份无法加载 (<code>CONFIG_INVALID</code>)</td>
+<td><code>(rule_id, rule_version)</code> unique、<code>content_sha256</code> — 重用具有不同内容的身份无法加载 (<code>CONFIG_INVALID</code>)</td>
 </tr>
 <tr>
 <td><code>review_records</code></td>
@@ -3242,7 +3382,7 @@ next_attempt_at)</code>）。</p>
   匹配 <code>lease_owner</code> 令牌和预期的当前状态，例如
   <code>mark_upload_succeeded(task_id, lease_owner, receipt)</code> 返回数字
   已更改的行数（0 = 过时的所有者 → 被拒绝）；另外还取得了成功
-  需要与任务的不可变性相匹配的持久<strong>已验证收据</strong>
+  需要与任务的不可变性相匹配的持久<strong>验证收据</strong>
   字段（幂等键、对象、种类、大小、校验和）。</li>
 <li><strong>立即交易序列化</strong>：<code>submit_review</code>解析
   <code>supersedes_review_id</code> 在 <code>BEGIN IMMEDIATE</code> 下链接所以并发
@@ -3266,7 +3406,7 @@ next_attempt_at)</code>）。</p>
 <li>验证收据：仅当有界打字收据时，2xx 才是成功
   回显有效负载的幂等键、对象、种类、大小和校验和
   已发送；媒体收据还需要一个中央对象 ID。</li>
-<li>接收器：<code>HttpUploadSink</code>（HTTPS POST 到 <code>{base_url}/inspection-uploads</code>；
+<li>接收器：<code>HttpUploadSink</code>（HTTPS POST 到<code>{base_url}/inspection-uploads</code>；
   dev HTTP 仅环回）和 <code>DirectoryUploadSink</code> （本地/dev，幂等
   键）。没有配置目的地 → 工作人员保持禁用状态并执行任务
   在 <code>/api/v1/uploads</code> 中保持可见。</li>

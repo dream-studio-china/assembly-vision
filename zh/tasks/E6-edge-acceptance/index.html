@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2603,6 +2603,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3111,7 +3251,7 @@ Edge 交付工作和最后一个 Edge 之后的验收门
   性能和稳定性断言，并对内容进行诚实分类
   每个项目都需要。</li>
 <li>E6b：<code>scripts/edge-acceptance-run.py</code>，本地自动化运行器
-  执行每个本地可自动化的矩阵项并发出机器可读的
+  执行每个本地可自动化矩阵项并发出机器可读的
   证据明显；现场项目作为 <code>NOT_EXECUTED</code> 发出
   记录所需的环境。</li>
 <li>E6c：边缘验收报告模板
@@ -3397,10 +3537,10 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
 <tr>
 <td>E6-A12</td>
 <td>离线操作</td>
-<td>地方检查、证据和持久的队列在没有中央的情况下继续进行</td>
-<td>自动化本地</td>
+<td>地方检查、证据和持久的队列在没有中央的情况下继续进行自动化本地</td>
 <td>是的</td>
 <td>中央独立（ADR-001，22.8）</td>
+<td></td>
 </tr>
 <tr>
 <td>E6-A13</td>
@@ -3460,7 +3600,7 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
 </tr>
 </tbody>
 </table>
-<p>| E6-A20 | GPU/加速器故障 |没有捏造就OK；可恢复的故障重新加载或切换到具有相同清单的经过验证的 CPU 运行时并记录切换；不可恢复故障故障和块检查|所需硬件 |没有|恢复路径有单位覆盖；真正的加速器故障需要硬件（22.8，设计 09.7）|
+<p>| E6-A20 | GPU/加速器故障 |没有捏造就OK；可恢复的故障重新加载或切换到具有相同清单的经过验证的 CPU 运行时并记录切换；不可恢复故障故障和块检查|所需硬件 |没有|恢复路径有单位覆盖；真正的加速器故障需要硬件（22.8，设计 09.7） |
 | E6-A21 |数据库故障/损坏 |安全地失败、保留诊断、执行测试的恢复路径 |自动化本地 |是的 |一次性测试数据库(22.8) |
 | E6-A22 |备份+恢复|代表恢复成功；悬而未决的证据和上传任务继续存在|自动化本地 |是的 |恢复成功之前不可操作 (20.10) |
 | E6-A23 |容器重启 |监督恢复，无需重复产品决策 |自动化本地 |是的 |需要 Docker；在可用的地方运行 |

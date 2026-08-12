@@ -2868,7 +2868,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2925,6 +2925,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3505,7 +3645,7 @@
     Hardware[相机扫描仪传感器适配器] --&gt; Coordinator[检验协调员]
     Coordinator --&gt; Quality[镜框品质]
     Coordinator --&gt; Identity[条形码和产品解析器]
-    Quality --&gt; Product[Product detector]
+    Quality --&gt; Product[产品检测仪]
     Product --&gt; ROI[投资回报率引擎]
     ROI --&gt; Component[元件检测器]
     ROI --&gt; CV[可选的 OpenCV 检查]
@@ -3522,7 +3662,7 @@
     API[本地FastAPI] --&gt; Persist
     API --&gt; Coordinator
     Web[本地Vue应用程序] --&gt; API
-    Health[健康监测器] --&gt; Hardware
+    Health[健康监测仪] --&gt; Hardware
     Health --&gt; DB
     Health --&gt; Media
     Health --&gt; API</code></pre>
@@ -3579,7 +3719,7 @@
     Degraded --&gt; Paused:授权暂停
     Paused --&gt; Ready:授权简历和检查通过
     Inspecting --&gt; Faulted:相机存储或活动包故障
-    Faulted --&gt; Starting:authorized restart or recovery
+    Faulted --&gt; Starting:授权重启或恢复
     Starting --&gt; Maintenance:维修授权
     Ready --&gt; Maintenance:维修授权
     Maintenance --&gt; Starting:维护完成</code></pre>
@@ -3596,14 +3736,14 @@
 </ol>
 <p>SQLite 使用 Alembic 迁移、外键、WAL 模式（如果在所选文件系统上进行验证）、有界繁忙超时、定期完整性检查和支持的备份过程。单个存储库编写器或短事务可以减少锁争用。</p>
 <h3 id="62-retention-and-disk-pressure">6.2 保留和磁盘压力<a class="headerlink" href="#62-retention-and-disk-pressure" title="Permanent link">&para;</a></h3>
-<p>保留类别针对完整/滚动视频、关键帧、NG 剪辑、带注释的图像、ROI 图像、日志和数据库记录进行独立配置。清理从过期的、成功上传的、未受保护的工件到价值较低的数据。它必须尊重参考资料、法律/审查保留、待处理/失败的上传以及最低证据政策。警告和严重水印会触发原因编码的健康事件；无法保留强制性证据的缺陷或保守地终止检查。</p>
+<p>保留类别针对完整/滚动视频、关键帧、NG 剪辑、带注释的图像、ROI 图像、日志和数据库记录进行独立配置。清理从过期的、成功上传的、未受保护的工件到价值较低的数据。它必须遵守参考资料、法律/审查保留、待处理/失败的上传以及最低证据政策。警告和严重水印会触发原因编码的健康事件；无法保留强制性证据的缺陷或保守地终止检查。</p>
 <p>确切的持续时间和水印有意未指定，以待容量和策略验证。</p>
 <h2 id="7-upload-scheduler">7. 上传调度程序<a class="headerlink" href="#7-upload-scheduler" title="Permanent link">&para;</a></h2>
 <p>上传任务包含任务 ID、检查 ID、工件类型、适用的本地路径、校验和、有效负载哈希、尝试计数、下次尝试时间和状态。幂等性密钥在重试后保持稳定。指数退避使用抖动和配置的上限；永久性验证/身份验证失败会停止自动重试并引发可操作事件，而暂时性网络/5xx 故障仍会排队。</p>
 <p>元数据在媒体清单之前或与媒体清单一起接受。当测量的大小需要时，大型媒体应使用服务器发出的上传会话或有界多部分协议。中央耐用收据标志着成功。清理不能仅仅因为传输了字节而删除受保护的本地证据；它需要收据和到期政策。</p>
 <h2 id="8-local-api-and-web-application">8. 本地API和Web应用程序<a class="headerlink" href="#8-local-api-and-web-application" title="Permanent link">&para;</a></h2>
 <p>版本化本地 API 组为 <code>/api/v1/health</code>、<code>/api/v1/device</code>、<code>/api/v1/camera</code>、<code>/api/v1/inspection</code>、<code>/api/v1/inspections</code>、<code>/api/v1/media</code>、<code>/api/v1/uploads</code>、<code>/api/v1/configuration</code>、<code>/api/v1/logs</code> 和 <code>/api/v1/ws/runtime</code>，详细信息请参见 <a href="../15-rest-api-and-events/">REST API and Events</a>。变异调用使用适合本地威胁模型的授权、验证、审计条目和重试时的幂等性。 WebSocket 事件是建议性的；重新连接后，UI 通过 REST 恢复真实情况。</p>
-<p>Vue 应用程序显示摄像头预览、当前身份/产品、最新结果/证据叠加、延迟、摄像头/模型/磁盘/网络/中央状态、队列深度、最近记录、本地日志和重试控件。它仅使用本地端点并在离线状态下仍然有用。预览交付必须受到速率限制，并且不得阻碍推理。</p>
+<p>Vue 应用程序显示摄像头预览、当前身份/产品、最新结果/证据叠加、延迟、摄像头/模型/磁盘/网络/中央状态、队列深度、最近记录、本地日志和重试控件。它仅使用本地端点，并且在离线状态下仍然有用。预览交付必须受到速率限制，并且不得阻碍推理。</p>
 <h2 id="9-process-concurrency-and-backpressure">9. 进程、并发和背压<a class="headerlink" href="#9-process-concurrency-and-backpressure" title="Permanent link">&para;</a></h2>
 <ul>
 <li>根据经过验证的窗口策略，有界捕获缓冲区有利于最近的帧；禁止无界队列。</li>
@@ -3623,13 +3763,13 @@
 <h3 id="122-one-month-target">12.2 一个月目标<a class="headerlink" href="#122-one-month-target" title="Permanent link">&para;</a></h3>
 <p>添加选定的硬件适配器、产品窗口、条形码解析器、<code>edge-service</code> 内的有界决策工作者、SQLite/媒体管理器、聚合、队列/重试、本地 Web UI、Compose 和恢复/运行状况测试。整合最初的集中摄取，而不将其引入决策中。</p>
 <h3 id="123-production-target">12.3 生产目标<a class="headerlink" href="#123-production-target" title="Permanent link">&para;</a></h3>
-<p>验证时序/硬件、强化迁移/备份/保留、凭据、包签名/回滚、故障状态、长时间运行的操作、支持诊断和验收指标。通过 NG 审查和抽样 OK 审核进行谨慎的推出。</p>
+<p>验证时序/硬件、强化迁移/备份/保留、凭据、包签名/回滚、故障状态、长时间运行的操作、支持诊断和验收指标。通过 NG 审核和抽样 OK 审核进行谨慎的推出。</p>
 <h3 id="124-future">12.4 未来<a class="headerlink" href="#124-future" title="Permanent link">&para;</a></h3>
 <p>仅通过明确的要求和验证来考虑 Tauri、更大的边缘 PostgreSQL、PLC/MES 适配器、高级跟踪和远程包自动化。</p>
 <h2 id="13-assumptions">13. 假设<a class="headerlink" href="#13-assumptions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>硬件 SDK 可以隔离在适配器后面并允许可恢复的重新连接。</li>
-<li>所选主机支持容器对硬件和持久安装存储的访问。</li>
+<li>所选主机支持容器访问硬件和持久安装的存储。</li>
 <li>产品吞吐量允许在硬件基准测试后进行有界两阶段推理。</li>
 <li>经批准的流程可以在边缘失去连接之前提供活动包。</li>
 </ul>
@@ -3639,7 +3779,7 @@
 <li>支持哪些操作系统、CPU/GPU、内存、磁盘类型/容量和容器运行时？</li>
 <li>什么打开/关闭窗口，观察到的传送带时间是多少，以及产品在视图中是否可以重叠？</li>
 <li>每个产品/型号验证了哪些帧质量、ROI、置信度、聚合和超时阈值？</li>
-<li>在向外部报告结果之前，特别是在磁盘压力下，哪些本地证据是强制性的？</li>
+<li>在对外报告结果之前，特别是在磁盘压力下，哪些本地证据是强制性的？</li>
 <li>适用哪些保留、隐私、加密、本地访问控制和维护策略？</li>
 <li>什么协议和安全状态行为将结果/设备故障连接到生产线？</li>
 <li>除了休闲浏览威慑之外，合同还要求什么级别的源代码打包？</li>

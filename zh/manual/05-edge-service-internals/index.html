@@ -2674,7 +2674,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2731,6 +2731,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3239,7 +3379,7 @@ fsync dir → 将 staging 重命名为 <code>&lt;output&gt;/&lt;inspection_id&gt
   <code>_register_rule_identity</code>：进程本地注册表键控
   <code>(rule_id, rule_version)</code> 反对规范 JSON 的 SHA-256；重新加载
   相同身份不同内容→<code>ConfigError</code>；然后是耐用的
-  回调到 SQLite <code>rule_identities</code> （<code>RepositoryError</code> 不匹配时）。
+  回调到 SQLite <code>rule_identities</code>（如果不匹配则为 <code>RepositoryError</code>）。
 - <code>load_edge_config</code>：每个实例的门 - 唯一的<code>instance_id</code>； <code>device_id</code>
   解析为 UUID；相机源类型特定的必填字段； <code>fps &gt; 0</code>；
   <code>reconnect.maximum_delay_ms &gt;= initial_delay_ms</code>； <code>gige-vision</code> 需要

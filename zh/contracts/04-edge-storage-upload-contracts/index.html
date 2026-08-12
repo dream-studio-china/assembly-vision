@@ -1979,7 +1979,7 @@
   <a href="#3-local-persistence-order" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.本地持久化顺序
+        3. 本地持久化顺序
       
     </span>
   </a>
@@ -2001,7 +2001,7 @@
   <a href="#5-idempotency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 幂等性
+        5.幂等性
       
     </span>
   </a>
@@ -2707,7 +2707,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2764,6 +2764,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3070,7 +3210,7 @@
   <a href="#3-local-persistence-order" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.本地持久化顺序
+        3. 本地持久化顺序
       
     </span>
   </a>
@@ -3092,7 +3232,7 @@
   <a href="#5-idempotency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 幂等性
+        5.幂等性
       
     </span>
   </a>
@@ -3199,14 +3339,14 @@
 <li>本地持久性</li>
 <li>上传队列管理</li>
 </ul>
-<h2 id="3-local-persistence-order">3.本地持久化顺序<a class="headerlink" href="#3-local-persistence-order" title="Permanent link">&para;</a></h2>
+<h2 id="3-local-persistence-order">3. 本地持久化顺序<a class="headerlink" href="#3-local-persistence-order" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>1. Complete inspection
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>2. Finalize required media files with size and checksum
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>3. Atomically commit inspection, media manifests, and upload outbox tasks
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>4. Publish/return the committed local result
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>5. Upload asynchronously
 </code></pre></div>
-<p>第 2 步和第 3 步形成一个可恢复单元：碰撞事故不得留下未完成的检查
+<p>第 2 步和第 3 步构成一个可恢复单元：碰撞事故不得留下未完成的检查
 所需的上传任务。临时文件和不完整的事务在启动时进行协调。</p>
 <p>在确认上传和保留检查之前，不得删除本地媒体和记录。</p>
 <h2 id="4-upload-task-fields">4. 上传任务字段<a class="headerlink" href="#4-upload-task-fields" title="Permanent link">&para;</a></h2>
@@ -3230,7 +3370,7 @@
 </ul>
 <p>规范状态有 <code>PENDING</code>、<code>IN_PROGRESS</code>、<code>RETRY_WAIT</code>、<code>SUCCEEDED</code>、
 <code>PERMANENT_FAILURE</code>和<code>CANCELLED</code>。</p>
-<h2 id="5-idempotency">5. 幂等性<a class="headerlink" href="#5-idempotency" title="Permanent link">&para;</a></h2>
+<h2 id="5-idempotency">5.幂等性<a class="headerlink" href="#5-idempotency" title="Permanent link">&para;</a></h2>
 <p>中央服务器必须支持幂等上传。</p>
 <p>推荐的幂等键：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>inspection:{device_id}:{inspection_id}

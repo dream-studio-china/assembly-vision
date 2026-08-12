@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/zh/research/01-industrial-inspection-success-rates/">
       
       
-        <link rel="prev" href="../../runbooks/15-edge-acceptance-execution/">
+        <link rel="prev" href="../../runbooks/central-pilot-upgrade-rollback/">
       
       
         <link rel="next" href="../02-yolo-capabilities-and-success-rates/">
@@ -2550,7 +2550,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2607,6 +2607,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3467,7 +3607,7 @@
 <tr>
 <td>工业-YOLO（微调YOLOv8，边缘优化）</td>
 <td>YOLOv8 + TensorRT/OpenVINO</td>
-<td><strong>NEU-DET + MVTec AD + 定制汽车/电池缺陷图像的基准；索赔部署在活跃的汽车装配线上</strong></td>
+<td><strong>NEU-DET + MVTec AD + 定制汽车/电池缺陷图像的基准；声称部署在活跃的汽车装配线上</strong></td>
 <td>NEU-DET、MVTec AD、自定义扩展</td>
 <td><strong>mAP 98.5%</strong>； <strong>&gt; NVIDIA Jetson Orin 上 120 FPS</strong></td>
 <td><strong>2026 年预印本，单组，未经同行评审；视为供应商/作者报告。</strong> NEU-DET 上的典型 YOLO 论文报告较低的 mAP (~70-80%)，具体取决于拆分； 98.5% 处于乐观状态，可能包括数据管理效应</td>
@@ -3515,7 +3655,7 @@
 <td>YOLOv8物体检测+姿态细化+Pose2State融合</td>
 <td>医疗/工业装配；遮挡和外观动态</td>
 <td>ASDF数据集+GBOT数据集</td>
-<td>优于“纯基于深度学习”的组装状态基线；更稳健的 6D 姿势； GBOT 击败混合和纯跟踪方法证明检测器 + 几何验证相结合优于单独使用检测器 - 与 AssemblyVision 的 ROI + 规则设计直接相关</td>
+<td>优于“纯基于深度学习”的组装状态基线；更稳健的 6D 姿势； GBOT 击败混合和纯跟踪方法证明检测器 + 几何验证相结合优于单独检测器 - 与 AssemblyVision 的 ROI + 规则设计直接相关</td>
 <td>https://arxiv.org/abs/2403.16400</td>
 <td></td>
 </tr>
@@ -3603,7 +3743,7 @@
 <p><strong>没有找到可靠、可引用的公共生产召回/精确度数据用于人工智能药品视觉检查（小瓶/安瓿/注射器完整性或颗粒检测）。</strong> 相关证据：</p>
 <ul>
 <li>MVTec AD 2 包括透明物体场景（与安瓿/小瓶相关）并报告 SOTA 异常检测低于 60% AU-PRO (https://arxiv.org/abs/2503.21622)。</li>
-<li>药品检查由供应商 AOI 系统（Cognex、Omron 等）主导，这些系统不发布召回编号。 https://www.cognex.com/what-is/machine-vision 描述了检测功能，但没有量化准确性。</li>
+<li>药品检验主要由供应商 AOI 系统（Cognex、Omron 等）主导，这些系统不发布召回编号。 https://www.cognex.com/what-is/machine-vision 描述了检测功能，但没有量化准确性。</li>
 </ul>
 <p><strong>这是一个明确的数据差距。</strong> AssemblyVision 不得假设存在公布的药品费率；计划生成自己的验收数据。</p>
 <h3 id="37-general-industry-level-failure-statistics-context">3.7 一般行业级故障统计（上下文）<a class="headerlink" href="#37-general-industry-level-failure-statistics-context" title="Permanent link">&para;</a></h3>

@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2603,6 +2603,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3215,7 +3355,7 @@
   M1基础（C1a）； PR #38 添加了置信度漂移统计数据
   （设计15.3.6）及其仪表板； PR #39 添加了实时网络
   设备运行状况页面的流量和 GPU 指标。边缘编码完成
-  通过E6准备门。中央服务器M1试点已开始
+  通过E6准备门。中央服务器M1试点已启动
   （已交付 C1a 基础和 C1b 租户/凭证基础）；它的
   有界实施计划在
   <code>docs/tasks/C1-central-server-m1.md</code>。</li>
@@ -3411,7 +3551,7 @@
   框架； <code>assemblyvision verify</code> 报告 NG 召回/漏报/误报；和
   <code>scripts/e2e-demo.sh</code> 使用针对误报的硬门运行整个流程。</li>
 <li>数据集：<code>scripts/generate-synthetic-dataset.py</code>构建一个带标签的程序集数据集（确切地说
-  框、缺少组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
+  框、缺失组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
   将 Roboflow YOLOv8 导出转换为两阶段布局，删除通用 <code>missing*</code> 类，
   并且需要一个独立注释的完整产品类（组件盒的联合是
   被拒绝）。源 <code>test</code> 分割仅成为保留的验证集；从来没有
@@ -3463,9 +3603,9 @@
   <code>min_area_pixels</code>必须是正整数，未知的键将被拒绝
   每个部分。</li>
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
-  盒子是致命的；丢失的标签文件无法验证，除非记录了
+  盒子是致命的；丢失的标签文件无法验证，除非已记录
   <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
-  底片；成分制备导致 ROI 作物为负值；并发表
+  底片；成分制备导致 ROI 作物为负数；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
 <li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code> 和
   <code>pytest</code> 现在覆盖整个存储库（边缘、包、训练、脚本
@@ -3512,7 +3652,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
   将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
   索引，并以幂等方式协调现有 CLI <code>inspection.json</code> 输出
-  启动。配置/规则/清单加载重用相同的经过验证的
+  启动。配置/规则/清单加载重用相同的验证
   管道构建为 <code>inspect</code>。</li>
 <li><strong>持久性</strong>：SQLAlchemy 核心架构 + Alembic 迁移 0001/0002
   (<code>apps/edge-service/migrations/</code>);检查表，组件
@@ -3626,7 +3766,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
   <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
   保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界每个实例检查队列
+  实例使用显式的有界的每个实例检查队列
   溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
   <code>EdgeRuntime.load_instances</code>开始独立单帧检查
   当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
@@ -3674,7 +3814,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
 <p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code> 因此严格的 mypy 门会通过
-  回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
+  回购范围内；当前套件有 635 个 Python 测试，91 个 TypeScript 单元测试
   （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
 <h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
 <p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
@@ -3687,7 +3827,7 @@ ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
   提交不可变的检查、媒体、证据和一项 <code>INSPECTION</code> 任务
   在单个 SQLite 事务中为每个工件加上一个 <code>MEDIA</code> 任务；启动
   调节修复搁浅的<code>LOCAL_ONLY</code>记录。</li>
-<li><strong>订购的租赁工人</strong>：<code>UploadScheduler</code>在一个任务中声明到期任务
+<li><strong>订购、租赁的工人</strong>：<code>UploadScheduler</code>在一个任务中声明到期任务
   即时交易； <code>MEDIA</code> 任务只有在检查后才到期
   任务有经过验证的收据；每个声明都带有每个任务的防护令牌
   (<code>lease_owner</code>)，陈旧的<code>IN_PROGRESS</code>任务在租约到期后被回收，
@@ -3721,7 +3861,7 @@ PR-020 审查强化）。交付任务和强制性安全不变量是
   <code>retention_eligible_at</code>，保留状态，删除声明/租赁/防护列，
   清除时间戳/原因、删除错误和完整性状态。 <code>PURGED</code> 行
   仍然是审计墓碑。资格需要经过验证的收据 <code>SYNCED</code>
-  使用包含中央对象 ID 的媒体收据进行检查
+  使用包含中心对象 ID 的媒体收据进行检查
   保留截止日期，并且没有保留/故障/清除/删除状态。</li>
 <li><strong>清洁工人 (E2b)</strong>：<code>RetentionCleanupWorker</code> 根据
   使用每个工件的隔离令牌进行进程间 SQLite 租赁。一个有围栏的
@@ -3879,7 +4019,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li><strong>边缘本地人工审查（PR #31，ADR-016）</strong>：可选，附加，
   对任何检查（OK 或 NG）进行仅附加审查，而不改变
   机器决定。域 <code>ReviewDisposition</code> (CONFIRMED_NG/CONFIRMED_OK/
-  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的限制，
+  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的约束，
   <code>ReviewRecord</code> 快照原始决策，一个 <code>review_records</code> 表
   （迁移 0008）使用引用链接取代、存储库
   <code>submit_review</code>/<code>list_review_queue</code>，和端点<code>GET /api/v1/reviews</code>，

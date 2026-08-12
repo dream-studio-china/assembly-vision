@@ -2729,7 +2729,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2786,6 +2786,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3230,7 +3370,7 @@
 <li>被拒绝的、陈旧的、重复的或错误的窗口框架不会做出贡献。</li>
 <li>一个高置信度观察或多个中等置信度观察只能根据该组件的配置策略来建立存在。</li>
 <li>不确定、矛盾或不充分的证据不能成为<code>OK</code>。</li>
-<li>关闭窗口是最终决定；迟到的帧会被记录为丢弃，并且不会改变其决定。</li>
+<li>关闭窗口是最终决定；迟到的帧被记录为丢弃，并且永远不会改变其决定。</li>
 </ol>
 <h2 id="104-component-state-model">10.4 组件状态模型<a class="headerlink" href="#104-component-state-model" title="Permanent link">&para;</a></h2>
 <p>每个必需的组件均以以下证据状态之一结尾：</p>
@@ -3286,7 +3426,7 @@ else 帧无效
     end
     Window-&gt;&gt;Aggregate:关闭窗口
 loop 每个必需的组件
-        Aggregate-&gt;&gt;Aggregate:解决现有、缺失、不确定或无法验证的问题
+        Aggregate-&gt;&gt;Aggregate:解决当前、缺失、不确定或无法验证的问题
     end
     Aggregate--&gt;&gt;Rules:不可变组件证据集
     Rules--&gt;&gt;Window:仅当所有必需的组件都存在时才可以</code></pre>
@@ -3387,7 +3527,7 @@ loop 每个必需的组件
 <li><strong>计数证据</strong>：<code>detection_count</code>、方框区域和中心摘要包括
   仅检测到等于或高于计数证据阈值（策略
   <code>medium_confidence</code> 至少），因此低置信度误报不能
-  膨胀一个精确的<code>expected_count</code>。</li>
+  膨胀一个精确的 <code>expected_count</code>。</li>
 </ul>
 <h2 id="108-window-integrity-and-failure-handling">10.8 窗口完整性和故障处理<a class="headerlink" href="#108-window-integrity-and-failure-handling" title="Permanent link">&para;</a></h2>
 <ul>

@@ -2790,7 +2790,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2847,6 +2847,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3344,7 +3484,7 @@
 <h2 id="241-purpose-and-safety-position">24.1 目的和安全位置<a class="headerlink" href="#241-purpose-and-safety-position" title="Permanent link">&para;</a></h2>
 <p>人工审核是一个受控的质量流程，旨在谨慎推出、模糊证据、NG 处理和持续改进。它不会隐藏模型限制或改变原始机器决策。 AssemblyVision 优先考虑高 NG 召回率：早期操作接受额外的错误 NG 决策，因为它们可以进行审查，而错误地发布为 OK 的真正 NG 是主要的质量风险。</p>
 <p>审核是<strong>可选且附加的</strong> (ADR-016)：运行
-检查，永远不会改变不可变的机器决策，并且永远不会改变
+检查，永远不会改变不可变的机器决策，也永远不会改变
 现有的检查终点或预测。任何检查 — <code>OK</code> 或 <code>NG</code> —
 可以在边缘进行本地审查； NG 详细视图显示评论条目
 OK 视图提供了可选的审核路径。</p>
@@ -3481,9 +3621,9 @@ else 机器决策确认
 <p>仅当测量的生产证据支持更改时，才会减少手动审核。该决定考虑了 NG 召回、OK 审核结果、新颖性、审查纠正率、样本代表性、最近的相机/产品/配置更改以及客户风险承受能力。没有固定的日历日期或未经验证的数字触发器。</p>
 <h2 id="2411-operational-exceptions">24.11 操作异常<a class="headerlink" href="#2411-operational-exceptions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>如果中央服务器不可用，边缘检查将继续并稍后同步审核项目。</li>
-<li>如果所需的证据缺失或损坏，则审查没有结论，并且会引发操作事件。</li>
-<li>如果队列增长超过人员配置能力，优先政策将保护最高风险的物品；它不会自动将 NG 转换为 OK。</li>
+<li>如果中央服务器不可用，边缘检查将继续，并稍后同步审核项目。</li>
+<li>如果所需的证据丢失或损坏，则审查没有结论，并且会引发操作事件。</li>
+<li>如果队列增长超过人员配置能力，优先政策会保护最高风险的物品；它不会自动将 NG 转换为 OK。</li>
 <li>如果审核者发现潜在的漏检 NG 模式，请遵循 <a href="../23-observability-and-support/">Observability and Support</a> 中的遏制运行手册。</li>
 <li>如果产品配置发生变化，请在激活之前和之后维护单独的审核指标。</li>
 </ul>

@@ -1123,7 +1123,7 @@
   <a href="#195-annotation-protocol" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.5 Annotation Protocol
+        19.5 注释协议
       
     </span>
   </a>
@@ -2929,7 +2929,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2986,6 +2986,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3370,7 +3510,7 @@
   <a href="#195-annotation-protocol" class="md-nav__link">
     <span class="md-ellipsis">
       
-        19.5 Annotation Protocol
+        19.5 注释协议
       
     </span>
   </a>
@@ -3667,7 +3807,7 @@
 <li>用于窗口/聚合测试的连续 OK、连续 NG 和混合产品序列。</li>
 </ul>
 <p>不要通过数字擦除组件来合成所有 NG 示例。合成编辑可能会增加罕见的变化，但物理捕获的缺陷是必要的，因为阴影、包装变形和显示的背景有所不同。</p>
-<h2 id="195-annotation-protocol">19.5 Annotation Protocol<a class="headerlink" href="#195-annotation-protocol" title="Permanent link">&para;</a></h2>
+<h2 id="195-annotation-protocol">19.5 注释协议<a class="headerlink" href="#195-annotation-protocol" title="Permanent link">&para;</a></h2>
 <p>使用稳定的组件代码、包含/排除规则、最小可见性、遮挡/截断标志和困难情况示例定义版本化的类本体。产品盒一致地封装可见的产品。组件框使用 ROI 坐标，但保留源帧变换元数据。</p>
 <p>工作流程：</p>
 <ol>
@@ -3686,67 +3826,67 @@
 <table>
 <thead>
 <tr>
-<th>Set</th>
-<th>Purpose</th>
-<th>Access and reuse rule</th>
+<th>设置</th>
+<th>目的</th>
+<th>访问和重用规则</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Training</td>
-<td>Fit model weights</td>
-<td>May be repeatedly sampled and augmented</td>
+<td>培训</td>
+<td>拟合模型重量</td>
+<td>可重复采样和增强</td>
 </tr>
 <tr>
-<td>Validation</td>
-<td>Select architecture, hyperparameters, thresholds, and aggregation policy</td>
-<td>Repeated use allowed; not a final unbiased estimate</td>
+<td>验证</td>
+<td>选择架构、超参数、阈值和聚合策略</td>
+<td>允许重复使用；不是最终的无偏估计</td>
 </tr>
 <tr>
-<td>Internal test</td>
-<td>Locked engineering comparison before release</td>
-<td>Limited evaluations; never train/tune on failures without creating a new test version</td>
+<td>内部测试</td>
+<td>发布前锁定工程对比</td>
+<td>有限的评估；在没有创建新的测试版本的情况下，切勿对故障进行训练/调整</td>
 </tr>
 <tr>
-<td>Customer acceptance</td>
-<td>Final site-specific validation with production data</td>
-<td>Not used for training or model selection; customer-agreed protocol</td>
+<td>客户验收</td>
+<td>使用生产数据进行最终的特定地点验证</td>
+<td>不用于训练或模型选择；客户同意的协议</td>
 </tr>
 <tr>
-<td>Production audit</td>
-<td>Ongoing drift and sampled OK/NG review</td>
-<td>Time-forward; promoted to training only after evaluation snapshot is frozen</td>
+<td>生产审核</td>
+<td>持续漂移和抽样 OK/NG 审查</td>
+<td>时间向前；仅在评估快照冻结后才晋升为培训</td>
 </tr>
 </tbody>
 </table>
-<p>Percentages depend on available independent groups. A reasonable planning start is 70/15/15 by grouped instances for train/validation/internal test, but sufficient NG examples per component and product take precedence. The customer acceptance set remains separate, not carved out after tuning.</p>
+<p>百分比取决于可用的独立组。合理的计划开始时间为 2015 年 70 月 15 日，按分组实例进行训练/验证/内部测试，但优先考虑每个组件和产品足够的 NG 示例。客户接受集仍然是独立的，不是在调整后雕刻出来的。</p>
 <h3 id="1963-split-construction">19.6.3 分体结构<a class="headerlink" href="#1963-split-construction" title="Permanent link">&para;</a></h3>
-<p>Use deterministic, versioned group assignment with a fixed seed and manifest. Stratify at group level by product, missing-component scenario, site/setup, and relevant operating condition where sample size permits. Report any stratum too small for independent evaluation rather than moving duplicate-like frames across splits.</p>
-<p>Before release, run leakage checks:</p>
+<p>使用具有固定种子和清单的确定性、版本化组分配。在样本量允许的情况下，按产品、缺少组件的情况、站点/设置以及相关操作条件在组级别进行分层。报告任何对于独立评估来说太小的层，而不是跨分割移动类似重复的帧。</p>
+<p>在发布之前，运行泄漏检查：</p>
 <ul>
-<li>Exact SHA-256 duplicate detection across splits.</li>
-<li>Perceptual-hash/embedding nearest-neighbor review for near duplicates and extracted video frames.</li>
-<li>Group-ID overlap checks for physical product, window, session, batch, and date.</li>
-<li>Derived-file lineage checks ensuring crops and augmentations follow their source split.</li>
-<li>Barcode/product-instance identifier overlap check where identifiers are permitted.</li>
-<li>Manual review of the closest cross-split image pairs.</li>
+<li>跨分割的精确 SHA-256 重复检测。</li>
+<li>感知哈希/嵌入最近邻审查，以检查近似重复项和提取的视频帧。</li>
+<li>物理产品、窗口、会话、批次和日期的组 ID 重叠检查。</li>
+<li>派生文件沿袭检查，确保作物和增强遵循其源拆分。</li>
+<li>条形码/产品实例标识符在允许标识符的情况下重叠检查。</li>
+<li>手动检查最接近的交叉分割图像对。</li>
 </ul>
 <h2 id="197-preprocessing-and-augmentation">19.7 预处理和增强<a class="headerlink" href="#197-preprocessing-and-augmentation" title="Permanent link">&para;</a></h2>
-<p>Training and evaluation use the same color conversion, resize/letterbox, ROI expansion/clipping, orientation logic, and image normalization as production. Store these parameters in the model manifest.</p>
-<p>Augmentation may include bounded translation, scale, mild perspective, exposure/contrast, blur, sensor noise, compression, and partial occlusion if each represents plausible production variation. Avoid large rotations or backgrounds not physically possible under the fixed camera. Do not augment validation, test, or acceptance images except deterministic production preprocessing. Audit class-box transformations visually.</p>
+<p>训练和评估使用与生产相同的颜色转换、调整大小/信箱、ROI 扩展/剪切、方向逻辑和图像标准化。将这些参数存储在模型清单中。</p>
+<p>增强可能包括有界平移、缩放、温和透视、曝光/对比度、模糊、传感器噪声、压缩和部分遮挡（如果每个都代表合理的生产变化）。避免在固定相机下物理上不可能出现的大旋转或背景。除确定性生产预处理外，请勿增强验证、测试或验收图像。直观地审核类框转换。</p>
 <h2 id="198-training-reproducibility">19.8 训练再现性<a class="headerlink" href="#198-training-reproducibility" title="Permanent link">&para;</a></h2>
-<p>Each run records source revision, environment/container digest, Python/CUDA/framework versions, random seeds, dataset/ontology version, split manifest, base weights, architecture, image size, epochs, optimizer/schedule, augmentations, thresholds used for reporting, and output artifact checksums. Store human-readable configuration and machine-readable run metadata.</p>
-<p>Training code must support a dry run on synthetic fixtures in CI. Full runs execute on controlled GPU infrastructure, not edge devices. Model artifacts are immutable and linked to evaluation reports; retraining does not overwrite a published semantic version.</p>
+<p>每次运行都会记录源修订、环境/容器摘要、Python/CUDA/框架版本、随机种子、数据集/本体版本、拆分清单、基本权重、架构、图像大小、纪元、优化器/计划、增强、用于报告的阈值以及输出工件校验和。存储人类可读的配置和机器可读的运行元数据。</p>
+<p>训练代码必须支持 CI 中合成装置的试运行。完整运行在受控 GPU 基础设施上执行，而不是在边缘设备上执行。模型工件是不可变的并链接到评估报告；重新训练不会覆盖已发布的语义版本。</p>
 <h2 id="199-detector-level-metrics">19.9 检测器级指标<a class="headerlink" href="#199-detector-level-metrics" title="Permanent link">&para;</a></h2>
-<p>For product and component detectors report:</p>
+<p>对于产品和组件检测器报告：</p>
 <ul>
-<li>Precision-recall curves and average precision at documented IoU thresholds, including mAP50 and mAP50-95 where appropriate.</li>
-<li>Per-class precision, recall, AP, support, and confidence distribution.</li>
-<li>Product-detection success at the operational confidence/IoU criteria.</li>
-<li>False detections on empty/background frames.</li>
-<li>Localization/ROI containment failures that cause component loss.</li>
-<li>Metrics by product, component, batch/session, position band, image-quality band, and setup revision when sample counts permit.</li>
-<li>Inference preprocessing, model, and postprocessing latency separately on representative edge hardware.</li>
+<li>记录的 IoU 阈值的精度-召回率曲线和平均精度，包括 mAP50 和 mAP50-95（如果适用）。</li>
+<li>每类精度、召回率、AP、支持度和置信度分布。</li>
+<li>在操作置信度/IoU 标准下产品检测成功。</li>
+<li>空/背景帧的错误检测。</li>
+<li>导致组件丢失的本地化/ROI 遏制失败。</li>
+<li>按产品、组件、批次/会话、位置范围、图像质量范围以及样本数量允许时的设置修订进行衡量。</li>
+<li>在代表性边缘硬件上分别进行推理预处理、模型和后处理延迟。</li>
 </ul>
 <p>mAP 对于模型开发很有用，但不是生产验收指标。根据验证数据选择阈值，将更高的成本分配给错过的 NG 结果，然后在测试/验收评估之前冻结。</p>
 <h2 id="1910-product-level-system-metrics">19.10 产品级系统指标<a class="headerlink" href="#1910-product-level-system-metrics" title="Permanent link">&para;</a></h2>
@@ -3795,7 +3935,7 @@
 <p>仅当满足以下条件时才能发布候选人：</p>
 <ol>
 <li>工件、清单、数据集和评估校验和完整且可重现。</li>
-<li>所需的每个产品/每个组件分层具有足够的数据或记录的限制。</li>
+<li>所需的每个产品/每个组件层具有足够的数据或记录的限制。</li>
 <li>NG召回、假阴性计数、条形码/产品处理或延迟方面没有出现不可接受的回归。</li>
 <li>规则和类兼容性验证通过。</li>
 <li>内部测试结果由指定的工程/质量审批人员审核。</li>
@@ -3832,7 +3972,7 @@
 不同的产品，这就是为什么小型多板模型通用性较差的原因
 而小型单一产品模型可能是有效的。瓶颈从来都不是
 好的一面；它是<strong>缺失组件 (NG) 面</strong>：物理缺失
-生产线上的零件很少，难以构建，并且每种故障模式都需要模型
+生产线上的零件很少，难以构建，每种故障模式都需要模型
 从未见过有假阴性的风险。</p>
 <h3 id="19172-collection-quantities-planning-ranges-not-acceptance-thresholds">19.17.2 收集数量（计划范围，而非接受阈值）<a class="headerlink" href="#19172-collection-quantities-planning-ranges-not-acceptance-thresholds" title="Permanent link">&para;</a></h3>
 <p>产品检测器（第 1 阶段，全画幅）：</p>

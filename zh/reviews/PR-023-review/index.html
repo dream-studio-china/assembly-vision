@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS 证书轮换
+    TLS Certificate Rotation
   
 
     
@@ -2603,6 +2603,146 @@
     
   
     边缘验收执行
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央摄取积压
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央对象存储故障
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央凭证泄露
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央备份和恢复
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中央试点升级和回滚
   
 
     
@@ -3119,7 +3259,7 @@
 <li><code>docs/design/15-rest-api-and-events.md:157-160</code></li>
 </ul>
 <p><strong>问题</strong></p>
-<p>对于支持的跨源开发设置，<code>VITE_API_BASE_URL</code> 是
+<p>对于支持的跨域开发设置，<code>VITE_API_BASE_URL</code> 是
 边缘原点，例如 <code>http://edge-host:8000</code>。 <code>runtimeWsUrl()</code> 将其转换为
 <code>ws://edge-host:8000/ws/runtime</code>，但服务器端点是
 <code>/api/v1/ws/runtime</code>；连接在身份验证之前收到 404
@@ -3146,7 +3286,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
    <code>Sec-WebSocket-Protocol</code>值。在<code>accept()</code>之前验证一下，只选择一个
    修复了非秘密响应子协议，并且从不记录票证。不要放
    查询参数或浏览器存储中的长期持有者令牌。</li>
-<li>保留同源部署和承载的 cookie 身份验证
+<li>为同源部署和承载保留 cookie 身份验证
    对可以设置标头的非浏览器客户端进行身份验证。更新
    仅当工单流是跨源且
    存在承载支持的查看器会话。</li>
@@ -3248,7 +3388,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <li>保留<code>ProductWindowManager</code>拥有的时间窗口ID；不更换
    身份密封窗口行为或为其生成第二个 ID。</li>
 <li>仅在<code>_persist_projection()</code>成功后发布<code>inspection.completed</code>，
-   就像当前代码一样。失败的推理/持久路径不得发出
+   正如当前代码所做的那样。失败的推理/持久路径不得发出
    错误完成；如果引入了明确的故障事件，请记录其
    语义并保持 REST 权威。</li>
 <li>在开始和完成的有效负载中一致地包含 <code>instance_id</code>
@@ -3306,7 +3446,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <tr>
 <td>PR23-F05</td>
 <td>P2</td>
-<td><code>RuntimeEventBus</code> 跟踪已发布的事件（总数/按类型）、慢速消费者断开连接和传递失败； <code>GET /api/v1/ws/runtime/stats</code> 公开经过身份验证的快照</td>
+<td><code>RuntimeEventBus</code> 跟踪已发布的事件（总数/按类型）、慢速消费者断开连接和交付失败； <code>GET /api/v1/ws/runtime/stats</code> 公开经过身份验证的快照</td>
 <td><code>test_stats_count_events_and_slow_consumers</code>、<code>test_delivery_failures_are_counted</code>、<code>test_runtime_stats_endpoint_requires_viewer</code></td>
 </tr>
 </tbody>
@@ -3458,8 +3598,8 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <tbody>
 <tr>
 <td>票证发行/消费可以同时访问 <code>app.state.ws_tickets</code>，因为同步 REST 处理程序可能在工作线程中运行，而 WebSocket 握手在 ASGI 循环上运行</td>
-<td>进程本地锁现在序列化票证清理、发行和原子消耗，防止并发字典突变，同时保留一次性语义</td>
-<td>现有票证发行/消费/重播/过期测试；运行时事件测试套件</td>
+<td>进程本地锁现在可以序列化票证清理、发行和原子消耗，防止并发字典突变，同时保留一次性语义</td>
+<td>现有票据发行/消费/重播/过期测试；运行时事件测试套件</td>
 </tr>
 <tr>
 <td>异步票证提供程序可以在仪表板断开连接或更新的连接启动后完成，从而允许过时的套接字或其关闭回调更改当前的连接状态</td>

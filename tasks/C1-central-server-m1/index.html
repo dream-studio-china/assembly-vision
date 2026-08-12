@@ -2616,6 +2616,146 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Ingestion Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Object-Store Failure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Credential Compromise
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Backup and Restore
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Pilot Upgrade and Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3853,6 +3993,35 @@ or more focused PRs into <code>main</code>.</p>
   operationally ready.</li>
 <li>M1 does not claim production HA, final RPO/RTO, full retention enforcement,
   OIDC, or remote rollout capability.</li>
+</ul>
+<p><strong>Implementation status</strong></p>
+<ul>
+<li>Delivered hardening: structured log correlation (per-request <code>request_id</code>
+  bound through a context variable and appended to every record; ingest log
+  lines carry device/inspection/object/receipt correlation and correlate with
+  <code>audit_logs.request_id</code>), per-client sliding-window rate limiting
+  (<code>429 RATE_LIMITED</code> + <code>Retry-After</code>, health endpoints exempt,
+  <code>AV_CENTRAL_RATE_LIMIT_REQUESTS_PER_MINUTE</code>, 0 disables), and database
+  connectivity failures mapped to retryable <code>503 DATABASE_UNAVAILABLE</code> +
+  <code>Retry-After</code> (constraint violations keep their explicit conflict
+  semantics). Request-body and payload caps (<code>413</code>) already existed from
+  C2a/C2b and remain covered by tests.</li>
+<li>Fault tests added: object-store outage returns <code>503 OBJECT_STORE_UNAVAILABLE</code>
+  with no receipt or binding persisted; database outage returns
+  <code>503 DATABASE_UNAVAILABLE</code>; controlled restart (engine disposed and
+  reopened) preserves inspections, media bindings, receipts, and audit rows,
+  and receipts stay replayable; a representative backup/restore round-trip
+  (consistent snapshot opened as a fresh database) preserves the same
+  invariants. A real PostgreSQL <code>pg_dump</code>/<code>pg_restore</code> round-trip to a fresh
+  database was executed and verified (schema at head, rows intact) as the
+  representative restore evidence for exit criterion 4.</li>
+<li>Central runbooks added: ingestion backlog (C1), object-store failure (C2),
+  credential compromise (C3), backup/restore (C4), and pilot upgrade/rollback
+  (C5), all indexed in <code>docs/runbooks/README.md</code> and the mkdocs nav
+  (<code>uv run mkdocs build --strict</code> passes).</li>
+<li>M1 remains labeled a controlled pilot: no claim of production HA, final
+  RPO/RTO, full retention enforcement, OIDC, or remote rollout (section 13
+  exit criterion 8).</li>
 </ul>
 <h2 id="8-m1-database-and-object-storage-rules">8. M1 Database and Object Storage Rules<a class="headerlink" href="#8-m1-database-and-object-storage-rules" title="Permanent link">&para;</a></h2>
 <h3 id="81-required-m1-tables">8.1 Required M1 tables<a class="headerlink" href="#81-required-m1-tables" title="Permanent link">&para;</a></h3>
