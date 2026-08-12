@@ -35,7 +35,7 @@ _DEVICE_ID = uuid4()
 
 
 def _settings() -> CentralSettings:
-    return CentralSettings(  # type: ignore[arg-type]
+    return CentralSettings(
         database_url="postgresql+psycopg://unused:unused@127.0.0.1:1/unused",
         admin_session_ttl_minutes=60,
         secure_cookies=False,
