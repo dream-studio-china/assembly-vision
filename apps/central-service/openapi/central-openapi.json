@@ -248,6 +248,63 @@
         "title": "SiteOut",
         "type": "object"
       },
+      "UploadReceiptOut": {
+        "additionalProperties": false,
+        "description": "Verified central receipt for one accepted edge upload (task C1 5.3).\n\nEvery field is echoed from the request so the edge scheduler can validate\nthe receipt against the payload it actually sent; a MEDIA receipt always\ncarries a non-empty ``central_object_id`` (C2b), which is null for\nINSPECTION receipts.",
+        "properties": {
+          "central_object_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Central Object Id"
+          },
+          "checksum_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checksum Sha256"
+          },
+          "idempotency_key": {
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "INSPECTION",
+              "MEDIA"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "object_id": {
+            "title": "Object Id",
+            "type": "string"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "object_id",
+          "kind",
+          "checksum_sha256",
+          "size_bytes"
+        ],
+        "title": "UploadReceiptOut",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -518,6 +575,91 @@
         "summary": "Health Ready",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/api/v1/inspection-uploads": {
+      "post": {
+        "description": "Ingest one edge inspection upload and return a verified receipt.",
+        "operationId": "inspection_uploads_api_v1_inspection_uploads_post",
+        "responses": {
+          "200": {
+            "description": "Identical replay; the original verified receipt is returned"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadReceiptOut"
+                }
+              }
+            },
+            "description": "New valid inspection persisted with a verified receipt"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid device upload credential is required"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The payload device does not match the authenticated device"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Payload conflict: a reused identity carried different content"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The envelope or payload exceeds the configured limit"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Malformed, invalid, or identity-mismatched envelope or payload"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Media ingestion is not available in this pilot step; retryable"
+          }
+        },
+        "summary": "Inspection Uploads",
+        "tags": [
+          "ingest"
         ]
       }
     },

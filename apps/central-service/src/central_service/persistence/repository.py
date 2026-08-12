@@ -1,10 +1,11 @@
-"""Central pilot persistence repository (C1b).
+"""Central pilot persistence repository (C1b/C2a).
 
-Typed row access for the tenant/device/credential domain. Every tenant-owned
-query takes an explicit ``organization_id`` and is scoped server-side in SQL;
-authentication looks up credentials by token and fails closed on unknown,
-disabled, or mismatched rows. Session tokens are split into a public lookup
-half and a hashed secret half so resolution is one indexed query.
+Typed row access for the tenant/device/credential domain and the C2a
+ingestion domain. Every tenant-owned query takes an explicit
+``organization_id`` and is scoped server-side in SQL; authentication looks up
+credentials by token and fails closed on unknown, disabled, or mismatched
+rows. Session tokens are split into a public lookup half and a hashed secret
+half so resolution is one indexed query.
 """
 
 from __future__ import annotations
@@ -12,10 +13,12 @@ from __future__ import annotations
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
+from assemblyvision_domain.models import InspectionRecord
 from sqlalchemy import Engine, Select, and_, select
 from sqlalchemy.engine import RowMapping
+from sqlalchemy.exc import IntegrityError
 
 from central_service.auth.passwords import CredentialHash, hash_credential, verify_credential
 from central_service.persistence.schema import (
@@ -23,9 +26,12 @@ from central_service.persistence.schema import (
     administrators,
     audit_logs,
     devices,
+    inspection_components,
+    inspections,
     organizations,
     production_lines,
     sites,
+    upload_receipts,
 )
 
 _SESSION_LOOKUP_BYTES = 16
@@ -47,6 +53,35 @@ def _utc(value: datetime) -> datetime:
 
 def _row_to_datetime(value: datetime | None) -> datetime | None:
     return _utc(value) if value is not None else None
+
+
+def _uuid_or_none(value: object | None) -> str | None:
+    """Serialize an optional UUID identity to its string form, or None."""
+    return str(value) if value is not None else None
+
+
+# The ingestion uniqueness constraints that protect effectively-once
+# persistence (task C1 section 5.4). A concurrent insert losing the race on
+# one of these is a payload conflict, never an internal error.
+_CONFLICT_CONSTRAINTS = frozenset(
+    {
+        "uq_upload_receipts_device_key",
+        "uq_inspections_device_inspection",
+        "uq_inspections_device_sequence",
+    }
+)
+
+
+def _integrity_constraint(exc: IntegrityError) -> str | None:
+    """Return the violated constraint name (PostgreSQL), or None.
+
+    psycopg attaches ``diag.constraint_name`` to integrity errors; SQLite
+    exposes only a message, so the name stays None there and non-conflict
+    integrity errors propagate as internal errors.
+    """
+    diag = getattr(exc.orig, "diag", None)
+    name = getattr(diag, "constraint_name", None) if diag is not None else None
+    return str(name) if name else None
 
 
 @dataclass(frozen=True)
@@ -101,6 +136,43 @@ class PilotBootstrapResult:
     @property
     def bootstrapped(self) -> bool:
         return bool(self.created)
+
+
+@dataclass(frozen=True)
+class UploadReceiptRow:
+    """A persisted, replayable central upload receipt (design 14)."""
+
+    idempotency_key: str
+    request_hash: str
+    kind: str
+    object_id: str
+    inspection_id: str | None
+    central_object_id: str | None
+    size_bytes: int
+    status: str
+    response_code: int
+    created_at: datetime
+
+
+class PayloadConflictError(Exception):
+    """A reused upload identity arrived with different content (409).
+
+    The original accepted resource is never altered; the conflict attempt is
+    recorded as an immutable audit event before the exception propagates.
+    """
+
+    def __init__(self, *, reason: str, idempotency_key: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+        self.idempotency_key = idempotency_key
+
+
+class _ConflictDetected(Exception):
+    """Internal sentinel: a conflict was found inside the ingest transaction."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
 
 
 class CentralRepository:
@@ -431,6 +503,265 @@ class CentralRepository:
             device_row_id=device_row_id,
             administrator_id=administrator_id,
             created=tuple(created),
+        )
+
+    # -- ingestion (C2a) ------------------------------------------------------
+
+    def ingest_inspection(
+        self,
+        *,
+        device: DeviceRow,
+        idempotency_key: str,
+        request_hash: str,
+        object_id: str,
+        inspection_id: str,
+        record: InspectionRecord,
+        payload_json: str,
+        received_at: datetime,
+    ) -> tuple[UploadReceiptRow, bool]:
+        """Persist one accepted inspection with its receipt and audit event.
+
+        Returns ``(receipt, replayed)``. An identical replay (same device,
+        idempotency key, and canonical request hash) returns the original
+        persisted receipt without a second inspection, component, or audit
+        acceptance row. Reusing the idempotency key, inspection id, or device
+        sequence with a different hash raises :class:`PayloadConflictError`
+        after recording the attempt as an audit event; the original accepted
+        resource is preserved. The inspection, receipt, components, and audit
+        acceptance event commit in one transaction (C2a exit criteria).
+        """
+        try:
+            with self._engine.begin() as connection:
+                existing_receipt = self._receipt_by_key(connection, device.id, idempotency_key)
+                if existing_receipt is not None:
+                    if existing_receipt["request_hash"] == request_hash:
+                        return self._receipt_from_row(existing_receipt), True
+                    raise _ConflictDetected(
+                        f"idempotency key {idempotency_key} was accepted with different content"
+                    )
+                if (
+                    self._inspection_by_identity(connection, device.id, inspection_id=inspection_id)
+                    is not None
+                ):
+                    raise _ConflictDetected(
+                        f"inspection id {inspection_id} was already accepted for this device"
+                    )
+                if (
+                    self._inspection_by_identity(
+                        connection, device.id, device_sequence=record.device_sequence
+                    )
+                    is not None
+                ):
+                    raise _ConflictDetected(
+                        f"device sequence {record.device_sequence} was already accepted "
+                        "for this device"
+                    )
+
+                inspection_row = (
+                    connection.execute(
+                        inspections.insert()
+                        .values(
+                            organization_id=device.organization_id,
+                            device_row_id=device.id,
+                            inspection_id=inspection_id,
+                            device_sequence=record.device_sequence,
+                            lifecycle_status=str(record.lifecycle_status.value),
+                            started_at=record.started_at,
+                            completed_at=record.completed_at,
+                            received_at=received_at,
+                            barcode_status=str(record.barcode_result.status),
+                            barcode_value=record.barcode_result.value,
+                            product_resolution_status=str(record.product_resolution.status),
+                            product_code=record.product_resolution.product_code,
+                            product_version_id=_uuid_or_none(
+                                record.product_resolution.product_version_id
+                            ),
+                            internal_decision=str(record.decision.internal_decision.value),
+                            business_result=str(record.decision.business_result.value),
+                            missing_components=list(record.decision.missing_components),
+                            low_confidence_components=list(
+                                record.decision.low_confidence_components
+                            ),
+                            decision_reason_codes=list(record.decision.reason_codes),
+                            decided_at=record.decision.decided_at,
+                            application_version=record.application_version,
+                            product_model_version_id=str(record.product_model_version_id),
+                            product_model_checksum_sha256=record.product_model_checksum_sha256,
+                            component_model_version_id=str(record.component_model_version_id),
+                            component_model_checksum_sha256=record.component_model_checksum_sha256,
+                            rule_version_id=str(record.rule_version_id),
+                            aggregation_policy_version=record.aggregation_policy_version,
+                            processing_ms=record.processing_ms,
+                            inference_metadata=(
+                                record.inference_metadata.model_dump(mode="json")
+                                if record.inference_metadata is not None
+                                else None
+                            ),
+                            payload_json=payload_json,
+                            request_hash=request_hash,
+                        )
+                        .returning(*inspections.c)
+                    )
+                    .mappings()
+                    .one()
+                )
+                inspection_pk = int(inspection_row["id"])
+                for evidence in record.evidence:
+                    connection.execute(
+                        inspection_components.insert().values(
+                            inspection_id=inspection_pk,
+                            component_code=evidence.component_code,
+                            state=str(evidence.state),
+                            best_confidence=evidence.best_confidence,
+                            usable_frame_count=evidence.usable_frame_count,
+                            detection_count=evidence.detection_count,
+                            policy_reason_codes=list(evidence.policy_reason_codes),
+                        )
+                    )
+                receipt_row = (
+                    connection.execute(
+                        upload_receipts.insert()
+                        .values(
+                            organization_id=device.organization_id,
+                            device_row_id=device.id,
+                            idempotency_key=idempotency_key,
+                            request_hash=request_hash,
+                            kind="INSPECTION",
+                            object_id=object_id,
+                            inspection_id=inspection_id,
+                            central_object_id=None,
+                            size_bytes=len(payload_json.encode("utf-8")),
+                            status="ACCEPTED",
+                            response_code=201,
+                        )
+                        .returning(*upload_receipts.c)
+                    )
+                    .mappings()
+                    .one()
+                )
+                connection.execute(
+                    audit_logs.insert().values(
+                        organization_id=device.organization_id,
+                        actor_type="DEVICE",
+                        actor_id=device.id,
+                        action="INSPECTION_ACCEPTED",
+                        target_type="inspection",
+                        target_id=inspection_id,
+                        detail=f"idempotency_key={idempotency_key}",
+                    )
+                )
+            return self._receipt_from_row(receipt_row), False
+        except _ConflictDetected as exc:
+            # target_id is the bounded 36-char inspection identity; the
+            # idempotency key (which embeds two UUIDs) would exceed the
+            # audit target_id column on PostgreSQL, so it goes in detail.
+            self.write_audit(
+                organization_id=device.organization_id,
+                actor_type="DEVICE",
+                actor_id=device.id,
+                action="UPLOAD_PAYLOAD_CONFLICT",
+                target_type="inspection-upload",
+                target_id=inspection_id,
+                detail=f"idempotency_key={idempotency_key} reason={exc.reason}",
+            )
+            raise PayloadConflictError(reason=exc.reason, idempotency_key=idempotency_key) from exc
+        except IntegrityError as exc:
+            # A concurrent request lost the insert race on an ingestion
+            # uniqueness constraint; the database is authoritative, so this is
+            # the same payload-conflict contract (409), never a 500.
+            if _integrity_constraint(exc) not in _CONFLICT_CONSTRAINTS:
+                raise
+            self.write_audit(
+                organization_id=device.organization_id,
+                actor_type="DEVICE",
+                actor_id=device.id,
+                action="UPLOAD_PAYLOAD_CONFLICT",
+                target_type="inspection-upload",
+                target_id=inspection_id,
+                detail="concurrent duplicate identity rejected by the database",
+            )
+            raise PayloadConflictError(
+                reason="a concurrent duplicate upload was rejected by the database",
+                idempotency_key=idempotency_key,
+            ) from exc
+
+    def get_receipt(self, device: DeviceRow, idempotency_key: str) -> UploadReceiptRow | None:
+        """Return the persisted receipt for one device/key, or None."""
+        with self._engine.connect() as connection:
+            row = self._receipt_by_key(connection, device.id, idempotency_key)
+        return self._receipt_from_row(row) if row is not None else None
+
+    @staticmethod
+    def _receipt_by_key(
+        connection: Any, device_row_id: int, idempotency_key: str
+    ) -> RowMapping | None:
+        row = (
+            connection.execute(
+                select(upload_receipts).where(
+                    and_(
+                        upload_receipts.c.device_row_id == device_row_id,
+                        upload_receipts.c.idempotency_key == idempotency_key,
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        return cast("RowMapping | None", row)
+
+    @staticmethod
+    def _inspection_by_identity(
+        connection: Any,
+        device_row_id: int,
+        *,
+        inspection_id: str | None = None,
+        device_sequence: int | None = None,
+    ) -> RowMapping | None:
+        if inspection_id is not None:
+            row = (
+                connection.execute(
+                    select(inspections).where(
+                        and_(
+                            inspections.c.device_row_id == device_row_id,
+                            inspections.c.inspection_id == inspection_id,
+                        )
+                    )
+                )
+                .mappings()
+                .first()
+            )
+            return cast("RowMapping | None", row)
+        if device_sequence is not None:
+            row = (
+                connection.execute(
+                    select(inspections).where(
+                        and_(
+                            inspections.c.device_row_id == device_row_id,
+                            inspections.c.device_sequence == device_sequence,
+                        )
+                    )
+                )
+                .mappings()
+                .first()
+            )
+            return cast("RowMapping | None", row)
+        return None
+
+    @staticmethod
+    def _receipt_from_row(row: RowMapping) -> UploadReceiptRow:
+        return UploadReceiptRow(
+            idempotency_key=str(row["idempotency_key"]),
+            request_hash=str(row["request_hash"]),
+            kind=str(row["kind"]),
+            object_id=str(row["object_id"]),
+            inspection_id=(str(row["inspection_id"]) if row["inspection_id"] is not None else None),
+            central_object_id=(
+                str(row["central_object_id"]) if row["central_object_id"] is not None else None
+            ),
+            size_bytes=int(row["size_bytes"]),
+            status=str(row["status"]),
+            response_code=int(row["response_code"]),
+            created_at=CentralRepository._parse_dt(row["created_at"]),
         )
 
     # -- audit ----------------------------------------------------------------

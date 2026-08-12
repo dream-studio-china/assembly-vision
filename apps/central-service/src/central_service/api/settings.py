@@ -52,6 +52,13 @@ class CentralSettings(BaseSettings):
     # infer the externally terminated TLS scheme.
     secure_cookies: bool = True
 
+    # Ingestion bounds (C2a, contract 05 section 7). The envelope body cap
+    # bounds the raw JSON request; the inspection payload cap bounds the
+    # Base64-decoded InspectionRecord payload. Oversized requests fail closed
+    # with 413 before any persistence.
+    max_envelope_body_bytes: int = 16 * 1024 * 1024
+    max_inspection_payload_bytes: int = 1 * 1024 * 1024
+
     @field_validator("database_url")
     @classmethod
     def _validate_database_scheme(cls, value: str) -> str:
@@ -73,3 +80,9 @@ class CentralSettings(BaseSettings):
             raise ConfigError("central: admin_session_ttl_minutes must be in [1, 1440]")
         if self.minio_bucket.strip() == "":
             raise ConfigError("central: minio_bucket must not be empty")
+        if self.max_envelope_body_bytes < 1024:
+            raise ConfigError("central: max_envelope_body_bytes must be at least 1024")
+        if not (1 <= self.max_inspection_payload_bytes <= self.max_envelope_body_bytes):
+            raise ConfigError(
+                "central: max_inspection_payload_bytes must be in [1, max_envelope_body_bytes]"
+            )

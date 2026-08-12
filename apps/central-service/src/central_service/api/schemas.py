@@ -80,3 +80,20 @@ class DeviceOut(APIModel):
     name: str
     status: str
     created_at: datetime
+
+
+class UploadReceiptOut(APIModel):
+    """Verified central receipt for one accepted edge upload (task C1 5.3).
+
+    Every field is echoed from the request so the edge scheduler can validate
+    the receipt against the payload it actually sent; a MEDIA receipt always
+    carries a non-empty ``central_object_id`` (C2b), which is null for
+    INSPECTION receipts.
+    """
+
+    idempotency_key: str
+    object_id: str
+    kind: Literal["INSPECTION", "MEDIA"]
+    checksum_sha256: str | None
+    size_bytes: int
+    central_object_id: str | None = None
