@@ -3771,69 +3771,69 @@ OpenAPI 中的模型。最小注册表是：</p>
 架构版本。事件 <code>sequence</code> 对于 <code>(source_id, channel)</code> 是单调的，并且仅当
 源身份变更。</p>
 <h2 id="145-edge-schema">14.5 边缘模式<a class="headerlink" href="#145-edge-schema" title="Permanent link">&para;</a></h2>
-<p>SQLite is the MVP default. Enable WAL mode, foreign keys, <code>busy_timeout</code>, and <code>synchronous=FULL</code> where inspection throughput permits. Keep one short writer transaction per finalized frame or inspection; media bytes stay in the filesystem.</p>
+<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份简短的写入交易；媒体字节保留在文件系统中。</p>
 <table>
 <thead>
 <tr>
-<th>Table</th>
-<th>Key and principal columns</th>
-<th>Constraints and purpose</th>
+<th>表</th>
+<th>关键列和主要列</th>
+<th>限制和目的</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>local_inspections</code></td>
-<td><code>id</code> PK UUID, <code>device_id</code>, <code>device_sequence</code>, lifecycle, timestamps, barcode status/value, product resolution, internal decision, business result, application/product-model/component-model/rule versions and checksums, reason JSON, latency</td>
-<td><code>UNIQUE(device_id, device_sequence)</code>; durable product-level result and synchronization unit.</td>
+<td><code>id</code> PK UUID、<code>device_id</code>、<code>device_sequence</code>、生命周期、时间戳、条形码状态/值、产品解析、内部决策、业务结果、应用程序/产品模型/组件模型/规则版本和校验和、原因 JSON、延迟</td>
+<td><code>UNIQUE(device_id, device_sequence)</code>；耐用的产品级结果和同步单元。</td>
 </tr>
 <tr>
 <td><code>local_detection_frames</code></td>
-<td><code>id</code> PK, <code>inspection_id</code> FK, <code>frame_index</code>, captured time, quality fields, product bbox JSON</td>
-<td><code>UNIQUE(inspection_id, frame_index)</code>; optional detailed evidence subject to shorter retention.</td>
+<td><code>id</code> PK、<code>inspection_id</code> FK、<code>frame_index</code>、捕获时间、质量字段、产品 bbox JSON</td>
+<td><code>UNIQUE(inspection_id, frame_index)</code>；可选的详细证据的保留时间较短。</td>
 </tr>
 <tr>
 <td><code>local_component_evidence</code></td>
-<td><code>id</code> PK, <code>inspection_id</code> FK, component code, state, confidence/count fields, reason JSON</td>
-<td><code>UNIQUE(inspection_id, component_code)</code>; final per-component evidence.</td>
+<td><code>id</code> PK、<code>inspection_id</code> FK、组件代码、状态、置信度/计数字段、原因 JSON</td>
+<td><code>UNIQUE(inspection_id, component_code)</code>；最终每个组件的证据。</td>
 </tr>
 <tr>
 <td><code>local_media_files</code></td>
-<td><code>id</code> PK, <code>inspection_id</code> FK nullable, kind, relative path, MIME type, bytes, SHA-256, captured time, upload-required flag</td>
-<td>Path must be relative to the configured media root; <code>UNIQUE(relative_path)</code> and <code>UNIQUE(sha256, kind)</code> where deduplication is safe.</td>
+<td><code>id</code> PK、<code>inspection_id</code> FK可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
+<td>路径必须相对于配置的媒体根； <code>UNIQUE(relative_path)</code> 和 <code>UNIQUE(sha256, kind)</code> ，其中重复数据删除是安全的。</td>
 </tr>
 <tr>
 <td><code>upload_tasks</code></td>
-<td><code>id</code> PK, device/inspection/object IDs, kind, payload hash, checksum, idempotency key, canonical state, attempts, lease owner/expiry, next attempt, timestamps, error</td>
-<td><code>UNIQUE(device_id, idempotency_key)</code>; persistent outbox with recoverable leases.</td>
+<td><code>id</code> PK、设备/检查/对象 ID、种类、有效负载哈希、校验和、幂等密钥、规范状态、尝试、租约所有者/到期、下次尝试、时间戳、错误</td>
+<td><code>UNIQUE(device_id, idempotency_key)</code>；具有可恢复租约的持久发件箱。</td>
 </tr>
 <tr>
 <td><code>device_events</code></td>
-<td><code>id</code> PK, occurred time, severity, event code, details JSON, upload state</td>
-<td>Append-only operational event stream.</td>
+<td><code>id</code> PK、发生时间、严重程度、事件代码、详情JSON、上传状态</td>
+<td>仅附加操作事件流。</td>
 </tr>
 <tr>
 <td><code>local_configuration</code></td>
-<td><code>key</code> PK, revision, value JSON, source, applied time, checksum</td>
-<td>Atomic effective configuration snapshot; retain prior snapshots in history or event records.</td>
+<td><code>key</code> PK、修订、值 JSON、来源、应用时间、校验和</td>
+<td>原子有效配置快照；在历史或事件记录中保留先前的快照。</td>
 </tr>
 <tr>
 <td><code>model_installations</code></td>
-<td><code>model_version_id</code> PK, manifest JSON, local path, SHA-256, state, installed/activated times</td>
-<td>Only one active installation per task, enforced transactionally.</td>
+<td><code>model_version_id</code> PK、清单 JSON、本地路径、SHA-256、状态、安装/激活时间</td>
+<td>每个任务只有一个活动安装，以事务方式强制执行。</td>
 </tr>
 <tr>
 <td><code>rule_installations</code></td>
-<td><code>rule_version_id</code> PK, product version ID, document JSON, checksum, state, installed/activated times</td>
-<td>Activation validates compatible model classes and product version.</td>
+<td><code>rule_version_id</code> PK、产品版本 ID、文档 JSON、校验和、状态、安装/激活次数</td>
+<td>激活验证兼容的型号类别和产品版本。</td>
 </tr>
 <tr>
 <td><code>review_records</code></td>
-<td><code>review_id</code> PK, <code>inspection_id</code> FK, disposition, reason, note, reviewer, created time, original business/internal decision and reason JSON, component-corrections JSON, supersedes review id</td>
-<td>Append-only (ADR-016, migration 0008); disposition is constrained per machine outcome; a later review supersedes by reference and never overwrites.</td>
+<td><code>review_id</code> PK、<code>inspection_id</code> FK、处置、原因、注释、审阅者、创建时间、原始业务/内部决策和原因 JSON、组件更正 JSON、取代审阅 ID</td>
+<td>仅附加（ADR-016，迁移 0008）；每个机器结果的配置受到限制；后来的评论将通过引用取代，并且永远不会覆盖。</td>
 </tr>
 </tbody>
 </table>
-<p>Required edge indexes:</p>
+<p>所需的边索引：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_local_inspections_completed</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">local_inspections</span><span class="p">(</span><span class="n">completed_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_local_inspections_barcode</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">local_inspections</span><span class="p">(</span><span class="n">barcode</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">barcode</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_local_inspections_result_time</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">local_inspections</span><span class="p">(</span><span class="n">business_result</span><span class="p">,</span><span class="w"> </span><span class="n">completed_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
@@ -3842,99 +3842,99 @@ OpenAPI 中的模型。最小注册表是：</p>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_device_events_time</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">device_events</span><span class="p">(</span><span class="n">occurred_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
 </code></pre></div>
 <h2 id="146-central-schema">14.6 中心模式<a class="headerlink" href="#146-central-schema" title="Permanent link">&para;</a></h2>
-<p>PostgreSQL owns tenant isolation and global history. Every tenant-owned row carries <code>organization_id</code>; repository queries must scope it even if row-level security is later enabled.</p>
+<p>PostgreSQL 拥有租户隔离和全局历史记录。每个租户拥有的行都带有 <code>organization_id</code>；即使稍后启用行级安全性，存储库查询也必须限定其范围。</p>
 <table>
 <thead>
 <tr>
-<th>Table</th>
-<th>Key and principal columns</th>
-<th>Constraints and purpose</th>
+<th>表</th>
+<th>关键列和主要列</th>
+<th>限制和目的</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>organizations</code></td>
-<td>UUID PK, unique slug, name, status</td>
-<td>Tenant root; archive rather than delete.</td>
+<td>UUID PK、唯一的 slug、名称、状态</td>
+<td>租户根；归档而不是删除。</td>
 </tr>
 <tr>
 <td><code>sites</code></td>
-<td>UUID PK, organization FK, code, name, timezone</td>
-<td><code>UNIQUE(organization_id, code)</code>.</td>
+<td>UUID PK、组织 FK、代码、名称、时区</td>
+<td><code>UNIQUE(organization_id, code)</code>。</td>
 </tr>
 <tr>
 <td><code>production_lines</code></td>
-<td>UUID PK, site FK, code, name</td>
-<td><code>UNIQUE(site_id, code)</code>.</td>
+<td>UUID PK、站点 FK、代码、名称</td>
+<td><code>UNIQUE(site_id, code)</code>。</td>
 </tr>
 <tr>
 <td><code>devices</code></td>
-<td>UUID PK, line FK, device code, certificate identity, state, last seen</td>
-<td><code>UNIQUE(organization_id, device_code)</code>; certificate identity separately unique.</td>
+<td>UUID PK、线路 FK、设备代码、证书身份、状态、上次查看</td>
+<td><code>UNIQUE(organization_id, device_code)</code>；证书身份单独唯一。</td>
 </tr>
 <tr>
-<td><code>users</code>, <code>roles</code>, <code>user_roles</code></td>
-<td>UUID keys, organization scope, identity subject, role name, join rows</td>
-<td>Identity-provider subject unique; assignment has composite uniqueness.</td>
+<td><code>users</code>、<code>roles</code>、<code>user_roles</code></td>
+<td>UUID 键、组织范围、身份主体、角色名称、连接行</td>
+<td>身份提供者主体唯一；赋值具有复合唯一性。</td>
 </tr>
 <tr>
-<td><code>products</code>, <code>product_components</code></td>
-<td>Product UUID/code; component code/name/active state</td>
-<td>Component membership is versioned through product-version snapshots, not overwritten in historical inspections.</td>
+<td><code>products</code>、<code>product_components</code></td>
+<td>产品UUID/代码；组件代码/名称/活动状态</td>
+<td>组件成员资格通过产品版本快照进行版本控制，不会在历史检查中被覆盖。</td>
 </tr>
 <tr>
 <td><code>product_versions</code></td>
-<td>UUID PK, product FK, integer version, immutable configuration JSON, published time</td>
-<td><code>UNIQUE(product_id, version)</code>; no update after publish.</td>
+<td>UUID PK、产品FK、整数版本、不可变配置JSON、发布时间</td>
+<td><code>UNIQUE(product_id, version)</code>；发布后没有更新。</td>
 </tr>
 <tr>
-<td><code>rules</code>, <code>rule_versions</code></td>
-<td>Stable rule identity and immutable version document with product version FK</td>
-<td>Drafts editable; published versions immutable and uniquely numbered.</td>
+<td><code>rules</code>、<code>rule_versions</code></td>
+<td>稳定的规则身份和不可变的版本文档，产品版本FK</td>
+<td>草稿可编辑；发布的版本不可变且具有唯一编号。</td>
 </tr>
 <tr>
-<td><code>model_packages</code>, <code>model_versions</code></td>
-<td>Stable model identity; task, semantic version, manifest, artifact URI/checksum, lifecycle state</td>
-<td><code>UNIQUE(model_id, semantic_version)</code>; immutable after publication.</td>
+<td><code>model_packages</code>、<code>model_versions</code></td>
+<td>稳定的模型身份；任务、语义版本、清单、工件 URI/校验和、生命周期状态</td>
+<td><code>UNIQUE(model_id, semantic_version)</code>；发布后不可更改。</td>
 </tr>
 <tr>
 <td><code>inspections</code></td>
-<td>UUID PK matching edge ID, organization/device FKs, device sequence, lifecycle/times, barcode/product resolution, internal decision, business result, application/product-model/component-model/rule versions and checksums, latency, received time</td>
-<td><code>UNIQUE(device_id, device_sequence)</code>; preserves exact runtime versions.</td>
+<td>UUID PK 匹配边缘 ID、组织/设备 FK、设备序列、生命周期/时间、条形码/产品分辨率、内部决策、业务结果、应用程序/产品模型/组件模型/规则版本和校验和、延迟、接收时间</td>
+<td><code>UNIQUE(device_id, device_sequence)</code>;保留准确的运行时版本。</td>
 </tr>
 <tr>
 <td><code>inspection_components</code></td>
-<td>UUID PK, inspection FK, component code, state, confidence/counts, reasons</td>
-<td><code>UNIQUE(inspection_id, component_code)</code>.</td>
+<td>UUID PK、检查 FK、组件代码、状态、置信度/计数、原因</td>
+<td><code>UNIQUE(inspection_id, component_code)</code>。</td>
 </tr>
 <tr>
 <td><code>inspection_media</code></td>
-<td>UUID PK matching edge object ID, inspection FK, kind, object key, MIME, bytes, SHA-256, capture/receive times</td>
-<td><code>UNIQUE(device_id, source_media_id)</code> and immutable object key after verification.</td>
+<td>UUID PK 匹配边缘对象 ID、检查 FK、种类、对象密钥、MIME、字节、SHA-256、捕获/接收时间</td>
+<td><code>UNIQUE(device_id, source_media_id)</code> 和验证后的不可变对象密钥。</td>
 </tr>
 <tr>
 <td><code>review_records</code></td>
-<td>UUID PK, inspection/reviewer FKs, outcomes, corrections, reason, revision, time</td>
-<td><code>UNIQUE(inspection_id, revision)</code>; revisions append, never overwrite.</td>
+<td>UUID PK、检查/审阅者 FK、结果、更正、原因、修订、时间</td>
+<td><code>UNIQUE(inspection_id, revision)</code>；修订追加，切勿覆盖。</td>
 </tr>
 <tr>
 <td><code>device_events</code></td>
-<td>UUID PK matching source event ID, device FK, source/receive times, severity/code/details</td>
-<td>Idempotent event ingestion.</td>
+<td>UUID PK 匹配源事件 ID、设备 FK、源/接收时间、严重性/代码/详细信息</td>
+<td>幂等事件摄取。</td>
 </tr>
 <tr>
 <td><code>upload_receipts</code></td>
-<td>UUID PK, device FK, idempotency key, request hash, resource type/ID, status, response code/time</td>
-<td><code>UNIQUE(device_id, idempotency_key)</code>; hash mismatch is a conflict.</td>
+<td>UUID PK、设备FK、幂等密钥、请求哈希、资源类型/ID、状态、响应代码/时间</td>
+<td><code>UNIQUE(device_id, idempotency_key)</code>；哈希不匹配是一种冲突。</td>
 </tr>
 <tr>
 <td><code>audit_logs</code></td>
-<td>UUID PK, organization/actor, action, resource type/ID, before/after JSON, request/correlation IDs, IP, time</td>
-<td>Append-only security and configuration audit.</td>
+<td>UUID PK、组织/参与者、操作、资源类型/ID、JSON 之前/之后、请求/关联 ID、IP、时间</td>
+<td>仅附加安全和配置审核。</td>
 </tr>
 </tbody>
 </table>
-<p>Use monthly range partitioning for <code>inspections</code>, <code>device_events</code>, and <code>audit_logs</code> only after measured volume justifies it. Premature partitioning complicates foreign keys and migrations.</p>
+<p>仅当测量的数量证明其合理性时，才对 <code>inspections</code>、<code>device_events</code> 和 <code>audit_logs</code> 使用每月范围分区。过早的分区会使外键和迁移变得复杂。</p>
 <h2 id="147-entity-relationships">14.7 实体关系<a class="headerlink" href="#147-entity-relationships" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>erDiagram
     ORGANIZATION ||--o{ SITE :包含
@@ -3955,19 +3955,19 @@ OpenAPI 中的模型。最小注册表是：</p>
     INSPECTION ||--o{ INSPECTION_COMPONENT :包含
     INSPECTION ||--o{ INSPECTION_MEDIA :有
     INSPECTION ||--o{ REVIEW_RECORD :评论者
-    DEVICE ||--o{ DEVICE_EVENT :emits
+    DEVICE ||--o{ DEVICE_EVENT :发出
     DEVICE ||--o{ UPLOAD_RECEIPT :上传
     ORGANIZATION ||--o{ AUDIT_LOG :记录</code></pre>
-<p>The edge equivalents of <code>INSPECTION</code>, <code>INSPECTION_COMPONENT</code>, and media retain the same IDs, allowing central ingestion without identity translation.</p>
+<p><code>INSPECTION</code>、<code>INSPECTION_COMPONENT</code> 和媒体的边缘等效项保留相同的 ID，允许集中摄取而无需身份转换。</p>
 <h2 id="148-keys-indexes-and-query-paths">14.8 键、索引和查询路径<a class="headerlink" href="#148-keys-indexes-and-query-paths" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Primary keys are UUIDs generated before persistence. The edge can therefore create records offline.</li>
-<li>Business keys are organization slug, site/line/device code, product code, component code, <code>(device_id, device_sequence)</code>, and version numbers within their stable parent.</li>
-<li>Index central barcode queries with <code>(organization_id, barcode, completed_at DESC)</code> and use a partial predicate excluding null barcodes. Do not globally constrain barcode uniqueness because rework and duplicate reads are possible.</li>
-<li>Index dashboard time scans with <code>(organization_id, completed_at DESC)</code> and <code>(device_id, completed_at DESC)</code>. Add <code>(organization_id, business_result, completed_at DESC)</code> for NG queues and indexes for product/model/rule/reason query paths.</li>
-<li>Index pending reviews with a partial index on inspections whose business result is <code>NG</code> and review status is pending; internal <code>UNCERTAIN</code> remains a filterable reason/state.</li>
-<li>Index all foreign keys used in joins. Validate plans with production-like cardinality before adding confidence/component composite indexes.</li>
-<li>Use keyset pagination <code>(completed_at, id) &lt; (:cursor_time, :cursor_id)</code> for history. Offset pagination is acceptable only for small configuration lists.</li>
+<li>主键是持久化之前生成的UUID。因此，边缘可以离线创建记录。</li>
+<li>业务密钥是组织别名、站点/线路/设备代码、产品代码、组件代码、<code>(device_id, device_sequence)</code> 及其稳定父级中的版本号。</li>
+<li>使用 <code>(organization_id, barcode, completed_at DESC)</code> 索引中央条形码查询并使用排除空条形码的部分谓词。不要全局限制条形码的唯一性，因为可能会出现返工和重复读取。</li>
+<li>使用 <code>(organization_id, completed_at DESC)</code> 和 <code>(device_id, completed_at DESC)</code> 索引仪表板时间扫描。为产品/型号/规则/原因查询路径的 NG 队列和索引添加 <code>(organization_id, business_result, completed_at DESC)</code>。</li>
+<li>对业务结果为<code>NG</code>且审核状态为待审核的检查使用部分索引来索引待审核；内部 <code>UNCERTAIN</code> 仍然是可过滤的原因/状态。</li>
+<li>索引连接中使用的所有外键。在添加置信度/组件综合索引之前，使用类似生产的基数验证计划。</li>
+<li>使用键集分页 <code>(completed_at, id) &lt; (:cursor_time, :cursor_id)</code> 来获取历史记录。偏移分页仅适用于小型配置列表。</li>
 </ul>
 <h2 id="149-media-metadata-and-integrity">14.9 媒体元数据和完整性<a class="headerlink" href="#149-media-metadata-and-integrity" title="Permanent link">&para;</a></h2>
 <p>数据库存储媒体元数据，而不是大图像/视频 blob。 Edge 写入临时路径（支持的情况下），自动重命名、计算 SHA-256，然后提交元数据及其上传任务。集中上传使用暂存对象密钥； API 在标记媒体可用之前验证大小和校验和。在最终对象存在之前，数据库行不得声明 <code>AVAILABLE</code>。</p>

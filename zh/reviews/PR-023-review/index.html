@@ -3198,7 +3198,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
    填充度决定并将信封入队或排出并入队
    恰好有一个 <code>_Disconnect</code> 哨兵。</li>
 <li>不要从检查/上传中访问或改变 <code>asyncio.Queue</code>
-   thread.仅保留订阅图和序列簿记在
+   线程。仅保留订阅图和序列簿记在
    螺纹锁。</li>
 <li>使计划的交付能够容忍关闭事件循环：事件发布
    仍然尽最大努力，绝不能进行检查、坚持或
@@ -3237,7 +3237,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 运行时，而不是死分支。因此，仪表板和任何其他事件
 尽管 E4a，消费者仍收到默认模式的不完整生命周期
 明确承诺来自真实检查循环的开始和完成事件
-transitions.</p>
+过渡。</p>
 <p><strong>所需的解决方案</strong></p>
 <ol>
 <li>在两种模式的推理之前定义生命周期标识。的
@@ -3355,84 +3355,84 @@ transitions.</p>
 强制矩阵明确要求可观察的连接和事件计数，
 因此操作员无法区分空闲仪表板和失败的事件源。</p>
 <p><strong>推荐解决方案</strong></p>
-<p>Add a typed runtime-event health snapshot with active connections, events
-published by type, slow-consumer disconnects, and delivery callback failures.
-Expose it through the existing authenticated device/status or observability
-surface, document units/reset semantics, and avoid putting unbounded
-per-connection identifiers into metrics.</p>
-<p><strong>Acceptance criteria</strong></p>
+<p>添加包含活动连接、事件的类型化运行时事件运行状况快照
+按类型发布、消费者断开连接缓慢以及传递回调失败。
+通过现有的经过身份验证的设备/状态或可观察性将其公开
+表面，文档单位/重置语义，并避免放置无界
+每个连接的标识符转化为指标。</p>
+<p><strong>验收标准</strong></p>
 <ul>
-<li>Connection open/close, published-event, slow-consumer, and failed-delivery
-  counters change deterministically in tests.</li>
-<li>Operators can retrieve the current values through an authenticated existing
-  status/metrics surface with documented fields.</li>
-<li>Counter collection remains non-blocking and does not expose credentials,
-  identities, or payload contents.</li>
+<li>连接打开/关闭、发布事件、缓慢消费和失败传递
+  计数器在测试中确定性地变化。</li>
+<li>操作员可以通过经过身份验证的现有值检索当前值
+  带有记录字段的状态/指标表面。</li>
+<li>计数器收集保持非阻塞并且不会暴露凭据，
+  身份或有效负载内容。</li>
 </ul>
 <h2 id="5-positive-findings">5. 积极的发现<a class="headerlink" href="#5-positive-findings" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>inspection.completed</code> is emitted only after projection/outbox persistence
-  succeeds (<code>state.py:438-471</code>), preserving REST/SQLite as the authoritative
-  source of truth.</li>
-<li>The runtime event path remains outside detector and rule-engine logic,
-  preserving Contract 01 boundaries.</li>
-<li>Mock trigger configuration accepts only explicit <code>source: mock</code>; unsupported
-  hardware sources reject configuration rather than silently substituting
-  simulated identities (<code>config.py:499-534</code>).</li>
-<li>The trigger correlator leaves frames without a validated identity unchanged,
-  allowing the identity-sealed window manager to fail closed instead of
-  fabricating evidence (<code>trigger/source.py:104-118</code>).</li>
-<li>The review remediation correctly adds a per-artifact inference lock to the
-  shared registry, avoiding concurrent access to mutable Ultralytics predictor
-  state while keeping different artifacts/devices independent.</li>
+<li><code>inspection.completed</code>仅在投影/发件箱持久化后发出
+  成功 (<code>state.py:438-471</code>)，保留 REST/SQLite 作为权威
+  真相的来源。</li>
+<li>运行时事件路径保留在检测器和规则引擎逻辑之外，
+  保留合同 01 边界。</li>
+<li>模拟触发器配置仅接受显式<code>source: mock</code>；不支持的
+  硬件源拒绝配置而不是默默地替换
+  模拟身份 (<code>config.py:499-534</code>)。</li>
+<li>触发相关器使没有经过验证的身份的帧保持不变，
+  允许身份密封窗口管理器失败关闭而不是
+  捏造证据 (<code>trigger/source.py:104-118</code>)。</li>
+<li>审查修复正确地将每个工件的推理锁添加到
+  共享注册表，避免并发访问可变的 Ultralytics 预测器
+  状态，同时保持不同的工件/设备独立。</li>
 </ul>
 <h2 id="6-resolution-checklist">6. 解决方案清单<a class="headerlink" href="#6-resolution-checklist" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Finding</th>
-<th style="text-align: right;">Severity</th>
-<th>Required before merge</th>
-<th>Resolution status</th>
+<th>寻找</th>
+<th style="text-align: right;">严重性</th>
+<th>合并前需要</th>
+<th>决议状态</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>PR23-F01</td>
 <td style="text-align: right;">P1</td>
-<td>Yes</td>
-<td>Resolved</td>
+<td>是的</td>
+<td>已解决</td>
 </tr>
 <tr>
 <td>PR23-F02</td>
 <td style="text-align: right;">P1</td>
-<td>Yes</td>
-<td>Resolved</td>
+<td>是的</td>
+<td>已解决</td>
 </tr>
 <tr>
 <td>PR23-F03</td>
 <td style="text-align: right;">P1</td>
-<td>Yes</td>
-<td>Resolved</td>
+<td>是的</td>
+<td>已解决</td>
 </tr>
 <tr>
 <td>PR23-F04</td>
 <td style="text-align: right;">P2</td>
-<td>No, required before E4 production readiness</td>
-<td>Resolved</td>
+<td>否，E4 生产准备就绪之前需要</td>
+<td>已解决</td>
 </tr>
 <tr>
 <td>PR23-F05</td>
 <td style="text-align: right;">P2</td>
-<td>No, required before E4 production readiness</td>
-<td>Resolved</td>
+<td>否，E4 生产准备就绪之前需要</td>
+<td>已解决</td>
 </tr>
 </tbody>
 </table>
 <h2 id="7-final-merge-gate">7. 最终合并门<a class="headerlink" href="#7-final-merge-gate" title="Permanent link">&para;</a></h2>
-<p>All findings are resolved with regression tests satisfying their acceptance
-criteria, and the E4 task/documentation were updated for the authentication
-and event-envelope behavior changes. The mandatory quality gates pass again:</p>
+<p>所有发现均通过回归测试得到解决，满足他们的接受度
+标准，并更新了 E4 任务/文档以进行身份验证
+和事件包络行为的变化。强制性质量关卡再次通过：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv run ruff check .
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv run ruff format --check .
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>uv run mypy .
@@ -3444,27 +3444,27 @@ and event-envelope behavior changes. The mandatory quality gates pass again:</p>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>uv run mkdocs build --strict
 </code></pre></div>
 <h2 id="8-follow-up-re-review">8. 后续复审<a class="headerlink" href="#8-follow-up-re-review" title="Permanent link">&para;</a></h2>
-<p><strong>Status: RESOLVED</strong></p>
-<p>The post-resolution review found two small lifecycle/concurrency risks and
-fixed them before merge:</p>
+<p><strong>状态：已解决</strong></p>
+<p>决议后审查发现了两个小的生命周期/并发风险
+在合并之前修复它们：</p>
 <table>
 <thead>
 <tr>
-<th>Finding</th>
-<th>Resolution</th>
-<th>Regression tests</th>
+<th>寻找</th>
+<th>分辨率</th>
+<th>回归测试</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Ticket issuance/consumption could access <code>app.state.ws_tickets</code> concurrently because synchronous REST handlers may run in a worker thread while WebSocket handshakes run on the ASGI loop</td>
-<td>A process-local lock now serializes ticket cleanup, issuance, and atomic consumption, preventing concurrent dictionary mutation while retaining one-time semantics</td>
-<td>Existing ticket issue/consume/replay/expiry tests; runtime-event test suite</td>
+<td>票证发行/消费可以同时访问 <code>app.state.ws_tickets</code>，因为同步 REST 处理程序可能在工作线程中运行，而 WebSocket 握手在 ASGI 循环上运行</td>
+<td>进程本地锁现在序列化票证清理、发行和原子消耗，防止并发字典突变，同时保留一次性语义</td>
+<td>现有票据发行/消费/重播/过期测试；运行时事件测试套件</td>
 </tr>
 <tr>
-<td>An asynchronous ticket provider could complete after the dashboard disconnects or a newer connection starts, allowing a stale socket or its close callback to alter the current connection state</td>
-<td><code>ReconnectingWebSocket</code> now uses a connection generation for ticket resolution, reconnect scheduling, and socket callbacks; stale operations return without creating or changing the active socket</td>
-<td><code>does not open a socket after disconnect during a ticket exchange</code>; <code>ignores an old socket closing after a newer connection starts</code></td>
+<td>异步票证提供程序可以在仪表板断开连接或更新的连接启动后完成，从而允许过时的套接字或其关闭回调更改当前的连接状态</td>
+<td><code>ReconnectingWebSocket</code> 现在使用连接生成来进行票据解析、重新连接调度和套接字回调；陈旧操作返回而不创建或更改活动套接字</td>
+<td><code>does not open a socket after disconnect during a ticket exchange</code>； <code>ignores an old socket closing after a newer connection starts</code></td>
 </tr>
 </tbody>
 </table>

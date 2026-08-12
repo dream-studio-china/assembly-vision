@@ -3469,9 +3469,15 @@ are <code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code>,
   alerts. Task payload sizes are recorded at enqueue so queue bytes need no
   media reads.</li>
 </ul>
-<p>Remaining for the connected pilot: the central ingestion endpoint and its
-server-side receipt contract, media binding confirmations, and retention
-gating on verified receipts.</p>
+<p>Remaining for the connected pilot: central retention gating on verified
+receipts (edge-side cleanup already gates on the persisted central object
+identifier) and the frozen resumable large-media protocol. The central
+inspection ingestion endpoint with its server-side receipt contract is
+implemented in <code>assemblyvision-central</code> (C2a: <code>POST /api/v1/inspection-uploads</code>
+with idempotent inspection ingestion and verified receipts), and media binding
+into MinIO with manifest cross-checking is implemented too (C2b:
+<code>inspection_media</code> bindings, tenant-scoped object keys, replay-safe binding,
+and the <code>central-service reconcile-media</code> maintenance command).</p>
 <h2 id="1313-implementation-status-upload-resilience-e3">13.13 Implementation Status (upload resilience, E3)<a class="headerlink" href="#1313-implementation-status-upload-resilience-e3" title="Permanent link">&para;</a></h2>
 <p>The upload-resilience milestone adds outage behavior on top of the outbox
 scheduler (design 13.5/13.9, E3 task):</p>

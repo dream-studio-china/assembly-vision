@@ -3469,16 +3469,22 @@ loop 到期排队任务
   警报。任务负载大小记录在队列中，因此队列字节不需要
   媒体阅读。</li>
 </ul>
-<p>剩下的连接试点：中央摄取端点及其
-服务器端收据合同、媒体绑定确认和保留
-对经过验证的收据进行控制。</p>
+<p>剩余连接试点：已验证的中央保留门控
+收据（边缘清理已经在持久化的中心对象上进行了门控
+标识符）和冻结可恢复大媒体协议。中央
+检查摄取端点及其服务器端接收合同是
+在<code>assemblyvision-central</code>中实现（C2a：<code>POST /api/v1/inspection-uploads</code>
+具有幂等检查摄取和验证收据）和媒体绑定
+也实现了带有清单交叉检查的 MinIO（C2b：
+<code>inspection_media</code> 绑定、租户范围的对象键、重放安全绑定、
+和 <code>central-service reconcile-media</code> 维护命令）。</p>
 <h2 id="1313-implementation-status-upload-resilience-e3">13.13 实施状态（上传弹性，E3）<a class="headerlink" href="#1313-implementation-status-upload-resilience-e3" title="Permanent link">&para;</a></h2>
 <p>上传弹性里程碑在发件箱顶部添加了中断行为
 调度程序（设计13.5/13.9，E3任务）：</p>
 <ul>
 <li><strong>带宽限制</strong>：令牌桶限制器限制序列化
   每秒实际发送到 HTTP 接收器的请求主体字节数
-  <code>UploadSettings.maximum_bandwidth_mbps</code>（<code>None</code> 禁用限制）。的
+  <code>UploadSettings.maximum_bandwidth_mbps</code>（<code>None</code>禁用限制）。的
   单位是传输写入的 JSON 信封（Base64 有效负载加上
   元数据），而不是原始媒体字节；本地目录接收器报告零
   网络字节。突发的上限为一秒的令牌，并且限制器从不
@@ -3491,7 +3497,7 @@ loop 到期排队任务
   没有声明任何内容，并且在 <code>circuit_open_seconds</code> 之后有一个半开探针
   判断恢复情况——成功关闭电路，失败重新打开电路。
   永久性故障永远不会计入电路中。电路状态和最后一次
-  通过稳定的 <code>UPLOAD_CIRCUIT_OPEN</code> 警报来暴露更改；耐用的
+  通过稳定的 <code>UPLOAD_CIRCUIT_OPEN</code> 警报公开更改；耐用的
   队列永远不会被电路改变。</li>
 <li><strong>受控手动重试</strong>：<code>POST /api/v1/uploads/{upload_task_id}/retry</code>
   仅将 <code>RETRY_WAIT</code> / <code>PERMANENT_FAILURE</code> 任务重置为 <code>PENDING</code>
