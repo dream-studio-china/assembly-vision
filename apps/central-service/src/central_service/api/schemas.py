@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Literal
 
 from assemblyvision_domain.models import APIModel
+from pydantic import Field
 
 
 class HealthLive(APIModel):
@@ -176,6 +177,8 @@ class InspectionDetailOut(APIModel):
     # Verified central receipt for the INSPECTION upload (task C1 5.3).
     receipt_status: str | None = None
     receipt_created_at: datetime | None = None
+    # Latest appended review, if any (C4); the machine outcome is never changed.
+    latest_review: ReviewOut | None = None
 
 
 class InspectionPage(APIModel):
@@ -217,3 +220,58 @@ class DeviceStatusOut(APIModel):
     name: str
     last_seen_at: datetime | None
     inspection_count: int
+
+
+class ComponentCorrectionIn(APIModel):
+    """Per-component ground truth recorded by a reviewer (C4, design 24)."""
+
+    component_code: str = Field(min_length=1, max_length=64)
+    corrected_state: Literal["PRESENT", "MISSING", "UNCERTAIN"]
+    note: str | None = Field(default=None, max_length=500)
+
+
+class ReviewSubmit(APIModel):
+    """One review append; the machine outcome is never overwritten (C4)."""
+
+    disposition: Literal[
+        "CONFIRMED_NG", "CONFIRMED_OK", "CORRECTED_NG", "INCONCLUSIVE", "REINSPECT"
+    ]
+    reason: str | None = Field(default=None, max_length=200)
+    note: str | None = Field(default=None, max_length=2000)
+    component_corrections: list[ComponentCorrectionIn] = Field(default_factory=list, max_length=64)
+
+
+class ReviewOut(APIModel):
+    """One appended central review record (C4)."""
+
+    inspection_id: str
+    revision: int
+    disposition: str
+    reason: str | None
+    note: str | None
+    reviewer: str
+    component_corrections: list[dict[str, object]]
+    original_business_result: str
+    original_internal_decision: str
+    original_reason_codes: list[str]
+    created_at: datetime
+
+
+class ReviewQueueItem(APIModel):
+    """One NG/uncertain inspection awaiting review (C4 routing policy)."""
+
+    inspection_id: str
+    device_id: str
+    completed_at: datetime
+    barcode_value: str | None
+    product_code: str | None
+    business_result: str
+    internal_decision: str
+    reason_codes: list[str]
+
+
+class ReviewQueuePage(APIModel):
+    """Keyset-paginated review queue (C4)."""
+
+    items: list[ReviewQueueItem]
+    next_cursor: str | None = None

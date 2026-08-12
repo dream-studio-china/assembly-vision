@@ -30,6 +30,7 @@ from central_service.api.routers import (
     ingest,
     inspections,
     media,
+    reviews,
     tenant,
 )
 from central_service.api.schemas import Problem
@@ -168,6 +169,7 @@ def create_app(
     app.include_router(inspections.router, prefix="/api/v1")
     app.include_router(dashboard.router, prefix="/api/v1")
     app.include_router(media.router, prefix="/api/v1")
+    app.include_router(reviews.router, prefix="/api/v1")
     return app
 
 
