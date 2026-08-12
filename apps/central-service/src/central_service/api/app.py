@@ -23,7 +23,15 @@ from central_service.api.readiness import (
     ReadinessResult,
     compute_readiness,
 )
-from central_service.api.routers import auth, health, ingest, tenant
+from central_service.api.routers import (
+    auth,
+    dashboard,
+    health,
+    ingest,
+    inspections,
+    media,
+    tenant,
+)
 from central_service.api.schemas import Problem
 from central_service.api.settings import CentralSettings
 from central_service.observability.logging import configure_logging
@@ -157,6 +165,9 @@ def create_app(
     app.include_router(auth.router, prefix="/api/v1")
     app.include_router(tenant.router, prefix="/api/v1")
     app.include_router(ingest.router, prefix="/api/v1")
+    app.include_router(inspections.router, prefix="/api/v1")
+    app.include_router(dashboard.router, prefix="/api/v1")
+    app.include_router(media.router, prefix="/api/v1")
     return app
 
 

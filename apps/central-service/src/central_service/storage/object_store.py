@@ -13,6 +13,7 @@ from __future__ import annotations
 import io
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Protocol
 
 from minio import Minio
@@ -39,6 +40,8 @@ class ObjectStorage(Protocol):
     def object_exists(self, key: str) -> bool: ...
     def remove_object(self, key: str) -> None: ...
     def list_objects(self, prefix: str) -> Iterator[str]: ...
+    def presigned_get_url(self, key: str, expires_seconds: int) -> str: ...
+    def get_object(self, key: str) -> Iterator[bytes]: ...
 
 
 class MinioObjectStorage:
@@ -96,6 +99,25 @@ class MinioObjectStorage:
         """Yield object names under ``prefix`` (recursive)."""
         for item in self._client.list_objects(self._settings.bucket, prefix=prefix, recursive=True):
             yield str(item.object_name)
+
+    def presigned_get_url(self, key: str, expires_seconds: int) -> str:
+        """Return a short-lived authorized GET URL (design 05 section 3.2).
+
+        The URL is scoped to one object and expires; bucket credentials and
+        raw keys are never returned to browsers.
+        """
+        return self._client.presigned_get_object(
+            self._settings.bucket, key, expires=timedelta(seconds=expires_seconds)
+        )
+
+    def get_object(self, key: str) -> Iterator[bytes]:
+        """Yield the object bytes in chunks (authorized streaming, C3)."""
+        response = self._client.get_object(self._settings.bucket, key)
+        try:
+            yield from response.stream(amt=64 * 1024)
+        finally:
+            response.close()
+            response.release_conn()
 
 
 @dataclass(frozen=True)
