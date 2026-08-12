@@ -3066,45 +3066,43 @@
 
 <h1 id="runbook-04-upload-backlog">运行手册 04：上传积压工作<a class="headerlink" href="#runbook-04-upload-backlog" title="Permanent link">&para;</a></h1>
 <h2 id="trigger">扳机<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
-<p>Queue count/bytes, oldest pending age, retry rate, or permanent failures exceed approved thresholds.的
+<p>队列计数/字节、最早的挂起期限、重试率或永久故障超过批准的阈值。的
 当调度程序在中断期间停止尝试上传时，<code>UPLOAD_CIRCUIT_OPEN</code> 警报也会触发。</p>
 <h2 id="immediate-safety-action">立即采取安全行动<a class="headerlink" href="#immediate-safety-action" title="Permanent link">&para;</a></h2>
 <ol>
 <li>确认当地检查已准备就绪且保护能力充足
-   (see runbook 03: retention cleanup only deletes receipt-verified,
+   （请参阅运行手册 03：保留清理仅删除已验证的收据，
    保留已过去的媒体；它永远不会删除待上传的证据）。</li>
-<li>Do not delete queued evidence or increase worker concurrency enough to starve inference.</li>
-<li>Classify failures: connectivity, authentication, server capacity, schema, checksum, or content conflict.</li>
+<li>不要删除排队的证据或增加工作线程的并发性，以免导致推理不足。</li>
+<li>对故障进行分类：连接、身份验证、服务器容量、模式、校验和或内容冲突。</li>
 </ol>
 <h2 id="circuit-open-diagnosis">断路诊断<a class="headerlink" href="#circuit-open-diagnosis" title="Permanent link">&para;</a></h2>
 <ol>
-<li><code>UPLOAD_CIRCUIT_OPEN</code> plus <code>upload_circuit_state=OPEN</code> in device status means the worker hit
-   <code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code> consecutive retryable failures (transport or
-   <code>408/429/5xx</code>); permanent local/content failures never open the circuit.</li>
+<li>设备状态中<code>UPLOAD_CIRCUIT_OPEN</code>加<code>upload_circuit_state=OPEN</code>表示worker命中
+   <code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code> 连续的可重试失败（传输或
+   <code>408/429/5xx</code>);永久的本地/内容故障永远不会断开电路。</li>
 <li>该电路是进程本地活跃的：它暂停新的尝试，从不改变队列，并且
-   durable queue truth remains in <code>/api/v1/uploads</code>.在<code>AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS</code>之后
-   worker half-opens and probes one task; success closes it, failure reopens it.</li>
-<li>Fix the dependency or credential fault first; while the circuit is open, no retry traffic is
+   持久队列真相保留在 <code>/api/v1/uploads</code> 中。在<code>AV_EDGE_UPLOAD_CIRCUIT_OPEN_SECONDS</code>之后
+   工人半开并探测一项任务；成功关闭它，失败重新打开它。</li>
+<li>首先修复依赖关系或凭证错误；当电路打开时，没有重试流量
    已发送，因此检查容量和队列增长不会受到中断本身的影响。</li>
 </ol>
 <h2 id="recovery">恢复<a class="headerlink" href="#recovery" title="Permanent link">&para;</a></h2>
-<ol>
-<li>Fix the dependency or credential fault; retain original idempotency keys and payload hashes.</li>
-<li>在有界并发、退避、抖动和带宽限制的情况下恢复
-   （<code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code> 限制 HTTP 接收器发送的序列化请求正文）。</li>
-<li>隔离永久内容冲突； do not overwrite immutable records.</li>
-<li>在标记任务<code>SUCCEEDED</code>之前核对中央收据。</li>
-<li>Use <code>POST /api/v1/uploads/{upload_task_id}/retry</code> only for <code>RETRY_WAIT</code> or <code>PERMANENT_FAILURE</code>
-   tasks after the underlying cause is corrected.转换是原子的（并发重试产生
+<p>1.修复依赖或凭证错误；保留原始幂等性密钥和有效负载哈希。
+2. 在有界并发、退避、抖动和带宽限制的情况下恢复
+   （<code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code> 限制 HTTP 接收器发送的序列化请求正文）。
+3. 隔离永久内容冲突；不要覆盖不可变的记录。
+4. 在标记任务<code>SUCCEEDED</code>之前核对中央收据。
+5. 仅将<code>POST /api/v1/uploads/{upload_task_id}/retry</code>用于<code>RETRY_WAIT</code>或<code>PERMANENT_FAILURE</code>
+   纠正根本原因后的任务。转换是原子的（并发重试产生
    一次成功，一次冲突），递增 <code>attempt_count</code>，并且从不授权保留清理：
-   媒体将一直受到保护，直到新的经过验证的中央收据进行检查<code>SYNCED</code>。</li>
-<li>观看 <code>UPLOAD_FAILING</code>/<code>UPLOAD_BLOCKED</code>/<code>UPLOAD_CIRCUIT_OPEN</code> 警报、<code>upload_failure_rate</code> 和
-   <code>upload_bytes_sent</code>/<code>upload_bandwidth_mbps</code>； a <code>PERMANENT_FAILURE</code> upload keeps local evidence
-   防止保留删除（媒体符合条件之前需要 <code>SYNCED</code>）。</li>
-</ol>
+   媒体将一直受到保护，直到新的经过验证的中央收据进行检查<code>SYNCED</code>。
+6. 观看 <code>UPLOAD_FAILING</code>/<code>UPLOAD_BLOCKED</code>/<code>UPLOAD_CIRCUIT_OPEN</code> 警报、<code>upload_failure_rate</code> 和
+   <code>upload_bytes_sent</code>/<code>upload_bandwidth_mbps</code>； <code>PERMANENT_FAILURE</code>上传保留本地证据
+   防止保留删除（媒体符合条件之前需要 <code>SYNCED</code>）。</p>
 <h2 id="exit-criteria">退出标准<a class="headerlink" href="#exit-criteria" title="Permanent link">&para;</a></h2>
 <p>积压的订单没有重复，最旧的年龄返回到阈值以下，电路关闭并保持
-closed, and permanent failures have owners.</p>
+关闭，永久失败有所有者。</p>
 
 
 

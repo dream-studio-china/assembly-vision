@@ -3805,6 +3805,30 @@
 <li>所需的分配不会改变边缘行为或声明激活。</li>
 <li>每个发布/分配路径都会写入一个不可变的审核事件。</li>
 </ul>
+<p><strong>实施情况</strong></p>
+<ul>
+<li>在迁移中交付<code>0006_metadata_governance</code>：组织范围内
+  组件、产品、规则和模型包；不可变的草稿/发布
+  具有公共 UUID <code>version_id</code> 的版本；精确条形码映射；明确的
+  规则/模型兼容性；单个设备所需的配置；和
+  <code>audit_logs</code> 上的请求/原因/审核之前/之后关联。</li>
+<li><code>/api/v1/components</code>、<code>/products</code>、<code>/product-versions</code>下的 API、
+  <code>/rules</code>、<code>/rule-versions</code>、<code>/models</code>、<code>/model-versions</code> 和
+  <code>/devices/{id}/desired-configuration</code> 加上 <code>/device-configurations</code>
+  阅读清单。稳定创建和草稿创建需要 <code>Idempotency-Key</code>；
+  赋值使用<code>If-Match</code>；重复发布返回已发布的版本。</li>
+<li>模型发布是声明性注册：工件字节永远不会
+  在 M1 中获取或验证服务器端（审计明确说明这一点）；的
+  边缘验证字节/校验和/兼容性和最后已知的良好回滚
+  手动安装期间本地。</li>
+<li><code>admin-web</code> 添加只读配置页面（产品、规则、型号、
+  所需的配置）以及所有强制手动安装通知
+  四个区域设置； C5 中没有编辑/发布/分配控件。</li>
+<li>验证：中央服务 Ruff/format/MyPy 和 162 个 Pytest 案例
+  （29 个新的 C5 存储库/API 测试），重新生成的 OpenAPI + TypeScript 客户端
+  带有构建/测试、admin-web lint/build 和 30 个单元测试、e2e 烟雾
+  撰写，加上 C5 页面的实时端到端浏览器检查。</li>
+</ul>
 <h3 id="c6-m1-hardening-and-operational-evidence">C6：M1强化和运行证据<a class="headerlink" href="#c6-m1-hardening-and-operational-evidence" title="Permanent link">&para;</a></h3>
 <p><strong>实施</strong></p>
 <ul>
@@ -3896,14 +3920,14 @@
 <ul>
 <li>中央公共请求/响应模式是 Pydantic 模型类型，并且具有
   <code>extra="forbid"</code> 用于突变体。</li>
-<li>FastAPI OpenAPI 已提交并进行了偏差检查。 <code>api-client-central</code>是
-  由其生成或同步； <code>admin-web</code> 不得手动投放服务器
+<li>FastAPI OpenAPI 已提交并进行了偏差检查。 <code>api-client-central</code> 是
+  由其生成或同步； <code>admin-web</code>不得手投服务器
   JSON。</li>
 <li>所有错误都使用有界的 <code>application/problem+json</code>
   <code>type</code>、<code>title</code>、<code>status</code>、<code>detail</code>、<code>code</code>、<code>request_id</code> 和字段错误。</li>
 <li>光标分页使用 <code>{items, next_cursor}</code> 默认 50/最大 200 和
   拒绝游标/过滤器不匹配。</li>
-<li>变异的人类/管理 API 在并发情况下使用 <code>If-Match</code> 修订检查
+<li>变异的人类/管理员 API 在并发情况下使用 <code>If-Match</code> 修订检查
   编辑很重要。可重试设备摄取使用幂等密钥代替。</li>
 <li>所有不可变的边缘标识符和原始决策都是在之后写入一次
   接受摄入。</li>

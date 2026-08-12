@@ -3805,6 +3805,30 @@ or more focused PRs into <code>main</code>.</p>
 <li>Desired assignment does not change edge behavior or claim activation.</li>
 <li>Every publish/assignment path writes an immutable audit event.</li>
 </ul>
+<p><strong>Implementation status</strong></p>
+<ul>
+<li>Delivered in migration <code>0006_metadata_governance</code>: organization-scoped
+  components, products, rules, and model packages; immutable draft/publish
+  versions with public UUID <code>version_id</code>; exact-barcode mappings; explicit
+  rule/model compatibility; single-device desired configuration; and
+  request/reason/before/after audit correlation on <code>audit_logs</code>.</li>
+<li>APIs under <code>/api/v1/components</code>, <code>/products</code>, <code>/product-versions</code>,
+  <code>/rules</code>, <code>/rule-versions</code>, <code>/models</code>, <code>/model-versions</code>, and
+  <code>/devices/{id}/desired-configuration</code> plus the <code>/device-configurations</code>
+  read list. Stable-create and draft-create require <code>Idempotency-Key</code>;
+  assignment uses <code>If-Match</code>; repeated publish returns the published version.</li>
+<li>Model publication is declarative registration: artifact bytes are never
+  fetched or verified server-side in M1 (audit states this explicitly); the
+  edge validates bytes/checksum/compatibility and last-known-good rollback
+  locally during manual installation.</li>
+<li><code>admin-web</code> adds read-only Configuration pages (products, rules, models,
+  desired configurations) with the mandatory manual-install notice in all
+  four locales; no edit/publish/assign controls ship in C5.</li>
+<li>Verification: central-service Ruff/format/MyPy and 162 Pytest cases
+  (29 new C5 repository/API tests), regenerated OpenAPI + TypeScript client
+  with build/tests, admin-web lint/build and 30 unit tests, e2e smoke against
+  Compose, plus a live end-to-end browser check of the C5 pages.</li>
+</ul>
 <h3 id="c6-m1-hardening-and-operational-evidence">C6: M1 Hardening and Operational Evidence<a class="headerlink" href="#c6-m1-hardening-and-operational-evidence" title="Permanent link">&para;</a></h3>
 <p><strong>Implementation</strong></p>
 <ul>

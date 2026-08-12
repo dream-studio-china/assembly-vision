@@ -3064,7 +3064,7 @@
   
 
 
-<h1 id="runbook-03-low-disk-space">Runbook 03: Low Disk Space<a class="headerlink" href="#runbook-03-low-disk-space" title="Permanent link">&para;</a></h1>
+<h1 id="runbook-03-low-disk-space">Runbook 03：磁盘空间不足<a class="headerlink" href="#runbook-03-low-disk-space" title="Permanent link">&para;</a></h1>
 <h2 id="trigger">扳机<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h2>
 <p>警告/严重/停止存储压力（空闲字节或空闲索引节点低于
 配置的<code>AV_EDGE_STORAGE_*</code>阈值），失败的强制写入，
@@ -3073,7 +3073,7 @@
 <table>
 <thead>
 <tr>
-<th>Alert</th>
+<th>警报</th>
 <th>意义</th>
 </tr>
 </thead>
@@ -3092,7 +3092,7 @@
 </tr>
 <tr>
 <td><code>STORAGE_WRITE_FAULT</code></td>
-<td>无法测量卷或强制写入失败（<code>ENOSPC</code>/<code>EROFS</code>/I/O）； inspection readiness is forced false.</td>
+<td>无法测量卷或强制写入失败（<code>ENOSPC</code>/<code>EROFS</code>/I/O）；检查准备情况强制为假。</td>
 </tr>
 <tr>
 <td><code>CLEANUP_FAULT</code></td>
@@ -3106,7 +3106,7 @@
    清理仅删除经过批准的收据验证、保留已过的媒体
    保留政策；它永远不会删除受保护的证据以释放空间。
 2、<code>DISK_STOP</code>或<code>STORAGE_WRITE_FAULT</code>时，边缘上报
-   <code>inspection_ready=false</code>并停止接受新产品； do not force a
+   <code>inspection_ready=false</code>并停止接受新产品；不要强迫
    在保留恢复之前恢复。
 3、不要手动删除证据；仅删除隔离/暂存文件或
    保留策略明确标识的数据。</li>
@@ -3116,10 +3116,10 @@
 <li>通过媒体类、日志、数据库、临时文件、上传来识别增长
    待办事项和 <code>quarantine/</code> 内容。</li>
 <li>恢复连接/凭证，以便耗尽上传积压并进行验证
-   receipts accumulate;然后，保留清理仅删除符合条件的媒体。</li>
+   收据累积；然后，保留清理仅删除符合条件的媒体。</li>
 <li>验证设备状态中的清理状态：<code>cleanup_eligible_count</code>，
-   <code>cleanup_purged_count</code>, <code>cleanup_delete_error_count</code>, and
-   <code>cleanup_integrity_fault_count</code>.</li>
+   <code>cleanup_purged_count</code>、<code>cleanup_delete_error_count</code> 和
+   <code>cleanup_integrity_fault_count</code>。</li>
 <li>如果 <code>CLEANUP_FAULT</code> 仍然存在，请检查卷权限/只读状态并
    文件系统；有故障的工件 (<code>integrity_status=FAULT</code>) 受到保护
    直到操作员对其进行协调。</li>

@@ -1017,7 +1017,7 @@
   <a href="#1534-upload-queue-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.4 上传队列和配置
+        15.3.4 Upload Queue and Configuration
       
     </span>
   </a>
@@ -3304,7 +3304,7 @@
   <a href="#1534-upload-queue-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15.3.4 上传队列和配置
+        15.3.4 Upload Queue and Configuration
       
     </span>
   </a>
@@ -3490,7 +3490,7 @@
 <h3 id="1522-idempotency-and-concurrency">15.2.2 幂等性和并发性<a class="headerlink" href="#1522-idempotency-and-concurrency" title="Permanent link">&para;</a></h3>
 <p><code>PUT</code> 和 <code>DELETE</code> 自然是幂等的。可重试的中央 <code>POST</code> 摄取请求需要 <code>Idempotency-Key</code>。服务器存储<code>(device_id, key, request_hash, response)</code>；相同的密钥/相同的散列重播结果，而相同的密钥/不同的散列返回<code>409 IDEMPOTENCY_CONFLICT</code>。管理更新将 <code>If-Match</code> 与 ETag/revision 一起使用，并在过时写入时返回 <code>412 REVISION_MISMATCH</code>。</p>
 <h3 id="1523-pagination-and-filtering">15.2.3 分页和过滤<a class="headerlink" href="#1523-pagination-and-filtering" title="Permanent link">&para;</a></h3>
-<p>历史记录端点使用带有 <code>limit</code> （默认 50，最大 200）和不透明 <code>cursor</code> 的键集分页。响应是<code>{items, next_cursor}</code>。过滤器是显式查询参数；游标绑定标准化过滤器集，如果与不同的过滤器重用，则游标会被拒绝。小型配置列表可以使用相同的信封而不带光标。</p>
+<p>历史记录端点使用带有 <code>limit</code> （默认 50，最大 200）和不透明 <code>cursor</code> 的键集分页。响应为<code>{items, next_cursor}</code>。过滤器是显式查询参数；游标绑定标准化过滤器集，如果与不同的过滤器重用，则游标会被拒绝。小型配置列表可以使用相同的信封而不带光标。</p>
 <h2 id="153-edge-api-groups">15.3 边缘 API 组<a class="headerlink" href="#153-edge-api-groups" title="Permanent link">&para;</a></h2>
 <p>在表中，<code>R</code> 表示经过身份验证的边缘查看器、<code>O</code> 操作员和 <code>A</code> 边缘管理员。分页下的<code>-</code>表示不适用。</p>
 <h3 id="1531-runtime-camera-and-health">15.3.1 运行时、相机和健康状况<a class="headerlink" href="#1531-runtime-camera-and-health" title="Permanent link">&para;</a></h3>
@@ -3712,156 +3712,156 @@
 或不确定；简单的 <code>NG</code> 可能会被确认为 NG/OK 或不确定；采样的
 <code>OK</code> 可能被确认为 OK、更正为 NG 或不确定。 <code>409 REVIEW_CONFLICT</code>
 还涵盖了<code>supersedes_review_id</code>，其中没有提及对该检查的审查。</p>
-<h3 id="1534-upload-queue-and-configuration">15.3.4 上传队列和配置<a class="headerlink" href="#1534-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
+<h3 id="1534-upload-queue-and-configuration">15.3.4 Upload Queue and Configuration<a class="headerlink" href="#1534-upload-queue-and-configuration" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>方法和终点</th>
-<th>目的</th>
-<th>请求/响应</th>
-<th>错误</th>
-<th>幂等性</th>
-<th>分页</th>
-<th>授权</th>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>GET /api/v1/uploads</code></td>
-<td>按状态/种类检查队列。</td>
-<td>查询过滤器/光标/ <code>Page[UploadTask]</code></td>
+<td>Inspect queue by state/kind.</td>
+<td>Query filters/cursor / <code>Page[UploadTask]</code></td>
 <td><code>400 INVALID_FILTER</code></td>
-<td>安全获取</td>
-<td>光标</td>
-<td>右</td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>R</td>
 </tr>
 <tr>
 <td><code>POST /api/v1/uploads/{upload_task_id}/retry</code></td>
-<td>在操作员解决后，将符合条件的重试等待或永久失败工作移至到期状态。</td>
+<td>Move eligible retry-wait or permanent-failure work to due state after operator resolution.</td>
 <td><code>{reason}</code> / <code>UploadTask</code></td>
-<td><code>404 TASK_NOT_FOUND</code>、<code>409 TASK_ACTIVE</code></td>
-<td><code>Idempotency-Key</code>；重复返回相同状态</td>
+<td><code>404 TASK_NOT_FOUND</code>, <code>409 TASK_ACTIVE</code></td>
+<td><code>Idempotency-Key</code>; duplicate returns same state</td>
 <td>-</td>
-<td>哦</td>
+<td>O</td>
 </tr>
 <tr>
 <td><code>GET /api/v1/configuration/effective</code></td>
-<td>有效的配置加上源/修订/校验和。</td>
-<td>无 / <code>EffectiveConfiguration</code></td>
+<td>Effective config plus source/revision/checksum.</td>
+<td>None / <code>EffectiveConfiguration</code></td>
 <td><code>503 CONFIG_UNAVAILABLE</code></td>
-<td>安全获取</td>
+<td>Safe GET</td>
 <td>-</td>
-<td>右</td>
+<td>R</td>
 </tr>
 <tr>
 <td><code>PUT /api/v1/configuration/local-overrides</code></td>
-<td>替换允许的站点本地覆盖。</td>
-<td><code>If-Match</code>、<code>LocalOverrides</code> / 新修订</td>
-<td><code>400 INVALID_CONFIG</code>、<code>403 MANAGED_FIELD</code>、<code>412 REVISION_MISMATCH</code></td>
-<td>幂等替代</td>
+<td>Replace permitted site-local overrides.</td>
+<td><code>If-Match</code>, <code>LocalOverrides</code> / new revision</td>
+<td><code>400 INVALID_CONFIG</code>, <code>403 MANAGED_FIELD</code>, <code>412 REVISION_MISMATCH</code></td>
+<td>Idempotent replacement</td>
 <td>-</td>
-<td>一个</td>
+<td>A</td>
 </tr>
 <tr>
 <td><code>POST /api/v1/configuration/validate</code></td>
-<td>无需激活即可验证。</td>
+<td>Validate without activation.</td>
 <td><code>ConfigurationCandidate</code> / <code>ValidationResult</code></td>
 <td><code>422 VALIDATION_FAILED</code></td>
-<td>确定性</td>
+<td>Deterministic</td>
 <td>-</td>
-<td>一个</td>
+<td>A</td>
 </tr>
 <tr>
 <td><code>GET /api/v1/logs</code></td>
-<td>有界结构化服务日志查询。</td>
-<td>级别/组件/从/到/光标 / <code>Page[LogEvent]</code></td>
+<td>Bounded structured service log query.</td>
+<td>level/component/from/to/cursor / <code>Page[LogEvent]</code></td>
 <td><code>400 INVALID_FILTER</code></td>
-<td>安全获取</td>
-<td>光标</td>
-<td>一个</td>
+<td>Safe GET</td>
+<td>Cursor</td>
+<td>A</td>
 </tr>
 </tbody>
 </table>
 <h3 id="1535-web-dev-test-harness-adr-014">15.3.5 Web 开发测试工具 (ADR-014)<a class="headerlink" href="#1535-web-dev-test-harness-adr-014" title="Permanent link">&para;</a></h3>
-<p>这些基于文件的端点<strong>默认禁用</strong>并返回
-<code>404 DEV_TOOLS_DISABLED</code> 除非 <code>serve</code> 与 <code>--enable-web-test</code> 一起运行。他们是
-开发人员测试工具，而不是生产获取路径；生产
-实时检查使用本机应用程序/RTSP/摄像头源。</p>
+<p>These file-based endpoints are <strong>disabled by default</strong> and return
+<code>404 DEV_TOOLS_DISABLED</code> unless <code>serve</code> runs with <code>--enable-web-test</code>. They are
+a developer test harness, not a production acquisition path; production
+real-time inspection uses the native app / RTSP / camera sources.</p>
 <table>
 <thead>
 <tr>
-<th>方法和终点</th>
-<th>目的</th>
-<th>请求/响应</th>
-<th>错误</th>
-<th>幂等性</th>
-<th>分页</th>
-<th>授权</th>
+<th>Method and endpoint</th>
+<th>Purpose</th>
+<th>Request / response</th>
+<th>Errors</th>
+<th>Idempotency</th>
+<th>Pagination</th>
+<th>Authorization</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>POST /api/v1/dev/inspect-frame</code></td>
-<td>通过实例管道分析一张上传的图像；除非<code>persist=false</code>，否则写入证据包。</td>
-<td>查询：可选<code>barcode</code>模拟键盘输入；原始图像字节 / <code>InspectionRecord</code></td>
-<td><code>400 INVALID_IMAGE</code>、<code>404 INSTANCE_NOT_FOUND</code>、<code>413 PAYLOAD_TOO_LARGE</code>、<code>503 PIPELINE_UNAVAILABLE</code></td>
-<td>确定性</td>
+<td>Analyze one uploaded image through an instance pipeline; writes an evidence bundle unless <code>persist=false</code>.</td>
+<td>Query: optional <code>barcode</code> simulated keyboard input; raw image bytes / <code>InspectionRecord</code></td>
+<td><code>400 INVALID_IMAGE</code>, <code>404 INSTANCE_NOT_FOUND</code>, <code>413 PAYLOAD_TOO_LARGE</code>, <code>503 PIPELINE_UNAVAILABLE</code></td>
+<td>Deterministic</td>
 <td>-</td>
-<td>R + 开发标志</td>
+<td>R + dev flag</td>
 </tr>
 <tr>
 <td><code>POST /api/v1/dev/inspect-video</code></td>
-<td>逐帧分析上传的视频（≤30个采样帧）并返回摘要；没有什么是持久的。</td>
-<td>原始视频字节 / <code>VideoInspectResult</code></td>
-<td><code>400 INVALID_VIDEO</code>、<code>404 INSTANCE_NOT_FOUND</code>、<code>413 PAYLOAD_TOO_LARGE</code>、<code>503 PIPELINE_UNAVAILABLE</code></td>
-<td>确定性</td>
+<td>Analyze an uploaded video frame by frame (≤30 sampled frames) and return a summary; nothing is persisted.</td>
+<td>Raw video bytes / <code>VideoInspectResult</code></td>
+<td><code>400 INVALID_VIDEO</code>, <code>404 INSTANCE_NOT_FOUND</code>, <code>413 PAYLOAD_TOO_LARGE</code>, <code>503 PIPELINE_UNAVAILABLE</code></td>
+<td>Deterministic</td>
 <td>-</td>
-<td>R + 开发标志</td>
+<td>R + dev flag</td>
 </tr>
 </tbody>
 </table>
 <h3 id="1536-confidence-drift-environment-change-diagnostics">15.3.6 置信度漂移（环境变化诊断）<a class="headerlink" href="#1536-confidence-drift-environment-change-diagnostics" title="Permanent link">&para;</a></h3>
-<p><code>GET /api/v1/statistics/confidence-drift</code> 分析检测置信度
-一种固定产品、规则、产品检测器版本、组件检测器下的时间
-版本，以及该设备上的聚合策略版本。这可以防止释放
-或政策转变不再表现为收购环境的变化
-（传送带、相机焦距/角度、照明）。</p>
+<p><code>GET /api/v1/statistics/confidence-drift</code> analyzes detection confidence over
+time under one fixed product, rule, product-detector version, component-detector
+version, and aggregation-policy version on this device. This prevents a release
+or policy switch from being presented as an acquisition-environment change
+(conveyor, camera focus/angle, lighting).</p>
 <table>
 <thead>
 <tr>
-<th>方面</th>
-<th>行为</th>
+<th>Aspect</th>
+<th>Behavior</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>置信度指标</td>
-<td>每个组件<code>best_confidence</code>按正<code>detection_count</code>加权（相当于按总检测计数对整个检查进行加权）；证据级别 <code>median</code> 被报告为可靠的参考。只有具有记录的置信度和至少一次检测的证据行才会起作用。</td>
+<td>Confidence metric</td>
+<td>Per-component <code>best_confidence</code> weighted by positive <code>detection_count</code> (equivalent to weighting whole inspections by their total detection count); the evidence-level <code>median</code> is reported as a robust reference. Only evidence rows with a recorded confidence and at least one detection contribute.</td>
 </tr>
 <tr>
-<td>期间</td>
-<td><code>today</code> = <code>[local-today 00:00, now)</code>、<code>yesterday</code> = <code>[local-yesterday 00:00, local-today 00:00)</code>、<code>previous_7d</code> = <code>[local-today 00:00 - 7 days, local-today 00:00)</code>（包括昨天）、<code>previous_30d</code> = <code>[local-today 00:00 - 30 days, local-today 00:00)</code>（包括 7 天窗口）。日期边界遵循 <code>tz_offset_minutes</code> 指定的运营商本地时区（默认 UTC）。桶半开<code>[from, to)</code>。</td>
+<td>Periods</td>
+<td><code>today</code> = <code>[local-today 00:00, now)</code>, <code>yesterday</code> = <code>[local-yesterday 00:00, local-today 00:00)</code>, <code>previous_7d</code> = <code>[local-today 00:00 - 7 days, local-today 00:00)</code> (includes yesterday), <code>previous_30d</code> = <code>[local-today 00:00 - 30 days, local-today 00:00)</code> (includes the 7-day window). Day boundaries follow the operator-local timezone given by <code>tz_offset_minutes</code> (default UTC). Buckets are half-open <code>[from, to)</code>.</td>
 </tr>
 <tr>
-<td>比较</td>
-<td><code>today_vs_yesterday</code>、<code>today_vs_previous_7d</code> 和 <code>today_vs_previous_30d</code> 报告加权平均增量、相对百分比变化以及两个证据计数。</td>
+<td>Comparison</td>
+<td><code>today_vs_yesterday</code>, <code>today_vs_previous_7d</code>, and <code>today_vs_previous_30d</code> report the weighted-mean delta, the relative percent change, and both evidence counts.</td>
 </tr>
 <tr>
-<td>组件</td>
-<td>今天与前 7 天基线相比的每个成分加权平均值，按降幅最大的在前排序；基线中缺少的组件带有<code>baseline_weighted_mean = null</code>（基线证据不足，绝不是捏造的零）。</td>
+<td>Components</td>
+<td>Per-component weighted means for today versus the previous-7-day baseline, sorted with the largest drop first; a component absent from the baseline carries <code>baseline_weighted_mean = null</code> (insufficient baseline evidence, never a fabricated zero).</td>
 </tr>
 <tr>
-<td>评估</td>
-<td>相对变化与前 7 天平均值的启发式标签：<code>&lt; 2 %</code> 稳定，<code>2–5 %</code> 较小，<code>&gt; 5 %</code> 明显，有下降/上升方向，或 <code>insufficient_data</code>（当任一窗口没有置信证据时）。该标签仅用于决策支持，从不声称根本原因或准确性值；持续下降会提示操作员验证帧质量和媒体。</td>
+<td>Assessment</td>
+<td>Heuristic label from the relative change versus the previous-7-day mean: <code>&lt; 2 %</code> stable, <code>2–5 %</code> minor, <code>&gt; 5 %</code> noticeable, with drop/rise direction, or <code>insufficient_data</code> when either window has no confidence evidence. The label is decision-support only and never claims a root cause or an accuracy value; a persistent drop prompts operators to verify frame quality and media.</td>
 </tr>
 <tr>
-<td>过滤器</td>
-<td>必需的 <code>product_code</code>、<code>rule_version_id</code>、<code>product_model_version_id</code>、<code>component_model_version_id</code> 和 <code>aggregation_policy_version</code> 定义可比较范围。可选的<code>component_code</code>缩小了范围。 <code>tz_offset_minutes</code> 绑定到 <code>[-840, 840]</code>（<code>422</code> 之外）；所有验证错误都使用 <code>application/problem+json</code>。</td>
+<td>Filters</td>
+<td>Required <code>product_code</code>, <code>rule_version_id</code>, <code>product_model_version_id</code>, <code>component_model_version_id</code>, and <code>aggregation_policy_version</code> define the comparable scope. Optional <code>component_code</code> narrows it. <code>tz_offset_minutes</code> is bounded to <code>[-840, 840]</code> (<code>422</code> outside); all validation errors use <code>application/problem+json</code>.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="154-central-api-groups">15.4 中央 API 组<a class="headerlink" href="#154-central-api-groups" title="Permanent link">&para;</a></h2>
-<p>角色缩写为 <code>V</code> 查看者、<code>R</code> 审阅者、<code>C</code> 配置管理员、<code>F</code> 队列管理员、<code>O</code> 组织管理员和 <code>D</code> 注册设备。</p>
+<p>Roles are abbreviated <code>V</code> viewer, <code>R</code> reviewer, <code>C</code> configuration manager, <code>F</code> fleet administrator, <code>O</code> organization administrator, and <code>D</code> enrolled device.</p>
 <h3 id="1541-identity-fleet-and-events">15.4.1 身份、车队和事件<a class="headerlink" href="#1541-identity-fleet-and-events" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
