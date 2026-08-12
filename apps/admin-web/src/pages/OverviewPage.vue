@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 import {
   apiClient,
@@ -12,6 +13,7 @@ import {
 } from "@assemblyvision/api-client-central";
 import * as echarts from "echarts";
 
+const { t } = useI18n();
 const summary = ref<DashboardSummary | null>(null);
 const timeseries = ref<DashboardTimeseries | null>(null);
 const devices = ref<DeviceStatus[]>([]);
@@ -45,7 +47,7 @@ async function load(): Promise<void> {
     ]);
     renderChart();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : "failed to load the dashboard";
+    error.value = err instanceof Error ? err.message : t("failed to load the dashboard");
   }
 }
 
@@ -55,17 +57,20 @@ function renderChart(): void {
   }
   chart ??= echarts.init(chartEl.value);
   const points = timeseries.value?.points ?? [];
+  const ok = t("OK");
+  const ng = t("NG");
+  const uncertain = t("Uncertain");
   chart.setOption({
     tooltip: { trigger: "axis" },
-    legend: { data: ["OK", "NG", "Uncertain"] },
+    legend: { data: [ok, ng, uncertain] },
     grid: { left: 40, right: 20, top: 40, bottom: 40 },
     xAxis: { type: "category", data: points.map((p) => p.bucket) },
     yAxis: { type: "value", minInterval: 1 },
     series: [
-      { name: "OK", type: "bar", stack: "outcome", data: points.map((p) => p.ok_count) },
-      { name: "NG", type: "bar", stack: "outcome", data: points.map((p) => p.ng_count) },
+      { name: ok, type: "bar", stack: "outcome", data: points.map((p) => p.ok_count) },
+      { name: ng, type: "bar", stack: "outcome", data: points.map((p) => p.ng_count) },
       {
-        name: "Uncertain",
+        name: uncertain,
         type: "bar",
         stack: "outcome",
         data: points.map((p) => p.uncertain_count),
@@ -101,31 +106,31 @@ async function onSiteChange(siteId?: number): Promise<void> {
 <template>
   <main class="overview">
     <header>
-      <h1>Overview</h1>
+      <h1>{{ t("Overview") }}</h1>
       <p class="muted">
-        Counts are sample denominators for the selected scope, not accuracy claims.
+        {{ t("Counts are sample denominators for the selected scope, not accuracy claims.") }}
       </p>
     </header>
 
     <el-card class="block">
       <div class="filters">
-        <el-select v-model="scope.site_id" placeholder="Site" clearable class="filter" @change="onSiteChange">
+        <el-select v-model="scope.site_id" :placeholder="t('Site')" clearable class="filter" @change="onSiteChange">
           <el-option v-for="site in sites" :key="site.id" :label="site.name" :value="site.id" />
         </el-select>
-        <el-select v-model="scope.line_id" placeholder="Line" clearable class="filter">
+        <el-select v-model="scope.line_id" :placeholder="t('Line')" clearable class="filter">
           <el-option v-for="line in lines" :key="line.id" :label="line.name" :value="line.id" />
         </el-select>
         <el-date-picker
           v-model="scope.from_at"
           type="date"
-          placeholder="From (UTC)"
+          :placeholder="t('From (UTC)')"
           value-format="YYYY-MM-DDT00:00:00.000Z"
           class="filter"
         />
         <el-date-picker
           v-model="scope.to_at"
           type="date"
-          placeholder="To (UTC)"
+          :placeholder="t('To (UTC)')"
           value-format="YYYY-MM-DDT00:00:00.000Z"
           class="filter"
         />
@@ -137,44 +142,44 @@ async function onSiteChange(siteId?: number): Promise<void> {
     <section v-if="summary" class="cards">
       <el-card class="metric">
         <div class="metric-value">{{ summary.inspection_count }}</div>
-        <div class="metric-label">Inspections</div>
+        <div class="metric-label">{{ t("Inspections") }}</div>
       </el-card>
       <el-card class="metric ok">
         <div class="metric-value">{{ summary.ok_count }}</div>
-        <div class="metric-label">OK</div>
+        <div class="metric-label">{{ t("OK") }}</div>
       </el-card>
       <el-card class="metric ng">
         <div class="metric-value">{{ summary.ng_count }}</div>
-        <div class="metric-label">NG</div>
+        <div class="metric-label">{{ t("NG") }}</div>
       </el-card>
       <el-card class="metric uncertain">
         <div class="metric-value">{{ summary.uncertain_count }}</div>
-        <div class="metric-label">Uncertain</div>
+        <div class="metric-label">{{ t("Uncertain") }}</div>
       </el-card>
       <el-card class="metric">
         <div class="metric-value">
           {{ summary.avg_upload_delay_ms == null ? "–" : `${Math.round(summary.avg_upload_delay_ms)} ms` }}
         </div>
-        <div class="metric-label">Mean upload delay</div>
+        <div class="metric-label">{{ t("Mean upload delay") }}</div>
       </el-card>
     </section>
 
     <el-card class="block">
-      <template #header>Daily outcomes</template>
+      <template #header>{{ t("Daily outcomes") }}</template>
       <div ref="chartEl" class="chart" />
     </el-card>
 
     <el-card class="block">
-      <template #header>Devices</template>
-      <el-table :data="devices" empty-text="No registered devices.">
-        <el-table-column prop="device_id" label="Device id" width="260" />
-        <el-table-column prop="name" label="Name" width="160" />
-        <el-table-column label="Last seen (UTC)" width="220">
+      <template #header>{{ t("Devices") }}</template>
+      <el-table :data="devices" :empty-text="t('No registered devices.')">
+        <el-table-column prop="device_id" :label="t('Device id')" width="260" />
+        <el-table-column prop="name" :label="t('Name')" width="160" />
+        <el-table-column :label="t('Last seen (UTC)')" width="220">
           <template #default="{ row }">
             {{ row.last_seen_at ? new Date(row.last_seen_at).toLocaleString() : "–" }}
           </template>
         </el-table-column>
-        <el-table-column prop="inspection_count" label="Inspections" width="120" />
+        <el-table-column prop="inspection_count" :label="t('Inspections')" width="120" />
       </el-table>
     </el-card>
   </main>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import {
   apiClient,
@@ -10,6 +11,7 @@ import {
   type Site,
 } from "@assemblyvision/api-client-central";
 
+const { t } = useI18n();
 const query = reactive<InspectionQuery>({
   site_id: undefined,
   line_id: undefined,
@@ -43,7 +45,7 @@ async function load(cursor?: string): Promise<void> {
   try {
     page.value = await apiClient.listInspections(params);
   } catch (err) {
-    error.value = err instanceof Error ? err.message : "failed to load inspections";
+    error.value = err instanceof Error ? err.message : t("failed to load inspections");
   }
 }
 
@@ -86,42 +88,44 @@ async function onSiteChange(siteId?: number): Promise<void> {
 <template>
   <main class="history">
     <header>
-      <h1>Inspection history</h1>
-      <p class="muted">Cross-device records with bounded filters and keyset pagination.</p>
+      <h1>{{ t("Inspection history") }}</h1>
+      <p class="muted">
+        {{ t("Cross-device records with bounded filters and keyset pagination.") }}
+      </p>
     </header>
 
     <el-card class="block">
       <div class="filters">
         <el-select
           v-model="query.business_result"
-          placeholder="Result"
+          :placeholder="t('Result')"
           clearable
           class="filter"
           @change="apply"
         >
-          <el-option label="OK" value="OK" />
-          <el-option label="NG" value="NG" />
+          <el-option :label="t('OK')" value="OK" />
+          <el-option :label="t('NG')" value="NG" />
         </el-select>
         <el-select
           v-model="query.internal_decision"
-          placeholder="Internal decision"
+          :placeholder="t('Internal decision')"
           clearable
           class="filter"
           @change="apply"
         >
-          <el-option label="OK" value="OK" />
-          <el-option label="NG" value="NG" />
-          <el-option label="Uncertain" value="UNCERTAIN" />
+          <el-option :label="t('OK')" value="OK" />
+          <el-option :label="t('NG')" value="NG" />
+          <el-option :label="t('Uncertain')" value="UNCERTAIN" />
         </el-select>
-        <el-select v-model="query.site_id" placeholder="Site" clearable class="filter" @change="onSiteChange">
+        <el-select v-model="query.site_id" :placeholder="t('Site')" clearable class="filter" @change="onSiteChange">
           <el-option v-for="site in sites" :key="site.id" :label="site.name" :value="site.id" />
         </el-select>
-        <el-select v-model="query.line_id" placeholder="Line" clearable class="filter" @change="apply">
+        <el-select v-model="query.line_id" :placeholder="t('Line')" clearable class="filter" @change="apply">
           <el-option v-for="line in lines" :key="line.id" :label="line.name" :value="line.id" />
         </el-select>
         <el-select
           v-model="query.device_row_id"
-          placeholder="Device"
+          :placeholder="t('Device')"
           clearable
           class="filter"
           @change="apply"
@@ -136,7 +140,7 @@ async function onSiteChange(siteId?: number): Promise<void> {
         <el-date-picker
           v-model="query.from_at"
           type="date"
-          placeholder="From (UTC)"
+          :placeholder="t('From (UTC)')"
           value-format="YYYY-MM-DDT00:00:00.000Z"
           class="filter"
           @change="apply"
@@ -144,19 +148,19 @@ async function onSiteChange(siteId?: number): Promise<void> {
         <el-date-picker
           v-model="query.to_at"
           type="date"
-          placeholder="To (UTC)"
+          :placeholder="t('To (UTC)')"
           value-format="YYYY-MM-DDT00:00:00.000Z"
           class="filter"
           @change="apply"
         />
-        <el-input v-model="query.barcode" placeholder="Barcode" clearable class="filter" @change="apply" />
-        <el-input v-model="query.product" placeholder="Product" clearable class="filter" @change="apply" />
-        <el-input v-model="query.reason" placeholder="Reason code" clearable class="filter" @change="apply" />
-        <el-input v-model="query.rule_version" placeholder="Rule version id" clearable class="filter" @change="apply" />
-        <el-input v-model="query.model_version" placeholder="Model version id" clearable class="filter" @change="apply" />
+        <el-input v-model="query.barcode" :placeholder="t('Barcode')" clearable class="filter" @change="apply" />
+        <el-input v-model="query.product" :placeholder="t('Product')" clearable class="filter" @change="apply" />
+        <el-input v-model="query.reason" :placeholder="t('Reason code')" clearable class="filter" @change="apply" />
+        <el-input v-model="query.rule_version" :placeholder="t('Rule version id')" clearable class="filter" @change="apply" />
+        <el-input v-model="query.model_version" :placeholder="t('Model version id')" clearable class="filter" @change="apply" />
       </div>
       <div class="filter-actions">
-        <el-button type="primary" @click="apply">Apply</el-button>
+        <el-button type="primary" @click="apply">{{ t("Apply") }}</el-button>
         <el-button
           @click="
             query.site_id = undefined;
@@ -174,7 +178,7 @@ async function onSiteChange(siteId?: number): Promise<void> {
             apply();
           "
         >
-          Clear
+          {{ t("Clear") }}
         </el-button>
       </div>
     </el-card>
@@ -182,41 +186,41 @@ async function onSiteChange(siteId?: number): Promise<void> {
     <el-alert v-if="error" :title="error" type="error" show-icon class="block" />
 
     <el-card class="block">
-      <el-table v-if="page" :data="page.items" empty-text="No inspections match the filters.">
-        <el-table-column prop="completed_at" label="Completed (UTC)" width="180">
+      <el-table v-if="page" :data="page.items" :empty-text="t('No inspections match the filters.')">
+        <el-table-column prop="completed_at" :label="t('Completed (UTC)')" width="180">
           <template #default="{ row }">{{ new Date(row.completed_at).toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="device_id" label="Device" width="220" />
-        <el-table-column prop="barcode_value" label="Barcode" width="140" />
-        <el-table-column prop="product_code" label="Product" width="120" />
-        <el-table-column label="Result" width="100">
+        <el-table-column prop="device_id" :label="t('Device')" width="220" />
+        <el-table-column prop="barcode_value" :label="t('Barcode')" width="140" />
+        <el-table-column prop="product_code" :label="t('Product')" width="120" />
+        <el-table-column :label="t('Result')" width="100">
           <template #default="{ row }">
             <el-tag :type="row.business_result === 'OK' ? 'success' : 'danger'">
               {{ row.business_result }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Internal" width="110">
+        <el-table-column :label="t('Internal')" width="110">
           <template #default="{ row }">{{ row.internal_decision }}</template>
         </el-table-column>
-        <el-table-column label="Upload delay" width="120">
+        <el-table-column :label="t('Upload delay')" width="120">
           <template #default="{ row }">{{ row.upload_delay_ms }} ms</template>
         </el-table-column>
         <el-table-column label="" width="90">
           <template #default="{ row }">
-            <router-link :to="`/inspections/${row.inspection_id}`">Detail</router-link>
+            <router-link :to="`/inspections/${row.inspection_id}`">{{ t("Detail") }}</router-link>
           </template>
         </el-table-column>
       </el-table>
       <div class="pager">
-        <el-button :disabled="cursorHistory.length === 0" @click="previous">Previous</el-button>
+        <el-button :disabled="cursorHistory.length === 0" @click="previous">{{ t("Previous") }}</el-button>
         <el-button
           v-if="page?.next_cursor"
           type="primary"
           plain
           @click="next"
         >
-          Next page
+          {{ t("Next page") }}
         </el-button>
       </div>
     </el-card>

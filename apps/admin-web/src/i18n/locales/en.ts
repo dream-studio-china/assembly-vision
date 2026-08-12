@@ -1,0 +1,142 @@
+/**
+ * English is the source locale: every key is the English text itself and the
+ * value is the English text, so `t("Overview")` reads naturally in code and
+ * the other locale files reuse the same keys (see
+ * docs/design/17-central-admin-dashboard.md).
+ */
+export default {
+  // App shell / navigation
+  Overview: "Overview",
+  Inspections: "Inspections",
+  Reviews: "Reviews",
+  "Sign out": "Sign out",
+  "Primary navigation": "Primary navigation",
+  "Interface language": "Interface language",
+
+  // Shared status words
+  OK: "OK",
+  NG: "NG",
+  Uncertain: "Uncertain",
+  Result: "Result",
+  "Internal decision": "Internal decision",
+  Internal: "Internal",
+  Lifecycle: "Lifecycle",
+  Product: "Product",
+  Barcode: "Barcode",
+  Device: "Device",
+  "Device id": "Device id",
+  Site: "Site",
+  Line: "Line",
+  Name: "Name",
+  State: "State",
+  Component: "Component",
+  Detail: "Detail",
+  Inspection: "Inspection",
+  Review: "Review",
+  Rev: "Rev",
+  Disposition: "Disposition",
+  Reviewer: "Reviewer",
+  Reason: "Reason",
+  Reasons: "Reasons",
+  Media: "Media",
+
+  // Common actions
+  "Sign in": "Sign in",
+  Apply: "Apply",
+  Clear: "Clear",
+  Cancel: "Cancel",
+  Previous: "Previous",
+  "Next page": "Next page",
+  "Append review": "Append review",
+  "Record review": "Record review",
+  "Review queue": "Review queue",
+
+  // Login
+  "Pilot administrator sign-in": "Pilot administrator sign-in",
+  "Administrator token": "Administrator token",
+  "Authentication failed; check the pilot administrator token.":
+    "Authentication failed; check the pilot administrator token.",
+
+  // Overview
+  "Counts are sample denominators for the selected scope, not accuracy claims.":
+    "Counts are sample denominators for the selected scope, not accuracy claims.",
+  "From (UTC)": "From (UTC)",
+  "To (UTC)": "To (UTC)",
+  "Mean upload delay": "Mean upload delay",
+  "Daily outcomes": "Daily outcomes",
+  Devices: "Devices",
+  "No registered devices.": "No registered devices.",
+  "Last seen (UTC)": "Last seen (UTC)",
+  "failed to load the dashboard": "failed to load the dashboard",
+
+  // Inspection history
+  "Inspection history": "Inspection history",
+  "Cross-device records with bounded filters and keyset pagination.":
+    "Cross-device records with bounded filters and keyset pagination.",
+  "Reason code": "Reason code",
+  "Rule version id": "Rule version id",
+  "Model version id": "Model version id",
+  "No inspections match the filters.": "No inspections match the filters.",
+  "Completed (UTC)": "Completed (UTC)",
+  "Upload delay": "Upload delay",
+  "failed to load inspections": "failed to load inspections",
+
+  // Inspection detail
+  "Inspection {id}": "Inspection {id}",
+  "reviewed r{revision}: {disposition}": "reviewed r{revision}: {disposition}",
+  "Original edge evidence; reviewed labels are shown separately.":
+    "Original edge evidence; reviewed labels are shown separately.",
+  Decision: "Decision",
+  "Missing components": "Missing components",
+  "Reason codes": "Reason codes",
+  Receipt: "Receipt",
+  "Receipt status": "Receipt status",
+  "Accepted (UTC)": "Accepted (UTC)",
+  "Component evidence": "Component evidence",
+  "Best confidence": "Best confidence",
+  Detections: "Detections",
+  "Usable frames": "Usable frames",
+  "No component evidence recorded.": "No component evidence recorded.",
+  "Versions and traceability": "Versions and traceability",
+  Application: "Application",
+  "Rule version": "Rule version",
+  "Product model": "Product model",
+  "Component model": "Component model",
+  "Aggregation policy": "Aggregation policy",
+  Processing: "Processing",
+  "Inference traceability": "Inference traceability",
+  "Product latency": "Product latency",
+  "Component latency": "Component latency",
+  "No review recorded yet.": "No review recorded yet.",
+  "No review recorded.": "No review recorded.",
+  "Recorded (UTC)": "Recorded (UTC)",
+  "Appends revision {revision} with optimistic If-Match; the machine decision is never modified.":
+    "Appends revision {revision} with optimistic If-Match; the machine decision is never modified.",
+  "Bounded reason (optional)": "Bounded reason (optional)",
+  "No media bound to this inspection.": "No media bound to this inspection.",
+  "Review recorded.": "Review recorded.",
+  "A newer review exists; the page was refreshed.":
+    "A newer review exists; the page was refreshed.",
+  "failed to load the inspection": "failed to load the inspection",
+  "failed to submit the review": "failed to submit the review",
+
+  // Review queue
+  "NG and uncertain inspections awaiting append-only review. Machine outcomes are never modified; reviewed labels are shown separately.":
+    "NG and uncertain inspections awaiting append-only review. Machine outcomes are never modified; reviewed labels are shown separately.",
+  "No inspections awaiting review.": "No inspections awaiting review.",
+  "Machine result": "Machine result",
+  "The original machine decision and evidence remain unchanged; this appends a reviewer disposition (revision 1 of an unreviewed inspection).":
+    "The original machine decision and evidence remain unchanged; this appends a reviewer disposition (revision 1 of an unreviewed inspection).",
+  "Bounded review reason (optional)": "Bounded review reason (optional)",
+  "Review r{revision} recorded ({disposition}).": "Review r{revision} recorded ({disposition}).",
+  "This inspection was reviewed by someone else; refresh the queue.":
+    "This inspection was reviewed by someone else; refresh the queue.",
+  "failed to load the review queue": "failed to load the review queue",
+
+  // Review dispositions (design 24.3; labels align with edge-web)
+  "Confirmed NG": "Confirmed NG",
+  "Confirmed OK": "Confirmed OK",
+  "Corrected NG": "Corrected NG",
+  Inconclusive: "Inconclusive",
+  Reinspect: "Reinspect",
+};
