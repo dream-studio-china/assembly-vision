@@ -1,6 +1,6 @@
 # AssemblyVision - Full Project Context
 
-> Context snapshot. Last updated: 2026-08-11
+> Context snapshot. Last updated: 2026-08-13
 >
 > Read this file first in a new session to reconstruct the project state quickly.
 
@@ -50,9 +50,25 @@ and verifies that all required assembly components are present.
   (design 15.3.6) and its dashboard panel; and PR #39 added live network
   traffic and GPU metrics to the device health page. Edge coding is complete
   through the E6 preparation gate. The central server M1 pilot has started
-  (C1a foundation and C1b tenant/credential foundation delivered); its
-  bounded implementation plan is in
-  `docs/tasks/C1-central-server-m1.md`.
+  (C1a foundation merged via PR #37; C1b tenant/credential foundation merged
+  via PR #40); its bounded implementation plan is in
+  `docs/tasks/C1-central-server-m1.md`. PR #41 repaired the GitHub issue
+  form templates: the `.md` forms were renamed to `.yml` (GitHub parses
+  `.md` files as Markdown templates requiring an `about:` key, which made
+  the editor report "About can't be blank"), the missing closing frontmatter
+  delimiter was added to the security template, and `.env` deployment secrets
+  are now gitignored. The central M1 pilot has since delivered inspection
+  ingestion with verified receipts (C2a, PR #42), MinIO media binding (C2b,
+  PR #43), history/detail/media access and the real admin-web UI (C3, PR
+  #44), central append-only human review (C4, PR #45), admin-web
+  i18n/theme/pagination/sign-out hardening (PR #46), C5 metadata governance
+  (PR #47), and C6 M1 hardening and operational evidence (PR #48, merged) -
+  completing the C1a-C6 M1 feature set, plus the E6-A16 real
+  edge-to-central integration fixture and the M1 closure documentation
+  (exit-criteria evidence table + go-live checklist, README/QUICKSTART/
+  DEPLOYMENT split) via PR #49 (open at snapshot time). The M1 pilot is
+  feature-complete; remaining work is on-site E6 acceptance and the §13.2
+  controlled-pilot deployment (execution, hardware/data-gated).
 
 ## 2. Repository State
 
@@ -65,10 +81,21 @@ and verifies that all required assembly components are present.
   review, issue templates, documentation refresh, developer manual, edge-web
   i18n, the MkDocs manual-index fix, the central server M1 foundation
   (C1a, PR #37), the central pilot tenant/device/credential foundation
-  (C1b), the confidence-drift statistics (PR #38), and the device
-  health observability layer (PR #39). `docs/tasks/C1-central-server-m1.md`
-  defines the central pilot scope; ingestion, history, central review, and
-  hardening (C2a-C6) remain.
+  (C1b, PR #40), the confidence-drift statistics (PR #38), and the device
+  health observability layer (PR #39). PR #41 fixed the GitHub issue form
+  templates (`.yml` rename, security closing delimiter, `.env` ignore).
+  PR #42 merged central inspection ingestion with verified receipts (C2a),
+  PR #43 merged MinIO media binding (C2b), PR #44 merged history/detail/
+  media access and the real admin-web UI (C3), PR #45 merged central
+  append-only human review (C4), PR #46 merged admin-web i18n/theme/
+  pagination/sign-out hardening, and PR #47 merged C5 metadata governance.
+  `docs/tasks/C1-central-server-m1.md`
+  defines the central pilot scope. C6 M1 hardening is merged via PR #48,
+  completing the C1a-C6 M1 feature set; PR #49 (dev -> main, open at
+  snapshot time) carries the E6-A16 real edge-to-central integration fixture
+  (`scripts/tests/test_edge_central_e2e.py`, section 8.23), the §13
+  exit-criteria evidence table and go-live checklist, and the
+  README/QUICKSTART/DEPLOYMENT documentation split.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -78,9 +105,10 @@ and verifies that all required assembly components are present.
 ```
 assembly-vision/
 ├── README.md               # Root README with docs map + bilingual site instructions
-├── QUICKSTART.md           # Developer onboarding: setup, checks, CLI, end-to-end demo
+├── QUICKSTART.md           # Short developer fast path (Docker-free) for all components + training
+├── DEPLOYMENT.md           # Exhaustive deployment reference (dev/production/training, CLI + Docker)
 ├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
-├── LICENSE                 # MIT License (c) 2026 dream-studio-china
+├── LICENSE                 # MIT License (c) 2026 Dream Studio
 ├── SECURITY.md             # Security policy: position, edge auth, vulnerability reporting
 ├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
 ├── Makefile                # Quality gates: lint, format, typecheck, test, check
@@ -94,7 +122,7 @@ assembly-vision/
 │   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -> two-stage layout
 │   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -> two-stage layout
 │   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
-│   └── tests/                       # tests for the dataset adapters
+│   └── tests/                       # dev harness tests: dataset adapters + edge-central e2e (E6-A16)
 ├── .github/
 │   ├── ISSUE_TEMPLATE/              # bug_report / feature_request / security_vulnerability + config
 │   └── workflows/                   # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
@@ -128,7 +156,7 @@ assembly-vision/
     ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
     ├── tasks/              # Delivery tasks, including the Central Server M1 plan
     ├── contracts/          # 11 mandatory engineering contracts + index
-    ├── runbooks/           # 15 operational recovery runbooks (01-15) + index
+    ├── runbooks/           # 20 operational recovery runbooks (01-15 + central C1-C5) + index
     ├── design/             # 28 design documents + appendices + decisions/
     │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
     │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
@@ -183,11 +211,13 @@ assembly-vision/
 - `docs/research/`: industry success rates, YOLO capabilities, imaging/workflow/training cost.
 - [docs/contracts/](../contracts/README.md): 11 enforceable architecture, safety, API, quality,
   operations, security, change-control, and acceptance contracts.
-- [docs/runbooks/](../runbooks/README.md): 15 executable recovery procedures for all contract-required
-  operational scenarios, including model improvement (runbook 10), data
-  collection and annotation (runbook 11), backup and recovery (12), TLS
-  certificate rotation (13), deployment upgrade and rollback (14), and edge
-  acceptance execution (15).
+- [docs/runbooks/](../runbooks/README.md): 20 executable recovery procedures
+  for all contract-required operational scenarios, including model improvement
+  (runbook 10), data collection and annotation (runbook 11), backup and
+  recovery (12), TLS certificate rotation (13), deployment upgrade and
+  rollback (14), edge acceptance execution (15), and the central runbooks C1-C5
+  (ingestion backlog, object-store failure, credential compromise,
+  backup/restore, pilot upgrade/rollback).
 
 ## 6. Bilingual MkDocs (English + Chinese)
 
@@ -875,7 +905,7 @@ PRs #38 and #39 are merged to `main`.
 ## 8.15 Central Server M1 Tenant and Pilot Authentication Foundation (C1b)
 
 The second central-server delivery (C1b of
-`docs/tasks/C1-central-server-m1.md`) is implemented on `dev`:
+`docs/tasks/C1-central-server-m1.md`) is implemented and merged via PR #40:
 
 - **Tenant/device/credential schema (migration 0002)**: `organizations`,
   `sites`, `production_lines`, `devices` (edge identity unique per
@@ -925,6 +955,274 @@ The second central-server delivery (C1b of
   `CENTRAL_SECURE_COOKIES` is in `compose.env.example`. The edge runtime
   still imports no central code and the edge upload envelope is unchanged.
 
+## 8.16 GitHub Issue Form Template Repair (PR #41)
+
+Merged via PR #41 (dev -> main). The `.github/ISSUE_TEMPLATE/` issue forms
+were broken on GitHub: the editor reported "About can't be blank" and marked
+the templates "this template has some problems".
+
+- **Root cause**: GitHub parses `.md` files in `ISSUE_TEMPLATE/` as Markdown
+  templates, which require an `about:` frontmatter key; the forms were
+  written with the issue-form schema (`name:`/`description:`/`body:`) but
+  carried `.md` extensions, so GitHub could not find `about:`.
+- **Fix**: `bug_report.md`, `feature_request.md`, and
+  `security_vulnerability.md` were renamed to `.yml` (GitHub then parses them
+  as issue forms), the missing closing `---` frontmatter delimiter was added
+  to `security_vulnerability.yml` (its YAML frontmatter was unparsable
+  regardless of extension), and `.gitignore` now excludes local `.env`
+  deployment secrets (Compose reads `.env`; see `compose.env.example`).
+- **Validation**: all three forms parse with both PyYAML and Ruby Psych
+  (name/description/body present, exactly two `---` delimiters, valid body
+  types and dropdown/checkbox options); referenced labels (`bug`, `triage`,
+  `enhancement`, `security`) exist in the repository; no code or docs
+  reference the old `.md` template filenames.
+
+## 8.17 Central Server Inspection Ingestion and Verified Receipts (C2a, PR #42)
+
+Merged via PR #42 (dev -> main). Implements the C2a milestone of
+`docs/tasks/C1-central-server-m1.md`: device-scoped idempotent inspection
+ingestion over the current edge upload envelope. The edge runtime is
+untouched; the endpoint preserves the existing wire contract and receipt
+semantics.
+
+- **Schema (migration 0003)**: `upload_receipts`, `inspections`, and
+  `inspection_components` with `UNIQUE(device_row_id, idempotency_key)`,
+  `UNIQUE(device_row_id, inspection_id)`, and
+  `UNIQUE(device_row_id, device_sequence)` plus the design 14 keyset
+  pagination and partial barcode indexes.
+- **`POST /api/v1/inspection-uploads`**: strict typed envelope parsing
+  (bounded Base64, canonical SHA-256 request hash, size/checksum
+  cross-validation, unknown-field rejection), device identity matching
+  against the authenticated device credential (C1b seam), and one-transaction
+  persistence of inspection + components + receipt + audit event.
+- **Idempotency**: identical replay returns the original receipt (200) with
+  exactly one inspection row; a reused idempotency key, inspection id, or
+  device sequence with different content returns `409 PAYLOAD_CONFLICT` with
+  an audit event and the accepted resource preserved. Concurrent
+  unique-constraint races map to 409, never 500.
+- **MEDIA envelopes** returned a retryable `503 MEDIA_INGESTION_UNAVAILABLE`
+  until the C2b milestone so pending edge media tasks were never permanently
+  failed.
+- **Verified receipts** echo idempotency key, object id, kind, size, and
+  checksum, satisfying the edge `HttpUploadSink` receipt validation (covered
+  by an end-to-end test driving the real sink).
+- Review fixes folded in: invalid UUID inputs fail closed with typed 4xx,
+  `capture_at` (edge capture clock) added to the media row, object keys
+  sanitize the registered device identity, and a concurrent unique-race maps
+  to 409. The pilot device must be registered with the edge's real UUID
+  `device_id` (the C1b default `edge-device-001` is a plain string).
+- Verification: 80 central tests, ruff/mypy/pytest, migration 0003
+  upgrade/downgrade, real edge sink e2e, and a Docker Compose e2e against
+  PostgreSQL (first SUCCEEDED, replay SUCCEEDED, conflict 409).
+
+## 8.18 Central Server MinIO Media Ingestion and Binding (C2b, PR #43)
+
+Merged via PR #43 (dev -> main). Implements the C2b milestone: binds the
+existing edge MEDIA envelope into MinIO with verified receipts, replacing the
+C2a temporary 503 placeholder.
+
+- **Migration 0004 `inspection_media`**: source media identity, media kind,
+  MIME, size, SHA-256, opaque tenant-scoped object key, a stable
+  independent-UUID `central_object_id`, lifecycle, and both edge capture and
+  central receive times; `UNIQUE(device_row_id, source_media_id)`,
+  `UNIQUE(object_key)`, `UNIQUE(central_object_id)`.
+- **`ObjectStorage` protocol / `MinioObjectStorage`** gained
+  put/stat/remove/list/presigned operations; the test `NoopObjectStorage`
+  keeps an in-memory object map for assertions.
+- **`ingest_media`**: parent-inspection lookup, manifest cross-check of size
+  and checksum against the accepted inspection payload (strong tamper
+  protection), idempotent replay and media-identity conflict detection
+  before any object write (no staged orphans on the common retry path),
+  staging under a generated `org/{org}/device/{device}/{yy}/{mm}/{media_id}`
+  key, then one transaction persisting the AVAILABLE binding, MEDIA receipt
+  (non-empty `central_object_id`), and audit event.
+- **Failure semantics**: object-store failure is a retryable 503; a manifest
+  mismatch creates no AVAILABLE row; concurrent races map to 409; replay
+  yields one final object/binding.
+- **`central-service reconcile-media`** maintenance command over an
+  extracted, unit-tested `reconcile_media` function reporting missing/orphan
+  objects.
+- Settings gained `max_media_payload_bytes` (16 MiB decoded); the envelope
+  body bound rose to 32 MiB. Review fixes: `capture_at` on the binding row,
+  conflict detection before object writes, and design 13 delivery status
+  updated.
+- Verification: 96+ central tests including a real edge outbox drain reaching
+  SYNCED only after the media receipt (C2b exit criterion), migration 0004
+  upgrade/downgrade, and a Docker e2e with a real MinIO object.
+
+## 8.19 Central Server History, Detail, Media Access, and Admin Dashboard (C3, PR #44)
+
+Merged via PR #44 (dev -> main). Implements the C3 milestone: cross-device
+inspection history, detail with evidence and media, dashboard aggregates, and
+the first real admin-web pilot UI.
+
+- **`GET /api/v1/inspections`**: twelve bounded filters (site, line, device,
+  UTC time range, barcode, product, business/internal decision, reason,
+  model/rule version) with keyset pagination; cursors are bound to the
+  normalized filter fingerprint and malformed/mismatched cursors return
+  `400 INVALID_CURSOR`.
+- **`GET /api/v1/inspections/{id}`**: decision, component evidence, version
+  traceability, inference metadata, receipt state, and media bindings.
+- **Authorized media streaming** `GET /api/v1/media/{central_object_id}`
+  (organization-scoped; 401/404/410). Replaced presigned URLs whose MinIO
+  container host was unreachable from browsers and keeps MinIO off the
+  network.
+- **`GET /api/v1/dashboard/summary`**, `/timeseries` (daily OK/NG/Uncertain
+  buckets), and `/devices` (per-device last-seen and volume); empty data
+  stays empty and no accuracy claims are made.
+- **admin-web**: `CentralApiClient` (session-cookie auth), login page,
+  overview with site/line/time scope selector and ECharts, history with the
+  full filter set and bidirectional keyset paging, and detail with evidence,
+  versions, receipt state, inference traceability, and streamed media.
+  Playwright e2e runs the login-page smoke without a backend (CI) and the
+  full pilot flow against Compose when `CENTRAL_E2E_TOKEN` is set.
+- Review fixes: malformed UUID inputs fail closed (400/404, never 500), and
+  the frontend pagination previous-page cursor handling was corrected.
+- Verification: 113+ central tests, migration 0004 remains head, TS gates,
+  and browser-verified overview/history/detail with zero console errors.
+
+## 8.20 Central Server Append-Only Human Review (C4, PR #45)
+
+PR #45 (dev -> main) implements the C4 milestone:
+central append-only review of ingested inspections with optimistic
+concurrency and the admin-web review queue and panel.
+
+- **Migration 0005 `review_records`**: per-inspection monotonic revisions,
+  disposition/reason/note/reviewer, bounded component corrections, a snapshot
+  of the original machine decision, and idempotency keys
+  (`UNIQUE(inspection_row_id, revision)` and
+  `UNIQUE(inspection_row_id, idempotency_key)`).
+- **`submit_review`**: appends under `Idempotency-Key` + `If-Match`; a stale
+  revision returns `409 REVIEW_CONFLICT`, an identical retry replays the
+  original record, and the disposition must be permitted for the machine
+  outcome (design 24.3). SQLite serializes with `BEGIN IMMEDIATE`;
+  PostgreSQL unique-constraint races map to 409, never 500. Every append
+  writes a `REVIEW_APPENDED` audit event.
+- **`GET /api/v1/reviews/queue`** (NG/uncertain inspections without a
+  review, keyset-paginated), **`POST /api/v1/inspections/{id}/reviews`**, and
+  **`GET /api/v1/inspections/{id}/reviews`** (oldest first). Inspection
+  detail carries `latest_review`; the original machine decision stays
+  byte-for-byte unchanged.
+- **admin-web**: review queue page and a detail review panel with append
+  history and optimistic append; dispositions are dynamically restricted per
+  machine outcome (CORRECTED_NG for sampled OK audits, REINSPECT for
+  uncertain), and reviewed inspections carry a "reviewed rN" badge distinct
+  from the automated outcome.
+- Review fixes: concurrent PostgreSQL append races surfaced as 500 (uncaught
+  IntegrityError) and now map to explicit `REVIEW_CONFLICT`; the disposition
+  options and initial value now follow the domain policy; the client request
+  headers merge fixed a missing Content-Type that caused 422 on review
+  submission.
+- Verification: 131+ central tests including a threaded parallel race (one
+  append wins, the other 409), migration 0005 upgrade/downgrade, and a
+  browser-verified review flow with zero console errors.
+
+## 8.21 Central Server Metadata Governance (C5, PR #47)
+
+Merged via PR #47 (dev -> main). Implements the C5 milestone: organization-
+scoped product/component/rule/model governance with immutable draft/publish
+versions, exact-barcode mappings, explicit rule/model compatibility,
+single-device desired configuration recording, and read-only admin-web
+configuration pages.
+
+- **Migration 0006 `metadata_governance`**: `components`, `products`,
+  `product_versions`, `product_version_components`, `product_version_barcodes`
+  (partial unique index on PUBLISHED exact barcodes), `rules`, `rule_versions`,
+  `rule_component_policies`, `rule_model_compatibilities`, `model_packages`,
+  `model_versions`, and `desired_configurations`; `audit_logs` gains
+  `request_id`/`reason`/`before_state`/`after_state` correlation columns.
+- **Repository**: idempotent create/draft (same key + same hash replays; a
+  reused key with different content returns `409 IDEMPOTENCY_CONFLICT`),
+  immutable publish (repeat publish returns the published version), publish
+  validation (component uniqueness, bounded policy values, threshold ordering,
+  exact-barcode ambiguity, published product/model and class coverage), and
+  declarative model registration (artifact bytes are never fetched or verified
+  server-side in M1; the audit states this explicitly and the edge validates
+  bytes/checksum/compatibility and last-known-good rollback locally during
+  manual installation). Desired configuration is assigned under an `If-Match`
+  revision guard; every publish/assignment writes an immutable audit event in
+  the same transaction.
+- **Routers**: `/api/v1/components`, `/products`, `/product-versions`,
+  `/rules`, `/rule-versions`, `/models`, `/model-versions`
+  (list/create/draft/publish/detail) and `/devices/{id}/desired-configuration`
+  plus `/device-configurations`. Stable creates and drafts require
+  `Idempotency-Key`; assignment requires `If-Match`.
+- **admin-web**: read-only Configuration pages (products, rules, models,
+  desired configurations) with the mandatory manual-install notice
+  ("Assignment is not proof of download, validation, or activation") in
+  en/zh-CN/zh-HK/ja; no edit/publish/assign controls ship in C5. Top
+  navigation uses direct links after an `el-dropdown` teleport/z-index issue
+  made menu clicks unreliable.
+- Verification: 162 central tests (29 new C5), regenerated OpenAPI + TS
+  client, admin-web lint/build and 30 unit tests, e2e smoke against Compose,
+  and a live browser check of all four configuration pages.
+
+## 8.22 Central Server M1 Hardening and Operational Evidence (C6, PR #48)
+
+Merged via PR #48 (dev -> main). Implements the C6 milestone:
+structured log correlation, bounded rate limiting, retryable dependency-
+failure responses, restart/backup/restore fault evidence, and central
+operational runbooks.
+
+- **Structured log correlation**: per-request `request_id` bound through a
+  context variable and appended to every log record; the request middleware
+  logs `method path -> status (ms)`; ingestion logs carry
+  device/inspection/object/receipt correlation tying to the
+  `audit_logs.request_id` column.
+- **Rate limiting**: per-client sliding-window middleware returns
+  `429 RATE_LIMITED` with `Retry-After` (health endpoints exempt;
+  `AV_CENTRAL_RATE_LIMIT_REQUESTS_PER_MINUTE`, 0 disables).
+- **Retryable dependency failures**: SQLAlchemy `OperationalError` maps to
+  `503 DATABASE_UNAVAILABLE` + `Retry-After` (IntegrityError keeps explicit
+  conflict semantics); object-store outages already returned
+  `503 OBJECT_STORE_UNAVAILABLE`. Request-body/payload caps (413) existed
+  from C2a/C2b and stay covered.
+- **Fault tests (5 new)**: object-store outage returns 503 with no receipt or
+  binding persisted; database outage returns 503; controlled restart (engine
+  disposed and reopened) preserves inspections, media bindings, receipts, and
+  audit rows with replayable receipts; a consistent snapshot restored as a
+  fresh database preserves the same invariants; a real PostgreSQL
+  `pg_dump`/`pg_restore` round-trip to a fresh database was executed and
+  verified (schema at head, rows intact) as the representative restore
+  evidence.
+- **Central runbooks C1-C5**: ingestion backlog, object-store failure,
+  credential compromise, backup/restore, and pilot upgrade/rollback, indexed
+  in `docs/runbooks/README.md` and the mkdocs nav
+  (`uv run mkdocs build --strict` passes). M1 remains labeled a controlled
+  pilot (no production HA / final RPO-RTO / full retention / OIDC / remote
+  rollout claims).
+- CI quality gate: an initial failure was a repo-wide `mypy .` unused
+  `type: ignore` in two C6 tests (local `mypy src` missed it); fixed in a
+  follow-up commit and all PR #48 checks pass. A local 7-test edge-service
+  failure was traced to the machine's Data volume being ~94% full
+  (free space fluctuating around the E2c `stop_free_percent` 5% threshold,
+  which correctly blocks intake); it passes in CI and now locally after disk
+  pressure eased - an environment issue, not a defect.
+
+## 8.23 E6-A16 Real Edge-to-Central Integration Fixture
+
+Delivered after PR #48 and carried by PR #49 (`scripts/tests/test_edge_central_e2e.py`).
+Closes the mandatory test-matrix item "an
+end-to-end edge outbox fixture that validates the actual central receipt"
+(task C1 section 11) and provides exit criterion 3's executable evidence,
+which the mocked `central.invalid` fixtures cannot:
+
+- The **real edge `UploadScheduler` + `HttpUploadSink`** run against a
+  **live in-process central FastAPI server** (uvicorn on a loopback port,
+  SQLite repository, in-memory object store, bootstrapped device) - no
+  mocked central and no stub sink.
+- Test 1 asserts the outbox drains in metadata-before-media order to
+  `QUEUED -> PARTIAL -> SYNCED` only after verified central receipts; both
+  INSPECTION and MEDIA tasks end `SUCCEEDED` (a SUCCEEDED MEDIA task proves
+  the receipt carried a central object id, since `mark_upload_succeeded`
+  rejects one without it), and the central inspection detail holds an
+  `AVAILABLE` media binding.
+- Test 2 asserts duplicate replay is duplicate-free: re-sending the exact
+  payload the sink sent returns the original receipt and the central
+  database keeps exactly one INSPECTION and one MEDIA receipt row.
+- Verification: full repo gates pass (`ruff check .`, `ruff format --check
+  .`, `mypy .`, `pytest` - 1174 tests total, `mkdocs build --strict`).
+
 ## 9. Open Items / Next Steps
 
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6); **E1
@@ -946,8 +1244,9 @@ The second central-server delivery (C1b of
   templates (PR #32), the README/QUICKSTART/SECURITY refresh (PR #33), the
   developer manual (PR #34), edge-web i18n (PR #35), and the MkDocs index fix
   (PR #36) are merged (see sections 8.11/8.12); the central C1a foundation
-  (PR #37), confidence drift (PR #38), and device health observability
-  (PR #39) are merged too (see sections 8.13/8.14).
+  (PR #37), the C1b tenant/credential foundation (PR #40), confidence drift
+  (PR #38), device health observability (PR #39), and the issue-form template
+  repair (PR #41) are merged too (see sections 8.13/8.15/8.16).
 - Real customer data is still required for the baseline: collect and annotate
   with X-AnyLabeling per
   `docs/design/19-training-and-evaluation.md` §19.17 and
@@ -964,19 +1263,40 @@ The second central-server delivery (C1b of
   replace the mock trigger source (the Modbus FIFO contract from PR #30 needs
   a site-validated register profile) and the time-only fallback (which is a
   development mode, not a production product boundary).
-- The central server M1 pilot is **in progress** (`docs/tasks/C1-central-server-m1.md`).
+- The central server M1 pilot is **feature-complete** (`docs/tasks/C1-central-server-m1.md`).
   C1a (workspace, service, Compose, health/readiness, OpenAPI) is merged
-  (PR #37), and C1b (tenant/device/credential schema, idempotent bootstrap,
-  separated device/admin authentication, admin endpoints) is implemented on
-  `dev` (section 8.15): `apps/central-service` (FastAPI, PostgreSQL, MinIO,
-  controlled schema migrations), `apps/admin-web` (Vue 3 pilot shell), and
-  `packages/typescript/api-client-central`. Ingestion with verified receipts,
-  media binding, history, central review, metadata governance, and hardening
-  (C2a-C6) remain; C2a (inspection ingestion and verified receipts) is the
-  next delivery and consumes the device-authentication seam and the
-  `(device_id, idempotency_key)` uniqueness from C1b. It must preserve the
-  current edge upload envelope and receipt semantics; resumable uploads remain
-  deferred until that contract changes.
+  (PR #37), C1b (tenant/device/credential schema, idempotent bootstrap,
+  separated device/admin authentication, admin endpoints) is merged (PR #40,
+  section 8.15), C2a (inspection ingestion and verified receipts) is merged
+  (PR #42, section 8.17), C2b (MinIO media ingestion and binding) is merged
+  (PR #43, section 8.18), C3 (history/detail/media access and the real
+  admin-web UI) is merged (PR #44, section 8.19), C4 (central append-only
+  human review) is merged (PR #45, section 8.20), admin-web
+  i18n/theme/pagination/sign-out hardening is merged (PR #46), C5 (metadata
+  governance) is merged (PR #47, section 8.21), and C6 (M1 hardening and
+  operational evidence) is merged via PR #48 (section 8.22): `apps/central-service` (FastAPI, PostgreSQL, MinIO,
+  controlled schema migrations 0001-0006), `apps/admin-web` (login, overview,
+  history, detail, review queue, read-only configuration pages), and
+  `packages/typescript/api-client-central`. The E6-A16 real edge-to-central
+  integration fixture is delivered
+  (`scripts/tests/test_edge_central_e2e.py`): the actual edge
+  `UploadScheduler` + `HttpUploadSink` run against a live in-process central
+  FastAPI server, verifying metadata-before-media ordering to
+  `QUEUED -> PARTIAL -> SYNCED` with real receipts and duplicate-free replay
+  (closes the mandatory-matrix edge-outbox item and exit criterion 3).
+  The section 13 exit-criteria evidence table (13.1) and the go-live
+  deployment checklist (13.2) are recorded in the task doc, and the
+  README/QUICKSTART/DEPLOYMENT documentation split is delivered; all of
+  these ride on PR #49 (open at snapshot time). Remaining execution work:
+  merge PR #49, apply the §13.2 deployment steps on the pilot host (TLS
+  termination, real device registration, hardware validation), and execute
+  E6 acceptance-prep evidence on-site.
+  M1 is a controlled pilot: no production HA, final RPO/RTO, full retention
+  enforcement, OIDC, or remote rollout claims. Resumable uploads remain
+  deferred until the edge-to-central contract changes. Pilot admin/device/UI
+  management operations (device registration/disable/credential rotation,
+  user/RBAC, remote package distribution) are production scope driven by
+  OQ-021/OQ-022 (roadmap 25.6), not part of C1a-C6.
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.
