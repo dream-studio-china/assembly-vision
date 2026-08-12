@@ -9,6 +9,7 @@ applied automatically; readiness reports schema state instead.
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from uuid import uuid4
@@ -16,9 +17,11 @@ from uuid import uuid4
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
+from sqlalchemy.exc import OperationalError
 
 from central_service import __version__
 from central_service.api.problems import install_problem_handlers
+from central_service.api.rate_limit import RateLimitState, client_key
 from central_service.api.readiness import (
     ReadinessResult,
     compute_readiness,
@@ -37,7 +40,11 @@ from central_service.api.routers import (
 )
 from central_service.api.schemas import Problem
 from central_service.api.settings import CentralSettings
-from central_service.observability.logging import configure_logging
+from central_service.observability.logging import (
+    clear_request_id,
+    configure_logging,
+    set_request_id,
+)
 from central_service.persistence.engine import create_database_engine
 from central_service.persistence.migrate import applied_revision, current_head
 from central_service.persistence.repository import CentralRepository
@@ -156,18 +163,88 @@ def create_app(
     _install_exception_handler(app)
     _install_security_scheme(app)
 
+    rate_limit_state = RateLimitState(limit_per_minute=settings.rate_limit_requests_per_minute)
+
+    @app.middleware("http")
+    async def _limit_request_rate(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        path = request.url.path
+        if path in ("/api/v1/health/live", "/api/v1/health/ready") or (
+            settings.rate_limit_requests_per_minute == 0
+        ):
+            return await call_next(request)
+        allowed, retry_after = rate_limit_state.allow(
+            client_key(
+                request.client.host if request.client else None,
+                request.headers.get("X-Forwarded-For"),
+            )
+        )
+        if not allowed:
+            request_id = request.headers.get("X-Request-ID") or str(uuid4())
+            log.warning("rate limit exceeded for %s", path)
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "type": "https://assemblyvision.example/problems/rate_limited",
+                    "title": "Rate limit exceeded",
+                    "status": 429,
+                    "detail": "too many requests; retry after the Retry-After period",
+                    "code": "RATE_LIMITED",
+                    "request_id": request_id,
+                    "errors": [],
+                },
+                media_type="application/problem+json",
+                headers={"X-Request-ID": request_id, "Retry-After": str(retry_after)},
+            )
+        return await call_next(request)
+
     @app.middleware("http")
     async def _correlate_request(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
+        started = time.perf_counter()
         request_id = request.headers.get("X-Request-ID") or str(uuid4())
         request.state.request_id = request_id
-        response = await call_next(request)
+        set_request_id(request_id)
+        try:
+            response = await call_next(request)
+        finally:
+            duration_ms = int((time.perf_counter() - started) * 1000)
+            status = getattr(locals().get("response"), "status_code", None)
+            log.info("%s %s -> %s (%d ms)", request.method, request.url.path, status, duration_ms)
+            clear_request_id()
         response.headers.setdefault("X-Request-ID", request_id)
         response.headers.setdefault("Content-Security-Policy", _CSP)
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("Referrer-Policy", "same-origin")
         return response
+
+    @app.exception_handler(OperationalError)
+    async def _database_unavailable(request: Request, exc: OperationalError) -> JSONResponse:
+        """Map database connectivity failures to a retryable 503 (C6).
+
+        Constraint violations surface as ``IntegrityError`` and keep their
+        explicit conflict semantics; ``OperationalError`` means the dependency
+        itself is unreachable or broken, so clients must retry with
+        ``Retry-After`` and no receipt is ever issued.
+        """
+        log.error("database dependency failure", exc_info=exc)
+        request_id = request.headers.get("X-Request-ID") or str(uuid4())
+        return JSONResponse(
+            status_code=503,
+            content={
+                "type": "https://assemblyvision.example/problems/database_unavailable",
+                "title": "Database temporarily unavailable",
+                "status": 503,
+                "detail": "the database dependency is unavailable; retry later",
+                "code": "DATABASE_UNAVAILABLE",
+                "request_id": request_id,
+                "errors": [],
+            },
+            media_type="application/problem+json",
+            headers={"X-Request-ID": request_id, "Retry-After": "5"},
+        )
 
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(auth.router, prefix="/api/v1")

@@ -488,6 +488,35 @@ or more focused PRs into `main`.
 - M1 does not claim production HA, final RPO/RTO, full retention enforcement,
   OIDC, or remote rollout capability.
 
+**Implementation status**
+
+- Delivered hardening: structured log correlation (per-request `request_id`
+  bound through a context variable and appended to every record; ingest log
+  lines carry device/inspection/object/receipt correlation and correlate with
+  `audit_logs.request_id`), per-client sliding-window rate limiting
+  (`429 RATE_LIMITED` + `Retry-After`, health endpoints exempt,
+  `AV_CENTRAL_RATE_LIMIT_REQUESTS_PER_MINUTE`, 0 disables), and database
+  connectivity failures mapped to retryable `503 DATABASE_UNAVAILABLE` +
+  `Retry-After` (constraint violations keep their explicit conflict
+  semantics). Request-body and payload caps (`413`) already existed from
+  C2a/C2b and remain covered by tests.
+- Fault tests added: object-store outage returns `503 OBJECT_STORE_UNAVAILABLE`
+  with no receipt or binding persisted; database outage returns
+  `503 DATABASE_UNAVAILABLE`; controlled restart (engine disposed and
+  reopened) preserves inspections, media bindings, receipts, and audit rows,
+  and receipts stay replayable; a representative backup/restore round-trip
+  (consistent snapshot opened as a fresh database) preserves the same
+  invariants. A real PostgreSQL `pg_dump`/`pg_restore` round-trip to a fresh
+  database was executed and verified (schema at head, rows intact) as the
+  representative restore evidence for exit criterion 4.
+- Central runbooks added: ingestion backlog (C1), object-store failure (C2),
+  credential compromise (C3), backup/restore (C4), and pilot upgrade/rollback
+  (C5), all indexed in `docs/runbooks/README.md` and the mkdocs nav
+  (`uv run mkdocs build --strict` passes).
+- M1 remains labeled a controlled pilot: no claim of production HA, final
+  RPO/RTO, full retention enforcement, OIDC, or remote rollout (section 13
+  exit criterion 8).
+
 ## 8. M1 Database and Object Storage Rules
 
 ### 8.1 Required M1 tables
