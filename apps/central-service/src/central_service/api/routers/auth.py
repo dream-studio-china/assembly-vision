@@ -67,6 +67,43 @@ def create_admin_session(
     )
 
 
+@router.post(
+    "/session/revoke",
+    status_code=204,
+)
+def revoke_admin_session(
+    request: Request,
+    response: Response,
+    repository: CentralRepository = Depends(get_repository),
+    settings: CentralSettings = Depends(get_settings),
+) -> None:
+    """Invalidate the current session cookie server-side and clear it.
+
+    Sign-out is idempotent: an absent or already-expired session still clears
+    the cookie and returns 204. Only the session identified by the caller's
+    own cookie is ever revoked.
+    """
+    session_token = request.cookies.get(SESSION_COOKIE_NAME)
+    if session_token:
+        administrator = repository.resolve_admin_session(session_token)
+        if administrator is not None:
+            repository.write_audit(
+                organization_id=administrator.organization_id,
+                actor_type="administrator",
+                actor_id=administrator.id,
+                action="ADMIN_SESSION_REVOKED",
+                target_type="admin_session",
+            )
+        repository.revoke_admin_session(session_token)
+    response.delete_cookie(
+        key=SESSION_COOKIE_NAME,
+        httponly=True,
+        samesite="strict",
+        secure=settings.secure_cookies,
+        path="/",
+    )
+
+
 @router.get(
     "/me",
     response_model=AdminMe,

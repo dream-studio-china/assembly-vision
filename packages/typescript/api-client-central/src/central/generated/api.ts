@@ -44,6 +44,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/session/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke Admin Session
+         * @description Invalidate the current session cookie server-side and clear it.
+         *
+         *     Sign-out is idempotent: an absent or already-expired session still clears
+         *     the cookie and returns 204. Only the session identified by the caller's
+         *     own cookie is ever revoked.
+         */
+        post: operations["revoke_admin_session_api_v1_auth_session_revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dashboard/devices": {
         parameters: {
             query?: never;
@@ -897,6 +921,24 @@ export interface operations {
                 content: {
                     "application/problem+json": components["schemas"]["Problem"];
                 };
+            };
+        };
+    };
+    revoke_admin_session_api_v1_auth_session_revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

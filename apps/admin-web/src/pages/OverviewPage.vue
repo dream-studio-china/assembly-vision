@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 import {
   apiClient,
@@ -12,6 +13,11 @@ import {
 } from "@assemblyvision/api-client-central";
 import * as echarts from "echarts";
 
+import { formatMillis, formatNumber } from "../lib/format";
+import { activeLocale } from "../i18n";
+import { activeTheme } from "../theme";
+
+const { t, locale } = useI18n();
 const summary = ref<DashboardSummary | null>(null);
 const timeseries = ref<DashboardTimeseries | null>(null);
 const devices = ref<DeviceStatus[]>([]);
@@ -45,8 +51,15 @@ async function load(): Promise<void> {
     ]);
     renderChart();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : "failed to load the dashboard";
+    error.value = err instanceof Error ? err.message : t("failed to load the dashboard");
   }
+}
+
+function themeToken(name: string, fallback: string): string {
+  if (typeof document === "undefined") {
+    return fallback;
+  }
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
 
 function renderChart(): void {
@@ -55,19 +68,62 @@ function renderChart(): void {
   }
   chart ??= echarts.init(chartEl.value);
   const points = timeseries.value?.points ?? [];
+  const ok = t("OK");
+  const ng = t("NG");
+  const uncertain = t("Uncertain");
+  // Chart ink follows the active black/white theme; ECharts 6 defaults the
+  // legend to the bottom, which overlaps the x-axis date labels, so it is
+  // pinned to the top explicitly.
+  const text = themeToken("--text-muted", "#5c666e");
+  const axis = themeToken("--border-strong", "#5f6b72");
+  const split = themeToken("--border", "#aeb6bc");
   chart.setOption({
     tooltip: { trigger: "axis" },
-    legend: { data: ["OK", "NG", "Uncertain"] },
-    grid: { left: 40, right: 20, top: 40, bottom: 40 },
-    xAxis: { type: "category", data: points.map((p) => p.bucket) },
-    yAxis: { type: "value", minInterval: 1 },
+    legend: {
+      top: 4,
+      left: "center",
+      textStyle: { color: text },
+      data: [ok, ng, uncertain],
+    },
+    grid: { left: 44, right: 20, top: 44, bottom: 36 },
+    xAxis: {
+      type: "category",
+      data: points.map((p) => p.bucket),
+      axisLabel: {
+        color: text,
+        formatter: (value: string) => value.slice(5), // "2026-07-20" -> "07-20"
+      },
+      axisLine: { lineStyle: { color: axis } },
+    },
+    yAxis: {
+      type: "value",
+      minInterval: 1,
+      splitLine: { lineStyle: { color: split } },
+      axisLabel: {
+        color: text,
+        formatter: (value: number) => value.toLocaleString(locale.value),
+      },
+    },
     series: [
-      { name: "OK", type: "bar", stack: "outcome", data: points.map((p) => p.ok_count) },
-      { name: "NG", type: "bar", stack: "outcome", data: points.map((p) => p.ng_count) },
       {
-        name: "Uncertain",
+        name: ok,
         type: "bar",
         stack: "outcome",
+        itemStyle: { color: themeToken("--status-ok", "#237a43") },
+        data: points.map((p) => p.ok_count),
+      },
+      {
+        name: ng,
+        type: "bar",
+        stack: "outcome",
+        itemStyle: { color: themeToken("--status-ng", "#b52d2b") },
+        data: points.map((p) => p.ng_count),
+      },
+      {
+        name: uncertain,
+        type: "bar",
+        stack: "outcome",
+        itemStyle: { color: themeToken("--status-warning", "#8a6200") },
         data: points.map((p) => p.uncertain_count),
       },
     ],
@@ -79,6 +135,8 @@ function resize(): void {
 }
 
 watch(scope, () => load());
+// Re-render the chart so legend text and theme colors follow locale/theme changes.
+watch([activeLocale, activeTheme], () => renderChart());
 onMounted(() => {
   load();
   apiClient
@@ -101,31 +159,31 @@ async function onSiteChange(siteId?: number): Promise<void> {
 <template>
   <main class="overview">
     <header>
-      <h1>Overview</h1>
+      <h1>{{ t("Overview") }}</h1>
       <p class="muted">
-        Counts are sample denominators for the selected scope, not accuracy claims.
+        {{ t("Counts are sample denominators for the selected scope, not accuracy claims.") }}
       </p>
     </header>
 
     <el-card class="block">
       <div class="filters">
-        <el-select v-model="scope.site_id" placeholder="Site" clearable class="filter" @change="onSiteChange">
+        <el-select v-model="scope.site_id" :placeholder="t('Site')" clearable class="filter" @change="onSiteChange">
           <el-option v-for="site in sites" :key="site.id" :label="site.name" :value="site.id" />
         </el-select>
-        <el-select v-model="scope.line_id" placeholder="Line" clearable class="filter">
+        <el-select v-model="scope.line_id" :placeholder="t('Line')" clearable class="filter">
           <el-option v-for="line in lines" :key="line.id" :label="line.name" :value="line.id" />
         </el-select>
         <el-date-picker
           v-model="scope.from_at"
           type="date"
-          placeholder="From (UTC)"
+          :placeholder="t('From (UTC)')"
           value-format="YYYY-MM-DDT00:00:00.000Z"
           class="filter"
         />
         <el-date-picker
           v-model="scope.to_at"
           type="date"
-          placeholder="To (UTC)"
+          :placeholder="t('To (UTC)')"
           value-format="YYYY-MM-DDT00:00:00.000Z"
           class="filter"
         />
@@ -136,45 +194,47 @@ async function onSiteChange(siteId?: number): Promise<void> {
 
     <section v-if="summary" class="cards">
       <el-card class="metric">
-        <div class="metric-value">{{ summary.inspection_count }}</div>
-        <div class="metric-label">Inspections</div>
+        <div class="metric-value">{{ formatNumber(summary.inspection_count, locale) }}</div>
+        <div class="metric-label">{{ t("Inspections") }}</div>
       </el-card>
       <el-card class="metric ok">
-        <div class="metric-value">{{ summary.ok_count }}</div>
-        <div class="metric-label">OK</div>
+        <div class="metric-value">{{ formatNumber(summary.ok_count, locale) }}</div>
+        <div class="metric-label">{{ t("OK") }}</div>
       </el-card>
       <el-card class="metric ng">
-        <div class="metric-value">{{ summary.ng_count }}</div>
-        <div class="metric-label">NG</div>
+        <div class="metric-value">{{ formatNumber(summary.ng_count, locale) }}</div>
+        <div class="metric-label">{{ t("NG") }}</div>
       </el-card>
       <el-card class="metric uncertain">
-        <div class="metric-value">{{ summary.uncertain_count }}</div>
-        <div class="metric-label">Uncertain</div>
+        <div class="metric-value">{{ formatNumber(summary.uncertain_count, locale) }}</div>
+        <div class="metric-label">{{ t("Uncertain") }}</div>
       </el-card>
       <el-card class="metric">
         <div class="metric-value">
-          {{ summary.avg_upload_delay_ms == null ? "–" : `${Math.round(summary.avg_upload_delay_ms)} ms` }}
+          {{ formatMillis(summary.avg_upload_delay_ms, locale) }}
         </div>
-        <div class="metric-label">Mean upload delay</div>
+        <div class="metric-label">{{ t("Mean upload delay") }}</div>
       </el-card>
     </section>
 
     <el-card class="block">
-      <template #header>Daily outcomes</template>
+      <template #header>{{ t("Daily outcomes") }}</template>
       <div ref="chartEl" class="chart" />
     </el-card>
 
     <el-card class="block">
-      <template #header>Devices</template>
-      <el-table :data="devices" empty-text="No registered devices.">
-        <el-table-column prop="device_id" label="Device id" width="260" />
-        <el-table-column prop="name" label="Name" width="160" />
-        <el-table-column label="Last seen (UTC)" width="220">
+      <template #header>{{ t("Devices") }}</template>
+      <el-table :data="devices" :empty-text="t('No registered devices.')">
+        <el-table-column prop="device_id" :label="t('Device id')" width="260" show-overflow-tooltip />
+        <el-table-column prop="name" :label="t('Name')" width="160" />
+        <el-table-column :label="t('Last seen (UTC)')" width="220">
           <template #default="{ row }">
             {{ row.last_seen_at ? new Date(row.last_seen_at).toLocaleString() : "–" }}
           </template>
         </el-table-column>
-        <el-table-column prop="inspection_count" label="Inspections" width="120" />
+        <el-table-column prop="inspection_count" :label="t('Inspections')" width="120">
+          <template #default="{ row }">{{ formatNumber(row.inspection_count, locale) }}</template>
+        </el-table-column>
       </el-table>
     </el-card>
   </main>
@@ -184,50 +244,50 @@ async function onSiteChange(siteId?: number): Promise<void> {
 .overview {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .block {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 }
 
 .filters {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .filter {
-  width: 200px;
+  width: 180px;
 }
 
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .metric-value {
-  font-size: 1.75rem;
+  font-size: 1.35rem;
   font-weight: 600;
 }
 
 .metric-label {
-  color: #909399;
-  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
 }
 
 .metric.ok .metric-value {
-  color: #67c23a;
+  color: var(--status-ok);
 }
 
 .metric.ng .metric-value {
-  color: #f56c6c;
+  color: var(--status-ng);
 }
 
 .metric.uncertain .metric-value {
-  color: #e6a23c;
+  color: var(--status-warning);
 }
 
 .chart {
@@ -235,6 +295,6 @@ async function onSiteChange(siteId?: number): Promise<void> {
 }
 
 .muted {
-  color: #909399;
+  color: var(--text-muted);
 }
 </style>

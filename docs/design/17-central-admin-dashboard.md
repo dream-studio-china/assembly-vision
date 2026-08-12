@@ -131,6 +131,29 @@ Audit search supports actor, action, resource, request ID, and bounded time. Bef
 - Central WebSocket invalidates active device, inspection, review, and report queries. REST refresh is authoritative.
 - Long filter values are serialized predictably in the URL; sensitive tokens and comments are never placed there.
 
+### 17.12.1 Interface Language
+
+The admin dashboard UI is internationalized with English as the source locale and
+default, plus Simplified Chinese (Mainland China, `zh-CN`), Traditional Chinese
+(Hong Kong, `zh-HK`), and Japanese (`ja`), following the same pattern as the
+edge dashboard (design 16.2.2). Each message key is the English text itself —
+`t("Overview")` — so code remains readable and the locale catalogs
+(`src/i18n/locales/`) translate the same keys. Missing keys fall back to
+English via vue-i18n's fallback locale.
+
+The build-time default language is configurable through `VITE_DEFAULT_LOCALE`
+in `.env.development` / `.env.production` (`en | zh-CN | zh-HK | ja`); an
+unset or unsupported value falls back to English. Administrators switch the
+live language from a globe-icon dropdown in the header; the selection is
+persisted in browser storage (`assemblyvision.admin.locale`, kept separate
+from the edge dashboard key so both dashboards remember their own choice) and
+always wins over the build default. The chosen locale drives both the
+dashboard strings and the Element Plus component locale through
+`el-config-provider`. The document `lang` attribute follows the locale so
+screen readers and browser translation behave correctly. Language choice
+never affects inspection records, review dispositions, uploads, or device
+state.
+
 ## 17.13 Performance, Resilience, and Security
 
 - Lazy-load route bundles, media viewer, and chart modules. Use server aggregation rather than downloading raw inspections to calculate charts.

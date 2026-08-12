@@ -5,6 +5,9 @@
  * dispositions the server will accept: UNCERTAIN inspections may be
  * reinspected, OK audits may be corrected to NG, and plain NG may be
  * confirmed either way or declared inconclusive.
+ *
+ * Label values are English message keys translated through vue-i18n (labels
+ * align with edge-web so both dashboards use the same wording).
  */
 
 export type ReviewDispositionOption =
@@ -17,9 +20,9 @@ export type ReviewDispositionOption =
 export const DISPOSITION_LABELS: Record<ReviewDispositionOption, string> = {
   CONFIRMED_NG: "Confirmed NG",
   CONFIRMED_OK: "Confirmed OK",
-  CORRECTED_NG: "Corrected to NG",
+  CORRECTED_NG: "Corrected NG",
   INCONCLUSIVE: "Inconclusive",
-  REINSPECT: "Request reinspection",
+  REINSPECT: "Reinspect",
 };
 
 export function allowedReviewDispositions(

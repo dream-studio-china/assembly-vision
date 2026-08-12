@@ -1285,6 +1285,21 @@
         ]
       }
     },
+    "/api/v1/auth/session/revoke": {
+      "post": {
+        "description": "Invalidate the current session cookie server-side and clear it.\n\nSign-out is idempotent: an absent or already-expired session still clears\nthe cookie and returns 204. Only the session identified by the caller's\nown cookie is ever revoked.",
+        "operationId": "revoke_admin_session_api_v1_auth_session_revoke_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Revoke Admin Session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/dashboard/devices": {
       "get": {
         "description": "Per-device last-seen and volume for the overview (C3, design 17).",

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { ElMessage } from "element-plus";
 
 import { useSessionStore } from "../stores/session";
 
+const { t } = useI18n();
 const session = useSessionStore();
 const router = useRouter();
 const token = ref("");
@@ -20,7 +22,7 @@ async function submit(): Promise<void> {
     await session.login(token.value.trim());
     await router.push("/");
   } catch {
-    ElMessage.error("Authentication failed; check the pilot administrator token.");
+    ElMessage.error(t("Authentication failed; check the pilot administrator token."));
   } finally {
     submitting.value = false;
   }
@@ -31,19 +33,19 @@ async function submit(): Promise<void> {
   <main class="login">
     <el-card class="login-card">
       <h1>AssemblyVision Central</h1>
-      <p class="muted">Pilot administrator sign-in</p>
+      <p class="muted">{{ t("Pilot administrator sign-in") }}</p>
       <el-form @submit.prevent="submit">
         <el-form-item>
           <el-input
             v-model="token"
             type="password"
-            placeholder="Administrator token"
+            :placeholder="t('Administrator token')"
             show-password
             @keyup.enter="submit"
           />
         </el-form-item>
         <el-button type="primary" :loading="submitting" class="full" @click="submit">
-          Sign in
+          {{ t("Sign in") }}
         </el-button>
       </el-form>
     </el-card>
@@ -59,7 +61,7 @@ async function submit(): Promise<void> {
 }
 
 .login-card {
-  width: 360px;
+  width: 340px;
 }
 
 .full {
@@ -67,6 +69,6 @@ async function submit(): Promise<void> {
 }
 
 .muted {
-  color: #909399;
+  color: var(--text-muted);
 }
 </style>

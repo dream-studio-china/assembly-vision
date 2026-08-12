@@ -550,6 +550,17 @@ class CentralRepository:
             return None
         return administrator
 
+    def revoke_admin_session(self, session_token: str) -> bool:
+        """Delete the session row for a token; returns True when one existed."""
+        if len(session_token) < _SESSION_LOOKUP_BYTES + _SESSION_SECRET_BYTES:
+            return False
+        lookup = session_token[:_SESSION_LOOKUP_BYTES]
+        with self._engine.begin() as connection:
+            result = connection.execute(
+                admin_sessions.delete().where(admin_sessions.c.session_lookup == lookup)
+            )
+        return int(result.rowcount) > 0
+
     def purge_expired_sessions(self) -> int:
         """Delete expired sessions and return the number removed."""
         with self._engine.begin() as connection:
