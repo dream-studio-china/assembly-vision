@@ -130,6 +130,24 @@ def test_session_cookie_flags(client: TestClient) -> None:
     assert "Secure" not in set_cookie  # dev test client is plain HTTP
 
 
+def test_admin_session_revoke_signs_out(client: TestClient) -> None:
+    session = client.post("/api/v1/auth/session", headers=_admin_headers())
+    assert session.status_code == 204
+    assert client.get("/api/v1/auth/me").status_code == 200
+
+    revoked = client.post("/api/v1/auth/session/revoke")
+    assert revoked.status_code == 204
+    # The cookie is cleared (expired) and the session row is deleted, so the
+    # next request is unauthenticated again.
+    set_cookie = revoked.headers["set-cookie"]
+    assert "Max-Age=0" in set_cookie
+    assert client.get("/api/v1/auth/me").status_code == 401
+
+    # Sign-out is idempotent, including with no session cookie present.
+    again = client.post("/api/v1/auth/session/revoke")
+    assert again.status_code == 204
+
+
 def test_session_cookie_is_secure_when_configured(
     repository: CentralRepository,
 ) -> None:

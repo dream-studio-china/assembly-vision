@@ -23,7 +23,7 @@ onMounted(async () => {
 });
 
 async function signOut(): Promise<void> {
-  session.clear();
+  await session.signOut();
   await router.push("/login");
 }
 

@@ -85,6 +85,11 @@ export class CentralApiClient {
     return this.request<AdminMe>("/auth/me");
   }
 
+  async logout(): Promise<void> {
+    // Revokes the session cookie server-side and clears it (idempotent).
+    await this.request<void>("/auth/session/revoke", { method: "POST" });
+  }
+
   async listInspections(query: InspectionQuery = {}): Promise<InspectionPage> {
     return this.request<InspectionPage>(`/inspections${toQuery(query)}`);
   }

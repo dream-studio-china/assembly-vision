@@ -43,6 +43,19 @@ export const useSessionStore = defineStore("session", {
       }
     },
 
+    /**
+     * Revoke the session cookie server-side, then drop the client state.
+     * Local state is always cleared even if the network call fails, so the
+     * UI never reports signed-in after the user asked to sign out.
+     */
+    async signOut(): Promise<void> {
+      try {
+        await apiClient.logout();
+      } finally {
+        this.me = null;
+      }
+    },
+
     clear(): void {
       this.me = null;
     },

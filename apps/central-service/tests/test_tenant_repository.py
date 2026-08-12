@@ -184,6 +184,20 @@ def test_admin_session_expired_fails_closed(repository: CentralRepository) -> No
     assert repository.purge_expired_sessions() >= 1
 
 
+def test_revoke_admin_session(repository: CentralRepository) -> None:
+    result = _bootstrap(repository)
+    token = repository.create_admin_session(
+        result.administrator_id, result.organization_id, timedelta(minutes=5)
+    )
+    assert repository.resolve_admin_session(token) is not None
+    assert repository.revoke_admin_session(token) is True
+    assert repository.resolve_admin_session(token) is None
+    # Revoking the same (now deleted) session is idempotent.
+    assert repository.revoke_admin_session(token) is False
+    # Malformed tokens never match a session row.
+    assert repository.revoke_admin_session("short") is False
+
+
 def test_tenant_queries_are_organization_scoped(repository: CentralRepository) -> None:
     first = _bootstrap(repository, organization_name="Org A", device_id="edge-a")
     second = _bootstrap(repository, organization_name="Org B", device_id="edge-b")
