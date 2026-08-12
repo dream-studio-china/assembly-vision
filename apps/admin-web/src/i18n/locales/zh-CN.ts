@@ -112,6 +112,7 @@ export default {
     "将以乐观 If-Match 追加修订版 {revision}；机器判定不会被修改。",
   "Bounded reason (optional)": "受限原因（可选）",
   "No media bound to this inspection.": "该检验未绑定媒体。",
+  "Enlarge media": "放大媒体",
   "Review recorded.": "复核已记录。",
   "A newer review exists; the page was refreshed.": "存在更新的复核；页面已刷新。",
   "failed to load the inspection": "检验详情加载失败",

@@ -114,6 +114,7 @@ export default {
     "Appends revision {revision} with optimistic If-Match; the machine decision is never modified.",
   "Bounded reason (optional)": "Bounded reason (optional)",
   "No media bound to this inspection.": "No media bound to this inspection.",
+  "Enlarge media": "Enlarge media",
   "Review recorded.": "Review recorded.",
   "A newer review exists; the page was refreshed.":
     "A newer review exists; the page was refreshed.",

@@ -49,6 +49,17 @@ const reviewForm = ref<{ disposition: ReviewDispositionOption; reason: string }>
   disposition: "CONFIRMED_NG",
   reason: "",
 });
+const viewerOpen = ref(false);
+const viewerMedia = ref<InspectionDetail["media"][number] | null>(null);
+
+function openMediaViewer(item: InspectionDetail["media"][number]): void {
+  viewerMedia.value = item;
+  viewerOpen.value = true;
+}
+
+function closeMediaViewer(): void {
+  viewerOpen.value = false;
+}
 
 async function load(): Promise<void> {
   error.value = null;
@@ -283,12 +294,20 @@ onMounted(load);
           {{ t("No media bound to this inspection.") }}
         </div>
         <div v-for="item in detail.media" :key="item.source_media_id" class="media">
-          <img
+          <button
             v-if="item.url"
-            :src="item.url"
-            :alt="`${item.kind} ${item.source_media_id}`"
-            class="media-image"
-          />
+            type="button"
+            class="media-thumb"
+            :aria-label="t('Enlarge media')"
+            :title="t('Enlarge media')"
+            @click="openMediaViewer(item)"
+          >
+            <img
+              :src="item.url"
+              :alt="`${item.kind} ${item.source_media_id}`"
+              class="media-image"
+            />
+          </button>
           <div class="media-meta">
             <div>{{ item.kind }} ({{ item.lifecycle }})</div>
             <div class="muted">{{ item.mime_type }} &middot; {{ formatNumber(item.size_bytes, locale) }} bytes</div>
@@ -296,6 +315,16 @@ onMounted(load);
         </div>
       </el-card>
     </template>
+
+    <el-image-viewer
+      v-if="viewerOpen && viewerMedia?.url"
+      :url-list="[viewerMedia.url]"
+      :initial-index="0"
+      :hide-on-click-modal="true"
+      :teleported="true"
+      :close-on-press-escape="true"
+      @close="closeMediaViewer"
+    />
   </main>
 </template>
 
@@ -320,6 +349,20 @@ onMounted(load);
 .media-image {
   max-width: 260px;
   border: 1px solid #e4e7ed;
+  border-radius: 6px;
+}
+
+.media-thumb {
+  padding: 0;
+  border: none;
+  background: none;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.media-thumb:focus-visible {
+  outline: 2px solid #409eff;
+  outline-offset: 2px;
   border-radius: 6px;
 }
 

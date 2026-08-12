@@ -112,6 +112,7 @@ export default {
     "楽観的 If-Match でリビジョン {revision} を追加します。機械判定は変更されません。",
   "Bounded reason (optional)": "制限付き理由（任意）",
   "No media bound to this inspection.": "この検査に紐づくメディアはありません。",
+  "Enlarge media": "メディアを拡大",
   "Review recorded.": "レビューを記録しました。",
   "A newer review exists; the page was refreshed.":
     "より新しいレビューが存在するため、ページを更新しました。",

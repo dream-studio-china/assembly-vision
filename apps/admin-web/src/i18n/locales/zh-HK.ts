@@ -112,6 +112,7 @@ export default {
     "將以樂觀 If-Match 附加修訂版 {revision}；機器判定不會被修改。",
   "Bounded reason (optional)": "受限原因（可選）",
   "No media bound to this inspection.": "該檢驗未綁定媒體。",
+  "Enlarge media": "放大媒體",
   "Review recorded.": "覆核已記錄。",
   "A newer review exists; the page was refreshed.": "存在較新的覆核；頁面已重新整理。",
   "failed to load the inspection": "檢驗詳情載入失敗",
