@@ -26,10 +26,12 @@ from central_service.api.readiness import (
 from central_service.api.routers import (
     auth,
     dashboard,
+    device_configurations,
     health,
     ingest,
     inspections,
     media,
+    metadata,
     reviews,
     tenant,
 )
@@ -140,8 +142,13 @@ def create_app(
         app.add_middleware(
             CORSMiddleware,
             allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
-            allow_methods=["GET", "POST", "OPTIONS"],
-            allow_headers=["Authorization", "Content-Type", "If-Match"],
+            allow_methods=["GET", "POST", "PUT", "OPTIONS"],
+            allow_headers=[
+                "Authorization",
+                "Content-Type",
+                "If-Match",
+                "Idempotency-Key",
+            ],
             allow_credentials=False,
         )
 
@@ -170,6 +177,8 @@ def create_app(
     app.include_router(dashboard.router, prefix="/api/v1")
     app.include_router(media.router, prefix="/api/v1")
     app.include_router(reviews.router, prefix="/api/v1")
+    app.include_router(metadata.router, prefix="/api/v1")
+    app.include_router(device_configurations.router, prefix="/api/v1")
     return app
 
 

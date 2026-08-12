@@ -26,6 +26,69 @@
         "title": "AdminMe",
         "type": "object"
       },
+      "ArtifactIn": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "size_bytes": {
+            "minimum": 0.0,
+            "title": "Size Bytes",
+            "type": "integer"
+          },
+          "uri": {
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "uri",
+          "sha256",
+          "size_bytes"
+        ],
+        "title": "ArtifactIn",
+        "type": "object"
+      },
+      "ArtifactOut": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          },
+          "uri": {
+            "title": "Uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "uri",
+          "sha256",
+          "size_bytes"
+        ],
+        "title": "ArtifactOut",
+        "type": "object"
+      },
       "ComponentCorrectionIn": {
         "additionalProperties": false,
         "description": "Per-component ground truth recorded by a reviewer (C4, design 24).",
@@ -63,6 +126,30 @@
           "corrected_state"
         ],
         "title": "ComponentCorrectionIn",
+        "type": "object"
+      },
+      "ComponentCreate": {
+        "additionalProperties": false,
+        "description": "Create a component in the organization vocabulary (C5).",
+        "properties": {
+          "component_code": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Component Code",
+            "type": "string"
+          },
+          "display_name": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "component_code",
+          "display_name"
+        ],
+        "title": "ComponentCreate",
         "type": "object"
       },
       "ComponentEvidenceOut": {
@@ -113,6 +200,69 @@
           "policy_reason_codes"
         ],
         "title": "ComponentEvidenceOut",
+        "type": "object"
+      },
+      "ComponentOut": {
+        "additionalProperties": false,
+        "properties": {
+          "component_code": {
+            "title": "Component Code",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "component_code",
+          "display_name",
+          "created_at"
+        ],
+        "title": "ComponentOut",
+        "type": "object"
+      },
+      "ComponentPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "ComponentPage",
         "type": "object"
       },
       "DashboardSummaryOut": {
@@ -172,6 +322,210 @@
           "points"
         ],
         "title": "DashboardTimeseriesOut",
+        "type": "object"
+      },
+      "DatasetIn": {
+        "additionalProperties": false,
+        "properties": {
+          "dataset_version": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Dataset Version",
+            "type": "string"
+          },
+          "manifest_uri": {
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Manifest Uri",
+            "type": "string"
+          },
+          "purpose": {
+            "default": "TRAIN",
+            "enum": [
+              "TRAIN",
+              "VALIDATION",
+              "TEST",
+              "ACCEPTANCE"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset_version",
+          "manifest_uri"
+        ],
+        "title": "DatasetIn",
+        "type": "object"
+      },
+      "DatasetOut": {
+        "additionalProperties": false,
+        "properties": {
+          "dataset_version": {
+            "title": "Dataset Version",
+            "type": "string"
+          },
+          "manifest_uri": {
+            "title": "Manifest Uri",
+            "type": "string"
+          },
+          "purpose": {
+            "title": "Purpose",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset_version",
+          "purpose",
+          "manifest_uri"
+        ],
+        "title": "DatasetOut",
+        "type": "object"
+      },
+      "DesiredConfigurationIn": {
+        "additionalProperties": false,
+        "description": "Desired bundle for one device (M1, C5).\n\nThe record expresses intent only: packages are installed manually in M1\nand assignment is never proof of download, validation, or activation.",
+        "properties": {
+          "component_model_version_id": {
+            "title": "Component Model Version Id",
+            "type": "string"
+          },
+          "product_model_version_id": {
+            "title": "Product Model Version Id",
+            "type": "string"
+          },
+          "product_version_id": {
+            "title": "Product Version Id",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "rule_version_id": {
+            "title": "Rule Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_version_id",
+          "product_model_version_id",
+          "component_model_version_id",
+          "rule_version_id",
+          "reason"
+        ],
+        "title": "DesiredConfigurationIn",
+        "type": "object"
+      },
+      "DesiredConfigurationOut": {
+        "additionalProperties": false,
+        "properties": {
+          "assigned_at": {
+            "format": "date-time",
+            "title": "Assigned At",
+            "type": "string"
+          },
+          "assigned_by": {
+            "title": "Assigned By",
+            "type": "string"
+          },
+          "component_model_version_id": {
+            "title": "Component Model Version Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "device_name": {
+            "title": "Device Name",
+            "type": "string"
+          },
+          "device_row_id": {
+            "title": "Device Row Id",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "product_model_version_id": {
+            "title": "Product Model Version Id",
+            "type": "string"
+          },
+          "product_version_id": {
+            "title": "Product Version Id",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "rule_version_id": {
+            "title": "Rule Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "device_row_id",
+          "device_id",
+          "device_name",
+          "revision",
+          "product_version_id",
+          "product_model_version_id",
+          "component_model_version_id",
+          "rule_version_id",
+          "reason",
+          "assigned_by",
+          "assigned_at",
+          "created_at"
+        ],
+        "title": "DesiredConfigurationOut",
+        "type": "object"
+      },
+      "DesiredConfigurationPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DesiredConfigurationOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "DesiredConfigurationPage",
         "type": "object"
       },
       "DeviceOut": {
@@ -732,6 +1086,587 @@
         "title": "MediaItemOut",
         "type": "object"
       },
+      "MetricIn": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "scope": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Scope",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "value",
+          "scope"
+        ],
+        "title": "MetricIn",
+        "type": "object"
+      },
+      "MetricOut": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "scope": {
+            "title": "Scope",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "value",
+          "scope"
+        ],
+        "title": "MetricOut",
+        "type": "object"
+      },
+      "ModelCreate": {
+        "additionalProperties": false,
+        "description": "Create a stable model package identity (C5).",
+        "properties": {
+          "model_code": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Model Code",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "task": {
+            "enum": [
+              "PRODUCT_DETECTION",
+              "COMPONENT_DETECTION"
+            ],
+            "title": "Task",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_code",
+          "name",
+          "task"
+        ],
+        "title": "ModelCreate",
+        "type": "object"
+      },
+      "ModelDetailOut": {
+        "additionalProperties": false,
+        "description": "A stable model package with all its immutable versions (C5).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "model_code": {
+            "title": "Model Code",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "task": {
+            "title": "Task",
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/ModelVersionOut"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "model_code",
+          "name",
+          "task",
+          "created_at",
+          "versions"
+        ],
+        "title": "ModelDetailOut",
+        "type": "object"
+      },
+      "ModelManifestIn": {
+        "additionalProperties": false,
+        "description": "Declarative model manifest draft (C5, design 14 ModelManifest).\n\nArtifact checksums are normalized to bare lowercase 64-hex; the central\nserver records declarations only and never verifies artifact bytes.",
+        "properties": {
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/ArtifactIn"
+            },
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Artifacts",
+            "type": "array"
+          },
+          "class_names": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 256,
+            "minItems": 1,
+            "title": "Class Names",
+            "type": "array"
+          },
+          "datasets": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetIn"
+            },
+            "maxItems": 32,
+            "title": "Datasets",
+            "type": "array"
+          },
+          "edge_version_label": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Edge Version Label",
+            "type": "string"
+          },
+          "input_height": {
+            "maximum": 8192.0,
+            "minimum": 1.0,
+            "title": "Input Height",
+            "type": "integer"
+          },
+          "input_width": {
+            "maximum": 8192.0,
+            "minimum": 1.0,
+            "title": "Input Width",
+            "type": "integer"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 64,
+            "title": "Limitations",
+            "type": "array"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/MetricIn"
+            },
+            "maxItems": 64,
+            "title": "Metrics",
+            "type": "array"
+          },
+          "runtime": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Runtime",
+            "type": "string"
+          },
+          "semantic_version": {
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Semantic Version",
+            "type": "string"
+          },
+          "source_revision": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Source Revision",
+            "type": "string"
+          },
+          "split_strategy": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Split Strategy",
+            "type": "string"
+          },
+          "task": {
+            "enum": [
+              "PRODUCT_DETECTION",
+              "COMPONENT_DETECTION"
+            ],
+            "title": "Task",
+            "type": "string"
+          },
+          "training_config_revision": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Training Config Revision",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task",
+          "semantic_version",
+          "edge_version_label",
+          "runtime",
+          "input_width",
+          "input_height",
+          "class_names",
+          "artifacts",
+          "split_strategy",
+          "source_revision",
+          "training_config_revision"
+        ],
+        "title": "ModelManifestIn",
+        "type": "object"
+      },
+      "ModelPackageOut": {
+        "additionalProperties": false,
+        "description": "A stable model package identity (C5).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "model_code": {
+            "title": "Model Code",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "task": {
+            "title": "Task",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "model_code",
+          "name",
+          "task",
+          "created_at"
+        ],
+        "title": "ModelPackageOut",
+        "type": "object"
+      },
+      "ModelPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ModelSummaryOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "ModelPage",
+        "type": "object"
+      },
+      "ModelSummaryOut": {
+        "additionalProperties": false,
+        "description": "A stable model package with its latest governed version (C5).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "latest_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Id"
+          },
+          "latest_version_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Number"
+          },
+          "latest_version_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Status"
+          },
+          "model_code": {
+            "title": "Model Code",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "task": {
+            "title": "Task",
+            "type": "string"
+          },
+          "version_count": {
+            "title": "Version Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "model_code",
+          "name",
+          "task",
+          "created_at",
+          "version_count",
+          "latest_version_id",
+          "latest_version_number",
+          "latest_version_status"
+        ],
+        "title": "ModelSummaryOut",
+        "type": "object"
+      },
+      "ModelVersionOut": {
+        "additionalProperties": false,
+        "properties": {
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/ArtifactOut"
+            },
+            "title": "Artifacts",
+            "type": "array"
+          },
+          "class_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Class Names",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "datasets": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetOut"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "edge_version_label": {
+            "title": "Edge Version Label",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "input_height": {
+            "title": "Input Height",
+            "type": "integer"
+          },
+          "input_width": {
+            "title": "Input Width",
+            "type": "integer"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limitations",
+            "type": "array"
+          },
+          "manifest_sha256": {
+            "title": "Manifest Sha256",
+            "type": "string"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/MetricOut"
+            },
+            "title": "Metrics",
+            "type": "array"
+          },
+          "model_code": {
+            "title": "Model Code",
+            "type": "string"
+          },
+          "model_package_id": {
+            "title": "Model Package Id",
+            "type": "integer"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "publish_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publish Reason"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "published_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published By"
+          },
+          "runtime": {
+            "title": "Runtime",
+            "type": "string"
+          },
+          "semantic_version": {
+            "title": "Semantic Version",
+            "type": "string"
+          },
+          "source_revision": {
+            "title": "Source Revision",
+            "type": "string"
+          },
+          "split_strategy": {
+            "title": "Split Strategy",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "task": {
+            "title": "Task",
+            "type": "string"
+          },
+          "training_config_revision": {
+            "title": "Training Config Revision",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "version_id": {
+            "title": "Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "model_package_id",
+          "model_code",
+          "task",
+          "version_id",
+          "version",
+          "status",
+          "semantic_version",
+          "edge_version_label",
+          "runtime",
+          "input_width",
+          "input_height",
+          "class_names",
+          "artifacts",
+          "datasets",
+          "split_strategy",
+          "source_revision",
+          "training_config_revision",
+          "metrics",
+          "limitations",
+          "manifest_sha256",
+          "published_at",
+          "published_by",
+          "publish_reason",
+          "created_at"
+        ],
+        "title": "ModelVersionOut",
+        "type": "object"
+      },
       "Problem": {
         "additionalProperties": false,
         "description": "RFC 7807 error body (contract 05 section 6).\n\n``request_id`` correlates the response with the request log; ``errors``\ncarries bounded per-field validation details. Credentials, object keys,\ninternal paths, SQL, and stack traces are never included.",
@@ -781,6 +1716,405 @@
           "errors"
         ],
         "title": "Problem",
+        "type": "object"
+      },
+      "ProductCreate": {
+        "additionalProperties": false,
+        "description": "Create a stable product identity (C5).",
+        "properties": {
+          "name": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "product_code": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Product Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_code",
+          "name"
+        ],
+        "title": "ProductCreate",
+        "type": "object"
+      },
+      "ProductDetailOut": {
+        "additionalProperties": false,
+        "description": "A stable product with all its immutable versions (C5).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "product_code": {
+            "title": "Product Code",
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/ProductVersionOut"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "product_code",
+          "name",
+          "created_at",
+          "versions"
+        ],
+        "title": "ProductDetailOut",
+        "type": "object"
+      },
+      "ProductOut": {
+        "additionalProperties": false,
+        "description": "A stable product identity (C5).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "product_code": {
+            "title": "Product Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "product_code",
+          "name",
+          "created_at"
+        ],
+        "title": "ProductOut",
+        "type": "object"
+      },
+      "ProductPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSummaryOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "ProductPage",
+        "type": "object"
+      },
+      "ProductSummaryOut": {
+        "additionalProperties": false,
+        "description": "A stable product with its latest governed version (C5).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "latest_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Id"
+          },
+          "latest_version_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Number"
+          },
+          "latest_version_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Status"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "product_code": {
+            "title": "Product Code",
+            "type": "string"
+          },
+          "version_count": {
+            "title": "Version Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "product_code",
+          "name",
+          "created_at",
+          "version_count",
+          "latest_version_id",
+          "latest_version_number",
+          "latest_version_status"
+        ],
+        "title": "ProductSummaryOut",
+        "type": "object"
+      },
+      "ProductVersionComponentIn": {
+        "additionalProperties": false,
+        "properties": {
+          "component_code": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Component Code",
+            "type": "string"
+          },
+          "expected_count": {
+            "maximum": 64.0,
+            "minimum": 1.0,
+            "title": "Expected Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "component_code",
+          "expected_count"
+        ],
+        "title": "ProductVersionComponentIn",
+        "type": "object"
+      },
+      "ProductVersionComponentOut": {
+        "additionalProperties": false,
+        "properties": {
+          "component_code": {
+            "title": "Component Code",
+            "type": "string"
+          },
+          "expected_count": {
+            "title": "Expected Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "component_code",
+          "expected_count"
+        ],
+        "title": "ProductVersionComponentOut",
+        "type": "object"
+      },
+      "ProductVersionCreate": {
+        "additionalProperties": false,
+        "description": "Draft a new immutable product version (C5).\n\nBarcode mappings are exact values only (ADR-015); a version may declare\nnone, but every value must be 1..256 characters.",
+        "properties": {
+          "barcodes": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Barcodes",
+            "type": "array"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ProductVersionComponentIn"
+            },
+            "maxItems": 64,
+            "minItems": 1,
+            "title": "Components",
+            "type": "array"
+          }
+        },
+        "required": [
+          "components"
+        ],
+        "title": "ProductVersionCreate",
+        "type": "object"
+      },
+      "ProductVersionOut": {
+        "additionalProperties": false,
+        "properties": {
+          "barcodes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Barcodes",
+            "type": "array"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ProductVersionComponentOut"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "product_code": {
+            "title": "Product Code",
+            "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "publish_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publish Reason"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "published_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published By"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "version_id": {
+            "title": "Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "product_id",
+          "product_code",
+          "version_id",
+          "version",
+          "status",
+          "barcodes",
+          "components",
+          "published_at",
+          "published_by",
+          "publish_reason",
+          "created_at"
+        ],
+        "title": "ProductVersionOut",
+        "type": "object"
+      },
+      "PublishRequest": {
+        "additionalProperties": false,
+        "description": "Required actor context for an immutable publish (C5).",
+        "properties": {
+          "reason": {
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "PublishRequest",
         "type": "object"
       },
       "ReadinessReport": {
@@ -1045,6 +2379,493 @@
         "title": "ReviewSubmit",
         "type": "object"
       },
+      "RuleCreate": {
+        "additionalProperties": false,
+        "description": "Create a stable rule identity (C5).",
+        "properties": {
+          "name": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "rule_code": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Rule Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_code",
+          "name"
+        ],
+        "title": "RuleCreate",
+        "type": "object"
+      },
+      "RuleDetailOut": {
+        "additionalProperties": false,
+        "description": "A stable rule with all its immutable versions (C5).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "rule_code": {
+            "title": "Rule Code",
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/RuleVersionOut"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "rule_code",
+          "name",
+          "created_at",
+          "versions"
+        ],
+        "title": "RuleDetailOut",
+        "type": "object"
+      },
+      "RuleOut": {
+        "additionalProperties": false,
+        "description": "A stable rule identity (C5).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "rule_code": {
+            "title": "Rule Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "rule_code",
+          "name",
+          "created_at"
+        ],
+        "title": "RuleOut",
+        "type": "object"
+      },
+      "RulePage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RuleSummaryOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "RulePage",
+        "type": "object"
+      },
+      "RulePolicyIn": {
+        "additionalProperties": false,
+        "description": "Per-component confidence/temporal policy (design 14 ComponentPolicy).",
+        "properties": {
+          "component_code": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Component Code",
+            "type": "string"
+          },
+          "expected_count": {
+            "maximum": 64.0,
+            "minimum": 1.0,
+            "title": "Expected Count",
+            "type": "integer"
+          },
+          "high_confidence": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1.0,
+            "title": "High Confidence",
+            "type": "number"
+          },
+          "medium_confidence": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1.0,
+            "title": "Medium Confidence",
+            "type": "number"
+          },
+          "minimum_medium_detections": {
+            "maximum": 64.0,
+            "minimum": 1.0,
+            "title": "Minimum Medium Detections",
+            "type": "integer"
+          },
+          "require_adjacent_frames": {
+            "default": false,
+            "title": "Require Adjacent Frames",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "component_code",
+          "high_confidence",
+          "medium_confidence",
+          "minimum_medium_detections",
+          "expected_count"
+        ],
+        "title": "RulePolicyIn",
+        "type": "object"
+      },
+      "RulePolicyOut": {
+        "additionalProperties": false,
+        "properties": {
+          "component_code": {
+            "title": "Component Code",
+            "type": "string"
+          },
+          "expected_count": {
+            "title": "Expected Count",
+            "type": "integer"
+          },
+          "high_confidence": {
+            "title": "High Confidence",
+            "type": "number"
+          },
+          "medium_confidence": {
+            "title": "Medium Confidence",
+            "type": "number"
+          },
+          "minimum_medium_detections": {
+            "title": "Minimum Medium Detections",
+            "type": "integer"
+          },
+          "require_adjacent_frames": {
+            "title": "Require Adjacent Frames",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "component_code",
+          "high_confidence",
+          "medium_confidence",
+          "minimum_medium_detections",
+          "require_adjacent_frames",
+          "expected_count"
+        ],
+        "title": "RulePolicyOut",
+        "type": "object"
+      },
+      "RuleSummaryOut": {
+        "additionalProperties": false,
+        "description": "A stable rule with its latest governed version (C5).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "latest_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Id"
+          },
+          "latest_version_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Number"
+          },
+          "latest_version_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Status"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "rule_code": {
+            "title": "Rule Code",
+            "type": "string"
+          },
+          "version_count": {
+            "title": "Version Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "rule_code",
+          "name",
+          "created_at",
+          "version_count",
+          "latest_version_id",
+          "latest_version_number",
+          "latest_version_status"
+        ],
+        "title": "RuleSummaryOut",
+        "type": "object"
+      },
+      "RuleVersionCreate": {
+        "additionalProperties": false,
+        "description": "Draft a new immutable rule version (C5, design 14 RuleConfiguration).",
+        "properties": {
+          "barcode_required": {
+            "default": false,
+            "title": "Barcode Required",
+            "type": "boolean"
+          },
+          "compatible_component_model_version_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "title": "Compatible Component Model Version Ids",
+            "type": "array"
+          },
+          "component_policies": {
+            "items": {
+              "$ref": "#/components/schemas/RulePolicyIn"
+            },
+            "maxItems": 64,
+            "minItems": 1,
+            "title": "Component Policies",
+            "type": "array"
+          },
+          "mandatory_gates": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "maxProperties": 16,
+            "title": "Mandatory Gates",
+            "type": "object"
+          },
+          "minimum_usable_frames": {
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Minimum Usable Frames",
+            "type": "integer"
+          },
+          "product_version_id": {
+            "title": "Product Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_version_id",
+          "minimum_usable_frames",
+          "component_policies"
+        ],
+        "title": "RuleVersionCreate",
+        "type": "object"
+      },
+      "RuleVersionOut": {
+        "additionalProperties": false,
+        "properties": {
+          "barcode_required": {
+            "title": "Barcode Required",
+            "type": "boolean"
+          },
+          "compatible_model_version_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Compatible Model Version Ids",
+            "type": "array"
+          },
+          "component_policies": {
+            "items": {
+              "$ref": "#/components/schemas/RulePolicyOut"
+            },
+            "title": "Component Policies",
+            "type": "array"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "mandatory_gates": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "title": "Mandatory Gates",
+            "type": "object"
+          },
+          "minimum_usable_frames": {
+            "title": "Minimum Usable Frames",
+            "type": "integer"
+          },
+          "organization_id": {
+            "title": "Organization Id",
+            "type": "integer"
+          },
+          "product_version_id": {
+            "title": "Product Version Id",
+            "type": "string"
+          },
+          "publish_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publish Reason"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "published_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published By"
+          },
+          "rule_code": {
+            "title": "Rule Code",
+            "type": "string"
+          },
+          "rule_id": {
+            "title": "Rule Id",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "uncertain_maps_to_ng": {
+            "title": "Uncertain Maps To Ng",
+            "type": "boolean"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "version_id": {
+            "title": "Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "rule_id",
+          "rule_code",
+          "product_version_id",
+          "version_id",
+          "version",
+          "status",
+          "barcode_required",
+          "minimum_usable_frames",
+          "uncertain_maps_to_ng",
+          "mandatory_gates",
+          "component_policies",
+          "compatible_model_version_ids",
+          "content_sha256",
+          "published_at",
+          "published_by",
+          "publish_reason",
+          "created_at"
+        ],
+        "title": "RuleVersionOut",
+        "type": "object"
+      },
       "SiteOut": {
         "additionalProperties": false,
         "description": "A production site within the administrator's organization.",
@@ -1297,6 +3118,126 @@
         "summary": "Revoke Admin Session",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/components": {
+      "get": {
+        "description": "The organization's component vocabulary (C5).",
+        "operationId": "list_components_api_v1_components_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComponentPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Components",
+        "tags": [
+          "metadata"
+        ]
+      },
+      "post": {
+        "description": "Create a component in the organization vocabulary (C5).",
+        "operationId": "create_component_api_v1_components_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComponentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComponentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Component code exists or the idempotency key was reused"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Create Component",
+        "tags": [
+          "metadata"
         ]
       }
     },
@@ -1643,6 +3584,43 @@
         ]
       }
     },
+    "/api/v1/device-configurations": {
+      "get": {
+        "description": "All current desired bundles in the organization (C5, read view).",
+        "operationId": "list_desired_configurations_api_v1_device_configurations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesiredConfigurationPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Desired Configurations",
+        "tags": [
+          "device-configurations"
+        ]
+      }
+    },
     "/api/v1/devices": {
       "get": {
         "operationId": "list_devices_api_v1_devices_get",
@@ -1680,6 +3658,186 @@
         "summary": "List Devices",
         "tags": [
           "tenant"
+        ]
+      }
+    },
+    "/api/v1/devices/{device_id}/desired-configuration": {
+      "get": {
+        "description": "The current desired bundle for one device (C5).",
+        "operationId": "get_desired_configuration_api_v1_devices__device_id__desired_configuration_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesiredConfigurationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Desired Configuration",
+        "tags": [
+          "device-configurations"
+        ]
+      },
+      "put": {
+        "description": "Record the desired bundle for one device (M1, C5).\n\n``If-Match`` carries the current revision (``0`` for the first\nassignment); a stale revision returns ``412 REVISION_MISMATCH``. The\nrecord is desired state only and never changes edge behavior.",
+        "operationId": "put_desired_configuration_api_v1_devices__device_id__desired_configuration_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesiredConfigurationIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesiredConfigurationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "An incompatible version bundle"
+          },
+          "412": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The If-Match revision is stale"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Put Desired Configuration",
+        "tags": [
+          "device-configurations"
         ]
       }
     },
@@ -2536,6 +4694,892 @@
         ]
       }
     },
+    "/api/v1/model-versions/{version_id}": {
+      "get": {
+        "description": "One immutable model version (C5).",
+        "operationId": "get_model_version_api_v1_model_versions__version_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Model Version",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/model-versions/{version_id}/publish": {
+      "post": {
+        "description": "Publish a declaratively registered model version (C5).\n\nPublication never claims server-side artifact verification; the edge\nvalidates bytes, checksums, compatibility, and last-known-good rollback\nlocally during manual installation.",
+        "operationId": "publish_model_version_api_v1_model_versions__version_id__publish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Publish Model Version",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/models": {
+      "get": {
+        "description": "Stable model packages with their latest governed version (C5).",
+        "operationId": "list_models_api_v1_models_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Models",
+        "tags": [
+          "metadata"
+        ]
+      },
+      "post": {
+        "description": "Create a stable model package identity (C5).",
+        "operationId": "create_model_package_api_v1_models_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPackageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Model code exists or the idempotency key was reused"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Create Model Package",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}": {
+      "get": {
+        "description": "A stable model package with all its immutable versions (C5).",
+        "operationId": "get_model_api_v1_models__model_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Model",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}/versions": {
+      "post": {
+        "description": "Register the next immutable model version manifest (C5).\n\nRegistration is declarative: artifact bytes are never fetched or verified\nserver-side in M1, so the record never claims the artifact was validated.",
+        "operationId": "create_model_version_api_v1_models__model_id__versions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelManifestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A version collision or idempotency key reuse"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Invalid manifest"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Create Model Version",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/product-versions/{version_id}": {
+      "get": {
+        "description": "One immutable product version (C5).",
+        "operationId": "get_product_version_api_v1_product_versions__version_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Product Version",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/product-versions/{version_id}/publish": {
+      "post": {
+        "description": "Validate and immutably publish a product version (C5).\n\nA repeated publish returns the already-published version without writing a\nsecond audit event. A published version is never updated or deleted.",
+        "operationId": "publish_product_version_api_v1_product_versions__version_id__publish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Ambiguous barcode mapping"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The version is not publishable"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Publish Product Version",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "description": "Stable products with their latest governed version (C5).",
+        "operationId": "list_products_api_v1_products_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Products",
+        "tags": [
+          "metadata"
+        ]
+      },
+      "post": {
+        "description": "Create a stable product identity (C5).",
+        "operationId": "create_product_api_v1_products_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Product code exists or the idempotency key was reused"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Create Product",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/products/{product_id}": {
+      "get": {
+        "description": "A stable product with all its immutable versions (C5).",
+        "operationId": "get_product_api_v1_products__product_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Product",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/products/{product_id}/versions": {
+      "post": {
+        "description": "Draft the next immutable product version (C5).",
+        "operationId": "create_product_version_api_v1_products__product_id__versions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductVersionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A version collision or idempotency key reuse"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Invalid component set or barcode values"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Create Product Version",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
     "/api/v1/reviews/queue": {
       "get": {
         "description": "NG/uncertain inspections awaiting review (C4 routing policy).",
@@ -2610,6 +5654,454 @@
         "summary": "List Review Queue",
         "tags": [
           "reviews"
+        ]
+      }
+    },
+    "/api/v1/rule-versions/{version_id}": {
+      "get": {
+        "description": "One immutable rule version (C5).",
+        "operationId": "get_rule_version_api_v1_rule_versions__version_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Rule Version",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/rule-versions/{version_id}/publish": {
+      "post": {
+        "description": "Validate model/product compatibility and publish a rule version (C5).",
+        "operationId": "publish_rule_version_api_v1_rule_versions__version_id__publish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The rule is incompatible with its product or models"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The rule policy set is incomplete"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Publish Rule Version",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/rules": {
+      "get": {
+        "description": "Stable rules with their latest governed version (C5).",
+        "operationId": "list_rules_api_v1_rules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RulePage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Rules",
+        "tags": [
+          "metadata"
+        ]
+      },
+      "post": {
+        "description": "Create a stable rule identity (C5).",
+        "operationId": "create_rule_api_v1_rules_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Rule code exists or the idempotency key was reused"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Create Rule",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/rules/{rule_id}": {
+      "get": {
+        "description": "A stable rule with all its immutable versions (C5).",
+        "operationId": "get_rule_api_v1_rules__rule_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "title": "Rule Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Rule",
+        "tags": [
+          "metadata"
+        ]
+      }
+    },
+    "/api/v1/rules/{rule_id}/versions": {
+      "post": {
+        "description": "Draft the next immutable rule version (C5).",
+        "operationId": "create_rule_version_api_v1_rules__rule_id__versions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "title": "Rule Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleVersionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A version collision or idempotency key reuse"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Invalid component policy"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Create Rule Version",
+        "tags": [
+          "metadata"
         ]
       }
     },

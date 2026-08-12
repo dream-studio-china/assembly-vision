@@ -438,6 +438,30 @@ or more focused PRs into `main`.
 - Desired assignment does not change edge behavior or claim activation.
 - Every publish/assignment path writes an immutable audit event.
 
+**Implementation status**
+
+- Delivered in migration `0006_metadata_governance`: organization-scoped
+  components, products, rules, and model packages; immutable draft/publish
+  versions with public UUID `version_id`; exact-barcode mappings; explicit
+  rule/model compatibility; single-device desired configuration; and
+  request/reason/before/after audit correlation on `audit_logs`.
+- APIs under `/api/v1/components`, `/products`, `/product-versions`,
+  `/rules`, `/rule-versions`, `/models`, `/model-versions`, and
+  `/devices/{id}/desired-configuration` plus the `/device-configurations`
+  read list. Stable-create and draft-create require `Idempotency-Key`;
+  assignment uses `If-Match`; repeated publish returns the published version.
+- Model publication is declarative registration: artifact bytes are never
+  fetched or verified server-side in M1 (audit states this explicitly); the
+  edge validates bytes/checksum/compatibility and last-known-good rollback
+  locally during manual installation.
+- `admin-web` adds read-only Configuration pages (products, rules, models,
+  desired configurations) with the mandatory manual-install notice in all
+  four locales; no edit/publish/assign controls ship in C5.
+- Verification: central-service Ruff/format/MyPy and 162 Pytest cases
+  (29 new C5 repository/API tests), regenerated OpenAPI + TypeScript client
+  with build/tests, admin-web lint/build and 30 unit tests, e2e smoke against
+  Compose, plus a live end-to-end browser check of the C5 pages.
+
 ### C6: M1 Hardening and Operational Evidence
 
 **Implementation**

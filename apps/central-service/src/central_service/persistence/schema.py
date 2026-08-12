@@ -18,6 +18,7 @@ from __future__ import annotations
 from sqlalchemy import (
     JSON,
     BigInteger,
+    Boolean,
     Column,
     DateTime,
     Float,
@@ -180,6 +181,14 @@ audit_logs = Table(
     Column("target_type", String(64), nullable=True),
     Column("target_id", String(64), nullable=True),
     Column("detail", Text, nullable=True),
+    # C5 governance correlation (design 05 section 8): the request ID ties the
+    # event to the correlated request log; the bounded before/after snapshots
+    # capture the governed resource state without storing secrets or object
+    # storage paths. Existing events keep NULL in all four columns.
+    Column("request_id", String(64), nullable=True),
+    Column("reason", String(512), nullable=True),
+    Column("before_state", JSON, nullable=True),
+    Column("after_state", JSON, nullable=True),
     Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
 )
 
@@ -405,3 +414,359 @@ review_records = Table(
 
 Index("ix_review_records_inspection", review_records.c.inspection_row_id, review_records.c.revision)
 Index("ix_review_records_created", review_records.c.organization_id, review_records.c.created_at)
+
+# ---------------------------------------------------------------------------
+# Metadata governance (C5, design 05 sections 4/5): stable product/component,
+# rule, and model identities with immutable draft/publish versioning plus
+# single-device desired configuration recording. Published versions are never
+# updated or deleted; changes always create a higher version. A published
+# central version is registered metadata only and never implies that a device
+# installed, validated, or activated it. Every tenant-owned row carries
+# organization_id (C1 invariant 6).
+# ---------------------------------------------------------------------------
+
+# Organization-scoped controlled component vocabulary: product versions and
+# rule policies reference components by row so code spellings cannot drift.
+components = Table(
+    "components",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("component_code", String(64), nullable=False),
+    Column("display_name", String(128), nullable=False),
+    # Idempotent creation: one request key per organization; the stored
+    # request hash distinguishes an identical replay from a conflicting reuse.
+    Column("idempotency_key", String(256), nullable=True),
+    Column("request_hash", String(64), nullable=True),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("organization_id", "component_code", name="uq_components_org_code"),
+    UniqueConstraint("organization_id", "idempotency_key", name="uq_components_org_key"),
+)
+
+products = Table(
+    "products",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("product_code", String(128), nullable=False),
+    Column("name", String(128), nullable=False),
+    Column("idempotency_key", String(256), nullable=True),
+    Column("request_hash", String(64), nullable=True),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("organization_id", "product_code", name="uq_products_org_code"),
+    UniqueConstraint("organization_id", "idempotency_key", name="uq_products_org_key"),
+)
+
+# Immutable product versions. version_id is the public UUID used for edge and
+# configuration traceability; version increments from 1 within a product.
+product_versions = Table(
+    "product_versions",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("product_id", ForeignKey("products.id", ondelete="CASCADE"), nullable=False),
+    Column("version_id", String(36), nullable=False),
+    Column("version", Integer, nullable=False),
+    Column("status", String(16), nullable=False, server_default="DRAFT"),
+    Column("published_at", DateTime(timezone=True), nullable=True),
+    Column("published_by", String(128), nullable=True),
+    Column("publish_reason", String(512), nullable=True),
+    Column("idempotency_key", String(256), nullable=True),
+    Column("request_hash", String(64), nullable=True),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("product_id", "version", name="uq_product_versions_product_version"),
+    UniqueConstraint("organization_id", "version_id", name="uq_product_versions_org_version_id"),
+    UniqueConstraint("product_id", "idempotency_key", name="uq_product_versions_product_key"),
+)
+
+# Frozen membership snapshot of a product version; counts are the required
+# quantities the rule engine enforces for that product configuration.
+product_version_components = Table(
+    "product_version_components",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "product_version_id",
+        ForeignKey("product_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("component_id", ForeignKey("components.id", ondelete="RESTRICT"), nullable=False),
+    Column("expected_count", Integer, nullable=False),
+    UniqueConstraint(
+        "product_version_id",
+        "component_id",
+        name="uq_product_version_components_version_component",
+    ),
+)
+
+# Exact barcode mappings only (ADR-015): prefix/pattern inference is
+# prohibited. A barcode row is DRAFT until its version publishes, when it is
+# flipped to PUBLISHED; the partial unique index then forbids the same
+# barcode value from mapping to a second product version in the organization.
+product_version_barcodes = Table(
+    "product_version_barcodes",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "product_version_id",
+        ForeignKey("product_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("barcode_value", String(256), nullable=False),
+    Column("status", String(16), nullable=False, server_default="DRAFT"),
+    UniqueConstraint(
+        "product_version_id",
+        "barcode_value",
+        name="uq_product_version_barcodes_version_barcode",
+    ),
+)
+
+rules = Table(
+    "rules",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("rule_code", String(128), nullable=False),
+    Column("name", String(128), nullable=False),
+    Column("idempotency_key", String(256), nullable=True),
+    Column("request_hash", String(64), nullable=True),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("organization_id", "rule_code", name="uq_rules_org_code"),
+    UniqueConstraint("organization_id", "idempotency_key", name="uq_rules_org_key"),
+)
+
+# Immutable rule versions. content_sha256 pins the canonicalized rule content
+# so a rule UUID/version can never be reused with different semantics.
+rule_versions = Table(
+    "rule_versions",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("rule_id", ForeignKey("rules.id", ondelete="CASCADE"), nullable=False),
+    Column(
+        "product_version_id",
+        ForeignKey("product_versions.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("version_id", String(36), nullable=False),
+    Column("version", Integer, nullable=False),
+    Column("status", String(16), nullable=False, server_default="DRAFT"),
+    Column("barcode_required", Boolean, nullable=False),
+    Column("minimum_usable_frames", Integer, nullable=False),
+    # M1 rules always map uncertain evidence to NG (contract 03 section 5); the
+    # column pins the invariant so a later version cannot relax it silently.
+    Column("uncertain_maps_to_ng", Boolean, nullable=False),
+    Column("mandatory_gates", JSON, nullable=False),
+    Column("content_sha256", String(64), nullable=False),
+    Column("published_at", DateTime(timezone=True), nullable=True),
+    Column("published_by", String(128), nullable=True),
+    Column("publish_reason", String(512), nullable=True),
+    Column("idempotency_key", String(256), nullable=True),
+    Column("request_hash", String(64), nullable=True),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("rule_id", "version", name="uq_rule_versions_rule_version"),
+    UniqueConstraint("organization_id", "version_id", name="uq_rule_versions_org_version_id"),
+    UniqueConstraint("rule_id", "idempotency_key", name="uq_rule_versions_rule_key"),
+)
+
+# Per-component confidence/temporal policy of one rule version (design 14
+# ComponentPolicy). Threshold ordering (medium <= high) is validated on write.
+rule_component_policies = Table(
+    "rule_component_policies",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "rule_version_id",
+        ForeignKey("rule_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("component_id", ForeignKey("components.id", ondelete="RESTRICT"), nullable=False),
+    Column("high_confidence", Float, nullable=False),
+    Column("medium_confidence", Float, nullable=False),
+    Column("minimum_medium_detections", Integer, nullable=False),
+    Column("require_adjacent_frames", Boolean, nullable=False),
+    Column("expected_count", Integer, nullable=False),
+    UniqueConstraint(
+        "rule_version_id",
+        "component_id",
+        name="uq_rule_component_policies_version_component",
+    ),
+)
+
+# Explicit component-detector compatibility per rule version: only the listed
+# model versions may satisfy this rule, mirroring the edge rule document's
+# ``compatible_component_model_versions`` (design 11, edge config.py).
+rule_model_compatibilities = Table(
+    "rule_model_compatibilities",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "rule_version_id",
+        ForeignKey("rule_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "model_version_id", ForeignKey("model_versions.id", ondelete="RESTRICT"), nullable=False
+    ),
+    UniqueConstraint(
+        "rule_version_id",
+        "model_version_id",
+        name="uq_rule_model_compatibilities_version_model",
+    ),
+)
+
+model_packages = Table(
+    "model_packages",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("model_code", String(128), nullable=False),
+    Column("name", String(128), nullable=False),
+    # PRODUCT_DETECTION or COMPONENT_DETECTION (design 14 ModelManifest.task).
+    Column("task", String(32), nullable=False),
+    Column("idempotency_key", String(256), nullable=True),
+    Column("request_hash", String(64), nullable=True),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("organization_id", "model_code", name="uq_model_packages_org_code"),
+    UniqueConstraint("organization_id", "idempotency_key", name="uq_model_packages_org_key"),
+)
+
+# Immutable model versions: declarative manifest registration (C5 locks the
+# M1 boundary: artifact bytes are never fetched or verified server-side, so
+# publication never claims the artifact was validated). manifest_sha256 pins
+# the canonical manifest content.
+model_versions = Table(
+    "model_versions",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "model_package_id",
+        ForeignKey("model_packages.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("version_id", String(36), nullable=False),
+    Column("version", Integer, nullable=False),
+    Column("status", String(16), nullable=False, server_default="DRAFT"),
+    Column("semantic_version", String(32), nullable=False),
+    Column("edge_version_label", String(64), nullable=False),
+    Column("runtime", String(64), nullable=False),
+    Column("input_width", Integer, nullable=False),
+    Column("input_height", Integer, nullable=False),
+    Column("class_names", JSON, nullable=False),
+    Column("artifacts", JSON, nullable=False),
+    Column("datasets", JSON, nullable=False),
+    Column("split_strategy", String(64), nullable=False),
+    Column("source_revision", String(128), nullable=False),
+    Column("training_config_revision", String(128), nullable=False),
+    Column("metrics", JSON, nullable=False),
+    Column("limitations", JSON, nullable=False),
+    Column("manifest_sha256", String(64), nullable=False),
+    Column("published_at", DateTime(timezone=True), nullable=True),
+    Column("published_by", String(128), nullable=True),
+    Column("publish_reason", String(512), nullable=True),
+    Column("idempotency_key", String(256), nullable=True),
+    Column("request_hash", String(64), nullable=True),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("model_package_id", "version", name="uq_model_versions_package_version"),
+    UniqueConstraint("organization_id", "version_id", name="uq_model_versions_org_version_id"),
+    UniqueConstraint("model_package_id", "idempotency_key", name="uq_model_versions_package_key"),
+)
+
+# Single-device desired configuration (M1, design 05 section 5.2): the central
+# records what the operator wants on one device; there is no remote download,
+# validation, or activation endpoint, and the record never changes edge
+# behavior. A new assignment replaces the previous desired state under an
+# If-Match revision guard.
+desired_configurations = Table(
+    "desired_configurations",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("device_row_id", ForeignKey("devices.id", ondelete="CASCADE"), nullable=False),
+    Column("revision", Integer, nullable=False),
+    Column(
+        "product_version_id",
+        ForeignKey("product_versions.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column(
+        "product_model_version_id",
+        ForeignKey("model_versions.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column(
+        "component_model_version_id",
+        ForeignKey("model_versions.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("rule_version_id", ForeignKey("rule_versions.id", ondelete="RESTRICT"), nullable=False),
+    Column("reason", String(512), nullable=False),
+    Column("assigned_by", String(128), nullable=False),
+    Column("assigned_at", DateTime(timezone=True), nullable=False),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("device_row_id", name="uq_desired_configurations_device"),
+)
+
+Index("ix_product_versions_product", product_versions.c.product_id, product_versions.c.version)
+Index(
+    "ix_product_versions_org_created",
+    product_versions.c.organization_id,
+    product_versions.c.created_at,
+)
+Index("ix_rule_versions_rule", rule_versions.c.rule_id, rule_versions.c.version)
+Index("ix_rule_versions_org_created", rule_versions.c.organization_id, rule_versions.c.created_at)
+Index("ix_model_versions_package", model_versions.c.model_package_id, model_versions.c.version)
+Index(
+    "ix_model_versions_org_created", model_versions.c.organization_id, model_versions.c.created_at
+)
+
+# Concurrency backstop for exact barcode mapping ambiguity: once a version
+# publishes, its barcode value is unique per organization. SQLite and
+# PostgreSQL both support partial indexes; the friendly conflict check happens
+# in the repository transaction, this index protects concurrent publishes.
+Index(
+    "uq_product_version_barcodes_published",
+    product_version_barcodes.c.organization_id,
+    product_version_barcodes.c.barcode_value,
+    unique=True,
+    sqlite_where=text("status = 'PUBLISHED'"),
+    postgresql_where=text("status = 'PUBLISHED'"),
+)

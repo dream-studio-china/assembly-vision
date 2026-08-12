@@ -22,6 +22,22 @@ export type Site = components["schemas"]["SiteOut"];
 export type Line = components["schemas"]["LineOut"];
 export type Device = components["schemas"]["DeviceOut"];
 export type Problem = components["schemas"]["Problem"];
+export type ComponentPage = components["schemas"]["ComponentPage"];
+export type ProductPage = components["schemas"]["ProductPage"];
+export type ProductDetail = components["schemas"]["ProductDetailOut"];
+export type ProductVersion = components["schemas"]["ProductVersionOut"];
+export type ProductVersionCreate = components["schemas"]["ProductVersionCreate"];
+export type RulePage = components["schemas"]["RulePage"];
+export type RuleDetail = components["schemas"]["RuleDetailOut"];
+export type RuleVersion = components["schemas"]["RuleVersionOut"];
+export type RuleVersionCreate = components["schemas"]["RuleVersionCreate"];
+export type ModelPage = components["schemas"]["ModelPage"];
+export type ModelDetail = components["schemas"]["ModelDetailOut"];
+export type ModelVersion = components["schemas"]["ModelVersionOut"];
+export type ModelManifest = components["schemas"]["ModelManifestIn"];
+export type DesiredConfiguration = components["schemas"]["DesiredConfigurationOut"];
+export type DesiredConfigurationIn = components["schemas"]["DesiredConfigurationIn"];
+export type DesiredConfigurationPage = components["schemas"]["DesiredConfigurationPage"];
 
 export interface InspectionQuery {
   site_id?: number;
@@ -143,6 +159,70 @@ export class CentralApiClient {
     return this.request<Review>(`/inspections/${inspectionId}/reviews`, {
       method: "POST",
       headers,
+      body: JSON.stringify(body),
+    });
+  }
+
+  // -- metadata governance (C5) -------------------------------------------
+
+  async listComponents(): Promise<ComponentPage> {
+    return this.request<ComponentPage>("/components");
+  }
+
+  async listProducts(): Promise<ProductPage> {
+    return this.request<ProductPage>("/products");
+  }
+
+  async getProduct(productId: number): Promise<ProductDetail> {
+    return this.request<ProductDetail>(`/products/${productId}`);
+  }
+
+  async getProductVersion(versionId: string): Promise<ProductVersion> {
+    return this.request<ProductVersion>(`/product-versions/${versionId}`);
+  }
+
+  async listRules(): Promise<RulePage> {
+    return this.request<RulePage>("/rules");
+  }
+
+  async getRule(ruleId: number): Promise<RuleDetail> {
+    return this.request<RuleDetail>(`/rules/${ruleId}`);
+  }
+
+  async getRuleVersion(versionId: string): Promise<RuleVersion> {
+    return this.request<RuleVersion>(`/rule-versions/${versionId}`);
+  }
+
+  async listModels(): Promise<ModelPage> {
+    return this.request<ModelPage>("/models");
+  }
+
+  async getModel(modelId: number): Promise<ModelDetail> {
+    return this.request<ModelDetail>(`/models/${modelId}`);
+  }
+
+  async getModelVersion(versionId: string): Promise<ModelVersion> {
+    return this.request<ModelVersion>(`/model-versions/${versionId}`);
+  }
+
+  async listDesiredConfigurations(): Promise<DesiredConfigurationPage> {
+    return this.request<DesiredConfigurationPage>("/device-configurations");
+  }
+
+  async getDesiredConfiguration(deviceId: string): Promise<DesiredConfiguration> {
+    return this.request<DesiredConfiguration>(
+      `/devices/${deviceId}/desired-configuration`,
+    );
+  }
+
+  async putDesiredConfiguration(
+    deviceId: string,
+    body: DesiredConfigurationIn,
+    ifMatch: number,
+  ): Promise<DesiredConfiguration> {
+    return this.request<DesiredConfiguration>(`/devices/${deviceId}/desired-configuration`, {
+      method: "PUT",
+      headers: { "If-Match": String(ifMatch) },
       body: JSON.stringify(body),
     });
   }
