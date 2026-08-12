@@ -44,6 +44,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dashboard/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard Devices
+         * @description Per-device last-seen and volume for the overview (C3, design 17).
+         */
+        get: operations["dashboard_devices_api_v1_dashboard_devices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboard/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard Summary
+         * @description Overview counts for the selected scope/period (C3).
+         */
+        get: operations["dashboard_summary_api_v1_dashboard_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboard/timeseries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard Timeseries
+         * @description Daily outcome counts for the selected scope/period (C3).
+         */
+        get: operations["dashboard_timeseries_api_v1_dashboard_timeseries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/devices": {
         parameters: {
             query?: never;
@@ -138,6 +198,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inspections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Inspections
+         * @description Cross-device inspection history with bounded filters (C3).
+         */
+        get: operations["list_inspections_api_v1_inspections_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inspections/{inspection_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Inspection
+         * @description Inspection detail with evidence, versions, and media (C3).
+         */
+        get: operations["get_inspection_api_v1_inspections__inspection_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/lines": {
         parameters: {
             query?: never;
@@ -147,6 +247,26 @@ export interface paths {
         };
         /** List Lines */
         get: operations["list_lines_api_v1_lines_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/{central_object_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stream Media
+         * @description Stream one bound media object through the authenticated API.
+         */
+        get: operations["stream_media_api_v1_media__central_object_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -189,6 +309,48 @@ export interface components {
             username: string;
         };
         /**
+         * ComponentEvidenceOut
+         * @description Per-component aggregated evidence (C3 detail).
+         */
+        ComponentEvidenceOut: {
+            /** Best Confidence */
+            best_confidence: number | null;
+            /** Component Code */
+            component_code: string;
+            /** Detection Count */
+            detection_count: number;
+            /** Policy Reason Codes */
+            policy_reason_codes: string[];
+            /** State */
+            state: string;
+            /** Usable Frame Count */
+            usable_frame_count: number;
+        };
+        /**
+         * DashboardSummaryOut
+         * @description Overview counts for a scope/period; empty data stays empty (C3).
+         */
+        DashboardSummaryOut: {
+            /** Avg Upload Delay Ms */
+            avg_upload_delay_ms?: number | null;
+            /** Inspection Count */
+            inspection_count: number;
+            /** Ng Count */
+            ng_count: number;
+            /** Ok Count */
+            ok_count: number;
+            /** Uncertain Count */
+            uncertain_count: number;
+        };
+        /**
+         * DashboardTimeseriesOut
+         * @description Daily outcome counts for a scope/period (C3 dashboard).
+         */
+        DashboardTimeseriesOut: {
+            /** Points */
+            points: components["schemas"]["TimeseriesPointOut"][];
+        };
+        /**
          * DeviceOut
          * @description A registered edge device; credentials are never exposed.
          */
@@ -213,6 +375,20 @@ export interface components {
             /** Status */
             status: string;
         };
+        /**
+         * DeviceStatusOut
+         * @description One device's central last-seen and inspection volume (C3 overview).
+         */
+        DeviceStatusOut: {
+            /** Device Id */
+            device_id: string;
+            /** Inspection Count */
+            inspection_count: number;
+            /** Last Seen At */
+            last_seen_at: string | null;
+            /** Name */
+            name: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -228,6 +404,140 @@ export interface components {
              * @constant
              */
             status: "ok";
+        };
+        /**
+         * InspectionDetailOut
+         * @description Full inspection detail with evidence and media (C3).
+         */
+        InspectionDetailOut: {
+            /** Aggregation Policy Version */
+            aggregation_policy_version: string;
+            /** Application Version */
+            application_version: string;
+            /** Barcode Status */
+            barcode_status: string;
+            /** Barcode Value */
+            barcode_value: string | null;
+            /** Business Result */
+            business_result: string;
+            /**
+             * Completed At
+             * Format: date-time
+             */
+            completed_at: string;
+            /** Component Model Checksum Sha256 */
+            component_model_checksum_sha256: string;
+            /** Component Model Version Id */
+            component_model_version_id: string;
+            /** Components */
+            components: components["schemas"]["ComponentEvidenceOut"][];
+            /** Device Id */
+            device_id: string;
+            /** Device Sequence */
+            device_sequence: number;
+            /** Inference Metadata */
+            inference_metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /** Inspection Id */
+            inspection_id: string;
+            /** Internal Decision */
+            internal_decision: string;
+            /** Lifecycle Status */
+            lifecycle_status: string;
+            /** Line Id */
+            line_id: number;
+            /** Low Confidence Components */
+            low_confidence_components: string[];
+            /** Media */
+            media: components["schemas"]["MediaItemOut"][];
+            /** Missing Components */
+            missing_components: string[];
+            /** Processing Ms */
+            processing_ms: number;
+            /** Product Code */
+            product_code: string | null;
+            /** Product Model Checksum Sha256 */
+            product_model_checksum_sha256: string;
+            /** Product Model Version Id */
+            product_model_version_id: string;
+            /** Product Resolution Status */
+            product_resolution_status: string;
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Receipt Created At */
+            receipt_created_at?: string | null;
+            /** Receipt Status */
+            receipt_status?: string | null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** Rule Version Id */
+            rule_version_id: string;
+            /** Site Id */
+            site_id: number;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Upload Delay Ms */
+            upload_delay_ms: number;
+        };
+        /**
+         * InspectionPage
+         * @description Keyset-paginated inspection history (C3).
+         */
+        InspectionPage: {
+            /** Items */
+            items: components["schemas"]["InspectionSummaryOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /**
+         * InspectionSummaryOut
+         * @description One inspection row for the history list (C3).
+         */
+        InspectionSummaryOut: {
+            /** Barcode Value */
+            barcode_value: string | null;
+            /** Business Result */
+            business_result: string;
+            /**
+             * Completed At
+             * Format: date-time
+             */
+            completed_at: string;
+            /** Device Id */
+            device_id: string;
+            /** Device Sequence */
+            device_sequence: number;
+            /** Inspection Id */
+            inspection_id: string;
+            /** Internal Decision */
+            internal_decision: string;
+            /** Line Id */
+            line_id: number;
+            /** Product Code */
+            product_code: string | null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** Rule Version Id */
+            rule_version_id: string;
+            /** Site Id */
+            site_id: number;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Upload Delay Ms */
+            upload_delay_ms: number;
         };
         /**
          * LineOut
@@ -247,6 +557,24 @@ export interface components {
             organization_id: number;
             /** Site Id */
             site_id: number;
+        };
+        /**
+         * MediaItemOut
+         * @description One media binding with a short-lived authorized URL (C3).
+         */
+        MediaItemOut: {
+            /** Kind */
+            kind: string;
+            /** Lifecycle */
+            lifecycle: string;
+            /** Mime Type */
+            mime_type: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Source Media Id */
+            source_media_id: string;
+            /** Url */
+            url?: string | null;
         };
         /**
          * Problem
@@ -308,6 +636,20 @@ export interface components {
             name: string;
             /** Organization Id */
             organization_id: number;
+        };
+        /**
+         * TimeseriesPointOut
+         * @description One daily bucket of outcome counts (C3 dashboard).
+         */
+        TimeseriesPointOut: {
+            /** Bucket */
+            bucket: string;
+            /** Ng Count */
+            ng_count: number;
+            /** Ok Count */
+            ok_count: number;
+            /** Uncertain Count */
+            uncertain_count: number;
         };
         /**
          * UploadReceiptOut
@@ -409,6 +751,125 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    dashboard_devices_api_v1_dashboard_devices_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceStatusOut"][];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    dashboard_summary_api_v1_dashboard_summary_get: {
+        parameters: {
+            query?: {
+                site_id?: number | null;
+                line_id?: number | null;
+                device_row_id?: number | null;
+                from_at?: string | null;
+                to_at?: string | null;
+                business_result?: ("OK" | "NG") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardSummaryOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dashboard_timeseries_api_v1_dashboard_timeseries_get: {
+        parameters: {
+            query?: {
+                site_id?: number | null;
+                line_id?: number | null;
+                device_row_id?: number | null;
+                from_at?: string | null;
+                to_at?: string | null;
+                business_result?: ("OK" | "NG") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardTimeseriesOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -612,6 +1073,108 @@ export interface operations {
             };
         };
     };
+    list_inspections_api_v1_inspections_get: {
+        parameters: {
+            query?: {
+                site_id?: number | null;
+                line_id?: number | null;
+                device_row_id?: number | null;
+                from_at?: string | null;
+                to_at?: string | null;
+                barcode?: string | null;
+                product?: string | null;
+                business_result?: ("OK" | "NG") | null;
+                internal_decision?: ("OK" | "NG" | "UNCERTAIN") | null;
+                reason?: string | null;
+                model_version?: string | null;
+                rule_version?: string | null;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionPage"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_inspection_api_v1_inspections__inspection_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inspection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionDetailOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_lines_api_v1_lines_get: {
         parameters: {
             query?: {
@@ -630,6 +1193,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LineOut"][];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stream_media_api_v1_media__central_object_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                central_object_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description A valid pilot administrator credential or session is required */

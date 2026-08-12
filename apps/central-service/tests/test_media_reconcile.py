@@ -41,6 +41,12 @@ class _Storage:
     def list_objects(self, prefix: str) -> Iterator[str]:
         yield from sorted(key for key in self.objects if key.startswith(prefix))
 
+    def presigned_get_url(self, key: str, expires_seconds: int) -> str:
+        return f"http://fake-store.test/{key}?expires={expires_seconds}"
+
+    def get_object(self, key: str) -> Iterator[bytes]:
+        yield self.objects.get(key, b"")
+
 
 def test_reconcile_consistent_state_reports_nothing() -> None:
     storage = _Storage({"org/1/device/a/2026/08/m1": b"x"})

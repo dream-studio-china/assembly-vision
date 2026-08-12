@@ -52,14 +52,18 @@ def build_record(
     device_sequence: int = 1,
     business: BusinessResult = BusinessResult.NG,
     media_content: bytes | None = None,
+    completed_at: datetime | None = None,
+    barcode: str | None = None,
+    product_code: str = "model_a",
 ) -> InspectionRecord:
     """A realistic edge InspectionRecord matching the edge test fixtures.
 
     With ``media_content`` set, the manifest entry describes exactly those
     bytes (real SHA-256 and size), which is what C2b media ingestion
-    cross-checks against.
+    cross-checks against. ``completed_at`` pins the edge capture/completion
+    clock and ``barcode``/``product_code`` vary the filterable identity.
     """
-    completed_at = datetime.now(UTC)
+    completed_at = completed_at or datetime.now(UTC)
     inspection_uuid = inspection_id or uuid4()
     media_id = uuid4()
     if media_content is not None:
@@ -93,9 +97,9 @@ def build_record(
         lifecycle_status=InspectionLifecycle.COMPLETED,
         started_at=completed_at,
         completed_at=completed_at,
-        barcode_result=BarcodeResult(status="NOT_REQUIRED", value=None),
+        barcode_result=BarcodeResult(status="READ" if barcode else "NOT_REQUIRED", value=barcode),
         product_resolution=ProductResolution(
-            status="RESOLVED", source="CONFIGURED_DEFAULT", product_code="model_a"
+            status="RESOLVED", source="CONFIGURED_DEFAULT", product_code=product_code
         ),
         frame_quality_summary=FrameQualitySummary(
             total_frame_count=1, usable_frame_count=1, rejected_frame_count=0
@@ -205,3 +209,10 @@ class NoopObjectStorage:
 
     def list_objects(self, prefix: str) -> Iterator[str]:
         yield from sorted(key for key in self.objects if key.startswith(prefix))
+
+    def presigned_get_url(self, key: str, expires_seconds: int) -> str:
+        return f"http://fake-store.test/{key}?expires={expires_seconds}"
+
+    def get_object(self, key: str) -> Iterator[bytes]:
+        data = self.objects.get(key, b"")
+        yield data

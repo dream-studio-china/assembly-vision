@@ -97,3 +97,123 @@ class UploadReceiptOut(APIModel):
     checksum_sha256: str | None
     size_bytes: int
     central_object_id: str | None = None
+
+
+class InspectionSummaryOut(APIModel):
+    """One inspection row for the history list (C3)."""
+
+    inspection_id: str
+    device_id: str
+    site_id: int
+    line_id: int
+    device_sequence: int
+    started_at: datetime
+    completed_at: datetime
+    received_at: datetime
+    upload_delay_ms: int
+    barcode_value: str | None
+    product_code: str | None
+    internal_decision: str
+    business_result: str
+    rule_version_id: str
+
+
+class ComponentEvidenceOut(APIModel):
+    """Per-component aggregated evidence (C3 detail)."""
+
+    component_code: str
+    state: str
+    best_confidence: float | None
+    detection_count: int
+    usable_frame_count: int
+    policy_reason_codes: list[str]
+
+
+class MediaItemOut(APIModel):
+    """One media binding with a short-lived authorized URL (C3)."""
+
+    source_media_id: str
+    kind: str
+    mime_type: str
+    size_bytes: int
+    lifecycle: str
+    url: str | None = None
+
+
+class InspectionDetailOut(APIModel):
+    """Full inspection detail with evidence and media (C3)."""
+
+    inspection_id: str
+    device_id: str
+    site_id: int
+    line_id: int
+    device_sequence: int
+    lifecycle_status: str
+    started_at: datetime
+    completed_at: datetime
+    received_at: datetime
+    upload_delay_ms: int
+    barcode_status: str
+    barcode_value: str | None
+    product_resolution_status: str
+    product_code: str | None
+    internal_decision: str
+    business_result: str
+    reason_codes: list[str]
+    missing_components: list[str]
+    low_confidence_components: list[str]
+    application_version: str
+    product_model_version_id: str
+    product_model_checksum_sha256: str
+    component_model_version_id: str
+    component_model_checksum_sha256: str
+    rule_version_id: str
+    aggregation_policy_version: str
+    processing_ms: int
+    inference_metadata: dict[str, object] | None = None
+    components: list[ComponentEvidenceOut]
+    media: list[MediaItemOut]
+    # Verified central receipt for the INSPECTION upload (task C1 5.3).
+    receipt_status: str | None = None
+    receipt_created_at: datetime | None = None
+
+
+class InspectionPage(APIModel):
+    """Keyset-paginated inspection history (C3)."""
+
+    items: list[InspectionSummaryOut]
+    next_cursor: str | None = None
+
+
+class DashboardSummaryOut(APIModel):
+    """Overview counts for a scope/period; empty data stays empty (C3)."""
+
+    inspection_count: int
+    ok_count: int
+    ng_count: int
+    uncertain_count: int
+    avg_upload_delay_ms: float | None = None
+
+
+class TimeseriesPointOut(APIModel):
+    """One daily bucket of outcome counts (C3 dashboard)."""
+
+    bucket: str
+    ok_count: int
+    ng_count: int
+    uncertain_count: int
+
+
+class DashboardTimeseriesOut(APIModel):
+    """Daily outcome counts for a scope/period (C3 dashboard)."""
+
+    points: list[TimeseriesPointOut]
+
+
+class DeviceStatusOut(APIModel):
+    """One device's central last-seen and inspection volume (C3 overview)."""
+
+    device_id: str
+    name: str
+    last_seen_at: datetime | None
+    inspection_count: int

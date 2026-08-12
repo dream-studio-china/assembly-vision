@@ -64,6 +64,12 @@ class _FakeStorage(ObjectStorage):
     def list_objects(self, prefix: str) -> Iterator[str]:
         return iter(())
 
+    def presigned_get_url(self, key: str, expires_seconds: int) -> str:
+        return f"http://fake-store.test/{key}"
+
+    def get_object(self, key: str) -> Iterator[bytes]:
+        return iter(())
+
 
 class _RaisingStorage(ObjectStorage):
     def ensure_bucket(self) -> None:
@@ -82,6 +88,12 @@ class _RaisingStorage(ObjectStorage):
         raise RuntimeError("storage unavailable")
 
     def list_objects(self, prefix: str) -> Iterator[str]:
+        raise RuntimeError("storage unavailable")
+
+    def presigned_get_url(self, key: str, expires_seconds: int) -> str:
+        raise RuntimeError("storage unavailable")
+
+    def get_object(self, key: str) -> Iterator[bytes]:
         raise RuntimeError("storage unavailable")
 
 

@@ -26,6 +26,115 @@
         "title": "AdminMe",
         "type": "object"
       },
+      "ComponentEvidenceOut": {
+        "additionalProperties": false,
+        "description": "Per-component aggregated evidence (C3 detail).",
+        "properties": {
+          "best_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Confidence"
+          },
+          "component_code": {
+            "title": "Component Code",
+            "type": "string"
+          },
+          "detection_count": {
+            "title": "Detection Count",
+            "type": "integer"
+          },
+          "policy_reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Policy Reason Codes",
+            "type": "array"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "usable_frame_count": {
+            "title": "Usable Frame Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "component_code",
+          "state",
+          "best_confidence",
+          "detection_count",
+          "usable_frame_count",
+          "policy_reason_codes"
+        ],
+        "title": "ComponentEvidenceOut",
+        "type": "object"
+      },
+      "DashboardSummaryOut": {
+        "additionalProperties": false,
+        "description": "Overview counts for a scope/period; empty data stays empty (C3).",
+        "properties": {
+          "avg_upload_delay_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Upload Delay Ms"
+          },
+          "inspection_count": {
+            "title": "Inspection Count",
+            "type": "integer"
+          },
+          "ng_count": {
+            "title": "Ng Count",
+            "type": "integer"
+          },
+          "ok_count": {
+            "title": "Ok Count",
+            "type": "integer"
+          },
+          "uncertain_count": {
+            "title": "Uncertain Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "inspection_count",
+          "ok_count",
+          "ng_count",
+          "uncertain_count"
+        ],
+        "title": "DashboardSummaryOut",
+        "type": "object"
+      },
+      "DashboardTimeseriesOut": {
+        "additionalProperties": false,
+        "description": "Daily outcome counts for a scope/period (C3 dashboard).",
+        "properties": {
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/TimeseriesPointOut"
+            },
+            "title": "Points",
+            "type": "array"
+          }
+        },
+        "required": [
+          "points"
+        ],
+        "title": "DashboardTimeseriesOut",
+        "type": "object"
+      },
       "DeviceOut": {
         "additionalProperties": false,
         "description": "A registered edge device; credentials are never exposed.",
@@ -77,6 +186,44 @@
         "title": "DeviceOut",
         "type": "object"
       },
+      "DeviceStatusOut": {
+        "additionalProperties": false,
+        "description": "One device's central last-seen and inspection volume (C3 overview).",
+        "properties": {
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "inspection_count": {
+            "title": "Inspection Count",
+            "type": "integer"
+          },
+          "last_seen_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Seen At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "device_id",
+          "name",
+          "last_seen_at",
+          "inspection_count"
+        ],
+        "title": "DeviceStatusOut",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -104,6 +251,354 @@
           "status"
         ],
         "title": "HealthLive",
+        "type": "object"
+      },
+      "InspectionDetailOut": {
+        "additionalProperties": false,
+        "description": "Full inspection detail with evidence and media (C3).",
+        "properties": {
+          "aggregation_policy_version": {
+            "title": "Aggregation Policy Version",
+            "type": "string"
+          },
+          "application_version": {
+            "title": "Application Version",
+            "type": "string"
+          },
+          "barcode_status": {
+            "title": "Barcode Status",
+            "type": "string"
+          },
+          "barcode_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Barcode Value"
+          },
+          "business_result": {
+            "title": "Business Result",
+            "type": "string"
+          },
+          "completed_at": {
+            "format": "date-time",
+            "title": "Completed At",
+            "type": "string"
+          },
+          "component_model_checksum_sha256": {
+            "title": "Component Model Checksum Sha256",
+            "type": "string"
+          },
+          "component_model_version_id": {
+            "title": "Component Model Version Id",
+            "type": "string"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentEvidenceOut"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "device_sequence": {
+            "title": "Device Sequence",
+            "type": "integer"
+          },
+          "inference_metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inference Metadata"
+          },
+          "inspection_id": {
+            "title": "Inspection Id",
+            "type": "string"
+          },
+          "internal_decision": {
+            "title": "Internal Decision",
+            "type": "string"
+          },
+          "lifecycle_status": {
+            "title": "Lifecycle Status",
+            "type": "string"
+          },
+          "line_id": {
+            "title": "Line Id",
+            "type": "integer"
+          },
+          "low_confidence_components": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Low Confidence Components",
+            "type": "array"
+          },
+          "media": {
+            "items": {
+              "$ref": "#/components/schemas/MediaItemOut"
+            },
+            "title": "Media",
+            "type": "array"
+          },
+          "missing_components": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Components",
+            "type": "array"
+          },
+          "processing_ms": {
+            "title": "Processing Ms",
+            "type": "integer"
+          },
+          "product_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Code"
+          },
+          "product_model_checksum_sha256": {
+            "title": "Product Model Checksum Sha256",
+            "type": "string"
+          },
+          "product_model_version_id": {
+            "title": "Product Model Version Id",
+            "type": "string"
+          },
+          "product_resolution_status": {
+            "title": "Product Resolution Status",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "receipt_created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Receipt Created At"
+          },
+          "receipt_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Receipt Status"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          },
+          "rule_version_id": {
+            "title": "Rule Version Id",
+            "type": "string"
+          },
+          "site_id": {
+            "title": "Site Id",
+            "type": "integer"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "upload_delay_ms": {
+            "title": "Upload Delay Ms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "inspection_id",
+          "device_id",
+          "site_id",
+          "line_id",
+          "device_sequence",
+          "lifecycle_status",
+          "started_at",
+          "completed_at",
+          "received_at",
+          "upload_delay_ms",
+          "barcode_status",
+          "barcode_value",
+          "product_resolution_status",
+          "product_code",
+          "internal_decision",
+          "business_result",
+          "reason_codes",
+          "missing_components",
+          "low_confidence_components",
+          "application_version",
+          "product_model_version_id",
+          "product_model_checksum_sha256",
+          "component_model_version_id",
+          "component_model_checksum_sha256",
+          "rule_version_id",
+          "aggregation_policy_version",
+          "processing_ms",
+          "components",
+          "media"
+        ],
+        "title": "InspectionDetailOut",
+        "type": "object"
+      },
+      "InspectionPage": {
+        "additionalProperties": false,
+        "description": "Keyset-paginated inspection history (C3).",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InspectionSummaryOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "InspectionPage",
+        "type": "object"
+      },
+      "InspectionSummaryOut": {
+        "additionalProperties": false,
+        "description": "One inspection row for the history list (C3).",
+        "properties": {
+          "barcode_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Barcode Value"
+          },
+          "business_result": {
+            "title": "Business Result",
+            "type": "string"
+          },
+          "completed_at": {
+            "format": "date-time",
+            "title": "Completed At",
+            "type": "string"
+          },
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "device_sequence": {
+            "title": "Device Sequence",
+            "type": "integer"
+          },
+          "inspection_id": {
+            "title": "Inspection Id",
+            "type": "string"
+          },
+          "internal_decision": {
+            "title": "Internal Decision",
+            "type": "string"
+          },
+          "line_id": {
+            "title": "Line Id",
+            "type": "integer"
+          },
+          "product_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Code"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          },
+          "rule_version_id": {
+            "title": "Rule Version Id",
+            "type": "string"
+          },
+          "site_id": {
+            "title": "Site Id",
+            "type": "integer"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "upload_delay_ms": {
+            "title": "Upload Delay Ms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "inspection_id",
+          "device_id",
+          "site_id",
+          "line_id",
+          "device_sequence",
+          "started_at",
+          "completed_at",
+          "received_at",
+          "upload_delay_ms",
+          "barcode_value",
+          "product_code",
+          "internal_decision",
+          "business_result",
+          "rule_version_id"
+        ],
+        "title": "InspectionSummaryOut",
         "type": "object"
       },
       "LineOut": {
@@ -140,6 +635,52 @@
           "created_at"
         ],
         "title": "LineOut",
+        "type": "object"
+      },
+      "MediaItemOut": {
+        "additionalProperties": false,
+        "description": "One media binding with a short-lived authorized URL (C3).",
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "lifecycle": {
+            "title": "Lifecycle",
+            "type": "string"
+          },
+          "mime_type": {
+            "title": "Mime Type",
+            "type": "string"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          },
+          "source_media_id": {
+            "title": "Source Media Id",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "source_media_id",
+          "kind",
+          "mime_type",
+          "size_bytes",
+          "lifecycle"
+        ],
+        "title": "MediaItemOut",
         "type": "object"
       },
       "Problem": {
@@ -246,6 +787,36 @@
           "created_at"
         ],
         "title": "SiteOut",
+        "type": "object"
+      },
+      "TimeseriesPointOut": {
+        "additionalProperties": false,
+        "description": "One daily bucket of outcome counts (C3 dashboard).",
+        "properties": {
+          "bucket": {
+            "title": "Bucket",
+            "type": "string"
+          },
+          "ng_count": {
+            "title": "Ng Count",
+            "type": "integer"
+          },
+          "ok_count": {
+            "title": "Ok Count",
+            "type": "integer"
+          },
+          "uncertain_count": {
+            "title": "Uncertain Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "bucket",
+          "ok_count",
+          "ng_count",
+          "uncertain_count"
+        ],
+        "title": "TimeseriesPointOut",
         "type": "object"
       },
       "UploadReceiptOut": {
@@ -424,6 +995,349 @@
         "summary": "Create Admin Session",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/dashboard/devices": {
+      "get": {
+        "description": "Per-device last-seen and volume for the overview (C3, design 17).",
+        "operationId": "dashboard_devices_api_v1_dashboard_devices_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceStatusOut"
+                  },
+                  "title": "Response Dashboard Devices Api V1 Dashboard Devices Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Dashboard Devices",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/api/v1/dashboard/summary": {
+      "get": {
+        "description": "Overview counts for the selected scope/period (C3).",
+        "operationId": "dashboard_summary_api_v1_dashboard_summary_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "site_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "line_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Line Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "device_row_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Device Row Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "business_result",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "OK",
+                    "NG"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Business Result"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Dashboard Summary",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/api/v1/dashboard/timeseries": {
+      "get": {
+        "description": "Daily outcome counts for the selected scope/period (C3).",
+        "operationId": "dashboard_timeseries_api_v1_dashboard_timeseries_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "site_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "line_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Line Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "device_row_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Device Row Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "business_result",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "OK",
+                    "NG"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Business Result"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardTimeseriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Dashboard Timeseries",
+        "tags": [
+          "dashboard"
         ]
       }
     },
@@ -663,6 +1577,354 @@
         ]
       }
     },
+    "/api/v1/inspections": {
+      "get": {
+        "description": "Cross-device inspection history with bounded filters (C3).",
+        "operationId": "list_inspections_api_v1_inspections_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "site_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "line_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Line Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "device_row_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Device Row Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "barcode",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Barcode"
+            }
+          },
+          {
+            "in": "query",
+            "name": "product",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Product"
+            }
+          },
+          {
+            "in": "query",
+            "name": "business_result",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "OK",
+                    "NG"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Business Result"
+            }
+          },
+          {
+            "in": "query",
+            "name": "internal_decision",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "OK",
+                    "NG",
+                    "UNCERTAIN"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Internal Decision"
+            }
+          },
+          {
+            "in": "query",
+            "name": "reason",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reason"
+            }
+          },
+          {
+            "in": "query",
+            "name": "model_version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Model Version"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rule_version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rule Version"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Inspections",
+        "tags": [
+          "inspections"
+        ]
+      }
+    },
+    "/api/v1/inspections/{inspection_id}": {
+      "get": {
+        "description": "Inspection detail with evidence, versions, and media (C3).",
+        "operationId": "get_inspection_api_v1_inspections__inspection_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "inspection_id",
+            "required": true,
+            "schema": {
+              "title": "Inspection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Get Inspection",
+        "tags": [
+          "inspections"
+        ]
+      }
+    },
     "/api/v1/lines": {
       "get": {
         "operationId": "list_lines_api_v1_lines_get",
@@ -728,6 +1990,57 @@
         "summary": "List Lines",
         "tags": [
           "tenant"
+        ]
+      }
+    },
+    "/api/v1/media/{central_object_id}": {
+      "get": {
+        "description": "Stream one bound media object through the authenticated API.",
+        "operationId": "stream_media_api_v1_media__central_object_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "central_object_id",
+            "required": true,
+            "schema": {
+              "title": "Central Object Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Stream Media",
+        "tags": [
+          "media"
         ]
       }
     },
