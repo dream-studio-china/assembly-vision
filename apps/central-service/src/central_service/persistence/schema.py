@@ -16,9 +16,11 @@ another tenant's hierarchy node.
 from __future__ import annotations
 
 from sqlalchemy import (
+    JSON,
     BigInteger,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     ForeignKeyConstraint,
     Index,
@@ -29,6 +31,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 
 metadata = MetaData()
@@ -184,3 +187,136 @@ Index("ix_devices_organization", devices.c.organization_id)
 Index("ix_admin_sessions_expires_at", admin_sessions.c.expires_at)
 Index("ix_admin_sessions_organization", admin_sessions.c.organization_id)
 Index("ix_audit_organization_created", audit_logs.c.organization_id, audit_logs.c.created_at)
+
+# ---------------------------------------------------------------------------
+# Ingestion domain (C2a, design 14 and task C1 section 8.1): idempotent
+# inspection uploads. Edge identifiers are preserved exactly (UUID strings);
+# edge-observed timestamps and the central receive time are stored separately.
+# Every tenant-owned row carries organization_id (C1 invariant 6).
+# ---------------------------------------------------------------------------
+
+upload_receipts = Table(
+    "upload_receipts",
+    metadata,
+    Column("id", _BigIntId, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "device_row_id",
+        ForeignKey("devices.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("idempotency_key", String(256), nullable=False),
+    # Canonical SHA-256 of the accepted payload; an identical replay must carry
+    # the same hash, a reuse with a different hash is a payload conflict.
+    Column("request_hash", String(64), nullable=False),
+    Column("kind", String(16), nullable=False),
+    Column("object_id", String(36), nullable=False),
+    Column("inspection_id", String(36), nullable=True),
+    # Central object identifier for MEDIA receipts (C2b); null for INSPECTION.
+    Column("central_object_id", String(128), nullable=True),
+    # Echoed receipt fields: byte size of the accepted decoded payload and its
+    # canonical SHA-256 (the edge validates both on every verified receipt).
+    Column("size_bytes", Integer, nullable=False),
+    Column("status", String(16), nullable=False, server_default="ACCEPTED"),
+    Column("response_code", Integer, nullable=False),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("device_row_id", "idempotency_key", name="uq_upload_receipts_device_key"),
+)
+
+inspections = Table(
+    "inspections",
+    metadata,
+    Column("id", _BigIntId, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "device_row_id",
+        ForeignKey("devices.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    # Edge business identity: the edge-generated inspection UUID and its
+    # per-device sequence. Both are write-once after accepted ingestion.
+    Column("inspection_id", String(36), nullable=False),
+    Column("device_sequence", Integer, nullable=False),
+    Column("lifecycle_status", String(16), nullable=False),
+    Column("started_at", DateTime(timezone=True), nullable=False),
+    Column("completed_at", DateTime(timezone=True), nullable=False),
+    Column("received_at", DateTime(timezone=True), nullable=False),
+    Column("barcode_status", String(16), nullable=False),
+    Column("barcode_value", String(256), nullable=True),
+    Column("product_resolution_status", String(16), nullable=False),
+    Column("product_code", String(128), nullable=True),
+    Column("product_version_id", String(36), nullable=True),
+    Column("internal_decision", String(16), nullable=False),
+    Column("business_result", String(8), nullable=False),
+    Column("missing_components", JSON, nullable=False),
+    Column("low_confidence_components", JSON, nullable=False),
+    Column("decision_reason_codes", JSON, nullable=False),
+    Column("decided_at", DateTime(timezone=True), nullable=False),
+    Column("application_version", String(64), nullable=False),
+    Column("product_model_version_id", String(36), nullable=False),
+    Column("product_model_checksum_sha256", String(64), nullable=False),
+    Column("component_model_version_id", String(36), nullable=False),
+    Column("component_model_checksum_sha256", String(64), nullable=False),
+    Column("rule_version_id", String(36), nullable=False),
+    Column("aggregation_policy_version", String(64), nullable=False),
+    Column("processing_ms", Integer, nullable=False),
+    # Bounded immutable snapshots (design 05 section 4): inference traceability
+    # and the exact accepted payload for byte-level audit comparison.
+    Column("inference_metadata", JSON, nullable=True),
+    Column("payload_json", Text, nullable=False),
+    Column("request_hash", String(64), nullable=False),
+    UniqueConstraint("device_row_id", "inspection_id", name="uq_inspections_device_inspection"),
+    UniqueConstraint("device_row_id", "device_sequence", name="uq_inspections_device_sequence"),
+)
+
+inspection_components = Table(
+    "inspection_components",
+    metadata,
+    Column("id", _BigIntId, primary_key=True, autoincrement=True),
+    Column(
+        "inspection_id",
+        ForeignKey("inspections.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("component_code", String(64), nullable=False),
+    Column("state", String(16), nullable=False),
+    Column("best_confidence", Float, nullable=True),
+    Column("usable_frame_count", Integer, nullable=False),
+    Column("detection_count", Integer, nullable=False),
+    Column("policy_reason_codes", JSON, nullable=False),
+    UniqueConstraint(
+        "inspection_id", "component_code", name="uq_inspection_components_inspection_code"
+    ),
+)
+
+# Keyset history pagination (design 14 section 8.2) and the partial barcode
+# index; barcode is never globally unique.
+Index(
+    "ix_inspections_org_completed",
+    inspections.c.organization_id,
+    inspections.c.completed_at.desc(),
+    inspections.c.id.desc(),
+)
+Index(
+    "ix_inspections_device_completed",
+    inspections.c.device_row_id,
+    inspections.c.completed_at.desc(),
+    inspections.c.id.desc(),
+)
+Index(
+    "ix_inspections_barcode",
+    inspections.c.organization_id,
+    inspections.c.barcode_value,
+    sqlite_where=text("barcode_value IS NOT NULL"),
+    postgresql_where=text("barcode_value IS NOT NULL"),
+)
+Index("ix_upload_receipts_device", upload_receipts.c.device_row_id)
+Index("ix_inspection_components_inspection", inspection_components.c.inspection_id)

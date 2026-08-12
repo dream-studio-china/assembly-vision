@@ -23,14 +23,18 @@ from central_service.api.readiness import (
     ReadinessResult,
     compute_readiness,
 )
-from central_service.api.routers import auth, health, tenant
+from central_service.api.routers import auth, health, ingest, tenant
 from central_service.api.schemas import Problem
 from central_service.api.settings import CentralSettings
 from central_service.observability.logging import configure_logging
 from central_service.persistence.engine import create_database_engine
 from central_service.persistence.migrate import applied_revision, current_head
 from central_service.persistence.repository import CentralRepository
-from central_service.storage.object_store import MinioObjectStorage, ObjectStorageSettings
+from central_service.storage.object_store import (
+    MinioObjectStorage,
+    ObjectStorage,
+    ObjectStorageSettings,
+)
 
 log = logging.getLogger("central_service.api")
 
@@ -66,11 +70,12 @@ def create_app(
     *,
     readiness: ReadinessProvider | None = None,
     repository: CentralRepository | None = None,
+    storage: ObjectStorage | None = None,
 ) -> FastAPI:
     """Build the central FastAPI application.
 
-    ``readiness`` and ``repository`` may be injected in tests; the default
-    readiness probes the live engine, object store, and credential store, and
+    ``readiness``, ``repository``, and ``storage`` may be injected in tests;
+    the defaults probe/use the live PostgreSQL engine and MinIO bucket, and
     the default repository wraps the configured PostgreSQL engine.
     """
     configure_logging()
@@ -79,7 +84,7 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         engine = create_database_engine(settings.database_url)
-        storage = MinioObjectStorage(
+        object_store = storage or MinioObjectStorage(
             ObjectStorageSettings(
                 endpoint=settings.minio_endpoint,
                 access_key=settings.minio_access_key,
@@ -104,14 +109,14 @@ def create_app(
                 current_head(),
             )
         try:
-            storage.ensure_bucket()
+            object_store.ensure_bucket()
         except Exception:  # noqa: BLE001 - startup must tolerate dependency outages
             log.warning("cannot ensure central object-store bucket at startup", exc_info=True)
         app.state.engine = engine
-        app.state.storage = storage
+        app.state.storage = object_store
         app.state.settings = settings
         app.state.repository = repository or CentralRepository(engine)
-        app.state.readiness = readiness or (lambda: compute_readiness(engine, storage))
+        app.state.readiness = readiness or (lambda: compute_readiness(engine, object_store))
         yield
         engine.dispose()
 
@@ -151,6 +156,7 @@ def create_app(
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(auth.router, prefix="/api/v1")
     app.include_router(tenant.router, prefix="/api/v1")
+    app.include_router(ingest.router, prefix="/api/v1")
     return app
 
 

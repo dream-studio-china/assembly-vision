@@ -118,6 +118,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inspection-uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Inspection Uploads
+         * @description Ingest one edge inspection upload and return a verified receipt.
+         */
+        post: operations["inspection_uploads_api_v1_inspection_uploads_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/lines": {
         parameters: {
             query?: never;
@@ -288,6 +308,32 @@ export interface components {
             name: string;
             /** Organization Id */
             organization_id: number;
+        };
+        /**
+         * UploadReceiptOut
+         * @description Verified central receipt for one accepted edge upload (task C1 5.3).
+         *
+         *     Every field is echoed from the request so the edge scheduler can validate
+         *     the receipt against the payload it actually sent; a MEDIA receipt always
+         *     carries a non-empty ``central_object_id`` (C2b), which is null for
+         *     INSPECTION receipts.
+         */
+        UploadReceiptOut: {
+            /** Central Object Id */
+            central_object_id?: string | null;
+            /** Checksum Sha256 */
+            checksum_sha256: string | null;
+            /** Idempotency Key */
+            idempotency_key: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "INSPECTION" | "MEDIA";
+            /** Object Id */
+            object_id: string;
+            /** Size Bytes */
+            size_bytes: number;
         };
         /** ValidationError */
         ValidationError: {
@@ -481,6 +527,87 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReadinessReport"];
+                };
+            };
+        };
+    };
+    inspection_uploads_api_v1_inspection_uploads_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Identical replay; the original verified receipt is returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description New valid inspection persisted with a verified receipt */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadReceiptOut"];
+                };
+            };
+            /** @description A valid device upload credential is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The payload device does not match the authenticated device */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Payload conflict: a reused identity carried different content */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The envelope or payload exceeds the configured limit */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Malformed, invalid, or identity-mismatched envelope or payload */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Media ingestion is not available in this pilot step; retryable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
