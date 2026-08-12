@@ -27,6 +27,7 @@ async function signOut(): Promise<void> {
       <nav class="nav">
         <router-link to="/">Overview</router-link>
         <router-link to="/inspections">Inspections</router-link>
+        <router-link to="/reviews">Reviews</router-link>
       </nav>
       <span class="user">
         {{ session.me?.username ?? "pilot-admin" }}

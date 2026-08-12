@@ -14,5 +14,8 @@ export {
   type InspectionQuery,
   type InspectionSummary,
   type Line,
+  type Review,
+  type ReviewQueuePage,
+  type ReviewSubmit,
   type Site,
 } from "./client";

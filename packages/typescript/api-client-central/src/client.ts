@@ -15,6 +15,9 @@ export type InspectionDetail = components["schemas"]["InspectionDetailOut"];
 export type DashboardSummary = components["schemas"]["DashboardSummaryOut"];
 export type DashboardTimeseries = components["schemas"]["DashboardTimeseriesOut"];
 export type DeviceStatus = components["schemas"]["DeviceStatusOut"];
+export type Review = components["schemas"]["ReviewOut"];
+export type ReviewQueuePage = components["schemas"]["ReviewQueuePage"];
+export type ReviewSubmit = components["schemas"]["ReviewSubmit"];
 export type Site = components["schemas"]["SiteOut"];
 export type Line = components["schemas"]["LineOut"];
 export type Device = components["schemas"]["DeviceOut"];
@@ -114,11 +117,36 @@ export class CentralApiClient {
     return this.request<Device[]>("/devices");
   }
 
+  async listReviewQueue(cursor?: string, limit = 50): Promise<ReviewQueuePage> {
+    return this.request<ReviewQueuePage>(`/reviews/queue${toQuery({ cursor, limit })}`);
+  }
+
+  async listReviewHistory(inspectionId: string): Promise<Review[]> {
+    return this.request<Review[]>(`/inspections/${inspectionId}/reviews`);
+  }
+
+  async submitReview(
+    inspectionId: string,
+    body: ReviewSubmit,
+    idempotencyKey: string,
+    ifMatch?: number,
+  ): Promise<Review> {
+    const headers: Record<string, string> = { "Idempotency-Key": idempotencyKey };
+    if (ifMatch !== undefined) {
+      headers["If-Match"] = String(ifMatch);
+    }
+    return this.request<Review>(`/inspections/${inspectionId}/reviews`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+  }
+
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
       ...init,
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
     });
     if (response.status === 204) {
       return undefined as T;

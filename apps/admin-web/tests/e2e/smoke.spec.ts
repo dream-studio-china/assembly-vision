@@ -41,4 +41,11 @@ test("pilot flow: sign in, overview, history filter, detail", async ({ page }) =
   await row.getByRole("link", { name: "Detail" }).click();
   await expect(page.getByRole("heading", { name: /Inspection/ })).toBeVisible();
   await expect(page.getByText("Component evidence")).toBeVisible();
+
+  // Reviews: the queue lists NG inspections and one can be reviewed.
+  await page.goto("/reviews");
+  await expect(page.getByRole("heading", { name: "Review queue" })).toBeVisible();
+  await page.getByRole("button", { name: "Review" }).first().click();
+  await page.getByRole("button", { name: "Record review" }).click();
+  await expect(page.getByText(/Review r\d+ recorded/)).toBeVisible();
 });

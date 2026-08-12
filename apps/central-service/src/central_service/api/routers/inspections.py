@@ -11,7 +11,7 @@ from __future__ import annotations
 import base64
 import json
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -30,6 +30,7 @@ from central_service.api.schemas import (
     InspectionPage,
     InspectionSummaryOut,
     MediaItemOut,
+    ReviewOut,
 )
 from central_service.persistence.repository import (
     AdministratorRow,
@@ -275,6 +276,28 @@ def get_inspection(
         media=_media_out(detail),
         receipt_status=detail.receipt_status,
         receipt_created_at=detail.receipt_created_at,
+        latest_review=_latest_review_out(
+            repository.get_latest_review(administrator.organization_id, inspection_id)
+        ),
+    )
+
+
+def _latest_review_out(review: Any) -> ReviewOut | None:
+    """Serialize the latest review (C4) for the detail response."""
+    if review is None:
+        return None
+    return ReviewOut(
+        inspection_id=review.inspection_id,
+        revision=review.revision,
+        disposition=review.disposition,
+        reason=review.reason,
+        note=review.note,
+        reviewer=review.reviewer,
+        component_corrections=review.component_corrections,
+        original_business_result=review.original_business_result,
+        original_internal_decision=review.original_internal_decision,
+        original_reason_codes=review.original_reason_codes,
+        created_at=review.created_at,
     )
 
 

@@ -2,7 +2,20 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
-import { apiClient, type InspectionDetail } from "@assemblyvision/api-client-central";
+import {
+  CentralApiError,
+  apiClient,
+  type InspectionDetail,
+  type Review,
+} from "@assemblyvision/api-client-central";
+import { ElMessage } from "element-plus";
+
+import {
+  DISPOSITION_LABELS,
+  allowedReviewDispositions,
+  newIdempotencyKey,
+  type ReviewDispositionOption,
+} from "../lib/reviews";
 
 interface InferenceStage {
   model_name: string;
@@ -18,16 +31,59 @@ interface InferenceMetadata {
 const route = useRoute();
 const detail = ref<InspectionDetail | null>(null);
 const error = ref<string | null>(null);
+const reviews = ref<Review[]>([]);
+const submitting = ref(false);
 const metadata = computed<InferenceMetadata | null>(
   () => (detail.value?.inference_metadata as InferenceMetadata | null) ?? null,
 );
+const latestRevision = computed(() => reviews.value.at(-1)?.revision ?? 0);
+const allowedDispositions = computed<ReviewDispositionOption[]>(() =>
+  detail.value
+    ? allowedReviewDispositions(detail.value.business_result, detail.value.internal_decision)
+    : [],
+);
+const reviewForm = ref<{ disposition: ReviewDispositionOption; reason: string }>({
+  disposition: "CONFIRMED_NG",
+  reason: "",
+});
 
 async function load(): Promise<void> {
   error.value = null;
   try {
-    detail.value = await apiClient.getInspection(String(route.params.id));
+    const id = String(route.params.id);
+    detail.value = await apiClient.getInspection(id);
+    reviews.value = await apiClient.listReviewHistory(id);
+    reviewForm.value.disposition = allowedDispositions.value[0] ?? "CONFIRMED_NG";
   } catch (err) {
     error.value = err instanceof Error ? err.message : "failed to load the inspection";
+  }
+}
+
+async function submitReview(): Promise<void> {
+  submitting.value = true;
+  error.value = null;
+  try {
+    await apiClient.submitReview(
+      String(route.params.id),
+      { disposition: reviewForm.value.disposition, reason: reviewForm.value.reason || undefined },
+      newIdempotencyKey(),
+      latestRevision.value,
+    );
+    ElMessage.success("Review recorded.");
+    reviewForm.value = {
+      disposition: allowedDispositions.value[0] ?? "CONFIRMED_NG",
+      reason: "",
+    };
+    await load();
+  } catch (err) {
+    if (err instanceof CentralApiError && err.code === "REVIEW_CONFLICT") {
+      error.value = "A newer review exists; the page was refreshed.";
+      await load();
+    } else {
+      error.value = err instanceof Error ? err.message : "failed to submit the review";
+    }
+  } finally {
+    submitting.value = false;
   }
 }
 
@@ -37,8 +93,13 @@ onMounted(load);
 <template>
   <main class="detail">
     <header>
-      <h1>Inspection {{ detail?.inspection_id ?? route.params.id }}</h1>
-      <p class="muted">Original edge evidence; reviewed labels would be shown separately.</p>
+      <h1>
+        Inspection {{ detail?.inspection_id ?? route.params.id }}
+        <el-tag v-if="detail?.latest_review" type="warning" class="reviewed-tag">
+          reviewed r{{ detail.latest_review.revision }}: {{ detail.latest_review.disposition }}
+        </el-tag>
+      </h1>
+      <p class="muted">Original edge evidence; reviewed labels are shown separately.</p>
     </header>
 
     <el-alert v-if="error" :title="error" type="error" show-icon class="block" />
@@ -158,6 +219,46 @@ onMounted(load);
       </el-card>
 
       <el-card class="block">
+        <template #header>Review</template>
+        <div v-if="reviews.length === 0" class="muted">No review recorded yet.</div>
+        <el-table v-else :data="reviews" empty-text="No review recorded.">
+          <el-table-column prop="revision" label="Rev" width="70" />
+          <el-table-column prop="disposition" label="Disposition" width="150" />
+          <el-table-column prop="reviewer" label="Reviewer" width="140" />
+          <el-table-column label="Reason">
+            <template #default="{ row }">{{ row.reason ?? "–" }}</template>
+          </el-table-column>
+          <el-table-column label="Recorded (UTC)" width="180">
+            <template #default="{ row }">{{ new Date(row.created_at).toLocaleString() }}</template>
+          </el-table-column>
+        </el-table>
+        <el-divider />
+        <p class="muted">
+          Appends revision {{ latestRevision + 1 }} with optimistic If-Match; the machine
+          decision is never modified.
+        </p>
+        <div class="review-form">
+          <el-select v-model="reviewForm.disposition" class="review-disposition">
+            <el-option
+              v-for="option in allowedDispositions"
+              :key="option"
+              :label="DISPOSITION_LABELS[option]"
+              :value="option"
+            />
+          </el-select>
+          <el-input
+            v-model="reviewForm.reason"
+            placeholder="Bounded reason (optional)"
+            maxlength="200"
+            class="review-reason"
+          />
+          <el-button type="primary" :loading="submitting" @click="submitReview">
+            Append review
+          </el-button>
+        </div>
+      </el-card>
+
+      <el-card class="block">
         <template #header>Media</template>
         <div v-if="detail.media.length === 0" class="muted">No media bound to this inspection.</div>
         <div v-for="item in detail.media" :key="item.source_media_id" class="media">
@@ -203,6 +304,27 @@ onMounted(load);
 
 .media-meta {
   font-size: 0.9rem;
+}
+
+.reviewed-tag {
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.review-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.review-disposition {
+  width: 180px;
+}
+
+.review-reason {
+  flex: 1;
+  min-width: 240px;
 }
 
 .muted {

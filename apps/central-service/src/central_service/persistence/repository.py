@@ -17,8 +17,15 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 
-from assemblyvision_domain.models import InspectionRecord
-from sqlalchemy import Engine, Select, Text, and_, case, func, or_, select
+from assemblyvision_domain.models import (
+    BusinessResult,
+    ComponentCorrection,
+    InspectionRecord,
+    InternalDecision,
+    ReviewDisposition,
+    allowed_review_dispositions,
+)
+from sqlalchemy import Engine, Select, Text, and_, case, func, or_, select, text
 from sqlalchemy.engine import RowMapping
 from sqlalchemy.exc import IntegrityError
 
@@ -33,6 +40,7 @@ from central_service.persistence.schema import (
     inspections,
     organizations,
     production_lines,
+    review_records,
     sites,
     upload_receipts,
 )
@@ -73,6 +81,15 @@ _CONFLICT_CONSTRAINTS = frozenset(
         "uq_inspections_device_sequence",
         "uq_inspection_media_device_media",
         "uq_inspection_media_object_key",
+    }
+)
+
+# Review append uniqueness constraints (C4): a concurrent append losing the
+# race on one of these is an explicit REVIEW_CONFLICT, never a 500.
+_REVIEW_CONFLICT_CONSTRAINTS = frozenset(
+    {
+        "uq_review_records_inspection_revision",
+        "uq_review_records_inspection_key",
     }
 )
 
@@ -321,6 +338,52 @@ class TimeseriesPointRow:
     ok_count: int
     ng_count: int
     uncertain_count: int
+
+
+@dataclass(frozen=True)
+class ReviewRow:
+    """One appended central review record (C4, design 24)."""
+
+    id: int
+    inspection_id: str
+    revision: int
+    disposition: str
+    reason: str | None
+    note: str | None
+    reviewer: str
+    component_corrections: list[dict[str, object]]
+    original_business_result: str
+    original_internal_decision: str
+    original_reason_codes: list[str]
+    created_at: datetime
+
+
+@dataclass(frozen=True)
+class ReviewSubmitResult:
+    """Outcome of one review submission (append or idempotent replay)."""
+
+    review: ReviewRow
+    replayed: bool
+
+
+@dataclass(frozen=True)
+class ReviewQueueRow:
+    """One NG/uncertain inspection awaiting review (C4 queue)."""
+
+    summary: InspectionSummaryRow
+    reason_codes: list[str]
+
+
+class ReviewNotFoundError(Exception):
+    """The inspection to review does not exist in this organization."""
+
+
+class ReviewConflictError(Exception):
+    """The submitted If-Match revision is stale (concurrent change, C4)."""
+
+
+class ReviewDispositionError(Exception):
+    """The disposition is not permitted for the machine outcome (C4)."""
 
 
 class PayloadConflictError(Exception):
@@ -1505,6 +1568,323 @@ class CentralRepository:
             size_bytes=int(row["size_bytes"]),
             status=str(row["status"]),
             response_code=int(row["response_code"]),
+            created_at=CentralRepository._parse_dt(row["created_at"]),
+        )
+
+    # -- central review (C4) ---------------------------------------------------
+
+    def submit_review(
+        self,
+        *,
+        organization_id: int,
+        inspection_id: str,
+        disposition: ReviewDisposition,
+        reason: str | None,
+        note: str | None,
+        component_corrections: list[ComponentCorrection],
+        reviewer: str,
+        idempotency_key: str,
+        if_match_revision: int | None,
+        created_at: datetime,
+    ) -> ReviewSubmitResult:
+        """Append one review revision with optimistic concurrency (C4).
+
+        The revision is per-inspection and monotonic; the client must submit
+        the current latest revision via ``If-Match`` (None means no review yet)
+        or the append fails with :class:`ReviewConflictError` and nothing is
+        overwritten. An identical retry under the same idempotency key returns
+        the original record. SQLite serializes submissions with BEGIN
+        IMMEDIATE so concurrent reads cannot fork the chain; PostgreSQL relies
+        on the unique revision constraint for the same guarantee. The
+        disposition must be permitted for the machine outcome (design 24.3).
+        A concurrent append losing the unique revision/idempotency race is an
+        explicit conflict (PostgreSQL), never an internal error.
+        """
+        try:
+            if self._engine.dialect.name == "sqlite":
+
+                def _run(connection: Any) -> ReviewSubmitResult:
+                    connection.execute(text("BEGIN IMMEDIATE"))
+                    try:
+                        result = self._submit_review_inner(
+                            connection,
+                            organization_id=organization_id,
+                            inspection_id=inspection_id,
+                            disposition=disposition,
+                            reason=reason,
+                            note=note,
+                            component_corrections=component_corrections,
+                            reviewer=reviewer,
+                            idempotency_key=idempotency_key,
+                            if_match_revision=if_match_revision,
+                            created_at=created_at,
+                        )
+                        connection.commit()
+                        return result
+                    except Exception:
+                        connection.rollback()
+                        raise
+
+                with self._engine.connect() as connection:
+                    return _run(connection)
+
+            with self._engine.begin() as connection:
+                return self._submit_review_inner(
+                    connection,
+                    organization_id=organization_id,
+                    inspection_id=inspection_id,
+                    disposition=disposition,
+                    reason=reason,
+                    note=note,
+                    component_corrections=component_corrections,
+                    reviewer=reviewer,
+                    idempotency_key=idempotency_key,
+                    if_match_revision=if_match_revision,
+                    created_at=created_at,
+                )
+        except IntegrityError as exc:
+            if _integrity_constraint(exc) not in _REVIEW_CONFLICT_CONSTRAINTS:
+                raise
+            raise ReviewConflictError(
+                "a concurrent review append was rejected by the database"
+            ) from exc
+
+    def _submit_review_inner(
+        self,
+        connection: Any,
+        *,
+        organization_id: int,
+        inspection_id: str,
+        disposition: ReviewDisposition,
+        reason: str | None,
+        note: str | None,
+        component_corrections: list[ComponentCorrection],
+        reviewer: str,
+        idempotency_key: str,
+        if_match_revision: int | None,
+        created_at: datetime,
+    ) -> ReviewSubmitResult:
+        inspection = (
+            connection.execute(
+                select(
+                    inspections.c.id,
+                    inspections.c.business_result,
+                    inspections.c.internal_decision,
+                    inspections.c.payload_json,
+                ).where(
+                    and_(
+                        inspections.c.organization_id == organization_id,
+                        inspections.c.inspection_id == inspection_id,
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if inspection is None:
+            raise ReviewNotFoundError(f"no inspection {inspection_id} to review")
+        inspection_pk = int(inspection["id"])
+
+        # Idempotent retry: same inspection + key returns the original record.
+        existing = (
+            connection.execute(
+                select(review_records).where(
+                    and_(
+                        review_records.c.inspection_row_id == inspection_pk,
+                        review_records.c.idempotency_key == idempotency_key,
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if existing is not None:
+            return ReviewSubmitResult(review=self._review_from_row(existing), replayed=True)
+
+        latest = connection.execute(
+            select(func.max(review_records.c.revision)).where(
+                review_records.c.inspection_row_id == inspection_pk
+            )
+        ).scalar()
+        latest_revision = int(latest) if latest is not None else 0
+        if (if_match_revision or 0) != latest_revision:
+            raise ReviewConflictError(
+                f"expected revision {if_match_revision or 0}, current revision {latest_revision}"
+            )
+
+        allowed = allowed_review_dispositions(
+            BusinessResult(str(inspection["business_result"])),
+            InternalDecision(str(inspection["internal_decision"])),
+        )
+        if disposition not in allowed:
+            raise ReviewDispositionError(
+                f"disposition {disposition.value} is not permitted for machine "
+                f"outcome {inspection['business_result']}/{inspection['internal_decision']}"
+            )
+
+        # Original reason codes come from the immutable accepted payload.
+        payload = json.loads(str(inspection["payload_json"]))
+        reason_codes = (
+            list(payload.get("decision", {}).get("reason_codes", []))
+            if isinstance(payload, dict)
+            else []
+        )
+        row = (
+            connection.execute(
+                review_records.insert()
+                .values(
+                    organization_id=organization_id,
+                    inspection_row_id=inspection_pk,
+                    revision=latest_revision + 1,
+                    disposition=disposition.value,
+                    reason=reason,
+                    note=note,
+                    reviewer=reviewer,
+                    component_corrections=(
+                        [correction.model_dump() for correction in component_corrections]
+                        if component_corrections
+                        else None
+                    ),
+                    original_business_result=str(inspection["business_result"]),
+                    original_internal_decision=str(inspection["internal_decision"]),
+                    original_reason_codes=reason_codes,
+                    idempotency_key=idempotency_key,
+                    created_at=created_at,
+                )
+                .returning(*review_records.c)
+            )
+            .mappings()
+            .one()
+        )
+        connection.execute(
+            audit_logs.insert().values(
+                organization_id=organization_id,
+                actor_type="ADMIN",
+                actor_id=None,
+                action="REVIEW_APPENDED",
+                target_type="inspection",
+                target_id=inspection_id,
+                detail=f"revision={row['revision']} disposition={disposition.value}",
+            )
+        )
+        return ReviewSubmitResult(review=self._review_from_row(row, inspection_id), replayed=False)
+
+    def list_review_history(self, organization_id: int, inspection_id: str) -> list[ReviewRow]:
+        """Append-only review history for one inspection, oldest first (C4)."""
+        with self._engine.connect() as connection:
+            inspection_pk = connection.execute(
+                select(inspections.c.id).where(
+                    and_(
+                        inspections.c.organization_id == organization_id,
+                        inspections.c.inspection_id == inspection_id,
+                    )
+                )
+            ).scalar_one_or_none()
+            if inspection_pk is None:
+                return []
+            rows = (
+                connection.execute(
+                    select(review_records)
+                    .where(review_records.c.inspection_row_id == int(inspection_pk))
+                    .order_by(review_records.c.revision)
+                )
+                .mappings()
+                .all()
+            )
+        return [self._review_from_row(row, inspection_id) for row in rows]
+
+    def get_latest_review(self, organization_id: int, inspection_id: str) -> ReviewRow | None:
+        """Latest review for one inspection (detail view), or None (C4)."""
+        with self._engine.connect() as connection:
+            inspection_pk = connection.execute(
+                select(inspections.c.id).where(
+                    and_(
+                        inspections.c.organization_id == organization_id,
+                        inspections.c.inspection_id == inspection_id,
+                    )
+                )
+            ).scalar_one_or_none()
+            if inspection_pk is None:
+                return None
+            row = (
+                connection.execute(
+                    select(review_records)
+                    .where(review_records.c.inspection_row_id == int(inspection_pk))
+                    .order_by(review_records.c.revision.desc())
+                )
+                .mappings()
+                .first()
+            )
+        return self._review_from_row(row, inspection_id) if row is not None else None
+
+    def list_review_queue(
+        self,
+        organization_id: int,
+        *,
+        after_completed_at: datetime | None,
+        after_id: int | None,
+        limit: int,
+    ) -> tuple[list[ReviewQueueRow], bool]:
+        """NG/uncertain inspections without any review, newest first (C4).
+
+        The M1 routing policy prioritizes NG and uncertain inspections; it is
+        versioned and auditable and does not imply every NG always requires
+        review after the pilot policy is revised.
+        """
+        reviewed_subquery = select(review_records.c.inspection_row_id).distinct()
+        conditions = [
+            inspections.c.organization_id == organization_id,
+            inspections.c.business_result == "NG",
+            ~inspections.c.id.in_(reviewed_subquery),
+        ]
+        if after_completed_at is not None and after_id is not None:
+            conditions.append(
+                or_(
+                    inspections.c.completed_at < after_completed_at,
+                    and_(
+                        inspections.c.completed_at == after_completed_at,
+                        inspections.c.id < after_id,
+                    ),
+                )
+            )
+        statement = (
+            select(
+                inspections,
+                devices.c.device_id,
+                devices.c.site_id,
+                devices.c.production_line_id,
+            )
+            .join(devices, devices.c.id == inspections.c.device_row_id)
+            .where(*conditions)
+            .order_by(inspections.c.completed_at.desc(), inspections.c.id.desc())
+            .limit(limit + 1)
+        )
+        with self._engine.connect() as connection:
+            rows = connection.execute(statement).mappings().all()
+        has_more = len(rows) > limit
+        items = [
+            ReviewQueueRow(
+                summary=self._inspection_summary_from_row(row),
+                reason_codes=list(row["decision_reason_codes"] or []),
+            )
+            for row in rows[:limit]
+        ]
+        return items, has_more
+
+    @staticmethod
+    def _review_from_row(row: RowMapping, inspection_id: str = "") -> ReviewRow:
+        return ReviewRow(
+            id=int(row["id"]),
+            inspection_id=inspection_id,
+            revision=int(row["revision"]),
+            disposition=str(row["disposition"]),
+            reason=str(row["reason"]) if row["reason"] is not None else None,
+            note=str(row["note"]) if row["note"] is not None else None,
+            reviewer=str(row["reviewer"]),
+            component_corrections=[dict(item) for item in (row["component_corrections"] or [])],
+            original_business_result=str(row["original_business_result"]),
+            original_internal_decision=str(row["original_internal_decision"]),
+            original_reason_codes=list(row["original_reason_codes"] or []),
             created_at=CentralRepository._parse_dt(row["created_at"]),
         )
 

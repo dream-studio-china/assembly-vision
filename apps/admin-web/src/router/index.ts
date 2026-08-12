@@ -4,6 +4,7 @@ import InspectionDetailPage from "../pages/InspectionDetailPage.vue";
 import InspectionsPage from "../pages/InspectionsPage.vue";
 import LoginPage from "../pages/LoginPage.vue";
 import OverviewPage from "../pages/OverviewPage.vue";
+import ReviewsPage from "../pages/ReviewsPage.vue";
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -16,5 +17,6 @@ export const router = createRouter({
       name: "inspection-detail",
       component: InspectionDetailPage,
     },
+    { path: "/reviews", name: "reviews", component: ReviewsPage },
   ],
 });

@@ -26,6 +26,45 @@
         "title": "AdminMe",
         "type": "object"
       },
+      "ComponentCorrectionIn": {
+        "additionalProperties": false,
+        "description": "Per-component ground truth recorded by a reviewer (C4, design 24).",
+        "properties": {
+          "component_code": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Component Code",
+            "type": "string"
+          },
+          "corrected_state": {
+            "enum": [
+              "PRESENT",
+              "MISSING",
+              "UNCERTAIN"
+            ],
+            "title": "Corrected State",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "component_code",
+          "corrected_state"
+        ],
+        "title": "ComponentCorrectionIn",
+        "type": "object"
+      },
       "ComponentEvidenceOut": {
         "additionalProperties": false,
         "description": "Per-component aggregated evidence (C3 detail).",
@@ -331,6 +370,16 @@
           "internal_decision": {
             "title": "Internal Decision",
             "type": "string"
+          },
+          "latest_review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "lifecycle_status": {
             "title": "Lifecycle Status",
@@ -756,6 +805,244 @@
           "checks"
         ],
         "title": "ReadinessReport",
+        "type": "object"
+      },
+      "ReviewOut": {
+        "additionalProperties": false,
+        "description": "One appended central review record (C4).",
+        "properties": {
+          "component_corrections": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Component Corrections",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "disposition": {
+            "title": "Disposition",
+            "type": "string"
+          },
+          "inspection_id": {
+            "title": "Inspection Id",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "original_business_result": {
+            "title": "Original Business Result",
+            "type": "string"
+          },
+          "original_internal_decision": {
+            "title": "Original Internal Decision",
+            "type": "string"
+          },
+          "original_reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Original Reason Codes",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "reviewer": {
+            "title": "Reviewer",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "inspection_id",
+          "revision",
+          "disposition",
+          "reason",
+          "note",
+          "reviewer",
+          "component_corrections",
+          "original_business_result",
+          "original_internal_decision",
+          "original_reason_codes",
+          "created_at"
+        ],
+        "title": "ReviewOut",
+        "type": "object"
+      },
+      "ReviewQueueItem": {
+        "additionalProperties": false,
+        "description": "One NG/uncertain inspection awaiting review (C4 routing policy).",
+        "properties": {
+          "barcode_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Barcode Value"
+          },
+          "business_result": {
+            "title": "Business Result",
+            "type": "string"
+          },
+          "completed_at": {
+            "format": "date-time",
+            "title": "Completed At",
+            "type": "string"
+          },
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "inspection_id": {
+            "title": "Inspection Id",
+            "type": "string"
+          },
+          "internal_decision": {
+            "title": "Internal Decision",
+            "type": "string"
+          },
+          "product_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Code"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "inspection_id",
+          "device_id",
+          "completed_at",
+          "barcode_value",
+          "product_code",
+          "business_result",
+          "internal_decision",
+          "reason_codes"
+        ],
+        "title": "ReviewQueueItem",
+        "type": "object"
+      },
+      "ReviewQueuePage": {
+        "additionalProperties": false,
+        "description": "Keyset-paginated review queue (C4).",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewQueueItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "ReviewQueuePage",
+        "type": "object"
+      },
+      "ReviewSubmit": {
+        "additionalProperties": false,
+        "description": "One review append; the machine outcome is never overwritten (C4).",
+        "properties": {
+          "component_corrections": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentCorrectionIn"
+            },
+            "maxItems": 64,
+            "title": "Component Corrections",
+            "type": "array"
+          },
+          "disposition": {
+            "enum": [
+              "CONFIRMED_NG",
+              "CONFIRMED_OK",
+              "CORRECTED_NG",
+              "INCONCLUSIVE",
+              "REINSPECT"
+            ],
+            "title": "Disposition",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "disposition"
+        ],
+        "title": "ReviewSubmit",
         "type": "object"
       },
       "SiteOut": {
@@ -1925,6 +2212,196 @@
         ]
       }
     },
+    "/api/v1/inspections/{inspection_id}/reviews": {
+      "get": {
+        "description": "Append-only review history for one inspection, oldest first (C4).",
+        "operationId": "list_review_history_api_v1_inspections__inspection_id__reviews_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "inspection_id",
+            "required": true,
+            "schema": {
+              "title": "Inspection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewOut"
+                  },
+                  "title": "Response List Review History Api V1 Inspections  Inspection Id  Reviews Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Review History",
+        "tags": [
+          "reviews"
+        ]
+      },
+      "post": {
+        "description": "Append one review revision; If-Match guards against concurrent change.",
+        "operationId": "submit_review_api_v1_inspections__inspection_id__reviews_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "inspection_id",
+            "required": true,
+            "schema": {
+              "title": "Inspection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewSubmit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "The requested resource does not exist in this organization"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Stale If-Match revision; a newer review already exists"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Disposition not permitted for the machine outcome, or invalid corrections"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "Submit Review",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
     "/api/v1/lines": {
       "get": {
         "operationId": "list_lines_api_v1_lines_get",
@@ -2041,6 +2518,83 @@
         "summary": "Stream Media",
         "tags": [
           "media"
+        ]
+      }
+    },
+    "/api/v1/reviews/queue": {
+      "get": {
+        "description": "NG/uncertain inspections awaiting review (C4 routing policy).",
+        "operationId": "list_review_queue_api_v1_reviews_queue_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewQueuePage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A valid pilot administrator credential or session is required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "PilotBearer": []
+          }
+        ],
+        "summary": "List Review Queue",
+        "tags": [
+          "reviews"
         ]
       }
     },

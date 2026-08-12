@@ -367,3 +367,41 @@ Index("ix_inspection_components_inspection", inspection_components.c.inspection_
 Index("ix_inspection_media_inspection", inspection_media.c.inspection_row_id)
 Index("ix_inspection_media_device", inspection_media.c.device_row_id)
 Index("ix_inspection_media_lifecycle", inspection_media.c.lifecycle)
+
+# Append-only central human review (C4, design 24). Revisions chain per
+# inspection; the original machine decision is snapshotted and never
+# overwritten. Idempotency keys make client retries duplicate-free.
+review_records = Table(
+    "review_records",
+    metadata,
+    Column("id", _BigIntId, primary_key=True, autoincrement=True),
+    Column(
+        "organization_id",
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "inspection_row_id",
+        ForeignKey("inspections.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("revision", Integer, nullable=False),
+    Column("disposition", String(16), nullable=False),
+    Column("reason", String(200), nullable=True),
+    Column("note", String(2000), nullable=True),
+    Column("reviewer", String(128), nullable=False),
+    # Bounded immutable snapshot of per-component corrections.
+    Column("component_corrections", JSON, nullable=True),
+    Column("original_business_result", String(8), nullable=False),
+    Column("original_internal_decision", String(16), nullable=False),
+    Column("original_reason_codes", JSON, nullable=False),
+    Column("idempotency_key", String(256), nullable=False),
+    Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
+    UniqueConstraint("inspection_row_id", "revision", name="uq_review_records_inspection_revision"),
+    UniqueConstraint(
+        "inspection_row_id", "idempotency_key", name="uq_review_records_inspection_key"
+    ),
+)
+
+Index("ix_review_records_inspection", review_records.c.inspection_row_id, review_records.c.revision)
+Index("ix_review_records_created", review_records.c.organization_id, review_records.c.created_at)

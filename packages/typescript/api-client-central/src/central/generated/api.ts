@@ -238,6 +238,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inspections/{inspection_id}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Review History
+         * @description Append-only review history for one inspection, oldest first (C4).
+         */
+        get: operations["list_review_history_api_v1_inspections__inspection_id__reviews_get"];
+        put?: never;
+        /**
+         * Submit Review
+         * @description Append one review revision; If-Match guards against concurrent change.
+         */
+        post: operations["submit_review_api_v1_inspections__inspection_id__reviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/lines": {
         parameters: {
             query?: never;
@@ -267,6 +291,26 @@ export interface paths {
          * @description Stream one bound media object through the authenticated API.
          */
         get: operations["stream_media_api_v1_media__central_object_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reviews/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Review Queue
+         * @description NG/uncertain inspections awaiting review (C4 routing policy).
+         */
+        get: operations["list_review_queue_api_v1_reviews_queue_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -307,6 +351,21 @@ export interface components {
             organization_id: number;
             /** Username */
             username: string;
+        };
+        /**
+         * ComponentCorrectionIn
+         * @description Per-component ground truth recorded by a reviewer (C4, design 24).
+         */
+        ComponentCorrectionIn: {
+            /** Component Code */
+            component_code: string;
+            /**
+             * Corrected State
+             * @enum {string}
+             */
+            corrected_state: "PRESENT" | "MISSING" | "UNCERTAIN";
+            /** Note */
+            note?: string | null;
         };
         /**
          * ComponentEvidenceOut
@@ -443,6 +502,7 @@ export interface components {
             inspection_id: string;
             /** Internal Decision */
             internal_decision: string;
+            latest_review?: components["schemas"]["ReviewOut"] | null;
             /** Lifecycle Status */
             lifecycle_status: string;
             /** Line Id */
@@ -619,6 +679,91 @@ export interface components {
              * @constant
              */
             status: "ok";
+        };
+        /**
+         * ReviewOut
+         * @description One appended central review record (C4).
+         */
+        ReviewOut: {
+            /** Component Corrections */
+            component_corrections: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Disposition */
+            disposition: string;
+            /** Inspection Id */
+            inspection_id: string;
+            /** Note */
+            note: string | null;
+            /** Original Business Result */
+            original_business_result: string;
+            /** Original Internal Decision */
+            original_internal_decision: string;
+            /** Original Reason Codes */
+            original_reason_codes: string[];
+            /** Reason */
+            reason: string | null;
+            /** Reviewer */
+            reviewer: string;
+            /** Revision */
+            revision: number;
+        };
+        /**
+         * ReviewQueueItem
+         * @description One NG/uncertain inspection awaiting review (C4 routing policy).
+         */
+        ReviewQueueItem: {
+            /** Barcode Value */
+            barcode_value: string | null;
+            /** Business Result */
+            business_result: string;
+            /**
+             * Completed At
+             * Format: date-time
+             */
+            completed_at: string;
+            /** Device Id */
+            device_id: string;
+            /** Inspection Id */
+            inspection_id: string;
+            /** Internal Decision */
+            internal_decision: string;
+            /** Product Code */
+            product_code: string | null;
+            /** Reason Codes */
+            reason_codes: string[];
+        };
+        /**
+         * ReviewQueuePage
+         * @description Keyset-paginated review queue (C4).
+         */
+        ReviewQueuePage: {
+            /** Items */
+            items: components["schemas"]["ReviewQueueItem"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /**
+         * ReviewSubmit
+         * @description One review append; the machine outcome is never overwritten (C4).
+         */
+        ReviewSubmit: {
+            /** Component Corrections */
+            component_corrections?: components["schemas"]["ComponentCorrectionIn"][];
+            /**
+             * Disposition
+             * @enum {string}
+             */
+            disposition: "CONFIRMED_NG" | "CONFIRMED_OK" | "CORRECTED_NG" | "INCONCLUSIVE" | "REINSPECT";
+            /** Note */
+            note?: string | null;
+            /** Reason */
+            reason?: string | null;
         };
         /**
          * SiteOut
@@ -1175,6 +1320,120 @@ export interface operations {
             };
         };
     };
+    list_review_history_api_v1_inspections__inspection_id__reviews_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inspection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewOut"][];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_review_api_v1_inspections__inspection_id__reviews_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+                "If-Match"?: string | null;
+            };
+            path: {
+                inspection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewSubmit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Stale If-Match revision; a newer review already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Disposition not permitted for the machine outcome, or invalid corrections */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     list_lines_api_v1_lines_get: {
         parameters: {
             query?: {
@@ -1233,6 +1492,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_review_queue_api_v1_reviews_queue_get: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewQueuePage"];
                 };
             };
             /** @description A valid pilot administrator credential or session is required */
