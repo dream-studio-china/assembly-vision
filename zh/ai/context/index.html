@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3277,6 +3277,94 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#816-github-issue-form-template-repair-pr-41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.16 GitHub 问题表单模板修复（PR #41）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#817-central-server-inspection-ingestion-and-verified-receipts-c2a-pr-42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.17 中央服务器检查摄取和验证收据（C2a，PR #42）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#818-central-server-minio-media-ingestion-and-binding-c2b-pr-43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.18 中央服务器 MinIO 媒体摄取和绑定（C2b，PR #43）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#819-central-server-history-detail-media-access-and-admin-dashboard-c3-pr-44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.19 中央服务器历史记录、详细信息、媒体访问和管理仪表板（C3、PR #44）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#820-central-server-append-only-human-review-c4-pr-45" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.20 中央服务器仅追加人工审核（C4，PR #45）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#821-central-server-metadata-governance-c5-pr-47" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.21 Central Server Metadata Governance (C5, PR #47)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#822-central-server-m1-hardening-and-operational-evidence-c6-pr-48" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.22 Central Server M1 Hardening and Operational Evidence (C6, PR #48)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#823-e6-a16-real-edge-to-central-integration-fixture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.23 E6-A16真正的边缘到中心集成夹具
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3309,7 +3397,7 @@
 
 <h1 id="assemblyvision---full-project-context">AssemblyVision - 完整的项目背景<a class="headerlink" href="#assemblyvision---full-project-context" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>上下文快照。最后更新: 2026-08-11</p>
+<p>上下文快照。最后更新: 2026-08-13</p>
 <p>首先在新会话中读取此文件以快速重建项目状态。</p>
 </blockquote>
 <hr />
@@ -3355,11 +3443,27 @@
   M1基础（C1a）； PR #38 添加了置信度漂移统计数据
   （设计15.3.6）及其仪表板； PR #39 添加了实时网络
   设备运行状况页面的流量和 GPU 指标。边缘编码完成
-  通过E6准备门。中央服务器M1试点已启动
-  （已交付 C1a 基础和 C1b 租户/凭证基础）；它的
-  有界实施计划在
-  <code>docs/tasks/C1-central-server-m1.md</code>。</li>
+  通过E6准备门。中央服务器M1试点已开始
+  （C1a 基金会通过 PR #37 合并；C1b 租户/凭证基金会合并
+  通过 PR #40）；其有界实施计划是
+  <code>docs/tasks/C1-central-server-m1.md</code>。 PR #41 修复了 GitHub 问题
+  表单模板：<code>.md</code> 表单已重命名为 <code>.yml</code>（GitHub 解析
+  <code>.md</code> 文件作为需要 <code>about:</code> 键的 Markdown 模板，这使得
+  编辑报告“关于不能为空”），缺少结束语
+  分隔符已添加到安全模板中，并且 <code>.env</code> 部署机密
+  现在已被 gitignored。中央M1飞行员已交付检查
+  通过验证收据进行摄取（C2a，PR #42），MinIO 媒体绑定（C2b，
+  PR #43)、历史/详细信息/媒体访问和真正的管理 Web UI（C3、PR
+  #44)、仅附加的中央人工审核（C4、PR #45）、admin-web
+  i18n/主题/分页/注销强化（PR #46）、C5 元数据治理
+  （PR #47）和 C6 M1 强化和操作证据（PR #48，合并）-
+  完成 C1a-C6 M1 功能集，加上 E6-A16 真实
+  从边缘到中心的集成夹具和 M1 闭合文档
+  （退出标准证据表 + 上线清单，自述文件/快速启动/
+  部署拆分）通过 PR #49（在快照时间打开）。 M1飞行员是</li>
 </ul>
+<p>功能齐全；剩下的工作是现场 E6 验收和§13.2
+  受控飞行员部署（执行、硬件/数据门控）。</p>
 <h2 id="2-repository-state">2. 存储库状态<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
 <li>遥控器：<code>https://github.com/dream-studio-china/assembly-vision</code>。 PR #3-#30
@@ -3371,10 +3475,21 @@
   审查、问题模板、文档更新、开发人员手册、边缘网络
   i18n、MkDocs 手动索引修复、中央服务器 M1 基础
   （C1a，PR #37），中央试点租户/设备/凭证基础
-  (C1b)、置信度漂移统计数据 (PR #38) 和设备
-  健康可观测层（PR #39）。 <code>docs/tasks/C1-central-server-m1.md</code>
-  明确中央试点范围；摄取、病史、中央审查和
-  硬化（C2a-C6）仍然存在。</li>
+  （C1b，PR #40）、置信漂移统计数据（PR #38）和设备
+  健康可观测层（PR #39）。 PR #41 修复了 GitHub 问题表单
+  模板（<code>.yml</code> 重命名、安全结束分隔符、<code>.env</code> 忽略）。
+  PR #42 将中央检查摄取与经过验证的收据合并 (C2a)，
+  PR #43 合并了 MinIO 媒体绑定 (C2b)，PR #44 合并了历史记录/详细信息/
+  媒体访问和真正的管理 Web UI (C3)，PR #45 合并中央
+  仅附加人工审核 (C4)，PR #46 合并了 admin-web i18n/theme/
+  分页/注销强化，PR #47 合并了 C5 元数据治理。
+  <code>docs/tasks/C1-central-server-m1.md</code>
+  明确中央试点范围。 C6 M1 强化通过 PR #48 合并，
+  完成 C1a-C6 M1 功能集； PR #49（开发 -&gt; 主要，打开于
+  快照时间）搭载E6-A16真正的边缘到中心集成夹具
+  （<code>scripts/tests/test_edge_central_e2e.py</code>，第 8.23 节），§13
+  退出标准证据表和上线清单，以及
+  自述文件/快速启动/部署文档拆分。</li>
 <li><code>.obsidian/</code>、<code>.idea/</code> 和 <code>.vscode/</code> 被忽略本地编辑器状态。</li>
 <li>运行时数据、模型权重、生产媒体、数据集和秘密不得存储在
   吉特。构建工件 <code>docs-zh/</code>、<code>site/</code>、<code>mkdocs-en.yml</code>、<code>mkdocs-zh.yml</code> 被 gitignored。</li>
@@ -3382,65 +3497,66 @@
 <h2 id="3-directory-structure">3、目录结构<a class="headerlink" href="#3-directory-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>assembly-vision/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── README.md               # Root README with docs map + bilingual site instructions
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── QUICKSTART.md           # Developer onboarding: setup, checks, CLI, end-to-end demo
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── LICENSE                 # MIT License (c) 2026 dream-studio-china
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── SECURITY.md             # Security policy: position, edge auth, vulnerability reporting
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── Makefile                # Quality gates: lint, format, typecheck, test, check
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>├── scripts/
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── translate-docs.py            # docs/ -&gt; docs-zh/ Chinese translation (deep-translator)
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── e2e-demo.sh                  # full train-&gt;prepare-&gt;train-&gt;inspect-&gt;verify smoke test
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -&gt; two-stage layout
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -&gt; two-stage layout
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   └── tests/                       # tests for the dataset adapters
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── .github/
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   ├── ISSUE_TEMPLATE/              # bug_report / feature_request / security_vulnerability + config
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   └── workflows/                   # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>├── packages/
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   ├── python/
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>│   └── typescript/
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>├── package.json                      # Root pnpm workspace (TypeScript)
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>└── docs/
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    ├── index.md            # MkDocs home page
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── README.md           # Documentation index
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── overrides/main.html # Theme override placeholder
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    ├── ai/context.md       # THIS file
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    ├── images/             # README screenshots (inspection detail, live view)
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    ├── manual/             # Developer manual
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    ├── tasks/              # Delivery tasks, including the Central Server M1 plan
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>    ├── runbooks/           # 15 operational recovery runbooks (01-15) + index
-<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>    ├── design/             # 28 design documents + appendices + decisions/
-<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
-<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
-<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>    │   └── decisions/      # ADR-001 ... ADR-016 + README
-<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>    └── research/           # 3 external-research reports
-<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>        ├── 01-industrial-inspection-success-rates.md
-<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>        ├── 02-yolo-capabilities-and-success-rates.md
-<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>        └── 03-imaging-workflow-and-training-cost.md
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── QUICKSTART.md           # Short developer fast path (Docker-free) for all components + training
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── DEPLOYMENT.md           # Exhaustive deployment reference (dev/production/training, CLI + Docker)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── AGENTS.md               # Coding rules: language, engineering, git workflow, security
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── LICENSE                 # MIT License (c) 2026 Dream Studio
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── SECURITY.md             # Security policy: position, edge auth, vulnerability reporting
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── .gitignore              # Ignores site/, docs-zh/, generated configs, Python/OS artifacts
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── Makefile                # Quality gates: lint, format, typecheck, test, check
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>├── mkdocs.yml              # Master bilingual MkDocs config (Material, Mermaid rendering)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── scripts/
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── translate-docs.py            # docs/ -&gt; docs-zh/ Chinese translation (deep-translator)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── generate-mkdocs-configs.py   # generates mkdocs-en.yml / mkdocs-zh.yml from mkdocs.yml
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── build-docs.sh                # translate -&gt; build site/ (EN) and site/zh/ (ZH)
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── e2e-demo.sh                  # full train-&gt;prepare-&gt;train-&gt;inspect-&gt;verify smoke test
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── generate-synthetic-dataset.py# procedural labeled assembly dataset (exact boxes)
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── adapt-roboflow-dataset.py    # Roboflow YOLOv8 export -&gt; two-stage layout
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── adapt-xanylabeling.py        # X-AnyLabeling YOLO export -&gt; two-stage layout
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── generate-edge-openapi.py     # regenerate the committed edge OpenAPI doc
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   └── tests/                       # dev harness tests: dataset adapters + edge-central e2e (E6-A16)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├── .github/
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   ├── ISSUE_TEMPLATE/              # bug_report / feature_request / security_vulnerability + config
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│   └── workflows/                   # ci.yml (repo-wide quality gates) + docs.yml (Pages deploy)
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>├── apps/edge-service/                # inspection runtime (inspect/verify CLI, pipeline, rules, detectors)
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>├── apps/edge-web/                    # Vue 3 operator dashboard (Vite)
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>├── apps/edge-desktop/                # Electron kiosk/desktop shell
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>├── packages/
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│   ├── python/
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│   │   ├── domain/                   # canonical models, errors, reason codes
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>│   │   └── vision-core/              # ROI engine, image sources, manifest loading
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│   └── typescript/
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>│       ├── api-client/               # edge API contract (types, Mock/HTTP client)
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>│       └── ui/                       # shared UI primitives (DetectionViewer, status, formatters)
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── training/                         # developer-only av-train CLI (product/prepare-components/component)
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── config/examples/                  # Example pipeline, rule, and manifest configuration
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── models/manifests/                 # Checked model metadata; weights remain outside Git
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>├── tests/fixtures/                   # Small non-sensitive test fixtures
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>├── pyproject.toml                    # Root uv workspace configuration (Python)
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>├── package.json                      # Root pnpm workspace (TypeScript)
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>├── pnpm-workspace.yaml               # pnpm workspace definition
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>├── pnpm-lock.yaml                    # locked frontend dependencies
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>└── docs/
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    ├── index.md            # MkDocs home page
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    ├── README.md           # Documentation index
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    ├── source-brief.md     # Original architecture task brief (was doc-task.md)
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    ├── contributing.md     # Contributor-facing repository rules and precedence
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    ├── overrides/main.html # Theme override placeholder
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    ├── ai/context.md       # THIS file
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    ├── images/             # README screenshots (inspection detail, live view)
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    ├── manual/             # Developer manual
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    ├── reviews/            # Reviews: PR-003/008/014/015/017/020/022/023/031, AUDIT-001
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    ├── tasks/              # Delivery tasks, including the Central Server M1 plan
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>    ├── contracts/          # 11 mandatory engineering contracts + index
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>    ├── runbooks/           # 20 operational recovery runbooks (01-15 + central C1-C5) + index
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>    ├── design/             # 28 design documents + appendices + decisions/
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>    │   ├── 00-cover-and-status.md ... 27-risks-and-mitigations.md
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>    │   ├── appendices.md   # Terminology, decision checklist, open questions, reason codes
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>    │   └── decisions/      # ADR-001 ... ADR-016 + README
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>    └── research/           # 3 external-research reports
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>        ├── 01-industrial-inspection-success-rates.md
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>        ├── 02-yolo-capabilities-and-success-rates.md
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>        └── 03-imaging-workflow-and-training-cost.md
 </code></pre></div>
 <h2 id="4-architecture-summary-from-docsdesign">4.架构总结（来自docs/design/）<a class="headerlink" href="#4-architecture-summary-from-docsdesign" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3486,11 +3602,13 @@
 <li><code>docs/research/</code>：行业成功率、YOLO 能力、成像/工作流程/培训成本。</li>
 <li><a href="../../contracts/">docs/contracts/</a>：11个可执行架构、安全、API、质量、
   运营、安全、变更控制和验收合同。</li>
-<li><a href="../../runbooks/">docs/runbooks/</a>：15个可执行的恢复程序，适用于所有合同要求的
-  运营场景，包括模型改进（运行手册 10）、数据
-  收集和注释 (Runbook 11)、备份和恢复 (12)、TLS
-  证书轮换 (13)、部署升级和回滚 (14) 以及边缘
-  验收执行（15）。</li>
+<li><a href="../../runbooks/">docs/runbooks/</a>：20个可执行恢复程序
+  适用于所有合同要求的运营场景，包括模型改进
+  （运行手册 10）、数据收集和注释（运行手册 11）、备份和
+  恢复 (12)、TLS 证书轮换 (13)、部署升级和
+  回滚 (14)、边缘接受执行 (15) 和中央运行手册 C1-C5
+  （摄取积压、对象存储故障、凭证泄露、
+  备份/恢复、试点升级/回滚）。</li>
 </ul>
 <h2 id="6-bilingual-mkdocs-english-chinese">6.双语MkDocs（英文+中文）<a class="headerlink" href="#6-bilingual-mkdocs-english-chinese" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3498,7 +3616,7 @@
   <code>pymdownx.superfences</code> 自定义围栏，<code>extra.alternate</code> 语言切换器）。</li>
 <li><code>scripts/build-docs.sh</code> 管道：<code>translate-docs.py</code> (docs/ -&gt; docs-zh/) -&gt;
   <code>generate-mkdocs-configs.py</code> （生成 mkdocs-en.yml + mkdocs-zh.yml）-&gt; 构建 site/ 和 site/zh/。</li>
-<li>翻译使用 <code>deep-translator</code> GoogleTranslator（免费，无 API 密钥）。限速；一个完整的
+<li>翻译使用<code>deep-translator</code> GoogleTranslator（免费，无API密钥）。限速；一个完整的
   翻译大约需要 15-30 分钟。单文件模式：
   <code>python scripts/translate-docs.py design/03-architecture-overview.md</code>。任何 API 失败时
   保留原始英文块。</li>
@@ -3506,7 +3624,7 @@
   保存；仅节点标签、边缘文本、子图标题、序列消息和状态/ER 标签
   被翻译。 <code>research/</code> 不再有特殊的复制步骤（从 build-docs.sh 中删除）。</li>
 <li>翻译后的标题将其原始英文标题保留为显式 <code>{#slug}</code> 属性，以便
-  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也可以使用中文。</li>
+  跨文档锚点（例如 <a href="../../design/appendices/#3-global-open-questions">appendices.md#3-global-open-questions</a>）也适用于中文。</li>
 <li>已知的机器翻译质量问题（不是脚本错误）：<code>frames</code> -&gt; 框架（应该是帧），
   <code>volume</code> -&gt; 音量（应该是意存储卷），<code>poll</code> -&gt; 民调查（应该是轮询）。发布前进行审查。</li>
 <li><code>docs-zh/</code>、<code>site/</code> 和生成的配置是构建工件，未提交。</li>
@@ -3530,9 +3648,9 @@
 <ul>
 <li>在 <code>docs/design/</code> 下生成完整的架构文档集（28 个文档 + 12 个 ADR +
   附录）来自<a href="../../source-brief/">docs/source-brief.md</a>（以前的<code>docs/doc-task.md</code>）。</li>
-<li>通过互联网研究创建了<code>docs/research/</code>（3份报告）。</li>
+<li>通过互联网研究创建<code>docs/research/</code>（3份报告）。</li>
 <li>构建了具有自动翻译功能的双语 MkDocs，改编自 <code>crud-skeleton</code> 项目。</li>
-<li>添加了对 <code>translate-docs.py</code> 的美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
+<li>向 <code>translate-docs.py</code> 添加了美人鱼翻译（仅标签/边缘文本，保留语法）。</li>
 <li><code>UNCERTAIN</code> 决策状态必须始终映射到业务<code>NG</code>（不可配置）。</li>
 <li>边缘部署是第一个生产版本的单个 <code>edge-service</code> 流程（一个单独的
   边缘工作者/API 分割被推迟，直到测量证明其合理为止）。</li>
@@ -3549,9 +3667,9 @@
   添加了（产品/准备组件/组件）；探测器存根被替换为真实的
   Ultralytics YOLO 适配器可加载清单引用的权重并将 ROI 框映射回完整值
   框架； <code>assemblyvision verify</code> 报告 NG 召回/漏报/误报；和
-  <code>scripts/e2e-demo.sh</code> 使用针对误报的硬门运行整个流程。</li>
+  <code>scripts/e2e-demo.sh</code> 使用针对漏报的硬门运行整个流程。</li>
 <li>数据集：<code>scripts/generate-synthetic-dataset.py</code>构建一个带标签的程序集数据集（确切地说
-  框、缺失组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
+  框、缺少组件的 NG 变体）用于框架测试； <code>scripts/adapt-roboflow-dataset.py</code>
   将 Roboflow YOLOv8 导出转换为两阶段布局，删除通用 <code>missing*</code> 类，
   并且需要一个独立注释的完整产品类（组件盒的联合是
   被拒绝）。源 <code>test</code> 分割仅成为保留的验证集；从来没有
@@ -3600,14 +3718,14 @@
   或坐标、越界框、不良张量形状）转换为
   <code>INFERENCE_ERROR</code> 在适配器边界，而不是转义或错误索引。</li>
 <li>配置：阈值必须是有限的，并且在<code>[0, 1]</code>中，布尔值是严格的，
-  <code>min_area_pixels</code>必须是正整数，未知的键将被拒绝
+  <code>min_area_pixels</code> 必须是正整数，未知的键将被拒绝
   每个部分。</li>
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
   盒子是致命的；丢失的标签文件无法验证，除非已记录
   <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
-  底片；成分制备导致 ROI 作物为负数；并发表
+  底片；成分制备导致 ROI 作物为负值；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
-<li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code> 和
+<li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code>和
   <code>pytest</code> 现在覆盖整个存储库（边缘、包、训练、脚本
   测试）通过 Makefile 和新的 <code>.github/workflows/ci.yml</code>。</li>
 </ul>
@@ -3652,7 +3770,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
   将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
   索引，并以幂等方式协调现有 CLI <code>inspection.json</code> 输出
-  启动。配置/规则/清单加载重用相同的验证
+  启动。配置/规则/清单加载重用相同的经过验证的
   管道构建为 <code>inspect</code>。</li>
 <li><strong>持久性</strong>：SQLAlchemy 核心架构 + Alembic 迁移 0001/0002
   (<code>apps/edge-service/migrations/</code>);检查表，组件
@@ -3701,7 +3819,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>InspectionRecord.inference_metadata</code>；管道验证检测
   具有纯绝对坐标的出处（框架/模型/坐标空间）
   边界处的公差。</li>
-<li><strong>打包</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
+<li><strong>包装</strong>：<code>py.typed</code>标记添加到<code>domain</code>和<code>vision-core</code>所以MyPy
   strict 在整个仓库范围内传递。</li>
 <li><strong>测试强化</strong>：共享门（ruff、format、mypy、pytest）通过
   <code>557 passed</code> (2026-08-09); TypeScript 是 <code>37 passed</code> （api 客户端）、<code>13 passed</code>
@@ -3710,7 +3828,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   数据和清除媒体渲染。 <code>uv run mkdocs build --strict</code> 通过。</li>
 </ul>
 <h2 id="84-audit-001-closure-and-review-fixes-pr-12">8.4 AUDIT-001 关闭和审查修复（PR #12）<a class="headerlink" href="#84-audit-001-closure-and-review-fixes-pr-12" title="Permanent link">&para;</a></h2>
-<p>只读系统审核 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 是
+<p>只读系统审核 (<code>docs/reviews/AUDIT-001-system-audit.md</code>) 为
 经过验证，其结果通过验收测试结束，并通过 PR #12 合并
 （dev -&gt; main，16 次提交；CI 绿色）：</p>
 <ul>
@@ -3719,7 +3837,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   数据集相对 <code>data.yaml</code> 路径，<code>av-train</code> 解析绝对路径
   Ultralytics 项目目录并断言 <code>best.pt</code> 存在。</li>
 <li><strong>M1-M3</strong>：协调跳过 NUL 字节媒体路径；规则身份
-  注册解决并发竞赛而不泄漏<code>IntegrityError</code>；
+  注册可以解决并发竞赛而不会泄漏<code>IntegrityError</code>；
   首次打开的 SQLite 迁移是跨线程和进程序列化的。</li>
 <li><strong>规则/清单故障安全</strong>：规则引擎拒绝非有限几何并且
   现有证据不完整；清单验证强制执行运行时、工件
@@ -3727,9 +3845,9 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li><strong>API强化</strong>：非环回绑定需要令牌（或显式开发
   覆盖）；日志消息清理绝对路径；失败尝试节流
   <code>Retry-After</code>；有界会话；光标绑定过滤指纹
-  (<code>400 INVALID_CURSOR</code>);净化介质始终<code>410</code>；非 ASCII 承载 <code>401</code>；
+  (<code>400 INVALID_CURSOR</code>);始终清除介质<code>410</code>；非 ASCII 承载 <code>401</code>；
   <code>/api</code> 在 SPA 回退之前保留； CSP/nosniff/referrer 标头。</li>
-<li><strong>前端强化</strong>：生产构建失败，除非<code>VITE_API_MODE=http</code>；
+<li><strong>前端强化</strong>：生产构建失败，除非 <code>VITE_API_MODE=http</code>；
   媒体 blob URL 拒绝外国来源； HTTP 模式删除不支持的行
   过滤器； WebSocket 间隙已发出信号；嵌套记录经过验证；的
   未路由的重复实时视图已被删除。</li>
@@ -3748,7 +3866,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 </ul>
 <h2 id="85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14">8.5 相机帧源、多实例边缘和 Web 开发测试工具（ADR-013/014、PR #14）<a class="headerlink" href="#85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14" title="Permanent link">&para;</a></h2>
 <p>通过 PR #14 合并（dev -&gt; main）。审查驱动的强化过程记录在
-<code>docs/reviews/PR-014-review.md</code>；结果 F1-F14 通过回归得到解决
+<code>docs/reviews/PR-014-review.md</code>;结果 F1-F14 通过回归得到解决
 测试。设计：</p>
 <ul>
 <li><strong><code>vision-core</code></strong>中的<code>FrameSource</code>协议（设计07§7.3）：<code>open /
@@ -3766,7 +3884,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
   <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
   保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界的每个实例检查队列
+  实例使用显式的有界每个实例检查队列
   溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
   <code>EdgeRuntime.load_instances</code>开始独立单帧检查
   当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
@@ -3786,7 +3904,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   其管道配置中的 <code>temporal:</code> 块将捕获的帧分组为
   每个产品窗口并发出一次 <code>per-component-temporal-v1</code> 检查
   通过确定性的每个组件聚合器记录每个窗口（设计 10）。
-  默认的单帧模式不变。 <code>UNVERIFIABLE</code> 已添加为
+  默认的单帧模式不变。 <code>UNVERIFIABLE</code> 添加为
   汇总证据状态；有效帧产量不足
   <code>UNVERIFIABLE</code>/<code>INSUFFICIENT_VALID_FRAMES</code>，中断的窗口关闭
   与 <code>INSPECTION_INTERRUPTED</code> 一样为 NG，并且 OpenAPI/TypeScript 合约是
@@ -3802,7 +3920,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li><strong>仍处于里程碑</strong>：供应商 SDK 适配器、每实例模型
   权重共享（阶段 3），将 REST 预览折叠到 WebSocket 中
   通道和硬件触发/条码相关源
-  <code>window_strategy: identity</code>接缝（仅时间回退仍然是
+  <code>window_strategy: identity</code> 接缝（仅时间回退仍然是
   开发模式，而不是生产产品边界）。</li>
 <li><strong>审查强化 (PR-014)</strong>：结果 F1-F14 通过回归结束
   测试：无静默帧丢失（有界队列+显式溢出），暂停
@@ -3813,8 +3931,8 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   具有二进制主体和问题响应的规范业务/内部枚举
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
-<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code> 因此严格的 mypy 门会通过
-  回购范围内；当前套件有 635 个 Python 测试，91 个 TypeScript 单元测试
+<p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code>，因此严格的 mypy 门会通过
+  回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
   （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
 <h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
 <p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
@@ -3833,7 +3951,7 @@ ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
   (<code>lease_owner</code>)，陈旧的<code>IN_PROGRESS</code>任务在租约到期后被回收，
   终端更新需要匹配的令牌。</li>
 <li><strong>故障分类</strong>：传输错误和<code>408/429/5xx</code>时间表
-  从响应时间起遵守<code>Retry-After</code>的全抖动退避；失踪/
+  从响应时间起遵守 <code>Retry-After</code> 的全抖动退避；失踪/
   证据损坏、校验和/大小不匹配以及服务器冲突变得
   永久性故障，同时保留本地证据。</li>
 <li><strong>验证收据</strong>：仅当有界打字收据时，2xx 才是成功
@@ -3854,14 +3972,14 @@ ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
 <code>UPLOAD_FAILING</code> 警报。</p>
 <p>通过 PR #20 合并保留和磁盘安全（dev -&gt; main、E2a-E2d 加上
 PR-020 审查强化）。交付任务和强制性安全不变量是
-在 <code>docs/tasks/E2-retention-and-disk-safety.md</code> 中；审查及其结果
+在<code>docs/tasks/E2-retention-and-disk-safety.md</code>中；审查及其结果
 决议记录在<code>docs/reviews/PR-020-review.md</code>中（已解决）：</p>
 <ul>
 <li><strong>持久保留状态 (E2a)</strong>：迁移 0007 添加介质 <code>created_at</code>，
   <code>retention_eligible_at</code>，保留状态，删除声明/租赁/防护列，
   清除时间戳/原因、删除错误和完整性状态。 <code>PURGED</code> 行
   仍然是审计墓碑。资格需要经过验证的收据 <code>SYNCED</code>
-  使用包含中心对象 ID 的媒体收据进行检查
+  使用包含中央对象 ID 的媒体收据进行检查
   保留截止日期，并且没有保留/故障/清除/删除状态。</li>
 <li><strong>清洁工人 (E2b)</strong>：<code>RetentionCleanupWorker</code> 根据
   使用每个工件的隔离令牌进行进程间 SQLite 租赁。一个有围栏的
@@ -3901,7 +4019,7 @@ PR-020 审查强化）。交付任务和强制性安全不变量是
 Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-web 30、
 桌面 3) 和 12 名剧作家 e2e。</p>
 <h2 id="88-upload-resilience-e3">8.8 上传弹性（E3）<a class="headerlink" href="#88-upload-resilience-e3" title="Permanent link">&para;</a></h2>
-<p>在<code>feat/e3-upload-resilience</code>上实现（投递任务
+<p>于<code>feat/e3-upload-resilience</code>实现（投递任务
 <code>docs/tasks/E3-upload-resilience.md</code>，设计13.13/13.14）：</p>
 <ul>
 <li><strong>带宽节流（E3a）</strong>：令牌桶限制器限制网络
@@ -3916,7 +4034,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   <code>UPLOAD_CIRCUIT_OPEN</code> 警报；持久队列永远不会改变。</li>
 <li><strong>受控手动重试 (E3c)</strong>：<code>POST /api/v1/uploads/{id}/retry</code>
   仅重置 <code>RETRY_WAIT</code>/<code>PERMANENT_FAILURE</code> 任务
-  <code>attempt_count + 1</code>； 404 未知，409 不合格，无突变。</li>
+  <code>attempt_count + 1</code>; 404 未知，409 不合格，无突变。</li>
 <li><strong>长时间停电排水 (E3d)</strong>：离线检查、重新启动和恢复的天数
   使用媒体之前的有序元数据恢复无重复的排空队列
   上传和每次检查<code>SYNCED</code>。</li>
@@ -3928,7 +4046,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 </ul>
 <h2 id="89-runtime-and-live-event-channel-e4">8.9 运行时和实时事件通道 (E4)<a class="headerlink" href="#89-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h2>
 <p>于<code>feat/e4-runtime</code>实现（投递任务
-<code>docs/tasks/E4-runtime.md</code>):</p>
+<code>docs/tasks/E4-runtime.md</code>）：</p>
 <ul>
 <li><strong>WebSocket 运行时通道 (E4a)</strong>：内存中 <code>RuntimeEventBus</code> 分配
   单调的每个源序列号并保持每个连接有界
@@ -3981,12 +4099,12 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li><strong>秘密和 TLS (E5b)</strong>：<code>serve</code> 从 <code>AV_EDGE_*</code> 环境回退
   为查看者提供 <code>/run/secrets/</code> 下的 Docker 秘密文件的变量
   上传令牌（因无法读取的秘密文件而关闭失败）；可选本地
-  启动时通过 <code>--tls-cert</code>/<code>--tls-key</code>（或 <code>AV_EDGE_TLS_*</code>）进行 HTTPS
+  启动时通过 <code>--tls-cert</code>/<code>--tls-key</code>（或 <code>AV_EDGE_TLS_*</code>）的 HTTPS
   验证存在、私钥权限和证书/密钥
   比赛。</li>
 <li><strong>备份和恢复（E5c）</strong>：<code>assemblyvision backup</code>采用一致的
   SQLite 在线快照以及受管理的配置/规则/清单文件和挂起的文件
-  将具有 SHA-256 校验和的证据放入 <code>tar.gz</code> 捆绑包中； <code>assemblyvision
+  将带有 SHA-256 校验和的证据放入 <code>tar.gz</code> 包中； <code>assemblyvision
   restore</code> 在应用之前验证每个校验和，保留 <code>.pre-restore</code>
   复制，从不覆盖冲突的媒体，并协调存储，以便
   待处理的上传任务将继续存在。</li>
@@ -4004,7 +4122,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 加载和审查面板历史错误门控。</p>
 <ul>
 <li><strong>条形码标识（PR #30、ADR-015）</strong>：键入 <code>BarcodeObservation</code> 型号，
-  一个可选的 ZXing-cpp 视觉解码器（<code>zxing-cpp&gt;=2.3,&lt;3</code>），一个显式的
+  一个可选的 ZXing-cpp 视觉解码器 (<code>zxing-cpp&gt;=2.3,&lt;3</code>)，一个显式的
   模拟键盘输入适配器（仅限开发线束）和确定性
   解析器将完整的条形码值映射到产品代码。解析失败
   关闭不可读、冲突、不支持的符号、未知或
@@ -4019,7 +4137,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li><strong>边缘本地人工审查（PR #31，ADR-016）</strong>：可选，附加，
   对任何检查（OK 或 NG）进行仅附加审查，而不改变
   机器决定。域 <code>ReviewDisposition</code> (CONFIRMED_NG/CONFIRMED_OK/
-  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的约束，
+  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的限制，
   <code>ReviewRecord</code> 快照原始决策，一个 <code>review_records</code> 表
   （迁移 0008）使用引用链接取代、存储库
   <code>submit_review</code>/<code>list_review_queue</code>，和端点<code>GET /api/v1/reviews</code>，
@@ -4080,8 +4198,8 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   构建和 15 个剧作家测试。</li>
 <li><strong>PR #36 MkDocs 索引修复</strong>：将 <code>exclude_docs: README.md</code> 更改为
   <code>exclude_docs: /README.md</code>，恢复嵌套的<code>README.md</code>索引页，例如
-  <code>/manual/</code>、<code>/design/</code>、<code>/contracts/</code> 和 <code>/runbooks/</code>。</li>
-<li><strong>中央服务器M1计划</strong>：<code>docs/tasks/C1-central-server-m1.md</code>定义了
+  <code>/manual/</code>、<code>/design/</code>、<code>/contracts/</code>和<code>/runbooks/</code>。</li>
+<li><strong>中央服务器M1计划</strong>：<code>docs/tasks/C1-central-server-m1.md</code>定义了一个
   保持边缘独立的试点实施：单独的设备上传
   和管理凭据、PostgreSQL + MinIO、当前边缘兼容
   幂等上传和验证收据、历史/媒体和仅附加
@@ -4097,7 +4215,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   响应、请求 ID 关联、<code>MinioObjectStorage</code> 抽象
   幂等存储桶引导程序和 Alembic 迁移运行程序。迁移是
   <strong>受控释放步骤</strong> (<code>python -m central_service migrate</code>)；应用程序接口
-  永远不会自动迁移。基线迁移 <code>0001</code> 建立了
+  永远不会自动迁移。基线迁移<code>0001</code>建立了
   <code>central_meta</code> 标记。</li>
 <li><strong>健康/就绪</strong>：<code>GET /api/v1/health/live</code>（无依赖项）和 <code>GET
   /api/v1/health/ready</code>（503 + 问题，而 PostgreSQL 无法访问，
@@ -4110,7 +4228,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   与 CI 一起承诺的 <code>apps/central-service/openapi/central-openapi.json</code>
   两侧进行漂移检查。</li>
 <li><strong>撰写</strong>：PostgreSQL + MinIO + <code>central-migrate</code>（一次性）+
-  <code>central-service</code> + <code>admin-web</code>、命名卷、非根映像、运行状况
+  <code>central-service</code> + <code>admin-web</code>，命名卷，非根镜像，健康状况
   检查，仅开发环境默认位于 <code>compose.env.example</code> 中。已验证冷启动，
   准备就绪，通过管理网络代理运行状况，并重新启动持久性； CI/Makefile
   现在涵盖中央 OpenAPI 偏差检查和管理 Web 门。</li>
@@ -4122,7 +4240,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <ul>
 <li><strong>置信度漂移（PR #38，设计 15.3.6）</strong>：<code>GET
   /api/v1/statistics/confidence-drift</code> 比较今天的加权平均值
-  每个组件 <code>best_confidence</code> （按正 <code>detection_count</code> 加权）
+  每个组件<code>best_confidence</code>（按正<code>detection_count</code>加权）
   与昨天、前 7 天和前 30 天相比。的
   比较范围是强制性的 - <code>product_code</code>、<code>rule_version_id</code>、
   <code>product_model_version_id</code>、<code>component_model_version_id</code> 和
@@ -4135,7 +4253,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   据报道，每个成分今天与 7 天的增量首先出现最大跌幅
   <code>null</code> 当基线证据缺失时（绝不是捏造的零）。的
   启发式评估 (<code>stable</code> / <code>minor_drop</code> / <code>noticeable_drop</code> /
-  <code>minor_rise</code> / <code>noticeable_rise</code> / <code>insufficient_data</code>) 7天锚定
+  <code>minor_rise</code> / <code>noticeable_rise</code> / <code>insufficient_data</code>）锚定在7天
   基线，仅作为决策支持，绝不是根本原因或准确性声明。
   统计仪表板面板从最新完成的数据中得出范围
   检查，传递浏览器本地UTC偏移量，并渲染有效
@@ -4150,7 +4268,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   <code>/proc/meminfo</code>（sysconf 后备）；通过区分网络速率
   累积<code>/proc/net/dev</code>计数器（第一次轮询<code>null</code>直到基线）；
   通过 <code>nvidia-smi</code> 的 NVIDIA GPU 利用率/功率（路径解析、2 秒超时、
-  5秒结果缓存）。当平台关闭时，每个指标都无法接近 <code>null</code>
+  5秒结果缓存）。当平台关闭时，每个指标都无法关闭到 <code>null</code>
   无法提供它，并且不会影响决策路径。仪表卡和两者
   图表共享一个四列网格模板，因此行保持严格对齐
   ECharts 画布随窗口缩小（网格项带有
@@ -4160,11 +4278,11 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 </ul>
 <h2 id="815-central-server-m1-tenant-and-pilot-authentication-foundation-c1b">8.15 中央服务器M1租户和试点认证基础（C1b）<a class="headerlink" href="#815-central-server-m1-tenant-and-pilot-authentication-foundation-c1b" title="Permanent link">&para;</a></h2>
 <p>第二次中心服务器交付（C1b
-<code>docs/tasks/C1-central-server-m1.md</code>) 在 <code>dev</code> 上实现：</p>
+<code>docs/tasks/C1-central-server-m1.md</code>) 通过 PR #40 实现和合并：</p>
 <ul>
 <li><strong>租户/设备/凭证架构（迁移 0002）</strong>：<code>organizations</code>，
   <code>sites</code>、<code>production_lines</code>、<code>devices</code>（每个边缘标识都是唯一的）
-  组织、<code>ACTIVE</code>/<code>DISABLED</code> 状态、哈希上传凭据）、
+  组织、<code>ACTIVE</code>/<code>DISABLED</code> 状态、散列上传凭据）、
   <code>administrators</code>（散列引导令牌），<code>admin_sessions</code>（分割
   查找/散列秘密会话令牌，<code>organization_id</code>范围），以及
   最小<code>audit_logs</code>表。复合材料生产线及设备
@@ -4210,6 +4328,266 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   <code>CENTRAL_SECURE_COOKIES</code> 位于 <code>compose.env.example</code> 中。边缘运行时
   仍然不导入中央代码，边缘上传信封不变。</li>
 </ul>
+<h2 id="816-github-issue-form-template-repair-pr-41">8.16 GitHub 问题表单模板修复（PR #41）<a class="headerlink" href="#816-github-issue-form-template-repair-pr-41" title="Permanent link">&para;</a></h2>
+<p>通过 PR #41 合并（dev -&gt; main）。 <code>.github/ISSUE_TEMPLATE/</code>问题形式
+在 GitHub 上被破坏：编辑报告“关于不能为空”并标记
+模板“此模板有一些问题”。</p>
+<ul>
+<li><strong>根本原因</strong>：GitHub 将 <code>ISSUE_TEMPLATE/</code> 中的 <code>.md</code> 文件解析为 Markdown
+  模板，需要 <code>about:</code> frontmatter 键；表格是
+  使用问题形式架构 (<code>name:</code>/<code>description:</code>/<code>body:</code>) 编写，但是
+  带有 <code>.md</code> 扩展，因此 GitHub 找不到 <code>about:</code>。</li>
+<li><strong>修复</strong>：<code>bug_report.md</code>、<code>feature_request.md</code> 和
+  <code>security_vulnerability.md</code> 被重命名为 <code>.yml</code> （GitHub 然后解析它们
+  作为问题表单），添加了缺少的结束 <code>---</code> frontmatter 分隔符
+  到 <code>security_vulnerability.yml</code> （其 YAML frontmatter 无法解析
+  无论扩展名如何），并且 <code>.gitignore</code> 现在不包括本地 <code>.env</code>
+  部署机密（Compose 读取 <code>.env</code>；请参阅 <code>compose.env.example</code>）。</li>
+<li><strong>验证</strong>：所有三种形式均使用 PyYAML 和 Ruby Psych 进行解析
+  （名称/描述/正文存在，正好两个 <code>---</code> 分隔符，有效的正文
+  类型和下拉/复选框选项）；引用的标签（<code>bug</code>、<code>triage</code>、
+  <code>enhancement</code>、<code>security</code>) 存在于存储库中；没有代码或文档
+  引用旧的 <code>.md</code> 模板文件名。</li>
+</ul>
+<h2 id="817-central-server-inspection-ingestion-and-verified-receipts-c2a-pr-42">8.17 中央服务器检查摄取和验证收据（C2a，PR #42）<a class="headerlink" href="#817-central-server-inspection-ingestion-and-verified-receipts-c2a-pr-42" title="Permanent link">&para;</a></h2>
+<p>通过 PR #42 合并（dev -&gt; main）。实现了 C2a 里程碑
+<code>docs/tasks/C1-central-server-m1.md</code>：设备范围的幂等检查
+通过当前边缘上传信封进行摄取。边缘运行时间为
+未受影响；端点保留现有的电汇合同和收据
+语义。</p>
+<ul>
+<li><strong>架构（迁移 0003）</strong>：<code>upload_receipts</code>、<code>inspections</code> 和
+  <code>inspection_components</code> 与 <code>UNIQUE(device_row_id, idempotency_key)</code>，
+  <code>UNIQUE(device_row_id, inspection_id)</code>，以及
+  <code>UNIQUE(device_row_id, device_sequence)</code>加设计14个按键
+  分页和部分条形码索引。</li>
+<li><strong><code>POST /api/v1/inspection-uploads</code></strong>：严格类型化信封解析
+  （有界 Base64、规范 SHA-256 请求哈希、大小/校验和
+  交叉验证、未知字段拒绝）、设备身份匹配
+  针对经过身份验证的设备凭证（C1b 接缝）和一笔交易
+  检验+组件+收货+审核事件的持久性。</li>
+<li><strong>幂等性</strong>：相同的重播返回原始收据 (200)
+  恰好是一个检查行；重复使用的幂等性密钥、检查 ID 或
+  具有不同内容的设备序列返回 <code>409 PAYLOAD_CONFLICT</code>
+  审计事件和已接受的资源被保留。并发
+  独特约束竞赛映射到 409，而不是 500。</li>
+<li><strong>媒体信封</strong>返回可重试的<code>503 MEDIA_INGESTION_UNAVAILABLE</code>
+  直到 C2b 里程碑到来，所以悬而未决的边缘媒体任务从来都不是永久的
+  失败了。</li>
+<li><strong>已验证的收据</strong> 回显幂等性密钥、对象 ID、种类、大小和
+  校验和，满足边缘<code>HttpUploadSink</code>收据验证（覆盖
+  通过驱动真实接收器的端到端测试）。</li>
+<li>审查合并的修复：无效的 UUID 输入无法通过键入 4xx 关闭，
+  <code>capture_at</code>（边缘捕获时钟）添加到媒体行，对象键
+  清理注册的设备身份和并发的唯一竞赛地图
+  至 409。试点设备必须使用边缘的真实 UUID 注册
+  <code>device_id</code> （C1b 默认 <code>edge-device-001</code> 是一个纯字符串）。</li>
+<li>验证：80个中心测试，ruff/mypy/pytest，迁移0003
+  升级/降级、真正的边缘接收器 e2e 以及 Docker Compose e2e
+  PostgreSQL（第一次成功，重播成功，冲突 409）。</li>
+</ul>
+<h2 id="818-central-server-minio-media-ingestion-and-binding-c2b-pr-43">8.18 中央服务器 MinIO 媒体摄取和绑定（C2b，PR #43）<a class="headerlink" href="#818-central-server-minio-media-ingestion-and-binding-c2b-pr-43" title="Permanent link">&para;</a></h2>
+<p>通过 PR #43 合并（dev -&gt; main）。实现 C2b 里程碑：绑定
+将现有边缘 MEDIA 信封放入 MinIO 中并验证收据，取代
+C2a 临时 503 占位符。</p>
+<ul>
+<li><strong>迁移 0004 <code>inspection_media</code></strong>：源媒体身份、媒体种类、
+  MIME、大小、SHA-256、不透明租户范围的对象密钥、稳定的
+  独立的 UUID <code>central_object_id</code>、生命周期以及边缘捕获和
+  中央接收时间； <code>UNIQUE(device_row_id, source_media_id)</code>，
+  <code>UNIQUE(object_key)</code>、<code>UNIQUE(central_object_id)</code>。</li>
+<li><strong><code>ObjectStorage</code>协议/<code>MinioObjectStorage</code></strong>获得
+  put/stat/remove/list/presigned 操作；测试<code>NoopObjectStorage</code>
+  为断言保留内存中的对象映射。</li>
+<li><strong><code>ingest_media</code></strong>：父检查查找，清单尺寸交叉检查
+  以及针对接受的检查有效负载的校验和（强篡改
+  保护）、幂等重放和媒体身份冲突检测
+  在任何对象写入之前（公共重试路径上没有暂存的孤儿），
+  在生成的 <code>org/{org}/device/{device}/{yy}/{mm}/{media_id}</code> 下暂存
+  键，然后一笔交易保存可用绑定、媒体收据
+  （非空<code>central_object_id</code>）和审核事件。</li>
+<li><strong>失败语义</strong>：对象存储失败是可重试的 503；清单
+  不匹配不会创建可用行；并发比赛数量增至 409 场；重播
+  产生一个最终对象/绑定。</li>
+<li><strong><code>central-service reconcile-media</code></strong> 维护指挥
+  提取的、经过单元测试的 <code>reconcile_media</code> 函数报告缺失/孤立
+  对象。</li>
+<li>获得设置<code>max_media_payload_bytes</code>（16 MiB 解码）；信封
+  正文限制升至 32 MiB。检查修复：绑定行上的 <code>capture_at</code>，
+  对象写入前冲突检测，并设计13交付状态
+  已更新。</li>
+<li>验证：96+ 中心测试，包括真正的边缘发件箱排水达到
+  仅在媒体接收后同步（C2b 退出标准），迁移 0004
+  升级/降级，以及带有真实 MinIO 对象的 Docker e2e。</li>
+</ul>
+<h2 id="819-central-server-history-detail-media-access-and-admin-dashboard-c3-pr-44">8.19 中央服务器历史记录、详细信息、媒体访问和管理仪表板（C3、PR #44）<a class="headerlink" href="#819-central-server-history-detail-media-access-and-admin-dashboard-c3-pr-44" title="Permanent link">&para;</a></h2>
+<p>通过 PR #44 合并（dev -&gt; main）。实现 C3 里程碑：跨设备
+检查历史记录、证据和媒体详细信息、仪表板聚合，以及
+第一个真正的管理网络试点用户界面。</p>
+<ul>
+<li><strong><code>GET /api/v1/inspections</code></strong>：十二个有界过滤器（站点、线路、设备、
+  UTC 时间范围、条形码、产品、业务/内部决策、原因、
+  模型/规则版本），带有键集分页；光标绑定到
+  标准化过滤器指纹和格式错误/不匹配的游标返回
+  <code>400 INVALID_CURSOR</code>。</li>
+<li><strong><code>GET /api/v1/inspections/{id}</code></strong>：决定、组成证据、版本
+  可追溯性、推理元数据、接收状态和媒体绑定。</li>
+<li><strong>授权媒体流</strong> <code>GET /api/v1/media/{central_object_id}</code>
+  （组织范围；401/404/410）。替换了 MinIO 的预签名 URL
+  容器主机无法从浏览器访问，并使 MinIO 无法访问
+  网络。</li>
+<li><strong><code>GET /api/v1/dashboard/summary</code></strong>、<code>/timeseries</code>（每日正常/不合格/不确定
+  存储桶）和 <code>/devices</code>（每个设备的最后查看时间和数量）；空数据
+  保持空白且不提出任何准确性声明。</li>
+<li><strong>admin-web</strong>：<code>CentralApiClient</code>（会话cookie身份验证），登录页面，
+  使用站点/线路/时间范围选择器和 ECharts 进行概述，使用历史记录
+  完整的过滤器集和双向键集寻呼，以及带有证据的详细信息，
+  版本、接收状态、推理可追溯性和流媒体。
+  Playwright e2e 在没有后端 (CI) 的情况下运行登录页面 Smoke，并且
+  设置 <code>CENTRAL_E2E_TOKEN</code> 时，针对 Compose 的完整引导流程。</li>
+<li>审查修复：格式错误的 UUID 输入无法关闭（400/404，从不 500），以及
+  前端分页上一页光标处理已更正。</li>
+<li>验证：113+中心测试，迁移0004仍然是头，TS门，
+  和浏览器验证的概述/历史/细节，控制台错误为零。</li>
+</ul>
+<h2 id="820-central-server-append-only-human-review-c4-pr-45">8.20 中央服务器仅追加人工审核（C4，PR #45）<a class="headerlink" href="#820-central-server-append-only-human-review-c4-pr-45" title="Permanent link">&para;</a></h2>
+<p>PR #45（dev -&gt; main）实现了 C4 里程碑：
+乐观地对摄入检查进行中央仅附加审查
+并发性以及 admin-web 审核队列和面板。</p>
+<ul>
+<li><strong>迁移 0005 <code>review_records</code></strong>：每次检查单调修订，
+  处置/原因/注释/审阅者，有界组件更正，快照
+  原始机器决策和幂等键
+  （<code>UNIQUE(inspection_row_id, revision)</code> 和
+  <code>UNIQUE(inspection_row_id, idempotency_key)</code>）。</li>
+<li><strong><code>submit_review</code></strong>：附加在<code>Idempotency-Key</code> + <code>If-Match</code>下；陈旧的
+  修订返回 <code>409 REVIEW_CONFLICT</code>，相同的重试会重播
+  原始记录，并且必须允许机器进行处置
+  结果（设计 24.3）。 SQLite 使用 <code>BEGIN IMMEDIATE</code> 进行序列化；
+  PostgreSQL 唯一约束竞争映射到 409，而不是 500。每个追加
+  写入 <code>REVIEW_APPENDED</code> 审核事件。</li>
+<li><strong><code>GET /api/v1/reviews/queue</code></strong>（NG/不确定的检查，没有
+  审查，按键集分页），<strong><code>POST /api/v1/inspections/{id}/reviews</code></strong>，以及
+  <strong><code>GET /api/v1/inspections/{id}/reviews</code></strong>（最早的在前）。检查
+  详细信息带有<code>latest_review</code>；原始机器决策保持不变
+  逐字节不变。</li>
+<li><strong>admin-web</strong>：审核队列页面和带有附加内容的详细审核面板
+  历史和乐观的追加；处置是动态限制的
+  机器结果（CORRECTED_NG 用于采样 OK 审核，REINSPECT 用于
+  不确定），并且经过审查的检查带有明显的“审查过的 rN”徽章
+  来自自动结果。</li>
+<li>审查修复：并发 PostgreSQL 追加竞赛显示为 500（未捕获）
+  IntegrityError) 并现在映射到显式 <code>REVIEW_CONFLICT</code>；处置
+  选项和初始值现在遵循域策略；客户要求
+  headers merge 修复了导致审核 422 的缺失 Content-Type
+  提交。</li>
+<li>验证：131+ 中心测试，包括线程并行竞赛（一个
+  附加获胜，其他409），迁移0005升级/降级，以及
+  经过浏览器验证的审核流程，控制台错误为零。</li>
+</ul>
+<h2 id="821-central-server-metadata-governance-c5-pr-47">8.21 Central Server Metadata Governance (C5, PR #47)<a class="headerlink" href="#821-central-server-metadata-governance-c5-pr-47" title="Permanent link">&para;</a></h2>
+<p>通过 PR #47 合并（dev -&gt; main）。实施 C5 里程碑：组织-
+具有不可变草案/发布的范围产品/组件/规则/模型治理
+版本、精确条形码映射、明确的规则/模型兼容性、
+单设备所需配置记录，只读admin-web
+配置页面。</p>
+<ul>
+<li><strong>迁移 0006 <code>metadata_governance</code></strong>：<code>components</code>、<code>products</code>、
+  <code>product_versions</code>、<code>product_version_components</code>、<code>product_version_barcodes</code>
+  （已发布的精确条形码的部分唯一索引）、<code>rules</code>、<code>rule_versions</code>、
+  <code>rule_component_policies</code>、<code>rule_model_compatibilities</code>、<code>model_packages</code>、
+  <code>model_versions</code>和<code>desired_configurations</code>； <code>audit_logs</code>收益
+  <code>request_id</code>/<code>reason</code>/<code>before_state</code>/<code>after_state</code> 相关列。</li>
+<li><strong>存储库</strong>：幂等创建/草稿（相同密钥+相同哈希重播；a
+  具有不同内容的重用密钥返回<code>409 IDEMPOTENCY_CONFLICT</code>），
+  不可变的发布（重复发布返回发布的版本），发布
+  验证（组件唯一性、有界策略值、阈值排序、
+  准确的条形码歧义、已发布的产品/型号和类别覆盖范围），以及
+  声明性模型注册（从未获取或验证工件字节
+  M1 中的服务器端；审计明确说明了这一点并且边缘验证
+  字节/校验和/兼容性和最后一次已知的良好回滚在本地
+  手动安装）。所需的配置在 <code>If-Match</code> 下分配
+  修订警卫；每个发布/分配都会写入一个不可变的审核事件
+  同一笔交易。</li>
+<li><strong>路由器</strong>：<code>/api/v1/components</code>、<code>/products</code>、<code>/product-versions</code>、
+  <code>/rules</code>、<code>/rule-versions</code>、<code>/models</code>、<code>/model-versions</code>
+  （列表/创建/草稿/发布/详细信息）和 <code>/devices/{id}/desired-configuration</code>
+  加上<code>/device-configurations</code>。稳定的创建和草稿要求
+  <code>Idempotency-Key</code>；分配需要 <code>If-Match</code>。</li>
+<li><strong>admin-web</strong>：只读配置页面（产品、规则、型号、
+  所需的配置）以及强制手动安装通知
+  （“分配不是下载、验证或激活的证明”）
+  en/zh-CN/zh-HK/ja； C5 中没有编辑/发布/分配控件。顶部
+  导航在 <code>el-dropdown</code> teleport/z-index 问题后使用直接链接
+  使菜单点击不可靠。</li>
+<li>验证：162个中心测试（29个新增C5），重新生成OpenAPI + TS
+  客户端、admin-web lint/build 和 30 个单元测试、针对 Compose 的 e2e 烟雾、
+  以及所有四个配置页面的实时浏览器检查。</li>
+</ul>
+<h2 id="822-central-server-m1-hardening-and-operational-evidence-c6-pr-48">8.22 Central Server M1 Hardening and Operational Evidence (C6, PR #48)<a class="headerlink" href="#822-central-server-m1-hardening-and-operational-evidence-c6-pr-48" title="Permanent link">&para;</a></h2>
+<p>通过 PR #48 合并（dev -&gt; main）。实现 C6 里程碑：
+结构化日志关联、有界速率限制、可重试依赖 -
+故障响应、重启/备份/恢复故障证据和中央
+操作手册。</p>
+<ul>
+<li><strong>结构化日志关联</strong>：每个请求 <code>request_id</code> 通过绑定
+  上下文变量并附加到每个日志记录；请求中间件
+  日志<code>method path -&gt; status (ms)</code>；摄入日志携带
+  设备/检查/对象/收据关联
+  <code>audit_logs.request_id</code>栏。</li>
+<li><strong>速率限制</strong>：每个客户端滑动窗口中间件返回
+  <code>429 RATE_LIMITED</code> 与 <code>Retry-After</code>（健康端点豁免；
+  <code>AV_CENTRAL_RATE_LIMIT_REQUESTS_PER_MINUTE</code>，0 禁用）。</li>
+<li><strong>可重试的依赖项失败</strong>：SQLAlchemy <code>OperationalError</code> 映射到
+  <code>503 DATABASE_UNAVAILABLE</code> + <code>Retry-After</code> （IntegrityError 保持显式
+  冲突语义）；对象存储中断已经返回
+  <code>503 OBJECT_STORE_UNAVAILABLE</code>。请求正文/有效负载上限 (413) 存在
+  来自 C2a/C2b 并保持覆盖。</li>
+<li><strong>故障测试（5 个新）</strong>：对象存储中断返回 503，没有收据或
+  绑定持续存在；数据库中断返回503；受控重启（发动机
+  处置并重新开放）保留检查、媒体装订、收据和
+  审计带有可重放收据的行；恢复为一致的快照
+  新的数据库保留了相同的不变量；一个真正的 PostgreSQL
+  <code>pg_dump</code>/<code>pg_restore</code> 到新数据库的往返已执行并且
+  已验证（头部模式，行完整）作为代表恢复
+  证据。</li>
+<li><strong>中央运行手册 C1-C5</strong>：摄取积压、对象存储故障、
+  凭证泄露、备份/恢复、试点升级/回滚、索引
+  在 <code>docs/runbooks/README.md</code> 和 mkdocs 导航中
+  （<code>uv run mkdocs build --strict</code> 通过）。 M1 仍标记为受控
+  试点（无生产 HA/最终 RPO-RTO/完全保留/OIDC/远程
+  推出声明）。</li>
+<li>CI 质量门：最初的失败是存储库范围内的 <code>mypy .</code> 未使用
+  <code>type: ignore</code> 在两次 C6 测试中（本地 <code>mypy src</code> 错过了）；固定在一个
+  后续提交和所有 PR #48 检查均通过。本地 7 项测试边缘服务
+  故障可追溯到机器的数据量已满约 94%
+  （自由空间在 E2c <code>stop_free_percent</code> 5% 阈值附近波动，
+  这正确地阻止了摄入）；它在 CI 中传递，现在在磁盘之后在本地传递
+  压力减轻——环境问题，而不是缺陷。</li>
+</ul>
+<h2 id="823-e6-a16-real-edge-to-central-integration-fixture">8.23 E6-A16真正的边缘到中心集成夹具<a class="headerlink" href="#823-e6-a16-real-edge-to-central-integration-fixture" title="Permanent link">&para;</a></h2>
+<p>在 PR #48 之后交付并由 PR #49 (<code>scripts/tests/test_edge_central_e2e.py</code>) 承载。
+关闭强制测试矩阵项“an
+验证实际中央收据的端到端边缘发件箱固定装置”
+（任务 C1 第 11 节）并提供退出标准 3 的可执行证据，
+模拟的 <code>central.invalid</code> 装置不能：</p>
+<ul>
+<li><strong>真实边缘 <code>UploadScheduler</code> + <code>HttpUploadSink</code></strong> 对抗
+  <strong>实时进程内中央 FastAPI 服务器</strong>（环回端口上的 uvicorn，
+  SQLite 存储库、内存中对象存储、引导设备）- 否
+  嘲笑中央和没有存根水槽。</li>
+<li>测试 1 断言发件箱按照元数据在媒体之前的顺序排出
+  <code>QUEUED -&gt; PARTIAL -&gt; SYNCED</code> 仅在验证中央收据后；两者
+  INSPECTION 和 MEDIA 任务结束 <code>SUCCEEDED</code>（SUCCEEDED MEDIA 任务证明
+  收据带有一个中心对象 ID，因为 <code>mark_upload_succeeded</code>
+  拒绝没有它的一个），并且中央检查细节持有一个
+  <code>AVAILABLE</code> 媒体绑定。</li>
+<li>测试 2 断言重复重播是无重复的：重新发送准确的内容
+  接收器发送的有效负载返回原始收据和中央
+  数据库仅保留一个 INSPECTION 和一个 MEDIA 收据行。</li>
+<li>验证：完整的回购门通过（<code>ruff check .</code>、<code>ruff format --check
+  .</code>、<code>mypy .</code>、<code>pytest</code> - 总共 1174 次测试、<code>mkdocs build --strict</code>）。</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. 未清项目/后续步骤<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>上传队列调度程序</strong>差距已缩小（PR #17，第 8.6 节）； <strong>E1
@@ -4217,7 +4595,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   PR-020 审核已解决），<strong>E3 上传弹性</strong>（PR #22，第 8.8 节），
    <strong>E4 运行时</strong>（第 8.9 节），<strong>E5 部署和安全性</strong>（第 8.9 节）
    8.10、PR #24) 和 <strong>E6 验收准备</strong> (PR #25) 已合并。
-   时钟漂移线束明确保留<code>NOT_EXECUTED</code>； E6保持开放
+   时钟漂移线束仍然明确地保持<code>NOT_EXECUTED</code>； E6保持开放
    直到它和硬件/客户数据门控接受阶段执行：</li>
 <li><strong>E6现场验收</strong>：所选项目的弹性和浸泡证据
      硬件、保留客户模型验证并签署 Edge 验收
@@ -4231,13 +4609,14 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   模板 (PR #32)、自述文件/快速启动/安全刷新 (PR #33)、
   开发人员手册 (PR #34)、edge-web i18n (PR #35) 和 MkDocs 索引修复
   (PR #36) 被合并（参见第 8.11/8.12 节）；中央C1a基金会
-  (PR #37)、置信度漂移 (PR #38) 和设备运行状况可观察性
-  (PR #39) 也被合并（参见第 8.13/8.14 节）。</li>
+  (PR #37)、C1b 租户/凭证基础 (PR #40)、置信度漂移
+  (PR #38)、设备运行状况可观察性 (PR #39) 和问题表单模板
+  修复（PR #41）也被合并（参见第 8.13/8.15/8.16 节）。</li>
 <li>基线仍然需要真实的客户数据：收集和注释
   与 X-AnyLabeling 每个
   <code>docs/design/19-training-and-evaluation.md</code> §19.17 和
   <code>docs/runbooks/11-data-collection-and-annotation.md</code>，将导出转换为
-  <code>scripts/adapt-xanylabeling.py</code>（书面形式；支持classes.txt/data.yaml，
+  <code>scripts/adapt-xanylabeling.py</code> （书面形式；支持classes.txt/data.yaml，
   图像优先和分割优先布局）到
   <code>dataset_product</code>/<code>dataset_components</code> + <code>test-expected.json</code>，然后运行
   <code>av-train</code> -&gt; <code>assemblyvision inspect</code> -&gt; <code>assemblyvision verify</code>。</li>
@@ -4249,24 +4628,45 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   替换模拟触发源（PR #30 中的 Modbus FIFO 合约需要
   经站点验证的寄存器配置文件）和仅限时间的后备（这是一个
   开发模式，而不是生产产品边界）。</li>
-<li>中央服务器 M1 试点<strong>正在进行</strong> (<code>docs/tasks/C1-central-server-m1.md</code>)。
+<li>中央服务器 M1 试点<strong>功能完整</strong> (<code>docs/tasks/C1-central-server-m1.md</code>)。
   C1a（工作空间、服务、Compose、运行状况/就绪性、OpenAPI）已合并
-  （PR #37）和 C1b（租户/设备/凭证模式、幂等引导程序、
-  分离的设备/管理身份验证、管理端点）是在
-  <code>dev</code>（第 8.15 节）：<code>apps/central-service</code>（FastAPI、PostgreSQL、MinIO、
-  受控模式迁移）、<code>apps/admin-web</code>（Vue 3 试点 shell）和
-  <code>packages/typescript/api-client-central</code>。摄入经核实的收据，
-  媒体绑定、历史、中央审查、元数据治理和强化
-  (C2a-C6)保留； C2a（检查摄取和验证收据）是
-  下一次交付并消耗设备身份验证缝和
-  <code>(device_id, idempotency_key)</code> 来自 C1b 的唯一性。它必须保留
-  当前边缘上传信封和收据语义；保留断点续传上传
-  推迟到合同发生变化为止。</li>
-<li>硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
-  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期限、网络
-  可靠性、中央服务器位置、接受阈值。</li>
-<li><code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</li>
+  (PR #37)、C1b（租户/设备/凭证模式、幂等引导程序、
+  分离的设备/管理身份验证、管理端点）被合并（PR #40，
+  第 8.15 节），C2a（检查摄入和验证收据）被合并
+  （PR #42，第 8.17 节），C2b（MinIO 媒体摄取和绑定）已合并
+  （PR #43，第 8.18 节），C3（历史/细节/媒体访问和真实情况）
+  admin-web UI）被合并（PR #44，第 8.19 节），C4（仅中央附加
+  人工审核）已合并（PR #45，第 8.20 节），admin-web
+  i18n/主题/分页/注销强化已合并（PR #46），C5（元数据
+  治理）被合并（PR #47，第 8.21 节），以及 C6（M1 强化和
+  操作证据）通过 PR #48（第 8.22 节）合并：<code>apps/central-service</code>（FastAPI、PostgreSQL、MinIO、
+  受控模式迁移 0001-0006), <code>apps/admin-web</code> （登录、概述、
+  历史记录、详细信息、审阅队列、只读配置页面）以及
+  <code>packages/typescript/api-client-central</code>。 E6-A16真正的边缘到中心
+  集成夹具交付
+  (<code>scripts/tests/test_edge_central_e2e.py</code>)：实际边缘
+  <code>UploadScheduler</code> + <code>HttpUploadSink</code> 针对实时进程内中央运行
+  FastAPI 服务器，在媒体排序之前验证元数据
+  <code>QUEUED -&gt; PARTIAL -&gt; SYNCED</code> 真实收据，无重复重播
+  （关闭强制矩阵边缘发件箱项目和退出标准 3）。
+  第 13 节退出标准证据表 (13.1) 和上线</li>
 </ul>
+<p>部署清单（13.2）记录在任务文档中，并且
+  已交付 README/QUICKSTART/DEPLOYMENT 文档拆分；所有的
+  这些基于 PR #49（在快照时间开放）。剩余执行工作：
+  合并 PR #49，在试点主机上应用 §13.2 部署步骤 (TLS
+  终止、真实设备注册、硬件验证），并执行
+  E6 现场验收准备证据。
+  M1 是受控试点：无生产 HA、最终 RPO/RTO、完全保留
+  强制执行、OIDC 或远程部署声明。保留可断点上传
+  推迟到边缘到中心合同发生变化为止。试点管理/设备/UI
+  管理操作（设备注册/禁用/凭证轮换，
+  用户/RBAC、远程包分发）是由以下驱动的生产范围
+  OQ-021/OQ-022（路线图 25.6），不是 C1a-C6 的一部分。
+- 硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
+  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期限、网络
+  可靠性、中央服务器位置、接受阈值。
+- <code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</p>
 
 
 

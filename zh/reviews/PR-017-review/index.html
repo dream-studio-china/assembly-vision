@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3284,7 +3284,7 @@
   时间，因此缓慢的请求不会侵蚀<code>Retry-After</code>；确定性测试
   验证 <code>next_attempt_at = response_time + 60</code> (<code>81fc6f4</code>)。</li>
 <li><strong>决议后强化</strong> - 最终审查弥补了四个小差距
-  原始修复：收据现在需要匹配的尺寸/校验和和介质
+  原始修复：收据现在需要匹配的大小/校验和和介质
   成功前的中心对象 ID；存储库同步需要持久验证
   收据元数据； <code>create_app</code> 重新验证程序化上传设置并
   限制明文开发HTTP为环回；介质大小和显式零
@@ -3388,7 +3388,7 @@
   协调后，只有一项检查任务和每个媒体项目一项任务。</li>
 <li>在原始投影提交之后和入队之前模拟崩溃，
   然后重新启动，将发件箱修复一次。</li>
-<li>完全排队记录的协调不会创建重复任务。</li>
+<li>完全排队的记录的协调不会创建重复的任务。</li>
 </ul>
 <h3 id="f3-lease-expiry-has-no-ownertoken-fencing-so-a-late-worker-can-overwrite-a-newer-worker">F3。租约到期没有所有者/令牌围栏，因此迟到的工作人员可以覆盖较新的工作人员<a class="headerlink" href="#f3-lease-expiry-has-no-ownertoken-fencing-so-a-late-worker-can-overwrite-a-newer-worker" title="Permanent link">&para;</a></h3>
 <p><strong>严重性：</strong> P1/高</p>
@@ -3436,17 +3436,17 @@
 <li><code>apps/edge-service/src/assemblyvision_edge/persistence/repository.py:829-866</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/upload/scheduler.py:207-238</code></li>
 </ul>
-<p>检查和所有媒体任务都会收到相同的 <code>created_at</code>。然后声称
+<p>检查和所有媒体任务都会收到相同的<code>created_at</code>。然后声称
 按随机 <code>upload_task_id</code> 排序关系，因此可以先发送媒体任务。的
 设计序列需要在媒体绑定之前摄取元数据（设计
 13.4/13.7）。正确拒绝未知检查介质的中央端点
-<code>404</code> 将被 <code>HttpUploadSink</code> 归类为永久故障，即使
+具有 <code>404</code> 的将被 <code>HttpUploadSink</code> 归类为永久故障，即使
 尽管元数据稍后会在同一批中成功。</p>
 <p><strong>分辨率：</strong></p>
 <ol>
 <li>明确地建模依赖关系：媒体任务仅在其父任务之后到期
    检验任务已验证成功收货，或使用单
-   在发布媒体之前上传元数据的检查会话状态机
+   检查会话状态机，在发布媒体之前上传元数据
    工作。</li>
 <li>将媒体保留在 <code>PENDING</code> 中（有依赖性原因），而不是处理
    预元数据服务器响应作为永久证据失败。</li>

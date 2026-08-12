@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3425,6 +3425,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="13. M1退出标准">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-m1-exit-criteria-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 M1 退出标准证据
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-go-live-deployment-checklist-controlled-pilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 上线部署清单（受控试点）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3505,7 +3533,7 @@
   管理 UI 的管理员会话/令牌路径。</li>
 <li>仅附加中央人工审核队列和审核提交。</li>
 <li>初始中心产品/规则/模型元数据注册和不可变
-  需要发布版本来验证引用的引用。包裹递送
+  需要发布版本来验证引用的内容。包裹递送
   边缘仍然是手动的。</li>
 <li>类型化 OpenAPI 输出和生成/同步的 TypeScript 中央 API 类型。</li>
 <li>编写健康检查、受控模式迁移、集中备份/恢复
@@ -3877,7 +3905,7 @@
 <li>实现<code>GET /api/v1/inspections/{id}</code>和媒体元数据访问。显示边缘
   捕获/完成时间与中央接收时间分开。</li>
 <li>实施授权的短期 MinIO URL 或授权的媒体流；
-  绝不返回存储桶凭据、原始对象密钥或永久公共链接。</li>
+  永远不要返回存储桶凭据、原始对象密钥或永久公共链接。</li>
 <li>实施 M1 <code>GET /api/v1/dashboard/summary</code> 和
   <code>GET /api/v1/dashboard/timeseries</code> 具有明确的范围/时间过滤器，示例
   计数，并且没有发明准确性或召回指标。</li>
@@ -4019,9 +4047,18 @@
   凭证泄露 (C3)、备份/恢复 (C4) 和试点升级/回滚
   (C5)，全部在 <code>docs/runbooks/README.md</code> 和 mkdocs nav 中索引
   （<code>uv run mkdocs build --strict</code> 通过）。</li>
-<li>M1 仍然被标记为受控飞行员：没有声称生产 HA，最终
+<li>M1仍然被标记为受控飞行员：没有声称生产HA，最终
   RPO/RTO、完全保留实施、OIDC 或远程部署（第 13 节
   退出标准 8)。</li>
+<li>E6-A16交付（<code>scripts/tests/test_edge_central_e2e.py</code>）：真正的优势
+  <code>UploadScheduler</code> 和 <code>HttpUploadSink</code> 针对实时进程内运行
+  中央 FastAPI 服务器（没有模拟中央，没有存根接收器）。发件箱排水
+  仅在媒体之前的元数据顺序到 <code>QUEUED -&gt; PARTIAL -&gt; SYNCED</code> 之后
+  经核实的中央收据；媒体绑定是<code>AVAILABLE</code>；并复制
+  重播确切的有效负载返回原始收据，其中恰好有一个
+  每个身份的中心行。这关闭了强制矩阵项“an
+  验证实际中央收据的端到端边缘发件箱固定装置”
+  （第 11 条）和退出标准 3 的可执行证据。</li>
 </ul>
 <h2 id="8-m1-database-and-object-storage-rules">8. M1数据库和对象存储规则<a class="headerlink" href="#8-m1-database-and-object-storage-rules" title="Permanent link">&para;</a></h2>
 <h3 id="81-required-m1-tables">8.1 所需的 M1 表<a class="headerlink" href="#81-required-m1-tables" title="Permanent link">&para;</a></h3>
@@ -4077,11 +4114,11 @@
 <ul>
 <li>生成不透明的密钥，例如
   <code>org/{organization_id}/device/{device_id}/{year}/{month}/{media_id}</code>。</li>
-<li>在 PostgreSQL 中不存储媒体字节，也不存储边缘提供的路径作为存储键。</li>
+<li>在 PostgreSQL 中不存储媒体字节，也不将边缘提供的路径作为存储键。</li>
 <li>暂存、验证、最终确定，然后标记<code>AVAILABLE</code>；保留明确的 <code>PENDING</code> /
   <code>FAILED</code> 表示工作中断。</li>
 <li>M1 不会自动删除中央媒体。它记录生命周期和
-  保留未来受治理清理所需的元数据。</li>
+  保留未来受控清理所需的元数据。</li>
 <li>媒体 URL 是经过授权的且短暂的。浏览器/管理员用户永远不会收到
   MinIO 根凭据或存储桶范围的权限。</li>
 </ul>
@@ -4097,7 +4134,7 @@
 <li>光标分页使用 <code>{items, next_cursor}</code> 默认 50/最大 200 和
   拒绝游标/过滤器不匹配。</li>
 <li>变异的人类/管理员 API 在并发情况下使用 <code>If-Match</code> 修订检查
-  编辑很重要。可重试的设备摄取使用幂等性密钥来代替。</li>
+  编辑很重要。可重试设备摄取使用幂等密钥代替。</li>
 <li>所有不可变的边缘标识符和原始决策都是在之后写入一次
   接受摄入。</li>
 <li>新的中心字段是在模式版本中添加的。删除/更改
@@ -4224,6 +4261,105 @@
    生产 HA、最终数据驻留合规性、完整 RBAC、远程
    推出、可恢复媒体上传或通用准确性。</li>
 </ol>
+<h3 id="131-m1-exit-criteria-evidence">13.1 M1 退出标准证据<a class="headerlink" href="#131-m1-exit-criteria-evidence" title="Permanent link">&para;</a></h3>
+<p>快照时间记录的证据（2026-08-13）；每个参考测试都是一部分
+下面的存储库门。 <code>apps/central-service/tests</code>，
+<code>apps/edge-service/tests</code> 和 <code>scripts/tests</code> 由根收集
+<code>uv run pytest</code>； admin-web 检查通过 <code>web</code> CI 作业中的 <code>pnpm</code> 运行。</p>
+<table>
+<thead>
+<tr>
+<th>＃</th>
+<th>标准</th>
+<th>证据</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>注册的边缘设备通过 HTTPS 发送检查/媒体信封；中央退货验证兼容收据</td>
+<td><code>test_ingest_edge_compat.py</code>（精确的当前边缘信封 + 已验证的收据），<code>test_ingest_api.py</code>（有效提交 + 收据，带有 <code>central_object_id</code> 的媒体收据），<code>test_ingest_repository.py</code>； edge <code>test_upload_scheduler.py</code> （2xx 仅在键入的回执回显密钥/对象/种类/大小/校验和时才成功；媒体需要中心对象 ID）；真实接收器收据验证。 HTTPS 终止是上线部署步骤（Runbook C5；compose env；边缘开发通过合约 04 使用环回 HTTP）</td>
+<td>✅ 代码+合约； ⚠️ TLS 终止是部署控制的</td>
+</tr>
+<tr>
+<td>2</td>
+<td>重播无重复，返回之前收据；冲突失败关闭 <code>409</code> 且不覆盖证据</td>
+<td><code>test_ingest_api.py</code>（相同重播200，<code>409 PAYLOAD_CONFLICT</code>关于不同内容的密钥/id/序列重用），<code>test_ingest_repository.py</code>（并发唯一竞赛映射到409，保留接受的资源）； E6-A16重播测试（返回原始收据，每个身份正好一行）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>3</td>
+<td>真正的边缘调度器只有在需要中央接收后才达到<code>QUEUED -&gt; PARTIAL -&gt; SYNCED</code>； E6-A16 可执行针对中央</td>
+<td><code>scripts/tests/test_edge_central_e2e.py</code>（针对实时进程内中央 API 的真实 <code>UploadScheduler</code> + <code>HttpUploadSink</code>：媒体排序之前的元数据，仅在验证收据后同步，无重复重播）；边缘<code>test_upload_scheduler.py</code>（媒体仅在检查收据后到期；E3d 长时间中断排水至同步）； C2b 退出测试（发件箱仅在收到媒体后才转至 SYNCED）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>4</td>
+<td>中央 PostgreSQL 历史记录和 MinIO 绑定在受控重启和代表性备份/恢复中仍然存在</td>
+<td><code>test_restart_persistence.py</code>（引擎处置/重新打开：检查、媒体装订、收据、审计行完好无损；收据可重播）； <code>test_backup_restore.py</code>（一致的快照恢复为新数据库，相同的不变量）；真正的 <code>pg_dump</code>/<code>pg_restore</code> 往返于执行和验证的新数据库（头部 <code>0006</code> 的模式，行完好） - 记录在上面的 C6 状态中</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>5</td>
+<td>试点管理 UI：概述、跨设备历史记录/详细信息、仅附加审核；组织范围强制执行</td>
+<td>admin-web <code>tests/e2e/smoke.spec.ts</code> （登录、概述、历史过滤器、详细信息；使用 <code>CENTRAL_E2E_TOKEN</code> 运行 Compose）； <code>test_tenant_api.py</code>/<code>test_tenant_repository.py</code>（服务器端组织范围）、<code>test_inspection_queries.py</code>（组织隔离查询）、<code>test_review_api.py</code>（仅附加 UI 流）； C3/C4/C5浏览器验证</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>6</td>
+<td>原始边缘决策和证据来源通过摄取和审查不可改变</td>
+<td><code>test_ingest_repository.py</code>（一次写入检查行，逐字保留规范有效负载，冲突永远不会覆盖）； <code>test_review_repository.py</code> / <code>test_review_api.py</code>（原始决策/版本在审核后逐字节不变）；合约 05 第 1 节 不可变字段</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>7</td>
+<td>撰写记录的健康/就绪、迁移、请求/错误、身份验证、恢复证据；强制性质量门通行证</td>
+<td>CI <code>quality</code> 作业（<code>uv run ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code>、<code>uv run pytest</code>）、<code>web</code> 作业（admin-web build/lint/test/e2e）、OpenAPI + TypeScript 偏差检查、<code>uv run mkdocs build --strict</code>； <code>test_health.py</code>/<code>test_readiness.py</code>（实时/就绪，依赖性探测），<code>test_fault_tolerance.py</code>（503 + <code>Retry-After</code>，无错误接收），C6 请求 ID 日志关联 + <code>audit_logs.request_id</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>8</td>
+<td>文件将 M1 标记为受控飞行员，但没有生产声明</td>
+<td>本文档（C6 状态，第 14 节延期），设计 05 第 11.2/11.3 节，运行手册 C1-C5（规定了 M1 限制），<code>docs/ai/context.md</code></td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>强制性附加检查（第 11 节）状态：OpenAPI/TS 漂移检查运行于
+CI; PostgreSQL迁移升级从空和每一个前任的行使
+本地（<code>0001</code>-<code>0006</code>，包括C5/C6中的0005-&gt;0006升级
+验证）； C2b Compose e2e 涵盖的 MinIO 集成检查和
+<code>test_media_reconcile.py</code>；端对端边缘发件箱固定装置已交付
+(<code>scripts/tests/test_edge_central_e2e.py</code>);安全测试涵盖
+跨组织访问 (<code>test_tenant_*</code>)、设备/人员凭证
+间隔（<code>test_ingest_api.py</code>、<code>test_bootstrap.py</code>）、有效负载限制
+（<code>test_ingest_api.py</code> 413 例）、不安全的媒体元数据（<code>test_ingest_api.py</code>
+MEDIA_MANIFEST_MISMATCH），并且没有内部错误泄漏（问题响应
+永远不要暴露堆栈跟踪/路径/凭据）。</p>
+<h3 id="132-go-live-deployment-checklist-controlled-pilot">13.2 上线部署清单（受控试点）<a class="headerlink" href="#132-go-live-deployment-checklist-controlled-pilot" title="Permanent link">&para;</a></h3>
+<p>不是生产清单； M1 仍然是受控飞行员（OQ-021/022/017/019/
+020 根据第 14 条推迟。首次现场试运行前：</p>
+<ul>
+<li>为受控主机、PostgreSQL 16 和 MinIO 提供持久性配置
+  卷；将迁移应用到 head (<code>0006</code>) 作为受控发布步骤
+  (<code>python -m central_service migrate</code>) 并验证<code>GET /api/v1/health/ready</code>
+  报告所有依赖关系正常。</li>
+<li>在 API 前面终止 TLS（admin-web nginx 或反向代理）并
+  验证边缘 <code>HttpUploadSink</code> 到达 <code>https://...</code> （纯 HTTP 仍然存在
+  仅环回开发，合同 04)；轮换飞行员管理员/设备
+  远离开发默认值的标记（compose.env.example）。</li>
+<li>向每个边缘设备注册其真实的 UUID <code>device_id</code> (C1b) 及其自己的
+  上传令牌；验证一次检查+媒体上传达到<code>SYNCED</code>并且
+  在更广泛的推出之前，重播不会重复。</li>
+<li>现场验证硬件先决条件：相机/GigE 或 GenICam 源，
+  生产样品上的条形码解码，以及光电眼/PLC 触发器或
+  批准的身份接缝（ADR-015）；记录 E6 验收准备证据
+  （弹性/浸泡，保持模型验证）。</li>
+<li>在第一次生产检查之前按照操作手册 C4 进行备份
+  验证一次恢复往返；确认边缘保留最后已知的良好状态
+  模型/规则（运行手册 08/09），以便试点升级可以回滚。</li>
+</ul>
 <h2 id="14-risks-dependencies-and-deferred-decisions">14. 风险、依赖性和延期决策<a class="headerlink" href="#14-risks-dependencies-and-deferred-decisions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3163,7 +3163,7 @@
 <h2 id="1-status">1. 现状<a class="headerlink" href="#1-status" title="Permanent link">&para;</a></h2>
 <p>已接受</p>
 <h2 id="2-context">2. 背景<a class="headerlink" href="#2-context" title="Permanent link">&para;</a></h2>
-<p>边缘检查必须在网络和中央中断期间继续进行。决策需要持久的本地可追溯性，而上传每个视频帧会消耗不必要的带宽和存储。重试可以在中央服务器提交请求之后但在边缘接收其响应之前发生。</p>
+<p>边缘检查必须在网络和中央中断期间继续进行。决策需要持久的本地可追溯性，而上传每个视频帧会消耗不必要的带宽和存储。重试可能发生在中央服务器提交请求之后、边缘接收其响应之前。</p>
 <h2 id="3-decision">3. 决定<a class="headerlink" href="#3-decision" title="Permanent link">&para;</a></h2>
 <p>保留检查元数据、版本、证据路径、最终结果，并在将检查视为完成之前在本地上传任务。根据保留策略在本地存储关键媒体和配置的滚动/完整视频。通过具有重试/退避、幂等性密钥、重复预防、状态跟踪、校验和和持久中央收据的持久队列异步上传选定的证据。</p>
 <p>好的上传通常包括元数据和一个代表性关键帧。 NG上传包括更丰富的元数据、丢失/低置信度组件、多个带注释的帧、产品投资回报率、可选短片和相关错误。系统异常包括状态、证据、日志和时间。</p>
@@ -3193,7 +3193,7 @@
 </ul>
 <h2 id="7-open-questions-and-validation-required">7. 开放式问题和需要验证<a class="headerlink" href="#7-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li>按介质类别划分的保留期和本地磁盘容量。</li>
+<li>按介质类别划分的保留期限和本地磁盘容量。</li>
 <li>预计最大中断和上传带宽/剪辑大小。</li>
 <li>如果耐用存储达到其临界储备，则安全线路行为。</li>
 </ul>

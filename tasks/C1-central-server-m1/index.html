@@ -3425,6 +3425,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="13. M1 Exit Criteria">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-m1-exit-criteria-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 M1 Exit Criteria Evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-go-live-deployment-checklist-controlled-pilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 Go-Live Deployment Checklist (controlled pilot)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -4022,6 +4050,15 @@ or more focused PRs into <code>main</code>.</p>
 <li>M1 remains labeled a controlled pilot: no claim of production HA, final
   RPO/RTO, full retention enforcement, OIDC, or remote rollout (section 13
   exit criterion 8).</li>
+<li>E6-A16 delivered (<code>scripts/tests/test_edge_central_e2e.py</code>): the real edge
+  <code>UploadScheduler</code> and <code>HttpUploadSink</code> run against a live in-process
+  central FastAPI server (no mocked central, no stub sink). The outbox drains
+  in metadata-before-media order to <code>QUEUED -&gt; PARTIAL -&gt; SYNCED</code> only after
+  verified central receipts; the media binding is <code>AVAILABLE</code>; and duplicate
+  replay of the exact payload returns the original receipt with exactly one
+  central row per identity. This closes the mandatory-matrix item "an
+  end-to-end edge outbox fixture that validates the actual central receipt"
+  (section 11) and exit criterion 3's executable evidence.</li>
 </ul>
 <h2 id="8-m1-database-and-object-storage-rules">8. M1 Database and Object Storage Rules<a class="headerlink" href="#8-m1-database-and-object-storage-rules" title="Permanent link">&para;</a></h2>
 <h3 id="81-required-m1-tables">8.1 Required M1 tables<a class="headerlink" href="#81-required-m1-tables" title="Permanent link">&para;</a></h3>
@@ -4224,6 +4261,105 @@ or operation changes.</p>
    production HA, final data-residency compliance, complete RBAC, remote
    rollout, resumable media upload, or universal accuracy.</li>
 </ol>
+<h3 id="131-m1-exit-criteria-evidence">13.1 M1 Exit Criteria Evidence<a class="headerlink" href="#131-m1-exit-criteria-evidence" title="Permanent link">&para;</a></h3>
+<p>Evidence recorded at snapshot time (2026-08-13); every referenced test is part
+of the repository gates below. <code>apps/central-service/tests</code>,
+<code>apps/edge-service/tests</code>, and <code>scripts/tests</code> are collected by the root
+<code>uv run pytest</code>; the admin-web checks run through <code>pnpm</code> in the <code>web</code> CI job.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Criterion</th>
+<th>Evidence</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Registered edge device sends inspection/media envelopes over HTTPS; central returns verified compatible receipts</td>
+<td><code>test_ingest_edge_compat.py</code> (exact current edge envelope + verified receipt), <code>test_ingest_api.py</code> (valid commit + receipt, MEDIA receipt with <code>central_object_id</code>), <code>test_ingest_repository.py</code>; edge <code>test_upload_scheduler.py</code> (2xx is success only with a typed receipt echoing key/object/kind/size/checksum; MEDIA requires a central object id); real-sink receipt validation. HTTPS termination is a go-live deployment step (runbook C5; compose env; edge dev uses loopback HTTP by contract 04)</td>
+<td>✅ code + contracts; ⚠️ TLS termination is deployment-gated</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Identical replay duplicate-free, returns previous receipt; conflicts fail closed <code>409</code> without overwriting evidence</td>
+<td><code>test_ingest_api.py</code> (same replay 200, <code>409 PAYLOAD_CONFLICT</code> on key/id/sequence reuse with different content), <code>test_ingest_repository.py</code> (concurrent unique-race maps to 409, accepted resource preserved); E6-A16 replay test (original receipt returned, exactly one row per identity)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Real edge scheduler reaches <code>QUEUED -&gt; PARTIAL -&gt; SYNCED</code> only after required central receipts; E6-A16 executable against central</td>
+<td><code>scripts/tests/test_edge_central_e2e.py</code> (real <code>UploadScheduler</code> + <code>HttpUploadSink</code> against a live in-process central API: metadata-before-media ordering, SYNCED only after verified receipts, duplicate-free replay); edge <code>test_upload_scheduler.py</code> (MEDIA due only after inspection receipt; E3d long-outage drain to SYNCED); C2b exit test (outbox drain to SYNCED only after the media receipt)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Central PostgreSQL history and MinIO bindings survive controlled restart and representative backup/restore</td>
+<td><code>test_restart_persistence.py</code> (engine disposed/reopened: inspections, media bindings, receipts, audit rows intact; receipts replayable); <code>test_backup_restore.py</code> (consistent snapshot restored as a fresh database, same invariants); real <code>pg_dump</code>/<code>pg_restore</code> round-trip to a fresh database executed and verified (schema at head <code>0006</code>, rows intact) - recorded in the C6 status above</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Pilot admin UI: overview, cross-device history/detail, append-only review; organization scope enforced</td>
+<td>admin-web <code>tests/e2e/smoke.spec.ts</code> (login, overview, history filter, detail; runs against Compose with <code>CENTRAL_E2E_TOKEN</code>); <code>test_tenant_api.py</code>/<code>test_tenant_repository.py</code> (server-side organization scoping), <code>test_inspection_queries.py</code> (org-isolated queries), <code>test_review_api.py</code> (append-only UI flow); C3/C4/C5 browser verification</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Original edge decisions and evidence provenance immutable through ingestion and review</td>
+<td><code>test_ingest_repository.py</code> (write-once inspection row, canonical payload preserved verbatim, conflict never overwrites); <code>test_review_repository.py</code> / <code>test_review_api.py</code> (original decision/versions byte-for-byte unchanged after review append); contract 05 section 1 immutable fields</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Compose health/readiness, migration, request/error, authentication, recovery evidence recorded; mandatory quality gates pass</td>
+<td>CI <code>quality</code> job (<code>uv run ruff check .</code>, <code>ruff format --check .</code>, <code>mypy .</code>, <code>uv run pytest</code>), <code>web</code> job (admin-web build/lint/test/e2e), OpenAPI + TypeScript drift checks, <code>uv run mkdocs build --strict</code>; <code>test_health.py</code>/<code>test_readiness.py</code> (live/ready, dependency probes), <code>test_fault_tolerance.py</code> (503 + <code>Retry-After</code>, no false receipts), C6 request-ID log correlation + <code>audit_logs.request_id</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Docs label M1 as a controlled pilot without production claims</td>
+<td>This document (C6 status, section 14 deferrals), design 05 sections 11.2/11.3, runbooks C1-C5 (M1 limits stated), <code>docs/ai/context.md</code></td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>Mandatory additional checks (section 11) status: OpenAPI/TS drift checks run in
+CI; PostgreSQL migration upgrade from empty and every predecessor exercised
+locally (<code>0001</code>-<code>0006</code>, including the 0005-&gt;0006 upgrade in the C5/C6
+verification); MinIO integration checks covered by the C2b Compose e2e and
+<code>test_media_reconcile.py</code>; the end-to-end edge outbox fixture is delivered
+(<code>scripts/tests/test_edge_central_e2e.py</code>); security tests cover
+cross-organization access (<code>test_tenant_*</code>), device/human credential
+separation (<code>test_ingest_api.py</code>, <code>test_bootstrap.py</code>), payload limits
+(<code>test_ingest_api.py</code> 413 cases), unsafe media metadata (<code>test_ingest_api.py</code>
+MEDIA_MANIFEST_MISMATCH), and no internal error leakage (problem responses
+never expose stack traces/paths/credentials).</p>
+<h3 id="132-go-live-deployment-checklist-controlled-pilot">13.2 Go-Live Deployment Checklist (controlled pilot)<a class="headerlink" href="#132-go-live-deployment-checklist-controlled-pilot" title="Permanent link">&para;</a></h3>
+<p>Not a production checklist; M1 remains a controlled pilot (OQ-021/022/017/019/
+020 deferred per section 14). Before the first on-site pilot run:</p>
+<ul>
+<li>Provision the controlled host, PostgreSQL 16, and MinIO with persistent
+  volumes; apply migrations to head (<code>0006</code>) as a controlled release step
+  (<code>python -m central_service migrate</code>) and verify <code>GET /api/v1/health/ready</code>
+  reports all dependencies ok.</li>
+<li>Terminate TLS in front of the API (admin-web nginx or a reverse proxy) and
+  verify the edge <code>HttpUploadSink</code> reaches <code>https://...</code> (plain HTTP remains
+  loopback-development only, contract 04); rotate the pilot admin/device
+  tokens away from dev defaults (compose.env.example).</li>
+<li>Register each edge device with its real UUID <code>device_id</code> (C1b) and its own
+  upload token; verify one inspection + media upload reaches <code>SYNCED</code> and
+  replay is duplicate-free before wider rollout.</li>
+<li>Validate hardware prerequisites on-site: camera/GigE or GenICam source,
+  barcode decoding on production samples, and the photo-eye/PLC trigger or the
+  approved identity seam (ADR-015); record E6 acceptance-prep evidence
+  (resilience/soak, held-out model validation).</li>
+<li>Take a backup per runbook C4 before the first production inspection and
+  verify one restore round-trip; confirm the edge retains last-known-good
+  models/rules (runbooks 08/09) so a pilot upgrade can roll back.</li>
+</ul>
 <h2 id="14-risks-dependencies-and-deferred-decisions">14. Risks, Dependencies, and Deferred Decisions<a class="headerlink" href="#14-risks-dependencies-and-deferred-decisions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

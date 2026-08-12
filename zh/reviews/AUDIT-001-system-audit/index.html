@@ -2546,7 +2546,7 @@
   <span class="md-ellipsis">
     
   
-    TLS Certificate Rotation
+    TLS 证书轮换
   
 
     
@@ -3204,7 +3204,7 @@
   <a href="#5-stress-test-record" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 压测记录
+        5. Stress-Test Record
       
     </span>
   </a>
@@ -3296,14 +3296,14 @@ API、前端、培训、脚本和文档），于 2026 年 8 月 8 日执行。
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv run pytest
 </code></pre></div>
 <p>仅文档更改也必须通过 <code>uv run mkdocs build --strict</code> 时
-文档环境已安装。调查结果仅在以下情况下结束：
+文档环境已安装。调查结果只有在以下情况下才会结束：
 CI 中的具体验收标准和适用的共享门通行证。</p>
 <h2 id="overall-verdict">总体判断<a class="headerlink" href="#overall-verdict" title="Permanent link">&para;</a></h2>
 <p>本次审查中没有任何证据与先前的结论相矛盾，即当前的
 对于普通无效管道状态，单帧管道无法关闭。的
 最高的具体风险是数据集标签伪造、无法发布
 训练数据集，以及记录的训练命令，可以选择错误的
-Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
+Ultralytics 运行目录。几个严重程度较低的稳健性和合同差距
 留下来。 M1 SQLite 数据库是可重建的读投影，而不是
 合同要求的权威检验/发箱店；未来的调度程序和
 权威持久性工作不得将其当前模式视为令人满意的
@@ -3342,14 +3342,14 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
   和合成发电机。</li>
 <li><strong>验收：</strong> 对于每个适配器和组件准备，创建一个数据集，
   发布它，解析它的<code>data.yaml</code>，根据以下内容解析<code>train</code>和<code>val</code>
-  选择约定，并断言最终输出下两个目录都存在
+  选择约定，并断言最终输出下存在两个目录
   root 并包含预期的图像。断言序列化值不包含
   <code>.staging-</code>。</li>
 </ul>
 <h3 id="h3-relative-can-select-the-wrong-ultralytics-run-path">H3。相对<code>--out-weights</code>可以选择错误的Ultralytics运行路径<a class="headerlink" href="#h3-relative-can-select-the-wrong-ultralytics-run-path" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>状态：</strong> 关闭 (fcfcf7c)。</li>
-<li><strong>证据：</strong> <code>cli.py:226,313</code> 通过了潜在的亲属
+<li><strong>证据：</strong> <code>cli.py:226,313</code> 通过了潜在的亲戚
   <code>weights_path.parent / ".train-runs"</code>； <code>train.py:71-77</code> 然后假设
   固定返回路径。这与记录的相对路径命令不同
   并且可能与 Ultralytics 对相关项目的处理发生冲突。</li>
@@ -3385,7 +3385,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 <tbody>
 <tr>
 <td>M1</td>
-<td>已关闭 (7d987e7)。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
+<td>已关闭（7d987e7）。 <code>media_path_is_safe</code> 仅捕获 <code>OSError</code> (<code>reconcile.py:37-42</code>)； <code>Path.resolve()</code> 可以为嵌入的 NUL 引发 <code>ValueError</code>。因此，启动扫描会中止，而不是跳过格式错误的包。</td>
 <td>将路径构建/解析期间引发的 <code>ValueError</code> 视为格式错误的媒体并跳过该记录。隔离单个包中的错误。</td>
 <td>包含 NUL 字节媒体路径的协调测试会导入有效的同级包，跳过格式错误的包，返回正确的导入计数，并发出警告而不引发警告。</td>
 </tr>
@@ -3431,7 +3431,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
   遍历或类似 URI 的工件路径； <code>verify_model_class_map</code> 假设
   连续的映射键并且可能泄漏<code>KeyError</code>。</li>
 <li><strong>需要更改：</strong> 清单中需要 <code>runtime == "ultralytics"</code>
-  加载边界、拒绝非文件 URI 方案、解析工件并
+  加载边界、拒绝非文件 URI 方案、解析工件和
   需要包含在模型束根以下（这允许
   记录了 <code>models/manifests</code> 和同级 <code>models/weights</code> 布局），以及
   将格式错误/不连续的类映射转换为 <code>ConfigError</code>。</li>
@@ -3504,7 +3504,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </tr>
 <tr>
 <td><code>/api</code> 可能会落入 SPA</td>
-<td>已关闭 (056e712)。守卫仅匹配<code>api/</code>。</td>
+<td>已关闭（056e712）。守卫仅匹配<code>api/</code>。</td>
 <td>在 SPA 回退之前保留 <code>api</code> 和 <code>api/</code>。测试 <code>/api</code>、<code>/api/unknown</code> 和正常的客户端路由。</td>
 </tr>
 <tr>
@@ -3540,7 +3540,7 @@ Ultralytics 运行目录。几个较低严重性的稳健性和合同差距
 </tbody>
 </table>
 <hr />
-<h2 id="5-stress-test-record">5. 压测记录<a class="headerlink" href="#5-stress-test-record" title="Permanent link">&para;</a></h2>
+<h2 id="5-stress-test-record">5. Stress-Test Record<a class="headerlink" href="#5-stress-test-record" title="Permanent link">&para;</a></h2>
 <p>最初的动态观察仍然是历史证据，而不是证明
 当前工作树已修复：</p>
 <table>
