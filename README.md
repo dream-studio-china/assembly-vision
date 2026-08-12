@@ -20,20 +20,28 @@ decision path.
 
 ## Screenshots
 
-| Inspection detail view | Live inspection view |
+| Edge - Inspection detail view | Edge - Live inspection view |
 |:---:|:---:|
 | <img src="docs/images/inspection.jpg" alt="Inspection detail view" width="100%"/> | <img src="docs/images/live.jpg" alt="Live inspection view" width="100%"/> |
 
-| Health view | Statistics view |
+| Edge - Health view | Edge - Statistics view |
 |:---:|:---:|
 | <img src="docs/images/health.jpg" alt="Health view" width="100%"/> | <img src="docs/images/statistics.jpg" alt="Statistics view" width="100%"/> |
+
+| Central - Overview | Central - Inspections view |
+|:---:|:---:|
+| <img src="docs/images/overview.jpg" alt="Health view" width="100%"/> | <img src="docs/images/inspections.jpg" alt="Statistics view" width="100%"/> |
 
 ## Production Status
 
 The Edge production-candidate gates E1–E5 are merged, and the Central server
-M1 pilot has started (C1a and C1b foundations delivered; C2a–C6 pending). Central
-never appears in the real-time inspection path, and M1 preserves the current
-Edge upload envelope and verified-receipt semantics.
+M1 pilot is **feature-complete** (C1a–C6 delivered, including the E6-A16 real
+edge-to-central integration fixture and the M1 exit-criteria evidence).
+Central never appears in the real-time inspection path, and M1 preserves the
+current Edge upload envelope and verified-receipt semantics. M1 is a
+**controlled pilot**: production hardening (OIDC/RBAC, remote rollout,
+resumable uploads, retention enforcement, DR/RPO-RTO) remains deferred; the
+go-live deployment checklist is in the [M1 plan](docs/tasks/C1-central-server-m1.md) §13.2.
 
 | Milestone | Status |
 |---|---|
@@ -45,7 +53,7 @@ Edge upload envelope and verified-receipt semantics.
 | E6 Edge acceptance | E6-prep tooling merged (PR #25); clock-drift harness and on-site acceptance remain open |
 | Barcode identity / PLC FIFO trigger (ADR-015) | Merged (PR #30) |
 | Edge-local human review (ADR-016) | Merged (PR #31) |
-| Central server (M1 pilot) | In progress — C1a workspace/service/Compose foundation and C1b tenant/device/credential foundation delivered; C2a–C6 pending ([plan](docs/tasks/C1-central-server-m1.md)) |
+| Central server (M1 pilot) | Feature-complete — C1a–C6 delivered (ingestion, media, history/detail, review, metadata governance, hardening) plus the E6-A16 edge-to-central integration fixture; controlled-pilot deployment checklist in task §13.2 ([plan](docs/tasks/C1-central-server-m1.md)) |
 
 **E6 edge acceptance** is split into two phases. The **E6-prep** deliverables
 need no real environment and are delivered: the acceptance test matrix
@@ -87,7 +95,12 @@ pass results are ever recorded.
 **Central management plane (M1 pilot)**
 
 - **Central service** — FastAPI application (`apps/central-service`) with PostgreSQL persistence, MinIO object storage behind a typed abstraction, controlled schema migrations (never auto-applied by the API), and a fail-closed `/health/ready` dependency probe
-- **Pilot administration UI** — Vue 3 `admin-web` overview shell served behind an nginx proxy to the API
+- **Idempotent ingestion with verified receipts** — accepts the current edge envelope (inspection + media) duplicate-free: identical replay returns the original receipt, payload conflicts fail closed with `409`, and media bytes are checksum-verified against the parent inspection manifest before binding
+- **History, detail, and media access** — cross-device history with bounded filters and keyset pagination, full inspection detail with version traceability, and authorized media streaming from MinIO
+- **Append-only human review** — central review of NG/uncertain inspections with optimistic concurrency (`If-Match`) and idempotency keys; the original machine decision stays byte-for-byte unchanged
+- **Metadata governance** — organization-scoped products, components, rules, and model packages with immutable draft/publish versions, exact barcode mappings, rule/model compatibility validation, and single-device desired configuration recording (manual installation; assignment is never presented as activation)
+- **Pilot hardening** — request-ID log correlation, per-client rate limiting (`429` + `Retry-After`), retryable dependency failures (`503`), and restart/backup-restore fault evidence; central runbooks cover ingestion backlog, object-store failure, credential compromise, backup/restore, and pilot upgrade/rollback
+- **Pilot administration UI** — Vue 3 `admin-web` (overview, history/detail, review queue, read-only configuration pages) served behind an nginx proxy to the API
 - **Typed central contract** — committed OpenAPI document with generated `api-client-central` TypeScript types and CI drift checks
 
 **Engineering**
@@ -152,11 +165,24 @@ locally (ADR-016) and never rewrite the machine decision.
 
 The central M1 pilot (`docs/tasks/C1-central-server-m1.md`) implements the
 bounded management plane: idempotent ingestion of the current edge envelope,
-PostgreSQL history, MinIO evidence, and pilot administration, delivered as
-`apps/central-service` and `apps/admin-web`. Central unavailability never
-blocks or alters an edge inspection decision.
+PostgreSQL history, MinIO evidence, append-only review, governed metadata,
+and pilot administration, delivered as `apps/central-service` and
+`apps/admin-web`. The real edge scheduler/`HttpUploadSink` are verified
+against the central API end to end (E6-A16 fixture), and the M1 exit
+criteria are recorded with evidence in the plan's §13.1. Central
+unavailability never blocks or alters an edge inspection decision.
 
 ## Quickstart
+
+Two companion guides split deployment into a short developer path and an
+exhaustive reference:
+
+- **[QUICKSTART.md](QUICKSTART.md)** — simple, intuitive dev setup for each
+  component (edge CLI/service/dashboard, central stack, admin-web) plus how
+  training works, in the fewest commands.
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** — the full deployment reference: dev,
+  production, and training over both the CLI and Docker, environment variable
+  tables, backup/restore, upgrade/rollback, and troubleshooting.
 
 ```bash
 git clone https://github.com/dream-studio-china/assembly-vision.git
@@ -208,10 +234,11 @@ curl http://localhost:8080/api/v1/health/live        # via the admin-web proxy
 Schema migrations are a controlled release step (the one-shot `central-migrate`
 service in the stack; the API never migrates automatically).
 
-See [QUICKSTART.md](QUICKSTART.md) for a detailed walkthrough, structured
-per app: section 4 covers the edge inspection CLI, section 5 the edge
-dashboard, section 6 the edge desktop shell, section 7 the central server
-pilot.
+See [QUICKSTART.md](QUICKSTART.md) for the short developer fast path
+(setup, training, edge CLI/service/dashboard, central API, admin-web) and
+[DEPLOYMENT.md](DEPLOYMENT.md) for the full deployment reference (dev,
+production, and training over the CLI and Docker, environment tables,
+troubleshooting).
 
 ## Usage
 
@@ -286,7 +313,7 @@ procedures live in the runbooks (camera disconnection, low disk space, database
 recovery, network recovery synchronization). The E6 acceptance matrix
 ([docs/tasks/E6-edge-acceptance.md](docs/tasks/E6-edge-acceptance.md)) classifies
 every scenario by environment, and the local runner
-(`scripts/edge-acceptance-run.py`, see QUICKSTART §9.1) executes supported
+(`scripts/edge-acceptance-run.py`, see [DEPLOYMENT.md](DEPLOYMENT.md) §5.1) executes supported
 locally automatable items while on-site and unsupported items stay
 `NOT_EXECUTED` until their required evidence is available.
 
@@ -298,7 +325,7 @@ upload an image, or upload a short video, and get the decision immediately
 (ADR-014). These endpoints are **disabled by default** — start `serve` with
 `--enable-web-test` to enable them. This is a test harness, not a production
 acquisition path: it never streams video. Production real-time inspection uses
-the native app / RTSP / camera sources. See [QUICKSTART](QUICKSTART.md) §4.8.
+the native app / RTSP / camera sources. See [DEPLOYMENT.md](DEPLOYMENT.md) §3.4 for the full description.
 
 ## Roadmap
 
@@ -306,7 +333,7 @@ the native app / RTSP / camera sources. See [QUICKSTART](QUICKSTART.md) §4.8.
 |---|---|
 | **Phase 1 — MVP** | Delivered — static train-and-inspect pipeline, operator dashboard, and the read-only M1 edge API are on `main` (PRs #3/#6/#8) |
 | **Phase 2 — Edge production readiness** | E1–E5 production gates, camera sources, temporal aggregation, upload outbox, barcode identity / PLC trigger (ADR-015), and edge-local human review (ADR-016, PR #31) are implemented; E6 on-site acceptance remains open |
-| **Phase 3 — Central server** | M1 pilot in progress — C1a workspace/service/Compose foundation and C1b tenant/device/credential foundation delivered; C2a–C6 pending ([C1 plan](docs/tasks/C1-central-server-m1.md)) |
+| **Phase 3 — Central server** | M1 pilot delivered — C1a–C6 feature-complete (ingestion, media, history/detail, review, metadata governance, hardening) plus the E6-A16 edge-to-central integration fixture; controlled-pilot deployment per the task §13.2 checklist remains; production scope (OIDC/RBAC, remote rollout, resumable uploads) deferred ([C1 plan](docs/tasks/C1-central-server-m1.md)) |
 
 ### Outlook
 
@@ -331,4 +358,4 @@ complete AI recognition platform for production lines:
 
 ## License
 
-MIT © 2026 dream-studio-china
+MIT © 2026 Dream Studio

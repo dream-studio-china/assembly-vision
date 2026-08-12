@@ -516,6 +516,15 @@ or more focused PRs into `main`.
 - M1 remains labeled a controlled pilot: no claim of production HA, final
   RPO/RTO, full retention enforcement, OIDC, or remote rollout (section 13
   exit criterion 8).
+- E6-A16 delivered (`scripts/tests/test_edge_central_e2e.py`): the real edge
+  `UploadScheduler` and `HttpUploadSink` run against a live in-process
+  central FastAPI server (no mocked central, no stub sink). The outbox drains
+  in metadata-before-media order to `QUEUED -> PARTIAL -> SYNCED` only after
+  verified central receipts; the media binding is `AVAILABLE`; and duplicate
+  replay of the exact payload returns the original receipt with exactly one
+  central row per identity. This closes the mandatory-matrix item "an
+  end-to-end edge outbox fixture that validates the actual central receipt"
+  (section 11) and exit criterion 3's executable evidence.
 
 ## 8. M1 Database and Object Storage Rules
 
@@ -668,6 +677,60 @@ M1 is ready for a controlled pilot only when all of the following are true:
 8. Documentation explicitly labels M1 as a controlled pilot and does not claim
    production HA, final data-residency compliance, complete RBAC, remote
    rollout, resumable media upload, or universal accuracy.
+
+### 13.1 M1 Exit Criteria Evidence
+
+Evidence recorded at snapshot time (2026-08-13); every referenced test is part
+of the repository gates below. `apps/central-service/tests`,
+`apps/edge-service/tests`, and `scripts/tests` are collected by the root
+`uv run pytest`; the admin-web checks run through `pnpm` in the `web` CI job.
+
+| # | Criterion | Evidence | Status |
+|---|---|---|---|
+| 1 | Registered edge device sends inspection/media envelopes over HTTPS; central returns verified compatible receipts | `test_ingest_edge_compat.py` (exact current edge envelope + verified receipt), `test_ingest_api.py` (valid commit + receipt, MEDIA receipt with `central_object_id`), `test_ingest_repository.py`; edge `test_upload_scheduler.py` (2xx is success only with a typed receipt echoing key/object/kind/size/checksum; MEDIA requires a central object id); real-sink receipt validation. HTTPS termination is a go-live deployment step (runbook C5; compose env; edge dev uses loopback HTTP by contract 04) | ✅ code + contracts; ⚠️ TLS termination is deployment-gated |
+| 2 | Identical replay duplicate-free, returns previous receipt; conflicts fail closed `409` without overwriting evidence | `test_ingest_api.py` (same replay 200, `409 PAYLOAD_CONFLICT` on key/id/sequence reuse with different content), `test_ingest_repository.py` (concurrent unique-race maps to 409, accepted resource preserved); E6-A16 replay test (original receipt returned, exactly one row per identity) | ✅ |
+| 3 | Real edge scheduler reaches `QUEUED -> PARTIAL -> SYNCED` only after required central receipts; E6-A16 executable against central | `scripts/tests/test_edge_central_e2e.py` (real `UploadScheduler` + `HttpUploadSink` against a live in-process central API: metadata-before-media ordering, SYNCED only after verified receipts, duplicate-free replay); edge `test_upload_scheduler.py` (MEDIA due only after inspection receipt; E3d long-outage drain to SYNCED); C2b exit test (outbox drain to SYNCED only after the media receipt) | ✅ |
+| 4 | Central PostgreSQL history and MinIO bindings survive controlled restart and representative backup/restore | `test_restart_persistence.py` (engine disposed/reopened: inspections, media bindings, receipts, audit rows intact; receipts replayable); `test_backup_restore.py` (consistent snapshot restored as a fresh database, same invariants); real `pg_dump`/`pg_restore` round-trip to a fresh database executed and verified (schema at head `0006`, rows intact) - recorded in the C6 status above | ✅ |
+| 5 | Pilot admin UI: overview, cross-device history/detail, append-only review; organization scope enforced | admin-web `tests/e2e/smoke.spec.ts` (login, overview, history filter, detail; runs against Compose with `CENTRAL_E2E_TOKEN`); `test_tenant_api.py`/`test_tenant_repository.py` (server-side organization scoping), `test_inspection_queries.py` (org-isolated queries), `test_review_api.py` (append-only UI flow); C3/C4/C5 browser verification | ✅ |
+| 6 | Original edge decisions and evidence provenance immutable through ingestion and review | `test_ingest_repository.py` (write-once inspection row, canonical payload preserved verbatim, conflict never overwrites); `test_review_repository.py` / `test_review_api.py` (original decision/versions byte-for-byte unchanged after review append); contract 05 section 1 immutable fields | ✅ |
+| 7 | Compose health/readiness, migration, request/error, authentication, recovery evidence recorded; mandatory quality gates pass | CI `quality` job (`uv run ruff check .`, `ruff format --check .`, `mypy .`, `uv run pytest`), `web` job (admin-web build/lint/test/e2e), OpenAPI + TypeScript drift checks, `uv run mkdocs build --strict`; `test_health.py`/`test_readiness.py` (live/ready, dependency probes), `test_fault_tolerance.py` (503 + `Retry-After`, no false receipts), C6 request-ID log correlation + `audit_logs.request_id` | ✅ |
+| 8 | Docs label M1 as a controlled pilot without production claims | This document (C6 status, section 14 deferrals), design 05 sections 11.2/11.3, runbooks C1-C5 (M1 limits stated), `docs/ai/context.md` | ✅ |
+
+Mandatory additional checks (section 11) status: OpenAPI/TS drift checks run in
+CI; PostgreSQL migration upgrade from empty and every predecessor exercised
+locally (`0001`-`0006`, including the 0005->0006 upgrade in the C5/C6
+verification); MinIO integration checks covered by the C2b Compose e2e and
+`test_media_reconcile.py`; the end-to-end edge outbox fixture is delivered
+(`scripts/tests/test_edge_central_e2e.py`); security tests cover
+cross-organization access (`test_tenant_*`), device/human credential
+separation (`test_ingest_api.py`, `test_bootstrap.py`), payload limits
+(`test_ingest_api.py` 413 cases), unsafe media metadata (`test_ingest_api.py`
+MEDIA_MANIFEST_MISMATCH), and no internal error leakage (problem responses
+never expose stack traces/paths/credentials).
+
+### 13.2 Go-Live Deployment Checklist (controlled pilot)
+
+Not a production checklist; M1 remains a controlled pilot (OQ-021/022/017/019/
+020 deferred per section 14). Before the first on-site pilot run:
+
+- Provision the controlled host, PostgreSQL 16, and MinIO with persistent
+  volumes; apply migrations to head (`0006`) as a controlled release step
+  (`python -m central_service migrate`) and verify `GET /api/v1/health/ready`
+  reports all dependencies ok.
+- Terminate TLS in front of the API (admin-web nginx or a reverse proxy) and
+  verify the edge `HttpUploadSink` reaches `https://...` (plain HTTP remains
+  loopback-development only, contract 04); rotate the pilot admin/device
+  tokens away from dev defaults (compose.env.example).
+- Register each edge device with its real UUID `device_id` (C1b) and its own
+  upload token; verify one inspection + media upload reaches `SYNCED` and
+  replay is duplicate-free before wider rollout.
+- Validate hardware prerequisites on-site: camera/GigE or GenICam source,
+  barcode decoding on production samples, and the photo-eye/PLC trigger or the
+  approved identity seam (ADR-015); record E6 acceptance-prep evidence
+  (resilience/soak, held-out model validation).
+- Take a backup per runbook C4 before the first production inspection and
+  verify one restore round-trip; confirm the edge retains last-known-good
+  models/rules (runbooks 08/09) so a pilot upgrade can roll back.
 
 ## 14. Risks, Dependencies, and Deferred Decisions
 
