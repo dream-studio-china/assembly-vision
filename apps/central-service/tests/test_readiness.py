@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import pytest
 from assemblyvision_domain.errors import ConfigError
 from central_service.api.readiness import (
@@ -50,12 +52,36 @@ class _FakeStorage(ObjectStorage):
     def bucket_ready(self) -> bool:
         return self._ready
 
+    def put_object(self, key: str, data: bytes, content_type: str) -> None:
+        return None
+
+    def object_exists(self, key: str) -> bool:
+        return False
+
+    def remove_object(self, key: str) -> None:
+        return None
+
+    def list_objects(self, prefix: str) -> Iterator[str]:
+        return iter(())
+
 
 class _RaisingStorage(ObjectStorage):
     def ensure_bucket(self) -> None:
         return None
 
     def bucket_ready(self) -> bool:
+        raise RuntimeError("storage unavailable")
+
+    def put_object(self, key: str, data: bytes, content_type: str) -> None:
+        raise RuntimeError("storage unavailable")
+
+    def object_exists(self, key: str) -> bool:
+        raise RuntimeError("storage unavailable")
+
+    def remove_object(self, key: str) -> None:
+        raise RuntimeError("storage unavailable")
+
+    def list_objects(self, prefix: str) -> Iterator[str]:
         raise RuntimeError("storage unavailable")
 
 

@@ -25,6 +25,11 @@ from central_service.persistence.bootstrap import (
 from central_service.persistence.engine import create_database_engine
 from central_service.persistence.migrate import migrate_to_head, schema_at_head
 from central_service.persistence.repository import CentralRepository
+from central_service.storage.object_store import (
+    MinioObjectStorage,
+    ObjectStorageSettings,
+    reconcile_media,
+)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -54,12 +59,25 @@ def main(argv: Sequence[str] | None = None) -> int:
     bootstrap.add_argument("--admin-username", default=None)
     bootstrap.add_argument("--admin-token", default=None)
 
+    reconcile = subparsers.add_parser(
+        "reconcile-media",
+        help="idempotent integrity check of media bindings vs object store (C2b)",
+    )
+    reconcile.add_argument("--database-url", default=None, help="override AV_CENTRAL_DATABASE_URL")
+    reconcile.add_argument(
+        "--remove-orphans",
+        action="store_true",
+        help="remove object-store objects that have no persisted binding",
+    )
+
     args = parser.parse_args(list(argv) if argv is not None else None)
     try:
         if args.command == "migrate":
             return _run_migrate(args.database_url)
         if args.command == "bootstrap":
             return _run_bootstrap(args)
+        if args.command == "reconcile-media":
+            return _run_reconcile_media(args)
         return _run_serve(args.host, args.port)
     except SystemExit:
         raise
@@ -137,6 +155,52 @@ def _run_bootstrap(args: argparse.Namespace) -> int:
     print(f"  administrator: {plan.admin_username} (id {result.administrator_id})")
     print(f"  created: {', '.join(result.created) or 'none (all rows already existed)'}")
     print("  note: credentials are never printed; provision them via environment or CLI options")
+    return 0
+
+
+def _run_reconcile_media(args: argparse.Namespace) -> int:
+    """Compare persisted media bindings against the object store (C2b).
+
+    M1 maintenance command, not a continuous worker: it reports bindings whose
+    object is missing and object-store objects without a binding, and
+    optionally removes the orphans. Idempotent by design.
+    """
+    settings = CentralSettings()
+    if args.database_url is not None:
+        settings.database_url = args.database_url
+    if not settings.database_url:
+        print(
+            "central-service: database_url is required (AV_CENTRAL_DATABASE_URL)", file=sys.stderr
+        )
+        return 1
+    engine = create_database_engine(settings.database_url)
+    storage = MinioObjectStorage(
+        ObjectStorageSettings(
+            endpoint=settings.minio_endpoint,
+            access_key=settings.minio_access_key,
+            secret_key=settings.minio_secret_key,
+            bucket=settings.minio_bucket,
+            secure=settings.minio_secure,
+        )
+    )
+    try:
+        bindings = CentralRepository(engine).list_media_bindings()
+    finally:
+        engine.dispose()
+    report = reconcile_media(bindings, storage)
+    for key in report.missing_objects:
+        print(f"missing-object: {key}")
+    for key in report.orphan_objects:
+        print(f"orphan-object: {key}")
+    if args.remove_orphans:
+        for key in report.orphan_objects:
+            storage.remove_object(key)
+            print(f"removed-orphan: {key}")
+    print(
+        f"reconcile-media: {report.binding_count} bindings, "
+        f"{len(report.missing_objects)} missing objects, "
+        f"{len(report.orphan_objects)} orphan objects"
+    )
     return 0
 
 

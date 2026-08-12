@@ -129,7 +129,7 @@ export interface paths {
         put?: never;
         /**
          * Inspection Uploads
-         * @description Ingest one edge inspection upload and return a verified receipt.
+         * @description Ingest one edge inspection or media upload and return a receipt.
          */
         post: operations["inspection_uploads_api_v1_inspection_uploads_post"];
         delete?: never;
@@ -601,7 +601,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["Problem"];
                 };
             };
-            /** @description Media ingestion is not available in this pilot step; retryable */
+            /** @description The object store could not accept the media; retryable */
             503: {
                 headers: {
                     [name: string]: unknown;

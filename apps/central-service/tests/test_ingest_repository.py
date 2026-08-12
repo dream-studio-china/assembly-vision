@@ -7,6 +7,7 @@ inspection id, device sequence) on SQLite with foreign keys enforced.
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from typing import Any
@@ -23,6 +24,7 @@ from central_service.persistence.repository import (
 from central_service.persistence.schema import (
     audit_logs,
     inspection_components,
+    inspection_media,
     inspections,
     metadata,
     upload_receipts,
@@ -287,4 +289,153 @@ def test_concurrent_unique_race_maps_to_payload_conflict(
         ).all()
     # The failed transaction rolled back and the conflict was audited.
     assert int(inspection_count) == 0
+    assert len(conflict_audits) == 1
+
+
+# -- C2b media binding -------------------------------------------------------
+
+
+def _ingest_media(
+    repository: CentralRepository,
+    device: PilotBootstrapResult,
+    record: Any,
+    *,
+    idempotency_key: str | None = None,
+    request_hash: str | None = None,
+    central_object_id: str | None = None,
+    object_key: str | None = None,
+) -> tuple[Any, bool]:
+    device_row = repository.get_device(device.organization_id, device.device_row_id)
+    assert device_row is not None
+    media = record.media[0]
+    lookup = repository.get_inspection_media_manifest(device_row.id, str(record.inspection_id))
+    assert lookup is not None
+    inspection_row_id, capture_at, _manifest = lookup
+    return repository.persist_media(
+        device=device_row,
+        inspection_row_id=inspection_row_id,
+        idempotency_key=idempotency_key or f"media:{record.device_id}:{media.media_id}",
+        request_hash=request_hash or media.checksum_sha256,
+        object_id=str(media.media_id),
+        inspection_id=str(record.inspection_id),
+        central_object_id=central_object_id or str(uuid4()),
+        object_key=object_key or f"org/1/device/{_DEVICE_ID}/2026/08/{media.media_id}",
+        media_kind=media.kind,
+        mime_type=media.mime_type,
+        size_bytes=media.size_bytes,
+        checksum_sha256=media.checksum_sha256,
+        capture_at=capture_at,
+        received_at=datetime.now(UTC),
+    )
+
+
+def test_get_inspection_media_manifest_parses_accepted_payload(
+    repository: CentralRepository, device: PilotBootstrapResult
+) -> None:
+    media_bytes = b"fake-jpeg-bytes"
+    record = _record(media_content=media_bytes)
+    _ingest(repository, device, record)
+    device_row = repository.get_device(device.organization_id, device.device_row_id)
+    assert device_row is not None
+    lookup = repository.get_inspection_media_manifest(device_row.id, str(record.inspection_id))
+    assert lookup is not None
+    inspection_row_id, capture_at, manifest = lookup
+    assert inspection_row_id > 0
+    assert capture_at.tzinfo is not None
+    media = record.media[0]
+    entry = manifest[str(media.media_id)]
+    assert entry.media_kind == "KEY_FRAME"
+    assert entry.mime_type == "image/jpeg"
+    assert entry.size_bytes == len(media_bytes)
+    assert entry.checksum_sha256 == hashlib.sha256(media_bytes).hexdigest()
+    # Unknown parent inspection returns None.
+    assert repository.get_inspection_media_manifest(device_row.id, str(uuid4())) is None
+
+
+def test_persist_media_creates_binding_receipt_and_audit(
+    sqlite_engine: Engine, repository: CentralRepository, device: PilotBootstrapResult
+) -> None:
+    record = _record(media_content=b"fake-jpeg-bytes")
+    _ingest(repository, device, record)
+    receipt, replayed = _ingest_media(repository, device, record)
+    assert replayed is False
+    assert receipt.kind == "MEDIA"
+    assert receipt.central_object_id is not None
+
+    with sqlite_engine.connect() as connection:
+        media_rows = connection.execute(select(inspection_media)).mappings().all()
+        receipt_rows = connection.execute(select(upload_receipts)).mappings().all()
+        audit_actions = [
+            str(row["action"]) for row in connection.execute(select(audit_logs.c.action)).mappings()
+        ]
+    assert len(media_rows) == 1
+    media_row = media_rows[0]
+    assert str(media_row["source_media_id"]) == str(record.media[0].media_id)
+    assert str(media_row["lifecycle"]) == "AVAILABLE"
+    assert str(media_row["central_object_id"]) == receipt.central_object_id
+    assert len(receipt_rows) == 2  # inspection + media
+    assert "MEDIA_ACCEPTED" in audit_actions
+
+
+def test_media_identical_replay_returns_original_receipt_without_duplicates(
+    sqlite_engine: Engine, repository: CentralRepository, device: PilotBootstrapResult
+) -> None:
+    record = _record(media_content=b"fake-jpeg-bytes")
+    _ingest(repository, device, record)
+    first, replayed_first = _ingest_media(repository, device, record)
+    second, replayed_second = _ingest_media(repository, device, record)
+    assert replayed_first is False
+    assert replayed_second is True
+    assert second.central_object_id == first.central_object_id
+
+    with sqlite_engine.connect() as connection:
+        media_count = connection.execute(select(func.count(inspection_media.c.id))).scalar_one()
+        media_receipts = connection.execute(
+            select(func.count(upload_receipts.c.id)).where(upload_receipts.c.kind == "MEDIA")
+        ).scalar_one()
+    assert int(media_count) == 1
+    assert int(media_receipts) == 1
+
+
+def test_media_source_id_reuse_with_different_hash_conflicts(
+    sqlite_engine: Engine, repository: CentralRepository, device: PilotBootstrapResult
+) -> None:
+    record = _record(media_content=b"fake-jpeg-bytes")
+    _ingest(repository, device, record)
+    _ingest_media(repository, device, record)
+    with pytest.raises(PayloadConflictError):
+        _ingest_media(
+            repository,
+            device,
+            record,
+            request_hash="1" * 64,
+            central_object_id=str(uuid4()),
+        )
+    with sqlite_engine.connect() as connection:
+        media_count = connection.execute(select(func.count(inspection_media.c.id))).scalar_one()
+    assert int(media_count) == 1  # original binding preserved
+
+
+def test_media_replay_conflict_writes_audit(
+    sqlite_engine: Engine, repository: CentralRepository, device: PilotBootstrapResult
+) -> None:
+    record = _record(media_content=b"fake-jpeg-bytes")
+    _ingest(repository, device, record)
+    _ingest_media(repository, device, record)
+    # A reused key with different content is recorded as a conflict by the
+    # service layer through record_payload_conflict; the repository-level
+    # replay check is exercised here.
+    with pytest.raises(PayloadConflictError):
+        _ingest_media(
+            repository,
+            device,
+            record,
+            idempotency_key=f"media:{record.device_id}:{record.media[0].media_id}",
+            request_hash="2" * 64,
+            central_object_id=str(uuid4()),
+        )
+    with sqlite_engine.connect() as connection:
+        conflict_audits = connection.execute(
+            select(audit_logs.c.action).where(audit_logs.c.action == "UPLOAD_PAYLOAD_CONFLICT")
+        ).all()
     assert len(conflict_audits) == 1

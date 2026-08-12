@@ -2,15 +2,21 @@
 
 M1 stores inspection evidence bytes only in the object store; PostgreSQL holds
 metadata and opaque, tenant-scoped object keys. The central server generates
-every key and never accepts client-controlled filesystem paths.
+every key and never accepts client-controlled filesystem paths. Objects are
+staged and verified before a binding row may report ``AVAILABLE``; the
+reconciliation command (``central-service reconcile-media``) repairs staged or
+orphan objects.
 """
 
 from __future__ import annotations
 
+import io
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from typing import Protocol
 
 from minio import Minio
+from minio.error import S3Error
 
 
 @dataclass(frozen=True)
@@ -29,6 +35,10 @@ class ObjectStorage(Protocol):
 
     def ensure_bucket(self) -> None: ...
     def bucket_ready(self) -> bool: ...
+    def put_object(self, key: str, data: bytes, content_type: str) -> None: ...
+    def object_exists(self, key: str) -> bool: ...
+    def remove_object(self, key: str) -> None: ...
+    def list_objects(self, prefix: str) -> Iterator[str]: ...
 
 
 class MinioObjectStorage:
@@ -52,3 +62,76 @@ class MinioObjectStorage:
     def bucket_ready(self) -> bool:
         """Return whether the configured bucket is reachable and exists."""
         return self._client.bucket_exists(self._settings.bucket)
+
+    def put_object(self, key: str, data: bytes, content_type: str) -> None:
+        """Write one object atomically; S3 single-PUT semantics."""
+        self._client.put_object(
+            self._settings.bucket,
+            key,
+            io.BytesIO(data),
+            length=len(data),
+            content_type=content_type,
+        )
+
+    def object_exists(self, key: str) -> bool:
+        """Return whether the object exists in the configured bucket."""
+        try:
+            self._client.stat_object(self._settings.bucket, key)
+            return True
+        except S3Error as exc:
+            if exc.code == "NoSuchKey":
+                return False
+            raise
+
+    def remove_object(self, key: str) -> None:
+        """Remove one object; a missing object is a no-op (idempotent)."""
+        try:
+            self._client.remove_object(self._settings.bucket, key)
+        except S3Error as exc:
+            if exc.code == "NoSuchKey":
+                return
+            raise
+
+    def list_objects(self, prefix: str) -> Iterator[str]:
+        """Yield object names under ``prefix`` (recursive)."""
+        for item in self._client.list_objects(self._settings.bucket, prefix=prefix, recursive=True):
+            yield str(item.object_name)
+
+
+@dataclass(frozen=True)
+class ReconcileReport:
+    """Outcome of one media reconciliation pass (C2b maintenance command)."""
+
+    binding_count: int
+    missing_objects: tuple[str, ...]
+    orphan_objects: tuple[str, ...]
+
+
+class _HasObjectKey(Protocol):
+    """Minimal shape of a persisted media binding for reconciliation."""
+
+    @property
+    def object_key(self) -> str: ...
+
+
+def reconcile_media(bindings: Iterable[_HasObjectKey], storage: ObjectStorage) -> ReconcileReport:
+    """Compare persisted bindings against the object store (idempotent).
+
+    Bindings whose object is absent are reported as missing; objects under the
+    tenant prefix without a binding are reported as orphans for the
+    maintenance command. Pure and injectable so the CLI stays a thin wrapper.
+    """
+    binding_list = list(bindings)
+    bound_keys = {binding.object_key for binding in binding_list}
+    missing = tuple(
+        binding.object_key
+        for binding in binding_list
+        if not storage.object_exists(binding.object_key)
+    )
+    stored_keys = list(storage.list_objects("org/"))
+    orphans = tuple(key for key in stored_keys if key not in bound_keys)
+    return ReconcileReport(
+        binding_count=len(binding_list),
+        missing_objects=missing,
+        orphan_objects=orphans,
+    )

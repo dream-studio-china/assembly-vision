@@ -21,6 +21,7 @@ from central_service.api.schemas import UploadReceiptOut
 from central_service.api.settings import CentralSettings
 from central_service.ingest import IngestError, PayloadConflictError, ingest_upload
 from central_service.persistence.repository import CentralRepository, DeviceRow
+from central_service.storage.object_store import ObjectStorage
 
 router = APIRouter(tags=["ingest"])
 
@@ -60,7 +61,7 @@ INGEST_RESPONSES: dict[int | str, dict[str, Any]] = {
         },
     },
     503: {
-        "description": "Media ingestion is not available in this pilot step; retryable",
+        "description": "The object store could not accept the media; retryable",
         "content": {
             "application/problem+json": {"schema": {"$ref": "#/components/schemas/Problem"}}
         },
@@ -81,11 +82,12 @@ async def inspection_uploads(
     repository: CentralRepository = Depends(get_repository),
     settings: CentralSettings = Depends(get_settings),
 ) -> UploadReceiptOut:
-    """Ingest one edge inspection upload and return a verified receipt."""
+    """Ingest one edge inspection or media upload and return a receipt."""
     body = await request.body()
     try:
         result = ingest_upload(
             repository=repository,
+            storage=cast("ObjectStorage", request.app.state.storage),
             device=device,
             body=body,
             settings=settings,
@@ -110,8 +112,6 @@ async def inspection_uploads(
     return UploadReceiptOut(
         idempotency_key=result.receipt.idempotency_key,
         object_id=result.receipt.object_id,
-        # Only INSPECTION envelopes reach persistence; MEDIA is rejected
-        # before this point, so the persisted kind is always INSPECTION.
         kind=cast("Literal['INSPECTION', 'MEDIA']", result.receipt.kind),
         checksum_sha256=result.receipt.request_hash,
         size_bytes=result.receipt.size_bytes,
