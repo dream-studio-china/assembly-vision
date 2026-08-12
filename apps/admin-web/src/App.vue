@@ -70,6 +70,10 @@ function selectTheme(): void {
           <router-link to="/">{{ t("Overview") }}</router-link>
           <router-link to="/inspections">{{ t("Inspections") }}</router-link>
           <router-link to="/reviews">{{ t("Reviews") }}</router-link>
+          <router-link to="/products">{{ t("Products") }}</router-link>
+          <router-link to="/rules">{{ t("Rules") }}</router-link>
+          <router-link to="/models">{{ t("Models") }}</router-link>
+          <router-link to="/device-configurations">{{ t("Desired configurations") }}</router-link>
         </nav>
         <button
           type="button"
@@ -183,6 +187,10 @@ function selectTheme(): void {
 .nav a.router-link-active {
   color: var(--accent);
   font-weight: 600;
+}
+
+.nav {
+  flex-wrap: wrap;
 }
 
 .user {

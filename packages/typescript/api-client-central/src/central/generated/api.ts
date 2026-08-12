@@ -68,6 +68,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/components": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Components
+         * @description The organization's component vocabulary (C5).
+         */
+        get: operations["list_components_api_v1_components_get"];
+        put?: never;
+        /**
+         * Create Component
+         * @description Create a component in the organization vocabulary (C5).
+         */
+        post: operations["create_component_api_v1_components_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dashboard/devices": {
         parameters: {
             query?: never;
@@ -128,6 +152,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/device-configurations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Desired Configurations
+         * @description All current desired bundles in the organization (C5, read view).
+         */
+        get: operations["list_desired_configurations_api_v1_device_configurations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/devices": {
         parameters: {
             query?: never;
@@ -138,6 +182,34 @@ export interface paths {
         /** List Devices */
         get: operations["list_devices_api_v1_devices_get"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/devices/{device_id}/desired-configuration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Desired Configuration
+         * @description The current desired bundle for one device (C5).
+         */
+        get: operations["get_desired_configuration_api_v1_devices__device_id__desired_configuration_get"];
+        /**
+         * Put Desired Configuration
+         * @description Record the desired bundle for one device (M1, C5).
+         *
+         *     ``If-Match`` carries the current revision (``0`` for the first
+         *     assignment); a stale revision returns ``412 REVISION_MISMATCH``. The
+         *     record is desired state only and never changes edge behavior.
+         */
+        put: operations["put_desired_configuration_api_v1_devices__device_id__desired_configuration_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -323,6 +395,224 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/model-versions/{version_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Model Version
+         * @description One immutable model version (C5).
+         */
+        get: operations["get_model_version_api_v1_model_versions__version_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-versions/{version_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish Model Version
+         * @description Publish a declaratively registered model version (C5).
+         *
+         *     Publication never claims server-side artifact verification; the edge
+         *     validates bytes, checksums, compatibility, and last-known-good rollback
+         *     locally during manual installation.
+         */
+        post: operations["publish_model_version_api_v1_model_versions__version_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Models
+         * @description Stable model packages with their latest governed version (C5).
+         */
+        get: operations["list_models_api_v1_models_get"];
+        put?: never;
+        /**
+         * Create Model Package
+         * @description Create a stable model package identity (C5).
+         */
+        post: operations["create_model_package_api_v1_models_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models/{model_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Model
+         * @description A stable model package with all its immutable versions (C5).
+         */
+        get: operations["get_model_api_v1_models__model_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models/{model_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Model Version
+         * @description Register the next immutable model version manifest (C5).
+         *
+         *     Registration is declarative: artifact bytes are never fetched or verified
+         *     server-side in M1, so the record never claims the artifact was validated.
+         */
+        post: operations["create_model_version_api_v1_models__model_id__versions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/product-versions/{version_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Product Version
+         * @description One immutable product version (C5).
+         */
+        get: operations["get_product_version_api_v1_product_versions__version_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/product-versions/{version_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish Product Version
+         * @description Validate and immutably publish a product version (C5).
+         *
+         *     A repeated publish returns the already-published version without writing a
+         *     second audit event. A published version is never updated or deleted.
+         */
+        post: operations["publish_product_version_api_v1_product_versions__version_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Products
+         * @description Stable products with their latest governed version (C5).
+         */
+        get: operations["list_products_api_v1_products_get"];
+        put?: never;
+        /**
+         * Create Product
+         * @description Create a stable product identity (C5).
+         */
+        post: operations["create_product_api_v1_products_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Product
+         * @description A stable product with all its immutable versions (C5).
+         */
+        get: operations["get_product_api_v1_products__product_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{product_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Product Version
+         * @description Draft the next immutable product version (C5).
+         */
+        post: operations["create_product_version_api_v1_products__product_id__versions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reviews/queue": {
         parameters: {
             query?: never;
@@ -337,6 +627,110 @@ export interface paths {
         get: operations["list_review_queue_api_v1_reviews_queue_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rule-versions/{version_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rule Version
+         * @description One immutable rule version (C5).
+         */
+        get: operations["get_rule_version_api_v1_rule_versions__version_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rule-versions/{version_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish Rule Version
+         * @description Validate model/product compatibility and publish a rule version (C5).
+         */
+        post: operations["publish_rule_version_api_v1_rule_versions__version_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Rules
+         * @description Stable rules with their latest governed version (C5).
+         */
+        get: operations["list_rules_api_v1_rules_get"];
+        put?: never;
+        /**
+         * Create Rule
+         * @description Create a stable rule identity (C5).
+         */
+        post: operations["create_rule_api_v1_rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rule
+         * @description A stable rule with all its immutable versions (C5).
+         */
+        get: operations["get_rule_api_v1_rules__rule_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rules/{rule_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Rule Version
+         * @description Draft the next immutable rule version (C5).
+         */
+        post: operations["create_rule_version_api_v1_rules__rule_id__versions_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -376,6 +770,28 @@ export interface components {
             /** Username */
             username: string;
         };
+        /** ArtifactIn */
+        ArtifactIn: {
+            /** Name */
+            name: string;
+            /** Sha256 */
+            sha256: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Uri */
+            uri: string;
+        };
+        /** ArtifactOut */
+        ArtifactOut: {
+            /** Name */
+            name: string;
+            /** Sha256 */
+            sha256: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Uri */
+            uri: string;
+        };
         /**
          * ComponentCorrectionIn
          * @description Per-component ground truth recorded by a reviewer (C4, design 24).
@@ -390,6 +806,16 @@ export interface components {
             corrected_state: "PRESENT" | "MISSING" | "UNCERTAIN";
             /** Note */
             note?: string | null;
+        };
+        /**
+         * ComponentCreate
+         * @description Create a component in the organization vocabulary (C5).
+         */
+        ComponentCreate: {
+            /** Component Code */
+            component_code: string;
+            /** Display Name */
+            display_name: string;
         };
         /**
          * ComponentEvidenceOut
@@ -408,6 +834,29 @@ export interface components {
             state: string;
             /** Usable Frame Count */
             usable_frame_count: number;
+        };
+        /** ComponentOut */
+        ComponentOut: {
+            /** Component Code */
+            component_code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Display Name */
+            display_name: string;
+            /** Id */
+            id: number;
+            /** Organization Id */
+            organization_id: number;
+        };
+        /** ComponentPage */
+        ComponentPage: {
+            /** Items */
+            items: components["schemas"]["ComponentOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
         };
         /**
          * DashboardSummaryOut
@@ -432,6 +881,91 @@ export interface components {
         DashboardTimeseriesOut: {
             /** Points */
             points: components["schemas"]["TimeseriesPointOut"][];
+        };
+        /** DatasetIn */
+        DatasetIn: {
+            /** Dataset Version */
+            dataset_version: string;
+            /** Manifest Uri */
+            manifest_uri: string;
+            /**
+             * Purpose
+             * @default TRAIN
+             * @enum {string}
+             */
+            purpose: "TRAIN" | "VALIDATION" | "TEST" | "ACCEPTANCE";
+        };
+        /** DatasetOut */
+        DatasetOut: {
+            /** Dataset Version */
+            dataset_version: string;
+            /** Manifest Uri */
+            manifest_uri: string;
+            /** Purpose */
+            purpose: string;
+        };
+        /**
+         * DesiredConfigurationIn
+         * @description Desired bundle for one device (M1, C5).
+         *
+         *     The record expresses intent only: packages are installed manually in M1
+         *     and assignment is never proof of download, validation, or activation.
+         */
+        DesiredConfigurationIn: {
+            /** Component Model Version Id */
+            component_model_version_id: string;
+            /** Product Model Version Id */
+            product_model_version_id: string;
+            /** Product Version Id */
+            product_version_id: string;
+            /** Reason */
+            reason: string;
+            /** Rule Version Id */
+            rule_version_id: string;
+        };
+        /** DesiredConfigurationOut */
+        DesiredConfigurationOut: {
+            /**
+             * Assigned At
+             * Format: date-time
+             */
+            assigned_at: string;
+            /** Assigned By */
+            assigned_by: string;
+            /** Component Model Version Id */
+            component_model_version_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Device Id */
+            device_id: string;
+            /** Device Name */
+            device_name: string;
+            /** Device Row Id */
+            device_row_id: number;
+            /** Id */
+            id: number;
+            /** Organization Id */
+            organization_id: number;
+            /** Product Model Version Id */
+            product_model_version_id: string;
+            /** Product Version Id */
+            product_version_id: string;
+            /** Reason */
+            reason: string;
+            /** Revision */
+            revision: number;
+            /** Rule Version Id */
+            rule_version_id: string;
+        };
+        /** DesiredConfigurationPage */
+        DesiredConfigurationPage: {
+            /** Items */
+            items: components["schemas"]["DesiredConfigurationOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
         };
         /**
          * DeviceOut
@@ -660,6 +1194,217 @@ export interface components {
             /** Url */
             url?: string | null;
         };
+        /** MetricIn */
+        MetricIn: {
+            /** Name */
+            name: string;
+            /** Scope */
+            scope: string;
+            /** Value */
+            value: number;
+        };
+        /** MetricOut */
+        MetricOut: {
+            /** Name */
+            name: string;
+            /** Scope */
+            scope: string;
+            /** Value */
+            value: number;
+        };
+        /**
+         * ModelCreate
+         * @description Create a stable model package identity (C5).
+         */
+        ModelCreate: {
+            /** Model Code */
+            model_code: string;
+            /** Name */
+            name: string;
+            /**
+             * Task
+             * @enum {string}
+             */
+            task: "PRODUCT_DETECTION" | "COMPONENT_DETECTION";
+        };
+        /**
+         * ModelDetailOut
+         * @description A stable model package with all its immutable versions (C5).
+         */
+        ModelDetailOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Model Code */
+            model_code: string;
+            /** Name */
+            name: string;
+            /** Organization Id */
+            organization_id: number;
+            /** Task */
+            task: string;
+            /** Versions */
+            versions: components["schemas"]["ModelVersionOut"][];
+        };
+        /**
+         * ModelManifestIn
+         * @description Declarative model manifest draft (C5, design 14 ModelManifest).
+         *
+         *     Artifact checksums are normalized to bare lowercase 64-hex; the central
+         *     server records declarations only and never verifies artifact bytes.
+         */
+        ModelManifestIn: {
+            /** Artifacts */
+            artifacts: components["schemas"]["ArtifactIn"][];
+            /** Class Names */
+            class_names: string[];
+            /** Datasets */
+            datasets?: components["schemas"]["DatasetIn"][];
+            /** Edge Version Label */
+            edge_version_label: string;
+            /** Input Height */
+            input_height: number;
+            /** Input Width */
+            input_width: number;
+            /** Limitations */
+            limitations?: string[];
+            /** Metrics */
+            metrics?: components["schemas"]["MetricIn"][];
+            /** Runtime */
+            runtime: string;
+            /** Semantic Version */
+            semantic_version: string;
+            /** Source Revision */
+            source_revision: string;
+            /** Split Strategy */
+            split_strategy: string;
+            /**
+             * Task
+             * @enum {string}
+             */
+            task: "PRODUCT_DETECTION" | "COMPONENT_DETECTION";
+            /** Training Config Revision */
+            training_config_revision: string;
+        };
+        /**
+         * ModelPackageOut
+         * @description A stable model package identity (C5).
+         */
+        ModelPackageOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Model Code */
+            model_code: string;
+            /** Name */
+            name: string;
+            /** Organization Id */
+            organization_id: number;
+            /** Task */
+            task: string;
+        };
+        /** ModelPage */
+        ModelPage: {
+            /** Items */
+            items: components["schemas"]["ModelSummaryOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /**
+         * ModelSummaryOut
+         * @description A stable model package with its latest governed version (C5).
+         */
+        ModelSummaryOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Latest Version Id */
+            latest_version_id: string | null;
+            /** Latest Version Number */
+            latest_version_number: number | null;
+            /** Latest Version Status */
+            latest_version_status: string | null;
+            /** Model Code */
+            model_code: string;
+            /** Name */
+            name: string;
+            /** Organization Id */
+            organization_id: number;
+            /** Task */
+            task: string;
+            /** Version Count */
+            version_count: number;
+        };
+        /** ModelVersionOut */
+        ModelVersionOut: {
+            /** Artifacts */
+            artifacts: components["schemas"]["ArtifactOut"][];
+            /** Class Names */
+            class_names: string[];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Datasets */
+            datasets: components["schemas"]["DatasetOut"][];
+            /** Edge Version Label */
+            edge_version_label: string;
+            /** Id */
+            id: number;
+            /** Input Height */
+            input_height: number;
+            /** Input Width */
+            input_width: number;
+            /** Limitations */
+            limitations: string[];
+            /** Manifest Sha256 */
+            manifest_sha256: string;
+            /** Metrics */
+            metrics: components["schemas"]["MetricOut"][];
+            /** Model Code */
+            model_code: string;
+            /** Model Package Id */
+            model_package_id: number;
+            /** Organization Id */
+            organization_id: number;
+            /** Publish Reason */
+            publish_reason: string | null;
+            /** Published At */
+            published_at: string | null;
+            /** Published By */
+            published_by: string | null;
+            /** Runtime */
+            runtime: string;
+            /** Semantic Version */
+            semantic_version: string;
+            /** Source Revision */
+            source_revision: string;
+            /** Split Strategy */
+            split_strategy: string;
+            /** Status */
+            status: string;
+            /** Task */
+            task: string;
+            /** Training Config Revision */
+            training_config_revision: string;
+            /** Version */
+            version: number;
+            /** Version Id */
+            version_id: string;
+        };
         /**
          * Problem
          * @description RFC 7807 error body (contract 05 section 6).
@@ -685,6 +1430,157 @@ export interface components {
             title: string;
             /** Type */
             type: string;
+        };
+        /**
+         * ProductCreate
+         * @description Create a stable product identity (C5).
+         */
+        ProductCreate: {
+            /** Name */
+            name: string;
+            /** Product Code */
+            product_code: string;
+        };
+        /**
+         * ProductDetailOut
+         * @description A stable product with all its immutable versions (C5).
+         */
+        ProductDetailOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Organization Id */
+            organization_id: number;
+            /** Product Code */
+            product_code: string;
+            /** Versions */
+            versions: components["schemas"]["ProductVersionOut"][];
+        };
+        /**
+         * ProductOut
+         * @description A stable product identity (C5).
+         */
+        ProductOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Organization Id */
+            organization_id: number;
+            /** Product Code */
+            product_code: string;
+        };
+        /** ProductPage */
+        ProductPage: {
+            /** Items */
+            items: components["schemas"]["ProductSummaryOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /**
+         * ProductSummaryOut
+         * @description A stable product with its latest governed version (C5).
+         */
+        ProductSummaryOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Latest Version Id */
+            latest_version_id: string | null;
+            /** Latest Version Number */
+            latest_version_number: number | null;
+            /** Latest Version Status */
+            latest_version_status: string | null;
+            /** Name */
+            name: string;
+            /** Organization Id */
+            organization_id: number;
+            /** Product Code */
+            product_code: string;
+            /** Version Count */
+            version_count: number;
+        };
+        /** ProductVersionComponentIn */
+        ProductVersionComponentIn: {
+            /** Component Code */
+            component_code: string;
+            /** Expected Count */
+            expected_count: number;
+        };
+        /** ProductVersionComponentOut */
+        ProductVersionComponentOut: {
+            /** Component Code */
+            component_code: string;
+            /** Expected Count */
+            expected_count: number;
+        };
+        /**
+         * ProductVersionCreate
+         * @description Draft a new immutable product version (C5).
+         *
+         *     Barcode mappings are exact values only (ADR-015); a version may declare
+         *     none, but every value must be 1..256 characters.
+         */
+        ProductVersionCreate: {
+            /** Barcodes */
+            barcodes?: string[];
+            /** Components */
+            components: components["schemas"]["ProductVersionComponentIn"][];
+        };
+        /** ProductVersionOut */
+        ProductVersionOut: {
+            /** Barcodes */
+            barcodes: string[];
+            /** Components */
+            components: components["schemas"]["ProductVersionComponentOut"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Organization Id */
+            organization_id: number;
+            /** Product Code */
+            product_code: string;
+            /** Product Id */
+            product_id: number;
+            /** Publish Reason */
+            publish_reason: string | null;
+            /** Published At */
+            published_at: string | null;
+            /** Published By */
+            published_by: string | null;
+            /** Status */
+            status: string;
+            /** Version */
+            version: number;
+            /** Version Id */
+            version_id: string;
+        };
+        /**
+         * PublishRequest
+         * @description Required actor context for an immutable publish (C5).
+         */
+        PublishRequest: {
+            /** Reason */
+            reason: string;
         };
         /**
          * ReadinessReport
@@ -788,6 +1684,195 @@ export interface components {
             note?: string | null;
             /** Reason */
             reason?: string | null;
+        };
+        /**
+         * RuleCreate
+         * @description Create a stable rule identity (C5).
+         */
+        RuleCreate: {
+            /** Name */
+            name: string;
+            /** Rule Code */
+            rule_code: string;
+        };
+        /**
+         * RuleDetailOut
+         * @description A stable rule with all its immutable versions (C5).
+         */
+        RuleDetailOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Organization Id */
+            organization_id: number;
+            /** Rule Code */
+            rule_code: string;
+            /** Versions */
+            versions: components["schemas"]["RuleVersionOut"][];
+        };
+        /**
+         * RuleOut
+         * @description A stable rule identity (C5).
+         */
+        RuleOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Organization Id */
+            organization_id: number;
+            /** Rule Code */
+            rule_code: string;
+        };
+        /** RulePage */
+        RulePage: {
+            /** Items */
+            items: components["schemas"]["RuleSummaryOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /**
+         * RulePolicyIn
+         * @description Per-component confidence/temporal policy (design 14 ComponentPolicy).
+         */
+        RulePolicyIn: {
+            /** Component Code */
+            component_code: string;
+            /** Expected Count */
+            expected_count: number;
+            /** High Confidence */
+            high_confidence: number;
+            /** Medium Confidence */
+            medium_confidence: number;
+            /** Minimum Medium Detections */
+            minimum_medium_detections: number;
+            /**
+             * Require Adjacent Frames
+             * @default false
+             */
+            require_adjacent_frames: boolean;
+        };
+        /** RulePolicyOut */
+        RulePolicyOut: {
+            /** Component Code */
+            component_code: string;
+            /** Expected Count */
+            expected_count: number;
+            /** High Confidence */
+            high_confidence: number;
+            /** Medium Confidence */
+            medium_confidence: number;
+            /** Minimum Medium Detections */
+            minimum_medium_detections: number;
+            /** Require Adjacent Frames */
+            require_adjacent_frames: boolean;
+        };
+        /**
+         * RuleSummaryOut
+         * @description A stable rule with its latest governed version (C5).
+         */
+        RuleSummaryOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Latest Version Id */
+            latest_version_id: string | null;
+            /** Latest Version Number */
+            latest_version_number: number | null;
+            /** Latest Version Status */
+            latest_version_status: string | null;
+            /** Name */
+            name: string;
+            /** Organization Id */
+            organization_id: number;
+            /** Rule Code */
+            rule_code: string;
+            /** Version Count */
+            version_count: number;
+        };
+        /**
+         * RuleVersionCreate
+         * @description Draft a new immutable rule version (C5, design 14 RuleConfiguration).
+         */
+        RuleVersionCreate: {
+            /**
+             * Barcode Required
+             * @default false
+             */
+            barcode_required: boolean;
+            /** Compatible Component Model Version Ids */
+            compatible_component_model_version_ids?: string[];
+            /** Component Policies */
+            component_policies: components["schemas"]["RulePolicyIn"][];
+            /** Mandatory Gates */
+            mandatory_gates?: {
+                [key: string]: boolean;
+            };
+            /** Minimum Usable Frames */
+            minimum_usable_frames: number;
+            /** Product Version Id */
+            product_version_id: string;
+        };
+        /** RuleVersionOut */
+        RuleVersionOut: {
+            /** Barcode Required */
+            barcode_required: boolean;
+            /** Compatible Model Version Ids */
+            compatible_model_version_ids: string[];
+            /** Component Policies */
+            component_policies: components["schemas"]["RulePolicyOut"][];
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /** Mandatory Gates */
+            mandatory_gates: {
+                [key: string]: boolean;
+            };
+            /** Minimum Usable Frames */
+            minimum_usable_frames: number;
+            /** Organization Id */
+            organization_id: number;
+            /** Product Version Id */
+            product_version_id: string;
+            /** Publish Reason */
+            publish_reason: string | null;
+            /** Published At */
+            published_at: string | null;
+            /** Published By */
+            published_by: string | null;
+            /** Rule Code */
+            rule_code: string;
+            /** Rule Id */
+            rule_id: number;
+            /** Status */
+            status: string;
+            /** Uncertain Maps To Ng */
+            uncertain_maps_to_ng: boolean;
+            /** Version */
+            version: number;
+            /** Version Id */
+            version_id: string;
         };
         /**
          * SiteOut
@@ -942,6 +2027,88 @@ export interface operations {
             };
         };
     };
+    list_components_api_v1_components_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComponentPage"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_component_api_v1_components_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComponentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComponentOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Component code exists or the idempotency key was reused */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     dashboard_devices_api_v1_dashboard_devices_get: {
         parameters: {
             query?: never;
@@ -1061,6 +2228,35 @@ export interface operations {
             };
         };
     };
+    list_desired_configurations_api_v1_device_configurations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesiredConfigurationPage"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     list_devices_api_v1_devices_get: {
         parameters: {
             query?: never;
@@ -1086,6 +2282,128 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_desired_configuration_api_v1_devices__device_id__desired_configuration_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesiredConfigurationOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_desired_configuration_api_v1_devices__device_id__desired_configuration_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+            };
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DesiredConfigurationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesiredConfigurationOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description An incompatible version bundle */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The If-Match revision is stale */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1556,6 +2874,609 @@ export interface operations {
             };
         };
     };
+    get_model_version_api_v1_model_versions__version_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelVersionOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_model_version_api_v1_model_versions__version_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelVersionOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_models_api_v1_models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelPage"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_model_package_api_v1_models_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelPackageOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Model code exists or the idempotency key was reused */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_model_api_v1_models__model_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                model_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelDetailOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_model_version_api_v1_models__model_id__versions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                model_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelManifestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelVersionOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description A version collision or idempotency key reuse */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Invalid manifest */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_product_version_api_v1_product_versions__version_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductVersionOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_product_version_api_v1_product_versions__version_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductVersionOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ambiguous barcode mapping */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The version is not publishable */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_products_api_v1_products_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductPage"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_product_api_v1_products_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Product code exists or the idempotency key was reused */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_product_api_v1_products__product_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_product_version_api_v1_products__product_id__versions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductVersionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductVersionOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description A version collision or idempotency key reuse */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Invalid component set or barcode values */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     list_review_queue_api_v1_reviews_queue_get: {
         parameters: {
             query?: {
@@ -1593,6 +3514,312 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rule_version_api_v1_rule_versions__version_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleVersionOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_rule_version_api_v1_rule_versions__version_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleVersionOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The rule is incompatible with its product or models */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The rule policy set is incomplete */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    list_rules_api_v1_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RulePage"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    create_rule_api_v1_rules_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rule code exists or the idempotency key was reused */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rule_api_v1_rules__rule_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleDetailOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_rule_version_api_v1_rules__rule_id__versions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                rule_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleVersionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleVersionOut"];
+                };
+            };
+            /** @description A valid pilot administrator credential or session is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description The requested resource does not exist in this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description A version collision or idempotency key reuse */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Invalid component policy */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };

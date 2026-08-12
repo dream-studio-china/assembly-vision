@@ -275,3 +275,398 @@ class ReviewQueuePage(APIModel):
 
     items: list[ReviewQueueItem]
     next_cursor: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# C5 metadata governance contracts. Published central versions are immutable
+# and registered metadata only; they never imply a device downloaded,
+# validated, or activated the content. Request bodies inherit ``extra="forbid"``
+# from the APIModel base (contract 15.1).
+# ---------------------------------------------------------------------------
+
+
+class ComponentCreate(APIModel):
+    """Create a component in the organization vocabulary (C5)."""
+
+    component_code: str = Field(min_length=1, max_length=64)
+    display_name: str = Field(min_length=1, max_length=128)
+
+
+class ComponentOut(APIModel):
+    id: int
+    organization_id: int
+    component_code: str
+    display_name: str
+    created_at: datetime
+
+
+class ComponentPage(APIModel):
+    items: list[ComponentOut]
+    next_cursor: str | None = None
+
+
+class ProductCreate(APIModel):
+    """Create a stable product identity (C5)."""
+
+    product_code: str = Field(min_length=1, max_length=128)
+    name: str = Field(min_length=1, max_length=128)
+
+
+class ProductOut(APIModel):
+    """A stable product identity (C5)."""
+
+    id: int
+    organization_id: int
+    product_code: str
+    name: str
+    created_at: datetime
+
+
+class ProductSummaryOut(APIModel):
+    """A stable product with its latest governed version (C5)."""
+
+    id: int
+    organization_id: int
+    product_code: str
+    name: str
+    created_at: datetime
+    version_count: int
+    latest_version_id: str | None
+    latest_version_number: int | None
+    latest_version_status: str | None
+
+
+class ProductPage(APIModel):
+    items: list[ProductSummaryOut]
+    next_cursor: str | None = None
+
+
+class ProductVersionComponentIn(APIModel):
+    component_code: str = Field(min_length=1, max_length=64)
+    expected_count: int = Field(ge=1, le=64)
+
+
+class ProductVersionCreate(APIModel):
+    """Draft a new immutable product version (C5).
+
+    Barcode mappings are exact values only (ADR-015); a version may declare
+    none, but every value must be 1..256 characters.
+    """
+
+    barcodes: list[str] = Field(default_factory=list, max_length=100)
+    components: list[ProductVersionComponentIn] = Field(min_length=1, max_length=64)
+
+
+class ProductVersionComponentOut(APIModel):
+    component_code: str
+    expected_count: int
+
+
+class ProductVersionOut(APIModel):
+    id: int
+    organization_id: int
+    product_id: int
+    product_code: str
+    version_id: str
+    version: int
+    status: str
+    barcodes: list[str]
+    components: list[ProductVersionComponentOut]
+    published_at: datetime | None
+    published_by: str | None
+    publish_reason: str | None
+    created_at: datetime
+
+
+class ProductDetailOut(APIModel):
+    """A stable product with all its immutable versions (C5)."""
+
+    id: int
+    organization_id: int
+    product_code: str
+    name: str
+    created_at: datetime
+    versions: list[ProductVersionOut]
+
+
+class RuleCreate(APIModel):
+    """Create a stable rule identity (C5)."""
+
+    rule_code: str = Field(min_length=1, max_length=128)
+    name: str = Field(min_length=1, max_length=128)
+
+
+class RuleOut(APIModel):
+    """A stable rule identity (C5)."""
+
+    id: int
+    organization_id: int
+    rule_code: str
+    name: str
+    created_at: datetime
+
+
+class RuleSummaryOut(APIModel):
+    """A stable rule with its latest governed version (C5)."""
+
+    id: int
+    organization_id: int
+    rule_code: str
+    name: str
+    created_at: datetime
+    version_count: int
+    latest_version_id: str | None
+    latest_version_number: int | None
+    latest_version_status: str | None
+
+
+class RulePage(APIModel):
+    items: list[RuleSummaryOut]
+    next_cursor: str | None = None
+
+
+class RulePolicyIn(APIModel):
+    """Per-component confidence/temporal policy (design 14 ComponentPolicy)."""
+
+    component_code: str = Field(min_length=1, max_length=64)
+    high_confidence: float = Field(gt=0, le=1)
+    medium_confidence: float = Field(gt=0, le=1)
+    minimum_medium_detections: int = Field(ge=1, le=64)
+    require_adjacent_frames: bool = False
+    expected_count: int = Field(ge=1, le=64)
+
+
+class RuleVersionCreate(APIModel):
+    """Draft a new immutable rule version (C5, design 14 RuleConfiguration)."""
+
+    product_version_id: str
+    barcode_required: bool = False
+    minimum_usable_frames: int = Field(ge=1, le=1000)
+    mandatory_gates: dict[str, bool] = Field(default_factory=dict, max_length=16)
+    component_policies: list[RulePolicyIn] = Field(min_length=1, max_length=64)
+    compatible_component_model_version_ids: list[str] = Field(default_factory=list, max_length=32)
+
+
+class RulePolicyOut(APIModel):
+    component_code: str
+    high_confidence: float
+    medium_confidence: float
+    minimum_medium_detections: int
+    require_adjacent_frames: bool
+    expected_count: int
+
+
+class RuleVersionOut(APIModel):
+    id: int
+    organization_id: int
+    rule_id: int
+    rule_code: str
+    product_version_id: str
+    version_id: str
+    version: int
+    status: str
+    barcode_required: bool
+    minimum_usable_frames: int
+    uncertain_maps_to_ng: bool
+    mandatory_gates: dict[str, bool]
+    component_policies: list[RulePolicyOut]
+    compatible_model_version_ids: list[str]
+    content_sha256: str
+    published_at: datetime | None
+    published_by: str | None
+    publish_reason: str | None
+    created_at: datetime
+
+
+class RuleDetailOut(APIModel):
+    """A stable rule with all its immutable versions (C5)."""
+
+    id: int
+    organization_id: int
+    rule_code: str
+    name: str
+    created_at: datetime
+    versions: list[RuleVersionOut]
+
+
+class ModelCreate(APIModel):
+    """Create a stable model package identity (C5)."""
+
+    model_code: str = Field(min_length=1, max_length=128)
+    name: str = Field(min_length=1, max_length=128)
+    task: Literal["PRODUCT_DETECTION", "COMPONENT_DETECTION"]
+
+
+class ModelPackageOut(APIModel):
+    """A stable model package identity (C5)."""
+
+    id: int
+    organization_id: int
+    model_code: str
+    name: str
+    task: str
+    created_at: datetime
+
+
+class ModelSummaryOut(APIModel):
+    """A stable model package with its latest governed version (C5)."""
+
+    id: int
+    organization_id: int
+    model_code: str
+    name: str
+    task: str
+    created_at: datetime
+    version_count: int
+    latest_version_id: str | None
+    latest_version_number: int | None
+    latest_version_status: str | None
+
+
+class ModelPage(APIModel):
+    items: list[ModelSummaryOut]
+    next_cursor: str | None = None
+
+
+class ArtifactIn(APIModel):
+    name: str = Field(min_length=1, max_length=128)
+    uri: str = Field(min_length=1, max_length=512)
+    sha256: str
+    size_bytes: int = Field(ge=0)
+
+
+class DatasetIn(APIModel):
+    dataset_version: str = Field(min_length=1, max_length=64)
+    purpose: Literal["TRAIN", "VALIDATION", "TEST", "ACCEPTANCE"] = "TRAIN"
+    manifest_uri: str = Field(min_length=1, max_length=512)
+
+
+class MetricIn(APIModel):
+    name: str = Field(min_length=1, max_length=64)
+    value: float
+    scope: str = Field(min_length=1, max_length=64)
+
+
+class ModelManifestIn(APIModel):
+    """Declarative model manifest draft (C5, design 14 ModelManifest).
+
+    Artifact checksums are normalized to bare lowercase 64-hex; the central
+    server records declarations only and never verifies artifact bytes.
+    """
+
+    task: Literal["PRODUCT_DETECTION", "COMPONENT_DETECTION"]
+    semantic_version: str = Field(min_length=1, max_length=32)
+    edge_version_label: str = Field(min_length=1, max_length=64)
+    runtime: str = Field(min_length=1, max_length=64)
+    input_width: int = Field(ge=1, le=8192)
+    input_height: int = Field(ge=1, le=8192)
+    class_names: list[str] = Field(min_length=1, max_length=256)
+    artifacts: list[ArtifactIn] = Field(min_length=1, max_length=32)
+    datasets: list[DatasetIn] = Field(default_factory=list, max_length=32)
+    split_strategy: str = Field(min_length=1, max_length=64)
+    source_revision: str = Field(min_length=1, max_length=128)
+    training_config_revision: str = Field(min_length=1, max_length=128)
+    metrics: list[MetricIn] = Field(default_factory=list, max_length=64)
+    limitations: list[str] = Field(default_factory=list, max_length=64)
+
+
+class ArtifactOut(APIModel):
+    name: str
+    uri: str
+    sha256: str
+    size_bytes: int
+
+
+class DatasetOut(APIModel):
+    dataset_version: str
+    purpose: str
+    manifest_uri: str
+
+
+class MetricOut(APIModel):
+    name: str
+    value: float
+    scope: str
+
+
+class ModelVersionOut(APIModel):
+    id: int
+    organization_id: int
+    model_package_id: int
+    model_code: str
+    task: str
+    version_id: str
+    version: int
+    status: str
+    semantic_version: str
+    edge_version_label: str
+    runtime: str
+    input_width: int
+    input_height: int
+    class_names: list[str]
+    artifacts: list[ArtifactOut]
+    datasets: list[DatasetOut]
+    split_strategy: str
+    source_revision: str
+    training_config_revision: str
+    metrics: list[MetricOut]
+    limitations: list[str]
+    manifest_sha256: str
+    published_at: datetime | None
+    published_by: str | None
+    publish_reason: str | None
+    created_at: datetime
+
+
+class ModelDetailOut(APIModel):
+    """A stable model package with all its immutable versions (C5)."""
+
+    id: int
+    organization_id: int
+    model_code: str
+    name: str
+    task: str
+    created_at: datetime
+    versions: list[ModelVersionOut]
+
+
+class PublishRequest(APIModel):
+    """Required actor context for an immutable publish (C5)."""
+
+    reason: str = Field(min_length=1, max_length=512)
+
+
+class DesiredConfigurationIn(APIModel):
+    """Desired bundle for one device (M1, C5).
+
+    The record expresses intent only: packages are installed manually in M1
+    and assignment is never proof of download, validation, or activation.
+    """
+
+    product_version_id: str
+    product_model_version_id: str
+    component_model_version_id: str
+    rule_version_id: str
+    reason: str = Field(min_length=1, max_length=512)
+
+
+class DesiredConfigurationOut(APIModel):
+    id: int
+    organization_id: int
+    device_row_id: int
+    device_id: str
+    device_name: str
+    revision: int
+    product_version_id: str
+    product_model_version_id: str
+    component_model_version_id: str
+    rule_version_id: str
+    reason: str
+    assigned_by: str
+    assigned_at: datetime
+    created_at: datetime
+
+
+class DesiredConfigurationPage(APIModel):
+    items: list[DesiredConfigurationOut]
+    next_cursor: str | None = None
