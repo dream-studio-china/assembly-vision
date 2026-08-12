@@ -14,6 +14,8 @@ import {
 import * as echarts from "echarts";
 
 import { formatMillis, formatNumber } from "../lib/format";
+import { activeLocale } from "../i18n";
+import { activeTheme } from "../theme";
 
 const { t, locale } = useI18n();
 const summary = ref<DashboardSummary | null>(null);
@@ -53,6 +55,13 @@ async function load(): Promise<void> {
   }
 }
 
+function themeToken(name: string, fallback: string): string {
+  if (typeof document === "undefined") {
+    return fallback;
+  }
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+}
+
 function renderChart(): void {
   if (!chartEl.value) {
     return;
@@ -62,23 +71,59 @@ function renderChart(): void {
   const ok = t("OK");
   const ng = t("NG");
   const uncertain = t("Uncertain");
+  // Chart ink follows the active black/white theme; ECharts 6 defaults the
+  // legend to the bottom, which overlaps the x-axis date labels, so it is
+  // pinned to the top explicitly.
+  const text = themeToken("--text-muted", "#5c666e");
+  const axis = themeToken("--border-strong", "#5f6b72");
+  const split = themeToken("--border", "#aeb6bc");
   chart.setOption({
     tooltip: { trigger: "axis" },
-    legend: { data: [ok, ng, uncertain] },
-    grid: { left: 40, right: 20, top: 40, bottom: 40 },
-    xAxis: { type: "category", data: points.map((p) => p.bucket) },
+    legend: {
+      top: 4,
+      left: "center",
+      textStyle: { color: text },
+      data: [ok, ng, uncertain],
+    },
+    grid: { left: 44, right: 20, top: 44, bottom: 36 },
+    xAxis: {
+      type: "category",
+      data: points.map((p) => p.bucket),
+      axisLabel: {
+        color: text,
+        formatter: (value: string) => value.slice(5), // "2026-07-20" -> "07-20"
+      },
+      axisLine: { lineStyle: { color: axis } },
+    },
     yAxis: {
       type: "value",
       minInterval: 1,
-      axisLabel: { formatter: (value: number) => value.toLocaleString(locale.value) },
+      splitLine: { lineStyle: { color: split } },
+      axisLabel: {
+        color: text,
+        formatter: (value: number) => value.toLocaleString(locale.value),
+      },
     },
     series: [
-      { name: ok, type: "bar", stack: "outcome", data: points.map((p) => p.ok_count) },
-      { name: ng, type: "bar", stack: "outcome", data: points.map((p) => p.ng_count) },
+      {
+        name: ok,
+        type: "bar",
+        stack: "outcome",
+        itemStyle: { color: themeToken("--status-ok", "#237a43") },
+        data: points.map((p) => p.ok_count),
+      },
+      {
+        name: ng,
+        type: "bar",
+        stack: "outcome",
+        itemStyle: { color: themeToken("--status-ng", "#b52d2b") },
+        data: points.map((p) => p.ng_count),
+      },
       {
         name: uncertain,
         type: "bar",
         stack: "outcome",
+        itemStyle: { color: themeToken("--status-warning", "#8a6200") },
         data: points.map((p) => p.uncertain_count),
       },
     ],
@@ -90,6 +135,8 @@ function resize(): void {
 }
 
 watch(scope, () => load());
+// Re-render the chart so legend text and theme colors follow locale/theme changes.
+watch([activeLocale, activeTheme], () => renderChart());
 onMounted(() => {
   load();
   apiClient
