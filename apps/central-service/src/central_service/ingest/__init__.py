@@ -9,6 +9,7 @@ echoes the fields the edge validates (task C1 section 5.3).
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -27,6 +28,8 @@ from central_service.persistence.repository import (
     UploadReceiptRow,
 )
 from central_service.storage.object_store import ObjectStorage
+
+log = logging.getLogger("central_service.ingest")
 
 
 @dataclass(frozen=True)
@@ -79,6 +82,13 @@ def ingest_upload(
         record=record,
         payload_json=payload_json,
         received_at=received_at,
+    )
+    log.info(
+        "inspection upload device=%s inspection=%s object=%s kind=INSPECTION replayed=%s",
+        device.device_id,
+        record.inspection_id,
+        envelope.object_id,
+        replayed,
     )
     return IngestionResult(receipt=receipt, replayed=replayed)
 
@@ -173,6 +183,12 @@ def ingest_media(
     try:
         storage.put_object(object_key, envelope.payload, entry.mime_type)
     except Exception as exc:  # noqa: BLE001 - any store failure is retryable
+        log.error(
+            "object store unavailable device=%s object=%s",
+            device.device_id,
+            envelope.object_id,
+            exc_info=exc,
+        )
         raise IngestError(
             status_code=503,
             code="OBJECT_STORE_UNAVAILABLE",
@@ -195,6 +211,14 @@ def ingest_media(
         checksum_sha256=envelope.checksum_sha256,
         capture_at=capture_at,
         received_at=received_at,
+    )
+    log.info(
+        "media upload device=%s inspection=%s object=%s kind=MEDIA size=%d replayed=%s",
+        device.device_id,
+        envelope.inspection_id,
+        envelope.object_id,
+        envelope.size_bytes,
+        replayed,
     )
     return IngestionResult(receipt=receipt, replayed=replayed)
 

@@ -62,6 +62,10 @@ class CentralSettings(BaseSettings):
     max_inspection_payload_bytes: int = 1 * 1024 * 1024
     max_media_payload_bytes: int = 16 * 1024 * 1024
 
+    # Pilot hardening bounds (C6): per-client sliding-window request cap.
+    # Health endpoints are never limited. Zero disables limiting entirely.
+    rate_limit_requests_per_minute: int = 600
+
     @field_validator("database_url")
     @classmethod
     def _validate_database_scheme(cls, value: str) -> str:
@@ -93,3 +97,5 @@ class CentralSettings(BaseSettings):
             raise ConfigError(
                 "central: max_media_payload_bytes must be in [1, max_envelope_body_bytes]"
             )
+        if self.rate_limit_requests_per_minute < 0:
+            raise ConfigError("central: rate_limit_requests_per_minute must be >= 0")

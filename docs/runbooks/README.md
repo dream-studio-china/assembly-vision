@@ -21,6 +21,11 @@ Site-specific contacts, commands, thresholds, and hardware steps must be added d
 | TLS certificate rotation | [13 - TLS Certificate Rotation](13-tls-certificate-rotation.md) |
 | Deployment upgrade and rollback | [14 - Deployment Upgrade and Rollback](14-deployment-upgrade-rollback.md) |
 | Edge acceptance execution | [15 - Edge Acceptance Execution](15-edge-acceptance-execution.md) |
+| Central ingestion backlog | [C1 - Central Ingestion Backlog](central-ingestion-backlog.md) |
+| Central object-store failure | [C2 - Central Object-Store Failure](central-object-store-failure.md) |
+| Central credential compromise | [C3 - Central Credential Compromise](central-credential-compromise.md) |
+| Central backup and restore | [C4 - Central Backup and Restore](central-backup-restore.md) |
+| Central pilot upgrade and rollback | [C5 - Central Pilot Upgrade and Rollback](central-pilot-upgrade-rollback.md) |
 
 Every execution records device/site, start/end time, actor, affected inspections, evidence/log bundle,
 actions, result, and escalation reference. A runbook never converts incomplete evidence to `OK`.
