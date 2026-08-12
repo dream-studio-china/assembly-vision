@@ -174,6 +174,16 @@ unavailability never blocks or alters an edge inspection decision.
 
 ## Quickstart
 
+Two companion guides split deployment into a short developer path and an
+exhaustive reference:
+
+- **[QUICKSTART.md](QUICKSTART.md)** — simple, intuitive dev setup for each
+  component (edge CLI/service/dashboard, central stack, admin-web) plus how
+  training works, in the fewest commands.
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** — the full deployment reference: dev,
+  production, and training over both the CLI and Docker, environment variable
+  tables, backup/restore, upgrade/rollback, and troubleshooting.
+
 ```bash
 git clone https://github.com/dream-studio-china/assembly-vision.git
 cd assembly-vision
