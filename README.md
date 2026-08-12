@@ -234,10 +234,11 @@ curl http://localhost:8080/api/v1/health/live        # via the admin-web proxy
 Schema migrations are a controlled release step (the one-shot `central-migrate`
 service in the stack; the API never migrates automatically).
 
-See [QUICKSTART.md](QUICKSTART.md) for a detailed walkthrough, structured
-per app: section 4 covers the edge inspection CLI, section 5 the edge
-dashboard, section 6 the edge desktop shell, section 7 the central server
-pilot.
+See [QUICKSTART.md](QUICKSTART.md) for the short developer fast path
+(setup, training, edge CLI/service/dashboard, central API, admin-web) and
+[DEPLOYMENT.md](DEPLOYMENT.md) for the full deployment reference (dev,
+production, and training over the CLI and Docker, environment tables,
+troubleshooting).
 
 ## Usage
 
@@ -312,7 +313,7 @@ procedures live in the runbooks (camera disconnection, low disk space, database
 recovery, network recovery synchronization). The E6 acceptance matrix
 ([docs/tasks/E6-edge-acceptance.md](docs/tasks/E6-edge-acceptance.md)) classifies
 every scenario by environment, and the local runner
-(`scripts/edge-acceptance-run.py`, see QUICKSTART §9.1) executes supported
+(`scripts/edge-acceptance-run.py`, see [DEPLOYMENT.md](DEPLOYMENT.md) §5.1) executes supported
 locally automatable items while on-site and unsupported items stay
 `NOT_EXECUTED` until their required evidence is available.
 
@@ -324,7 +325,7 @@ upload an image, or upload a short video, and get the decision immediately
 (ADR-014). These endpoints are **disabled by default** — start `serve` with
 `--enable-web-test` to enable them. This is a test harness, not a production
 acquisition path: it never streams video. Production real-time inspection uses
-the native app / RTSP / camera sources. See [QUICKSTART](QUICKSTART.md) §4.8.
+the native app / RTSP / camera sources. See [DEPLOYMENT.md](DEPLOYMENT.md) §3.4 for the full description.
 
 ## Roadmap
 
@@ -357,4 +358,4 @@ complete AI recognition platform for production lines:
 
 ## License
 
-MIT © 2026 dream-studio-china
+MIT © 2026 Dream Studio
