@@ -178,7 +178,7 @@ async function onSiteChange(siteId?: number): Promise<void> {
     <el-card class="block">
       <template #header>{{ t("Devices") }}</template>
       <el-table :data="devices" :empty-text="t('No registered devices.')">
-        <el-table-column prop="device_id" :label="t('Device id')" width="260" />
+        <el-table-column prop="device_id" :label="t('Device id')" width="260" show-overflow-tooltip />
         <el-table-column prop="name" :label="t('Name')" width="160" />
         <el-table-column :label="t('Last seen (UTC)')" width="220">
           <template #default="{ row }">
@@ -197,50 +197,50 @@ async function onSiteChange(siteId?: number): Promise<void> {
 .overview {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .block {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 }
 
 .filters {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .filter {
-  width: 200px;
+  width: 180px;
 }
 
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .metric-value {
-  font-size: 1.75rem;
+  font-size: 1.35rem;
   font-weight: 600;
 }
 
 .metric-label {
-  color: #909399;
-  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
 }
 
 .metric.ok .metric-value {
-  color: #67c23a;
+  color: var(--status-ok);
 }
 
 .metric.ng .metric-value {
-  color: #f56c6c;
+  color: var(--status-ng);
 }
 
 .metric.uncertain .metric-value {
-  color: #e6a23c;
+  color: var(--status-warning);
 }
 
 .chart {
@@ -248,6 +248,6 @@ async function onSiteChange(siteId?: number): Promise<void> {
 }
 
 .muted {
-  color: #909399;
+  color: var(--text-muted);
 }
 </style>

@@ -332,23 +332,23 @@ onMounted(load);
 .detail {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .block {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 }
 
 .media {
   display: flex;
   gap: 1rem;
   align-items: flex-start;
-  margin: 0.75rem 0;
+  margin: 0.5rem 0;
 }
 
 .media-image {
-  max-width: 260px;
-  border: 1px solid #e4e7ed;
+  max-width: 220px;
+  border: 1px solid var(--border);
   border-radius: 6px;
 }
 
@@ -361,7 +361,7 @@ onMounted(load);
 }
 
 .media-thumb:focus-visible {
-  outline: 2px solid #409eff;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -392,6 +392,6 @@ onMounted(load);
 }
 
 .muted {
-  color: #909399;
+  color: var(--text-muted);
 }
 </style>

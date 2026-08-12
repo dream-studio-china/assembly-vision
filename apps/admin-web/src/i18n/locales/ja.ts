@@ -10,6 +10,7 @@ export default {
   "Sign out": "サインアウト",
   "Primary navigation": "メインナビゲーション",
   "Interface language": "表示言語",
+  "Interface theme": "表示テーマ",
 
   // Shared status words
   OK: "OK",

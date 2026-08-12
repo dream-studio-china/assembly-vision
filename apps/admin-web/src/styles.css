@@ -1,12 +1,232 @@
-body {
-  margin: 0;
-  font-family:
-    "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB",
-    "Microsoft YaHei", Arial, sans-serif;
-  background: #f5f7fa;
-  color: #303133;
+/*
+ * Flat industrial theme for the central admin dashboard (design 17.12).
+ *
+ * Every surface is flat: zero shadows, zero rounded corners, 1px borders.
+ * The palette swaps wholesale between the white (light) and black (dark)
+ * themes through `data-theme` on <html>; Element Plus tokens are remapped
+ * to the same variables so date pickers, tables, dialogs, and tags follow
+ * the theme.
+ */
+
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --font-sans:
+    "Helvetica Neue", Helvetica, "Segoe UI", Roboto, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+  --font-mono:
+    "SFMono-Regular", "IBM Plex Mono", "JetBrains Mono", Consolas,
+    "Liberation Mono", Menlo, monospace;
+  --page-bg: #e9ecef;
+  --surface: #f3f5f6;
+  --surface-raised: #ffffff;
+  --surface-muted: #edf0f2;
+  --surface-inset: #dde1e4;
+  --text: #1a1f24;
+  --text-muted: #5c666e;
+  --text-faint: #7d878e;
+  --border: #aeb6bc;
+  --border-strong: #5f6b72;
+  --accent: #126c87;
+  --accent-strong: #064f68;
+  --accent-soft: #d7e9ee;
+  --shell: #ffffff;
+  --shell-strong: #f3f5f6;
+  --shell-text: #1a1f24;
+  --shell-muted: #5c666e;
+  --status-ok: #237a43;
+  --status-ng: #b52d2b;
+  --status-warning: #8a6200;
+  --panel-padding: 14px;
 }
 
-#app {
-  min-height: 100vh;
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --font-sans:
+    "Helvetica Neue", Helvetica, "Segoe UI", Roboto, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+  --font-mono:
+    "SFMono-Regular", "IBM Plex Mono", "JetBrains Mono", Consolas,
+    "Liberation Mono", Menlo, monospace;
+  --page-bg: #101416;
+  --surface: #171c1f;
+  --surface-raised: #1d2326;
+  --surface-muted: #242b2f;
+  --surface-inset: #0d1113;
+  --text: #e8edef;
+  --text-muted: #aab6ba;
+  --text-faint: #7e8b90;
+  --border: #3a454a;
+  --border-strong: #5a686e;
+  --accent: #4c9eb9;
+  --accent-strong: #80c6da;
+  --accent-soft: #173944;
+  --shell: #0d1113;
+  --shell-strong: #06090a;
+  --shell-text: #eef3f4;
+  --shell-muted: #a0adb2;
+  --status-ok: #66bd84;
+  --status-ng: #ef7770;
+  --status-warning: #e5ba58;
+  --panel-padding: 14px;
+}
+
+:root {
+  color: var(--text);
+  background: var(--page-bg);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+
+  /* Element Plus tokens follow the theme variables. */
+  --el-color-primary: var(--accent);
+  --el-color-success: var(--status-ok);
+  --el-color-warning: var(--status-warning);
+  --el-color-danger: var(--status-ng);
+  --el-color-info: var(--accent);
+  --el-bg-color: var(--surface-raised);
+  --el-bg-color-page: var(--page-bg);
+  --el-bg-color-overlay: var(--surface-raised);
+  --el-fill-color: var(--surface-muted);
+  --el-fill-color-light: var(--surface-muted);
+  --el-fill-color-lighter: var(--surface-inset);
+  --el-fill-color-blank: var(--surface-raised);
+  --el-text-color-primary: var(--text);
+  --el-text-color-regular: var(--text-muted);
+  --el-text-color-secondary: var(--text-faint);
+  --el-border-color: var(--border);
+  --el-border-color-light: var(--border);
+  --el-border-color-lighter: var(--border);
+  --el-border-radius-base: 0;
+  --el-border-radius-small: 0;
+  --el-border-radius-round: 0;
+  --el-box-shadow-light: none;
+  --el-box-shadow: none;
+  --el-box-shadow-dark: none;
+  --el-table-header-bg-color: var(--surface-muted);
+  --el-table-tr-bg-color: var(--surface-raised);
+  --el-table-row-hover-bg-color: var(--accent-soft);
+  --el-table-border-color: var(--border);
+  --el-dialog-border-radius: 0;
+
+  /* Compact industrial density. */
+  --el-component-size: 28px;
+  --el-card-padding: 12px;
+  --el-table-cell-padding: 4px 0;
+  --el-dialog-padding-primary: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--page-bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* Flat industrial component overrides: no shadows, no rounded corners. */
+.el-card {
+  --el-card-padding: 12px;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.el-dialog {
+  --el-dialog-padding-primary: 12px;
+  border-radius: 0 !important;
+}
+
+.el-message-box,
+.el-message,
+.el-dropdown-menu,
+.el-picker-panel,
+.el-popper,
+.el-tooltip__popper {
+  border-radius: 0 !important;
+}
+
+/* EP 2.8 hardcodes the default button height, so compact it explicitly. */
+.el-button {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 0 !important;
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper,
+.el-date-editor .el-input__wrapper {
+  border-radius: 0 !important;
+}
+
+.el-table {
+  border-radius: 0 !important;
+}
+
+/* Compact rows: EP hardcodes cell padding per table size class. */
+.el-table .el-table__cell,
+.el-table--default .el-table__cell {
+  padding: 3px 0;
+}
+
+.el-table .cell {
+  line-height: 20px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.el-tag {
+  border-radius: 0 !important;
+}
+
+.el-image-viewer__close {
+  border-radius: 0 !important;
+}
+
+/* Industrial data typography: mono for values, identifiers, and timestamps;
+   CJK glyphs fall back to the sans stack because mono faces lack them. */
+.el-table .el-table__cell,
+.el-descriptions__content,
+.metric-value,
+.media-meta,
+.viewer-meta {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }

@@ -12,6 +12,7 @@ export default {
   "Sign out": "Sign out",
   "Primary navigation": "Primary navigation",
   "Interface language": "Interface language",
+  "Interface theme": "Interface theme",
 
   // Shared status words
   OK: "OK",

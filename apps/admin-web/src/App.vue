@@ -9,6 +9,7 @@ import jaLocale from "element-plus/es/locale/lang/ja";
 
 import { useSessionStore } from "./stores/session";
 import { activeLocale, applyLocale, isSupportedLocale, SUPPORTED_LOCALES } from "./i18n";
+import { toggleTheme } from "./theme";
 
 const { t } = useI18n();
 const session = useSessionStore();
@@ -50,6 +51,14 @@ function selectLocale(command: string | number | object): void {
     applyLocale(value);
   }
 }
+
+function selectTheme(): void {
+  try {
+    toggleTheme(window.localStorage);
+  } catch {
+    toggleTheme();
+  }
+}
 </script>
 
 <template>
@@ -62,6 +71,26 @@ function selectLocale(command: string | number | object): void {
           <router-link to="/inspections">{{ t("Inspections") }}</router-link>
           <router-link to="/reviews">{{ t("Reviews") }}</router-link>
         </nav>
+        <button
+          type="button"
+          class="theme-toggle"
+          :aria-label="t('Interface theme')"
+          :title="t('Interface theme')"
+          data-testid="theme-toggle"
+          @click="selectTheme"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" fill="#ffffff" />
+            <path d="M12 2a10 10 0 0 1 0 20z" fill="#000000" />
+          </svg>
+        </button>
         <el-dropdown
           class="locale"
           trigger="click"
@@ -130,10 +159,10 @@ function selectLocale(command: string | number | object): void {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid #e4e7ed;
-  background: #fff;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--shell);
 }
 
 .brand {
@@ -142,27 +171,28 @@ function selectLocale(command: string | number | object): void {
 
 .nav {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   flex: 1;
 }
 
 .nav a {
-  color: #606266;
+  color: var(--text-muted);
   text-decoration: none;
 }
 
 .nav a.router-link-active {
-  color: #409eff;
+  color: var(--accent);
   font-weight: 600;
 }
 
 .user {
-  color: #909399;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
+.theme-toggle,
 .locale-trigger {
   display: inline-flex;
   align-items: center;
@@ -170,19 +200,22 @@ function selectLocale(command: string | number | object): void {
   width: 30px;
   height: 30px;
   padding: 0;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  background: #fff;
-  color: #606266;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--shell-strong);
+  color: var(--text-muted);
   cursor: pointer;
 }
 
+.theme-toggle:hover,
+.theme-toggle:focus-visible,
 .locale-trigger:hover,
 .locale-trigger:focus-visible {
-  color: #409eff;
-  border-color: #409eff;
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
+.theme-toggle svg,
 .locale-trigger svg {
   width: 16px;
   height: 16px;

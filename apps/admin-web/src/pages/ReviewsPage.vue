@@ -102,10 +102,10 @@ onMounted(() => load());
 
     <el-card class="block">
       <el-table v-if="page" :data="page.items" :empty-text="t('No inspections awaiting review.')">
-        <el-table-column prop="completed_at" :label="t('Completed (UTC)')" width="180">
+        <el-table-column prop="completed_at" :label="t('Completed (UTC)')" width="200" show-overflow-tooltip>
           <template #default="{ row }">{{ new Date(row.completed_at).toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="device_id" :label="t('Device')" width="220" />
+        <el-table-column prop="device_id" :label="t('Device')" width="260" show-overflow-tooltip />
         <el-table-column prop="product_code" :label="t('Product')" width="120" />
         <el-table-column prop="barcode_value" :label="t('Barcode')" width="130" />
         <el-table-column :label="t('Machine result')" width="120">
@@ -176,15 +176,15 @@ onMounted(() => load());
 .reviews {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .block {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 }
 
 .pager {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   text-align: right;
 }
 
@@ -193,6 +193,6 @@ onMounted(() => load());
 }
 
 .muted {
-  color: #909399;
+  color: var(--text-muted);
 }
 </style>

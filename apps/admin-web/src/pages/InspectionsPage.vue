@@ -189,11 +189,11 @@ async function onSiteChange(siteId?: number): Promise<void> {
 
     <el-card class="block">
       <el-table v-if="page" :data="page.items" :empty-text="t('No inspections match the filters.')">
-        <el-table-column prop="completed_at" :label="t('Completed (UTC)')" width="180">
+        <el-table-column prop="completed_at" :label="t('Completed (UTC)')" width="200" show-overflow-tooltip>
           <template #default="{ row }">{{ new Date(row.completed_at).toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="device_id" :label="t('Device')" width="220" />
-        <el-table-column prop="barcode_value" :label="t('Barcode')" width="140" />
+        <el-table-column prop="device_id" :label="t('Device')" width="260" show-overflow-tooltip />
+        <el-table-column prop="barcode_value" :label="t('Barcode')" width="150" show-overflow-tooltip />
         <el-table-column prop="product_code" :label="t('Product')" width="120" />
         <el-table-column :label="t('Result')" width="100">
           <template #default="{ row }">
@@ -205,7 +205,7 @@ async function onSiteChange(siteId?: number): Promise<void> {
         <el-table-column :label="t('Internal')" width="110">
           <template #default="{ row }">{{ row.internal_decision }}</template>
         </el-table-column>
-        <el-table-column :label="t('Upload delay')" width="120">
+        <el-table-column :label="t('Upload delay')" width="140">
           <template #default="{ row }">{{ formatMillis(row.upload_delay_ms, locale) }}</template>
         </el-table-column>
         <el-table-column label="" width="90">
@@ -233,21 +233,21 @@ async function onSiteChange(siteId?: number): Promise<void> {
 .history {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .block {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 }
 
 .filters {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .filter {
-  width: 190px;
+  width: 170px;
 }
 
 .filter-actions {
@@ -257,13 +257,13 @@ async function onSiteChange(siteId?: number): Promise<void> {
 }
 
 .pager {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
 }
 
 .muted {
-  color: #909399;
+  color: var(--text-muted);
 }
 </style>

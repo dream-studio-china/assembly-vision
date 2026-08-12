@@ -61,7 +61,7 @@ async function submit(): Promise<void> {
 }
 
 .login-card {
-  width: 360px;
+  width: 340px;
 }
 
 .full {
@@ -69,6 +69,6 @@ async function submit(): Promise<void> {
 }
 
 .muted {
-  color: #909399;
+  color: var(--text-muted);
 }
 </style>
