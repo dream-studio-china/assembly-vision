@@ -17,6 +17,7 @@ import {
   newIdempotencyKey,
   type ReviewDispositionOption,
 } from "../lib/reviews";
+import { formatMillis, formatNumber } from "../lib/format";
 
 interface InferenceStage {
   model_name: string;
@@ -29,7 +30,7 @@ interface InferenceMetadata {
   component_detection?: InferenceStage;
 }
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 const detail = ref<InspectionDetail | null>(null);
 const error = ref<string | null>(null);
@@ -135,7 +136,7 @@ onMounted(load);
             {{ detail.barcode_value ?? "–" }}
           </el-descriptions-item>
           <el-descriptions-item :label="t('Upload delay')">
-            {{ detail.upload_delay_ms }} ms
+            {{ formatMillis(detail.upload_delay_ms, locale) }}
           </el-descriptions-item>
           <el-descriptions-item :label="t('Missing components')" :span="3">
             {{ detail.missing_components.join(", ") || "–" }}
@@ -171,8 +172,12 @@ onMounted(load);
               {{ row.best_confidence == null ? "&ndash;" : row.best_confidence.toFixed(3) }}
             </template>
           </el-table-column>
-          <el-table-column prop="detection_count" :label="t('Detections')" width="110" />
-          <el-table-column prop="usable_frame_count" :label="t('Usable frames')" width="120" />
+          <el-table-column :label="t('Detections')" width="110">
+            <template #default="{ row }">{{ formatNumber(row.detection_count, locale) }}</template>
+          </el-table-column>
+          <el-table-column :label="t('Usable frames')" width="120">
+            <template #default="{ row }">{{ formatNumber(row.usable_frame_count, locale) }}</template>
+          </el-table-column>
           <el-table-column :label="t('Reasons')">
             <template #default="{ row }">{{ row.policy_reason_codes.join(", ") || "&ndash;" }}</template>
           </el-table-column>
@@ -198,7 +203,7 @@ onMounted(load);
             {{ detail.aggregation_policy_version }}
           </el-descriptions-item>
           <el-descriptions-item :label="t('Processing')">
-            {{ detail.processing_ms }} ms
+            {{ formatMillis(detail.processing_ms, locale) }}
           </el-descriptions-item>
         </el-descriptions>
       </el-card>
@@ -212,7 +217,7 @@ onMounted(load);
               ({{ metadata.product_detection.model_version }})
             </el-descriptions-item>
             <el-descriptions-item :label="t('Product latency')">
-              {{ metadata.product_detection.latency_ms }} ms
+              {{ formatMillis(metadata.product_detection.latency_ms, locale) }}
             </el-descriptions-item>
           </template>
           <template v-if="metadata.component_detection">
@@ -221,7 +226,7 @@ onMounted(load);
               ({{ metadata.component_detection.model_version }})
             </el-descriptions-item>
             <el-descriptions-item :label="t('Component latency')">
-              {{ metadata.component_detection.latency_ms }} ms
+              {{ formatMillis(metadata.component_detection.latency_ms, locale) }}
             </el-descriptions-item>
           </template>
         </el-descriptions>
@@ -231,7 +236,9 @@ onMounted(load);
         <template #header>{{ t("Review") }}</template>
         <div v-if="reviews.length === 0" class="muted">{{ t("No review recorded yet.") }}</div>
         <el-table v-else :data="reviews" :empty-text="t('No review recorded.')">
-          <el-table-column prop="revision" :label="t('Rev')" width="70" />
+          <el-table-column :label="t('Rev')" width="70">
+            <template #default="{ row }">{{ formatNumber(row.revision, locale) }}</template>
+          </el-table-column>
           <el-table-column prop="disposition" :label="t('Disposition')" width="150" />
           <el-table-column prop="reviewer" :label="t('Reviewer')" width="140" />
           <el-table-column :label="t('Reason')">
@@ -284,7 +291,7 @@ onMounted(load);
           />
           <div class="media-meta">
             <div>{{ item.kind }} ({{ item.lifecycle }})</div>
-            <div class="muted">{{ item.mime_type }} &middot; {{ item.size_bytes }} bytes</div>
+            <div class="muted">{{ item.mime_type }} &middot; {{ formatNumber(item.size_bytes, locale) }} bytes</div>
           </div>
         </div>
       </el-card>

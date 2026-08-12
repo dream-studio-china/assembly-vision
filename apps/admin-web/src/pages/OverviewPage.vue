@@ -13,7 +13,9 @@ import {
 } from "@assemblyvision/api-client-central";
 import * as echarts from "echarts";
 
-const { t } = useI18n();
+import { formatMillis, formatNumber } from "../lib/format";
+
+const { t, locale } = useI18n();
 const summary = ref<DashboardSummary | null>(null);
 const timeseries = ref<DashboardTimeseries | null>(null);
 const devices = ref<DeviceStatus[]>([]);
@@ -65,7 +67,11 @@ function renderChart(): void {
     legend: { data: [ok, ng, uncertain] },
     grid: { left: 40, right: 20, top: 40, bottom: 40 },
     xAxis: { type: "category", data: points.map((p) => p.bucket) },
-    yAxis: { type: "value", minInterval: 1 },
+    yAxis: {
+      type: "value",
+      minInterval: 1,
+      axisLabel: { formatter: (value: number) => value.toLocaleString(locale.value) },
+    },
     series: [
       { name: ok, type: "bar", stack: "outcome", data: points.map((p) => p.ok_count) },
       { name: ng, type: "bar", stack: "outcome", data: points.map((p) => p.ng_count) },
@@ -141,24 +147,24 @@ async function onSiteChange(siteId?: number): Promise<void> {
 
     <section v-if="summary" class="cards">
       <el-card class="metric">
-        <div class="metric-value">{{ summary.inspection_count }}</div>
+        <div class="metric-value">{{ formatNumber(summary.inspection_count, locale) }}</div>
         <div class="metric-label">{{ t("Inspections") }}</div>
       </el-card>
       <el-card class="metric ok">
-        <div class="metric-value">{{ summary.ok_count }}</div>
+        <div class="metric-value">{{ formatNumber(summary.ok_count, locale) }}</div>
         <div class="metric-label">{{ t("OK") }}</div>
       </el-card>
       <el-card class="metric ng">
-        <div class="metric-value">{{ summary.ng_count }}</div>
+        <div class="metric-value">{{ formatNumber(summary.ng_count, locale) }}</div>
         <div class="metric-label">{{ t("NG") }}</div>
       </el-card>
       <el-card class="metric uncertain">
-        <div class="metric-value">{{ summary.uncertain_count }}</div>
+        <div class="metric-value">{{ formatNumber(summary.uncertain_count, locale) }}</div>
         <div class="metric-label">{{ t("Uncertain") }}</div>
       </el-card>
       <el-card class="metric">
         <div class="metric-value">
-          {{ summary.avg_upload_delay_ms == null ? "–" : `${Math.round(summary.avg_upload_delay_ms)} ms` }}
+          {{ formatMillis(summary.avg_upload_delay_ms, locale) }}
         </div>
         <div class="metric-label">{{ t("Mean upload delay") }}</div>
       </el-card>
@@ -179,7 +185,9 @@ async function onSiteChange(siteId?: number): Promise<void> {
             {{ row.last_seen_at ? new Date(row.last_seen_at).toLocaleString() : "–" }}
           </template>
         </el-table-column>
-        <el-table-column prop="inspection_count" :label="t('Inspections')" width="120" />
+        <el-table-column prop="inspection_count" :label="t('Inspections')" width="120">
+          <template #default="{ row }">{{ formatNumber(row.inspection_count, locale) }}</template>
+        </el-table-column>
       </el-table>
     </el-card>
   </main>

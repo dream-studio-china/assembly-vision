@@ -11,7 +11,9 @@ import {
   type Site,
 } from "@assemblyvision/api-client-central";
 
-const { t } = useI18n();
+import { formatMillis } from "../lib/format";
+
+const { t, locale } = useI18n();
 const query = reactive<InspectionQuery>({
   site_id: undefined,
   line_id: undefined,
@@ -204,7 +206,7 @@ async function onSiteChange(siteId?: number): Promise<void> {
           <template #default="{ row }">{{ row.internal_decision }}</template>
         </el-table-column>
         <el-table-column :label="t('Upload delay')" width="120">
-          <template #default="{ row }">{{ row.upload_delay_ms }} ms</template>
+          <template #default="{ row }">{{ formatMillis(row.upload_delay_ms, locale) }}</template>
         </el-table-column>
         <el-table-column label="" width="90">
           <template #default="{ row }">
