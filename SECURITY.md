@@ -177,6 +177,32 @@ device-configuration changes, and remote operations. Entries record actor,
 action, target, before/after state or checksum, timestamp, device/site, and
 trace ID. Logs display credential identifiers, never credential values.
 
+## Deployment contexts
+
+Central runs in one of two optional deployment modes. Both keep the edge out of
+the real-time decision path, and in both the edge reaches central directly over
+the factory network (never through a VPN).
+
+| Dimension | A. Network deployment | B. Factory intranet + controlled Tailscale |
+|---|---|---|
+| Central reachability | Reachable on the regular factory/enterprise network | Factory intranet only; not exposed publicly |
+| Edge to central | Intranet direct | Intranet direct (never through Tailscale) |
+| TLS termination | External reverse proxy | Intranet reverse proxy, optionally over Tailscale's WireGuard |
+| Remote maintenance | Regular network + TLS + admin session | Temporary Tailscale during operator-led maintenance only |
+| Primary threats | Network attack surface plus insider | Insider lateral movement plus a compromised Tailscale node |
+| H02/H06/H11/H12 (AUDIT-002) | Close or strictly mitigate | Accepted risk (mitigations applied) |
+| H07 (AUDIT-002) | Production scope (functional completeness) | Production scope (functional completeness) |
+| M12 (MinIO root, AUDIT-002) | Medium | Production hardening |
+
+In mode B, Tailscale is a compensating control with mandatory constraints:
+
+- Tailscale is enabled only during operator-led maintenance windows and
+  disabled afterwards; it is never a permanent administrative channel.
+- A Tailscale ACL allowlist admits only the authorized maintenance nodes.
+- A site operator owns the Tailscale keys and ACL.
+- Tailscale node identity is layered with, and never replaces, application
+  authentication (the administrator session cookie).
+
 ## Network and API Security
 
 - Use TLS for edge-to-central and browser-to-central traffic; validate

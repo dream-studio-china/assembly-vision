@@ -529,10 +529,19 @@ The go-live checklist is recorded in `docs/tasks/C1-central-server-m1.md`
 backlog, C2 object-store failure, C3 credential compromise, C4 backup/restore,
 C5 pilot upgrade/rollback). Key steps:
 
-1. **TLS termination** in front of the API (admin-web nginx or a reverse
-   proxy). The edge `HttpUploadSink` must reach `https://...`; plain HTTP is
-   loopback-development only (contract 04). Keep `CENTRAL_SECURE_COOKIES=true`
-   outside plain-HTTP loopback dev.
+1. **TLS termination and network boundary** — depends on the deployment mode
+   (see SECURITY.md "Deployment contexts"):
+
+   - **A. Network deployment**: terminate TLS in front of the API (a reverse
+     proxy). The edge `HttpUploadSink` must reach `https://...`; plain HTTP is
+     loopback-development only (contract 04). Keep `CENTRAL_SECURE_COOKIES=true`
+     outside plain-HTTP loopback dev.
+   - **B. Factory intranet + controlled Tailscale**: central listens on the
+     intranet only and is not exposed publicly; the edge reaches it directly
+     over the intranet. Remote maintenance uses a temporary Tailscale channel
+     that is enabled only during operator-led maintenance windows and disabled
+     afterwards (ACL allowlist of authorized maintenance nodes). Tailscale does
+     not replace application authentication.
 2. **Credentials**: set unique secrets in `apps/central-service/.env`
    (`CENTRAL_ADMIN_TOKEN`, `CENTRAL_DEVICE_UPLOAD_TOKEN`, MinIO keys, PostgreSQL
    password). The tracked example contains placeholders only; Compose fails
