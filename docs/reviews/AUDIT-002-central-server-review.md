@@ -96,6 +96,8 @@ The following controls are implemented well and should be preserved:
 
 ### H01. Published development credentials become active credentials
 
+**Status:** RESOLVED (2026-08-13, first remediation batch).
+
 **Evidence**
 
 - `apps/central-service/compose.env.example:1-18` contains working PostgreSQL,
@@ -170,6 +172,8 @@ central access must remain stopped during an approved database-level response.
 - The runbook is executable without undocumented SQL.
 
 ### H03. Desired-configuration assignment corrupts public version identity
+
+**Status:** RESOLVED (2026-08-13, first remediation batch).
 
 **Evidence**
 
@@ -377,6 +381,8 @@ governed product version.
   component codes return `422`.
 
 ### H09. Rate limiting trusts attacker-controlled identity and leaks memory
+
+**Status:** RESOLVED (2026-08-13, first remediation batch).
 
 **Evidence**
 
