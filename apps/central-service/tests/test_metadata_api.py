@@ -542,6 +542,10 @@ def test_desired_configuration_assignment(client: TestClient) -> None:
     assert assigned.status_code == 200
     assert assigned.json()["revision"] == 1
     assert assigned.json()["device_id"] == str(_DEVICE_ID)
+    assert assigned.json()["product_version_id"] == product_version_id
+    assert assigned.json()["product_model_version_id"] == bundle["product_model_version_id"]
+    assert assigned.json()["component_model_version_id"] == component_model_version_id
+    assert assigned.json()["rule_version_id"] == rule_version_id
 
     updated = client.put(
         f"/api/v1/devices/{_DEVICE_ID}/desired-configuration",
@@ -556,10 +560,20 @@ def test_desired_configuration_assignment(client: TestClient) -> None:
     )
     assert fetched.status_code == 200
     assert fetched.json()["revision"] == 2
+    assert fetched.json()["product_version_id"] == product_version_id
+    assert fetched.json()["product_model_version_id"] == bundle["product_model_version_id"]
+    assert fetched.json()["component_model_version_id"] == component_model_version_id
+    assert fetched.json()["rule_version_id"] == rule_version_id
 
     listed = client.get("/api/v1/device-configurations", headers=_admin_headers())
     assert listed.status_code == 200
     assert len(listed.json()["items"]) == 1
+    assert listed.json()["items"][0]["product_version_id"] == product_version_id
+    assert (
+        listed.json()["items"][0]["product_model_version_id"] == bundle["product_model_version_id"]
+    )
+    assert listed.json()["items"][0]["component_model_version_id"] == component_model_version_id
+    assert listed.json()["items"][0]["rule_version_id"] == rule_version_id
 
 
 def test_desired_configuration_unknown_device(client: TestClient) -> None:
