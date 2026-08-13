@@ -139,7 +139,9 @@ server {
         proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        # Replace, never append, an inbound forwarding chain. The API trusts
+        # only the single address written by this proxy for rate limiting.
+        proxy_set_header X-Forwarded-For $remote_addr;
         proxy_read_timeout 75s;
     }
 
@@ -147,7 +149,7 @@ server {
         proxy_pass http://central-api:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-For $remote_addr;
         proxy_read_timeout 60s;
     }
 

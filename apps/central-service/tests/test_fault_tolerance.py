@@ -15,6 +15,7 @@ from uuid import uuid4
 import pytest
 from assemblyvision_domain.models import BusinessResult
 from central_service.api.app import create_app
+from central_service.api.rate_limit import RateLimitState, client_key
 from central_service.api.readiness import ReadinessCheck, ReadinessResult
 from central_service.api.settings import CentralSettings
 from central_service.persistence.bootstrap import resolve_plan, run_bootstrap
@@ -178,3 +179,14 @@ def test_rate_limit_returns_429_with_retry_after(repository: CentralRepository) 
         assert limited.status_code == 429
         assert limited.json()["code"] == "RATE_LIMITED"
         assert int(limited.headers["Retry-After"]) >= 1
+
+
+def test_rate_limiter_rejects_forwarded_chains_and_bounds_client_state() -> None:
+    assert client_key("127.0.0.1", "198.51.100.2") == "xff:198.51.100.2"
+    assert client_key("127.0.0.1", "198.51.100.2, 127.0.0.1") == "peer:127.0.0.1"
+    assert client_key("127.0.0.1", "not-an-ip") == "peer:127.0.0.1"
+
+    limiter = RateLimitState(limit_per_minute=1, max_keys=2)
+    for key in ("first", "second", "third"):
+        assert limiter.allow(key, now=0)[0]
+    assert list(limiter._hits) == ["second", "third"]
