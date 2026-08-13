@@ -170,13 +170,45 @@ pnpm --filter admin-web dev      # http://127.0.0.1:5174
 - In production the built admin-web is served by the central stack (nginx
   proxy) — see DEPLOYMENT.md.
 
-## 10. Quality gates
+## 10. Configuration tool (guided editing)
+
+`assemblyvision config` guides edge and central configuration editing with
+validation, change previews, automatic backups, and rollback. It is
+interactive (needs a terminal) and supports English / Simplified Chinese /
+Traditional Chinese / Japanese:
+
+```bash
+# Aggregate validation before deployment (non-interactive)
+assemblyvision config validate --config config/examples/pipeline.cameras.yaml \
+  --env production --lang en
+
+# Interactive object editing (product/rule, camera instances, thresholds,
+# ROI, identity/barcode, model manifests, central .env)
+assemblyvision config edit --config config/examples/pipeline.cameras.yaml \
+  --central apps/central-service/.env --env production
+
+# Backup history and rollback (every edit snapshots the file first)
+assemblyvision config history --config config/examples/pipeline.cameras.yaml
+assemblyvision config rollback --id 20260813-103000-000000 \
+  --config config/examples/pipeline.cameras.yaml
+```
+
+`--env production` rejects development-only settings (placeholder manifests,
+mock triggers, insecure cookies); `--env dev` permits them with warnings.
+Without `--lang` the tool uses English; the interface language is only chosen
+via `--lang` (`en` / `zh-cn` / `zh-hk` / `ja`). When `--config`, `--rule`, or
+`--central` is omitted, the tool falls back to the repository defaults
+`config/examples/pipeline.cameras.yaml`, `config/examples/product-rule.yaml`,
+and `apps/central-service/.env`, so `assemblyvision config edit` works
+directly from the repository root.
+
+## 11. Quality gates
 
 ```bash
 make check
 ```
 
-## 11. Full documentation
+## 12. Full documentation
 
 - **Every deployment scenario** (dev / production / training, env reference,
   troubleshooting): [DEPLOYMENT.md](DEPLOYMENT.md)

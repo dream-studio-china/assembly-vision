@@ -19,6 +19,7 @@ from central_service.persistence.repository import CentralRepository
 from central_service.persistence.schema import metadata
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from ingest_fixtures import NoopObjectStorage
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
@@ -73,7 +74,12 @@ def _app(
         )
     )
     settings = _settings(**(settings_overrides or {}))
-    return create_app(settings, readiness=lambda: readiness, repository=repository)
+    return create_app(
+        settings,
+        readiness=lambda: readiness,
+        repository=repository,
+        storage=NoopObjectStorage(),
+    )
 
 
 def _admin_headers() -> dict[str, str]:

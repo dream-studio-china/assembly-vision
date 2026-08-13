@@ -13,7 +13,7 @@ typecheck:
 	uv run mypy .
 
 test:
-	uv run pytest
+	uv run pytest -n auto
 
 web-install:
 	pnpm install

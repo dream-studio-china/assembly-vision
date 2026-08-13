@@ -21,6 +21,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.12'
+          enable-cache: true
 
       - name: Install workspace
         run: uv sync
@@ -34,9 +35,6 @@ jobs:
       - name: MyPy
         run: uv run mypy .
 
-      - name: Pytest
-        run: uv run pytest
-
       - name: Edge OpenAPI drift check
         run: |
           uv run python scripts/generate-edge-openapi.py
@@ -47,6 +45,22 @@ jobs:
           uv run python scripts/generate-central-openapi.py
           git diff --exit-code -- apps/central-service/openapi/central-openapi.json
 
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+          enable-cache: true
+
+      - name: Install workspace
+        run: uv sync
+
+      - name: Pytest
+        run: uv run pytest -n auto
+
   web:
     runs-on: ubuntu-latest
     steps:
@@ -55,6 +69,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.12'
+          enable-cache: true
 
       - uses: pnpm/action-setup@v4
         # Version is read from the `packageManager` field in package.json.
@@ -96,6 +111,14 @@ jobs:
 
       - name: Unit tests
         run: pnpm -r test
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
 
       - name: Install Python edge service
         run: uv sync
