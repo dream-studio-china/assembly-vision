@@ -70,6 +70,18 @@ and verifies that all required assembly components are present.
   feature-complete; remaining work is on-site E6 acceptance and the §13.2
   controlled-pilot deployment (execution, hardware/data-gated).
 
+  Since the M1 closure snapshot, a read-only central-server review
+  (`docs/reviews/AUDIT-002-central-server-review.md`) ran and its twelve
+  high-severity findings were dispositioned: seven resolved across two
+  batches (H01/H03/H09 via PR #50 merged; H04/H05/H08/H10 via PR #51 open)
+  and five deferred (H02/H06/H11 with mitigations, H07/H12 to production
+  scope). SECURITY.md now documents the central M1 pilot boundary and the two
+  deployment contexts (network deployment vs factory intranet plus a
+  maintenance-only Tailscale channel). A new interactive configuration tool
+  (`assemblyvision config edit/validate/history/rollback`) with four
+  languages and a dev/production dimension is implemented but not yet
+  committed.
+
 ## 2. Repository State
 
 - Remote: `https://github.com/dream-studio-china/assembly-vision`. PRs #3-#30
@@ -96,6 +108,12 @@ and verifies that all required assembly components are present.
   (`scripts/tests/test_edge_central_e2e.py`, section 8.23), the §13
   exit-criteria evidence table and go-live checklist, and the
   README/QUICKSTART/DEPLOYMENT documentation split.
+- The central review and remediation work lives on `dev` (not yet on `main`):
+  `docs/reviews/AUDIT-002-central-server-review.md`, the first remediation
+  batch (PR #50, merged), the second batch plus deferred dispositions and the
+  SECURITY.md/deployment-context updates (PR #51, open), and the uncommitted
+  `assemblyvision config` tool. `apps/edge-service` gained the
+  `config_tool` package (interactive config editing) as a new subpackage.
 - `.obsidian/`, `.idea/`, and `.vscode/` are ignored local editor state.
 - Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts `docs-zh/`, `site/`, `mkdocs-en.yml`, `mkdocs-zh.yml` are gitignored.
@@ -1223,6 +1241,59 @@ which the mocked `central.invalid` fixtures cannot:
 - Verification: full repo gates pass (`ruff check .`, `ruff format --check
   .`, `mypy .`, `pytest` - 1174 tests total, `mkdocs build --strict`).
 
+## 8.24 Central Server Review and Remediation (AUDIT-002)
+
+A read-only review of `apps/central-service`, `apps/admin-web`, and the
+central documentation recorded `docs/reviews/AUDIT-002-central-server-review.md`
+with twelve high-severity findings. All twelve are dispositioned:
+
+- **First batch (PR #50, merged)**: H01 (Compose now fails closed with no
+  published credentials), H03 (desired-configuration returns public version
+  UUIDs and validates the correct product), H09 (rate limiting derives
+  identity only from a trusted proxy address with bounded state).
+- **Second batch (PR #51, open)**: H04 (desired-configuration `If-Match` is
+  an atomic conditional update, verified by a real PostgreSQL barrier test),
+  H05 (media bytes are size- and SHA-256-verified before an `AVAILABLE`
+  receipt), H08 (review idempotency is content-addressed with domain
+  validation, migration 0007), H10 (bounded/streamed ingestion and an
+  explicit proxy body limit).
+- **Deferred with mitigation**: H02 (manual revocation runbook; no automated
+  rotation), H06 (`reconcile-media` age-guards orphan deletion,
+  `--min-age-hours`), H11 (backup runbook quiesces writes for a consistent
+  recovery point).
+- **Deferred (production scope)**: H07 (governed ingestion references),
+  H12 (unique credential identity).
+- **Docs**: SECURITY.md documents the central M1 pilot boundary; the two
+  deployment contexts (network deployment vs factory intranet plus a
+  maintenance-only Tailscale channel) are recorded in SECURITY.md,
+  DEPLOYMENT.md, design 20, and the AUDIT-002 pilot gate. Real PostgreSQL
+  verification covers the desired-configuration concurrency guard
+  (`AV_CENTRAL_TEST_DATABASE_URL`) and migration 0007 upgrade/downgrade.
+
+## 8.25 Interactive Configuration Tool (`assemblyvision config`)
+
+A new `assemblyvision config` subcommand set (package
+`apps/edge-service/src/assemblyvision_edge/config_tool/`) provides guided
+configuration management for the field engineer:
+
+- `config edit` - interactive object menu over product/rule, camera
+  instances, detection thresholds, ROI, identity/barcode, model manifests,
+  and the central `.env`; every change is validated, diffed, confirmed, and
+  snapshotted (backup) before writing.
+- `config validate` - aggregate validation across edge pipeline/rule/
+  manifests and the central `.env`, with a `dev`/`production` environment
+  dimension (production rejects development-only settings such as placeholder
+  manifests and mock triggers).
+- `config history` / `config rollback` - list and restore backups under
+  `.assemblyvision-backups/`.
+- Localization: English (default), Simplified/Traditional Chinese, and
+  Japanese via `questionary` (new dependency).
+- Multi-instance edits validate only the selected instance, so a pre-existing
+  issue in an unrelated instance does not block an edit; diffs are scoped to
+  the edited instance.
+- Status: implemented and tested (14 config-tool tests) but **not yet
+  committed**; QUICKSTART section 10 documents usage.
+
 ## 9. Open Items / Next Steps
 
 - The **upload queue scheduler** gap is closed (PR #17, section 8.6); **E1
@@ -1297,6 +1368,18 @@ which the mocked `central.invalid` fixtures cannot:
   management operations (device registration/disable/credential rotation,
   user/RBAC, remote package distribution) are production scope driven by
   OQ-021/OQ-022 (roadmap 25.6), not part of C1a-C6.
+- The central server M1 pilot is **feature-complete** with all twelve
+  AUDIT-002 high-severity findings dispositioned (section 8.24): seven
+  resolved (H01/H03/H04/H05/H08/H09/H10) and five deferred (H02/H06/H11 with
+  mitigations; H07/H12 to production scope). PR #50 (first batch) is merged;
+  PR #51 (second batch + deferred + SECURITY.md/deployment-context updates)
+  is open. Remaining central work is production scope: OIDC/RBAC, credential
+  rotation and unique identity, governed ingestion references, a staged media
+  lifecycle, and snapshot/PITR backup.
+- The **interactive configuration tool** (`assemblyvision config`) is
+  implemented and tested but **not yet committed** (section 8.25). Commit and
+  merge it via PR, then consider field validation (real TTY interaction,
+  additional language coverage).
 - Hardware/conditions still unconfirmed (see [Appendices section 3](../design/appendices.md#3-global-open-questions)):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.

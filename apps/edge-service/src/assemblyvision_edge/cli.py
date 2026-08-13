@@ -12,6 +12,7 @@ import ssl
 import sys
 from datetime import timedelta
 from pathlib import Path
+from typing import cast
 from uuid import UUID, uuid4
 
 from assemblyvision_domain.errors import AssemblyVisionError, ConfigError
@@ -169,6 +170,59 @@ def build_parser() -> argparse.ArgumentParser:
         help="Restore governed config/rule/manifest files into this directory "
         "(the approved release location; never an arbitrary path)",
     )
+
+    config = sub.add_parser(
+        "config",
+        help="Guided edge/central configuration editing, validation, and rollback",
+    )
+    config_sub = config.add_subparsers(dest="config_command", required=True)
+
+    def _add_config_options(target: argparse.ArgumentParser) -> None:
+        target.add_argument(
+            "--config",
+            type=Path,
+            default=Path("config/examples/pipeline.cameras.yaml"),
+            help="Pipeline configuration file (default: config/examples/pipeline.cameras.yaml)",
+        )
+        target.add_argument(
+            "--rule",
+            type=Path,
+            default=Path("config/examples/product-rule.yaml"),
+            help="Product rule definition file (default: config/examples/product-rule.yaml)",
+        )
+        target.add_argument(
+            "--central",
+            type=Path,
+            default=Path("apps/central-service/.env"),
+            help="Central server .env file (default: apps/central-service/.env)",
+        )
+        target.add_argument(
+            "--env",
+            choices=("dev", "production"),
+            default="dev",
+            help="Run environment; production rejects development-only settings",
+        )
+        target.add_argument(
+            "--lang",
+            choices=("en", "zh-cn", "zh-hk", "ja"),
+            default=None,
+            help="Interface language (default: English)",
+        )
+
+    edit = config_sub.add_parser("edit", help="Interactively edit configuration objects")
+    _add_config_options(edit)
+
+    validate = config_sub.add_parser(
+        "validate", help="Aggregate validation across pipeline, rule, and manifests"
+    )
+    _add_config_options(validate)
+
+    history = config_sub.add_parser("history", help="List configuration backups")
+    _add_config_options(history)
+
+    rollback = config_sub.add_parser("rollback", help="Restore a configuration backup")
+    _add_config_options(rollback)
+    rollback.add_argument("--id", required=True, type=str, help="Backup id (timestamp)")
     return parser
 
 
@@ -185,7 +239,9 @@ def main(argv: list[str] | None = None) -> int:
         return _run_backup(args)
     if args.command == "restore":
         return _run_restore(args)
-    # Unreachable: argparse only accepts the five subcommands above.
+    if args.command == "config":
+        return _run_config(args)
+    # Unreachable: argparse only accepts the six subcommands above.
     return 1  # pragma: no cover
 
 
@@ -648,6 +704,79 @@ def _run_restore(args: argparse.Namespace) -> int:
     except (ConfigError, ValueError, OSError) as exc:
         log.error("restore failed: %s", exc)
         return 2
+
+
+def _run_config(args: argparse.Namespace) -> int:
+    """Interactive/guided configuration management (config tool)."""
+    from assemblyvision_edge.config_tool import (
+        Lang,
+        list_backups,
+        restore_backup,
+        run_edit,
+        t,
+        validate_all,
+    )
+
+    lang: Lang = "en"
+    if args.lang is not None:
+        lang = cast(Lang, {"zh-cn": "zh-CN", "zh-hk": "zh-HK"}.get(args.lang, args.lang))
+
+    if args.config_command == "validate":
+        issues = validate_all(
+            pipeline_path=args.config,
+            rule_path=args.rule,
+            central_env_path=args.central,
+            env=args.env,
+            lang=lang,
+        )
+        errors = [issue for issue in issues if issue.level == "error"]
+        warnings = [issue for issue in issues if issue.level == "warning"]
+        for issue in issues:
+            print(f"[{issue.level}] {issue.path}: {issue.message}".strip())
+        print(
+            f"{t(lang, 'Validation passed') if not errors else t(lang, 'Validation failed')}: "
+            f"{len(errors)} errors, {len(warnings)} warnings"
+        )
+        return 1 if errors else 0
+
+    if args.config_command == "history":
+        if args.config is None:
+            print(t(lang, "Config file") + ": " + t(lang, "Config file does not exist"))
+            return 1
+        backups = list_backups(args.config)
+        if not backups:
+            print(t(lang, "No backups found"))
+            return 0
+        print(t(lang, "Backup history"))
+        for entry in backups:
+            print(f"  {entry.created_at.isoformat()}  {entry.backup_path.name}")
+        return 0
+
+    if args.config_command == "rollback":
+        if args.config is None or not args.config.exists():
+            print(t(lang, "Config file") + ": " + t(lang, "Config file does not exist"))
+            return 1
+        backups = list_backups(args.config)
+        match = next((entry for entry in backups if args.id in entry.backup_path.name), None)
+        if match is None:
+            print(t(lang, "Rollback failed") + f": {args.id}")
+            return 1
+        try:
+            restore_backup(args.config, match.backup_path)
+        except OSError as exc:
+            print(f"{t(lang, 'Rollback failed')}: {exc}")
+            return 1
+        print(f"{t(lang, 'Rolled back')}: {match.backup_path.name}")
+        return 0
+
+    # edit
+    return run_edit(
+        lang=lang,
+        env=args.env,
+        pipeline_path=args.config,
+        rule_path=args.rule,
+        central_env_path=args.central,
+    )
 
 
 def _collect_sources(paths: list[str]) -> list[tuple[FolderSource, Path]]:
