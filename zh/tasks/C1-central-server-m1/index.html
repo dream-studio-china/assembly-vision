@@ -3533,7 +3533,7 @@
   管理 UI 的管理员会话/令牌路径。</li>
 <li>仅附加中央人工审核队列和审核提交。</li>
 <li>初始中心产品/规则/模型元数据注册和不可变
-  需要发布版本来验证引用的内容。包裹递送
+  需要发布版本来验证引用的引用。包裹递送
   边缘仍然是手动的。</li>
 <li>类型化 OpenAPI 输出和生成/同步的 TypeScript 中央 API 类型。</li>
 <li>编写健康检查、受控模式迁移、集中备份/恢复
@@ -3905,7 +3905,7 @@
 <li>实现<code>GET /api/v1/inspections/{id}</code>和媒体元数据访问。显示边缘
   捕获/完成时间与中央接收时间分开。</li>
 <li>实施授权的短期 MinIO URL 或授权的媒体流；
-  永远不要返回存储桶凭据、原始对象密钥或永久公共链接。</li>
+  绝不返回存储桶凭据、原始对象密钥或永久公共链接。</li>
 <li>实施 M1 <code>GET /api/v1/dashboard/summary</code> 和
   <code>GET /api/v1/dashboard/timeseries</code> 具有明确的范围/时间过滤器，示例
   计数，并且没有发明准确性或召回指标。</li>
@@ -4047,7 +4047,7 @@
   凭证泄露 (C3)、备份/恢复 (C4) 和试点升级/回滚
   (C5)，全部在 <code>docs/runbooks/README.md</code> 和 mkdocs nav 中索引
   （<code>uv run mkdocs build --strict</code> 通过）。</li>
-<li>M1仍然被标记为受控飞行员：没有声称生产HA，最终
+<li>M1 仍然被标记为受控飞行员：没有声称生产 HA，最终
   RPO/RTO、完全保留实施、OIDC 或远程部署（第 13 节
   退出标准 8)。</li>
 <li>E6-A16交付（<code>scripts/tests/test_edge_central_e2e.py</code>）：真正的优势
@@ -4114,11 +4114,11 @@
 <ul>
 <li>生成不透明的密钥，例如
   <code>org/{organization_id}/device/{device_id}/{year}/{month}/{media_id}</code>。</li>
-<li>在 PostgreSQL 中不存储媒体字节，也不将边缘提供的路径作为存储键。</li>
+<li>在 PostgreSQL 中不存储媒体字节，也不存储边缘提供的路径作为存储键。</li>
 <li>暂存、验证、最终确定，然后标记<code>AVAILABLE</code>；保留明确的 <code>PENDING</code> /
   <code>FAILED</code> 表示工作中断。</li>
 <li>M1 不会自动删除中央媒体。它记录生命周期和
-  保留未来受控清理所需的元数据。</li>
+  保留未来受治理清理所需的元数据。</li>
 <li>媒体 URL 是经过授权的且短暂的。浏览器/管理员用户永远不会收到
   MinIO 根凭据或存储桶范围的权限。</li>
 </ul>
@@ -4134,7 +4134,7 @@
 <li>光标分页使用 <code>{items, next_cursor}</code> 默认 50/最大 200 和
   拒绝游标/过滤器不匹配。</li>
 <li>变异的人类/管理员 API 在并发情况下使用 <code>If-Match</code> 修订检查
-  编辑很重要。可重试设备摄取使用幂等密钥代替。</li>
+  编辑很重要。可重试的设备摄取使用幂等性密钥来代替。</li>
 <li>所有不可变的边缘标识符和原始决策都是在之后写入一次
   接受摄入。</li>
 <li>新的中心字段是在模式版本中添加的。删除/更改
@@ -4232,7 +4232,7 @@
 <li>从空数据库和每个提交的 PostgreSQL 迁移升级
   前身迁移。</li>
 <li>使用校验和/对象绑定断言进行 MinIO 集成测试。</li>
-<li>验证实际中央收据的端到端边缘发件箱固定装置。</li>
+<li>端到端边缘发件箱固定装置，可验证实际的中央收据。</li>
 <li>跨组织访问、设备/人员凭证的安全测试
   分离、有效负载限制、不安全的媒体元数据以及无内部错误
   泄漏。</li>
@@ -4241,7 +4241,7 @@
 每当 API、持久性模式、配置、
 或操作变更。</p>
 <h2 id="13-m1-exit-criteria">13. M1退出标准<a class="headerlink" href="#13-m1-exit-criteria" title="Permanent link">&para;</a></h2>
-<p>仅当满足以下所有条件时，M1 才适合受控飞行员：</p>
+<p>仅当满足以下所有条件时，M1 才准备好受控飞行员：</p>
 <ol>
 <li>已注册的边缘设备发送当前检查和选定的介质
    通过 HTTPS 的信封；中央退货验证兼容收据。
@@ -4347,9 +4347,9 @@ MEDIA_MANIFEST_MISMATCH），并且没有内部错误泄漏（问题响应
   报告所有依赖关系正常。</li>
 <li>在 API 前面终止 TLS（admin-web nginx 或反向代理）并
   验证边缘 <code>HttpUploadSink</code> 到达 <code>https://...</code> （纯 HTTP 仍然存在
-  仅环回开发，合同 04)；轮换飞行员管理员/设备
-  远离开发默认值的标记（compose.env.example）。</li>
-<li>向每个边缘设备注册其真实的 UUID <code>device_id</code> (C1b) 及其自己的
+  仅环回开发，合同 04)；设置唯一的飞行员管理员/设备
+  标记，因为 <code>compose.env.example</code> 仅包含占位符。</li>
+<li>使用其真实的 UUID <code>device_id</code> (C1b) 及其自己的 UUID 注册每个边缘设备
   上传令牌；验证一次检查+媒体上传达到<code>SYNCED</code>并且
   在更广泛的推出之前，重播不会重复。</li>
 <li>现场验证硬件先决条件：相机/GigE 或 GenICam 源，

@@ -1,0 +1,4684 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AssemblyVision - Industrial Assembly Inspection System (edge-first software architecture)">
+      
+      
+      
+        <link rel="canonical" href="https://dream-studio-china.github.io/assembly-vision/reviews/AUDIT-002-central-server-review/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="/assembly-vision/" hreflang="en">
+        
+          <link rel="alternate" href="/assembly-vision/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>AUDIT-002: Central Server Code, Security, and Documentation Review - AssemblyVision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#audit-002-central-server-code-security-and-documentation-review" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AssemblyVision" class="md-header__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AssemblyVision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AUDIT-002: Central Server Code, Security, and Documentation Review
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/assembly-vision/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AssemblyVision" class="md-nav__button md-logo" aria-label="AssemblyVision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AssemblyVision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dream-studio-china/assembly-vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../source-brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/00-cover-and-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cover and Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/02-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/03-architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/04-edge-client-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Client Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/05-central-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/06-ai-detection-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Detection Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/07-camera-and-image-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera and Image Acquisition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/08-product-detection-and-roi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Detection and ROI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/09-component-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/10-temporal-aggregation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Aggregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/11-rule-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/12-local-storage-and-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Storage and Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/13-upload-and-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload and Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/14-data-model-and-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model and Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/15-rest-api-and-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API and Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/16-edge-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/17-central-admin-dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Admin Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/18-monorepo-and-code-organization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monorepo and Code Organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/19-training-and-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/20-deployment-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/21-security-and-source-distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security and Source Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/22-testing-and-quality-assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/23-observability-and-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability and Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/24-human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/25-roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/26-customer-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/27-risks-and-mitigations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Risks and Mitigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/28-edge-acceptance-report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Acceptance Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/appendices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/01-getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/02-repository-layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/03-cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/04-edge-api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/05-edge-service-internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge-Service Internals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/06-adding-a-rest-endpoint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a REST Endpoint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/07-database-and-persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database and Persistence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/08-camera-sources-and-vision-core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera Sources and Vision-Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/09-training-and-datasets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training and Datasets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/10-frontend-development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/11-testing-and-quality-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing and Quality Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/12-core-abstractions-and-type-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Abstractions and Type Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/13-debugging-and-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Debugging and Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engineering Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Engineering Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contract Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/01-architecture-boundaries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Boundaries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/02-code-and-interface-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code and Interface Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/03-ai-rule-and-safety-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI, Rule Engine, and Fail-Safe Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/04-edge-storage-upload-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge, Storage, and Upload Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/05-data-api-and-versioning-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data, API, and Versioning Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/06-testing-quality-and-ci-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing, Quality, and CI Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/07-deployment-observability-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment, Observability, and Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/08-security-permissions-and-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security, Permissions, and Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/09-industrial-site-and-change-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Site and Change Control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/10-model-rule-release-and-acceptance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model, Rule, Release, and Acceptance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/11-minimum-mandatory-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minimum Mandatory Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operational Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operational Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/01-camera-disconnection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera Disconnection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/02-model-loading-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model-Loading Failure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/03-low-disk-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Low Disk Space
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/04-upload-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/05-database-recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/06-repeated-container-restart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repeated Container Restart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/07-network-recovery-synchronization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network Recovery Synchronization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/08-model-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/09-rule-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rule Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/10-model-improvement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Improvement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/11-data-collection-and-annotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Collection and Annotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/12-backup-and-recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backup and Recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/13-tls-certificate-rotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TLS Certificate Rotation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/14-deployment-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Upgrade and Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/15-edge-acceptance-execution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge Acceptance Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-ingestion-backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Ingestion Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-object-store-failure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Object-Store Failure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-credential-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Credential Compromise
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-backup-restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Backup and Restore
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/central-pilot-upgrade-rollback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Central Pilot Upgrade and Rollback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/01-industrial-inspection-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Industrial Inspection Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/02-yolo-capabilities-and-success-rates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YOLO Capabilities and Success Rates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/03-imaging-workflow-and-training-cost/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imaging Workflow and Training Cost
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributor Documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributor Documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-review-record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Review Record
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-sources-and-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Sources and Method
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-positive-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Positive Findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-high-severity-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. High-Severity Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. High-Severity Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#h01-published-development-credentials-become-active-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H01. Published development credentials become active credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h02-the-credential-compromise-runbook-cannot-perform-its-promised-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H02. The credential-compromise runbook cannot perform its promised rotation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h03-desired-configuration-assignment-corrupts-public-version-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H03. Desired-configuration assignment corrupts public version identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h04-postgresql-desired-configuration-concurrency-is-last-write-wins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H04. PostgreSQL desired-configuration concurrency is last-write-wins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h05-central-issues-an-available-media-receipt-without-verifying-stored-bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H05. Central issues an AVAILABLE media receipt without verifying stored bytes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h06-reconciliation-can-delete-an-upload-that-is-still-committing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H06. Reconciliation can delete an upload that is still committing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h07-inspection-ingestion-accepts-records-that-violate-central-safety-and-governance-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H07. Inspection ingestion accepts records that violate central safety and governance claims
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h08-review-idempotency-and-validation-do-not-preserve-request-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H08. Review idempotency and validation do not preserve request identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h09-rate-limiting-trusts-attacker-controlled-identity-and-leaks-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H09. Rate limiting trusts attacker-controlled identity and leaks memory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h10-proxybody-handling-breaks-valid-media-and-permits-memory-amplification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H10. Proxy/body handling breaks valid media and permits memory amplification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h11-backup-instructions-do-not-create-a-consistent-postgresqlminio-recovery-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H11. Backup instructions do not create a consistent PostgreSQL/MinIO recovery point
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#h12-duplicate-principal-secrets-can-authenticate-as-the-wrong-principal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        H12. Duplicate principal secrets can authenticate as the wrong principal
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-medium-severity-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Medium-Severity Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Medium-Severity Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#m01-pilot-authentication-has-no-backend-authorization-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M01. Pilot authentication has no backend authorization roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m02-append-onlyimmutable-data-is-protected-only-by-repository-convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M02. Append-only/immutable data is protected only by repository convention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m03-audit-entries-do-not-reliably-identify-the-administrator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M03. Audit entries do not reliably identify the administrator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m04-tenant-ownership-is-not-consistently-database-enforced" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M04. Tenant ownership is not consistently database-enforced
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m05-arbitrary-media-mime-is-reflected-into-the-admin-origin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M05. Arbitrary media MIME is reflected into the admin origin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m06-missing-object-data-remains-falsely-available" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M06. Missing object data remains falsely AVAILABLE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m07-metadata-uniqueness-and-query-indexes-are-incomplete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M07. Metadata uniqueness and query indexes are incomplete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m08-generated-typescript-types-are-treated-as-runtime-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M08. Generated TypeScript types are treated as runtime validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m09-admin-session-restoration-expiry-and-logout-are-not-safely-coordinated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M09. Admin session restoration, expiry, and logout are not safely coordinated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m10-admin-filters-and-lists-have-correctness-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M10. Admin filters and lists have correctness gaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m11-admin-document-and-sensitive-media-lack-browsercache-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M11. Admin document and sensitive media lack browser/cache controls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m12-containers-and-runtime-credentials-are-not-least-privileged" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M12. Containers and runtime credentials are not least-privileged
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m13-csrf-protection-relies-only-on-cookie-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M13. CSRF protection relies only on cookie attributes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m14-readiness-and-maintenance-have-lifecycle-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M14. Readiness and maintenance have lifecycle gaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-documentation-and-evidence-consistency-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Documentation and Evidence Consistency Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Documentation and Evidence Consistency Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d01-object-store-runbook-describes-states-and-repairs-that-do-not-exist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D01. Object-store runbook describes states and repairs that do not exist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d02-shipped-nginx-cannot-terminate-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D02. Shipped Nginx cannot terminate TLS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d03-non-docker-deployment-cannot-reach-readiness-as-written" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D03. Non-Docker deployment cannot reach readiness as written
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d04-m1-feature-complete-evidence-overstates-ci-and-delivered-c3-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D04. M1 feature-complete evidence overstates CI and delivered C3 scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d05-central-backlog-signals-in-the-runbook-are-not-central-observables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D05. Central backlog signals in the runbook are not central observables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d06-design-15-mixes-implemented-m1-and-production-target-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D06. Design 15 mixes implemented M1 and production-target APIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d07-model-published-semantics-conflict-with-the-release-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D07. Model PUBLISHED semantics conflict with the release contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d08-security-and-developer-manual-status-is-stale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D08. Security and developer-manual status is stale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d09-architecture-status-and-repository-maps-are-stale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D09. Architecture status and repository maps are stale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d10-required-open-questions-have-no-ownerclosure-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D10. Required open questions have no owner/closure evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d11-no-adr-records-the-central-m1-securitygovernance-deviations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D11. No ADR records the central M1 security/governance deviations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d12-minor-documentation-defects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D12. Minor documentation defects
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-test-and-verification-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Test and Verification Gaps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-verification-executed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Verification Executed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-residual-risks-and-explicit-deferrals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Residual Risks and Explicit Deferrals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-improvement-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Improvement Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Improvement Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-security-and-credential-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Security and credential design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-evidence-integrity-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Evidence integrity design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-governance-and-traceability-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Governance and traceability design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-api-and-frontend-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.4 API and frontend design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#105-documentation-and-evidence-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.5 Documentation and evidence design
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-recommended-remediation-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Recommended Remediation Sequence
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Recommended Remediation Sequence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-0-before-any-controlled-pilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 0: Before any controlled pilot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-before-multiple-users-or-organizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Before multiple users or organizations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-before-production-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Before production classification
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-pilot-decision-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Pilot Decision Gate
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="audit-002-central-server-code-security-and-documentation-review">AUDIT-002: Central Server Code, Security, and Documentation Review<a class="headerlink" href="#audit-002-central-server-code-security-and-documentation-review" title="Permanent link">&para;</a></h1>
+<h2 id="1-review-record">1. Review Record<a class="headerlink" href="#1-review-record" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Review date</td>
+<td>2026-08-13</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td><code>apps/central-service</code>, <code>apps/admin-web</code>, <code>packages/typescript/api-client-central</code>, central migrations/tests/deployment, and governing documentation</td>
+</tr>
+<tr>
+<td>Review type</td>
+<td>Read-only implementation, security, architecture, operations, test-evidence, and documentation-consistency audit</td>
+</tr>
+<tr>
+<td>Baseline</td>
+<td>Current workspace after the C1a-C6 implementation and E6-A16 fixture</td>
+</tr>
+<tr>
+<td>Safety boundary</td>
+<td>Central is an evidence and management plane; no finding changed the edge-first rule that central availability must not affect real-time inspection</td>
+</tr>
+<tr>
+<td>Overall result</td>
+<td><strong>Not ready for a controlled pilot until the P0 findings in section 12 are resolved or explicitly accepted with compensating controls</strong></td>
+</tr>
+</tbody>
+</table>
+<p>This report distinguishes demonstrated defects from production-target features
+that were deliberately deferred by the bounded M1 plan. It does not treat the
+absence of production HA, final RPO/RTO, OIDC, complete RBAC, remote rollout,
+resumable uploads, or central retention enforcement as an implementation bug
+when the M1 documentation labels that absence accurately.</p>
+<p>No critical vulnerability or direct path to changing an edge machine decision
+was identified. The highest risks affect central credential compromise
+recovery, configuration identity, evidence integrity, tenant attribution,
+availability, and the accuracy of pilot-readiness claims.</p>
+<h2 id="2-sources-and-method">2. Sources and Method<a class="headerlink" href="#2-sources-and-method" title="Permanent link">&para;</a></h2>
+<p>The review used the precedence required by <code>AGENTS.md</code>:</p>
+<ol>
+<li>Accepted ADRs.</li>
+<li>Engineering contracts under <code>docs/contracts/</code>.</li>
+<li>Architecture documents under <code>docs/design/</code>.</li>
+<li>The bounded central M1 plan in <code>docs/tasks/C1-central-server-m1.md</code>.</li>
+<li>Runbooks, root deployment guides, implementation, migrations, generated
+   OpenAPI/types, and tests.</li>
+</ol>
+<p>Primary governing sources included:</p>
+<ul>
+<li><code>docs/contracts/01-architecture-boundaries.md</code></li>
+<li><code>docs/contracts/04-edge-storage-upload-contracts.md</code></li>
+<li><code>docs/contracts/05-data-api-and-versioning-contracts.md</code></li>
+<li><code>docs/contracts/07-deployment-observability-and-operations.md</code></li>
+<li><code>docs/contracts/08-security-permissions-and-audit.md</code></li>
+<li><code>docs/contracts/10-model-rule-release-and-acceptance.md</code></li>
+<li><code>docs/design/05-central-server-architecture.md</code></li>
+<li><code>docs/design/13-upload-and-synchronization.md</code></li>
+<li><code>docs/design/14-data-model-and-database.md</code></li>
+<li><code>docs/design/15-rest-api-and-events.md</code></li>
+<li><code>docs/design/17-central-admin-dashboard.md</code></li>
+<li><code>docs/design/20-deployment-and-operations.md</code></li>
+<li><code>docs/design/21-security-and-source-distribution.md</code></li>
+<li><code>docs/design/24-human-in-the-loop.md</code></li>
+<li><code>docs/design/appendices.md</code></li>
+<li><code>docs/tasks/C1-central-server-m1.md</code></li>
+<li><code>docs/runbooks/central-*.md</code></li>
+<li><code>README.md</code>, <code>QUICKSTART.md</code>, <code>DEPLOYMENT.md</code>, and <code>SECURITY.md</code></li>
+</ul>
+<p>The implementation review covered API composition and middleware,
+authentication and sessions, ingestion, persistence and migrations, object
+storage, metadata governance, review, query APIs, generated contracts, the
+admin SPA, Nginx, Docker Compose, tests, and CI.</p>
+<h2 id="3-positive-findings">3. Positive Findings<a class="headerlink" href="#3-positive-findings" title="Permanent link">&para;</a></h2>
+<p>The following controls are implemented well and should be preserved:</p>
+<ul>
+<li>The edge runtime imports no central implementation, and central remains out
+  of the inspection decision path.</li>
+<li>Device upload authentication and administrator authentication use separate
+  code paths and cannot be substituted for each other.</li>
+<li>Credentials are stored as independently salted scrypt hashes and compared in
+  constant time (<code>auth/passwords.py:31-60</code>).</li>
+<li>Browser sessions use a high-entropy lookup/secret split, store only a salted
+  secret hash, expire server-side, and use <code>HttpOnly</code> and <code>SameSite=Strict</code>
+  cookies (<code>repository.py:896-980</code>, <code>routers/auth.py:55-67</code>).</li>
+<li>Inspection ingestion atomically commits the immutable inspection projection,
+  component evidence, receipt, and acceptance audit event.</li>
+<li>Device sequence, inspection ID, and idempotency constraints provide a strong
+  duplicate-prevention backstop.</li>
+<li>Media uploads are bound to the accepted parent manifest by source media ID,
+  expected size, and expected SHA-256 before object storage
+  (<code>ingest/__init__.py:125-145</code>).</li>
+<li>Object keys are generated by central and tenant-scoped; clients cannot supply
+  storage paths (<code>ingest/__init__.py:226-237</code>).</li>
+<li>Principal history, detail, review, and media HTTP paths scope queries to the
+  authenticated administrator organization.</li>
+<li>Human review is additive and does not update the original machine decision.</li>
+<li>Schema migration is a controlled release step; the API checks migration head
+  in readiness and does not migrate on startup.</li>
+<li>RFC 7807 responses generally avoid stack traces, SQL, secrets, absolute
+  paths, and model paths.</li>
+<li>Compose publishes the pilot UI on loopback by default, and the central API
+  image runs as a non-root user.</li>
+<li>OpenAPI and generated TypeScript artifacts have deterministic drift checks.</li>
+</ul>
+<h2 id="4-high-severity-findings">4. High-Severity Findings<a class="headerlink" href="#4-high-severity-findings" title="Permanent link">&para;</a></h2>
+<h3 id="h01-published-development-credentials-become-active-credentials">H01. Published development credentials become active credentials<a class="headerlink" href="#h01-published-development-credentials-become-active-credentials" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> RESOLVED (2026-08-13, first remediation batch).</p>
+<p><strong>Evidence</strong></p>
+<ul>
+<li><code>apps/central-service/compose.env.example:1-18</code> contains working PostgreSQL,
+  MinIO root, administrator, and device-upload values.</li>
+<li>The documented workflow tells operators to copy this file to <code>.env</code>
+  (<code>compose.env.example:1-3</code>, <code>README.md:226-230</code>).</li>
+<li>Compose provisions the administrator and device tokens into the durable
+  credential store (<code>compose.yaml:58-73</code>).</li>
+<li>PostgreSQL and MinIO also retain known fallback passwords
+  (<code>compose.yaml:19-21</code>, <code>compose.yaml:35-36</code>).</li>
+</ul>
+<p>The claim that administrator/device tokens have no defaults is misleading in
+the documented path: the Compose file has no interpolation default, but the
+published example supplies known values. A copied example produces a ready
+stack with publicly known credentials.</p>
+<p><strong>Impact</strong></p>
+<p>An accidentally exposed pilot can be accessed as administrator or registered
+device. The published MinIO root credential also grants unrestricted object
+store administration.</p>
+<p><strong>Required change</strong></p>
+<ul>
+<li>Remove usable secrets from the example. Use empty required variables or
+  explicit placeholders that fail the Compose required-variable expression.</li>
+<li>Require high-entropy generated values and reject known development sentinels
+  unless an explicit loopback-only development mode is enabled.</li>
+<li>Use Docker secrets or mounted secret files for non-local deployment.</li>
+<li>Remove PostgreSQL and MinIO password fallbacks from the controlled-pilot
+  profile.</li>
+</ul>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Compose fails before starting when secrets are unset or still equal published
+  sentinels.</li>
+<li>A test inspects effective Compose configuration without printing secret
+  values and proves the controlled-pilot profile has no known credentials.</li>
+</ul>
+<h3 id="h02-the-credential-compromise-runbook-cannot-perform-its-promised-rotation">H02. The credential-compromise runbook cannot perform its promised rotation<a class="headerlink" href="#h02-the-credential-compromise-runbook-cannot-perform-its-promised-rotation" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong></p>
+<ul>
+<li><code>docs/runbooks/central-credential-compromise.md:13-21</code> instructs operators to
+  disable/re-enroll a device and rerun bootstrap for administrator rotation.</li>
+<li><code>persistence/bootstrap.py:3-10</code> explicitly states that existing devices and
+  administrators are never re-keyed.</li>
+<li><code>repository.py:1073-1137</code> hashes credentials only when creating a new row.</li>
+<li>No supported device-disable, credential-rotation, or revoke-all-admin-
+  sessions command/API exists.</li>
+</ul>
+<p><strong>Impact</strong></p>
+<p>Operators can follow the emergency procedure and incorrectly conclude that a
+stolen credential was revoked while it remains valid.</p>
+<p><strong>Required change</strong></p>
+<p>Implement explicit transactional commands for administrator token rotation,
+device token rotation, device disable/re-enable, and organization-wide session
+revocation. Every operation must write an audit event with actor, target,
+request/incident correlation, reason, and outcome. Until implemented, amend the
+runbook to state that rerunning bootstrap does not rotate credentials and that
+central access must remain stopped during an approved database-level response.</p>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>The old token returns <code>401</code> immediately after rotation and the new token is
+  scoped to the same principal.</li>
+<li>Administrator rotation revokes all sessions selected by policy.</li>
+<li>Rotation/revocation and failed attempts are auditable.</li>
+<li>The runbook is executable without undocumented SQL.</li>
+</ul>
+<h3 id="h03-desired-configuration-assignment-corrupts-public-version-identity">H03. Desired-configuration assignment corrupts public version identity<a class="headerlink" href="#h03-desired-configuration-assignment-corrupts-public-version-identity" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> RESOLVED (2026-08-13, first remediation batch).</p>
+<p><strong>Evidence</strong></p>
+<ul>
+<li><code>repository.py:4036-4039</code> assigns <code>product_versions.id</code> to <code>product_pk</code> and
+  then queries <code>products.id == product_pk</code>. It should use
+  <code>product_versions.product_id</code>.</li>
+<li><code>repository.py:4177-4196</code> correctly stores internal integer foreign keys.</li>
+<li><code>repository.py:4549-4560</code> then serializes those internal keys directly as
+  strings instead of joining to the public <code>version_id</code> UUIDs.</li>
+<li>Existing tests assert revision/device only and even preserve the wrong
+  internal value in audit state (<code>test_metadata_repository.py:1142-1197</code>,
+  <code>test_metadata_api.py:537-562</code>).</li>
+</ul>
+<p><strong>Impact</strong></p>
+<p>Once product and product-version integer sequences differ, a valid assignment
+can fail or validate the product detector against the wrong product code. A
+successful response returns values such as <code>"1"</code> instead of the requested
+public UUIDs, breaking traceability and any consumer that uses the desired
+bundle identity.</p>
+<p><strong>Required change</strong></p>
+<ul>
+<li>Resolve product code through <code>product_versions.product_id</code>.</li>
+<li>Join all four stored foreign keys to their version tables when returning a
+  desired configuration.</li>
+<li>Keep internal integer keys private to persistence.</li>
+</ul>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Seed diverging product/product-version primary keys and prove assignment
+  validates the intended product.</li>
+<li>Assert create, update, fetch, list, and audit outputs contain exactly the four
+  public UUIDs submitted by the caller.</li>
+</ul>
+<h3 id="h04-postgresql-desired-configuration-concurrency-is-last-write-wins">H04. PostgreSQL desired-configuration concurrency is last-write-wins<a class="headerlink" href="#h04-postgresql-desired-configuration-concurrency-is-last-write-wins" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong></p>
+<ul>
+<li><code>repository.py:3997-4016</code> reads the current revision before mutation.</li>
+<li><code>repository.py:4172-4185</code> performs an unconditional update by device row ID.</li>
+<li><code>_metadata_write</code> relies on an ordinary PostgreSQL transaction and uniqueness
+  constraints (<code>repository.py:2297-2319</code>); no row lock or conditional revision
+  predicate protects this update.</li>
+</ul>
+<p>Two PostgreSQL transactions can read the same revision, both pass <code>If-Match</code>,
+both write the same next revision, and silently overwrite one another. SQLite
+tests do not expose this because <code>BEGIN IMMEDIATE</code> serializes writers.</p>
+<p><strong>Required change</strong></p>
+<p>Use <code>UPDATE ... WHERE device_row_id = :id AND revision = :expected</code>, verify one
+affected row, and map zero rows to <code>412 REVISION_MISMATCH</code>. <code>SELECT ... FOR
+UPDATE</code> is also acceptable if the locking semantics are covered explicitly.</p>
+<p><strong>Acceptance</strong></p>
+<p>A real PostgreSQL barrier test submits two updates with the same <code>If-Match</code>:
+exactly one succeeds, one returns <code>412</code>, revision increments once, and one
+corresponding audit event is committed.</p>
+<h3 id="h05-central-issues-an-available-media-receipt-without-verifying-stored-bytes">H05. Central issues an <code>AVAILABLE</code> media receipt without verifying stored bytes<a class="headerlink" href="#h05-central-issues-an-available-media-receipt-without-verifying-stored-bytes" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong></p>
+<ul>
+<li><code>ingest/__init__.py:181-214</code> calls <code>put_object</code> and immediately persists an
+  <code>AVAILABLE</code> binding and receipt.</li>
+<li><code>storage/object_store.py:69-77</code> performs a single PUT but no post-write stat,
+  trusted checksum check, or read-back.</li>
+<li>Design 14 requires size/checksum verification before availability
+  (<code>docs/design/14-data-model-and-database.md:528-532</code>).</li>
+<li>The M1 exit criterion calls these "verified compatible receipts"
+  (<code>docs/tasks/C1-central-server-m1.md:663-665</code>).</li>
+</ul>
+<p><strong>Impact</strong></p>
+<p>A short write, storage corruption, object replacement, or S3-compatible
+implementation defect can leave a database row and verified receipt claiming
+that evidence exists with the expected hash when retained bytes differ.</p>
+<p><strong>Required change</strong></p>
+<p>Extend the object-storage protocol to return or retrieve trustworthy stored
+size and SHA-256 metadata. Verify both before committing <code>AVAILABLE</code>. Do not
+use multipart ETag as SHA-256. For the bounded 16 MiB pilot, read-back hashing
+is acceptable if measured; otherwise store and verify supported S3 checksum
+metadata.</p>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Simulated truncation/corruption after a successful PUT produces no
+  <code>AVAILABLE</code> row and no success receipt.</li>
+<li>A valid object passes exact size and SHA-256 verification.</li>
+<li>Reconciliation independently detects later corruption, not only absence.</li>
+</ul>
+<h3 id="h06-reconciliation-can-delete-an-upload-that-is-still-committing">H06. Reconciliation can delete an upload that is still committing<a class="headerlink" href="#h06-reconciliation-can-delete-an-upload-that-is-still-committing" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong></p>
+<ul>
+<li>Ingestion writes an object before its database binding
+  (<code>ingest/__init__.py:181-214</code>).</li>
+<li>Reconciliation independently snapshots bindings and lists object keys
+  (<code>storage/object_store.py:139-159</code>).</li>
+<li>The maintenance command can remove every object not in that snapshot.</li>
+</ul>
+<p>If reconciliation runs after object PUT but before the binding commit, it can
+classify the active upload as orphan, delete it, and allow ingestion to commit
+an <code>AVAILABLE</code> row pointing to missing evidence.</p>
+<p><strong>Required change</strong></p>
+<p>Use an explicit staging namespace/state with an age threshold and finalization
+protocol. Reconciliation must never delete recently staged or leased objects.
+Coordinate final object publication and binding recovery with durable state.</p>
+<p><strong>Acceptance</strong></p>
+<p>A barrier test pauses ingestion between PUT and binding commit while
+reconciliation runs with orphan removal. The active upload must survive and
+finish available, or fail without an available binding.</p>
+<h3 id="h07-inspection-ingestion-accepts-records-that-violate-central-safety-and-governance-claims">H07. Inspection ingestion accepts records that violate central safety and governance claims<a class="headerlink" href="#h07-inspection-ingestion-accepts-records-that-violate-central-safety-and-governance-claims" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong></p>
+<ul>
+<li><code>ingest/envelope.py:138-189</code> validates Pydantic shape, device identity, and
+  inspection identity only.</li>
+<li><code>InspectionRecord</code> has no cross-field validator for finalized lifecycle,
+  timestamp order, or decision mapping (<code>domain/models.py:264-290</code>).</li>
+<li>Central does not resolve the referenced product/rule/model versions or their
+  compatibility before acceptance.</li>
+<li>Design 05 says central validates compatible references
+  (<code>docs/design/05-central-server-architecture.md:39-43</code>).</li>
+<li>Contract 05 requires product-configuration version traceability
+  (<code>docs/contracts/05-data-api-and-versioning-contracts.md:20-29,103-113</code>),
+  but the persisted field is nullable (<code>persistence/schema.py:265</code>).</li>
+</ul>
+<p>Examples currently accepted include a non-final lifecycle, completion before
+start, <code>internal_decision=UNCERTAIN</code> with <code>business_result=OK</code>, missing product
+configuration identity, and arbitrary unknown version UUIDs.</p>
+<p><strong>Impact</strong></p>
+<p>A compromised or defective device can obtain a verified receipt for evidence
+that central later presents as governed/finalized even though it violates the
+documented decision and traceability model.</p>
+<p><strong>Required change</strong></p>
+<p>Choose and document one explicit reference policy:</p>
+<ul>
+<li>Governed pilot: resolve organization-owned published versions, validate
+  product/rule/model compatibility and checksums, and reject unknown versions.</li>
+<li>Compatibility ingestion: accept immutable unknown edge references but mark
+  the inspection <code>UNGOVERNED</code> and never describe the receipt as compatibility
+  verification.</li>
+</ul>
+<p>In both cases, enforce final lifecycle, timestamp ordering, <code>UNCERTAIN -&gt; NG</code>,
+decision/evidence coherence, unique media manifest identities, and mandatory
+product-configuration identity for production/pilot records.</p>
+<p><strong>Acceptance</strong></p>
+<p>Negative ingestion tests cover every invariant above. Invalid records return a
+stable <code>409</code> or <code>422</code>, write no accepted inspection/receipt, and retain a
+bounded integrity audit where appropriate.</p>
+<h3 id="h08-review-idempotency-and-validation-do-not-preserve-request-identity">H08. Review idempotency and validation do not preserve request identity<a class="headerlink" href="#h08-review-idempotency-and-validation-do-not-preserve-request-identity" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong></p>
+<ul>
+<li>Review records persist an idempotency key but no canonical request hash
+  (<code>persistence/schema.py:383-413</code>).</li>
+<li>Any repeat of the key returns the old record without comparing content
+  (<code>repository.py:2109-2123</code>).</li>
+<li>The replay path omits <code>inspection_id</code>, whose mapper default is an empty string
+  (<code>repository.py:2123</code>, <code>repository.py:4571-4586</code>).</li>
+<li><code>ReviewSubmit</code> does not enforce a reason for <code>INCONCLUSIVE</code>, normalize/reject
+  duplicate component codes, or prove corrections belong to the inspection
+  (<code>api/schemas.py:225-241</code>).</li>
+<li>Equivalent domain invariants exist but are bypassed
+  (<code>domain/models.py:365-414</code>).</li>
+</ul>
+<p><strong>Impact</strong></p>
+<p>The same key can be retried with contradictory content and silently return the
+first review. A replay response loses its inspection identity. Invalid or
+ambiguous ground-truth corrections can enter an append-only record that cannot
+be repaired in place.</p>
+<p><strong>Required change</strong></p>
+<p>Persist a canonical request hash with each review key. Replay only identical
+content; return <code>409 IDEMPOTENCY_CONFLICT</code> for changed content. Construct the
+domain review command, or reproduce all domain validators at the API boundary,
+and validate correction component codes against the inspection evidence or
+governed product version.</p>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Same key/same body returns the original review with the correct inspection
+  ID.</li>
+<li>Same key/different body returns <code>409</code> without another row.</li>
+<li><code>INCONCLUSIVE</code> without reason, duplicate normalized components, and unknown
+  component codes return <code>422</code>.</li>
+</ul>
+<h3 id="h09-rate-limiting-trusts-attacker-controlled-identity-and-leaks-memory">H09. Rate limiting trusts attacker-controlled identity and leaks memory<a class="headerlink" href="#h09-rate-limiting-trusts-attacker-controlled-identity-and-leaks-memory" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> RESOLVED (2026-08-13, first remediation batch).</p>
+<p><strong>Evidence</strong></p>
+<ul>
+<li>Nginx appends client-supplied <code>X-Forwarded-For</code>
+  (<code>apps/admin-web/nginx.conf:8-14</code>).</li>
+<li>The API trusts the first value (<code>api/rate_limit.py:46-57</code>).</li>
+<li><code>_hits</code> never evicts inactive keys (<code>api/rate_limit.py:17-39</code>).</li>
+<li>Authentication scans all principals and performs scrypt verification
+  (<code>repository.py:867-892</code>), increasing CPU amplification.</li>
+<li><code>CENTRAL_RATE_LIMIT_REQUESTS_PER_MINUTE</code> is published in the env example but
+  is not passed to the API container (<code>compose.env.example:16-18</code>,
+  <code>compose.yaml:79-88</code>).</li>
+</ul>
+<p><strong>Impact</strong></p>
+<p>A caller can rotate forged forwarding values to bypass limits, grow process
+memory, and amplify credential-guessing CPU cost. Operators can also believe a
+configured limit is active when Compose silently uses the default.</p>
+<p><strong>Required change</strong></p>
+<ul>
+<li>Strip inbound forwarding headers at the trusted outer proxy and set a single
+  verified client address.</li>
+<li>Ignore forwarding headers unless the socket peer is an approved proxy.</li>
+<li>Bound and expire limiter keys.</li>
+<li>Add stricter credential/principal-specific authentication limits.</li>
+<li>Wire the documented Compose setting explicitly.</li>
+</ul>
+<p><strong>Acceptance</strong></p>
+<p>Tests cover spoofed forwarding chains, trusted/untrusted proxies, key eviction,
+authentication-specific limits, shared-NAT behavior, and effective Compose
+configuration.</p>
+<h3 id="h10-proxybody-handling-breaks-valid-media-and-permits-memory-amplification">H10. Proxy/body handling breaks valid media and permits memory amplification<a class="headerlink" href="#h10-proxybody-handling-breaks-valid-media-and-permits-memory-amplification" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong></p>
+<ul>
+<li>Nginx has no <code>client_max_body_size</code> (<code>apps/admin-web/nginx.conf:1-20</code>), so its
+  standard 1 MiB limit conflicts with the API's 32 MiB envelope and 16 MiB
+  decoded media limits (<code>api/settings.py:55-63</code>).</li>
+<li>The API calls <code>await request.body()</code> before checking the configured bound
+  (<code>routers/ingest.py:78-95</code>).</li>
+<li>Blocking SQLAlchemy/MinIO work then runs in the async route.</li>
+</ul>
+<p><strong>Impact</strong></p>
+<p>Legitimate media fails through the shipped proxy, often with Nginx HTML rather
+than typed problem JSON. If the proxy limit is raised without fixing the API,
+concurrent requests can force full raw JSON, Base64, and decoded payloads into
+memory while blocking the event loop.</p>
+<p><strong>Required change</strong></p>
+<p>Set an explicit proxy bound consistent with encoded envelope overhead. Enforce
+<code>Content-Length</code> early, stream into a bounded buffer or temporary file, cap
+concurrent ingestion, and offload synchronous database/object-store work from
+the event loop. Add container memory/PID limits.</p>
+<p><strong>Acceptance</strong></p>
+<p>Compose integration tests submit valid media near the supported limit and one
+byte over each configured limit. Valid uploads succeed; oversized requests
+fail with bounded <code>413</code>; concurrent maximum requests stay within an approved
+memory/latency envelope.</p>
+<h3 id="h11-backup-instructions-do-not-create-a-consistent-postgresqlminio-recovery-point">H11. Backup instructions do not create a consistent PostgreSQL/MinIO recovery point<a class="headerlink" href="#h11-backup-instructions-do-not-create-a-consistent-postgresqlminio-recovery-point" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong></p>
+<ul>
+<li>The runbook dumps PostgreSQL while API writes continue, then mirrors MinIO
+  "approximately" at the same point
+  (<code>docs/runbooks/central-backup-restore.md:19-45</code>).</li>
+<li>The API is stopped only during restore (<code>central-backup-restore.md:47-54</code>).</li>
+<li>Container names are hard-coded and depend on the Compose project name
+  (<code>central-backup-restore.md:26-27,61-62</code>).</li>
+</ul>
+<p><strong>Impact</strong></p>
+<p>A restored pair can contain an available binding without its object, or an
+object without its binding. This does not satisfy the M1 exit criterion that
+PostgreSQL history and MinIO bindings survive representative backup/restore.</p>
+<p><strong>Required change</strong></p>
+<p>For the pilot, quiesce central writes before both backups, record a common
+backup ID/time, back up both stores, generate a checksummed manifest, reconcile
+the copy, and only then resume. Use Compose service names rather than generated
+container names. Production needs a separately approved snapshot/PITR,
+encryption, retention, and off-host strategy.</p>
+<p><strong>Acceptance</strong></p>
+<p>A real PostgreSQL/MinIO restore test runs while upload attempts are present,
+restores to fresh services, verifies every available binding's exact bytes,
+finds no unexplained orphan, and replays receipts duplicate-free.</p>
+<h3 id="h12-duplicate-principal-secrets-can-authenticate-as-the-wrong-principal">H12. Duplicate principal secrets can authenticate as the wrong principal<a class="headerlink" href="#h12-duplicate-principal-secrets-can-authenticate-as-the-wrong-principal" title="Permanent link">&para;</a></h3>
+<p><strong>Evidence</strong></p>
+<ul>
+<li>Device and administrator authentication scan all salted hashes and return
+  the first match (<code>repository.py:867-892</code>).</li>
+<li>Bootstrap does not reject a token already used by another device or
+  administrator (<code>repository.py:1073-1137</code>).</li>
+</ul>
+<p><strong>Impact</strong></p>
+<p>If the same token is accidentally assigned to multiple devices or tenants, the
+caller authenticates as whichever matching row is returned first. Uploads can
+be attributed to the wrong device/organization.</p>
+<p><strong>Required change</strong></p>
+<p>Use a unique public credential lookup ID plus a hashed secret, analogous to
+browser sessions. Bind the lookup ID to one principal with a database unique
+constraint. Reject enrollment/rotation that reuses an existing credential
+identity.</p>
+<p><strong>Acceptance</strong></p>
+<p>Multi-tenant tests prove that duplicate credential registration fails and that
+each token resolves deterministically to exactly one principal.</p>
+<h2 id="5-medium-severity-findings">5. Medium-Severity Findings<a class="headerlink" href="#5-medium-severity-findings" title="Permanent link">&para;</a></h2>
+<h3 id="m01-pilot-authentication-has-no-backend-authorization-roles">M01. Pilot authentication has no backend authorization roles<a class="headerlink" href="#m01-pilot-authentication-has-no-backend-authorization-roles" title="Permanent link">&para;</a></h3>
+<p>Every authenticated administrator can review, publish metadata, and assign
+desired configuration (<code>api/deps.py:84-96</code>, <code>routers/reviews.py:172-230</code>,
+<code>routers/metadata.py:408-455</code>, <code>routers/device_configurations.py:116-165</code>).
+This is disclosed as an M1 deferral, but it conflicts with contract 08's
+elevated-permission requirement (<code>docs/contracts/08-security-permissions-and-audit.md:11-27</code>).</p>
+<p>Before any user beyond a tightly controlled single pilot administrator is
+enrolled, add deny-by-default organization-scoped reviewer, configuration
+manager, fleet administrator, and organization administrator permissions. In
+the interim, record a formal risk acceptance and keep metadata mutation routes
+inaccessible to ordinary viewers.</p>
+<h3 id="m02-append-onlyimmutable-data-is-protected-only-by-repository-convention">M02. Append-only/immutable data is protected only by repository convention<a class="headerlink" href="#m02-append-onlyimmutable-data-is-protected-only-by-repository-convention" title="Permanent link">&para;</a></h3>
+<p>The API and migration process share the PostgreSQL owner credential
+(<code>compose.yaml:46-88</code>). Database privileges/triggers do not prevent update or
+delete of inspections, reviews, audit rows, or published versions, and several
+foreign keys cascade deletion. Design 14 requires reviews/audit rows to be
+append-only to the application role (<code>docs/design/14-data-model-and-database.md:547-554</code>).</p>
+<p>Use a migration owner and a restricted runtime role. Revoke update/delete on
+append-only tables and protect publication transitions with explicit grants or
+database-enforced routines.</p>
+<h3 id="m03-audit-entries-do-not-reliably-identify-the-administrator">M03. Audit entries do not reliably identify the administrator<a class="headerlink" href="#m03-audit-entries-do-not-reliably-identify-the-administrator" title="Permanent link">&para;</a></h3>
+<p>Review audit writes <code>actor_id=None</code> (<code>repository.py:2180-2189</code>), metadata audit
+helpers receive a username but do not consistently persist the administrator
+row ID, and successful/failed session creation is not fully audited. This falls
+short of contract 08 actor/trace requirements.</p>
+<p>Pass the authenticated administrator ID and request ID through all mutation
+services; retain username only as a display snapshot. Audit login/session,
+review, publish, assignment, rotation, and denied privileged attempts.</p>
+<h3 id="m04-tenant-ownership-is-not-consistently-database-enforced">M04. Tenant ownership is not consistently database-enforced<a class="headerlink" href="#m04-tenant-ownership-is-not-consistently-database-enforced" title="Permanent link">&para;</a></h3>
+<p>Several child tables omit <code>organization_id</code> despite design 14's literal "every
+tenant-owned row" statement (<code>docs/design/14-data-model-and-database.md:464-466</code>).
+Many foreign keys do not bind child and parent organization. The desired-
+configuration device existence lookup is also not organization-scoped
+(<code>repository.py:3997-4002</code>). HTTP routes currently resolve the principal in
+scope, but repository misuse or future maintenance code can create cross-tenant
+relations.</p>
+<p>Add organization-scoped mutation predicates and composite tenant-bound foreign
+keys for safety-relevant relationships, or formally narrow the design invariant
+for child ownership and prove every chain at the database boundary.</p>
+<h3 id="m05-arbitrary-media-mime-is-reflected-into-the-admin-origin">M05. Arbitrary media MIME is reflected into the admin origin<a class="headerlink" href="#m05-arbitrary-media-mime-is-reflected-into-the-admin-origin" title="Permanent link">&para;</a></h3>
+<p>The inspection manifest can declare an arbitrary MIME value, which is stored
+and returned as <code>Content-Type</code> from the authenticated same-origin media route
+(<code>ingest/__init__.py:133-145</code>, <code>routers/media.py:68-72</code>). There is no kind/MIME
+allowlist, magic-byte validation, or attachment policy.</p>
+<p>Allowlist media types by kind, validate magic bytes, bound normalized MIME
+length, and serve unsafe formats as attachments from a separate non-privileged
+origin. Preserve <code>nosniff</code>.</p>
+<h3 id="m06-missing-object-data-remains-falsely-available">M06. Missing object data remains falsely <code>AVAILABLE</code><a class="headerlink" href="#m06-missing-object-data-remains-falsely-available" title="Permanent link">&para;</a></h3>
+<p>Reconciliation reports missing objects but does not transition lifecycle, and
+streaming begins a <code>200</code> response before a missing-object iterator failure can
+be mapped (<code>storage/object_store.py:139-159</code>, <code>routers/media.py:48-72</code>). Mark a
+missing/corrupt object <code>FAILED</code> transactionally with reason/time and verify
+availability before sending response headers.</p>
+<h3 id="m07-metadata-uniqueness-and-query-indexes-are-incomplete">M07. Metadata uniqueness and query indexes are incomplete<a class="headerlink" href="#m07-metadata-uniqueness-and-query-indexes-are-incomplete" title="Permanent link">&para;</a></h3>
+<p>The schema permits duplicate model semantic versions within a package and can
+surface unhandled uniqueness failures for duplicate request-list values. Query
+indexes do not cover all contract-required organization/result/product/model/
+rule paths (<code>docs/contracts/05-data-api-and-versioning-contracts.md:39-49</code>).</p>
+<p>Add the documented stable-identity constraints, validate duplicate request
+values before insert, map expected constraints to typed errors, and validate
+query plans with production-like cardinality.</p>
+<h3 id="m08-generated-typescript-types-are-treated-as-runtime-validation">M08. Generated TypeScript types are treated as runtime validation<a class="headerlink" href="#m08-generated-typescript-types-are-treated-as-runtime-validation" title="Permanent link">&para;</a></h3>
+<p><code>CentralApiClient.request</code> casts arbitrary successful JSON directly to <code>T</code>
+(<code>packages/typescript/api-client-central/src/client.ts:230-247</code>). Generated
+interfaces provide compile-time checking only. Malformed session identity,
+tenant data, media records, review revisions, or desired configuration can
+reach UI workflows unchecked.</p>
+<p>Add runtime schemas at the client boundary for security/workflow-critical
+responses and validate RFC 7807 errors before accessing <code>code</code>/<code>detail</code>.</p>
+<h3 id="m09-admin-session-restoration-expiry-and-logout-are-not-safely-coordinated">M09. Admin session restoration, expiry, and logout are not safely coordinated<a class="headerlink" href="#m09-admin-session-restoration-expiry-and-logout-are-not-safely-coordinated" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Protected routes have no router guard (<code>apps/admin-web/src/router/index.ts:16-51</code>).</li>
+<li>Session restoration runs after components mount (<code>App.vue:18-23</code>), allowing
+  protected pages to issue requests first.</li>
+<li><code>401</code> is not intercepted centrally and old protected data remains rendered.</li>
+<li>Failed logout rejects before navigation (<code>session.ts:51-56</code>, <code>App.vue:25-28</code>),
+  while the server session may remain valid.</li>
+<li>In-flight requests cannot be cancelled and can repopulate a page after
+  logout/session replacement.</li>
+</ul>
+<p>Restore the session before route resolution, enforce a global guard, centrally
+clear protected state and redirect on <code>401</code>, navigate in a logout <code>finally</code>
+while warning if revocation failed, and bind/abort requests by session
+generation.</p>
+<h3 id="m10-admin-filters-and-lists-have-correctness-gaps">M10. Admin filters and lists have correctness gaps<a class="headerlink" href="#m10-admin-filters-and-lists-have-correctness-gaps" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Overview scope changes race and stale responses can overwrite new scope
+  (<code>OverviewPage.vue:38-55,137-156</code>).</li>
+<li>Site/line loads race in overview and history.</li>
+<li>The <code>to_at</code> date is serialized as midnight while the backend uses an
+  exclusive upper bound, excluding the selected day
+  (<code>OverviewPage.vue:176-188</code>, <code>InspectionsPage.vue:162-176</code>).</li>
+<li>Product/rule/model/desired-configuration pages ignore <code>next_cursor</code>; only
+  history/review pages paginate.</li>
+<li>UTC labels use browser-local <code>toLocaleString()</code> in several pages.</li>
+</ul>
+<p>Add request generation/abort handling, submit the following midnight for an
+inclusive date picker, implement cursor navigation, and use an explicit
+selected locale plus UTC formatter.</p>
+<h3 id="m11-admin-document-and-sensitive-media-lack-browsercache-controls">M11. Admin document and sensitive media lack browser/cache controls<a class="headerlink" href="#m11-admin-document-and-sensitive-media-lack-browsercache-controls" title="Permanent link">&para;</a></h3>
+<p>The FastAPI CSP applies to API responses, not the Nginx-served SPA document.
+<code>apps/admin-web/nginx.conf:1-20</code> lacks CSP, <code>frame-ancestors</code>, <code>nosniff</code>,
+referrer, permissions, and server disclosure controls. Authenticated media has
+no <code>Cache-Control: private, no-store</code> (<code>routers/media.py:68-72</code>).</p>
+<p>Set strict headers on the SPA document at Nginx/TLS ingress and an approved
+cache policy on sensitive evidence. HSTS belongs at the actual TLS terminator.</p>
+<h3 id="m12-containers-and-runtime-credentials-are-not-least-privileged">M12. Containers and runtime credentials are not least-privileged<a class="headerlink" href="#m12-containers-and-runtime-credentials-are-not-least-privileged" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The API uses MinIO root credentials (<code>compose.yaml:31-36,81-84</code>).</li>
+<li>Migration/bootstrap/API use the same PostgreSQL owner.</li>
+<li>Admin Nginx runs the stock root master (<code>apps/admin-web/Dockerfile:21-29</code>).</li>
+<li>Compose lacks read-only filesystems, capability drops, no-new-privileges,
+  PID/resource limits, and bounded log rotation.</li>
+<li>Base/service images use mutable tags and are not digest-pinned.</li>
+</ul>
+<p>Use a bucket-scoped MinIO service account, restricted database runtime role,
+unprivileged Nginx, container hardening controls, bounded logs/resources, and
+digest-pinned/scanned images with an SBOM before production exposure.</p>
+<h3 id="m13-csrf-protection-relies-only-on-cookie-attributes">M13. CSRF protection relies only on cookie attributes<a class="headerlink" href="#m13-csrf-protection-relies-only-on-cookie-attributes" title="Permanent link">&para;</a></h3>
+<p>Cookie-authenticated logout, review, and configuration updates have no CSRF
+token or server-side <code>Origin</code>/<code>Sec-Fetch-Site</code> check. <code>SameSite=Strict</code> and JSON
+preflight are meaningful mitigations, but design 17 requires an explicit CSRF
+boundary. Require a session-bound token or strict origin/fetch-metadata
+validation for all cookie-authenticated mutations.</p>
+<h3 id="m14-readiness-and-maintenance-have-lifecycle-gaps">M14. Readiness and maintenance have lifecycle gaps<a class="headerlink" href="#m14-readiness-and-maintenance-have-lifecycle-gaps" title="Permanent link">&para;</a></h3>
+<p>PostgreSQL/MinIO readiness calls do not consistently set bounded application-
+level network timeouts. Docker marks an unhealthy process but does not restart
+it solely because health checks fail. Expired sessions have a purge repository
+method but no scheduled command. Add dependency timeouts, external alert/
+restart policy, and a controlled expired-session maintenance job.</p>
+<h2 id="6-documentation-and-evidence-consistency-findings">6. Documentation and Evidence Consistency Findings<a class="headerlink" href="#6-documentation-and-evidence-consistency-findings" title="Permanent link">&para;</a></h2>
+<h3 id="d01-object-store-runbook-describes-states-and-repairs-that-do-not-exist">D01. Object-store runbook describes states and repairs that do not exist<a class="headerlink" href="#d01-object-store-runbook-describes-states-and-repairs-that-do-not-exist" title="Permanent link">&para;</a></h3>
+<p><code>docs/runbooks/central-object-store-failure.md:11-18,42-52</code> says failed uploads
+leave <code>PENDING</code> bindings and reconciliation promotes them to <code>AVAILABLE</code> or
+marks them <code>FAILED</code>. The implementation creates no binding after a failed PUT,
+writes successful bindings directly as <code>AVAILABLE</code>, and reconciliation only
+reports missing/orphan objects (<code>storage/object_store.py:139-159</code>). The same
+stale <code>PENDING</code> claim appears in
+<code>docs/runbooks/central-ingestion-backlog.md:53-55</code>.</p>
+<p>Either implement the documented staged lifecycle or rewrite both runbooks to
+the actual report/delete and edge-replay behavior. Do not claim integrity was
+repaired when the command only listed discrepancies.</p>
+<h3 id="d02-shipped-nginx-cannot-terminate-tls">D02. Shipped Nginx cannot terminate TLS<a class="headerlink" href="#d02-shipped-nginx-cannot-terminate-tls" title="Permanent link">&para;</a></h3>
+<p>The M1 checklist and deployment guide say TLS may terminate at "admin-web
+nginx or a reverse proxy" (<code>docs/tasks/C1-central-server-m1.md:720-723</code>,
+<code>DEPLOYMENT.md:528-531</code>). The shipped Nginx listens only on HTTP and has no
+certificate configuration (<code>apps/admin-web/nginx.conf:1-14</code>).</p>
+<p>State unambiguously that the shipped Nginx does not terminate TLS. Supply an
+executable external TLS proxy profile, certificate/CA procedure, trusted-
+forwarding policy, and edge upload CA configuration before pilot deployment.</p>
+<h3 id="d03-non-docker-deployment-cannot-reach-readiness-as-written">D03. Non-Docker deployment cannot reach readiness as written<a class="headerlink" href="#d03-non-docker-deployment-cannot-reach-readiness-as-written" title="Permanent link">&para;</a></h3>
+<p><code>DEPLOYMENT.md:502-515</code> exports no device token and runs neither bootstrap nor
+device registration before serve. Readiness requires at least one
+administrator and active device. Align this section with the correct sequence
+already shown in <code>QUICKSTART.md:133-149</code>, including the real edge UUID.</p>
+<h3 id="d04-m1-feature-complete-evidence-overstates-ci-and-delivered-c3-scope">D04. M1 feature-complete evidence overstates CI and delivered C3 scope<a class="headerlink" href="#d04-m1-feature-complete-evidence-overstates-ci-and-delivered-c3-scope" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The evidence table says every referenced admin test is in repository gates
+  (<code>docs/tasks/C1-central-server-m1.md:683-696</code>). CI does not set
+  <code>CENTRAL_E2E_TOKEN</code>, and the Compose-backed flow explicitly skips
+  (<code>apps/admin-web/tests/e2e/smoke.spec.ts:20-24</code>).</li>
+<li>The C3 plan requires a review-state history filter
+  (<code>docs/tasks/C1-central-server-m1.md:364-367</code>), but the endpoint has no such
+  parameter.</li>
+<li>The overview requirement includes oldest pending upload and upload state
+  (<code>docs/tasks/C1-central-server-m1.md:590-596</code>), but central exposes only
+  counts and average upload delay (<code>api/schemas.py:191-199</code>).</li>
+</ul>
+<p>Change status to "manual/local evidence, not CI-enforced" and retain dated
+artifacts, or add a CI job that starts PostgreSQL/MinIO/central/admin-web,
+asserts no skip, and runs the full flow. Deliver or formally waive the missing
+C3 filter/metric before calling C1a-C6 complete.</p>
+<h3 id="d05-central-backlog-signals-in-the-runbook-are-not-central-observables">D05. Central backlog signals in the runbook are not central observables<a class="headerlink" href="#d05-central-backlog-signals-in-the-runbook-are-not-central-observables" title="Permanent link">&para;</a></h3>
+<p><code>docs/runbooks/central-ingestion-backlog.md:5-8,59-64</code> references oldest
+unreceipted edge task age, retry rate, and oldest pending upload. Central does
+not ingest edge task state and exposes no such metrics. Separate edge-owned
+outbox signals from central-owned receipt/error/latency signals and provide
+executable API/log/SQL queries for each trigger.</p>
+<h3 id="d06-design-15-mixes-implemented-m1-and-production-target-apis">D06. Design 15 mixes implemented M1 and production-target APIs<a class="headerlink" href="#d06-design-15-mixes-implemented-m1-and-production-target-apis" title="Permanent link">&para;</a></h3>
+<p><code>docs/design/15-rest-api-and-events.md:13-18,116-175</code> presents OIDC/RBAC,
+multipart media initiation/completion, review-state filtering, and verified
+model publication beside current routes without a sufficiently explicit
+implementation overlay. M1 uses one bounded envelope and declarative model
+registration without server-side artifact verification.</p>
+<p>Add an "Implemented M1 API" table generated from committed OpenAPI. Move OIDC,
+full roles, multipart/resumable upload, central WebSocket, reports/users/audit
+APIs, and artifact-verifying publication under a clearly marked production
+target.</p>
+<h3 id="d07-model-published-semantics-conflict-with-the-release-contract">D07. Model <code>PUBLISHED</code> semantics conflict with the release contract<a class="headerlink" href="#d07-model-published-semantics-conflict-with-the-release-contract" title="Permanent link">&para;</a></h3>
+<p>Contract 10 requires artifact checksum/release validation, while M1 publishes
+declarative metadata without fetching artifact bytes. The UI warning correctly
+says assignment is not activation, but <code>PUBLISHED</code> can still be interpreted as
+a validated release.</p>
+<p>Rename the M1 state to <code>REGISTERED</code>, or add an accepted ADR defining central
+metadata publication as declarative registration, prohibiting activation
+claims, and stating the supersession criteria for production artifact
+verification.</p>
+<h3 id="d08-security-and-developer-manual-status-is-stale">D08. Security and developer-manual status is stale<a class="headerlink" href="#d08-security-and-developer-manual-status-is-stale" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>SECURITY.md:16-18,85-87</code> says PR #31 is pending, while it is merged.</li>
+<li><code>SECURITY.md:118-122</code> presents central OIDC/RBAC without documenting the M1
+  single-administrator credential boundary.</li>
+<li><code>docs/manual/README.md:68-79</code> says central is not implemented and omits all
+  central workspace members.</li>
+</ul>
+<p>Update the supported-version table and manual. State the actual pilot bearer/
+session model, absent role separation/rotation, external TLS requirement, and
+controlled-pilot limitations.</p>
+<h3 id="d09-architecture-status-and-repository-maps-are-stale">D09. Architecture status and repository maps are stale<a class="headerlink" href="#d09-architecture-status-and-repository-maps-are-stale" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>docs/design/00-cover-and-status.md:9-35</code> still labels delivered MVP/central
+  work as proposed/defined.</li>
+<li><code>docs/contracts/01-architecture-boundaries.md:23-41</code> and
+  <code>docs/design/18-monorepo-and-code-organization.md:20-140</code> use <code>central-api</code>,
+  <code>central-worker</code>, and a combined client instead of <code>central-service</code> and
+  <code>api-client-central</code>.</li>
+<li><code>docs/ai/context.md</code> contains detailed central status but its directory tree
+  omits the central workspace members and retains PR-centric snapshot language.</li>
+</ul>
+<p>Keep target architecture separate from a dated current implementation map.
+Label proposed future units explicitly and make repository-state facts the
+canonical status source.</p>
+<h3 id="d10-required-open-questions-have-no-ownerclosure-evidence">D10. Required open questions have no owner/closure evidence<a class="headerlink" href="#d10-required-open-questions-have-no-ownerclosure-evidence" title="Permanent link">&para;</a></h3>
+<p>OQ-018 and OQ-021 are marked needed by the one-month target
+(<code>docs/design/appendices.md:99-114</code>), while section 7 requires owner, horizon,
+and closure evidence (<code>appendices.md:230-232</code>). M1 implicitly chose one pilot
+organization and external TLS but does not formally record those pilot
+assumptions. Add owner, state, decision/evidence, and whether the answer is a
+pilot assumption or production closure.</p>
+<h3 id="d11-no-adr-records-the-central-m1-securitygovernance-deviations">D11. No ADR records the central M1 security/governance deviations<a class="headerlink" href="#d11-no-adr-records-the-central-m1-securitygovernance-deviations" title="Permanent link">&para;</a></h3>
+<p>The ADR index ends at ADR-016. Pilot bearer authentication, one all-powerful
+administrator, declarative model publication, manual package installation,
+single-envelope media, no credential rotation, and external TLS ownership are
+locked only in a task document. Add a central M1 ADR documenting these bounded
+decisions, risks, compensating controls, and supersession triggers.</p>
+<h3 id="d12-minor-documentation-defects">D12. Minor documentation defects<a class="headerlink" href="#d12-minor-documentation-defects" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>api/settings.py:37-43</code> says bootstrap generates and prints missing tokens;
+  actual bootstrap fails closed.</li>
+<li><code>docs/tasks/C1-central-server-m1.md:731-733</code> says "first production
+  inspection" inside a non-production checklist; use "first retained pilot
+  inspection."</li>
+<li><code>README.md:31-33</code> gives central screenshots edge health/statistics alt text.</li>
+<li>Root status should not call M1 unconditionally feature-complete while H01-H11
+  and D01-D04 remain open; use "implemented feature set, pilot closure pending."</li>
+</ul>
+<h2 id="7-test-and-verification-gaps">7. Test and Verification Gaps<a class="headerlink" href="#7-test-and-verification-gaps" title="Permanent link">&para;</a></h2>
+<p>Existing tests are extensive, but the following gaps explain why green gates
+did not detect the high-severity findings:</p>
+<ul>
+<li>No real PostgreSQL concurrency test covers desired-configuration CAS,
+  metadata publication, or review append under the full production dialect.</li>
+<li>Most repository tests use SQLite <code>metadata.create_all()</code> rather than applying
+  every Alembic migration and comparing the migrated schema to metadata.</li>
+<li>No ingestion tests reject non-final lifecycle, reversed timestamps,
+  <code>UNCERTAIN -&gt; OK</code>, missing product configuration, unknown governed versions,
+  or incompatible rule/model/product bindings.</li>
+<li>No object-store test simulates silent truncation/corruption after successful
+  PUT or verifies persisted SHA-256.</li>
+<li>No reconciliation race test pauses between PUT and binding commit.</li>
+<li>No review test checks same key/different body, replayed inspection ID,
+  inconclusive reason, duplicate normalized corrections, or unknown component.</li>
+<li>No authorization matrix exists because every administrator has identical
+  effective privilege.</li>
+<li>No forwarding-header/key-eviction/multi-worker/authentication rate-limit test
+  exists.</li>
+<li>No Compose test uploads media above 1 MiB or at configured API boundaries.</li>
+<li>The automated backup test is SQLite/in-memory focused; real PostgreSQL/MinIO
+  consistency is not CI-enforced.</li>
+<li>No test proves the runtime database role cannot update/delete inspections,
+  reviews, audit rows, or published metadata.</li>
+<li>No API-client transport tests cover malformed JSON/problem bodies, <code>401</code>,
+  cookie/session transitions, aborts, or response runtime validation.</li>
+<li>No admin component/E2E tests cover failed logout, expiry, stale requests,
+  inclusive dates, list pagination, tenant switching, media cache policy, or
+  accessibility.</li>
+<li>The substantive admin Playwright flow is skipped unless
+  <code>CENTRAL_E2E_TOKEN</code> is supplied; CI currently runs only the login smoke.</li>
+</ul>
+<h2 id="8-verification-executed">8. Verification Executed<a class="headerlink" href="#8-verification-executed" title="Permanent link">&para;</a></h2>
+<p>The following commands were executed against the reviewed workspace:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv run ruff check apps/central-service scripts/tests/test_edge_central_e2e.py
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv run ruff format --check apps/central-service scripts/tests/test_edge_central_e2e.py
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv run mypy apps/central-service/src apps/central-service/tests
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv run pytest apps/central-service/tests scripts/tests/test_edge_central_e2e.py
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>pnpm --filter @assemblyvision/api-client-central build
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>pnpm --filter @assemblyvision/api-client-central lint
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>pnpm --filter @assemblyvision/api-client-central test
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>pnpm --filter admin-web build
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>pnpm --filter admin-web lint
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>pnpm --filter admin-web test
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>pnpm --filter admin-web test:e2e
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>uv run mkdocs build --strict
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>docker compose --env-file apps/central-service/compose.env.example \
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  -f apps/central-service/compose.yaml config --quiet
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>uv run python scripts/generate-central-openapi.py
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>git diff --exit-code -- apps/central-service/openapi/central-openapi.json
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>pnpm --filter @assemblyvision/api-client-central generate:types
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>git diff --exit-code -- \
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  packages/typescript/api-client-central/src/central/generated/api.ts
+</code></pre></div>
+<p>Results:</p>
+<ul>
+<li>Ruff lint: passed.</li>
+<li>Ruff format check: 68 files already formatted.</li>
+<li>MyPy: passed for 57 central source/test files.</li>
+<li>Pytest: 169 passed, 1 third-party Starlette deprecation warning.</li>
+<li>Central TypeScript client: build/lint passed; 3 tests passed.</li>
+<li>Admin web: build/lint passed; 30 unit tests passed.</li>
+<li>Admin Playwright: 1 login smoke passed; 1 Compose-backed pilot flow skipped
+  because <code>CENTRAL_E2E_TOKEN</code> was not set.</li>
+<li>MkDocs strict build: passed, with upstream/dependency warnings and the
+  existing list of pages omitted from configured navigation.</li>
+<li>Compose configuration: parsed successfully.</li>
+<li>Central OpenAPI and generated TypeScript drift checks: passed.</li>
+</ul>
+<p>The first Python test invocation reached 85% before the 120-second command
+timeout; it was rerun with a 300-second limit and completed successfully.</p>
+<p><code>apps/central-service/.env</code> exists locally but is ignored and untracked. Its
+contents were not included in this report. <code>compose.env.example</code> is tracked.</p>
+<h2 id="9-residual-risks-and-explicit-deferrals">9. Residual Risks and Explicit Deferrals<a class="headerlink" href="#9-residual-risks-and-explicit-deferrals" title="Permanent link">&para;</a></h2>
+<p>The following remain legitimate M1 deferrals only while deployment stays a
+tightly controlled pilot and documentation does not imply otherwise:</p>
+<ul>
+<li>No OIDC, MFA, mature user lifecycle, or full organization-scoped RBAC.</li>
+<li>No device PKI/mTLS or automated credential lifecycle.</li>
+<li>No production HA, horizontal rate-limit coordination, final RPO/RTO, PITR,
+  or continuous replication.</li>
+<li>No central retention/legal-hold/deletion enforcement or final data-residency
+  controls.</li>
+<li>No malware scanning or final media data-classification policy.</li>
+<li>No server-side model artifact verification, signature verification, remote
+  package delivery, activation acknowledgement, or rollback orchestration.</li>
+<li>No resumable large-media protocol.</li>
+<li>No production capacity/soak evidence, partition strategy, or worker topology.</li>
+</ul>
+<p>These deferrals become release blockers before broader network exposure,
+multiple human users, multiple organizations, production evidence retention,
+or remote configuration/model management.</p>
+<h2 id="10-improvement-design">10. Improvement Design<a class="headerlink" href="#10-improvement-design" title="Permanent link">&para;</a></h2>
+<h3 id="101-security-and-credential-design">10.1 Security and credential design<a class="headerlink" href="#101-security-and-credential-design" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Replace shared plaintext bootstrap tokens with a credential identifier plus
+   independently rotatable secret.</li>
+<li>Add audited principal lifecycle commands: enroll, disable, rotate, revoke,
+   and session revoke-all.</li>
+<li>Split database owner/migration/runtime roles and MinIO root/service-account
+   roles.</li>
+<li>Add backend permission dependencies and a role matrix before multiple pilot
+   administrators.</li>
+<li>Establish one trusted TLS/forwarding boundary and reject untrusted proxy
+   headers.</li>
+</ol>
+<h3 id="102-evidence-integrity-design">10.2 Evidence integrity design<a class="headerlink" href="#102-evidence-integrity-design" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Introduce durable media staging with lease/age semantics.</li>
+<li>Verify retained object size and SHA-256 before <code>AVAILABLE</code> and receipt.</li>
+<li>Reconcile absence and corruption into explicit lifecycle/audit state.</li>
+<li>Quiesce writes for pilot backup or implement snapshot-aligned backup.</li>
+<li>Add a restore manifest that cross-checks database bindings and object hashes.</li>
+</ol>
+<h3 id="103-governance-and-traceability-design">10.3 Governance and traceability design<a class="headerlink" href="#103-governance-and-traceability-design" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Fix public/internal desired-configuration identities and PostgreSQL CAS.</li>
+<li>Decide governed versus ungoverned ingestion reference policy.</li>
+<li>Require finalized cross-field decision invariants and product-configuration
+   identity.</li>
+<li>Make review idempotency content-addressed and reuse domain validation.</li>
+<li>Separate declarative model registration from validated release publication.</li>
+</ol>
+<h3 id="104-api-and-frontend-design">10.4 API and frontend design<a class="headerlink" href="#104-api-and-frontend-design" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Stream and bound ingestion before allocation; move blocking work off the
+   event loop.</li>
+<li>Add runtime response validation and centralized <code>401</code> handling.</li>
+<li>Restore/authenticate before protected route mounting and cancel stale work.</li>
+<li>Correct date/pagination/race/timezone behavior.</li>
+<li>Add explicit CSRF, browser security headers, and sensitive-media cache
+   controls.</li>
+</ol>
+<h3 id="105-documentation-and-evidence-design">10.5 Documentation and evidence design<a class="headerlink" href="#105-documentation-and-evidence-design" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Create a central M1 ADR for bounded deviations and supersession criteria.</li>
+<li>Separate target architecture from the implemented M1 OpenAPI/status table.</li>
+<li>Make every runbook executable against existing commands only.</li>
+<li>Distinguish CI-enforced, locally executed, deployment-gated, and deferred
+   evidence.</li>
+<li>Track open questions with owner, state, horizon, and closure evidence.</li>
+</ol>
+<h2 id="11-recommended-remediation-sequence">11. Recommended Remediation Sequence<a class="headerlink" href="#11-recommended-remediation-sequence" title="Permanent link">&para;</a></h2>
+<h3 id="phase-0-before-any-controlled-pilot">Phase 0: Before any controlled pilot<a class="headerlink" href="#phase-0-before-any-controlled-pilot" title="Permanent link">&para;</a></h3>
+<ul>
+<li>H01 published credentials.</li>
+<li>H02 credential compromise/rotation procedure.</li>
+<li>H03 desired-configuration identity defect.</li>
+<li>H04 PostgreSQL CAS.</li>
+<li>H05 stored-media verification.</li>
+<li>H06 reconciliation race.</li>
+<li>H07 ingestion invariant/reference policy.</li>
+<li>H08 review idempotency/validation.</li>
+<li>H09 forwarding/rate-limit bypass and Compose wiring.</li>
+<li>H10 proxy/body mismatch and bounded ingestion.</li>
+<li>H11 consistent pilot backup/restore.</li>
+<li>D01-D05 runbook/TLS/evidence corrections.</li>
+</ul>
+<h3 id="phase-1-before-multiple-users-or-organizations">Phase 1: Before multiple users or organizations<a class="headerlink" href="#phase-1-before-multiple-users-or-organizations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>H12 deterministic credential identity.</li>
+<li>M01 role authorization.</li>
+<li>M02 database immutability controls.</li>
+<li>M03 complete actor audit.</li>
+<li>M04 database-enforced tenant relationships.</li>
+<li>M08-M11 admin client/session/browser controls.</li>
+</ul>
+<h3 id="phase-2-before-production-classification">Phase 2: Before production classification<a class="headerlink" href="#phase-2-before-production-classification" title="Permanent link">&para;</a></h3>
+<ul>
+<li>M05-M07 media/governance/index hardening.</li>
+<li>M12-M14 deployment and lifecycle hardening.</li>
+<li>D06-D11 architecture, ADR, status, and open-question alignment.</li>
+<li>All production deferrals in section 9, with customer-approved requirements
+  and measured acceptance evidence.</li>
+</ul>
+<h2 id="12-pilot-decision-gate">12. Pilot Decision Gate<a class="headerlink" href="#12-pilot-decision-gate" title="Permanent link">&para;</a></h2>
+<p>The central implementation has a substantial, typed, and well-tested M1
+foundation. The edge-first safety boundary remains intact, and the existing
+idempotent inspection path is stronger than a typical prototype. However, the
+current workspace should not be represented as ready for the section 13.2
+controlled-pilot go-live checklist because:</p>
+<ol>
+<li>The documented deployment path can activate public credentials.</li>
+<li>The documented compromise procedure does not revoke those credentials.</li>
+<li>Desired configuration can return or validate the wrong identities.</li>
+<li>PostgreSQL optimistic concurrency is not enforced atomically.</li>
+<li>Media receipts do not prove retained bytes match the accepted checksum.</li>
+<li>Reconciliation can race active uploads.</li>
+<li>Central accepts evidence that contradicts its finalized/governed claims.</li>
+<li>Review retries can silently alias contradictory requests.</li>
+<li>The shipped proxy defeats both the intended media limit and rate limiter.</li>
+<li>The backup pair is not a consistent recovery point.</li>
+<li>Several runbooks and exit-criteria claims describe behavior that does not
+    exist or is not CI-enforced.</li>
+</ol>
+<p>Recommended status wording until Phase 0 closes:</p>
+<blockquote>
+<p>The Central M1 feature set is implemented and passes current static/unit
+gates. Controlled-pilot closure is pending the AUDIT-002 Phase 0 security,
+evidence-integrity, concurrency, recovery, and documentation findings. It is
+not a production release and remains outside the edge decision path.</p>
+</blockquote>
+<p>No production or pilot code was modified by this audit.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

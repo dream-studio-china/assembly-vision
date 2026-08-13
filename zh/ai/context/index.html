@@ -3335,7 +3335,7 @@
   <a href="#821-central-server-metadata-governance-c5-pr-47" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.21 Central Server Metadata Governance (C5, PR #47)
+        8.21 中央服务器元数据治理（C5，PR #47）
       
     </span>
   </a>
@@ -3346,7 +3346,7 @@
   <a href="#822-central-server-m1-hardening-and-operational-evidence-c6-pr-48" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.22 Central Server M1 Hardening and Operational Evidence (C6, PR #48)
+        8.22 中央服务器 M1 强化和操作证据（C6，PR #48）
       
     </span>
   </a>
@@ -3443,7 +3443,7 @@
   M1基础（C1a）； PR #38 添加了置信度漂移统计数据
   （设计15.3.6）及其仪表板； PR #39 添加了实时网络
   设备运行状况页面的流量和 GPU 指标。边缘编码完成
-  通过E6准备门。中央服务器M1试点已开始
+  通过E6准备门。中央服务器M1试点已启动
   （C1a 基金会通过 PR #37 合并；C1b 租户/凭证基金会合并
   通过 PR #40）；其有界实施计划是
   <code>docs/tasks/C1-central-server-m1.md</code>。 PR #41 修复了 GitHub 问题
@@ -3451,7 +3451,7 @@
   <code>.md</code> 文件作为需要 <code>about:</code> 键的 Markdown 模板，这使得
   编辑报告“关于不能为空”），缺少结束语
   分隔符已添加到安全模板中，并且 <code>.env</code> 部署机密
-  现在已被 gitignored。中央M1飞行员已交付检查
+  现在已被 gitignored。中央M1飞行员此后已交付检查
   通过验证收据进行摄取（C2a，PR #42），MinIO 媒体绑定（C2b，
   PR #43)、历史/详细信息/媒体访问和真正的管理 Web UI（C3、PR
   #44)、仅附加的中央人工审核（C4、PR #45）、admin-web
@@ -3459,7 +3459,7 @@
   （PR #47）和 C6 M1 强化和操作证据（PR #48，合并）-
   完成 C1a-C6 M1 功能集，加上 E6-A16 真实
   从边缘到中心的集成夹具和 M1 闭合文档
-  （退出标准证据表 + 上线清单，自述文件/快速启动/
+  （退出标准证据表 + 上线清单、自述文件/快速启动/
   部署拆分）通过 PR #49（在快照时间打开）。 M1飞行员是</li>
 </ul>
 <p>功能齐全；剩下的工作是现场 E6 验收和§13.2
@@ -3723,7 +3723,7 @@
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
   盒子是致命的；丢失的标签文件无法验证，除非已记录
   <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
-  底片；成分制备导致 ROI 作物为负值；并发表
+  底片；成分制备导致 ROI 作物为负数；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
 <li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code>和
   <code>pytest</code> 现在覆盖整个存储库（边缘、包、训练、脚本
@@ -3770,7 +3770,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 <li><strong><code>assemblyvision serve</code></strong>：在<code>/api/v1</code>上启动本地API（设计15.3），
   将构建的仪表板作为带有 SPA 后备的静态资产，打开 SQLite
   索引，并以幂等方式协调现有 CLI <code>inspection.json</code> 输出
-  启动。配置/规则/清单加载重用相同的经过验证的
+  启动。配置/规则/清单加载重用相同的验证
   管道构建为 <code>inspect</code>。</li>
 <li><strong>持久性</strong>：SQLAlchemy 核心架构 + Alembic 迁移 0001/0002
   (<code>apps/edge-service/migrations/</code>);检查表，组件
@@ -3866,7 +3866,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 </ul>
 <h2 id="85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14">8.5 相机帧源、多实例边缘和 Web 开发测试工具（ADR-013/014、PR #14）<a class="headerlink" href="#85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14" title="Permanent link">&para;</a></h2>
 <p>通过 PR #14 合并（dev -&gt; main）。审查驱动的强化过程记录在
-<code>docs/reviews/PR-014-review.md</code>;结果 F1-F14 通过回归得到解决
+<code>docs/reviews/PR-014-review.md</code>；结果 F1-F14 通过回归得到解决
 测试。设计：</p>
 <ul>
 <li><strong><code>vision-core</code></strong>中的<code>FrameSource</code>协议（设计07§7.3）：<code>open /
@@ -3884,7 +3884,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
   <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
   保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界每个实例检查队列
+  实例使用显式的有界的每个实例检查队列
   溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
   <code>EdgeRuntime.load_instances</code>开始独立单帧检查
   当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
@@ -3932,7 +3932,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
 <p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code>，因此严格的 mypy 门会通过
-  回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
+  回购范围内；当前套件有 635 个 Python 测试，91 个 TypeScript 单元测试
   （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
 <h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
 <p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
@@ -3979,7 +3979,7 @@ PR-020 审查强化）。交付任务和强制性安全不变量是
   <code>retention_eligible_at</code>，保留状态，删除声明/租赁/防护列，
   清除时间戳/原因、删除错误和完整性状态。 <code>PURGED</code> 行
   仍然是审计墓碑。资格需要经过验证的收据 <code>SYNCED</code>
-  使用包含中央对象 ID 的媒体收据进行检查
+  使用包含中心对象 ID 的媒体收据进行检查
   保留截止日期，并且没有保留/故障/清除/删除状态。</li>
 <li><strong>清洁工人 (E2b)</strong>：<code>RetentionCleanupWorker</code> 根据
   使用每个工件的隔离令牌进行进程间 SQLite 租赁。一个有围栏的
@@ -4024,14 +4024,14 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <ul>
 <li><strong>带宽节流（E3a）</strong>：令牌桶限制器限制网络
   来自 <code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code> 的每秒有效负载字节数
-  （<code>None</code> 禁用）；突发的上限为一秒的令牌和限制器
+  (<code>None</code> disables);突发的上限为一秒的令牌和限制器
   永远不会限制本地持久性。发送的字节数和上限暴露在
   设备状态。</li>
 <li><strong>断路器 (E3b)</strong>：连续可重试失败
   (<code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code>/<code>_OPEN_SECONDS</code>) 打开
   电路；打开时调度程序不声明任何内容，而打开窗口后
   单个半开探头判断恢复情况。永久的失败永远不算数。
-  <code>UPLOAD_CIRCUIT_OPEN</code> 警报；持久队列永远不会改变。</li>
+  <code>UPLOAD_CIRCUIT_OPEN</code> alert;持久队列永远不会改变。</li>
 <li><strong>受控手动重试 (E3c)</strong>：<code>POST /api/v1/uploads/{id}/retry</code>
   仅重置 <code>RETRY_WAIT</code>/<code>PERMANENT_FAILURE</code> 任务
   <code>attempt_count + 1</code>; 404 未知，409 不合格，无突变。</li>
@@ -4046,7 +4046,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 </ul>
 <h2 id="89-runtime-and-live-event-channel-e4">8.9 运行时和实时事件通道 (E4)<a class="headerlink" href="#89-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h2>
 <p>于<code>feat/e4-runtime</code>实现（投递任务
-<code>docs/tasks/E4-runtime.md</code>）：</p>
+<code>docs/tasks/E4-runtime.md</code>):</p>
 <ul>
 <li><strong>WebSocket 运行时通道 (E4a)</strong>：内存中 <code>RuntimeEventBus</code> 分配
   单调的每个源序列号并保持每个连接有界
@@ -4122,7 +4122,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 加载和审查面板历史错误门控。</p>
 <ul>
 <li><strong>条形码标识（PR #30、ADR-015）</strong>：键入 <code>BarcodeObservation</code> 型号，
-  一个可选的 ZXing-cpp 视觉解码器 (<code>zxing-cpp&gt;=2.3,&lt;3</code>)，一个显式的
+  一个可选的 ZXing-cpp 视觉解码器（<code>zxing-cpp&gt;=2.3,&lt;3</code>），一个显式的
   模拟键盘输入适配器（仅限开发线束）和确定性
   解析器将完整的条形码值映射到产品代码。解析失败
   关闭不可读、冲突、不支持的符号、未知或
@@ -4137,7 +4137,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li><strong>边缘本地人工审查（PR #31，ADR-016）</strong>：可选，附加，
   对任何检查（OK 或 NG）进行仅附加审查，而不改变
   机器决定。域 <code>ReviewDisposition</code> (CONFIRMED_NG/CONFIRMED_OK/
-  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的限制，
+  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的约束，
   <code>ReviewRecord</code> 快照原始决策，一个 <code>review_records</code> 表
   （迁移 0008）使用引用链接取代、存储库
   <code>submit_review</code>/<code>list_review_queue</code>，和端点<code>GET /api/v1/reviews</code>，
@@ -4371,7 +4371,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   具有不同内容的设备序列返回 <code>409 PAYLOAD_CONFLICT</code>
   审计事件和已接受的资源被保留。并发
   独特约束竞赛映射到 409，而不是 500。</li>
-<li><strong>媒体信封</strong>返回可重试的<code>503 MEDIA_INGESTION_UNAVAILABLE</code>
+<li><strong>媒体信封</strong>返回可重试的 <code>503 MEDIA_INGESTION_UNAVAILABLE</code>
   直到 C2b 里程碑到来，所以悬而未决的边缘媒体任务从来都不是永久的
   失败了。</li>
 <li><strong>已验证的收据</strong> 回显幂等性密钥、对象 ID、种类、大小和
@@ -4485,7 +4485,7 @@ C2a 临时 503 占位符。</p>
   附加获胜，其他409），迁移0005升级/降级，以及
   经过浏览器验证的审核流程，控制台错误为零。</li>
 </ul>
-<h2 id="821-central-server-metadata-governance-c5-pr-47">8.21 Central Server Metadata Governance (C5, PR #47)<a class="headerlink" href="#821-central-server-metadata-governance-c5-pr-47" title="Permanent link">&para;</a></h2>
+<h2 id="821-central-server-metadata-governance-c5-pr-47">8.21 中央服务器元数据治理（C5，PR #47）<a class="headerlink" href="#821-central-server-metadata-governance-c5-pr-47" title="Permanent link">&para;</a></h2>
 <p>通过 PR #47 合并（dev -&gt; main）。实施 C5 里程碑：组织-
 具有不可变草案/发布的范围产品/组件/规则/模型治理
 版本、精确条形码映射、明确的规则/模型兼容性、
@@ -4524,7 +4524,7 @@ C2a 临时 503 占位符。</p>
   客户端、admin-web lint/build 和 30 个单元测试、针对 Compose 的 e2e 烟雾、
   以及所有四个配置页面的实时浏览器检查。</li>
 </ul>
-<h2 id="822-central-server-m1-hardening-and-operational-evidence-c6-pr-48">8.22 Central Server M1 Hardening and Operational Evidence (C6, PR #48)<a class="headerlink" href="#822-central-server-m1-hardening-and-operational-evidence-c6-pr-48" title="Permanent link">&para;</a></h2>
+<h2 id="822-central-server-m1-hardening-and-operational-evidence-c6-pr-48">8.22 中央服务器 M1 强化和操作证据（C6，PR #48）<a class="headerlink" href="#822-central-server-m1-hardening-and-operational-evidence-c6-pr-48" title="Permanent link">&para;</a></h2>
 <p>通过 PR #48 合并（dev -&gt; main）。实现 C6 里程碑：
 结构化日志关联、有界速率限制、可重试依赖 -
 故障响应、重启/备份/恢复故障证据和中央
@@ -4664,7 +4664,7 @@ C2a 临时 503 占位符。</p>
   用户/RBAC、远程包分发）是由以下驱动的生产范围
   OQ-021/OQ-022（路线图 25.6），不是 C1a-C6 的一部分。
 - 硬件/条件仍未确认（参见<a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>）：
-  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期限、网络
+  相机供应商/SDK、条形码标准、传送带速度、GPU/操作系统、保留期、网络
   可靠性、中央服务器位置、接受阈值。
 - <code>.obsidian/</code> 选择保持不被跟踪；在更改该决定之前通知用户。</p>
 

@@ -758,7 +758,7 @@
   <a href="#610-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.10 未解决的问题和需要验证
+        6.10 开放性问题和需要验证
       
     </span>
   </a>
@@ -3287,7 +3287,7 @@
   <a href="#610-open-questions-and-validation-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.10 未解决的问题和需要验证
+        6.10 开放性问题和需要验证
       
     </span>
   </a>
@@ -3319,7 +3319,7 @@
 <p>本文档定义了从获取的图像到持久的产品级决策的端到端检查流程。详细的子系统行为在 <a href="../07-camera-and-image-acquisition/">camera and image acquisition</a>、<a href="../08-product-detection-and-roi/">product detection and ROI</a>、<a href="../09-component-detection/">component detection</a>、<a href="../10-temporal-aggregation/">temporal aggregation</a> 和 <a href="../11-rule-engine/">rule engine</a> 中指定。</p>
 <p>安全不变量是：</p>
 <blockquote>
-<p>只有当每个必需的组件都有足够的有效证据并且每个强制性管道阶段都可验证时，才可以进行检查<code>OK</code>。缺失、不确定、无效或不可用的证据会产生 <code>NG</code>，而不是 <code>OK</code>。</p>
+<p>只有当每个必需的组件都有足够的有效证据并且每个强制性管道阶段都可验证时，才可以进行检查。缺失、不确定、无效或不可用的证据会产生 <code>NG</code>，而不是 <code>OK</code>。</p>
 </blockquote>
 <p>这是一种自动防故障的分类策略，而不是完美的检测准确性。</p>
 <h2 id="62-scope-by-delivery-phase">6.2 按交付阶段划分的范围<a class="headerlink" href="#62-scope-by-delivery-phase" title="Permanent link">&para;</a></h2>
@@ -3423,10 +3423,10 @@ else 产品无法验证
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="nt">max_mean_brightness</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">225.0</span>
 </code></pre></div>
 <p>上面的 <code>pipeline.*</code> 键描述了生产窗口管道，并且是
-延迟：M1 静态单帧 CLI 只接受 <code>product_detection</code>，
+deferred：M1静态单帧CLI仅接受<code>product_detection</code>，
 <code>component_detection</code>、<code>components</code> 和 <code>roi</code> 部分并拒绝未知
 键（AUDIT-001）。</p>
-<p>配置在启动时进行架构验证。无效的配置会妨碍检查准备工作。当产品窗口打开时，活动模型、规则和产品配置版本将被固定，并且无法在该窗口内更改。</p>
+<p>配置在启动时进行模式验证。无效的配置会妨碍检查准备工作。当产品窗口打开时，活动模型、规则和产品配置版本将被固定，并且无法在该窗口内更改。</p>
 <h2 id="67-failure-handling">6.7 故障处理<a class="headerlink" href="#67-failure-handling" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3446,7 +3446,7 @@ else 产品无法验证
 </tr>
 <tr>
 <td>没有产品、有多个产品或无效的投资回报率</td>
-<td><code>NG</code>;当输入无效时跳过组件推理</td>
+<td><code>NG</code>；当输入无效时跳过组件推理</td>
 </tr>
 <tr>
 <td>模型加载/推理错误</td>
@@ -3478,7 +3478,7 @@ else 产品无法验证
 <li>测量平均和 P95 延迟、吞吐量、NG 召回、产品检测成功和每个组件召回。</li>
 <li>在确定性推理支持允许的情况下，从持久输入、配置和版本元数据中再现结果。</li>
 </ul>
-<h2 id="610-open-questions-and-validation-required">6.10 未解决的问题和需要验证<a class="headerlink" href="#610-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
+<h2 id="610-open-questions-and-validation-required">6.10 开放性问题和需要验证<a class="headerlink" href="#610-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li>测量传送带速度后确认生产延迟和吞吐量预算。</li>
 <li>选择并验证边缘推理硬件和执行提供商。</li>

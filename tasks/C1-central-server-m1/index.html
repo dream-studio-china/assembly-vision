@@ -4347,8 +4347,8 @@ never expose stack traces/paths/credentials).</p>
   reports all dependencies ok.</li>
 <li>Terminate TLS in front of the API (admin-web nginx or a reverse proxy) and
   verify the edge <code>HttpUploadSink</code> reaches <code>https://...</code> (plain HTTP remains
-  loopback-development only, contract 04); rotate the pilot admin/device
-  tokens away from dev defaults (compose.env.example).</li>
+  loopback-development only, contract 04); set unique pilot admin/device
+  tokens because <code>compose.env.example</code> contains placeholders only.</li>
 <li>Register each edge device with its real UUID <code>device_id</code> (C1b) and its own
   upload token; verify one inspection + media upload reaches <code>SYNCED</code> and
   replay is duplicate-free before wider rollout.</li>

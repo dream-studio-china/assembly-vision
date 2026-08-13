@@ -3911,7 +3911,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 架构版本。事件 <code>sequence</code> 对于 <code>(source_id, channel)</code> 是单调的，并且仅当
 源身份变更。</p>
 <h2 id="145-edge-schema">14.5 边缘模式<a class="headerlink" href="#145-edge-schema" title="Permanent link">&para;</a></h2>
-<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份简短的写入交易；媒体字节保留在文件系统中。</p>
+<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份短写交易；媒体字节保留在文件系统中。</p>
 <table>
 <thead>
 <tr>
@@ -3938,7 +3938,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 <tr>
 <td><code>local_media_files</code></td>
-<td><code>id</code> PK、<code>inspection_id</code> FK可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
+<td><code>id</code> PK、<code>inspection_id</code> FK 可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
 <td>路径必须相对于配置的媒体根； <code>UNIQUE(relative_path)</code> 和 <code>UNIQUE(sha256, kind)</code> ，其中重复数据删除是安全的。</td>
 </tr>
 <tr>
@@ -3964,7 +3964,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>rule_installations</code></td>
 <td><code>rule_version_id</code> PK、产品版本 ID、文档 JSON、校验和、状态、安装/激活次数</td>
-<td>激活验证兼容的型号类别和产品版本。</td>
+<td>激活验证兼容的模型类和产品版本。</td>
 </tr>
 <tr>
 <td><code>review_records</code></td>
@@ -3982,7 +3982,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_device_events_time</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">device_events</span><span class="p">(</span><span class="n">occurred_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
 </code></pre></div>
 <h2 id="146-central-schema">14.6 中心模式<a class="headerlink" href="#146-central-schema" title="Permanent link">&para;</a></h2>
-<p>PostgreSQL 拥有租户隔离和全局历史记录。每个租户拥有的行都带有 <code>organization_id</code>；即使稍后启用行级安全性，存储库查询也必须限定其范围。</p>
+<p>PostgreSQL 拥有租户隔离和全局历史记录。每个租户拥有的行都带有 <code>organization_id</code>；即使稍后启用行级安全性，存储库查询也必须对其进行范围限制。</p>
 <table>
 <thead>
 <tr>
@@ -4040,7 +4040,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>inspections</code></td>
 <td>UUID PK 匹配边缘 ID、组织/设备 FK、设备序列、生命周期/时间、条形码/产品分辨率、内部决策、业务结果、应用程序/产品模型/组件模型/规则版本和校验和、延迟、接收时间</td>
-<td><code>UNIQUE(device_id, device_sequence)</code>;保留准确的运行时版本。</td>
+<td><code>UNIQUE(device_id, device_sequence)</code>;保留精确的运行时版本。</td>
 </tr>
 <tr>
 <td><code>inspection_components</code></td>

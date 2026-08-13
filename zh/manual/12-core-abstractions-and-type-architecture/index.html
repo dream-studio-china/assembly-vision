@@ -3583,8 +3583,8 @@ FIFO 适配器（<code>ModbusTcpTriggerAdapter</code> 位于 <code>ModbusTcpTran
    提高与返回状态 - 例如汇返回<code>UploadResult</code>，源提高
    <code>FrameStreamError</code>）。
 2.为每个变体添加一个具体实现；保持供应商/SDK 导入惰性
-   在带有可选附加依赖项的 <code>_backend.py</code> 帮助器后面。</li>
-<li>工厂/组合根中的线材构建（<code>build_frame_source</code>，
+   在带有可选附加依赖项的 <code>_backend.py</code> 帮助器后面。
+3.工厂/组合根中的线材构建（<code>build_frame_source</code>，
    <code>cli._build_pipeline</code>、<code>EdgeRuntime.load_instances</code>）。</li>
 <li>通过构造函数注入——永远不要在消费者内部实例化。</li>
 <li>使用伪造的后端测试具体实现并测试
@@ -3596,7 +3596,7 @@ FIFO 适配器（<code>ModbusTcpTriggerAdapter</code> 位于 <code>ModbusTcpTran
 点：</p>
 <ul>
 <li><code>cli._build_pipeline</code> (CLI)：加载配置/规则/清单，构建
-  <code>ProductDetector</code>/<code>ComponentDetector</code>/<code>ROIEngine</code>/<code>RuleEngine</code>，那么
+  <code>ProductDetector</code>/<code>ComponentDetector</code>/<code>ROIEngine</code>/<code>RuleEngine</code>，然后
   <code>InspectionPipeline(...)</code>。</li>
 <li><code>api.app.create_app</code>（服务）：构建<code>EdgeRepository</code>，<code>RuntimeEventBus</code>，
   <code>EdgeRuntime</code>（+ 实例），然后 <code>UploadScheduler</code>/<code>RetentionCleanupWorker</code>

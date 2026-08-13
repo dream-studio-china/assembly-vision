@@ -3799,23 +3799,23 @@
 <p>P2 要求和集成单独批准。 Kubernetes、自动再训练、Tauri 打包、PLC/MES 集成和边缘 PostgreSQL 不是默认的生产依赖项。</p>
 <h2 id="8-constraints-and-non-requirements">8. 限制和非要求<a class="headerlink" href="#8-constraints-and-non-requirements" title="Permanent link">&para;</a></h2>
 <ul>
-<li>边缘部署不能依赖于Kubernetes；核心设计仍然对 Docker Compose 友好。</li>
-<li>在没有测量证据的情况下，AssemblyVision 不保证 100% 的准确性或近乎零遗漏的 NG 案例。</li>
+<li>The edge deployment MUST NOT depend on Kubernetes; the central design remains Docker Compose friendly.</li>
+<li>AssemblyVision does not guarantee 100% accuracy or near-zero missed NG cases without measured evidence.</li>
 <li>该设计未假设确切的相机/扫描仪供应商、GPU、操作系统、条形码标准、传送带速度、网络可用性、组件类别、保留期、服务器位置或接受阈值。</li>
-<li>主仪表板不会使用 Tkinter、PyQt 或 PySide。未来的轻量级桌面包装器可能会托管本地 Web 应用程序。</li>
-<li><code>.pyc</code> 文件和 Docker 镜像减少了随意的源浏览，但不是反逆向工程或源安全边界。</li>
-<li>训练数据、笔记本、生产运行时数据和长期机密不得包含在客户端运行时映像中。</li>
+<li>The main dashboard will not use Tkinter, PyQt, or PySide. A future lightweight desktop wrapper may host the local Web application.</li>
+<li><code>.pyc</code> files and Docker images reduce casual source browsing but are not anti-reverse-engineering or source-security boundaries.</li>
+<li>Training data, notebooks, production runtime data, and long-term secrets MUST NOT be included in client runtime images.</li>
 </ul>
 <h2 id="9-open-questions-and-validation-required">9. 开放问题和需要验证<a class="headerlink" href="#9-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>
 <ol>
-<li>哪些确切的阈值、置信策略和所需的证据可以证明每个组件的存在？
-2、<code>UNCERTAIN</code>是暴露给运营商还是只保留在内部，而业务输出仍然是<code>NG</code>？</li>
-<li>1个月目标中哪些边缘操作需要身份验证？</li>
-<li>当存储降级时，哪些元数据/媒体对于本地提交的结果是必需的？</li>
-<li>边缘必须支持多长的中断持续时间和磁盘预留？</li>
-<li>哪些授权、审计保留、加密和数据驻留义务集中适用？</li>
-<li>根据基线数据商定哪些可衡量的绩效和接受阈值？</li>
-<li>权威的未解决列表是<a href="../appendices/#3-global-open-questions">Global Open Questions</a>。</li>
+<li>What exact thresholds, confidence policies, and required evidence qualify each component as present?</li>
+<li>Is <code>UNCERTAIN</code> exposed to operators or only retained internally while business output remains <code>NG</code>?</li>
+<li>Which edge operations require authentication in the one-month target?</li>
+<li>Which metadata/media are mandatory for a locally committed result when storage is degraded?</li>
+<li>What outage duration and disk reserve must the edge support?</li>
+<li>What authorization, audit retention, encryption, and data residency obligations apply centrally?</li>
+<li>What measurable performance and acceptance thresholds will be agreed from baseline data?</li>
+<li>The authoritative unresolved list is <a href="../appendices/#3-global-open-questions">Global Open Questions</a>.</li>
 </ol>
 
 
