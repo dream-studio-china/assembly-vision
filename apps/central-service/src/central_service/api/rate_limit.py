@@ -10,8 +10,9 @@ endpoints are never limited so orchestrator probes cannot be starved.
 from __future__ import annotations
 
 import time
-from collections import defaultdict, deque
+from collections import OrderedDict, deque
 from dataclasses import dataclass, field
+from ipaddress import ip_address
 
 
 @dataclass
@@ -19,7 +20,8 @@ class RateLimitState:
     """Sliding-window hit tracker keyed by client identity."""
 
     limit_per_minute: int
-    _hits: dict[str, deque[float]] = field(default_factory=lambda: defaultdict(deque), repr=False)
+    max_keys: int = 10_000
+    _hits: OrderedDict[str, deque[float]] = field(default_factory=OrderedDict, repr=False)
 
     def allow(self, key: str, now: float | None = None) -> tuple[bool, int]:
         """Decide one request from ``key``.
@@ -29,7 +31,14 @@ class RateLimitState:
         """
         now = time.monotonic() if now is None else now
         window_seconds = 60.0
-        hits = self._hits[key]
+        hits = self._hits.get(key)
+        if hits is None:
+            if len(self._hits) >= self.max_keys:
+                self._hits.popitem(last=False)
+            hits = deque()
+            self._hits[key] = hits
+        else:
+            self._hits.move_to_end(key)
         while hits and hits[0] <= now - window_seconds:
             hits.popleft()
         if len(hits) >= self.limit_per_minute:
@@ -44,14 +53,18 @@ class RateLimitState:
 
 
 def client_key(request_host: str | None, forwarded_for: str | None) -> str:
-    """A stable per-client key without trusting arbitrary hop chains.
+    """Return a bounded key from one proxy-written IP address or the socket peer.
 
-    The first ``X-Forwarded-For`` value (the immediate client) is used when
-    present; otherwise the socket peer address stands in. The value is bounded
-    to avoid unbounded key growth from hostile headers.
+    The Compose proxy overwrites ``X-Forwarded-For`` with its observed peer
+    address. Comma-separated chains and non-IP values are rejected so a direct
+    caller cannot choose arbitrary limiter identities.
     """
-    if forwarded_for:
-        first = forwarded_for.split(",")[0].strip()
-        if first and len(first) <= 64:
-            return f"xff:{first}"
+    if forwarded_for and "," not in forwarded_for:
+        candidate = forwarded_for.strip()
+        try:
+            normalized = str(ip_address(candidate))
+        except ValueError:
+            pass
+        else:
+            return f"xff:{normalized}"
     return f"peer:{request_host or 'unknown'}"

@@ -62,6 +62,8 @@ from central_service.persistence.schema import (
 _SESSION_LOOKUP_BYTES = 16
 _SESSION_SECRET_BYTES = 32
 _ACTIVE = "ACTIVE"
+_DESIRED_PRODUCT_MODEL_VERSIONS = model_versions.alias("desired_product_model_versions")
+_DESIRED_COMPONENT_MODEL_VERSIONS = model_versions.alias("desired_component_model_versions")
 
 
 def _utc(value: datetime) -> datetime:
@@ -3950,8 +3952,38 @@ class CentralRepository:
         with self._engine.connect() as connection:
             row = (
                 connection.execute(
-                    select(desired_configurations, devices.c.device_id, devices.c.name)
+                    select(
+                        desired_configurations,
+                        devices.c.device_id,
+                        devices.c.name,
+                        product_versions.c.version_id.label("product_version_public_id"),
+                        _DESIRED_PRODUCT_MODEL_VERSIONS.c.version_id.label(
+                            "product_model_version_public_id"
+                        ),
+                        _DESIRED_COMPONENT_MODEL_VERSIONS.c.version_id.label(
+                            "component_model_version_public_id"
+                        ),
+                        rule_versions.c.version_id.label("rule_version_public_id"),
+                    )
                     .join(devices, devices.c.id == desired_configurations.c.device_row_id)
+                    .join(
+                        product_versions,
+                        product_versions.c.id == desired_configurations.c.product_version_id,
+                    )
+                    .join(
+                        _DESIRED_PRODUCT_MODEL_VERSIONS,
+                        _DESIRED_PRODUCT_MODEL_VERSIONS.c.id
+                        == desired_configurations.c.product_model_version_id,
+                    )
+                    .join(
+                        _DESIRED_COMPONENT_MODEL_VERSIONS,
+                        _DESIRED_COMPONENT_MODEL_VERSIONS.c.id
+                        == desired_configurations.c.component_model_version_id,
+                    )
+                    .join(
+                        rule_versions,
+                        rule_versions.c.id == desired_configurations.c.rule_version_id,
+                    )
                     .where(
                         and_(
                             desired_configurations.c.organization_id == organization_id,
@@ -3968,8 +4000,38 @@ class CentralRepository:
         with self._engine.connect() as connection:
             rows = (
                 connection.execute(
-                    select(desired_configurations, devices.c.device_id, devices.c.name)
+                    select(
+                        desired_configurations,
+                        devices.c.device_id,
+                        devices.c.name,
+                        product_versions.c.version_id.label("product_version_public_id"),
+                        _DESIRED_PRODUCT_MODEL_VERSIONS.c.version_id.label(
+                            "product_model_version_public_id"
+                        ),
+                        _DESIRED_COMPONENT_MODEL_VERSIONS.c.version_id.label(
+                            "component_model_version_public_id"
+                        ),
+                        rule_versions.c.version_id.label("rule_version_public_id"),
+                    )
                     .join(devices, devices.c.id == desired_configurations.c.device_row_id)
+                    .join(
+                        product_versions,
+                        product_versions.c.id == desired_configurations.c.product_version_id,
+                    )
+                    .join(
+                        _DESIRED_PRODUCT_MODEL_VERSIONS,
+                        _DESIRED_PRODUCT_MODEL_VERSIONS.c.id
+                        == desired_configurations.c.product_model_version_id,
+                    )
+                    .join(
+                        _DESIRED_COMPONENT_MODEL_VERSIONS,
+                        _DESIRED_COMPONENT_MODEL_VERSIONS.c.id
+                        == desired_configurations.c.component_model_version_id,
+                    )
+                    .join(
+                        rule_versions,
+                        rule_versions.c.id == desired_configurations.c.rule_version_id,
+                    )
                     .where(desired_configurations.c.organization_id == organization_id)
                     .order_by(devices.c.device_id)
                 )
@@ -4033,9 +4095,11 @@ class CentralRepository:
                 )
             if str(product_version["status"]) != "PUBLISHED":
                 raise IncompatibleVersionError("the desired product version must be published")
-            product_pk = int(product_version["id"])
+            product_version_pk = int(product_version["id"])
             product_code = connection.execute(
-                select(products.c.product_code).where(products.c.id == product_pk)
+                select(products.c.product_code).where(
+                    products.c.id == int(product_version["product_id"])
+                )
             ).scalar_one()
 
             rule_version = (
@@ -4054,7 +4118,7 @@ class CentralRepository:
                 raise MetadataVersionNotFoundError(f"rule version {rule_version_id} does not exist")
             if str(rule_version["status"]) != "PUBLISHED":
                 raise IncompatibleVersionError("the desired rule version must be published")
-            if int(rule_version["product_version_id"]) != product_pk:
+            if int(rule_version["product_version_id"]) != product_version_pk:
                 raise IncompatibleVersionError(
                     "the desired rule version does not apply to the selected product version"
                 )
@@ -4139,7 +4203,7 @@ class CentralRepository:
                         product_version_components,
                         product_version_components.c.component_id == components.c.id,
                     )
-                    .where(product_version_components.c.product_version_id == product_pk)
+                    .where(product_version_components.c.product_version_id == product_version_pk)
                 )
                 .mappings()
                 .all()
@@ -4167,14 +4231,20 @@ class CentralRepository:
             if existing is not None:
                 before_state = {
                     "revision": int(existing["revision"]),
-                    "product_version_id": str(existing["product_version_id"]),
+                    "product_version_id": str(
+                        connection.execute(
+                            select(product_versions.c.version_id).where(
+                                product_versions.c.id == int(existing["product_version_id"])
+                            )
+                        ).scalar_one()
+                    ),
                 }
                 connection.execute(
                     desired_configurations.update()
                     .where(desired_configurations.c.device_row_id == device_row_id)
                     .values(
                         revision=current_revision + 1,
-                        product_version_id=product_pk,
+                        product_version_id=product_version_pk,
                         product_model_version_id=product_model_pk,
                         component_model_version_id=component_model_pk,
                         rule_version_id=rule_pk,
@@ -4190,7 +4260,7 @@ class CentralRepository:
                         organization_id=organization_id,
                         device_row_id=device_row_id,
                         revision=1,
-                        product_version_id=product_pk,
+                        product_version_id=product_version_pk,
                         product_model_version_id=product_model_pk,
                         component_model_version_id=component_model_pk,
                         rule_version_id=rule_pk,
@@ -4225,8 +4295,38 @@ class CentralRepository:
             )
             row = (
                 connection.execute(
-                    select(desired_configurations, devices.c.device_id, devices.c.name)
+                    select(
+                        desired_configurations,
+                        devices.c.device_id,
+                        devices.c.name,
+                        product_versions.c.version_id.label("product_version_public_id"),
+                        _DESIRED_PRODUCT_MODEL_VERSIONS.c.version_id.label(
+                            "product_model_version_public_id"
+                        ),
+                        _DESIRED_COMPONENT_MODEL_VERSIONS.c.version_id.label(
+                            "component_model_version_public_id"
+                        ),
+                        rule_versions.c.version_id.label("rule_version_public_id"),
+                    )
                     .join(devices, devices.c.id == desired_configurations.c.device_row_id)
+                    .join(
+                        product_versions,
+                        product_versions.c.id == desired_configurations.c.product_version_id,
+                    )
+                    .join(
+                        _DESIRED_PRODUCT_MODEL_VERSIONS,
+                        _DESIRED_PRODUCT_MODEL_VERSIONS.c.id
+                        == desired_configurations.c.product_model_version_id,
+                    )
+                    .join(
+                        _DESIRED_COMPONENT_MODEL_VERSIONS,
+                        _DESIRED_COMPONENT_MODEL_VERSIONS.c.id
+                        == desired_configurations.c.component_model_version_id,
+                    )
+                    .join(
+                        rule_versions,
+                        rule_versions.c.id == desired_configurations.c.rule_version_id,
+                    )
                     .where(
                         and_(
                             desired_configurations.c.organization_id == organization_id,
@@ -4554,10 +4654,10 @@ class CentralRepository:
             device_id=str(row["device_id"]),
             device_name=str(row["name"]),
             revision=int(row["revision"]),
-            product_version_id=str(row["product_version_id"]),
-            product_model_version_id=str(row["product_model_version_id"]),
-            component_model_version_id=str(row["component_model_version_id"]),
-            rule_version_id=str(row["rule_version_id"]),
+            product_version_id=str(row["product_version_public_id"]),
+            product_model_version_id=str(row["product_model_version_public_id"]),
+            component_model_version_id=str(row["component_model_version_public_id"]),
+            rule_version_id=str(row["rule_version_public_id"]),
             reason=str(row["reason"]),
             assigned_by=str(row["assigned_by"]),
             assigned_at=CentralRepository._parse_dt(row["assigned_at"]),

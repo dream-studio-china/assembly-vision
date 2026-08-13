@@ -1174,6 +1174,10 @@ def test_desired_configuration_flow(repository: CentralRepository, organization_
     )
     assert first.revision == 1
     assert first.device_id == str(_DEVICE_ID)
+    assert first.product_version_id == seed.product_version_id
+    assert first.product_model_version_id == seed.product_model_version_id
+    assert first.component_model_version_id == seed.component_model_version_id
+    assert first.rule_version_id == seed.rule_version_id
     # Replace the assignment under the new revision.
     second = repository.set_desired_configuration(
         organization_id=organization_id,
@@ -1190,11 +1194,57 @@ def test_desired_configuration_flow(repository: CentralRepository, organization_
         request_id="req-2",
     )
     assert second.revision == 2
+    assert second.product_version_id == seed.product_version_id
+    assert second.product_model_version_id == seed.product_model_version_id
+    assert second.component_model_version_id == seed.component_model_version_id
+    assert second.rule_version_id == seed.rule_version_id
     audit = _audit_actions(repository, organization_id, "DESIRED_CONFIGURATION_ASSIGNED")
     assert len(audit) == 2
     assert audit[0]["before_state"] is None
-    assert audit[1]["before_state"] == {"revision": 1, "product_version_id": "1"}
+    assert audit[1]["before_state"] == {
+        "revision": 1,
+        "product_version_id": seed.product_version_id,
+    }
     assert "manual installation required" in str(audit[0]["detail"])
+
+
+def test_desired_configuration_uses_product_version_parent_and_public_ids(
+    repository: CentralRepository, organization_id: int
+) -> None:
+    """A product/version PK mismatch must not alter compatibility validation."""
+    repository.create_product(
+        organization_id=organization_id,
+        product_code="unused",
+        name="Unused",
+        idempotency_key="product:unused",
+        request_hash=_HASH,
+        created_at=datetime.now(UTC),
+        actor="admin",
+        request_id=None,
+    )
+    seed = _seed_governance(repository, organization_id)
+    device = repository.get_device_by_identity(organization_id, str(_DEVICE_ID))
+    assert device is not None
+
+    assigned = repository.set_desired_configuration(
+        organization_id=organization_id,
+        device_row_id=device.id,
+        if_match_revision=0,
+        product_version_id=seed.product_version_id,
+        product_model_version_id=seed.product_model_version_id,
+        component_model_version_id=seed.component_model_version_id,
+        rule_version_id=seed.rule_version_id,
+        reason="pilot rollout",
+        assigned_by="admin",
+        assigned_at=datetime.now(UTC),
+        actor="admin",
+        request_id=None,
+    )
+
+    assert assigned.product_version_id == seed.product_version_id
+    assert assigned.product_model_version_id == seed.product_model_version_id
+    assert assigned.component_model_version_id == seed.component_model_version_id
+    assert assigned.rule_version_id == seed.rule_version_id
 
 
 def test_desired_configuration_incompatible_bundle(

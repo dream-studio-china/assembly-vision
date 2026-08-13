@@ -4,11 +4,11 @@
 # release step), central-bootstrap (one-shot pilot credential provisioning),
 # central-service (API), and admin-web (built pilot UI).
 #
-# Credentials below are DEVELOPMENT defaults only. Copy this file's variable
-# block into a private `.env` next to this compose file (Compose reads `.env`
-# automatically). The admin/device tokens have NO defaults: Compose refuses to
-# start the bootstrap until they are set. The admin web port binds to loopback
-# only; publish it explicitly behind TLS for remote access.
+# Copy compose.env.example into a private `.env` next to this compose file and
+# set every required secret. This profile has no usable credential defaults;
+# Compose refuses to start until every required value is non-empty. The admin
+# web port binds to loopback only; publish it explicitly behind TLS for remote
+# access.
 #
 # Run: docker compose -f apps/central-service/compose.yaml up --build
 
@@ -16,13 +16,13 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-central}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-assemblyvision-dev}
-      POSTGRES_DB: ${POSTGRES_DB:-assemblyvision}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in the .env file}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the .env file}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in the .env file}
     volumes:
       - central-pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-central} -d ${POSTGRES_DB:-assemblyvision}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?set POSTGRES_USER in the .env file} -d ${POSTGRES_DB:?set POSTGRES_DB in the .env file}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -32,8 +32,8 @@ services:
     image: minio/minio:RELEASE.2024-10-13T13-34-11Z
     command: server /data
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-assemblyvision-dev}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-assemblyvision-dev}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER in the .env file}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD in the .env file}
     volumes:
       - central-miniodata:/data
     healthcheck:
@@ -49,7 +49,7 @@ services:
       dockerfile: apps/central-service/Dockerfile
     command: ["migrate"]
     environment:
-      AV_CENTRAL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-central}:${POSTGRES_PASSWORD:-assemblyvision-dev}@postgres:5432/${POSTGRES_DB:-assemblyvision}
+      AV_CENTRAL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?set POSTGRES_USER in the .env file}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the .env file}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB in the .env file}
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,10 +61,9 @@ services:
       dockerfile: apps/central-service/Dockerfile
     command: ["bootstrap"]
     environment:
-      AV_CENTRAL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-central}:${POSTGRES_PASSWORD:-assemblyvision-dev}@postgres:5432/${POSTGRES_DB:-assemblyvision}
-      # Tokens are mandatory (no dev defaults): the bootstrap fails closed
-      # rather than provisioning a publicly known credential. Copy
-      # compose.env.example to .env and set both variables.
+      AV_CENTRAL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?set POSTGRES_USER in the .env file}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the .env file}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB in the .env file}
+      # Bootstrap tokens are mandatory. The bootstrap fails closed rather than
+      # provisioning a publicly known credential.
       AV_CENTRAL_ADMIN_TOKEN: ${CENTRAL_ADMIN_TOKEN:?set CENTRAL_ADMIN_TOKEN in the .env file}
       AV_CENTRAL_DEVICE_UPLOAD_TOKEN: ${CENTRAL_DEVICE_UPLOAD_TOKEN:?set CENTRAL_DEVICE_UPLOAD_TOKEN in the .env file}
     depends_on:
@@ -77,15 +76,16 @@ services:
       context: ../..
       dockerfile: apps/central-service/Dockerfile
     environment:
-      AV_CENTRAL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-central}:${POSTGRES_PASSWORD:-assemblyvision-dev}@postgres:5432/${POSTGRES_DB:-assemblyvision}
+      AV_CENTRAL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?set POSTGRES_USER in the .env file}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the .env file}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB in the .env file}
       AV_CENTRAL_MINIO_ENDPOINT: minio:9000
-      AV_CENTRAL_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-assemblyvision-dev}
-      AV_CENTRAL_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-assemblyvision-dev}
-      AV_CENTRAL_MINIO_BUCKET: ${MINIO_BUCKET:-assemblyvision-central}
+      AV_CENTRAL_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER in the .env file}
+      AV_CENTRAL_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD in the .env file}
+      AV_CENTRAL_MINIO_BUCKET: ${MINIO_BUCKET:?set MINIO_BUCKET in the .env file}
       AV_CENTRAL_MINIO_SECURE: "false"
       # Secure session cookies are the safe default. Plain-HTTP loopback
       # development must opt out in the .env file.
       AV_CENTRAL_SECURE_COOKIES: ${CENTRAL_SECURE_COOKIES:-true}
+      AV_CENTRAL_RATE_LIMIT_REQUESTS_PER_MINUTE: ${CENTRAL_RATE_LIMIT_REQUESTS_PER_MINUTE:-600}
     depends_on:
       postgres:
         condition: service_healthy

@@ -226,7 +226,7 @@ pnpm --filter edge-web build && pnpm --filter edge-desktop start
 Run the central M1 pilot stack (PostgreSQL + MinIO + API + admin-web):
 
 ```bash
-cp apps/central-service/compose.env.example apps/central-service/.env   # dev defaults; override secrets for real use
+cp apps/central-service/compose.env.example apps/central-service/.env   # fill every required secret before startup
 docker compose -f apps/central-service/compose.yaml up -d --build
 curl http://localhost:8080/api/v1/health/live        # via the admin-web proxy
 ```
