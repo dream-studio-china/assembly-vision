@@ -16,7 +16,7 @@ from central_service.api.settings import CentralSettings
 from central_service.persistence.bootstrap import resolve_plan, run_bootstrap
 from central_service.persistence.repository import CentralRepository
 from central_service.persistence.schema import metadata
-from central_service.storage.object_store import ObjectStorage
+from central_service.storage.object_store import ObjectEntry, ObjectStorage
 from pydantic import ValidationError
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.pool import StaticPool
@@ -64,7 +64,7 @@ class _FakeStorage(ObjectStorage):
     def remove_object(self, key: str) -> None:
         return None
 
-    def list_objects(self, prefix: str) -> Iterator[str]:
+    def list_objects(self, prefix: str) -> Iterator[ObjectEntry]:
         return iter(())
 
     def presigned_get_url(self, key: str, expires_seconds: int) -> str:
@@ -93,7 +93,7 @@ class _RaisingStorage(ObjectStorage):
     def remove_object(self, key: str) -> None:
         raise RuntimeError("storage unavailable")
 
-    def list_objects(self, prefix: str) -> Iterator[str]:
+    def list_objects(self, prefix: str) -> Iterator[ObjectEntry]:
         raise RuntimeError("storage unavailable")
 
     def presigned_get_url(self, key: str, expires_seconds: int) -> str:

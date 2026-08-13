@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import sys
 from collections.abc import Sequence
+from datetime import timedelta
 
 from central_service.api.app import create_app
 from central_service.api.settings import CentralSettings
@@ -67,7 +68,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     reconcile.add_argument(
         "--remove-orphans",
         action="store_true",
-        help="remove object-store objects that have no persisted binding",
+        help=(
+            "remove unbound objects older than --min-age-hours; M1 has no staged "
+            "upload protocol, so only run during a maintenance window with no "
+            "in-flight uploads"
+        ),
+    )
+    reconcile.add_argument(
+        "--min-age-hours",
+        type=int,
+        default=24,
+        help="minimum age in hours for an unbound object to be removable (default 24)",
     )
 
     args = parser.parse_args(list(argv) if argv is not None else None)
@@ -163,7 +174,9 @@ def _run_reconcile_media(args: argparse.Namespace) -> int:
 
     M1 maintenance command, not a continuous worker: it reports bindings whose
     object is missing and object-store objects without a binding, and
-    optionally removes the orphans. Idempotent by design.
+    optionally removes orphans older than ``--min-age-hours``. The age guard
+    prevents an in-flight upload whose object is written before its binding
+    from being classified and deleted as an orphan.
     """
     settings = CentralSettings()
     if args.database_url is not None:
@@ -187,7 +200,7 @@ def _run_reconcile_media(args: argparse.Namespace) -> int:
         bindings = CentralRepository(engine).list_media_bindings()
     finally:
         engine.dispose()
-    report = reconcile_media(bindings, storage)
+    report = reconcile_media(bindings, storage, min_age=timedelta(hours=args.min_age_hours))
     for key in report.missing_objects:
         print(f"missing-object: {key}")
     for key in report.orphan_objects:

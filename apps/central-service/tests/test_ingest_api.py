@@ -285,7 +285,7 @@ def test_media_ingestion_binds_object_and_returns_central_object_id(
     assert body["object_id"] == str(media_id)
     assert body["central_object_id"]
     assert body["size_bytes"] == len(media_bytes)
-    assert any(storage.object_exists(key) for key in storage.list_objects("org/"))
+    assert any(storage.object_exists(entry.object_key) for entry in storage.list_objects("org/"))
 
 
 def test_media_identical_replay_returns_original_receipt(

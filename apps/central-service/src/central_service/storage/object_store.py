@@ -14,7 +14,7 @@ import hashlib
 import io
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
 from minio import Minio
@@ -23,6 +23,14 @@ from minio.error import S3Error
 
 class ObjectVerificationError(Exception):
     """A stored object's bytes do not match the expected size or checksum."""
+
+
+@dataclass(frozen=True)
+class ObjectEntry:
+    """One object-store entry with its last-modified time when available."""
+
+    object_key: str
+    last_modified: datetime | None
 
 
 @dataclass(frozen=True)
@@ -45,7 +53,7 @@ class ObjectStorage(Protocol):
     def verify_object(self, key: str, size_bytes: int, checksum_sha256: str) -> None: ...
     def object_exists(self, key: str) -> bool: ...
     def remove_object(self, key: str) -> None: ...
-    def list_objects(self, prefix: str) -> Iterator[str]: ...
+    def list_objects(self, prefix: str) -> Iterator[ObjectEntry]: ...
     def presigned_get_url(self, key: str, expires_seconds: int) -> str: ...
     def get_object(self, key: str) -> Iterator[bytes]: ...
 
@@ -101,10 +109,13 @@ class MinioObjectStorage:
                 return
             raise
 
-    def list_objects(self, prefix: str) -> Iterator[str]:
-        """Yield object names under ``prefix`` (recursive)."""
+    def list_objects(self, prefix: str) -> Iterator[ObjectEntry]:
+        """Yield object entries under ``prefix`` (recursive), with mtime."""
         for item in self._client.list_objects(self._settings.bucket, prefix=prefix, recursive=True):
-            yield str(item.object_name)
+            yield ObjectEntry(
+                object_key=str(item.object_name),
+                last_modified=item.last_modified,
+            )
 
     def presigned_get_url(self, key: str, expires_seconds: int) -> str:
         """Return a short-lived authorized GET URL (design 05 section 3.2).
@@ -165,12 +176,20 @@ class _HasObjectKey(Protocol):
     def object_key(self) -> str: ...
 
 
-def reconcile_media(bindings: Iterable[_HasObjectKey], storage: ObjectStorage) -> ReconcileReport:
+def reconcile_media(
+    bindings: Iterable[_HasObjectKey],
+    storage: ObjectStorage,
+    min_age: timedelta | None = None,
+) -> ReconcileReport:
     """Compare persisted bindings against the object store (idempotent).
 
     Bindings whose object is absent are reported as missing; objects under the
     tenant prefix without a binding are reported as orphans for the
-    maintenance command. Pure and injectable so the CLI stays a thin wrapper.
+    maintenance command. When ``min_age`` is set, an unbound object is only
+    treated as an orphan once its last-modified time is older than the
+    threshold, so an in-flight upload that has written bytes but not yet
+    committed its binding is never deleted. Pure and injectable so the CLI
+    stays a thin wrapper.
     """
     binding_list = list(bindings)
     bound_keys = {binding.object_key for binding in binding_list}
@@ -179,8 +198,13 @@ def reconcile_media(bindings: Iterable[_HasObjectKey], storage: ObjectStorage) -
         for binding in binding_list
         if not storage.object_exists(binding.object_key)
     )
-    stored_keys = list(storage.list_objects("org/"))
-    orphans = tuple(key for key in stored_keys if key not in bound_keys)
+    cutoff = datetime.now(UTC) - min_age if min_age is not None else None
+    orphans = tuple(
+        entry.object_key
+        for entry in storage.list_objects("org/")
+        if entry.object_key not in bound_keys
+        and (cutoff is None or entry.last_modified is None or entry.last_modified < cutoff)
+    )
     return ReconcileReport(
         binding_count=len(binding_list),
         missing_objects=missing,
