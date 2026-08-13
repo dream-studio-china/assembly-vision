@@ -10,12 +10,13 @@ authoritative.
 
 | Version | Status |
 |---|---|
-| `main` | Edge production-candidate: MVP and dashboard (PRs #3/#6), M1 edge API (PR #8), camera sources and multi-instance `serve` (PR #14), temporal aggregation (PRs #15/#16), durable upload outbox (PR #17), E1–E5 production gates (PRs #18–#24), E6 acceptance-prep tooling (PR #25), GigE/GenICam source and dashboard themes (PRs #26–#28), and barcode identity / PLC trigger contract (PR #30, ADR-015). Actively developed and supported. |
+| `main` | Edge production-candidate (MVP, dashboard, M1 edge API, camera sources, temporal aggregation, durable upload outbox, E1–E5 gates, E6 acceptance-prep tooling, barcode identity / PLC trigger, edge-local human review) and the Central server M1 pilot (ingestion, media, history/detail, append-only review, metadata governance, hardening). Edge-local human review (ADR-016, PR #31) and the central M1 pilot (C1a–C6, PRs #37–#48) are merged. Actively developed and supported. |
 | `dev` | Development branch, kept in sync with `main`; not a release on its own. |
 
-The edge-local human review feature (ADR-016, PR #31) is implemented on a
-feature branch and pending merge; its security posture is documented below in
-the "Current edge API" section.
+The central M1 pilot is a **controlled pilot**, not a production deployment.
+Its security boundary is summarized below in the "Current central API" section
+and tracked in
+[`docs/reviews/AUDIT-002-central-server-review.md`](docs/reviews/AUDIT-002-central-server-review.md).
 
 ## Reporting a Vulnerability
 
@@ -44,7 +45,7 @@ Scope by phase:
 | Phase | Boundary |
 |---|---|
 | Static MVP | CLIs used only in an isolated development environment with non-production data. Training code, datasets, notebooks, and experiment configuration are developer-only and not distributed. Model encryption and `.pyc`-only packaging are deferred. |
-| One-month target | Local access controls, central authentication, TLS, device credentials, audit logs, non-root containers, controlled artifact distribution. Delivered so far (E5, PR #24): non-root read-only-rootfs Docker image, optional local HTTPS, runtime secrets via environment or Docker secrets, and checksummed backup/restore bundles. |
+| One-month target | Local access controls, central authentication, TLS, device credentials, audit logs, non-root containers, controlled artifact distribution. Delivered so far: non-root read-only-rootfs edge image, optional local HTTPS, runtime secrets via environment or Docker secrets, checksummed backup/restore bundles (E5), the barcode identity / PLC trigger contract (ADR-015), edge-local human review (ADR-016), and the Central server M1 pilot (C1a–C6) with separated device/admin authentication, fail-closed secrets, verified media receipts, and append-only review. |
 | Production target | Customer-integrated identity, role-based authorization, certificate lifecycle, signed model/configuration packages, vulnerability management, backup encryption, incident response. |
 
 ## Threat Model Summary
@@ -83,9 +84,8 @@ authentication (design 15.2.1).
   reconnect are not exposed. The controlled upload retry
   (`POST /api/v1/uploads/{id}/retry`, E3) is the only mutating route on
   `main`; review submission (`POST /api/v1/inspections/{id}/reviews`,
-  ADR-016, PR #31 pending merge) uses the same viewer credential as a
-  documented deviation (see "Privileged operations" below) until an edge role
-  model exists.
+  ADR-016) uses the same viewer credential as a documented deviation (see
+  "Privileged operations" below) until an edge role model exists.
 - Uploads use a separate credential (`AV_EDGE_UPLOAD_TOKEN` /
   `--upload-base-url`); the viewer token is never reused for uploads. Upload
   destinations require HTTPS; plaintext HTTP is allowed only for a loopback
@@ -104,6 +104,38 @@ authentication (design 15.2.1).
 - If no token is configured the service runs in an explicit M1 development
   mode. This must never be presented as production authentication.
 
+### Current central API (M1 pilot)
+
+The central server M1 pilot (`apps/central-service`, `apps/admin-web`) is a
+management and evidence plane and is never in the real-time inspection path.
+Its boundary is pilot-grade and tracked in
+[`docs/reviews/AUDIT-002-central-server-review.md`](docs/reviews/AUDIT-002-central-server-review.md):
+
+- Device uploads authenticate with a dedicated upload token; administrators
+  exchange a long-lived pilot bearer token for a short-lived HttpOnly,
+  `SameSite=Strict`, `Secure` session cookie. Device and administrator
+  authentication are strictly separated and cannot be substituted.
+- The Compose profile ships no usable credential defaults; every PostgreSQL,
+  MinIO, administrator, and device secret is a required non-empty value and
+  fails closed when unset.
+- Ingestion is idempotent and bounded (envelope/payload caps), media bytes are
+  size- and SHA-256-verified before an `AVAILABLE` receipt, review appends are
+  content-addressed, desired-configuration assignments use an atomic
+  `If-Match`, and per-client rate limiting derives identity only from a
+  trusted proxy address.
+- M1 has a single all-powerful pilot administrator: there is no OIDC, no
+  role-based authorization, no automated credential rotation, and no device
+  disable/re-enroll path. A credential compromise follows the manual
+  revocation procedure in runbook C3. TLS is terminated by an external reverse
+  proxy (the shipped nginx listens on HTTP only).
+- The API uses the MinIO root credential and the migration owner database
+  credential in the pilot; bucket-scoped service accounts and separate
+  migration/runtime roles are production scope.
+
+Central OIDC/roles, credential rotation and unique credential identity, and the
+governed ingestion reference policy remain production scope (AUDIT-002 H02,
+H07, H12 deferred).
+
 ### Recommended roles (design 21.3, contract 08)
 
 | Role | Permitted actions |
@@ -119,7 +151,8 @@ Central users authenticate through OIDC Authorization Code with PKCE where
 available; API authorization uses organization-scoped roles (`viewer`,
 `reviewer`, `config_manager`, `fleet_admin`, `org_admin`). Drafting and
 approving safety-relevant configuration should be separated where staffing
-permits.
+permits. These are production-target controls; the central M1 pilot has no
+roles and a single administrator (see "Current central API" above).
 
 ### Privileged operations (contract 08)
 
@@ -128,8 +161,11 @@ device configuration, user management, and human-review actions that append or
 supersede a human disposition require elevated permissions. On the current
 edge, the only privileged-class action exposed — review submission — rides the
 single viewer credential (ADR-016 decision 3/7) as a documented operator-
-convenience trade-off until an edge role model exists (PR31-T05); the
-elevated-permission requirement applies to the central and mature designs.
+convenience trade-off until an edge role model exists (PR31-T05). The central
+M1 pilot has the same gap in a different form: every authenticated pilot
+administrator can review, publish metadata, and assign desired configuration,
+because M1 has no role separation. The elevated-permission requirement and
+role model apply to the mature designs.
 Review never overwrites the immutable edge `internal_decision` or
 `business_result`.
 
@@ -241,7 +277,11 @@ Prescribed recovery procedures (design 21.10):
 
 Operational runbooks cover the related recovery paths: runbook 05 (database
 recovery), runbook 12 (backup and recovery), runbook 13 (TLS certificate
-rotation), and runbook 14 (deployment upgrade and rollback).
+rotation), and runbook 14 (deployment upgrade and rollback). Central pilot
+runbooks C1–C5 cover the ingestion backlog, object-store failure, credential
+compromise (including the M1 manual revocation procedure, since automated
+rotation is deferred), backup/restore (with a quiesced, consistent recovery
+point), and pilot upgrade/rollback.
 
 ## Verification
 
@@ -255,7 +295,10 @@ CI enforces the Python and frontend gates (ruff, mypy, pytest, OpenAPI/
 TypeScript contract drift, frontend build/lint/unit, Playwright e2e) on every
 push, and the E6 acceptance runner (`scripts/edge-acceptance-run.py`) executes
 the locally automatable security and operations items while on-site hardware
-items stay `NOT_EXECUTED` (never reported as pass).
+items stay `NOT_EXECUTED` (never reported as pass). The central server is
+covered by a dedicated review (`docs/reviews/AUDIT-002-central-server-review.md`);
+a real PostgreSQL concurrency test verifies the desired-configuration
+`If-Match` guard when `AV_CENTRAL_TEST_DATABASE_URL` is set.
 
 ## Open Questions and Validation Required
 
