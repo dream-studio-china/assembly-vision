@@ -10,6 +10,7 @@ machine decision is never mutated.
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 from datetime import UTC, datetime
 from typing import Annotated, Any
@@ -42,6 +43,7 @@ from central_service.persistence.repository import (
     ReviewConflictError,
     ReviewDispositionError,
     ReviewNotFoundError,
+    ReviewValidationError,
 )
 
 router = APIRouter(tags=["reviews"])
@@ -225,6 +227,7 @@ def submit_review(
             ],
             reviewer=administrator.username,
             idempotency_key=idempotency_key,
+            request_hash=_review_request_hash(body),
             if_match_revision=if_match_revision,
             created_at=datetime.now(UTC),
         )
@@ -246,9 +249,23 @@ def submit_review(
             code="REVIEW_DISPOSITION_INVALID",
             detail=str(exc),
         ) from exc
+    except ReviewValidationError as exc:
+        raise ApiProblem(
+            status_code=422,
+            code="INVALID_CORRECTION",
+            detail=str(exc),
+        ) from exc
     if result.replayed:
         response.status_code = 200
     return _review_out(result.review)
+
+
+def _review_request_hash(body: ReviewSubmit) -> str:
+    """Canonical SHA-256 of the submitted review content (idempotency binding)."""
+    canonical = json.dumps(
+        body.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
 
 
 def _valid_uuid(value: str) -> bool:

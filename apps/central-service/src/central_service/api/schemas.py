@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Literal
 
 from assemblyvision_domain.models import APIModel
-from pydantic import Field
+from pydantic import Field, field_validator, model_validator
 
 
 class HealthLive(APIModel):
@@ -229,6 +229,14 @@ class ComponentCorrectionIn(APIModel):
     corrected_state: Literal["PRESENT", "MISSING", "UNCERTAIN"]
     note: str | None = Field(default=None, max_length=500)
 
+    @field_validator("component_code")
+    @classmethod
+    def _normalize_component_code(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("component_code must be a non-empty component identifier")
+        return value
+
 
 class ReviewSubmit(APIModel):
     """One review append; the machine outcome is never overwritten (C4)."""
@@ -239,6 +247,19 @@ class ReviewSubmit(APIModel):
     reason: str | None = Field(default=None, max_length=200)
     note: str | None = Field(default=None, max_length=2000)
     component_corrections: list[ComponentCorrectionIn] = Field(default_factory=list, max_length=64)
+
+    @model_validator(mode="after")
+    def _require_reason_when_inconclusive(self) -> ReviewSubmit:
+        if self.disposition == "INCONCLUSIVE" and not (self.reason and self.reason.strip()):
+            raise ValueError("an inconclusive review requires a reason")
+        return self
+
+    @model_validator(mode="after")
+    def _reject_duplicate_component_corrections(self) -> ReviewSubmit:
+        codes = [correction.component_code for correction in self.component_corrections]
+        if len(codes) != len(set(codes)):
+            raise ValueError("each component may be corrected at most once")
+        return self
 
 
 class ReviewOut(APIModel):

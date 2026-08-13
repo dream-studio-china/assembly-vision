@@ -203,6 +203,59 @@ def test_submit_review_appends_and_replays(
     assert len(history.json()) == 1
 
 
+def test_submit_review_idempotency_key_content_conflict(
+    repository: CentralRepository, client: TestClient
+) -> None:
+    """A reused idempotency key with different content is a 409 conflict."""
+    ng_ids, _ = _seed(repository)
+    inspection_id = ng_ids[0]
+    first = client.post(
+        f"/api/v1/inspections/{inspection_id}/reviews",
+        json={"disposition": "CONFIRMED_NG", "reason": "first"},
+        headers=_admin_headers(**{"Idempotency-Key": "r1"}),
+    )
+    assert first.status_code == 201
+    conflict = client.post(
+        f"/api/v1/inspections/{inspection_id}/reviews",
+        json={"disposition": "CONFIRMED_OK", "reason": "changed content"},
+        headers=_admin_headers(**{"Idempotency-Key": "r1"}),
+    )
+    assert conflict.status_code == 409
+    assert conflict.json()["code"] == "REVIEW_CONFLICT"
+
+
+def test_submit_review_inconclusive_requires_reason(
+    repository: CentralRepository, client: TestClient
+) -> None:
+    ng_ids, _ = _seed(repository)
+    response = client.post(
+        f"/api/v1/inspections/{ng_ids[0]}/reviews",
+        json={"disposition": "INCONCLUSIVE"},
+        headers=_admin_headers(**{"Idempotency-Key": "r1"}),
+    )
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_FAILED"
+
+
+def test_submit_review_rejects_duplicate_component_corrections(
+    repository: CentralRepository, client: TestClient
+) -> None:
+    ng_ids, _ = _seed(repository)
+    response = client.post(
+        f"/api/v1/inspections/{ng_ids[0]}/reviews",
+        json={
+            "disposition": "CONFIRMED_NG",
+            "component_corrections": [
+                {"component_code": "component_a", "corrected_state": "PRESENT"},
+                {"component_code": "component_a", "corrected_state": "MISSING"},
+            ],
+        },
+        headers=_admin_headers(**{"Idempotency-Key": "r1"}),
+    )
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_FAILED"
+
+
 def test_submit_review_stale_if_match_conflicts(
     repository: CentralRepository, client: TestClient
 ) -> None:
