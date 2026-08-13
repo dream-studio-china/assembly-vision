@@ -8,8 +8,9 @@ thin wrapper over it.
 from __future__ import annotations
 
 from collections.abc import Iterator
+from datetime import UTC, datetime, timedelta
 
-from central_service.storage.object_store import ReconcileReport, reconcile_media
+from central_service.storage.object_store import ObjectEntry, ReconcileReport, reconcile_media
 
 
 class _Binding:
@@ -32,14 +33,18 @@ class _Storage:
     def put_object(self, key: str, data: bytes, content_type: str) -> None:
         self.objects[key] = data
 
+    def verify_object(self, key: str, size_bytes: int, checksum_sha256: str) -> None:
+        return None
+
     def object_exists(self, key: str) -> bool:
         return key in self.objects
 
     def remove_object(self, key: str) -> None:
         self.objects.pop(key, None)
 
-    def list_objects(self, prefix: str) -> Iterator[str]:
-        yield from sorted(key for key in self.objects if key.startswith(prefix))
+    def list_objects(self, prefix: str) -> Iterator[ObjectEntry]:
+        for key in sorted(key for key in self.objects if key.startswith(prefix)):
+            yield ObjectEntry(object_key=key, last_modified=None)
 
     def presigned_get_url(self, key: str, expires_seconds: int) -> str:
         return f"http://fake-store.test/{key}?expires={expires_seconds}"
@@ -67,6 +72,20 @@ def test_reconcile_reports_missing_when_object_absent() -> None:
     report = reconcile_media([_Binding("org/1/device/a/2026/08/m1")], storage)
     assert report.missing_objects == ("org/1/device/a/2026/08/m1",)
     assert report.orphan_objects == ()
+
+
+def test_reconcile_min_age_excludes_recent_orphans() -> None:
+    """An unbound object written recently is not classified as a removable orphan."""
+    recent = datetime.now(UTC) - timedelta(minutes=5)
+    old = datetime.now(UTC) - timedelta(days=2)
+
+    class _AgedStorage(_Storage):
+        def list_objects(self, prefix: str) -> Iterator[ObjectEntry]:
+            yield ObjectEntry(object_key="org/1/device/a/recent", last_modified=recent)
+            yield ObjectEntry(object_key="org/1/device/a/old", last_modified=old)
+
+    report = reconcile_media([], _AgedStorage({}), min_age=timedelta(hours=24))
+    assert report.orphan_objects == ("org/1/device/a/old",)
 
 
 def test_reconcile_is_idempotent() -> None:

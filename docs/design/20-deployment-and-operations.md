@@ -118,6 +118,23 @@ The central profile contains Nginx, `central-api`, optional `central-worker`, Po
 
 Persistent volumes must cover PostgreSQL and object storage. Database migrations run as a one-shot release task before application replacement; they must be backward-compatible during rolling replacement or require a documented maintenance window.
 
+### 20.5.1 Deployment Modes
+
+Central runs in one of two optional modes (see SECURITY.md "Deployment
+contexts"):
+
+- **Network deployment**: central is reachable on the regular factory/enterprise
+  network, with TLS terminated by an external reverse proxy.
+- **Factory intranet + controlled Tailscale**: central is intranet-only and not
+  exposed publicly; the edge reaches it directly over the intranet. Remote
+  maintenance uses a temporary Tailscale channel enabled only during
+  operator-led maintenance windows and disabled afterwards, with an ACL
+  allowlist of authorized maintenance nodes.
+
+The factory firewall/network and any Tailscale ACL are owned by the site
+operator; the supplier owns the application and model support surface
+(see 20.12).
+
 ## 20.6 Nginx Example
 
 ```nginx

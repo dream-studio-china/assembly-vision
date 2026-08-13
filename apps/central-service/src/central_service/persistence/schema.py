@@ -405,6 +405,7 @@ review_records = Table(
     Column("original_internal_decision", String(16), nullable=False),
     Column("original_reason_codes", JSON, nullable=False),
     Column("idempotency_key", String(256), nullable=False),
+    Column("request_hash", String(64), nullable=True),
     Column("created_at", DateTime(timezone=True), server_default=_UTC_NOW, nullable=False),
     UniqueConstraint("inspection_row_id", "revision", name="uq_review_records_inspection_revision"),
     UniqueConstraint(

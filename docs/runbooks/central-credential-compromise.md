@@ -11,17 +11,40 @@ upload token, a session cookie, or the MinIO access/secret key.
    credentials are hashed with random salts in PostgreSQL, and the API never
    reads the bootstrap plaintext at runtime.
 2. Suspend the affected credential immediately:
-   - Device upload token: disable the device row
-     (`devices.status != 'ACTIVE'`) so `_require_device` fails closed;
-     re-enrollment issues a fresh token.
-   - Administrator bearer token: the pilot token is long-lived; rotate the
-     `AV_CENTRAL_ADMIN_TOKEN` bootstrap value, re-run bootstrap to re-hash,
-     and revoke open admin sessions.
+   - Device upload token: set the device row inactive
+     (`devices.status != 'ACTIVE'`) so `_require_device` fails closed. M1 has
+     no device disable/re-enroll API or CLI, so this is a direct,
+     operator-approved database change, not an endpoint call.
+   - Administrator bearer token: the pilot token is long-lived. **M1 has no
+     in-place credential rotation**, and re-running `central-service bootstrap`
+     does **not** re-key an existing administrator: bootstrap reuses existing
+     rows and never overwrites their hashes. To revoke the token you must stop
+     central access and follow the "Manual revocation" procedure below.
    - Browser session cookie: revoke sessions through
      `POST /api/v1/auth/session/revoke` (server-side revocation clears the
-     HttpOnly cookie and writes an `ADMIN_SESSION_REVOKED` audit event).
+     HttpOnly cookie and writes an `ADMIN_SESSION_REVOKED` audit event). This
+     is the only credential class with a supported revocation path in M1.
 3. Confirm the API is not exposing the credential: `/api/v1/health/*` and
    problem responses never include tokens, object keys, or internal paths.
+
+### Manual revocation (M1, no in-place rotation)
+
+Until automated credential rotation ships, revoking a compromised pilot
+administrator or device token is a documented database-level incident action:
+
+1. Stop the API and bootstrap services so no further action uses the stolen
+   credential.
+2. Using the migration/owner database role, rotate the stored hash directly
+   (replace `upload_token_hash`/`upload_token_salt` on the device row or
+   `token_hash`/`token_salt` on the administrator row) and record an
+   `audit_logs` row naming actor, action, target, request/incident id, and
+   reason.
+3. Restart the services; the old credential now fails closed.
+4. Provision the new credential out of band and keep it in the deployment
+   secret store, never in logs or the repository.
+
+This procedure must itself be pre-approved and is out of scope for the
+automated bootstrap path.
 
 ## Diagnosis
 
@@ -43,22 +66,27 @@ upload token, a session cookie, or the MinIO access/secret key.
 
 ## Recovery
 
-1. Rotate credentials in order: MinIO keys, device upload tokens (re-enroll
-   each affected device with a new secret-file value), then the administrator
-   bootstrap token and session revocation.
-2. Re-verify the edge scheduler authenticates with the new device tokens and
-   that accepted inspections replay duplicate-free after re-enrollment
-   (device identity is unchanged; only the credential rotated).
-3. Audit every action performed during the suspected window and preserve
+1. Rotate MinIO keys first (change `AV_CENTRAL_MINIO_ACCESS_KEY` /
+   `AV_CENTRAL_MINIO_SECRET_KEY`, restart MinIO, update the bucket policy).
+   Object keys are opaque and tenant-scoped, so a key leak does not expose the
+   database, but the root credential still controls every object.
+2. Revoke browser sessions via `POST /api/v1/auth/session/revoke` (supported
+   in M1).
+3. Device and administrator tokens have **no automated rotation in M1**; use
+   the "Manual revocation" procedure above for each affected principal.
+4. Re-verify the edge scheduler authenticates with the new device tokens and
+   that accepted inspections replay duplicate-free (device identity is
+   unchanged; only the credential rotated).
+5. Audit every action performed during the suspected window and preserve
    evidence; add the request IDs to the incident record.
 
 ## Verification
 
 - The old device credential returns `401 UNAUTHENTICATED` and the new one
-  authenticates.
+  authenticates (after the manual rotation procedure).
 - Old admin bearer fails `GET /api/v1/auth/me`; a fresh session works and the
   `ADMIN_SESSION_REVOKED` audit row exists.
-- Readiness still reports `credentials: ok` after re-bootstrap.
+- Readiness still reports `credentials: ok`.
 
 ## Escalation
 

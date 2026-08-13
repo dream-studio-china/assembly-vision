@@ -419,6 +419,10 @@ class ReviewDispositionError(Exception):
     """The disposition is not permitted for the machine outcome (C4)."""
 
 
+class ReviewValidationError(Exception):
+    """A review correction references an unknown component (422, C4)."""
+
+
 class PayloadConflictError(Exception):
     """A reused upload identity arrived with different content (409).
 
@@ -813,6 +817,7 @@ _METADATA_CONFLICTS: dict[str, type[Exception]] = {
     "uq_rule_versions_rule_key": IdempotencyConflictError,
     "uq_model_versions_package_key": IdempotencyConflictError,
     "uq_product_version_barcodes_published": AmbiguousBarcodeError,
+    "uq_desired_configurations_device": RevisionMismatchError,
 }
 
 
@@ -2007,6 +2012,7 @@ class CentralRepository:
         component_corrections: list[ComponentCorrection],
         reviewer: str,
         idempotency_key: str,
+        request_hash: str,
         if_match_revision: int | None,
         created_at: datetime,
     ) -> ReviewSubmitResult:
@@ -2015,13 +2021,15 @@ class CentralRepository:
         The revision is per-inspection and monotonic; the client must submit
         the current latest revision via ``If-Match`` (None means no review yet)
         or the append fails with :class:`ReviewConflictError` and nothing is
-        overwritten. An identical retry under the same idempotency key returns
-        the original record. SQLite serializes submissions with BEGIN
-        IMMEDIATE so concurrent reads cannot fork the chain; PostgreSQL relies
-        on the unique revision constraint for the same guarantee. The
-        disposition must be permitted for the machine outcome (design 24.3).
-        A concurrent append losing the unique revision/idempotency race is an
-        explicit conflict (PostgreSQL), never an internal error.
+        overwritten. An identical retry under the same idempotency key and the
+        same canonical request hash returns the original record; a reused key
+        with different content is an explicit conflict. SQLite serializes
+        submissions with BEGIN IMMEDIATE so concurrent reads cannot fork the
+        chain; PostgreSQL relies on the unique revision constraint for the same
+        guarantee. The disposition must be permitted for the machine outcome
+        (design 24.3). A concurrent append losing the unique revision/
+        idempotency race is an explicit conflict (PostgreSQL), never an
+        internal error.
         """
         try:
             if self._engine.dialect.name == "sqlite":
@@ -2039,6 +2047,7 @@ class CentralRepository:
                             component_corrections=component_corrections,
                             reviewer=reviewer,
                             idempotency_key=idempotency_key,
+                            request_hash=request_hash,
                             if_match_revision=if_match_revision,
                             created_at=created_at,
                         )
@@ -2062,6 +2071,7 @@ class CentralRepository:
                     component_corrections=component_corrections,
                     reviewer=reviewer,
                     idempotency_key=idempotency_key,
+                    request_hash=request_hash,
                     if_match_revision=if_match_revision,
                     created_at=created_at,
                 )
@@ -2084,6 +2094,7 @@ class CentralRepository:
         component_corrections: list[ComponentCorrection],
         reviewer: str,
         idempotency_key: str,
+        request_hash: str,
         if_match_revision: int | None,
         created_at: datetime,
     ) -> ReviewSubmitResult:
@@ -2108,7 +2119,8 @@ class CentralRepository:
             raise ReviewNotFoundError(f"no inspection {inspection_id} to review")
         inspection_pk = int(inspection["id"])
 
-        # Idempotent retry: same inspection + key returns the original record.
+        # Idempotent retry: same inspection + key + content returns the
+        # original record; a reused key with different content is a conflict.
         existing = (
             connection.execute(
                 select(review_records).where(
@@ -2122,7 +2134,13 @@ class CentralRepository:
             .first()
         )
         if existing is not None:
-            return ReviewSubmitResult(review=self._review_from_row(existing), replayed=True)
+            if existing["request_hash"] == request_hash:
+                return ReviewSubmitResult(
+                    review=self._review_from_row(existing, inspection_id), replayed=True
+                )
+            raise ReviewConflictError(
+                "the review idempotency key was accepted with different content"
+            )
 
         latest = connection.execute(
             select(func.max(review_records.c.revision)).where(
@@ -2152,6 +2170,22 @@ class CentralRepository:
             if isinstance(payload, dict)
             else []
         )
+        # Corrections may only name components present in the inspection's
+        # evidence; a correction for an unknown component would fabricate
+        # ground truth that cannot be traced to this inspection.
+        evidence_codes = {
+            str(item["component_code"])
+            for item in (payload.get("evidence", []) if isinstance(payload, dict) else [])
+            if isinstance(item, dict) and item.get("component_code")
+        }
+        unknown_corrections = sorted(
+            {correction.component_code for correction in component_corrections} - evidence_codes
+        )
+        if unknown_corrections:
+            raise ReviewValidationError(
+                "corrections reference components not present in the inspection evidence: "
+                f"{unknown_corrections}"
+            )
         row = (
             connection.execute(
                 review_records.insert()
@@ -2172,6 +2206,7 @@ class CentralRepository:
                     original_internal_decision=str(inspection["internal_decision"]),
                     original_reason_codes=reason_codes,
                     idempotency_key=idempotency_key,
+                    request_hash=request_hash,
                     created_at=created_at,
                 )
                 .returning(*review_records.c)
@@ -4239,9 +4274,17 @@ class CentralRepository:
                         ).scalar_one()
                     ),
                 }
-                connection.execute(
+                # Conditional update is the PostgreSQL concurrency backstop:
+                # the revision predicate makes a stale If-Match a no-op rather
+                # than a last-write-wins overwrite.
+                result = connection.execute(
                     desired_configurations.update()
-                    .where(desired_configurations.c.device_row_id == device_row_id)
+                    .where(
+                        and_(
+                            desired_configurations.c.device_row_id == device_row_id,
+                            desired_configurations.c.revision == current_revision,
+                        )
+                    )
                     .values(
                         revision=current_revision + 1,
                         product_version_id=product_version_pk,
@@ -4253,6 +4296,10 @@ class CentralRepository:
                         assigned_at=assigned_at,
                     )
                 )
+                if result.rowcount != 1:
+                    raise RevisionMismatchError(
+                        f"expected revision {if_match_revision}, current revision changed concurrently"
+                    )
                 new_revision = current_revision + 1
             else:
                 connection.execute(

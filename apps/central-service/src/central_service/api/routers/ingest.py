@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from typing import Any, Literal, cast
 
 from fastapi import APIRouter, Depends, Request, Response
+from starlette.concurrency import run_in_threadpool
 
 from central_service.api.deps import _require_device, get_repository, get_settings
 from central_service.api.problems import ApiProblem
@@ -83,9 +84,12 @@ async def inspection_uploads(
     settings: CentralSettings = Depends(get_settings),
 ) -> UploadReceiptOut:
     """Ingest one edge inspection or media upload and return a receipt."""
-    body = await request.body()
+    body = await _read_body_bounded(request, settings.max_envelope_body_bytes)
     try:
-        result = ingest_upload(
+        # Synchronous database/object-store work runs in the thread pool so a
+        # slow dependency cannot block the event loop or health probes.
+        result = await run_in_threadpool(
+            ingest_upload,
             repository=repository,
             storage=cast("ObjectStorage", request.app.state.storage),
             device=device,
@@ -116,4 +120,36 @@ async def inspection_uploads(
         checksum_sha256=result.receipt.request_hash,
         size_bytes=result.receipt.size_bytes,
         central_object_id=result.receipt.central_object_id,
+    )
+
+
+async def _read_body_bounded(request: Request, limit: int) -> bytes:
+    """Read the request body with a hard byte cap enforced before buffering.
+
+    ``Content-Length`` is rejected up front when present; a chunked or lying
+    client is bounded by counting streamed chunks so a hostile request can
+    never allocate beyond the configured envelope limit.
+    """
+    content_length = request.headers.get("Content-Length")
+    if content_length is not None:
+        try:
+            if int(content_length) > limit:
+                raise _payload_too_large()
+        except ValueError:
+            pass
+    chunks: list[bytes] = []
+    total = 0
+    async for chunk in request.stream():
+        total += len(chunk)
+        if total > limit:
+            raise _payload_too_large()
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
+def _payload_too_large() -> ApiProblem:
+    return ApiProblem(
+        status_code=413,
+        code="PAYLOAD_TOO_LARGE",
+        detail="the upload envelope exceeds the configured body limit",
     )

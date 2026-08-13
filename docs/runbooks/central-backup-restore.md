@@ -18,18 +18,29 @@ replacement, database corruption, or media loss.
 
 ## Backup Procedure
 
-1. **PostgreSQL logical backup** (schema + governed data + receipts + audit):
+1. **Quiesce central writes** so PostgreSQL and MinIO share one consistent
+   recovery point. M1 has no snapshot-coordinated backup, so backing up a live
+   API can capture a media object without its binding (or the reverse):
+
+   ```text
+   docker compose stop central-service
+   ```
+
+   Record the backup identifier, start/end time, actor, and destination before
+   proceeding.
+
+2. **PostgreSQL logical backup** (schema + governed data + receipts + audit):
 
    ```text
    docker compose exec postgres pg_dump -U central -d assemblyvision \
      --format=custom -f /tmp/assemblyvision.dump
-   docker compose cp central-service-postgres-1:/tmp/assemblyvision.dump \
+   docker compose cp postgres:/tmp/assemblyvision.dump \
      ./backups/assemblyvision-<date>.dump
    ```
 
    Record the SHA-256 of the dump file.
 
-2. **MinIO data alignment**: media evidence lives in the object store, so the
+3. **MinIO data alignment**: media evidence lives in the object store, so the
    database backup alone is not a full restore. Copy the bucket (or the
    persistent volume) with an S3-compatible tool, preserving object keys:
 
@@ -38,11 +49,18 @@ replacement, database corruption, or media loss.
      myminio/assemblyvision-central ./backups/minio-<date>/
    ```
 
-   The DB and the object store are backed up at approximately the same point;
-   restore both from the same dated bundle so bindings line up.
+   Because the API was stopped before both backups, the database and object
+   store share one point; restore both from the same dated bundle so bindings
+   line up.
 
-3. Verify the backup before storing it: `pg_restore --list` on the dump and a
+4. Verify the backup before storing it: `pg_restore --list` on the dump and a
    `mc ls`/checksum spot-check of the mirror.
+
+5. Resume the API:
+
+   ```text
+   docker compose start central-service
+   ```
 
 ## Restore Procedure
 
@@ -59,7 +77,7 @@ replacement, database corruption, or media loss.
    ```text
    docker compose exec postgres createdb -U central assemblyvision_restored
    docker compose cp ./backups/assemblyvision-<date>.dump \
-     central-service-postgres-1:/tmp/assemblyvision.dump
+     postgres:/tmp/assemblyvision.dump
    docker compose exec postgres pg_restore -U central -d assemblyvision_restored \
      /tmp/assemblyvision.dump
    ```

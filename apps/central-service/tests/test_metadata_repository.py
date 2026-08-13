@@ -9,6 +9,8 @@ transactional audit events.
 
 from __future__ import annotations
 
+import os
+import threading
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -1291,3 +1293,86 @@ def test_desired_configuration_unknown_device(
             actor="admin",
             request_id=None,
         )
+
+
+def _assign(
+    repository: CentralRepository,
+    organization_id: int,
+    device_row_id: int,
+    if_match_revision: int,
+    seed: GovernanceSeed,
+) -> None:
+    repository.set_desired_configuration(
+        organization_id=organization_id,
+        device_row_id=device_row_id,
+        if_match_revision=if_match_revision,
+        product_version_id=seed.product_version_id,
+        product_model_version_id=seed.product_model_version_id,
+        component_model_version_id=seed.component_model_version_id,
+        rule_version_id=seed.rule_version_id,
+        reason="pilot rollout",
+        assigned_by="admin",
+        assigned_at=datetime.now(UTC),
+        actor="admin",
+        request_id=None,
+    )
+
+
+def test_postgres_concurrent_assignment_conflicts_explicitly() -> None:
+    """Two PostgreSQL transactions with the same If-Match: one wins, one 412.
+
+    The conditional update (revision predicate) is the concurrency backstop
+    that SQLite's global write lock cannot exercise; this test requires a real
+    PostgreSQL instance via ``AV_CENTRAL_TEST_DATABASE_URL``.
+    """
+    dsn = os.environ.get("AV_CENTRAL_TEST_DATABASE_URL")
+    if not dsn:
+        pytest.skip("AV_CENTRAL_TEST_DATABASE_URL not set")
+    engine = create_engine(dsn)
+    metadata.create_all(engine)
+    repository = CentralRepository(engine)
+    try:
+        bootstrap = repository.bootstrap_pilot(
+            organization_name="Org A",
+            site_name="Site A",
+            line_name="Line A",
+            device_id=str(_DEVICE_ID),
+            device_name="Edge 1",
+            device_upload_token=_DEVICE_TOKEN,
+            admin_username="admin",
+            admin_token=_ADMIN_TOKEN,
+        )
+        organization_id = bootstrap.organization_id
+        seed = _seed_governance(repository, organization_id)
+        device = repository.get_device_by_identity(organization_id, str(_DEVICE_ID))
+        assert device is not None
+        _assign(repository, organization_id, device.id, 0, seed)
+
+        barrier = threading.Barrier(2)
+        outcomes: list[str] = []
+
+        def _worker() -> None:
+            worker_engine = create_engine(dsn)
+            worker = CentralRepository(worker_engine)
+            try:
+                barrier.wait()
+                try:
+                    _assign(worker, organization_id, device.id, 1, seed)
+                    outcomes.append("ok")
+                except RevisionMismatchError:
+                    outcomes.append("mismatch")
+            finally:
+                worker_engine.dispose()
+
+        threads = [threading.Thread(target=_worker) for _ in range(2)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        assert sorted(outcomes) == ["mismatch", "ok"]
+        final = repository.get_desired_configuration(organization_id, device.id)
+        assert final is not None
+        assert final.revision == 2
+    finally:
+        engine.dispose()

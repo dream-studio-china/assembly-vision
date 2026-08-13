@@ -27,6 +27,7 @@ from central_service.persistence.repository import (
     ReviewConflictError,
     ReviewDispositionError,
     ReviewNotFoundError,
+    ReviewValidationError,
 )
 from central_service.persistence.schema import audit_logs, metadata, review_records
 from ingest_fixtures import build_record, canonical_payload, content_hash
@@ -113,6 +114,7 @@ def _submit(
     idempotency_key: str | None = None,
     reviewer: str = "pilot-admin",
     corrections: list[ComponentCorrection] | None = None,
+    request_hash: str | None = None,
 ) -> Any:
     return repository.submit_review(
         organization_id=device.organization_id,
@@ -123,6 +125,7 @@ def _submit(
         component_corrections=corrections or [],
         reviewer=reviewer,
         idempotency_key=idempotency_key or f"review-{uuid4()}",
+        request_hash=request_hash or f"hash:{disposition.value}",
         if_match_revision=if_match_revision,
         created_at=datetime.now(UTC),
     )
@@ -167,9 +170,49 @@ def test_submit_review_idempotent_retry_returns_original(
     )
     assert second.replayed is True
     assert second.review.revision == first.review.revision
+    assert second.review.inspection_id == inspection_id
     with repository._engine.connect() as connection:
         review_count = connection.execute(select(func.count(review_records.c.id))).scalar_one()
     assert int(review_count) == 1
+
+
+def test_submit_review_idempotency_key_content_conflict(
+    repository: CentralRepository, device: PilotBootstrapResult
+) -> None:
+    """A reused idempotency key with different content is an explicit conflict."""
+    inspection_id = _seed_inspection(repository, device)
+    key = f"review-{uuid4()}"
+    _submit(repository, device, inspection_id, idempotency_key=key, request_hash="hash:first")
+    with pytest.raises(ReviewConflictError):
+        _submit(
+            repository,
+            device,
+            inspection_id,
+            idempotency_key=key,
+            request_hash="hash:different",
+        )
+    with repository._engine.connect() as connection:
+        review_count = connection.execute(select(func.count(review_records.c.id))).scalar_one()
+    assert int(review_count) == 1
+
+
+def test_submit_review_rejects_unknown_component_correction(
+    repository: CentralRepository, device: PilotBootstrapResult
+) -> None:
+    """Corrections may only name components present in the inspection evidence."""
+    inspection_id = _seed_inspection(repository, device)
+    with pytest.raises(ReviewValidationError):
+        _submit(
+            repository,
+            device,
+            inspection_id,
+            corrections=[
+                ComponentCorrection(
+                    component_code="component_z",
+                    corrected_state=ComponentCorrectionState.MISSING,
+                )
+            ],
+        )
 
 
 def test_submit_review_stale_if_match_conflicts(

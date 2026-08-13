@@ -56,6 +56,7 @@ from central_service.persistence.schema import (
 from central_service.persistence.schema import (
     upload_receipts,
 )
+from central_service.storage.object_store import ObjectEntry
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.pool import StaticPool
 
@@ -92,14 +93,18 @@ class _NoopObjectStorage:
     def put_object(self, key: str, data: bytes, content_type: str) -> None:
         self.objects[key] = data
 
+    def verify_object(self, key: str, size_bytes: int, checksum_sha256: str) -> None:
+        return None
+
     def object_exists(self, key: str) -> bool:
         return key in self.objects
 
     def remove_object(self, key: str) -> None:
         self.objects.pop(key, None)
 
-    def list_objects(self, prefix: str) -> Iterator[str]:
-        yield from sorted(key for key in self.objects if key.startswith(prefix))
+    def list_objects(self, prefix: str) -> Iterator[ObjectEntry]:
+        for key in sorted(key for key in self.objects if key.startswith(prefix)):
+            yield ObjectEntry(object_key=key, last_modified=None)
 
     def presigned_get_url(self, key: str, expires_seconds: int) -> str:
         return f"http://fake-store.test/{key}?expires={expires_seconds}"
