@@ -37,8 +37,8 @@ class CentralSettings(BaseSettings):
     # Bootstrap-only pilot credentials (C1b). They are consumed once by
     # `central-service bootstrap` / the Compose bootstrap service to create
     # salted hashes in the durable credential store; the API never uses them
-    # at runtime and never persists the plaintext. When either is unset the
-    # bootstrap generates a token and prints it exactly once.
+    # at runtime and never persists the plaintext. Missing values fail
+    # bootstrap closed rather than generating a credential.
     admin_token: str | None = None
     device_upload_token: str | None = None
 

@@ -719,8 +719,8 @@ Not a production checklist; M1 remains a controlled pilot (OQ-021/022/017/019/
   reports all dependencies ok.
 - Terminate TLS in front of the API (admin-web nginx or a reverse proxy) and
   verify the edge `HttpUploadSink` reaches `https://...` (plain HTTP remains
-  loopback-development only, contract 04); rotate the pilot admin/device
-  tokens away from dev defaults (compose.env.example).
+  loopback-development only, contract 04); set unique pilot admin/device
+  tokens because `compose.env.example` contains placeholders only.
 - Register each edge device with its real UUID `device_id` (C1b) and its own
   upload token; verify one inspection + media upload reaches `SYNCED` and
   replay is duplicate-free before wider rollout.

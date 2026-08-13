@@ -31,5 +31,6 @@ the API process.
 ## Configuration
 
 All settings are read from `AV_CENTRAL_*` environment variables (see
-`central_service/api/settings.py`). Development defaults live in
-`compose.env.example`; production deployments must supply their own secrets.
+`central_service/api/settings.py`). `compose.env.example` contains empty
+required placeholders only; every Compose secret must be supplied in a private
+`.env` or a deployment secret store before startup.

@@ -481,10 +481,14 @@ the E6-A16 edge-to-central integration fixture) and is a **controlled pilot**
 ### 4.2 Docker Compose (the standard dev stack)
 
 PostgreSQL, MinIO, the API (`central-service`), the one-shot migration step
-(`central-migrate`), and the built admin UI (`admin-web`) start together:
+(`central-migrate`), and the built admin UI (`admin-web`) start together. The
+example environment file intentionally contains no usable credentials, so
+populate every required value in a private `.env` before starting:
 
 ```bash
-cp apps/central-service/compose.env.example apps/central-service/.env   # dev defaults; override secrets for real use
+cp apps/central-service/compose.env.example apps/central-service/.env
+# Edit .env: set POSTGRES_*, MINIO_*, CENTRAL_ADMIN_TOKEN, and
+# CENTRAL_DEVICE_UPLOAD_TOKEN to unique non-empty values.
 docker compose -f apps/central-service/compose.yaml up -d --build
 curl http://localhost:8080/api/v1/health/live     # admin-web proxies /api to the API
 ```
@@ -496,8 +500,8 @@ curl http://localhost:8080/api/v1/health/live     # admin-web proxies /api to th
   `central-migrate` service (`python -m central_service migrate`); the API
   never migrates automatically.
 - `central-bootstrap` (one-shot) provisions the pilot organization, site,
-  line, device, and administrator; it fails closed when
-  `CENTRAL_ADMIN_TOKEN` / `CENTRAL_DEVICE_UPLOAD_TOKEN` are unset.
+  line, device, and administrator. Compose fails closed when any PostgreSQL,
+  MinIO, administrator, or device-upload secret is unset.
 
 ### 4.3 Without Docker (CLI)
 
@@ -529,9 +533,10 @@ C5 pilot upgrade/rollback). Key steps:
    proxy). The edge `HttpUploadSink` must reach `https://...`; plain HTTP is
    loopback-development only (contract 04). Keep `CENTRAL_SECURE_COOKIES=true`
    outside plain-HTTP loopback dev.
-2. **Credentials**: replace dev defaults in `apps/central-service/.env`
+2. **Credentials**: set unique secrets in `apps/central-service/.env`
    (`CENTRAL_ADMIN_TOKEN`, `CENTRAL_DEVICE_UPLOAD_TOKEN`, MinIO keys, PostgreSQL
-   password). The bootstrap fails closed when tokens are unset.
+   password). The tracked example contains placeholders only; Compose fails
+   closed when any required secret is unset.
 3. **Migrations**: run `central-migrate` to head (`0006`) as a controlled
    release step; verify `GET /api/v1/health/ready` reports all dependencies ok.
 4. **Backup/restore** (runbook C4): `pg_dump --format=custom` for PostgreSQL
@@ -662,7 +667,8 @@ See [docs/tasks/E6-edge-acceptance.md](docs/tasks/E6-edge-acceptance.md) and
 
 `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB`, `MINIO_ROOT_USER` /
 `MINIO_ROOT_PASSWORD` / `MINIO_BUCKET`, `CENTRAL_ADMIN_TOKEN` /
-`CENTRAL_DEVICE_UPLOAD_TOKEN` (no dev defaults — bootstrap fails closed),
+`CENTRAL_DEVICE_UPLOAD_TOKEN` (all required; the tracked example has no usable
+defaults),
 `CENTRAL_SECURE_COOKIES`, `CENTRAL_RATE_LIMIT_REQUESTS_PER_MINUTE`,
 `ADMIN_WEB_PORT`. See `apps/central-service/compose.env.example`.
 

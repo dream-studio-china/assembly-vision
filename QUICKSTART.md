@@ -132,8 +132,8 @@ pnpm --filter edge-web dev      # http://localhost:5173 (mock data by default)
 
 ## 8. Central server — the API (M1 pilot)
 
-Run the API against your own PostgreSQL and an S3-compatible object store
-(dev defaults below; override secrets in real use):
+Run the API against your own PostgreSQL and an S3-compatible object store. Use
+unique local-only credentials; do not copy credentials from tracked examples:
 
 ```bash
 (
