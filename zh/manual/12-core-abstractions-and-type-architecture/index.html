@@ -1823,7 +1823,7 @@
   <a href="#edge-service" class="md-nav__link">
     <span class="md-ellipsis">
       
-        UploadSink（边缘服务upload/）
+        UploadSink (edge-service upload/)
       
     </span>
   </a>
@@ -3339,7 +3339,7 @@
   <a href="#edge-service" class="md-nav__link">
     <span class="md-ellipsis">
       
-        UploadSink（边缘服务upload/）
+        UploadSink (edge-service upload/)
       
     </span>
   </a>
@@ -3427,88 +3427,88 @@
 
 
 <h1 id="12-core-abstractions-and-type-architecture">12 - 核心抽象和类型架构<a class="headerlink" href="#12-core-abstractions-and-type-architecture" title="Permanent link">&para;</a></h1>
-<p>该代码库如何抽象其类和类型，以及添加规则
-新的。这是“类架构”章节：何时使用 Pydantic
-模型、冻结数据类或 <code>Protocol</code>，域模型的组成方式，
-错误如何变成原因代码，以及在运行时使用的模式。</p>
+<p>How this codebase abstracts its classes and types, and the rules for adding
+new ones. This is the "class architecture" chapter: when to use a Pydantic
+model, a frozen dataclass, or a <code>Protocol</code>, how the domain model is composed,
+how errors become reason codes, and the patterns used across the runtime.</p>
 <h2 id="the-three-abstraction-mechanisms">三种抽象机制<a class="headerlink" href="#the-three-abstraction-mechanisms" title="Permanent link">&para;</a></h2>
-<p>代码库恰好使用三种机制进行抽象，由以下人员选择
-目的：</p>
+<p>The codebase uses exactly three mechanisms for its abstractions, chosen by
+purpose:</p>
 <table>
 <thead>
 <tr>
-<th>机制</th>
-<th>用于</th>
-<th>示例</th>
+<th>Mechanism</th>
+<th>Used for</th>
+<th>Examples</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Pydantic 模型</strong> (<code>APIModel</code>)</td>
-<td>跨越边界的合约：持久性、API、配置、清单；已验证、可序列化、拒绝未知字段</td>
-<td><code>InspectionRecord</code>、<code>ModelManifest</code>、<code>RuleDefinition</code>、<code>PipelineConfig</code>、<code>SubmitReviewRequest</code>、所有 API 架构</td>
+<td><strong>Pydantic model</strong> (<code>APIModel</code>)</td>
+<td>Contracts that cross boundaries: persistence, API, config, manifests; validated, serializable, reject unknown fields</td>
+<td><code>InspectionRecord</code>, <code>ModelManifest</code>, <code>RuleDefinition</code>, <code>PipelineConfig</code>, <code>SubmitReviewRequest</code>, all API schemas</td>
 </tr>
 <tr>
-<td><strong>冻结数据类</strong></td>
-<td>永远不会跨越线路边界的内部值对象/配置；便宜、不可变、可散列</td>
-<td><code>CapturedFrame</code>、<code>CameraCapabilities</code>、<code>ROIConfig</code>、<code>GeneratedROI</code>、<code>Box</code>、<code>Transform</code>、<code>ComponentTemporalPolicy</code>、<code>FrameObservation</code>、<code>ProductWindow</code>、<code>RetentionPolicy</code>、<code>StorageState</code>、<code>UploadReceipt</code>、<code>MockProductSpec</code>、<code>ServerSettings</code></td>
+<td><strong>Frozen dataclass</strong></td>
+<td>Internal value objects / configuration that never cross a wire boundary; cheap, immutable, hashable</td>
+<td><code>CapturedFrame</code>, <code>CameraCapabilities</code>, <code>ROIConfig</code>, <code>GeneratedROI</code>, <code>Box</code>, <code>Transform</code>, <code>ComponentTemporalPolicy</code>, <code>FrameObservation</code>, <code>ProductWindow</code>, <code>RetentionPolicy</code>, <code>StorageState</code>, <code>UploadReceipt</code>, <code>MockProductSpec</code>, <code>ServerSettings</code></td>
 </tr>
 <tr>
-<td><strong><code>Protocol</code></strong>（结构类型）</td>
-<td>供应商/SDK/传输实现必须可交换的插件接缝；运行时可检查</td>
-<td><code>FrameSource</code>、<code>BarcodeDecoder</code>、<code>TriggerSource</code>、<code>UploadSink</code>、<code>ModbusTcpTransport</code>、<code>ZXingDecodedBarcode</code></td>
+<td><strong><code>Protocol</code></strong> (structural typing)</td>
+<td>Plugin seams where a vendor/SDK/transport implementation must be swappable; runtime checkable</td>
+<td><code>FrameSource</code>, <code>BarcodeDecoder</code>, <code>TriggerSource</code>, <code>UploadSink</code>, <code>ModbusTcpTransport</code>, <code>ZXingDecodedBarcode</code></td>
 </tr>
 </tbody>
 </table>
-<p><strong>经验法则</strong>：如果一个值跨越边界（持久化、序列化为
-API，从配置加载，清单的一部分）→ Pydantic
-<code>extra="forbid"</code>。如果它是纯粹的内部管道→冻结数据类。如果它
-是可交换功能（相机、条形码读取器、触发器、上传
-目的地）→ <code>Protocol</code> +具体实现。</p>
+<p><strong>Rule of thumb</strong>: if a value crosses a boundary (persisted, serialized to
+the API, loaded from config, part of a manifest) → Pydantic with
+<code>extra="forbid"</code>. If it is purely internal plumbing → frozen dataclass. If it
+is a swappable capability (camera, barcode reader, trigger, upload
+destination) → <code>Protocol</code> + concrete implementations.</p>
 <h2 id="domain-model">域模型 (<code>packages/python/domain</code>)<a class="headerlink" href="#domain-model" title="Permanent link">&para;</a></h2>
 <h3 id="base-and-enums">基数和枚举<a class="headerlink" href="#base-and-enums" title="Permanent link">&para;</a></h3>
-<p><code>APIModel(BaseModel)</code> 和 <code>model_config = ConfigDict(extra="forbid",
-from_attributes=True)</code> — 未知字段会被大声拒绝，ORM 风格
-属性建设工程。所有领域模型都源自它。</p>
-<p>枚举是 <code>StrEnum</code> （序列化为其字符串值）：</p>
+<p><code>APIModel(BaseModel)</code> with <code>model_config = ConfigDict(extra="forbid",
+from_attributes=True)</code> — unknown fields are rejected loudly, ORM-style
+attribute construction works. All domain models derive from it.</p>
+<p>Enums are <code>StrEnum</code> (serialize as their string values):</p>
 <table>
 <thead>
 <tr>
-<th>枚举</th>
-<th>价值观</th>
+<th>Enum</th>
+<th>Values</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>InternalDecision</code></td>
-<td><code>OK</code>、<code>NG</code>、<code>UNCERTAIN</code></td>
+<td><code>OK</code>, <code>NG</code>, <code>UNCERTAIN</code></td>
 </tr>
 <tr>
 <td><code>BusinessResult</code></td>
-<td><code>OK</code>、<code>NG</code>（不确定始终映射为 NG）</td>
+<td><code>OK</code>, <code>NG</code> (UNCERTAIN always maps to NG)</td>
 </tr>
 <tr>
 <td><code>InspectionLifecycle</code></td>
-<td><code>OPEN</code>、<code>EVALUATING</code>、<code>COMPLETED</code>、<code>ABORTED</code></td>
+<td><code>OPEN</code>, <code>EVALUATING</code>, <code>COMPLETED</code>, <code>ABORTED</code></td>
 </tr>
 <tr>
 <td><code>MediaLifecycle</code></td>
-<td><code>PENDING</code>、<code>AVAILABLE</code>、<code>FAILED</code>、<code>PURGED</code></td>
+<td><code>PENDING</code>, <code>AVAILABLE</code>, <code>FAILED</code>, <code>PURGED</code></td>
 </tr>
 <tr>
 <td><code>ReviewDisposition</code></td>
-<td><code>CONFIRMED_NG</code>、<code>CONFIRMED_OK</code>、<code>CORRECTED_NG</code>、<code>INCONCLUSIVE</code>、<code>REINSPECT</code></td>
+<td><code>CONFIRMED_NG</code>, <code>CONFIRMED_OK</code>, <code>CORRECTED_NG</code>, <code>INCONCLUSIVE</code>, <code>REINSPECT</code></td>
 </tr>
 <tr>
 <td><code>ComponentCorrectionState</code></td>
-<td><code>PRESENT</code>、<code>MISSING</code>、<code>UNCERTAIN</code></td>
+<td><code>PRESENT</code>, <code>MISSING</code>, <code>UNCERTAIN</code></td>
 </tr>
 </tbody>
 </table>
-<p>如果代码中的枚举值还不是 <code>StrEnum</code>（例如 <code>UploadTask.status</code>，
-<code>DeviceStatus.operational_state</code> 是 Pydantic 模型中的 <code>Literal</code>），请对待
-文字字符串作为规范值 - 它们是列出的相同集合
-在 API 参考中。</p>
+<p>Where an enum value is not yet a <code>StrEnum</code> in the code (e.g. <code>UploadTask.status</code>,
+<code>DeviceStatus.operational_state</code> are <code>Literal</code>s in the Pydantic models), treat
+the literal strings as the canonical values — they are the same sets listed
+in the API reference.</p>
 <h3 id="the-composition-graph"><code>InspectionRecord</code>组合图<a class="headerlink" href="#the-composition-graph" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>graph TD
     IR[检验记录]
@@ -3517,7 +3517,7 @@ from_attributes=True)</code> — 未知字段会被大声拒绝，ORM 风格
     IR --&gt; PD[产品检测]
     IR --&gt; RR[ROI结果]
     IR --&gt; FQ[框架质量总结]
-    IR --&gt; EV[聚合成分证据 *]
+    IR --&gt; EV[聚合成分证据*]
     IR --&gt; MM[媒体元数据 *]
     IR --&gt; DEC[检查决定]
     IR --&gt; IM[推理元数据]
@@ -3528,17 +3528,17 @@ from_attributes=True)</code> — 未知字段会被大声拒绝，ORM 风格
     RR --&gt; BB3[边界框]
     IM --&gt; SM[推理阶段元数据 *]
     SM --&gt; IS[推理设置]</code></pre>
-<p>模型中包含的关键不变量：
-- <code>evidence[]</code> 根据需要携带一个 <code>AggregatedComponentEvidence</code>
-  状态为 <code>PRESENT | MISSING | UNCERTAIN | UNVERIFIABLE</code> 的组件。
-- <code>media[]</code> 仅是元数据（字节存在于磁盘上）；每个条目都有
-  <code>relative_path</code>、<code>size_bytes</code>、<code>checksum_sha256</code>。
-- 模型/规则版本在记录中固定为 UUID + 校验和；每个
-  检查可以从记录+介质中完全再现。
-- <code>ReviewRecord</code> 快照 <code>original_business_result</code> /
-  <code>original_internal_decision</code> / <code>original_reason_codes</code> — 机器
-  决定是一成不变的；评论仅可附加（通过链
-  <code>supersedes_review_id</code>）。</p>
+<p>Key invariants baked into the model:
+- <code>evidence[]</code> carries one <code>AggregatedComponentEvidence</code> per required
+  component with state <code>PRESENT | MISSING | UNCERTAIN | UNVERIFIABLE</code>.
+- <code>media[]</code> is metadata only (bytes live on disk); every entry has
+  <code>relative_path</code>, <code>size_bytes</code>, <code>checksum_sha256</code>.
+- Model/rule versions are pinned as UUIDs + checksums on the record; every
+  inspection is fully reproducible from the record + media.
+- <code>ReviewRecord</code> snapshots <code>original_business_result</code> /
+  <code>original_internal_decision</code> / <code>original_reason_codes</code> — the machine
+  decision is immutable; reviews are append-only (chain via
+  <code>supersedes_review_id</code>).</p>
 <h2 id="protocol-seams-how-to-abstract-a-swappable-capability">协议接缝（如何抽象可交换功能）<a class="headerlink" href="#protocol-seams-how-to-abstract-a-swappable-capability" title="Permanent link">&para;</a></h2>
 <h3 id="vision-core"><code>FrameSource</code>（视觉核心）<a class="headerlink" href="#vision-core" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@runtime_checkable</span>
@@ -3548,35 +3548,35 @@ from_attributes=True)</code> — 未知字段会被大声拒绝，ORM 风格
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">frames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">CapturedFrame</span><span class="p">]:</span> <span class="o">...</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
 </code></pre></div>
-<p>具体实现：<code>FolderSource</code>、<code>VideoFrameSource</code>、
-<code>OpenCVCameraSource</code>、<code>RTSPFrameSource</code>、<code>HttpImageSource</code>、
-<code>GigEVisionFrameSource</code>。建设集中于
-<code>build_frame_source(config)</code>（工厂）。仅边缘<code>CameraSourceManager</code>
-了解协议——供应商 SDK 被隔离在其后面 (ADR-013)。添加一个
-根据<code>08-camera-sources-and-vision-core.md</code>的新来源。</p>
+<p>Concrete implementations: <code>FolderSource</code>, <code>VideoFrameSource</code>,
+<code>OpenCVCameraSource</code>, <code>RTSPFrameSource</code>, <code>HttpImageSource</code>,
+<code>GigEVisionFrameSource</code>. Construction is centralized in
+<code>build_frame_source(config)</code> (factory). The edge <code>CameraSourceManager</code> only
+knows the protocol — vendor SDKs are isolated behind it (ADR-013). Add a
+new source per <code>08-camera-sources-and-vision-core.md</code>.</p>
 <h3 id="edge-service"><code>BarcodeDecoder</code>（边缘服务<code>barcode/</code>）<a class="headerlink" href="#edge-service" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BarcodeDecoder</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">BarcodeObservation</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span> <span class="o">...</span>
 </code></pre></div>
-<p><code>ZXingCppBarcodeDecoder</code> 延迟加载 <code>zxingcpp</code>； <code>KeyboardBarcodeInputAdapter</code>
-解析模拟键盘输入（仅限开发工具）。观察结果显示
-读取/失败状态，因此解决方案可能会失败关闭。</p>
+<p><code>ZXingCppBarcodeDecoder</code> lazily loads <code>zxingcpp</code>; <code>KeyboardBarcodeInputAdapter</code>
+parses simulated keyboard input (dev harness only). Observations carry
+read/failure status so resolution can fail closed.</p>
 <h3 id="edge-service"><code>TriggerSource</code>（边缘服务<code>trigger/</code>）<a class="headerlink" href="#edge-service" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">TriggerSource</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">events</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">TriggerEvent</span><span class="p">]:</span> <span class="o">...</span>
 </code></pre></div>
-<p><code>MockTriggerSource</code> 产生确定性的身份序列；
-<code>IdentityCorrelator</code> 标记 <code>CapturedFrame.product_identity</code>。 Modbus TCP
-FIFO 适配器（<code>ModbusTcpTriggerAdapter</code> 位于 <code>ModbusTcpTransport</code> 后面
-协议）作为选择加入合同交付；实时传输是门控的
-经现场验证的注册配置文件。</p>
-<h3 id="edge-service"><code>UploadSink</code>（边缘服务<code>upload/</code>）<a class="headerlink" href="#edge-service" title="Permanent link">&para;</a></h3>
+<p><code>MockTriggerSource</code> produces a deterministic identity sequence;
+<code>IdentityCorrelator</code> stamps <code>CapturedFrame.product_identity</code>. The Modbus TCP
+FIFO adapter (<code>ModbusTcpTriggerAdapter</code> behind the <code>ModbusTcpTransport</code>
+protocol) is delivered as an opt-in contract; live transport is gated on a
+site-validated register profile.</p>
+<h3 id="edge-service"><code>UploadSink</code> (edge-service <code>upload/</code>)<a class="headerlink" href="#edge-service" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">UploadSink</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">UploadTask</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UploadResult</span><span class="p">:</span> <span class="o">...</span>
 </code></pre></div>
-<p><code>HttpUploadSink</code> 将 JSON 信封 POST 到 <code>{base_url}/inspection-uploads</code>；
-<code>DirectoryUploadSink</code> 写入目录（receipt = 幂等密钥）
-开发/测试。调度程序取决于协议，而不是具体的接收器。</p>
+<p><code>HttpUploadSink</code> POSTs the JSON envelope to <code>{base_url}/inspection-uploads</code>;
+<code>DirectoryUploadSink</code> writes to a directory (receipt = idempotency key) for
+dev/tests. The scheduler depends on the protocol, never a concrete sink.</p>
 <h3 id="how-to-add-a-new-seam">如何添加新接缝<a class="headerlink" href="#how-to-add-a-new-seam" title="Permanent link">&para;</a></h3>
 <ol>
 <li>使用类型化方法定义 <code>Protocol</code> （记录失败契约：

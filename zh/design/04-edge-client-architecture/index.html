@@ -3683,7 +3683,7 @@
 <p>组件检测器在生成的 ROI 上运行并发出类别、框、置信度、帧 ID 和模型版本。所需的类来自固定的产品配置。可选的 OpenCV 检查使用自己的算法/配置版本发出命名观察结果；它们不能无形地改变检测器的输出。</p>
 <h3 id="33-per-component-aggregation-and-rules">3.3 每个组件的聚合和规则<a class="headerlink" href="#33-per-component-aggregation-and-rules" title="Permanent link">&para;</a></h3>
 <p>聚合器排除无效/模糊的帧，并使用配置的策略评估每个所需的组件，例如一个高置信度观察、两个中等置信度观察、相邻帧证据、可见区域限制和最小可用帧计数。阈值仍然特定于型号/产品，并且需要评估。</p>
-<p>规则引擎仅使用类型化的聚合证据和固定配置。它返回内部 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code>、组件列表和原因代码。 <code>UNCERTAIN</code>始终映射到业务<code>NG</code>；演示文稿可以显示内部原因，但不能将业务结果更改为<code>OK</code>。</p>
+<p>规则引擎仅使用类型化的聚合证据和固定配置。它返回内部 <code>OK</code>、<code>NG</code> 或 <code>UNCERTAIN</code>、组件列表和原因代码。 <code>UNCERTAIN</code>始终映射到业务<code>NG</code>；演示可以显示内部原因，但不能将业务结果更改为<code>OK</code>。</p>
 <h2 id="4-inspection-state-model">4. 检验状态模型<a class="headerlink" href="#4-inspection-state-model" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     [*] --&gt; Idle

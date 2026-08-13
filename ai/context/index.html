@@ -3365,6 +3365,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#824-central-server-review-and-remediation-audit-002" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.24 Central Server Review and Remediation (AUDIT-002)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#825-interactive-configuration-tool-assemblyvision-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.25 Interactive Configuration Tool (assemblyvision config)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#9-open-items-next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3464,6 +3486,17 @@ and verifies that all required assembly components are present.</p>
   feature-complete; remaining work is on-site E6 acceptance and the §13.2
   controlled-pilot deployment (execution, hardware/data-gated).</li>
 </ul>
+<p>Since the M1 closure snapshot, a read-only central-server review
+  (<code>docs/reviews/AUDIT-002-central-server-review.md</code>) ran and its twelve
+  high-severity findings were dispositioned: seven resolved across two
+  batches (H01/H03/H09 via PR #50 merged; H04/H05/H08/H10 via PR #51 open)
+  and five deferred (H02/H06/H11 with mitigations, H07/H12 to production
+  scope). SECURITY.md now documents the central M1 pilot boundary and the two
+  deployment contexts (network deployment vs factory intranet plus a
+  maintenance-only Tailscale channel). A new interactive configuration tool
+  (<code>assemblyvision config edit/validate/history/rollback</code>) with four
+  languages and a dev/production dimension is implemented but not yet
+  committed.</p>
 <h2 id="2-repository-state">2. Repository State<a class="headerlink" href="#2-repository-state" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Remote: <code>https://github.com/dream-studio-china/assembly-vision</code>. PRs #3-#30
@@ -3490,6 +3523,12 @@ and verifies that all required assembly components are present.</p>
   (<code>scripts/tests/test_edge_central_e2e.py</code>, section 8.23), the §13
   exit-criteria evidence table and go-live checklist, and the
   README/QUICKSTART/DEPLOYMENT documentation split.</li>
+<li>The central review and remediation work lives on <code>dev</code> (not yet on <code>main</code>):
+  <code>docs/reviews/AUDIT-002-central-server-review.md</code>, the first remediation
+  batch (PR #50, merged), the second batch plus deferred dispositions and the
+  SECURITY.md/deployment-context updates (PR #51, open), and the uncommitted
+  <code>assemblyvision config</code> tool. <code>apps/edge-service</code> gained the
+  <code>config_tool</code> package (interactive config editing) as a new subpackage.</li>
 <li><code>.obsidian/</code>, <code>.idea/</code>, and <code>.vscode/</code> are ignored local editor state.</li>
 <li>Runtime data, model weights, production media, datasets, and secrets must never be stored in
   Git. Build artifacts <code>docs-zh/</code>, <code>site/</code>, <code>mkdocs-en.yml</code>, <code>mkdocs-zh.yml</code> are gitignored.</li>
@@ -4588,6 +4627,57 @@ which the mocked <code>central.invalid</code> fixtures cannot:</p>
 <li>Verification: full repo gates pass (<code>ruff check .</code>, <code>ruff format --check
   .</code>, <code>mypy .</code>, <code>pytest</code> - 1174 tests total, <code>mkdocs build --strict</code>).</li>
 </ul>
+<h2 id="824-central-server-review-and-remediation-audit-002">8.24 Central Server Review and Remediation (AUDIT-002)<a class="headerlink" href="#824-central-server-review-and-remediation-audit-002" title="Permanent link">&para;</a></h2>
+<p>A read-only review of <code>apps/central-service</code>, <code>apps/admin-web</code>, and the
+central documentation recorded <code>docs/reviews/AUDIT-002-central-server-review.md</code>
+with twelve high-severity findings. All twelve are dispositioned:</p>
+<ul>
+<li><strong>First batch (PR #50, merged)</strong>: H01 (Compose now fails closed with no
+  published credentials), H03 (desired-configuration returns public version
+  UUIDs and validates the correct product), H09 (rate limiting derives
+  identity only from a trusted proxy address with bounded state).</li>
+<li><strong>Second batch (PR #51, open)</strong>: H04 (desired-configuration <code>If-Match</code> is
+  an atomic conditional update, verified by a real PostgreSQL barrier test),
+  H05 (media bytes are size- and SHA-256-verified before an <code>AVAILABLE</code>
+  receipt), H08 (review idempotency is content-addressed with domain
+  validation, migration 0007), H10 (bounded/streamed ingestion and an
+  explicit proxy body limit).</li>
+<li><strong>Deferred with mitigation</strong>: H02 (manual revocation runbook; no automated
+  rotation), H06 (<code>reconcile-media</code> age-guards orphan deletion,
+  <code>--min-age-hours</code>), H11 (backup runbook quiesces writes for a consistent
+  recovery point).</li>
+<li><strong>Deferred (production scope)</strong>: H07 (governed ingestion references),
+  H12 (unique credential identity).</li>
+<li><strong>Docs</strong>: SECURITY.md documents the central M1 pilot boundary; the two
+  deployment contexts (network deployment vs factory intranet plus a
+  maintenance-only Tailscale channel) are recorded in SECURITY.md,
+  DEPLOYMENT.md, design 20, and the AUDIT-002 pilot gate. Real PostgreSQL
+  verification covers the desired-configuration concurrency guard
+  (<code>AV_CENTRAL_TEST_DATABASE_URL</code>) and migration 0007 upgrade/downgrade.</li>
+</ul>
+<h2 id="825-interactive-configuration-tool-assemblyvision-config">8.25 Interactive Configuration Tool (<code>assemblyvision config</code>)<a class="headerlink" href="#825-interactive-configuration-tool-assemblyvision-config" title="Permanent link">&para;</a></h2>
+<p>A new <code>assemblyvision config</code> subcommand set (package
+<code>apps/edge-service/src/assemblyvision_edge/config_tool/</code>) provides guided
+configuration management for the field engineer:</p>
+<ul>
+<li><code>config edit</code> - interactive object menu over product/rule, camera
+  instances, detection thresholds, ROI, identity/barcode, model manifests,
+  and the central <code>.env</code>; every change is validated, diffed, confirmed, and
+  snapshotted (backup) before writing.</li>
+<li><code>config validate</code> - aggregate validation across edge pipeline/rule/
+  manifests and the central <code>.env</code>, with a <code>dev</code>/<code>production</code> environment
+  dimension (production rejects development-only settings such as placeholder
+  manifests and mock triggers).</li>
+<li><code>config history</code> / <code>config rollback</code> - list and restore backups under
+  <code>.assemblyvision-backups/</code>.</li>
+<li>Localization: English (default), Simplified/Traditional Chinese, and
+  Japanese via <code>questionary</code> (new dependency).</li>
+<li>Multi-instance edits validate only the selected instance, so a pre-existing
+  issue in an unrelated instance does not block an edit; diffs are scoped to
+  the edited instance.</li>
+<li>Status: implemented and tested (14 config-tool tests) but <strong>not yet
+  committed</strong>; QUICKSTART section 10 documents usage.</li>
+</ul>
 <h2 id="9-open-items-next-steps">9. Open Items / Next Steps<a class="headerlink" href="#9-open-items-next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The <strong>upload queue scheduler</strong> gap is closed (PR #17, section 8.6); <strong>E1
@@ -4662,6 +4752,18 @@ which the mocked <code>central.invalid</code> fixtures cannot:</p>
   management operations (device registration/disable/credential rotation,
   user/RBAC, remote package distribution) are production scope driven by
   OQ-021/OQ-022 (roadmap 25.6), not part of C1a-C6.</li>
+<li>The central server M1 pilot is <strong>feature-complete</strong> with all twelve
+  AUDIT-002 high-severity findings dispositioned (section 8.24): seven
+  resolved (H01/H03/H04/H05/H08/H09/H10) and five deferred (H02/H06/H11 with
+  mitigations; H07/H12 to production scope). PR #50 (first batch) is merged;
+  PR #51 (second batch + deferred + SECURITY.md/deployment-context updates)
+  is open. Remaining central work is production scope: OIDC/RBAC, credential
+  rotation and unique identity, governed ingestion references, a staged media
+  lifecycle, and snapshot/PITR backup.</li>
+<li>The <strong>interactive configuration tool</strong> (<code>assemblyvision config</code>) is
+  implemented and tested but <strong>not yet committed</strong> (section 8.25). Commit and
+  merge it via PR, then consider field validation (real TTY interaction,
+  additional language coverage).</li>
 <li>Hardware/conditions still unconfirmed (see <a href="../../design/appendices/#3-global-open-questions">Appendices section 3</a>):
   camera vendor/SDK, barcode standard, conveyor speed, GPU/OS, retention periods, network
   reliability, central-server location, acceptance thresholds.</li>

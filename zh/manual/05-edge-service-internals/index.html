@@ -3249,113 +3249,113 @@
 
 
 <h1 id="05-edge-service-internals">05 — 边缘服务内部结构<a class="headerlink" href="#05-edge-service-internals" title="Permanent link">&para;</a></h1>
-<p>运行时的实际工作原理（逐个功能）。所有路径相对于
-<code>apps/edge-service/src/assemblyvision_edge/</code>。</p>
+<p>How the runtime really works, function by function. All paths relative to
+<code>apps/edge-service/src/assemblyvision_edge/</code>.</p>
 <h2 id="how-an-image-becomes-an-inspection-record">图像如何成为检查记录（<code>inspect</code>）<a class="headerlink" href="#how-an-image-becomes-an-inspection-record" title="Permanent link">&para;</a></h2>
 <ol>
-<li><code>cli._run_inspect</code> → <code>_open_durable_rule_registry(output)</code> 打开
-   <code>EdgeRepository.open(output / "edge.sqlite3")</code>（持久规则身份
-   注册表，与<code>serve</code>共享；如果无法打开则失败关闭）。</li>
-<li><code>_build_pipeline</code> 加载配置+规则+清单和验证：
-   <code>validate_model_version_declaration</code> （声明 <code>model_version</code> 必须等于
-   清单标签）和 <code>validate_rule_component_compatibility</code> （每个
-   配置中存在规则所需的组件；组件清单版本
-   位于 <code>compatible_component_model_versions</code> 中； <code>barcode_required</code> 规则
-   需要启用+必需的 <code>identity.barcode</code> 配置）。探测器已建成
-   来自清单。</li>
-<li>对于每个<code>(source, path)</code>：<code>pipeline.inspect_image(source, path, writer)</code>。</li>
+<li><code>cli._run_inspect</code> → <code>_open_durable_rule_registry(output)</code> opens
+   <code>EdgeRepository.open(output / "edge.sqlite3")</code> (the durable rule-identity
+   registry, shared with <code>serve</code>; fail-closed if it cannot open).</li>
+<li><code>_build_pipeline</code> loads config + rule + both manifests and validates:
+   <code>validate_model_version_declaration</code> (declared <code>model_version</code> must equal
+   the manifest label) and <code>validate_rule_component_compatibility</code> (every
+   rule-required component exists in config; the component manifest version
+   is in <code>compatible_component_model_versions</code>; a <code>barcode_required</code> rule
+   requires enabled+required <code>identity.barcode</code> config). Detectors are built
+   from manifests.</li>
+<li>For each <code>(source, path)</code>: <code>pipeline.inspect_image(source, path, writer)</code>.</li>
 </ol>
-<p><code>InspectionPipeline._inspect_impl</code> (<code>pipeline.py:536</code>) — 核心流程：</p>
+<p><code>InspectionPipeline._inspect_impl</code> (<code>pipeline.py:536</code>) — the core flow:</p>
 <ol>
-<li>生成<code>inspection_id</code>、<code>frame_id</code>、<code>started_at</code>（UTC）。
-2.<code>_detect_frame(frame, frame_id)</code>：</li>
-<li><code>product_detector.detect(frame, frame_id)</code>； <code>DetectionError</code> → 附加其
-     <code>reason_code</code>（例如<code>INFERENCE_ERROR</code>）；没有选择 → <code>NO_PRODUCT</code>。</li>
-<li>出处检查<code>_validate_product_provenance</code>：<code>detection.frame_id ==
-     frame_id</code>、<code>model_version_id == manifest.model_version_id</code>和盒子
-     尺寸与框架匹配 — 任何不匹配 → <code>INFERENCE_ERROR</code>。</li>
-<li><code>roi_engine.generate(frame, frame_id, product_box)</code>；失败 →
-     <code>ROI_INVALID</code>；成功设置门 <code>roi_valid=True</code>。</li>
+<li>Generate <code>inspection_id</code>, <code>frame_id</code>, <code>started_at</code> (UTC).</li>
+<li><code>_detect_frame(frame, frame_id)</code>:</li>
+<li><code>product_detector.detect(frame, frame_id)</code>; <code>DetectionError</code> → append its
+     <code>reason_code</code> (e.g. <code>INFERENCE_ERROR</code>); no selection → <code>NO_PRODUCT</code>.</li>
+<li>Provenance check <code>_validate_product_provenance</code>: <code>detection.frame_id ==
+     frame_id</code>, <code>model_version_id == manifest.model_version_id</code>, and the box
+     dimensions match the frame — any mismatch → <code>INFERENCE_ERROR</code>.</li>
+<li><code>roi_engine.generate(frame, frame_id, product_box)</code>; failure →
+     <code>ROI_INVALID</code>; success sets gate <code>roi_valid=True</code>.</li>
 <li><code>component_detector.detect(roi_image, frame_id, required_components,
-     transform_full_to_roi, frame_size)</code>。</li>
-<li>组件出处检查：转换必须是纯翻译，
-     每个观察 <code>frame_id</code>/<code>model_version_id</code> 必须匹配，<code>roi_bbox</code>
-     size == ROI 大小，<code>full_frame_bbox</code> size == 帧大小，以及
-     <code>apply_transform(roi_box, inverse) == full_frame_box</code>之内
-     <code>_COORD_TOLERANCE = 1e-6</code> — 否则观察值下降 +
-     <code>INFERENCE_ERROR</code>。
-3.<code>_build_evidence(observations, gates, frame_readable, frame_id)</code>：
-   每个所需组件→ <code>PRESENT</code>（命中），<code>MISSING</code>（有效推论，无
-   点击数、<code>COMPONENT_MISSING</code> 政策原因）或 <code>UNCERTAIN</code>
-   (<code>COMPONENT_UNVERIFIABLE</code>) 当推理无效时。
-4、身份：<code>identity_verified = identity.verified if identity else not
-   rule.barcode_required</code>；未经验证的身份添加
-   <code>PRODUCT_IDENTITY_UNVERIFIED</code>。</li>
-<li><code>rule_engine.evaluate(context, rule)</code> — 任何提出的
-   <code>RuleEvaluationError</code> → 额外原因<code>RULE_EVALUATION_ERROR</code>，
-   <code>decided=None</code>。</li>
-<li><strong>失败关闭合并</strong>：<code>final_reasons = decided.reasons ∪ extra_reasons</code>；
-   <code>internal = NG if final_reasons else OK</code>； <code>business_result = NG if
-   internal != OK else OK</code>。任何额外原因（读取错误、检测失败、
-   出处不匹配、未经验证的身份、规则评估错误）强制 <code>NG</code>。</li>
-<li>收集推理元数据（模型、版本、输入大小、延迟、设备、
-   阈值），构建 <code>InspectionRecord</code>
-   （<code>aggregation_policy_version="single-frame-mvp-1"</code> 对于单帧），
-   注释框架（产品框绿色，组件框红色），然后
-   <code>writer.save(...)</code>。</li>
+     transform_full_to_roi, frame_size)</code>.</li>
+<li>Component provenance check: transform must be a pure translation,
+     per-observation <code>frame_id</code>/<code>model_version_id</code> must match, <code>roi_bbox</code>
+     size == ROI size, <code>full_frame_bbox</code> size == frame size, and
+     <code>apply_transform(roi_box, inverse) == full_frame_box</code> within
+     <code>_COORD_TOLERANCE = 1e-6</code> — else observations dropped +
+     <code>INFERENCE_ERROR</code>.</li>
+<li><code>_build_evidence(observations, gates, frame_readable, frame_id)</code>:
+   per required component → <code>PRESENT</code> (hits), <code>MISSING</code> (valid inference, no
+   hits, <code>COMPONENT_MISSING</code> policy reason), or <code>UNCERTAIN</code>
+   (<code>COMPONENT_UNVERIFIABLE</code>) when inference was invalid.</li>
+<li>Identity: <code>identity_verified = identity.verified if identity else not
+   rule.barcode_required</code>; unverified identity adds
+   <code>PRODUCT_IDENTITY_UNVERIFIED</code>.</li>
+<li><code>rule_engine.evaluate(context, rule)</code> — any raised
+   <code>RuleEvaluationError</code> → extra reason <code>RULE_EVALUATION_ERROR</code>,
+   <code>decided=None</code>.</li>
+<li><strong>Fail-closed merge</strong>: <code>final_reasons = decided.reasons ∪ extra_reasons</code>;
+   <code>internal = NG if final_reasons else OK</code>; <code>business_result = NG if
+   internal != OK else OK</code>. Any extra reason (read error, detection failure,
+   provenance mismatch, unverified identity, rule-eval error) forces <code>NG</code>.</li>
+<li>Collect inference metadata (model, version, input size, latency, device,
+   thresholds), build the <code>InspectionRecord</code>
+   (<code>aggregation_policy_version="single-frame-mvp-1"</code> for single frames),
+   annotate the frame (product boxes green, component boxes red), then
+   <code>writer.save(...)</code>.</li>
 </ol>
-<p><code>OutputWriter.save</code> (<code>output/writer.py:96</code>) — 原子发布：
-暂存目录 <code>.staging-&lt;inspection_id&gt;-&lt;uuid&gt;</code> → 写入 <code>key_frame.jpg</code>
+<p><code>OutputWriter.save</code> (<code>output/writer.py:96</code>) — atomic publish:
+staging dir <code>.staging-&lt;inspection_id&gt;-&lt;uuid&gt;</code> → write <code>key_frame.jpg</code>
 (<code>KEY_FRAME</code>), <code>product_roi.jpg</code> (<code>PRODUCT_ROI</code>), <code>annotated_frame.jpg</code>
-(<code>ANNOTATED_FRAME</code>) 通过 temp+fsync+rename (JPEG q90) → 写入
-<code>inspection.json</code> (<code>record.model_dump(mode="json")</code>, 缩进 2, sort_keys) →
-fsync dir → 将 staging 重命名为 <code>&lt;output&gt;/&lt;inspection_id&gt;/</code> → fsync 父级。
-<code>record.media</code> 准确反映了所写内容。重新发布相同内容
-检查 ID → <code>OutputError</code>。在临界/停止磁盘压力下，仅<em>OK</em>
-样品抑制可选介质； NG 证据和元数据始终存在。</p>
+(<code>ANNOTATED_FRAME</code>) via temp+fsync+rename (JPEG q90) → write
+<code>inspection.json</code> (<code>record.model_dump(mode="json")</code>, indent 2, sort_keys) →
+fsync dir → rename staging to <code>&lt;output&gt;/&lt;inspection_id&gt;/</code> → fsync parent.
+<code>record.media</code> reflects exactly what was written. Re-publishing the same
+inspection id → <code>OutputError</code>. At critical/stop disk pressure, only <em>OK</em>
+samples suppress optional media; NG evidence and metadata always persist.</p>
 <h2 id="how-runs-live-inspection"><code>serve</code> 如何运行实时检查<a class="headerlink" href="#how-runs-live-inspection" title="Permanent link">&para;</a></h2>
-<p>组合根<code>api/app.py:create_app(settings)</code>：
-- <code>runtime = EdgeRuntime(settings)</code>；生命周期：打开存储库→创建
+<p>Composition root <code>api/app.py:create_app(settings)</code>:
+- <code>runtime = EdgeRuntime(settings)</code>; lifespan: open repository → create
   <code>RuntimeEventBus(source_id=device_id)</code> → <code>reconcile_output_root</code> +
-  <code>scan_storage_integrity</code> → <code>runtime.load_config(repository)</code>（多实例
-  <code>load_edge_config</code>，回退到传统的单一管道）→
-  可选地启动 <code>UploadScheduler</code> + <code>RetentionCleanupWorker</code>。</p>
+  <code>scan_storage_integrity</code> → <code>runtime.load_config(repository)</code> (multi-instance
+  <code>load_edge_config</code>, falling back to the legacy single pipeline) →
+  optionally start <code>UploadScheduler</code> + <code>RetentionCleanupWorker</code>.</p>
 <p><code>EdgeRuntime.load_instances</code> (<code>api/state.py:170</code>):
-- 加载边缘配置；每个实例与共享的构建管道
-  <code>ModelRegistry</code>； <code>device_id = uuid5(_INSTANCE_NAMESPACE, instance_id)</code>
-  除非配置；构建 <code>IdentityCorrelator(MockTriggerSource(...))</code> 时
-  存在 <code>trigger:</code> 块；每个相机<code>build_frame_source(...)</code>（失败
-  实例是非致命的）；带有 <code>inspection.enabled and pipeline</code> 的实例
-  订阅有界队列（最大大小 8）并启动守护进程
-  <code>_inspection_loop</code>。</p>
-<p>捕获线程 (<code>camera_manager.py</code>): <code>source.open()</code> → <code>_capture_loop</code>
-迭代 <code>source.frames(stop)</code> → <code>_publish_frame</code>：存储 <code>state.last_frame</code>
-（预览内存）和<code>inspection_queue.put_nowait(frame)</code>；在<code>queue.Full</code>上
-递增 <code>frames_dropped</code> 并设置 <code>degraded=True</code> （显式溢出，
-从来没有沉默的损失）。</p>
-<p><code>_inspection_loop</code> (<code>api/state.py:268</code>) 每次迭代：
-1.如果暂停→清空队列，睡眠。
-2. <code>refresh_storage()</code> — 锁存器<code>storage_write_fault</code>出现故障。
-3. 如果写入错误 → <code>probe_persistence()</code> 仅当发生写入错误时才清除锁存器
-   SQLite 探针写入<strong>和</strong>探针文件写入+fsync 均成功。
-4. 如果堵塞(<code>write_fault or integrity_fault or mode == "STOP"</code>) → 排水，
-   没有摄入。
-5. <code>optional = _optional_capture_suppressed()</code>（紧急/停止模式）。
-6.<code>next_frame(instance_id)</code>：
-   - <code>None</code>→<code>window_manager.expire(now)</code>；过期窗口 → <code>inspect_window</code>
-     → <code>_persist_projection</code>。
-   - 框架→<code>correlator.annotate(frame)</code>印记<code>product_identity</code>；那么
-     - <strong>颞分支</strong>：<code>pipeline.frame_observations(frame)</code> →
+- Load edge config; per-instance build pipeline with the shared
+  <code>ModelRegistry</code>; <code>device_id = uuid5(_INSTANCE_NAMESPACE, instance_id)</code>
+  unless configured; build <code>IdentityCorrelator(MockTriggerSource(...))</code> when
+  a <code>trigger:</code> block exists; <code>build_frame_source(...)</code> per camera (a failing
+  instance is non-fatal); instances with <code>inspection.enabled and pipeline</code>
+  subscribe a bounded queue (maxsize 8) and start a daemon
+  <code>_inspection_loop</code>.</p>
+<p>Capture thread (<code>camera_manager.py</code>): <code>source.open()</code> → <code>_capture_loop</code>
+iterates <code>source.frames(stop)</code> → <code>_publish_frame</code>: stores <code>state.last_frame</code>
+(preview memory) and <code>inspection_queue.put_nowait(frame)</code>; on <code>queue.Full</code>
+increments <code>frames_dropped</code> and sets <code>degraded=True</code> (explicit overflow,
+never silent loss).</p>
+<p><code>_inspection_loop</code> (<code>api/state.py:268</code>) per iteration:
+1. If paused → drain queue, sleep.
+2. <code>refresh_storage()</code> — on failure latches <code>storage_write_fault</code>.
+3. If write-faulted → <code>probe_persistence()</code> clears the latch only when a
+   SQLite probe write <strong>and</strong> a probe file write+fsync both succeed.
+4. If blocked (<code>write_fault or integrity_fault or mode == "STOP"</code>) → drain,
+   no intake.
+5. <code>optional = _optional_capture_suppressed()</code> (CRITICAL/STOP modes).
+6. <code>next_frame(instance_id)</code>:
+   - <code>None</code> → <code>window_manager.expire(now)</code>; an expired window → <code>inspect_window</code>
+     → <code>_persist_projection</code>.
+   - Frame → <code>correlator.annotate(frame)</code> stamps <code>product_identity</code>; then
+     - <strong>Temporal branch</strong>: <code>pipeline.frame_observations(frame)</code> →
        <code>window_manager.feed(observation, frame.monotonic_ts_ns/1e9)</code>
-       （采集时间单调时钟）；新窗口 → 发布
-       <code>inspection.started</code>；关闭窗口 → <code>inspect_window</code> →
-       <code>_persist_projection</code>。
-     - <strong>单帧分支</strong>：发布 <code>inspection.started</code> （之前
-       推理）→ 解析条形码身份（如果启用）→
+       (acquisition-time monotonic clock); new window → publish
+       <code>inspection.started</code>; closed window → <code>inspect_window</code> →
+       <code>_persist_projection</code>.
+     - <strong>Single-frame branch</strong>: publish <code>inspection.started</code> (before
+       inference) → resolve barcode identity if enabled →
        <code>pipeline.inspect_frame(frame, writer, inspection_id=..., identity=...)</code>
-       → <code>_persist_projection</code>。
-7. 关机 → <code>window_manager.force_close()</code> → 中断窗口关闭为
-   <code>NG</code> 与 <code>INSPECTION_INTERRUPTED</code> （部分证据从未重建）。</p>
+       → <code>_persist_projection</code>.
+7. Shutdown → <code>window_manager.force_close()</code> → interrupted window closed as
+   <code>NG</code> with <code>INSPECTION_INTERRUPTED</code> (partial evidence never reconstructed).</p>
 <p><code>_persist_projection</code> (<code>api/state.py:464</code>):
 <code>repository.persist_inspection_and_enqueue_uploads(record, retention=...)</code>
 — 不可变投影的原子更新插入 + 一项 <code>INSPECTION</code> 任务 + 一项

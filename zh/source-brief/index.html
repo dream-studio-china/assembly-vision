@@ -3134,188 +3134,192 @@
 <h2 id="31-edge-client-responsibilities">3.1 边缘客户端职责<a class="headerlink" href="#31-edge-client-responsibilities" title="Permanent link">&para;</a></h2>
 <p>边缘客户端在客户工厂内部运行，负责：</p>
 <ul>
-<li>工业相机集成</li>
-<li>视频流或帧捕获</li>
-<li>触发处理</li>
-<li>产品窗口管理</li>
-<li>条码识别</li>
-<li>产品类型解析</li>
-<li>YOLO产品检测</li>
-<li>投资回报率生成</li>
-<li>YOLO组件检测</li>
-<li>可选的 OpenCV 检查</li>
-<li>多帧时间聚合</li>
-<li>规则评估</li>
-<li>最终 OK 或 NG 决定</li>
-<li>本地检查数据库</li>
-<li>本地图像存储</li>
-<li>本地视频或视频剪辑存储</li>
-<li>上传队列</li>
-<li>网络中断后重试</li>
-<li>本地设备健康监控</li>
-<li>本地FastAPI服务</li>
-<li>本地Vue仪表板</li>
+<li>Industrial camera integration</li>
+<li>Video stream or frame capture</li>
+<li>Trigger handling</li>
+<li>Product-window management</li>
+<li>Barcode recognition</li>
+<li>Product-type resolution</li>
+<li>YOLO product detection</li>
+<li>ROI generation</li>
+<li>YOLO component detection</li>
+<li>Optional OpenCV inspection</li>
+<li>Multi-frame temporal aggregation</li>
+<li>Rule evaluation</li>
+<li>Final OK or NG decision</li>
+<li>Local inspection database</li>
+<li>Local image storage</li>
+<li>Local video or video-clip storage</li>
+<li>Upload queue</li>
+<li>Retry after network interruption</li>
+<li>Local device health monitoring</li>
+<li>Local FastAPI service</li>
+<li>Local Vue dashboard</li>
 </ul>
-<p>如果中央服务器或网络不可用，检查管道必须继续运行。</p>
+<p>The inspection pipeline must continue operating if the central server or network is unavailable.</p>
 <h2 id="32-central-server-responsibilities">3.2 中心服务器职责<a class="headerlink" href="#32-central-server-responsibilities" title="Permanent link">&para;</a></h2>
-<p>中央 Web 服务器负责：</p>
+<p>The central Web server is responsible for:</p>
 <ul>
-<li>接收上传的检查结果</li>
-<li>接收选定的关键图像帧</li>
-<li>接收可选的 NG 视频剪辑</li>
-<li>集中检查历史记录</li>
-<li>跨设备、跨线路报告</li>
-<li>设备管理</li>
-<li>产品配置管理</li>
-<li>规则配置管理</li>
-<li>模型版本管理</li>
-<li>用户和权限管理</li>
-<li>手动NG审核</li>
-<li>数据仪表板</li>
-<li>统计分析</li>
-<li>审核日志</li>
-<li>远程配置分发</li>
-<li>未来模型包分发</li>
+<li>Receiving uploaded inspection results</li>
+<li>Receiving selected key image frames</li>
+<li>Receiving optional NG video clips</li>
+<li>Centralized inspection history</li>
+<li>Cross-device and cross-line reporting</li>
+<li>Device management</li>
+<li>Product configuration management</li>
+<li>Rule configuration management</li>
+<li>Model version management</li>
+<li>User and permission management</li>
+<li>Manual NG review</li>
+<li>Data dashboards</li>
+<li>Statistical analysis</li>
+<li>Audit logs</li>
+<li>Remote configuration distribution</li>
+<li>Future model package distribution</li>
 </ul>
 <h2 id="33-upload-strategy">3.3 上传策略<a class="headerlink" href="#33-upload-strategy" title="Permanent link">&para;</a></h2>
-<p>不要将每个视频帧上传到中央服务器。</p>
-<p>边缘客户端应在需要时保留完整或滚动的本地视频。</p>
-<p>推荐的上传策略：</p>
+<p>Do not upload every video frame to the central server.</p>
+<p>The edge client should retain the complete or rolling local video when required.</p>
+<p>Recommended upload policy:</p>
 <h3 id="for-ok-inspections">用于 OK 检查<a class="headerlink" href="#for-ok-inspections" title="Permanent link">&para;</a></h3>
-<p>上传：</p>
+<p>Upload:</p>
 <ul>
-<li>检查元数据</li>
-<li>条形码</li>
-<li>产品类型</li>
-<li>最终决定</li>
-<li>检测到的组件</li>
-<li>信心总结</li>
-<li>型号版本</li>
-<li>规则版本</li>
-<li>设备ID</li>
-<li>检查时间戳</li>
-<li>1个有代表性的关键帧</li>
+<li>Inspection metadata</li>
+<li>Barcode</li>
+<li>Product type</li>
+<li>Final decision</li>
+<li>Detected components</li>
+<li>Confidence summary</li>
+<li>Model version</li>
+<li>Rule version</li>
+<li>Device ID</li>
+<li>Inspection timestamp</li>
+<li>One representative key frame</li>
 </ul>
 <h3 id="for-ng-inspections">用于 NG 检查<a class="headerlink" href="#for-ng-inspections" title="Permanent link">&para;</a></h3>
-<p>上传：</p>
+<p>Upload:</p>
 <ul>
-<li>完整的检查元数据</li>
-<li>缺少组件</li>
-<li>低置信度组件</li>
-<li>多个关键帧</li>
-<li>带注释的关键帧</li>
-<li>产品投资回报率图像</li>
-<li>可选的围绕检查活动的短视频片段</li>
-<li>相关错误日志</li>
+<li>Full inspection metadata</li>
+<li>Missing components</li>
+<li>Low-confidence components</li>
+<li>Multiple key frames</li>
+<li>Annotated key frame</li>
+<li>Product ROI image</li>
+<li>Optional short video clip around the inspection event</li>
+<li>Relevant error logs</li>
 </ul>
 <h3 id="for-system-exceptions">对于系统异常<a class="headerlink" href="#for-system-exceptions" title="Permanent link">&para;</a></h3>
-<p>上传：</p>
+<p>Upload:</p>
 <ul>
-<li>异常类型</li>
-<li>设备状态</li>
-<li>相机状态</li>
-<li>相关图片</li>
-<li>相关日志摘录</li>
-<li>时间戳</li>
+<li>Exception type</li>
+<li>Device state</li>
+<li>Camera state</li>
+<li>Relevant image</li>
+<li>Relevant log excerpt</li>
+<li>Timestamp</li>
 </ul>
-<p>上传子系统必须支持：</p>
+<p>The upload subsystem must support:</p>
 <ul>
-<li>离线缓冲</li>
-<li>持久上传队列</li>
-<li>退避重试</li>
-<li>幂等性</li>
-<li>防止重复</li>
-<li>上传状态跟踪</li>
-<li>校验和验证</li>
-<li>本地保留政策</li>
+<li>Offline buffering</li>
+<li>Persistent upload queue</li>
+<li>Retry with backoff</li>
+<li>Idempotency</li>
+<li>Duplicate prevention</li>
+<li>Upload status tracking</li>
+<li>Checksum verification</li>
+<li>Local retention policies</li>
 </ul>
 <hr />
 <h1 id="4-technology-decisions">4. 技术决策<a class="headerlink" href="#4-technology-decisions" title="Permanent link">&para;</a></h1>
 <h2 id="41-edge-backend">4.1 边缘后端<a class="headerlink" href="#41-edge-backend" title="Permanent link">&para;</a></h2>
-<p>用途：</p>
-<p>-Python 3.12
-- 快速API
-- 独角兽
-- Ultralytics YOLO
-- OpenCV
-- 派丹提克
-- SQLAlchemy
-- 蒸馏器
-- SQLite最初用于本地存储
-- PostgreSQL 可选用于较大的边缘安装
-- pytest
--拉夫
-- 我的Py
-- structlog 或标准结构化日志记录</p>
-<p>第一个 MVP 可能在本地使用 SQLite。</p>
+<p>Use:</p>
+<ul>
+<li>Python 3.12</li>
+<li>FastAPI</li>
+<li>Uvicorn</li>
+<li>Ultralytics YOLO</li>
+<li>OpenCV</li>
+<li>Pydantic</li>
+<li>SQLAlchemy</li>
+<li>Alembic</li>
+<li>SQLite initially for local storage</li>
+<li>PostgreSQL optionally for larger edge installations</li>
+<li>Pytest</li>
+<li>Ruff</li>
+<li>MyPy</li>
+<li>structlog or standard structured logging</li>
+</ul>
+<p>The first MVP may use SQLite locally.</p>
 <h2 id="42-central-backend">4.2 中央后端<a class="headerlink" href="#42-central-backend" title="Permanent link">&para;</a></h2>
-<p>用途：</p>
-<p>-Python 3.12
-- 快速API
-- Uvicorn 或 Gunicorn
-- 派丹提克
-- SQLAlchemy
-- 蒸馏器
-- PostgreSQL
-- Redis 合理的地方
-- Celery、Dramatiq、RQ 或其他合理的后台作业系统
-- S3兼容的对象存储或文件系统抽象
-- pytest
--拉夫
-- 我的Py</p>
-<p>不要仅仅为了建筑外观而引入后台工作者。解释哪些作业需要异步执行。</p>
+<p>Use:</p>
+<ul>
+<li>Python 3.12</li>
+<li>FastAPI</li>
+<li>Uvicorn or Gunicorn</li>
+<li>Pydantic</li>
+<li>SQLAlchemy</li>
+<li>Alembic</li>
+<li>PostgreSQL</li>
+<li>Redis where justified</li>
+<li>Celery, Dramatiq, RQ, or another background-job system where justified</li>
+<li>S3-compatible object storage or filesystem abstraction</li>
+<li>Pytest</li>
+<li>Ruff</li>
+<li>MyPy</li>
+</ul>
+<p>Do not introduce background workers merely for architectural appearance. Explain which jobs require asynchronous execution.</p>
 <h2 id="43-web-frontend">4.3 Web 前端<a class="headerlink" href="#43-web-frontend" title="Permanent link">&para;</a></h2>
-<p>本地边缘仪表板和中央管理仪表板都使用：</p>
+<p>Both the local edge dashboard and the central administration dashboard use:</p>
 <ul>
-<li>视图3</li>
-<li>打字稿</li>
-<li>维特
--Vue路由器</li>
-<li>皮尼亚</li>
-<li>Axios 或生成的 OpenAPI 客户端</li>
-<li>Element Plus 或 Naive UI</li>
-<li>电子图表
--Vue使用</li>
-<li>维泰斯特
--ESLint</li>
-<li>更漂亮</li>
+<li>Vue 3</li>
+<li>TypeScript</li>
+<li>Vite</li>
+<li>Vue Router</li>
+<li>Pinia</li>
+<li>Axios or a generated OpenAPI client</li>
+<li>Element Plus or Naive UI</li>
+<li>ECharts</li>
+<li>VueUse</li>
+<li>Vitest</li>
+<li>ESLint</li>
+<li>Prettier</li>
 </ul>
-<p>使用 Vue 和 TypeScript 因为系统需要：</p>
+<p>Use Vue and TypeScript because the system requires:</p>
 <ul>
-<li>复杂的管理页面</li>
-<li>可重复使用的桌子</li>
-<li>数据仪表板</li>
-<li>实时状态</li>
-<li>图像检查视图</li>
-<li>检测框覆盖</li>
-<li>规则配置</li>
-<li>设备状态</li>
-<li>上传队列可视化</li>
-<li>人工审核</li>
-<li>类型化 API 集成</li>
+<li>Complex administration pages</li>
+<li>Reusable tables</li>
+<li>Data dashboards</li>
+<li>Real-time status</li>
+<li>Image inspection views</li>
+<li>Detection-box overlays</li>
+<li>Rule configuration</li>
+<li>Device status</li>
+<li>Upload-queue visualization</li>
+<li>Manual review</li>
+<li>Typed API integration</li>
 </ul>
-<p>本地边缘仪表板必须是本地服务的 Web 应用程序。</p>
-<p>可以通过以下方式打开：</p>
+<p>The local edge dashboard must be a Web application served locally.</p>
+<p>It may be opened through:</p>
 <ul>
-<li>标准浏览器</li>
-<li>浏览器信息亭模式</li>
-<li>未来版本中的轻量级桌面包装器，例如 Tauri</li>
+<li>A standard browser</li>
+<li>Browser kiosk mode</li>
+<li>A lightweight desktop wrapper such as Tauri in a future version</li>
 </ul>
-<p>不建议使用 Tkinter、PyQt 或 PySide 构建主仪表板，除非将它们作为被拒绝的替代方案进行讨论。</p>
+<p>Do not recommend building the main dashboard with Tkinter, PyQt, or PySide unless discussing them as rejected alternatives.</p>
 <h2 id="44-deployment">4.4 部署<a class="headerlink" href="#44-deployment" title="Permanent link">&para;</a></h2>
-<p>用途：</p>
+<p>Use:</p>
 <ul>
-<li>码头工人</li>
-<li>Docker 撰写</li>
-<li>Nginx（如果适用）</li>
-<li>持久卷</li>
-<li>多阶段构建</li>
-<li>非根容器</li>
-<li>基于环境的配置</li>
-<li>健康检查</li>
-<li>重启政策</li>
+<li>Docker</li>
+<li>Docker Compose</li>
+<li>Nginx where appropriate</li>
+<li>Persistent volumes</li>
+<li>Multi-stage builds</li>
+<li>Non-root containers</li>
+<li>Environment-based configuration</li>
+<li>Health checks</li>
+<li>Restart policies</li>
 </ul>
-<p>边缘部署不能依赖于Kubernetes。</p>
+<p>The edge deployment must not depend on Kubernetes.</p>
 <p>中央服务器可能会支持 Kubernetes 作为未来的选项，但最初的设计应该保持 Docker Compose 友好。</p>
 <hr />
 <h1 id="5-detection-architecture">5. 检测架构<a class="headerlink" href="#5-detection-architecture" title="Permanent link">&para;</a></h1>
@@ -3576,7 +3580,7 @@
 <li><code>tests/</code>包含跨应用程序测试</li>
 <li>运行时生产数据不得存储在 Git 存储库中</li>
 </ul>
-<p>生成并解释一个清晰的目录结构，类似于：</p>
+<p>生成并解释类似于以下的清晰目录结构：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>assembly-vision/
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>├── apps/
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>│   ├── edge-api/

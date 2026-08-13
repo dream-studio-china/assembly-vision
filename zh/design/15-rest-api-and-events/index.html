@@ -3630,7 +3630,7 @@
 <h3 id="1522-idempotency-and-concurrency">15.2.2 幂等性和并发性<a class="headerlink" href="#1522-idempotency-and-concurrency" title="Permanent link">&para;</a></h3>
 <p><code>PUT</code> 和 <code>DELETE</code> 自然是幂等的。可重试的中央 <code>POST</code> 摄取请求需要 <code>Idempotency-Key</code>。服务器存储<code>(device_id, key, request_hash, response)</code>；相同的密钥/相同的散列重播结果，而相同的密钥/不同的散列返回<code>409 IDEMPOTENCY_CONFLICT</code>。管理更新将 <code>If-Match</code> 与 ETag/revision 一起使用，并在过时写入时返回 <code>412 REVISION_MISMATCH</code>。</p>
 <h3 id="1523-pagination-and-filtering">15.2.3 分页和过滤<a class="headerlink" href="#1523-pagination-and-filtering" title="Permanent link">&para;</a></h3>
-<p>历史记录端点使用带有 <code>limit</code> （默认 50，最大 200）和不透明 <code>cursor</code> 的键集分页。响应是<code>{items, next_cursor}</code>。过滤器是显式查询参数；游标绑定标准化过滤器集，如果与不同的过滤器重用，则游标会被拒绝。小型配置列表可以使用相同的信封而不带光标。</p>
+<p>历史记录端点使用带有 <code>limit</code> （默认 50，最大 200）和不透明 <code>cursor</code> 的键集分页。响应为<code>{items, next_cursor}</code>。过滤器是显式查询参数；游标绑定标准化过滤器集，如果与不同的过滤器重用，则游标会被拒绝。小型配置列表可以使用相同的信封而不带光标。</p>
 <h2 id="153-edge-api-groups">15.3 边缘 API 组<a class="headerlink" href="#153-edge-api-groups" title="Permanent link">&para;</a></h2>
 <p>在表中，<code>R</code> 表示经过身份验证的边缘查看器、<code>O</code> 操作员和 <code>A</code> 边缘管理员。分页下的<code>-</code>表示不适用。</p>
 <h3 id="1531-runtime-camera-and-health">15.3.1 运行时、相机和健康状况<a class="headerlink" href="#1531-runtime-camera-and-health" title="Permanent link">&para;</a></h3>

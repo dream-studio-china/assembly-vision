@@ -3244,7 +3244,7 @@
   保留作为仅诊断框架原因。</li>
 <li><strong>F2</strong> - <code>ProductWindowManager.expire()</code> 将空闲窗口最终确定为 <code>GAP</code>；
   检查循环在每个空捕获轮询时调用它。最终产品
-  正常判定不再有帧，正常到期后关闭
+  没有进一步的帧被正常决定，并在正常到期后关闭
   不添加第二条记录。</li>
 <li><strong>F3</strong> - 运行时为窗口提供 <code>CapturedFrame.monotonic_ts_ns</code>
   （获取时间）而不是推理后<code>time.monotonic()</code>；陈旧的
@@ -3380,7 +3380,7 @@
   没有收到触发帧的正常决策。</li>
 <li>正常到期后关闭不会产生第二次中断
   记录。</li>
-<li>到期前关闭会创建一条 <code>NG</code> 记录，其中包含
+<li>在到期之前关闭会创建一条 <code>NG</code> 记录，其中包含
   <code>INSPECTION_INTERRUPTED</code>并且没有重建部分证据。</li>
 </ul>
 <h3 id="f3-window-membership-is-determined-by-post-inference-time-not-capture-time">F3。窗口成员资格由推理后时间决定，而不是捕获时间<a class="headerlink" href="#f3-window-membership-is-determined-by-post-inference-time-not-capture-time" title="Permanent link">&para;</a></h3>

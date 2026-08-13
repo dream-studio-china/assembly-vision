@@ -3269,13 +3269,13 @@
 <li>秘密（查看者令牌、上传令牌、TLS 私钥、中央凭证）
    仅在运行时注入；它们永远不会出现在图像层、前端中
    捆绑包、配置包、日志或 API 响应。</li>
-<li>生产传输是 TLS：一种非环回绑定，无需 API 令牌和
+<li>生产传输是 TLS：无需 API 令牌和 API 的非环回绑定
    非 HTTPS 中央上传端点将被拒绝，除非明确
    设置开发标志（未更改，AUDIT-001 4.5）。</li>
 <li>备份是一致的时间点快照：支持 SQLite 存储
    配有在线备份 API，并且该捆绑包记录了每个备份的校验和
    配置/规则/清单工件以及待处理的证据路径。</li>
-<li>恢复不会破坏或重新上传证据：输出根上的媒体是
+<li>恢复不会破坏或重新上传证据：输出根目录上的媒体是
    保留，恢复的存储与根协调，并且待处理
    上传任务在恢复后仍然存在。</li>
 <li>在代表性恢复完成之前，备份才被视为可操作。
@@ -3327,7 +3327,7 @@
 <h3 id="e5b-secrets-and-tls">E5b：秘密和 TLS<a class="headerlink" href="#e5b-secrets-and-tls" title="Permanent link">&para;</a></h3>
 <p><strong>实施</strong></p>
 <ul>
-<li>支持运行时机密的 Docker 机密文件：当 <code>AV_EDGE_API_TOKEN</code> 为
+<li>支持 Docker 秘密文件作为运行时秘密：当 <code>AV_EDGE_API_TOKEN</code> 为
   未设置但<code>/run/secrets/edge_api_token</code>存在，使用文件内容；
   同样对于上传令牌。</li>
 <li>将可选的本地 TLS 添加到 <code>serve</code>：<code>--tls-cert</code> / <code>--tls-key</code>（或
