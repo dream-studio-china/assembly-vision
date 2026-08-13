@@ -813,6 +813,7 @@ _METADATA_CONFLICTS: dict[str, type[Exception]] = {
     "uq_rule_versions_rule_key": IdempotencyConflictError,
     "uq_model_versions_package_key": IdempotencyConflictError,
     "uq_product_version_barcodes_published": AmbiguousBarcodeError,
+    "uq_desired_configurations_device": RevisionMismatchError,
 }
 
 
@@ -4239,9 +4240,17 @@ class CentralRepository:
                         ).scalar_one()
                     ),
                 }
-                connection.execute(
+                # Conditional update is the PostgreSQL concurrency backstop:
+                # the revision predicate makes a stale If-Match a no-op rather
+                # than a last-write-wins overwrite.
+                result = connection.execute(
                     desired_configurations.update()
-                    .where(desired_configurations.c.device_row_id == device_row_id)
+                    .where(
+                        and_(
+                            desired_configurations.c.device_row_id == device_row_id,
+                            desired_configurations.c.revision == current_revision,
+                        )
+                    )
                     .values(
                         revision=current_revision + 1,
                         product_version_id=product_version_pk,
