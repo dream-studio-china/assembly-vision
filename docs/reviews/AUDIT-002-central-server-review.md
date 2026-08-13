@@ -139,6 +139,12 @@ store administration.
 
 ### H02. The credential-compromise runbook cannot perform its promised rotation
 
+**Status:** DEFERRED (2026-08-13) with mitigation. Automated credential
+rotation is production scope (shared with H12); the runbook now states that
+M1 has no in-place rotation and documents an approved manual database-level
+revocation procedure, so operators no longer believe a bootstrap re-run revokes
+a stolen token.
+
 **Evidence**
 
 - `docs/runbooks/central-credential-compromise.md:13-21` instructs operators to
@@ -275,6 +281,12 @@ metadata.
 
 ### H06. Reconciliation can delete an upload that is still committing
 
+**Status:** DEFERRED (2026-08-13) with mitigation. A full staged/finalize
+protocol is production scope; `reconcile-media` now accepts a `--min-age-hours`
+threshold (default 24) and only classifies unbound objects older than that as
+removable orphans, so an in-flight upload whose bytes precede its binding is
+never deleted. The CLI help documents the no-active-uploads requirement.
+
 **Evidence**
 
 - Ingestion writes an object before its database binding
@@ -300,6 +312,12 @@ reconciliation runs with orphan removal. The active upload must survive and
 finish available, or fail without an available binding.
 
 ### H07. Inspection ingestion accepts records that violate central safety and governance claims
+
+**Status:** DEFERRED (2026-08-13). Resolving governed version references
+requires an edge-to-central contract change that conflicts with the M1 promise
+to keep the current envelope, so it is production scope. Pilot deployments must
+treat ingested records as compatibility-preserving rather than as centrally
+governed; this residual risk is accepted for the single-device pilot.
 
 **Evidence**
 
@@ -459,6 +477,12 @@ memory/latency envelope.
 
 ### H11. Backup instructions do not create a consistent PostgreSQL/MinIO recovery point
 
+**Status:** DEFERRED (2026-08-13) with mitigation. Automated snapshot/PITR and
+a real PostgreSQL/MinIO consistency test remain production scope; the runbook
+now quiesces central writes before both backups so a restored pair shares one
+recovery point, and uses Compose service names instead of generated container
+names.
+
 **Evidence**
 
 - The runbook dumps PostgreSQL while API writes continue, then mirrors MinIO
@@ -489,6 +513,10 @@ restores to fresh services, verifies every available binding's exact bytes,
 finds no unexplained orphan, and replays receipts duplicate-free.
 
 ### H12. Duplicate principal secrets can authenticate as the wrong principal
+
+**Status:** DEFERRED (2026-08-13). A unique credential identity model is
+production scope (shared with H02); the single-device, single-administrator
+pilot keeps the ambiguity practically unreachable, and the risk is accepted.
 
 **Evidence**
 
