@@ -211,6 +211,8 @@ bundle identity.
 
 ### H04. PostgreSQL desired-configuration concurrency is last-write-wins
 
+**Status:** RESOLVED (2026-08-13, second remediation batch).
+
 **Evidence**
 
 - `repository.py:3997-4016` reads the current revision before mutation.
@@ -236,6 +238,8 @@ exactly one succeeds, one returns `412`, revision increments once, and one
 corresponding audit event is committed.
 
 ### H05. Central issues an `AVAILABLE` media receipt without verifying stored bytes
+
+**Status:** RESOLVED (2026-08-13, second remediation batch).
 
 **Evidence**
 
@@ -343,6 +347,8 @@ bounded integrity audit where appropriate.
 
 ### H08. Review idempotency and validation do not preserve request identity
 
+**Status:** RESOLVED (2026-08-13, second remediation batch).
+
 **Evidence**
 
 - Review records persist an idempotency key but no canonical request hash
@@ -418,6 +424,8 @@ authentication-specific limits, shared-NAT behavior, and effective Compose
 configuration.
 
 ### H10. Proxy/body handling breaks valid media and permits memory amplification
+
+**Status:** RESOLVED (2026-08-13, second remediation batch).
 
 **Evidence**
 
