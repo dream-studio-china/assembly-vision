@@ -11,6 +11,7 @@ from central_service.api.readiness import ReadinessCheck, ReadinessResult
 from central_service.api.settings import CentralSettings
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from ingest_fixtures import NoopObjectStorage
 
 _PILOT_TOKEN = "pilot-admin-token-0123456789abcdef"  # noqa: S105 - test fixture credential
 
@@ -25,8 +26,8 @@ def _settings() -> CentralSettings:
 
 def _app(readiness: ReadinessResult | None = None) -> FastAPI:
     if readiness is None:
-        return create_app(_settings())
-    return create_app(_settings(), readiness=lambda: readiness)
+        return create_app(_settings(), storage=NoopObjectStorage())
+    return create_app(_settings(), readiness=lambda: readiness, storage=NoopObjectStorage())
 
 
 @pytest.fixture
