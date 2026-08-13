@@ -3308,7 +3308,7 @@ schema.py</code>中定义的表：</p>
 <tr>
 <td><code>rule_identities</code></td>
 <td>持久规则身份注册</td>
-<td><code>(rule_id, rule_version)</code> unique、<code>content_sha256</code> — 重用具有不同内容的身份无法加载 (<code>CONFIG_INVALID</code>)</td>
+<td><code>(rule_id, rule_version)</code> 唯一，<code>content_sha256</code> — 重用具有不同内容的身份无法加载 (<code>CONFIG_INVALID</code>)</td>
 </tr>
 <tr>
 <td><code>review_records</code></td>
@@ -3406,12 +3406,12 @@ next_attempt_at)</code>）。</p>
 <li>验证收据：仅当有界打字收据时，2xx 才是成功
   回显有效负载的幂等键、对象、种类、大小和校验和
   已发送；媒体收据还需要一个中央对象 ID。</li>
-<li>接收器：<code>HttpUploadSink</code>（HTTPS POST 到<code>{base_url}/inspection-uploads</code>；
+<li>接收器：<code>HttpUploadSink</code>（HTTPS POST 到 <code>{base_url}/inspection-uploads</code>；
   dev HTTP 仅环回）和 <code>DirectoryUploadSink</code> （本地/dev，幂等
   键）。没有配置目的地 → 工作人员保持禁用状态并执行任务
   在 <code>/api/v1/uploads</code> 中保持可见。</li>
 <li>同一模块中的 E3 附加功能：令牌桶带宽限制器、电路
-  断路器（连续可重试故障→打开→半开探头），以及
+  断路器（连续可重试故障→打开→半开探针），以及
   <code>POST /api/v1/uploads/{id}/retry</code> 后面的手动重试路径。</li>
 </ul>
 <h2 id="retention-worker">保留人员（<code>retention/worker.py</code>、<code>policy.py</code>、<code>storage.py</code>）<a class="headerlink" href="#retention-worker" title="Permanent link">&para;</a></h2>

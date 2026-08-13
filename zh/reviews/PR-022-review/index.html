@@ -3231,7 +3231,7 @@
 <p><code>_TokenBucket.acquire()</code> 将令牌限制为配置速率的一秒，但是
 要求存储桶在返回之前包含完整的 <code>amount</code>。对于任何
 有效负载大于 <code>rate_bytes_per_second * 1.0</code>，该谓词永远不能
-真实：</p>
+正确：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>tokens &lt;= rate * 1 second &lt; amount
 </code></pre></div>
 <p>调度程序在调用 <code>acquire()</code> 之前已经租用了该任务。那么它
@@ -3270,7 +3270,7 @@
   节流传输；续订失败会阻止旧所有者发送或
   更新任务。</li>
 <li>停止/关闭测试会立即中断节流等待并离开
-  租用的任务可通过现有的租用回收路径恢复。</li>
+  租用的任务可通过现有的租用-回收路径恢复。</li>
 <li>并行本地检查持久性测试证明不会阻止任何一个节流
   SQLite/发件箱提交也不会更改其顺序。</li>
 <li>现有的无上限行为仍然立即存在，并且正常有效负载低于
@@ -3284,10 +3284,10 @@
 <li><code>docs/tasks/E3-upload-resilience.md:80-86</code></li>
 </ul>
 <p><strong>问题</strong></p>
-<p>调度程序保留<code>len(payload)</code>，但<code>HttpUploadSink</code>发送JSON
+<p>调度程序保留 <code>len(payload)</code>，但 <code>HttpUploadSink</code> 发送 JSON
 包含 Base64 数据的信封。因此媒体请求的正文更大
 比原始媒体字节加上 JSON 元数据大约三分之一。的
-然后，在原始字节等待之后，将完整的信封在一次写入中传递给 <code>httpx</code>。
+在原始字节等待之后，完整的信封会在一次写入中传递给 <code>httpx</code>。
 因此，实际网络上配置的带宽最大值超出了
 有效负载和 <code>upload_bytes_sent</code> 指标报告更小的、不同的单位。</p>
 <p>这与 E3a 将限制器应用于网络有效负载的要求相矛盾
@@ -3379,7 +3379,7 @@
 <thead>
 <tr>
 <th>寻找</th>
-<th>严重性</th>
+<th>严重程度</th>
 <th>分辨率</th>
 <th>测试</th>
 </tr>

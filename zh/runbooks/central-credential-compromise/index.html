@@ -2762,6 +2762,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="立即采取安全行动">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-revocation-m1-no-in-place-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        手动撤销（M1，无就地轮换）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3160,6 +3177,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="立即采取安全行动">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-revocation-m1-no-in-place-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        手动撤销（M1，无就地轮换）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3236,18 +3270,39 @@
    凭据在 PostgreSQL 中使用随机盐进行哈希处理，并且 API 永远不会
    在运行时读取引导程序明文。</li>
 <li>立即暂停受影响的凭证：</li>
-<li>设备上传令牌：禁用设备行
-     (<code>devices.status != 'ACTIVE'</code>) 因此<code>_require_device</code> 无法关闭；
-     重新注册会发出新的令牌。</li>
-<li>管理员不记名令牌：试点令牌是长期存在的；旋转
-     <code>AV_CENTRAL_ADMIN_TOKEN</code> bootstrap值，重新运行bootstrap重新哈希，
-     并撤销开放的管理会话。</li>
+<li>设备上传令牌：将设备行设置为非活动状态
+     (<code>devices.status != 'ACTIVE'</code>) 因此 <code>_require_device</code> 无法关闭。 M1有
+     没有设备禁用/重新注册 API 或 CLI，因此这是直接的，
+     操作员批准的数据库更改，而不是端点调用。</li>
+<li>管理员不记名令牌：试点令牌是长期存在的。 <strong>M1没有
+     就地凭证轮换</strong>，并重新运行 <code>central-service bootstrap</code>
+     <strong>不</strong>重新设置现有管理员的密钥：引导程序重用现有的
+     行并且永远不会覆盖它们的哈希值。要撤销令牌，您必须停止
+     中央访问并遵循下面的“手动撤销”程序。</li>
 <li>浏览器会话cookie：通过撤销会话
      <code>POST /api/v1/auth/session/revoke</code>（服务器端撤销清除
-     HttpOnly cookie 并写入 <code>ADMIN_SESSION_REVOKED</code> 审核事件）。</li>
+     HttpOnly cookie 并写入 <code>ADMIN_SESSION_REVOKED</code> 审核事件）。这个
+     是 M1 中唯一具有受支持的撤销路径的凭证类。</li>
 <li>确认 API 未公开凭据：<code>/api/v1/health/*</code> 和
    问题响应从不包含令牌、对象键或内部路径。</li>
 </ol>
+<h3 id="manual-revocation-m1-no-in-place-rotation">手动撤销（M1，无就地轮换）<a class="headerlink" href="#manual-revocation-m1-no-in-place-rotation" title="Permanent link">&para;</a></h3>
+<p>直到自动凭证轮换发布，撤销受损的飞行员
+管理员或设备令牌是记录的数据库级事件操作：</p>
+<ol>
+<li>停止 API 和引导服务，这样就不会再采取进一步的操作来使用被盗的内容
+   凭证。
+2.使用migration/owner数据库角色，直接旋转存储的hash
+   （替换设备行上的 <code>upload_token_hash</code>/<code>upload_token_salt</code> 或
+   <code>token_hash</code>/<code>token_salt</code> 在管理员行）并记录
+   <code>audit_logs</code> 行命名参与者、操作、目标、请求/事件 ID 和
+   原因。
+3、重启服务；旧凭证现在无法关闭。</li>
+<li>在带外配置新凭证并将其保留在部署中
+   秘密存储，绝不在日志或存储库中。</li>
+</ol>
+<p>该程序本身必须经过预先批准，并且超出了
+自动引导路径。</p>
 <h2 id="diagnosis">诊断<a class="headerlink" href="#diagnosis" title="Permanent link">&para;</a></h2>
 <ol>
 <li>使用 <code>actor_type</code> 查询受影响窗口的 <code>audit_logs</code>，
@@ -3262,27 +3317,32 @@
 <li>确认受影响的身份下接受了哪些设备/上传内容，以及
    <code>upload_receipts</code>中是否存在重放/冲突异常。
 3.对于MinIO密钥暴露：旋转<code>AV_CENTRAL_MINIO_ACCESS_KEY</code> /
-   <code>AV_CENTRAL_MINIO_SECRET_KEY</code>并更新存储桶策略；对象键是
+   <code>AV_CENTRAL_MINIO_SECRET_KEY</code> 并更新存储桶策略；对象键是
    不透明且仅限租户范围，因此密钥泄漏不会暴露数据库。</li>
 </ol>
 <h2 id="recovery">恢复<a class="headerlink" href="#recovery" title="Permanent link">&para;</a></h2>
 <ol>
-<li>按顺序轮换凭证：MinIO 密钥、设备上传令牌（重新注册
-   每个受影响的设备都有一个新的秘密文件值），然后管理员
-   引导令牌和会话撤销。</li>
+<li>首先旋转 MinIO 键（更改 <code>AV_CENTRAL_MINIO_ACCESS_KEY</code> /
+   <code>AV_CENTRAL_MINIO_SECRET_KEY</code>，重启MinIO，更新bucket策略）。
+   对象密钥是不透明的并且是租户范围的，因此密钥泄漏不会暴露
+   数据库，但根凭证仍然控制着每个对象。
+2.通过<code>POST /api/v1/auth/session/revoke</code>撤销浏览器会话（支持
+   在M1）。</li>
+<li>设备和管理员令牌<strong>在 M1 中没有自动轮换</strong>；使用
+   上述针对每个受影响主体的“手动撤销”程序。</li>
 <li>使用新设备令牌重新验证边缘调度程序的身份验证
-   接受检查的重新注册后可以无重复重播
-   （设备标识未更改；仅轮换了凭证）。</li>
+   接受的检查重播无重复（设备身份是
+   不变；仅轮换凭证）。</li>
 <li>审核可疑窗口期间执行的每项操作并保存
    证据；将请求 ID 添加到事件记录中。</li>
 </ol>
 <h2 id="verification">确认<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>旧设备凭证返回<code>401 UNAUTHENTICATED</code>，新设备凭证返回
-  进行身份验证。</li>
+  进行身份验证（在手动轮换过程之后）。</li>
 <li>旧的管理承载失败<code>GET /api/v1/auth/me</code>；新的会话有效并且
   <code>ADMIN_SESSION_REVOKED</code> 审核行存在。</li>
-<li>重新引导后，就绪情况仍报告 <code>credentials: ok</code>。</li>
+<li>准备情况仍报告<code>credentials: ok</code>。</li>
 </ul>
 <h2 id="escalation">升级<a class="headerlink" href="#escalation" title="Permanent link">&para;</a></h2>
 <ul>

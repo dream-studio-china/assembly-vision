@@ -3209,12 +3209,12 @@
   <a href="#5-medium-severity-findings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 中等严重程度的发现
+        5. 中等严重程度的调查结果
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. 中等严重程度的发现">
+    <nav class="md-nav" aria-label="5. 中等严重程度的调查结果">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3436,7 +3436,7 @@
   <a href="#d05-central-backlog-signals-in-the-runbook-are-not-central-observables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        D05。操作手册中的中央待办事项信号不是中央可观察数据
+        D05。操作手册中的中央待办事项信号不是中央可观察量
       
     </span>
   </a>
@@ -3863,6 +3863,11 @@
   值并证明受控飞行员配置文件没有已知的凭据。</li>
 </ul>
 <h3 id="h02-the-credential-compromise-runbook-cannot-perform-its-promised-rotation">H02。凭证泄露操作手册无法执行其承诺的轮换<a class="headerlink" href="#h02-the-credential-compromise-runbook-cannot-perform-its-promised-rotation" title="Permanent link">&para;</a></h3>
+<p><strong>状态：</strong> 已推迟（2026-08-13）并采取缓解措施。自动凭证
+旋转是生产范围（与H12共享）；运行手册现在指出
+M1 没有就地轮换，并记录经批准的手动数据库级别
+撤销程序，因此运营商不再相信引导程序重新运行会撤销
+被盗的令牌。</p>
 <p><strong>证据</strong></p>
 <ul>
 <li><code>docs/runbooks/central-credential-compromise.md:13-21</code> 指示操作员
@@ -3918,7 +3923,7 @@ Runbook 声明重新运行引导程序不会轮换凭据，并且
   所需的配置。</li>
 <li>保持内部整数密钥对持久性的私密性。</li>
 </ul>
-<p><strong>验收</strong></p>
+<p><strong>接受</strong></p>
 <ul>
 <li>种子分歧产品/产品版本主键并证明分配
   验证预期产品。</li>
@@ -3926,11 +3931,12 @@ Runbook 声明重新运行引导程序不会轮换凭据，并且
   调用者提交的公共 UUID。</li>
 </ul>
 <h3 id="h04-postgresql-desired-configuration-concurrency-is-last-write-wins">H04。 PostgreSQL 所需配置并发是最后写入获胜<a class="headerlink" href="#h04-postgresql-desired-configuration-concurrency-is-last-write-wins" title="Permanent link">&para;</a></h3>
+<p><strong>状态：</strong> 已解决（2026 年 8 月 13 日，第二批修复）。</p>
 <p><strong>证据</strong></p>
 <ul>
 <li><code>repository.py:3997-4016</code> 读取突变前的当前修订版本。</li>
 <li><code>repository.py:4172-4185</code> 按设备行 ID 执行无条件更新。</li>
-<li><code>_metadata_write</code> 依赖于普通的 PostgreSQL 事务和唯一性
+<li><code>_metadata_write</code>依赖于普通的PostgreSQL事务和唯一性
   约束（<code>repository.py:2297-2319</code>）；无行锁或条件修订
   谓词保护此更新。</li>
 </ul>
@@ -3946,6 +3952,7 @@ UPDATE</code> 也是可以接受的。</p>
 恰好一个成功，一个返回 <code>412</code>，修订增量一次，一个
 相应的审计事件已提交。</p>
 <h3 id="h05-central-issues-an-media-receipt-without-verifying-stored-bytes">H05。 Central 发出 <code>AVAILABLE</code> 媒体收据而不验证存储的字节<a class="headerlink" href="#h05-central-issues-an-media-receipt-without-verifying-stored-bytes" title="Permanent link">&para;</a></h3>
+<p><strong>状态：</strong> 已解决（2026 年 8 月 13 日，第二批修复）。</p>
 <p><strong>证据</strong></p>
 <ul>
 <li><code>ingest/__init__.py:181-214</code> 调用 <code>put_object</code> 并立即保留
@@ -3975,6 +3982,11 @@ UPDATE</code> 也是可以接受的。</p>
 <li>调节独立地检测后来的腐败，而不仅仅是缺席。</li>
 </ul>
 <h3 id="h06-reconciliation-can-delete-an-upload-that-is-still-committing">H06。协调可以删除仍在提交的上传<a class="headerlink" href="#h06-reconciliation-can-delete-an-upload-that-is-still-committing" title="Permanent link">&para;</a></h3>
+<p><strong>状态：</strong> 已推迟（2026-08-13）并采取缓解措施。完整的阶段/最终确定
+协议是生产范围； <code>reconcile-media</code> 现在接受 <code>--min-age-hours</code>
+阈值（默认 24）并且仅将早于该阈值的未绑定对象分类为
+可移动的孤儿，因此其字节先于其绑定的正在进行的上传是
+从未删除。 CLI 帮助记录了无主动上传要求。</p>
 <p><strong>证据</strong></p>
 <ul>
 <li>摄取在数据库绑定之前写入对象
@@ -3995,6 +4007,11 @@ UPDATE</code> 也是可以接受的。</p>
 协调运行并删除孤儿。活动上传必须存活并且
 完成可用，或者在没有可用绑定的情况下失败。</p>
 <h3 id="h07-inspection-ingestion-accepts-records-that-violate-central-safety-and-governance-claims">H07。检查摄取接受违反中央安全和治理声明的记录<a class="headerlink" href="#h07-inspection-ingestion-accepts-records-that-violate-central-safety-and-governance-claims" title="Permanent link">&para;</a></h3>
+<p><strong>状态：</strong> 推迟（2026-08-13）。解决受管控版本引用
+需要从边缘到中心的合约变更，这与 M1 承诺相冲突
+保持当前的信封，所以它是生产范围。试点部署必须
+将摄取的记录视为兼容性保留而不是集中记录
+管辖；对于单设备试点来说，这种残余风险是可以接受的。</p>
 <p><strong>证据</strong></p>
 <ul>
 <li><code>ingest/envelope.py:138-189</code> 验证 Pydantic 形状、设备身份和
@@ -4022,7 +4039,7 @@ UPDATE</code> 也是可以接受的。</p>
 <li>受监管的试点：解决组织拥有的已发布版本，验证
   产品/规则/模型兼容性和校验和，并拒绝未知版本。</li>
 <li>兼容性摄取：接受不可变的未知边缘引用，但标记
-  检查<code>UNGOVERNED</code>并且绝不将收据描述为兼容性
+  检查<code>UNGOVERNED</code>，切勿将收据描述为兼容性
   验证。</li>
 </ul>
 <p>在这两种情况下，强制执行最终生命周期、时间戳排序、<code>UNCERTAIN -&gt; NG</code>、
@@ -4033,6 +4050,7 @@ UPDATE</code> 也是可以接受的。</p>
 稳定<code>409</code>或<code>422</code>，写不接受的检验/收据，并保留
 在适当的情况下进行有界完整性审计。</p>
 <h3 id="h08-review-idempotency-and-validation-do-not-preserve-request-identity">H08。检查幂等性和验证不保留请求身份<a class="headerlink" href="#h08-review-idempotency-and-validation-do-not-preserve-request-identity" title="Permanent link">&para;</a></h3>
+<p><strong>状态：</strong> 已解决（2026 年 8 月 13 日，第二批修复）。</p>
 <p><strong>证据</strong></p>
 <ul>
 <li>审核记录保留幂等性密钥，但没有规范的请求哈希
@@ -4060,7 +4078,7 @@ UPDATE</code> 也是可以接受的。</p>
 受监管的产品版本。</p>
 <p><strong>接受</strong></p>
 <ul>
-<li>相同钥匙/相同主体返回原始评论并进行正确检查
+<li>相同的钥匙/相同的身体返回原始评论并进行正确的检查
   身份证。</li>
 <li>相同的键/不同的主体返回 <code>409</code> 而没有另一行。</li>
 <li><code>INCONCLUSIVE</code> 无原因、重复标准化组件且未知
@@ -4098,6 +4116,7 @@ UPDATE</code> 也是可以接受的。</p>
 特定于身份验证的限制、共享 NAT 行为和有效的 Compose
 配置。</p>
 <h3 id="h10-proxybody-handling-breaks-valid-media-and-permits-memory-amplification">H10。代理/主体处理会破坏有效媒体并允许内存放大<a class="headerlink" href="#h10-proxybody-handling-breaks-valid-media-and-permits-memory-amplification" title="Permanent link">&para;</a></h3>
+<p><strong>状态：</strong> 已解决（2026 年 8 月 13 日，第二批修复）。</p>
 <p><strong>证据</strong></p>
 <ul>
 <li>Nginx 没有 <code>client_max_body_size</code> (<code>apps/admin-web/nginx.conf:1-20</code>)，所以它
@@ -4123,6 +4142,11 @@ UPDATE</code> 也是可以接受的。</p>
 失败并有界<code>413</code>；并发最大请求数保持在批准的范围内
 内存/延迟包络。</p>
 <h3 id="h11-backup-instructions-do-not-create-a-consistent-postgresqlminio-recovery-point">H11。备份指令不会创建一致的 PostgreSQL/MinIO 恢复点<a class="headerlink" href="#h11-backup-instructions-do-not-create-a-consistent-postgresqlminio-recovery-point" title="Permanent link">&para;</a></h3>
+<p><strong>状态：</strong> 已推迟（2026-08-13）并采取缓解措施。自动快照/PITR 和
+真正的 PostgreSQL/MinIO 一致性测试仍在生产范围内；运行手册
+现在在两个备份之前停止中央写入，因此恢复的一对共享一个
+恢复点，并使用 Compose 服务名称而不是生成的容器
+名称。</p>
 <p><strong>证据</strong></p>
 <ul>
 <li>Runbook 在 API 写入继续时转储 PostgreSQL，然后镜像 MinIO
@@ -4147,6 +4171,9 @@ PostgreSQL 历史记录和 MinIO 绑定可以在代表性备份/恢复中保留�
 恢复到新的服务，验证每个可用绑定的确切字节，
 没有发现无法解释的孤儿，并且无重复地重放收据。</p>
 <h3 id="h12-duplicate-principal-secrets-can-authenticate-as-the-wrong-principal">H12。重复的主体机密可能会被验证为错误的主体<a class="headerlink" href="#h12-duplicate-principal-secrets-can-authenticate-as-the-wrong-principal" title="Permanent link">&para;</a></h3>
+<p><strong>状态：</strong> 推迟（2026-08-13）。唯一的凭证身份模型是
+生产范围（与H02共享）；单一设备、单一管理员
+Pilot 使模糊性几乎无法达到，并且风险被接受。</p>
 <p><strong>证据</strong></p>
 <ul>
 <li>设备和管理员身份验证扫描所有加盐哈希并返回
@@ -4166,7 +4193,7 @@ PostgreSQL 历史记录和 MinIO 绑定可以在代表性备份/恢复中保留�
 <p><strong>接受</strong></p>
 <p>多租户测试证明重复的凭证注册失败，并且
 每个令牌都确定性地解析为一个主体。</p>
-<h2 id="5-medium-severity-findings">5. 中等严重程度的发现<a class="headerlink" href="#5-medium-severity-findings" title="Permanent link">&para;</a></h2>
+<h2 id="5-medium-severity-findings">5. 中等严重程度的调查结果<a class="headerlink" href="#5-medium-severity-findings" title="Permanent link">&para;</a></h2>
 <h3 id="m01-pilot-authentication-has-no-backend-authorization-roles">M01。 Pilot 身份验证没有后端授权角色<a class="headerlink" href="#m01-pilot-authentication-has-no-backend-authorization-roles" title="Permanent link">&para;</a></h3>
 <p>每个经过身份验证的管理员都可以查看、发布元数据并分配
 所需的配置（<code>api/deps.py:84-96</code>、<code>routers/reviews.py:172-230</code>、
@@ -4200,7 +4227,7 @@ PostgreSQL 历史记录和 MinIO 绑定可以在代表性备份/恢复中保留�
 租户拥有的行”声明 (<code>docs/design/14-data-model-and-database.md:464-466</code>)。
 许多外键不绑定子组织和父组织。所期望的——
 配置设备存在查找也不在组织范围内
-(<code>repository.py:3997-4002</code>)。 HTTP 路由当前解析主体为
+（<code>repository.py:3997-4002</code>）。 HTTP 路由当前解析主体为
 范围，但存储库滥用或未来的维护代码可能会创建跨租户
 关系。</p>
 <p>添加组织范围的突变谓词和复合租户绑定的外部
@@ -4218,7 +4245,7 @@ PostgreSQL 历史记录和 MinIO 绑定可以在代表性备份/恢复中保留�
 <p>协调报告丢失的对象但不转换生命周期，并且
 流式传输在丢失对象迭代器失败之前开始 <code>200</code> 响应
 被映射（<code>storage/object_store.py:139-159</code>、<code>routers/media.py:48-72</code>）。标记一个
-丢失/损坏对象<code>FAILED</code>以事务方式与原因/时间并验证
+丢失/损坏对象 <code>FAILED</code> 事务性原因/时间并验证
 发送响应头之前的可用性。</p>
 <h3 id="m07-metadata-uniqueness-and-query-indexes-are-incomplete">M07。元数据唯一性和查询索引不完整<a class="headerlink" href="#m07-metadata-uniqueness-and-query-indexes-are-incomplete" title="Permanent link">&para;</a></h3>
 <p>该模式允许包内重复的模型语义版本，并且可以
@@ -4230,7 +4257,7 @@ PostgreSQL 历史记录和 MinIO 绑定可以在代表性备份/恢复中保留�
 具有类似生产基数的查询计划。</p>
 <h3 id="m08-generated-typescript-types-are-treated-as-runtime-validation">M08。生成的 TypeScript 类型被视为运行时验证<a class="headerlink" href="#m08-generated-typescript-types-are-treated-as-runtime-validation" title="Permanent link">&para;</a></h3>
 <p><code>CentralApiClient.request</code> 将任意成功的 JSON 直接转换为 <code>T</code>
-（<code>packages/typescript/api-client-central/src/client.ts:230-247</code>）。生成
+(<code>packages/typescript/api-client-central/src/client.ts:230-247</code>)。生成
 接口仅提供编译时检查。会话标识格式错误，
 租户数据、媒体记录、审查修订或所需的配置可以
 未选中的 UI 工作流程。</p>
@@ -4248,13 +4275,13 @@ PostgreSQL 历史记录和 MinIO 绑定可以在代表性备份/恢复中保留�
   注销/会话替换。</li>
 </ul>
 <p>在路由解析之前恢复会话，集中实施全局防护
-清除受保护状态并在 <code>401</code> 上重定向，在注销中导航 <code>finally</code>
+清除保护状态并在 <code>401</code> 上重定向，在注销中导航 <code>finally</code>
 如果撤销失败则发出警告，并按会话绑定/中止请求
 一代。</p>
 <h3 id="m10-admin-filters-and-lists-have-correctness-gaps">M10。管理过滤器和列表存在正确性差距<a class="headerlink" href="#m10-admin-filters-and-lists-have-correctness-gaps" title="Permanent link">&para;</a></h3>
 <ul>
 <li>概述范围变化竞赛和过时的响应可能会覆盖新范围
-  （<code>OverviewPage.vue:38-55,137-156</code>）。</li>
+  (<code>OverviewPage.vue:38-55,137-156</code>)。</li>
 <li>概述和历史中的站点/线路负载竞赛。</li>
 <li><code>to_at</code> 日期被序列化为午夜，而后端使用
   排除上限，不包括所选日期
@@ -4332,14 +4359,14 @@ nginx 或反向代理” (<code>docs/tasks/C1-central-server-m1.md:720-723</code
   (<code>docs/tasks/C1-central-server-m1.md:364-367</code>)，但端点没有这样的
   参数。</li>
 <li>概述要求包括最早的待上传和上传状态
-  (<code>docs/tasks/C1-central-server-m1.md:590-596</code>)，但中央仅公开
+  (<code>docs/tasks/C1-central-server-m1.md:590-596</code>)，但仅中央公开
   计数和平均上传延迟 (<code>api/schemas.py:191-199</code>)。</li>
 </ul>
 <p>将状态更改为“手动/本地证据，非 CI 强制”并保留日期
 工件，或添加启动 PostgreSQL/MinIO/central/admin-web 的 CI 作业，
 断言不跳过，并运行完整流程。交付或正式放弃失踪
 在调用 C1a-C6 之前完成 C3 过滤器/度量。</p>
-<h3 id="d05-central-backlog-signals-in-the-runbook-are-not-central-observables">D05。操作手册中的中央待办事项信号不是中央可观察数据<a class="headerlink" href="#d05-central-backlog-signals-in-the-runbook-are-not-central-observables" title="Permanent link">&para;</a></h3>
+<h3 id="d05-central-backlog-signals-in-the-runbook-are-not-central-observables">D05。操作手册中的中央待办事项信号不是中央可观察量<a class="headerlink" href="#d05-central-backlog-signals-in-the-runbook-are-not-central-observables" title="Permanent link">&para;</a></h3>
 <p><code>docs/runbooks/central-ingestion-backlog.md:5-8,59-64</code> 引用最早的
 未收到的边缘任务期限、重试率和最早的待上传。中央确实
 不摄取边缘任务状态并且不公开此类指标。独立边缘拥有
@@ -4358,7 +4385,7 @@ API 和工件验证出版物在明确标记的生产下
 <h3 id="d07-model-semantics-conflict-with-the-release-contract">D07。模型 <code>PUBLISHED</code> 语义与发布合约冲突<a class="headerlink" href="#d07-model-semantics-conflict-with-the-release-contract" title="Permanent link">&para;</a></h3>
 <p>合约 10 需要工件校验和/发布验证，而 M1 发布
 声明性元数据，无需获取工件字节。 UI正确警告
-说赋值不是激活，但 <code>PUBLISHED</code> 仍然可以解释为
+说赋值不是激活，但是 <code>PUBLISHED</code> 仍然可以解释为
 经过验证的版本。</p>
 <p>将 M1 状态重命名为 <code>REGISTERED</code>，或添加一个接受的 ADR 定义中心
 元数据发布为声明性注册，禁止激活
@@ -4383,7 +4410,7 @@ API 和工件验证出版物在明确标记的生产下
   <code>docs/design/18-monorepo-and-code-organization.md:20-140</code> 使用<code>central-api</code>，
   <code>central-worker</code>，以及组合客户端而不是 <code>central-service</code> 和
   <code>api-client-central</code>。</li>
-<li><code>docs/ai/context.md</code>包含详细的中心状态，但它的目录树
+<li><code>docs/ai/context.md</code>包含详细的中央状态，但它的目录树
   省略了中心工作区成员并保留了以 PR 为中心的快照语言。</li>
 </ul>
 <p>将目标架构与过时的当前实现图分开。
@@ -4589,28 +4616,31 @@ API 和工件验证出版物在明确标记的生产下
 </ul>
 <h2 id="12-pilot-decision-gate">12. 飞行员决策门<a class="headerlink" href="#12-pilot-decision-gate" title="Permanent link">&para;</a></h2>
 <p>中央实现有一个实质性的、类型化的、经过充分测试的 M1
-基础。边缘优先安全边界保持不变，现有的
-幂等检查路径比典型原型更强。然而，
-当前工作区不应表示为第 13.2 节准备就绪
-受控飞行员上线清单，因为：</p>
-<p>1.记录的部署路径可以激活公共凭据。
-2. 记录的妥协程序不会撤销这些凭证。
-3. 所需的配置可能会返回或验证错误的身份。
-4. PostgreSQL 乐观并发不是自动强制执行的。
-5. 媒体收据不能证明保留的字节与接受的校验和匹配。
-6. 协调可以与主动上传竞争。
-7. 中央接受与其最终/管辖的主张相矛盾的证据。
-8. 审查重试可以默默地为相互矛盾的请求加上别名。
-9. 发送的代理违反了预期的媒体限制和速率限制器。
-10. 备份对不是一致的恢复点。
-11. 一些操作手册和退出标准声明所描述的行为并不
-    存在或不是 CI 强制执行的。</p>
-<p>阶段 0 结束前建议的状态措辞：</p>
+基础。边缘优先的安全边界保持不变，并且幂等
+检查路径比典型原型更强。所有十二个高严重性
+调查结果现已处理：七个已解决（H01、H03、H04、H05、H08、H09、
+H10）和五个被推迟（H02、H06、H11 和缓解措施；H07、H12 到
+生产范围）。</p>
+<p>试点准备情况现在取决于部署上下文（请参阅 SECURITY.md
+“部署上下文”）：</p>
+<ul>
+<li><strong>网络部署</strong>：推迟的操作项目（凭证轮换、
+  分阶段媒体生命周期、快照/PITR 备份）保持开放状态，因此试点
+  在关闭之前，不应将其暴露在严格控制的网络之外。</li>
+<li><strong>工厂内网+受控Tailscale</strong>：以内网为边界，
+  专门的站点运营商和仅维护的 Tailscale 通道，
+  推迟的运营项目是可接受的风险并已采取缓解措施，并且
+  飞行员可以根据第 13.2 节检查清单进行操作。 H07（受管制
+  摄入参考）在两种模式下仍然保持生产范围。</li>
+</ul>
+<p>推荐的状态措辞：</p>
 <blockquote>
 <p>Central M1 功能集已实现并通过当前静态/单元
-大门。受控飞行员关闭正在等待 AUDIT-002 第 0 阶段安全，
-证据完整性、并发性、恢复和文档调查结果。它是
-不是生产版本，并且仍处于边缘决策路径之外。</p>
+大门。所有 12 个 AUDIT-002 高严重性调查结果均得到解决或推迟
+采取缓解措施。厂内网下可试点上线 +
+由专门的站点操作员控制的 Tailscale 部署模式；网络
+部署使推迟的操作项目保持开放状态。这不是一个生产
+释放并保持在边缘决策路径之外。</p>
 </blockquote>
 <p>此次审核未修改任何生产或试点代码。</p>
 

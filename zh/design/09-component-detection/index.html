@@ -3318,7 +3318,7 @@
 <h2 id="91-responsibility">9.1 责任<a class="headerlink" href="#91-responsibility" title="Permanent link">&para;</a></h2>
 <p>第二阶段从 <a href="../08-product-detection-and-roi/">product detection and ROI</a> 检测有效产品 ROI 内已配置的组件类。它向 <a href="../10-temporal-aggregation/">temporal aggregation</a> 发出帧级观察；它不直接发出 <code>OK</code> 或推断抽象全局 <code>missing_component</code> 类。</p>
 <h2 id="92-detection-model">9.2 检测模型<a class="headerlink" href="#92-detection-model" title="Permanent link">&para;</a></h2>
-<p>Ultralytics YOLO 是最初的实现。所需的类可能包括 <code>component_a</code>、<code>component_b</code>、<code>component_c</code> 和 <code>manual</code>，但实际的分类是产品配置数据。条形码解码仍然是一个单独的子系统； YOLO 可以定位条形码区域，但不得取代基于标准的解码。</p>
+<p>Ultralytics YOLO 是最初的实现。必需的类可能包括 <code>component_a</code>、<code>component_b</code>、<code>component_c</code> 和 <code>manual</code>，但实际的分类是产品配置数据。条形码解码仍然是一个单独的子系统； YOLO 可以定位条形码区域，但不得取代基于标准的解码。</p>
 <p>每个模型包包含：</p>
 <ul>
 <li>不可变版本和 SHA-256 校验和；</li>
@@ -3382,7 +3382,7 @@
 <p>推理超时、内存不足、输出格式错误、模型进程崩溃、转换失败或版本不匹配会使受影响的帧无效。如果无法提供所需证据，则最终结果为<code>NG</code>。实现绝不能从另一个框架、ROI、产品或模型调用中进行检测。</p>
 <p>在可恢复的加速器故障后，工作线程可以重新加载或使用经过验证的 CPU 运行时（如果已配置）。回退运行时必须使用相同的清单并单独进行性能测试；记录切换运行时间。服务器连接对本地推理没有影响。加速器/GPU 故障根据弹性矩阵 (22.8) 进行故障注入：可恢复故障可能会回退，不可恢复故障必须故障并阻止检查，永远不会从不完整的证据中产生 <code>OK</code>。</p>
 <h2 id="98-performance-and-concurrency">9.8 性能和并发性<a class="headerlink" href="#98-performance-and-concurrency" title="Permanent link">&para;</a></h2>
-<p>保持模型实例正常运行并将并发绑定到测量的 GPU/CPU 容量。 Backpressure must be explicit.仅在测量每个组件的 NG 召回率后才优化输入大小、运行时间或帧采样；禁止默默地丢弃帧以满足吞吐量。采样必须保留最低有效帧要求和产品窗口标识。</p>
+<p>保持模型实例正常运行并将并发绑定到测量的 GPU/CPU 容量。背压必须是明确的。仅在测量每个组件的 NG 召回率后才优化输入大小、运行时间或帧采样；禁止默默地丢弃帧以满足吞吐量。采样必须保留最低有效帧要求和产品窗口标识。</p>
 <h2 id="99-verification">9.9 验证<a class="headerlink" href="#99-verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>单元测试类映射、阈值边界、空间约束、计数和坐标转换。</li>
@@ -3390,8 +3390,8 @@
 <li>评估每个组件、产品类型、位置、批次和型号版本的精确度和召回率。</li>
 <li>包括故意缺失的组件、困难的当前组件、空的 ROI、反射和遮挡。</li>
 <li>按物理产品、捕获会话、批次或日期（而不是相邻视频帧）分割数据集。</li>
-<li>错误注入超时、OOM、张量格式错误和工作进程重启； none may yield <code>OK</code> from incomplete evidence.</li>
-<li>Fault-inject accelerator/GPU failure;验证重新加载或验证的 CPU 回退使用相同的清单，记录运行时切换，并且永远不会从不完整的证据中产生 <code>OK</code>。</li>
+<li>错误注入超时、OOM、张量格式错误和工作进程重启；没有人可以从不完整的证据中得出<code>OK</code>。</li>
+<li>故障注入加速器/GPU故障；验证重新加载或验证的 CPU 回退使用相同的清单，记录运行时切换，并且永远不会从不完整的证据中产生 <code>OK</code>。</li>
 <li>部署硬件上的基准平均/P95 推理延迟和持续吞吐量。</li>
 </ul>
 <h2 id="910-open-questions-and-validation-required">9.10 未解决的问题和需要验证<a class="headerlink" href="#910-open-questions-and-validation-required" title="Permanent link">&para;</a></h2>

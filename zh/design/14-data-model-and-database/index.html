@@ -3911,7 +3911,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 架构版本。事件 <code>sequence</code> 对于 <code>(source_id, channel)</code> 是单调的，并且仅当
 源身份变更。</p>
 <h2 id="145-edge-schema">14.5 边缘模式<a class="headerlink" href="#145-edge-schema" title="Permanent link">&para;</a></h2>
-<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份短写交易；媒体字节保留在文件系统中。</p>
+<p>SQLite 是 MVP 默认值。在检查吞吐量允许的情况下启用 WAL 模式、外键、<code>busy_timeout</code> 和 <code>synchronous=FULL</code>。每个最终框架或检查都保留一份简短的写入交易；媒体字节保留在文件系统中。</p>
 <table>
 <thead>
 <tr>
@@ -3938,7 +3938,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 </tr>
 <tr>
 <td><code>local_media_files</code></td>
-<td><code>id</code> PK、<code>inspection_id</code> FK 可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
+<td><code>id</code> PK、<code>inspection_id</code> FK可为空、种类、相对路径、MIME 类型、字节、SHA-256、捕获时间、需要上传标志</td>
 <td>路径必须相对于配置的媒体根； <code>UNIQUE(relative_path)</code> 和 <code>UNIQUE(sha256, kind)</code> ，其中重复数据删除是安全的。</td>
 </tr>
 <tr>
@@ -4040,7 +4040,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <tr>
 <td><code>inspections</code></td>
 <td>UUID PK 匹配边缘 ID、组织/设备 FK、设备序列、生命周期/时间、条形码/产品分辨率、内部决策、业务结果、应用程序/产品模型/组件模型/规则版本和校验和、延迟、接收时间</td>
-<td><code>UNIQUE(device_id, device_sequence)</code>;保留精确的运行时版本。</td>
+<td><code>UNIQUE(device_id, device_sequence)</code>;保留准确的运行时版本。</td>
 </tr>
 <tr>
 <td><code>inspection_components</code></td>
@@ -4142,7 +4142,7 @@ OpenAPI 中的模型。最小注册表是：</p>
 <li>CI 验证每个文档并检查提交/生成的工件是否存在偏差。</li>
 <li><code>openapi-typescript</code> 或 Orval 生成 TypeScript 模式和客户端到 <code>packages/typescript/api-client/generated</code> 中；生成的文件不需手动编辑。</li>
 <li>前端包装器添加了身份验证和错误映射等传输问题，而无需重新定义有效负载。</li>
-<li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。重大架构更改需要版本化端点或协调发布。</li>
+<li>合约测试反序列化代表性服务器响应并运行 TypeScript 类型检查。破坏性架构更改需要版本化端点或协调发布。</li>
 <li>在需要时在前端边界添加日期时间和 UUID 运行时验证；单独生成的 TypeScript 类型并不能验证 JSON。</li>
 </ol>
 <p>OpenAPI 涵盖按名称引用的 REST 快照和 WebSocket 事件负载模式。由于 OpenAPI 没有完全描述 WebSocket 通道，因此事件信封从相同的 Pydantic 类导出为 JSON 模式，并针对前端验证器进行测试。</p>

@@ -1709,7 +1709,7 @@
   <a href="#dev-test-harness-adr-014-404-unless" class="md-nav__link">
     <span class="md-ellipsis">
       
-        开发测试工具（ADR-014；404 DEV_TOOLS_DISABLED，除非 serve --enable-web-test）
+        开发测试工具（ADR-014；404 DEV_TOOLS_DISABLED，除非serve --enable-web-test）
       
     </span>
   </a>
@@ -3515,7 +3515,7 @@
   <a href="#dev-test-harness-adr-014-404-unless" class="md-nav__link">
     <span class="md-ellipsis">
       
-        开发测试工具（ADR-014；404 DEV_TOOLS_DISABLED，除非 serve --enable-web-test）
+        开发测试工具（ADR-014；404 DEV_TOOLS_DISABLED，除非serve --enable-web-test）
       
     </span>
   </a>
@@ -3560,7 +3560,7 @@
 
 <h1 id="04-edge-api-reference">04 — 边缘 API 参考<a class="headerlink" href="#04-edge-api-reference" title="Permanent link">&para;</a></h1>
 <p>边缘 API 如何<strong>真正被调用</strong>：基本 URL、身份验证流程、每个端点
-具有真实请求/响应 JSON 和curl 示例、WebSocket 协议、错误
+具有真实的请求/响应 JSON 和curl 示例、WebSocket 协议、错误
 约定和代码清单。权威合同是
 提交的 OpenAPI 文档 (<code>apps/edge-service/openapi/edge-openapi.json</code>,
 使用 <code>uv run python scripts/generate-edge-openapi.py</code> 重新生成）。</p>
@@ -3598,7 +3598,7 @@
 <ul>
 <li>204 无内容； cookie <code>Max-Age=28800</code>（8 小时）、<code>HttpOnly</code>、<code>SameSite=strict</code>、
   <code>Secure</code> 当使用 HTTPS 时；最多 500 个会话。</li>
-<li>错误的令牌 → 401；速率限制 → 429。</li>
+<li>错误的令牌 → 401;速率限制 → 429。</li>
 </ul>
 <h3 id="websocket-ticket-flow">WebSocket 票证流程<a class="headerlink" href="#websocket-ticket-flow" title="Permanent link">&para;</a></h3>
 <p>浏览器套接字无法设置 <code>Authorization</code> 标头，因此仪表板
@@ -4122,7 +4122,7 @@ VALIDATION_FAILED</code>（架构/模型验证）。</p>
 <code>device.status_changed</code>、<code>upload.changed</code>。序列是严格单调的
 根据<code>(source_id, channel)</code>；差距意味着事件丢失 - <strong>客户必须
 重新获取 REST</strong>。事件是短暂的； REST 是权威的。</p>
-<h3 id="dev-test-harness-adr-014-404-unless">开发测试工具（ADR-014；404 <code>DEV_TOOLS_DISABLED</code>，除非 <code>serve --enable-web-test</code>）<a class="headerlink" href="#dev-test-harness-adr-014-404-unless" title="Permanent link">&para;</a></h3>
+<h3 id="dev-test-harness-adr-014-404-unless">开发测试工具（ADR-014；404 <code>DEV_TOOLS_DISABLED</code>，除非<code>serve --enable-web-test</code>）<a class="headerlink" href="#dev-test-harness-adr-014-404-unless" title="Permanent link">&para;</a></h3>
 <p><strong>POST <code>/api/v1/dev/inspect-frame</code></strong> — 原始图像字节正文；查询参数
 <code>instance_id</code>（默认第一个实例）、<code>persist</code>（默认 true）、<code>barcode</code>
 （模拟键盘输入）。限制 ≤20 MB、≤12000 px/dim、≤50 MP 总计。</p>

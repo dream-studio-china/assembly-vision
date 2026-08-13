@@ -3326,7 +3326,7 @@
 <code>manual</code>可以形成一个全<code>PRESENT</code>窗口并被评估为<code>OK</code>。</p>
 <p>这违反了设计 10 中的物理产品证据隔离不变量
 第 10.2 和 10.3 节，混合窗口排除要求
-10.8、ADR-010 第 3 节和合同 06 第 5 节要求的混合产品
+10.8、ADR-010第3节和合同06第5节要求的混合产品
 测试。</p>
 <p><strong>分辨率：</strong></p>
 <ol>
@@ -3344,7 +3344,7 @@
 </ol>
 <p><strong>验收标准：</strong></p>
 <ul>
-<li>集成测试对两个组件进行互补的所需组件检测
+<li>集成测试从两个方面进行互补的所需组件检测
   一个持续时间/间隙间隔内的不同产品标识并进行验证
   这两种产品都不产生<code>OK</code>。</li>
 <li>身份转换、边界信号缺失和已确认的多产品
@@ -3380,7 +3380,7 @@
   没有收到触发帧的正常决策。</li>
 <li>正常到期后关闭不会产生第二次中断
   记录。</li>
-<li>在到期之前关闭会创建一条 <code>NG</code> 记录，其中包含
+<li>到期前关闭会创建一条 <code>NG</code> 记录，其中包含
   <code>INSPECTION_INTERRUPTED</code>并且没有重建部分证据。</li>
 </ul>
 <h3 id="f3-window-membership-is-determined-by-post-inference-time-not-capture-time">F3。窗口成员资格由推理后时间决定，而不是捕获时间<a class="headerlink" href="#f3-window-membership-is-determined-by-post-inference-time-not-capture-time" title="Permanent link">&para;</a></h3>
@@ -3426,7 +3426,7 @@ available <code>ProductDetection.quality.usable</code> 携带实际的质量门
 这违反了合同 03 第 5 节和设计 10 第 10.3 节和 10.6 节。</p>
 <p><strong>分辨率：</strong></p>
 <ol>
-<li>从评估的帧质量门设置<code>FrameObservation.quality_usable</code>
+<li>根据评估的帧质量门设置<code>FrameObservation.quality_usable</code>
    （<code>outcome.product_detection.quality.usable</code> 当检测到产品时）。</li>
 <li>在观察中保留帧质量拒绝原因代码
    <code>FrameQualitySummary</code>。</li>
@@ -3473,7 +3473,7 @@ available <code>ProductDetection.quality.usable</code> 携带实际的质量门
   <code>OK</code> 当它还包含一个被拒绝的非完整性帧时。</li>
 <li>该框架的原因仍然存在，其可用机会计数为
   零。</li>
-<li>即使有其他帧，中断或混合身份窗口仍保持<code>NG</code>
+<li>即使其他帧，中断或混合身份窗口仍保持<code>NG</code>
   满足每个组件的策略。</li>
 </ul>
 <h3 id="f6-missing-policies-and-equal-thresholds-are-not-fail-closed">F6。缺失的策略和相同的阈值不会失败关闭<a class="headerlink" href="#f6-missing-policies-and-equal-thresholds-are-not-fail-closed" title="Permanent link">&para;</a></h3>
@@ -3533,7 +3533,7 @@ available <code>ProductDetection.quality.usable</code> 携带实际的质量门
 <p><strong>验收标准：</strong></p>
 <ul>
 <li>一项高置信度检测加上一项低于中等的检测报告
-  计数为 1 并且未满足 <code>expected_count=2</code> 规则，如 <code>NG</code>。</li>
+  计数为 1 并且未通过 <code>expected_count=2</code> 规则，如 <code>NG</code>。</li>
 <li>一个有效帧中的两个合格检测满足 <code>expected_count=2</code>
   规则。</li>
 <li>用于基于计数的规则的面积和空间证据仅来自相同的

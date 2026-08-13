@@ -3408,7 +3408,7 @@
 <blockquote>
 <p>状态：AssemblyVision 项目的研究综合（两阶段检测：第一阶段全框架产品检测、第二阶段 ROI 上的组件检测）。
 编译日期：2026-08-04
-诚实约定：除非另有说明，下面的所有 mAP/AP 数字均为模型作者或 Ultralytics 发布的 <strong>COCO val 或 LVIS 基准数字</strong>。基准数字是<strong>实验室结果，而不是生产结果</strong>。 FPS/延迟数据由供应商在特定 GPU 上报告（每行注明）。 “截至 2025/2026”受到尊重：涵盖的最新模型是 Ultralytics YOLO26 (2026)。</p>
+诚实约定：除非另有说明，下面的所有 mAP/AP 数字均为模型作者或 Ultralytics 发布的 <strong>COCO val 或 LVIS 基准数字</strong>。基准数字是<strong>实验室结果，而不是生产结果</strong>。 FPS/延迟数据由供应商在特定 GPU 上报告（每行注明）。 “截至 2025/2026”受到尊重：涵盖的最新型号是 Ultralytics YOLO26 (2026)。</p>
 </blockquote>
 <hr />
 <h2 id="1-scope">1.范围<a class="headerlink" href="#1-scope" title="Permanent link">&para;</a></h2>
@@ -3792,7 +3792,7 @@
 <tr>
 <td><strong>YOLO11n / YOLO11s</strong>（默认推荐）</td>
 <td>成熟、稳定、官方维护； nano=2.6M 参数远低于任何边缘预算； 39.5/47.0 COCO mAP 对于简单的类来说足够了；任务/出口覆盖范围最广；新项目的事实上的标准</td>
-<td>无重大影响；如果组件较小或彼此相似，则选择 <code>s</code> 而不是 <code>n</code></td>
+<td>无重大意义；如果组件较小或彼此相似，则选择 <code>s</code> 而不是 <code>n</code></td>
 </tr>
 <tr>
 <td><strong>YOLOv8n / YOLOv8s</strong></td>
@@ -3830,7 +3830,7 @@
 <h3 id="63-specific-guidance-for-the-two-stage-design">6.3 两阶段设计的具体指导<a class="headerlink" href="#63-specific-guidance-for-the-two-stage-design" title="Permanent link">&para;</a></h3>
 <ol>
 <li><strong>在两个阶段使用相同的 YOLO 系列</strong>，以保留一个训练/导出/部署管道（根据 <code>[docs/design/09-component-detection.md](../design/09-component-detection.md)</code>，Ultralytics YOLO 是初始实现）。</li>
-<li><strong>第 1 阶段需要很少的容量。</strong> 单个 <code>product</code> 类、大对象、稳定的框架：YOLO11n 可能就足够了；保持置信度阈值验证（<code>[docs/design/08-product-detection-and-roi.md](../design/08-product-detection-and-roi.md)</code>中默认起始配置0.70）。</li>
+<li><strong>第 1 阶段需要很少的容量。</strong> 单个 <code>product</code> 类、大对象、稳定的框架：YOLO11n 可能就足够了；保持置信度阈值验证（<code>[docs/design/08-product-detection-and-roi.md](../design/08-product-detection-and-roi.md)</code> 中默认起始配置 0.70）。</li>
 <li><strong>第二阶段是准确性预算很重要的阶段。</strong> ROI 内的组件较小，并且可能在视觉上相似。如果验证上的 mAP50-95 低于目标，则首选 YOLO11 或第 2 阶段的 1280 输入运行（PCB 证据：小对象定位是困难的部分 - https://arxiv.org/abs/2507.17176）。 </li>
 <li><strong>输入大小权衡：</strong> 640px 是默认值，速度很快； 1280px 大约使计算量增加了四倍，但提高了小物体的召回率。对于 4MP 源，您几乎总是裁剪为第 2 阶段的固定分辨率，而不是运行原生 4MP。</li>
 <li><strong>无 NMS (v10/26) 很有吸引力，但在管道的低帧速率下不是必需的</strong>。如果您采用它，请保留一对一头部默认值并验证重放的确定性（AssemblyVision 的 <code>fail_on_multiple_products</code> 和确定性证据需要可重现的输出）。</li>

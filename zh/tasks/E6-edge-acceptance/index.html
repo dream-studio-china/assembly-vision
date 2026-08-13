@@ -3251,7 +3251,7 @@ Edge 交付工作和最后一个 Edge 之后的验收门
   性能和稳定性断言，并对内容进行诚实分类
   每个项目都需要。</li>
 <li>E6b：<code>scripts/edge-acceptance-run.py</code>，本地自动化运行器
-  执行每个本地可自动化矩阵项并发出机器可读的
+  执行每个本地可自动化的矩阵项并发出机器可读的
   证据明显；现场项目作为 <code>NOT_EXECUTED</code> 发出
   记录所需的环境。</li>
 <li>E6c：边缘验收报告模板
@@ -3378,7 +3378,7 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
     吞吐量、按连接性分段的上传延迟、审核率和
     稳定性，每个都有分子、分母和置信度处理
     （设计26.7，合同10）；</li>
-<li>证据链接、偏差、残余风险以及角色和签名
+<li>证据链接、偏差、残余风险以及角色和签字
     残余风险批准（设计 26.8 步骤 10）。</li>
 <li>任何没有客户数据的指标都记录为 <code>NOT_MEASURED</code>，而不是记录为
   零、占位符或通行证。</li>
@@ -3422,12 +3422,12 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
 <li><a href="../../runbooks/15-edge-acceptance-execution/">Runbook 15: Edge Acceptance Execution</a>
   和 <a href="../../design/28-edge-acceptance-report/">edge acceptance report template</a>
   可以从该计划中执行；没有E6-prep门被E6d阻挡，并且E6是
-  直到 E6d 出示已执行的现场证据后才宣布完成。</li>
+  在 E6d 出示已执行的现场证据之前，不宣布完成。</li>
 </ul>
 <h2 id="6-mandatory-test-matrix">6. 强制测试矩阵<a class="headerlink" href="#6-mandatory-test-matrix" title="Permanent link">&para;</a></h2>
 <p>列语义：分类是验收运行最严格的环境
 需要 (<code>automated-local</code>、<code>hardware-required</code>、<code>customer-data-required</code>、
-<code>central-required</code>）。当运行程序执行时，本地运行程序覆盖率为 <code>yes</code>
+<code>central-required</code>）。当运行器执行时，本地运行器覆盖率为 <code>yes</code>
 矩阵行的显式目标 pytest 断言或 Docker 重启检查；
 证据清单记录了确切的断言，因此跳过或失败
 断言永远不会产生<code>PASS</code>。否则它是 <code>no</code> 并且跑步者发出
@@ -3537,10 +3537,10 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
 <tr>
 <td>E6-A12</td>
 <td>离线操作</td>
-<td>地方检查、证据和持久的队列在没有中央的情况下继续进行自动化本地</td>
+<td>地方检查、证据和持久的队列在没有中央的情况下继续进行</td>
+<td>自动化本地</td>
 <td>是的</td>
 <td>中央独立（ADR-001，22.8）</td>
-<td></td>
 </tr>
 <tr>
 <td>E6-A13</td>
@@ -3600,7 +3600,7 @@ E6 必须展示的真相、什么是本地可自动化的以及什么是
 </tr>
 </tbody>
 </table>
-<p>| E6-A20 | GPU/加速器故障 |没有捏造就OK；可恢复的故障重新加载或切换到具有相同清单的经过验证的 CPU 运行时并记录切换；不可恢复故障故障和块检查|所需硬件 |没有|恢复路径有单位覆盖；真正的加速器故障需要硬件（22.8，设计 09.7） |
+<p>| E6-A20 | GPU/加速器故障 |没有捏造就OK；可恢复的故障重新加载或切换到具有相同清单的经过验证的 CPU 运行时并记录切换；不可恢复故障故障和块检查|所需硬件 |没有|恢复路径有单位覆盖；真正的加速器故障需要硬件（22.8，设计 09.7）|
 | E6-A21 |数据库故障/损坏 |安全地失败、保留诊断、执行测试的恢复路径 |自动化本地 |是的 |一次性测试数据库(22.8) |
 | E6-A22 |备份+恢复|代表恢复成功；悬而未决的证据和上传任务继续存在|自动化本地 |是的 |恢复成功之前不可操作 (20.10) |
 | E6-A23 |容器重启 |监督恢复，无需重复产品决策 |自动化本地 |是的 |需要 Docker；在可用的地方运行 |

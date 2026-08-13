@@ -3331,7 +3331,7 @@ assemblyvision_domain/models.py</code> 中添加/重用 Pydantic 模型（基础
 </code></pre></div>
 <ul>
 <li>使用 <code>Depends(require_viewer)</code> 作为查看者验证的路由（所有内容
-  除了<code>/health/live</code>）。没有单独的操作员/管理员依赖
+  除了<code>/health/live</code>）。不存在单独的操作员/管理员依赖性
   边缘尚未（ADR-012/016）；仅管理<em>页面</em>在
   前端。</li>
 <li>错误：从 <code>problems.py</code> 引发 <code>ApiProblem(status_code, code, detail)</code>
@@ -3397,7 +3397,7 @@ assemblyvision_domain/models.py</code> 中添加/重用 Pydantic 模型（基础
 <ul>
 <li>[ ] <code>domain</code> 或 <code>schemas.py</code> (<code>extra="forbid"</code>) 中的 Pydantic 模型</li>
 <li>[ ] 具有 CAS 转换 + 测试的存储库方法</li>
-<li>[ ] 具有 <code>require_viewer</code> + 键入响应 + <code>ApiProblem</code> 错误的路由器</li>
+<li>[ ] 带有 <code>require_viewer</code> + 键入响应 + <code>ApiProblem</code> 错误的路由器</li>
 <li>[ ] 在 <code>app.py</code> 中注册的路由器</li>
 <li>[ ] OpenAPI 重新生成 + 提交（漂移检查）</li>
 <li>[ ] TS 类型重新生成 + 提交（漂移检查）</li>

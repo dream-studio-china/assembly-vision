@@ -3533,7 +3533,7 @@
   管理 UI 的管理员会话/令牌路径。</li>
 <li>仅附加中央人工审核队列和审核提交。</li>
 <li>初始中心产品/规则/模型元数据注册和不可变
-  需要发布版本来验证引用的引用。包裹递送
+  需要发布版本来验证引用的内容。包裹递送
   边缘仍然是手动的。</li>
 <li>类型化 OpenAPI 输出和生成/同步的 TypeScript 中央 API 类型。</li>
 <li>编写健康检查、受控模式迁移、集中备份/恢复
@@ -3825,7 +3825,7 @@
 <li>为<code>organizations</code>、<code>sites</code>、<code>production_lines</code>创建迁移，
   <code>devices</code>，试点管理员身份/会话记录，设备上传令牌
   哈希值和最低 <code>audit_logs</code> 支持。</li>
-<li>种子或引导恰好一个试点组织、地点、线路、注册
+<li>种子或启动恰好一个试点组织、地点、线路、注册
   设备、上传凭证和管理员通过显式迁移，
   管理命令，或撰写引导流程。没有隐式默认设备
   根据上传请求创建。</li>
@@ -3862,7 +3862,7 @@
 <p><strong>退出标准</strong></p>
 <ul>
 <li>集成测试发送准确的当前边缘检查包络。</li>
-<li>重放相同的字节会返回相同的收据，并且只留下一个
+<li>重放相同的字节会返回相同的收据并仅留下一个
   检查行。</li>
 <li>重用幂等密钥、检查 ID 或设备序列
   不同的规范哈希返回 <code>409 PAYLOAD_CONFLICT</code> 并保留数据。</li>
@@ -4047,7 +4047,7 @@
   凭证泄露 (C3)、备份/恢复 (C4) 和试点升级/回滚
   (C5)，全部在 <code>docs/runbooks/README.md</code> 和 mkdocs nav 中索引
   （<code>uv run mkdocs build --strict</code> 通过）。</li>
-<li>M1 仍然被标记为受控飞行员：没有声称生产 HA，最终
+<li>M1仍然被标记为受控飞行员：没有声称生产HA，最终
   RPO/RTO、完全保留实施、OIDC 或远程部署（第 13 节
   退出标准 8)。</li>
 <li>E6-A16交付（<code>scripts/tests/test_edge_central_e2e.py</code>）：真正的优势
@@ -4134,7 +4134,7 @@
 <li>光标分页使用 <code>{items, next_cursor}</code> 默认 50/最大 200 和
   拒绝游标/过滤器不匹配。</li>
 <li>变异的人类/管理员 API 在并发情况下使用 <code>If-Match</code> 修订检查
-  编辑很重要。可重试的设备摄取使用幂等性密钥来代替。</li>
+  编辑很重要。可重试设备摄取使用幂等密钥代替。</li>
 <li>所有不可变的边缘标识符和原始决策都是在之后写入一次
   接受摄入。</li>
 <li>新的中心字段是在模式版本中添加的。删除/更改
@@ -4241,7 +4241,7 @@
 每当 API、持久性模式、配置、
 或操作变更。</p>
 <h2 id="13-m1-exit-criteria">13. M1退出标准<a class="headerlink" href="#13-m1-exit-criteria" title="Permanent link">&para;</a></h2>
-<p>仅当满足以下所有条件时，M1 才准备好受控飞行员：</p>
+<p>仅当满足以下所有条件时，M1 才适合受控飞行员：</p>
 <ol>
 <li>已注册的边缘设备发送当前检查和选定的介质
    通过 HTTPS 的信封；中央退货验证兼容收据。

@@ -3863,6 +3863,11 @@ store administration.</p>
   values and proves the controlled-pilot profile has no known credentials.</li>
 </ul>
 <h3 id="h02-the-credential-compromise-runbook-cannot-perform-its-promised-rotation">H02. The credential-compromise runbook cannot perform its promised rotation<a class="headerlink" href="#h02-the-credential-compromise-runbook-cannot-perform-its-promised-rotation" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> DEFERRED (2026-08-13) with mitigation. Automated credential
+rotation is production scope (shared with H12); the runbook now states that
+M1 has no in-place rotation and documents an approved manual database-level
+revocation procedure, so operators no longer believe a bootstrap re-run revokes
+a stolen token.</p>
 <p><strong>Evidence</strong></p>
 <ul>
 <li><code>docs/runbooks/central-credential-compromise.md:13-21</code> instructs operators to
@@ -3926,6 +3931,7 @@ bundle identity.</p>
   public UUIDs submitted by the caller.</li>
 </ul>
 <h3 id="h04-postgresql-desired-configuration-concurrency-is-last-write-wins">H04. PostgreSQL desired-configuration concurrency is last-write-wins<a class="headerlink" href="#h04-postgresql-desired-configuration-concurrency-is-last-write-wins" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> RESOLVED (2026-08-13, second remediation batch).</p>
 <p><strong>Evidence</strong></p>
 <ul>
 <li><code>repository.py:3997-4016</code> reads the current revision before mutation.</li>
@@ -3946,6 +3952,7 @@ UPDATE</code> is also acceptable if the locking semantics are covered explicitly
 exactly one succeeds, one returns <code>412</code>, revision increments once, and one
 corresponding audit event is committed.</p>
 <h3 id="h05-central-issues-an-available-media-receipt-without-verifying-stored-bytes">H05. Central issues an <code>AVAILABLE</code> media receipt without verifying stored bytes<a class="headerlink" href="#h05-central-issues-an-available-media-receipt-without-verifying-stored-bytes" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> RESOLVED (2026-08-13, second remediation batch).</p>
 <p><strong>Evidence</strong></p>
 <ul>
 <li><code>ingest/__init__.py:181-214</code> calls <code>put_object</code> and immediately persists an
@@ -3975,6 +3982,11 @@ metadata.</p>
 <li>Reconciliation independently detects later corruption, not only absence.</li>
 </ul>
 <h3 id="h06-reconciliation-can-delete-an-upload-that-is-still-committing">H06. Reconciliation can delete an upload that is still committing<a class="headerlink" href="#h06-reconciliation-can-delete-an-upload-that-is-still-committing" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> DEFERRED (2026-08-13) with mitigation. A full staged/finalize
+protocol is production scope; <code>reconcile-media</code> now accepts a <code>--min-age-hours</code>
+threshold (default 24) and only classifies unbound objects older than that as
+removable orphans, so an in-flight upload whose bytes precede its binding is
+never deleted. The CLI help documents the no-active-uploads requirement.</p>
 <p><strong>Evidence</strong></p>
 <ul>
 <li>Ingestion writes an object before its database binding
@@ -3995,6 +4007,11 @@ Coordinate final object publication and binding recovery with durable state.</p>
 reconciliation runs with orphan removal. The active upload must survive and
 finish available, or fail without an available binding.</p>
 <h3 id="h07-inspection-ingestion-accepts-records-that-violate-central-safety-and-governance-claims">H07. Inspection ingestion accepts records that violate central safety and governance claims<a class="headerlink" href="#h07-inspection-ingestion-accepts-records-that-violate-central-safety-and-governance-claims" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> DEFERRED (2026-08-13). Resolving governed version references
+requires an edge-to-central contract change that conflicts with the M1 promise
+to keep the current envelope, so it is production scope. Pilot deployments must
+treat ingested records as compatibility-preserving rather than as centrally
+governed; this residual risk is accepted for the single-device pilot.</p>
 <p><strong>Evidence</strong></p>
 <ul>
 <li><code>ingest/envelope.py:138-189</code> validates Pydantic shape, device identity, and
@@ -4033,6 +4050,7 @@ product-configuration identity for production/pilot records.</p>
 stable <code>409</code> or <code>422</code>, write no accepted inspection/receipt, and retain a
 bounded integrity audit where appropriate.</p>
 <h3 id="h08-review-idempotency-and-validation-do-not-preserve-request-identity">H08. Review idempotency and validation do not preserve request identity<a class="headerlink" href="#h08-review-idempotency-and-validation-do-not-preserve-request-identity" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> RESOLVED (2026-08-13, second remediation batch).</p>
 <p><strong>Evidence</strong></p>
 <ul>
 <li>Review records persist an idempotency key but no canonical request hash
@@ -4098,6 +4116,7 @@ configured limit is active when Compose silently uses the default.</p>
 authentication-specific limits, shared-NAT behavior, and effective Compose
 configuration.</p>
 <h3 id="h10-proxybody-handling-breaks-valid-media-and-permits-memory-amplification">H10. Proxy/body handling breaks valid media and permits memory amplification<a class="headerlink" href="#h10-proxybody-handling-breaks-valid-media-and-permits-memory-amplification" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> RESOLVED (2026-08-13, second remediation batch).</p>
 <p><strong>Evidence</strong></p>
 <ul>
 <li>Nginx has no <code>client_max_body_size</code> (<code>apps/admin-web/nginx.conf:1-20</code>), so its
@@ -4123,6 +4142,11 @@ byte over each configured limit. Valid uploads succeed; oversized requests
 fail with bounded <code>413</code>; concurrent maximum requests stay within an approved
 memory/latency envelope.</p>
 <h3 id="h11-backup-instructions-do-not-create-a-consistent-postgresqlminio-recovery-point">H11. Backup instructions do not create a consistent PostgreSQL/MinIO recovery point<a class="headerlink" href="#h11-backup-instructions-do-not-create-a-consistent-postgresqlminio-recovery-point" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> DEFERRED (2026-08-13) with mitigation. Automated snapshot/PITR and
+a real PostgreSQL/MinIO consistency test remain production scope; the runbook
+now quiesces central writes before both backups so a restored pair shares one
+recovery point, and uses Compose service names instead of generated container
+names.</p>
 <p><strong>Evidence</strong></p>
 <ul>
 <li>The runbook dumps PostgreSQL while API writes continue, then mirrors MinIO
@@ -4147,6 +4171,9 @@ encryption, retention, and off-host strategy.</p>
 restores to fresh services, verifies every available binding's exact bytes,
 finds no unexplained orphan, and replays receipts duplicate-free.</p>
 <h3 id="h12-duplicate-principal-secrets-can-authenticate-as-the-wrong-principal">H12. Duplicate principal secrets can authenticate as the wrong principal<a class="headerlink" href="#h12-duplicate-principal-secrets-can-authenticate-as-the-wrong-principal" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> DEFERRED (2026-08-13). A unique credential identity model is
+production scope (shared with H02); the single-device, single-administrator
+pilot keeps the ambiguity practically unreachable, and the risk is accepted.</p>
 <p><strong>Evidence</strong></p>
 <ul>
 <li>Device and administrator authentication scan all salted hashes and return
@@ -4591,30 +4618,31 @@ or remote configuration/model management.</p>
 </ul>
 <h2 id="12-pilot-decision-gate">12. Pilot Decision Gate<a class="headerlink" href="#12-pilot-decision-gate" title="Permanent link">&para;</a></h2>
 <p>The central implementation has a substantial, typed, and well-tested M1
-foundation. The edge-first safety boundary remains intact, and the existing
-idempotent inspection path is stronger than a typical prototype. However, the
-current workspace should not be represented as ready for the section 13.2
-controlled-pilot go-live checklist because:</p>
-<ol>
-<li>The documented deployment path can activate public credentials.</li>
-<li>The documented compromise procedure does not revoke those credentials.</li>
-<li>Desired configuration can return or validate the wrong identities.</li>
-<li>PostgreSQL optimistic concurrency is not enforced atomically.</li>
-<li>Media receipts do not prove retained bytes match the accepted checksum.</li>
-<li>Reconciliation can race active uploads.</li>
-<li>Central accepts evidence that contradicts its finalized/governed claims.</li>
-<li>Review retries can silently alias contradictory requests.</li>
-<li>The shipped proxy defeats both the intended media limit and rate limiter.</li>
-<li>The backup pair is not a consistent recovery point.</li>
-<li>Several runbooks and exit-criteria claims describe behavior that does not
-    exist or is not CI-enforced.</li>
-</ol>
-<p>Recommended status wording until Phase 0 closes:</p>
+foundation. The edge-first safety boundary remains intact, and the idempotent
+inspection path is stronger than a typical prototype. All twelve high-severity
+findings are now disposed: seven are resolved (H01, H03, H04, H05, H08, H09,
+H10) and five are deferred (H02, H06, H11 with mitigations; H07, H12 to
+production scope).</p>
+<p>Pilot-readiness now depends on the deployment context (see SECURITY.md
+"Deployment contexts"):</p>
+<ul>
+<li><strong>Network deployment</strong>: the deferred operational items (credential rotation,
+  staged media lifecycle, snapshot/PITR backup) remain open, so the pilot
+  should not be exposed beyond a tightly controlled network until they close.</li>
+<li><strong>Factory intranet + controlled Tailscale</strong>: with the intranet boundary, a
+  dedicated site operator, and a maintenance-only Tailscale channel, the
+  deferred operational items are accepted risks with mitigations in place, and
+  the pilot may proceed under the section 13.2 checklist. H07 (governed
+  ingestion references) remains production scope in both modes.</li>
+</ul>
+<p>Recommended status wording:</p>
 <blockquote>
 <p>The Central M1 feature set is implemented and passes current static/unit
-gates. Controlled-pilot closure is pending the AUDIT-002 Phase 0 security,
-evidence-integrity, concurrency, recovery, and documentation findings. It is
-not a production release and remains outside the edge decision path.</p>
+gates. All twelve AUDIT-002 high-severity findings are resolved or deferred
+with mitigations. Pilot go-live is acceptable under the factory-intranet +
+controlled-Tailscale deployment mode with a dedicated site operator; network
+deployment keeps the deferred operational items open. It is not a production
+release and remains outside the edge decision path.</p>
 </blockquote>
 <p>No production or pilot code was modified by this audit.</p>
 

@@ -3225,7 +3225,7 @@
   <a href="#811-barcode-identity-and-edge-local-human-review-prs-3031" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.11 条码身份和边缘本地人工审核（PR #30/#31）
+        8.11 条码身份和边缘本地人工审查（PR #30/#31）
       
     </span>
   </a>
@@ -3723,7 +3723,7 @@
 <li>训练数据：格式错误或超出范围的标签、零大小和超出框架
   盒子是致命的；丢失的标签文件无法验证，除非已记录
   <code>--allow-missing-labels</code> 使用旧版选择加入；空标签文件有效
-  底片；成分制备导致 ROI 作物为负数；并发表
+  底片；成分制备导致 ROI 作物为负值；并发表
   模型版本拒绝被不同的字节默默地覆盖。</li>
 <li>质量门：<code>ruff check .</code>、<code>ruff format --check .</code>、<code>mypy .</code>和
   <code>pytest</code> 现在覆盖整个存储库（边缘、包、训练、脚本
@@ -3866,7 +3866,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
 </ul>
 <h2 id="85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14">8.5 相机帧源、多实例边缘和 Web 开发测试工具（ADR-013/014、PR #14）<a class="headerlink" href="#85-camera-frame-sources-multi-instance-edge-and-web-dev-test-harness-adr-013014-pr-14" title="Permanent link">&para;</a></h2>
 <p>通过 PR #14 合并（dev -&gt; main）。审查驱动的强化过程记录在
-<code>docs/reviews/PR-014-review.md</code>；结果 F1-F14 通过回归得到解决
+<code>docs/reviews/PR-014-review.md</code>;结果 F1-F14 通过回归得到解决
 测试。设计：</p>
 <ul>
 <li><strong><code>vision-core</code></strong>中的<code>FrameSource</code>协议（设计07§7.3）：<code>open /
@@ -3884,7 +3884,7 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   <code>uuid5(namespace, instance_id)</code>（显式覆盖获胜）。一个
   <code>CameraSourceManager</code> 每个实例运行一个有界捕获线程（最新
   保留用于预览的帧，非致命的每个实例故障）；已启用
-  实例使用显式的有界的每个实例检查队列
+  实例使用显式的有界每个实例检查队列
   溢出报告（<code>FRAME_OVERFLOW</code>、PR-014 F1/F2），以及
   <code>EdgeRuntime.load_instances</code>开始独立单帧检查
   当 <code>inspection.enabled</code> 时循环每个实例（默认 false）。</li>
@@ -3932,13 +3932,13 @@ CLI 检查结果。 PR #8（开发 -&gt; 主要）实现了这一里程碑；的
   记录在重新生成的 OpenAPI/TypeScript 合约中。</li>
 </ul>
 <p><code>assemblyvision_edge</code> 现在发布 <code>py.typed</code>，因此严格的 mypy 门会通过
-  回购范围内；当前套件有 635 个 Python 测试，91 个 TypeScript 单元测试
+  回购范围内；当前套件有 635 个 Python 测试、91 个 TypeScript 单元测试
   （api-client 45、ui 13、edge-web 30、desktop 3）和 12 Playwright e2e。</p>
 <h2 id="86-durable-upload-outbox-and-scheduler-pr-17-adr-005">8.6 持久上传发件箱和调度程序（PR #17，ADR-005）<a class="headerlink" href="#86-durable-upload-outbox-and-scheduler-pr-17-adr-005" title="Permanent link">&para;</a></h2>
 <p>通过 PR #17 合并（dev -&gt; main，10 次提交）。实现持久上传
 ADR-005 所需的队列并关闭延迟的 AUDIT-001 4.4 持久性
 项目。审查驱动的强化过程记录在
-<code>docs/reviews/PR-017-review.md</code>；结果 F1-F8 加上决议后通过
+<code>docs/reviews/PR-017-review.md</code>;结果 F1-F8 加上决议后通过
 通过回归测试解决：</p>
 <ul>
 <li><strong>原子投影和发件箱</strong>：<code>persist_inspection_and_enqueue_uploads</code>
@@ -4024,17 +4024,17 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <ul>
 <li><strong>带宽节流（E3a）</strong>：令牌桶限制器限制网络
   来自 <code>AV_EDGE_UPLOAD_MAXIMUM_BANDWIDTH_MBPS</code> 的每秒有效负载字节数
-  (<code>None</code> disables);突发的上限为一秒的令牌和限制器
+  （<code>None</code> 禁用）；突发的上限为一秒的令牌和限制器
   永远不会限制本地持久性。发送的字节数和上限暴露在
   设备状态。</li>
 <li><strong>断路器 (E3b)</strong>：连续可重试失败
   (<code>AV_EDGE_UPLOAD_CIRCUIT_FAILURE_THRESHOLD</code>/<code>_OPEN_SECONDS</code>) 打开
   电路；打开时调度程序不声明任何内容，而打开窗口后
   单个半开探头判断恢复情况。永久的失败永远不算数。
-  <code>UPLOAD_CIRCUIT_OPEN</code> alert;持久队列永远不会改变。</li>
+  <code>UPLOAD_CIRCUIT_OPEN</code> 警报；持久队列永远不会改变。</li>
 <li><strong>受控手动重试 (E3c)</strong>：<code>POST /api/v1/uploads/{id}/retry</code>
   仅重置 <code>RETRY_WAIT</code>/<code>PERMANENT_FAILURE</code> 任务
-  <code>attempt_count + 1</code>; 404 未知，409 不合格，无突变。</li>
+  <code>attempt_count + 1</code>； 404 未知，409 不合格，无突变。</li>
 <li><strong>长时间停电排水 (E3d)</strong>：离线检查、重新启动和恢复的天数
   使用媒体之前的有序元数据恢复无重复的排空队列
   上传和每次检查<code>SYNCED</code>。</li>
@@ -4046,7 +4046,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 </ul>
 <h2 id="89-runtime-and-live-event-channel-e4">8.9 运行时和实时事件通道 (E4)<a class="headerlink" href="#89-runtime-and-live-event-channel-e4" title="Permanent link">&para;</a></h2>
 <p>于<code>feat/e4-runtime</code>实现（投递任务
-<code>docs/tasks/E4-runtime.md</code>):</p>
+<code>docs/tasks/E4-runtime.md</code>）：</p>
 <ul>
 <li><strong>WebSocket 运行时通道 (E4a)</strong>：内存中 <code>RuntimeEventBus</code> 分配
   单调的每个源序列号并保持每个连接有界
@@ -4076,7 +4076,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   不保留身份并关闭窗口。模拟源被限制在后面
   显式实例 <code>trigger:</code> 配置（仅开发/测试）并且可以
   永远不要伪装成生产硬件。</li>
-<li><strong>共享模型权重 (E4c)</strong>：进程范围的 <code>ModelRegistry</code> 由
+<li><strong>共享模型权重 (E4c)</strong>：由
   不可变工件 SHA-256 加上推理设备允许实例引用
   相同的清单共享一个加载的句柄；持有者将推理序列化
   每个工件锁定，因为 ultralytics 预测器保持可变状态，而
@@ -4112,7 +4112,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
   旋转），并将 14（部署升级和回滚）添加到索引中
   运行手册集。</li>
 </ul>
-<h2 id="811-barcode-identity-and-edge-local-human-review-prs-3031">8.11 条码身份和边缘本地人工审核（PR #30/#31）<a class="headerlink" href="#811-barcode-identity-and-edge-local-human-review-prs-3031" title="Permanent link">&para;</a></h2>
+<h2 id="811-barcode-identity-and-edge-local-human-review-prs-3031">8.11 条码身份和边缘本地人工审查（PR #30/#31）<a class="headerlink" href="#811-barcode-identity-and-edge-local-human-review-prs-3031" title="Permanent link">&para;</a></h2>
 <p>通过 PR #30 合并（dev -&gt; main）：精确映射的条形码身份解析
 （ADR-015）。 PR #31 合并了可选的边缘本地人工审核 (ADR-016)，包括
 <code>docs/reviews/PR-031-review.md</code>中记录的审查强化：已序列化
@@ -4122,7 +4122,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 加载和审查面板历史错误门控。</p>
 <ul>
 <li><strong>条形码标识（PR #30、ADR-015）</strong>：键入 <code>BarcodeObservation</code> 型号，
-  一个可选的 ZXing-cpp 视觉解码器（<code>zxing-cpp&gt;=2.3,&lt;3</code>），一个显式的
+  一个可选的 ZXing-cpp 视觉解码器 (<code>zxing-cpp&gt;=2.3,&lt;3</code>)，一个显式的
   模拟键盘输入适配器（仅限开发线束）和确定性
   解析器将完整的条形码值映射到产品代码。解析失败
   关闭不可读、冲突、不支持的符号、未知或
@@ -4137,7 +4137,7 @@ Python 测试、91 个 TypeScript 单元测试（api-client 45、ui 13、edge-we
 <li><strong>边缘本地人工审查（PR #31，ADR-016）</strong>：可选，附加，
   对任何检查（OK 或 NG）进行仅附加审查，而不改变
   机器决定。域 <code>ReviewDisposition</code> (CONFIRMED_NG/CONFIRMED_OK/
-  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的约束，
+  CORRECTED_NG/INCONCLUSIVE/REINSPECT) 受每台机器结果的限制，
   <code>ReviewRecord</code> 快照原始决策，一个 <code>review_records</code> 表
   （迁移 0008）使用引用链接取代、存储库
   <code>submit_review</code>/<code>list_review_queue</code>，和端点<code>GET /api/v1/reviews</code>，
@@ -4498,7 +4498,7 @@ C2a 临时 503 占位符。</p>
   <code>rule_component_policies</code>、<code>rule_model_compatibilities</code>、<code>model_packages</code>、
   <code>model_versions</code>和<code>desired_configurations</code>； <code>audit_logs</code>收益
   <code>request_id</code>/<code>reason</code>/<code>before_state</code>/<code>after_state</code> 相关列。</li>
-<li><strong>存储库</strong>：幂等创建/草稿（相同密钥+相同哈希重播；a
+<li><strong>存储库</strong>：幂等创建/草稿（相同的密钥+相同的哈希重播；a
   具有不同内容的重用密钥返回<code>409 IDEMPOTENCY_CONFLICT</code>），
   不可变的发布（重复发布返回发布的版本），发布
   验证（组件唯一性、有界策略值、阈值排序、

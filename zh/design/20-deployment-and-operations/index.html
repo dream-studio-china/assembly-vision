@@ -1139,6 +1139,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="20.5 中央 Docker 撰写配置文件">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2051-deployment-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20.5.1 部署模式
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3420,6 +3437,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="20.5 中央 Docker 撰写配置文件">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2051-deployment-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20.5.1 部署模式
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3761,6 +3795,21 @@
 <h2 id="205-central-docker-compose-profile">20.5 中央 Docker 撰写配置文件<a class="headerlink" href="#205-central-docker-compose-profile" title="Permanent link">&para;</a></h2>
 <p>中央配置文件包含 Nginx、<code>central-api</code>、可选的 <code>central-worker</code>、PostgreSQL、对象存储和可选的 Redis。后台执行适用于大型媒体、缩略图、导出、报告生成、通知和模型包准备的校验和验证。检查摄取本身仍然是同步幂等 API 操作，在确认边缘之前持久记录收据。</p>
 <p>持久卷必须涵盖 PostgreSQL 和对象存储。数据库迁移在应用程序替换之前作为一次性发布任务运行；它们必须在滚动更换过程中向后兼容，或者需要有记录的维护窗口。</p>
+<h3 id="2051-deployment-modes">20.5.1 部署模式<a class="headerlink" href="#2051-deployment-modes" title="Permanent link">&para;</a></h3>
+<p>Central 以两种可选模式之一运行（请参阅 SECURITY.md“部署
+上下文”）：</p>
+<ul>
+<li><strong>网络部署</strong>：正规工厂/企业均可到达中心
+  网络，TLS 由外部反向代理终止。</li>
+<li><strong>工厂内联网 + 受控 Tailscale</strong>：中央仅是内联网，而不是内联网
+  公开曝光；边缘直接通过内联网到达它。远程
+  维护使用仅在维护期间启用的临时 Tailscale 通道
+  操作员引导的维护窗口，然后通过 ACL 禁用
+  授权维护节点的白名单。</li>
+</ul>
+<p>工厂防火墙/网络和任何 Tailscale ACL 均归该站点所有
+操作员；供应商拥有应用程序和模型支持界面
+（见20.12）。</p>
 <h2 id="206-nginx-example">20.6 Nginx 示例<a class="headerlink" href="#206-nginx-example" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">server</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>

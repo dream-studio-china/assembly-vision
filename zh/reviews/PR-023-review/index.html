@@ -3259,7 +3259,7 @@
 <li><code>docs/design/15-rest-api-and-events.md:157-160</code></li>
 </ul>
 <p><strong>问题</strong></p>
-<p>对于支持的跨域开发设置，<code>VITE_API_BASE_URL</code> 是
+<p>对于支持的跨源开发设置，<code>VITE_API_BASE_URL</code> 是
 边缘原点，例如 <code>http://edge-host:8000</code>。 <code>runtimeWsUrl()</code> 将其转换为
 <code>ws://edge-host:8000/ws/runtime</code>，但服务器端点是
 <code>/api/v1/ws/runtime</code>；连接在身份验证之前收到 404
@@ -3388,7 +3388,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <li>保留<code>ProductWindowManager</code>拥有的时间窗口ID；不更换
    身份密封窗口行为或为其生成第二个 ID。</li>
 <li>仅在<code>_persist_projection()</code>成功后发布<code>inspection.completed</code>，
-   正如当前代码所做的那样。失败的推理/持久路径不得发出
+   就像当前代码一样。失败的推理/持久路径不得发出
    错误完成；如果引入了明确的故障事件，请记录其
    语义并保持 REST 权威。</li>
 <li>在开始和完成的有效负载中一致地包含 <code>instance_id</code>
@@ -3413,7 +3413,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <thead>
 <tr>
 <th>寻找</th>
-<th>严重性</th>
+<th>严重程度</th>
 <th>分辨率</th>
 <th>测试</th>
 </tr>
@@ -3446,7 +3446,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <tr>
 <td>PR23-F05</td>
 <td>P2</td>
-<td><code>RuntimeEventBus</code> 跟踪已发布的事件（总数/按类型）、慢速消费者断开连接和交付失败； <code>GET /api/v1/ws/runtime/stats</code> 公开经过身份验证的快照</td>
+<td><code>RuntimeEventBus</code> 跟踪已发布的事件（总数/按类型）、慢速消费者断开连接和传递失败； <code>GET /api/v1/ws/runtime/stats</code> 公开经过身份验证的快照</td>
 <td><code>test_stats_count_events_and_slow_consumers</code>、<code>test_delivery_failures_are_counted</code>、<code>test_runtime_stats_endpoint_requires_viewer</code></td>
 </tr>
 </tbody>
@@ -3491,7 +3491,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 </ul>
 <p>总线保留<code>connection_count</code>和<code>last_sequence</code>，但都不暴露
 通过运营指标、结构化状态或经过身份验证的支持
-端点。也没有发布/慢速消费者断开计数器。 E4的
+端点。也没有发布/慢消费者断开计数器。 E4的
 强制矩阵明确要求可观察的连接和事件计数，
 因此操作员无法区分空闲仪表板和失败的事件源。</p>
 <p><strong>推荐解决方案</strong></p>
@@ -3531,7 +3531,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <thead>
 <tr>
 <th>寻找</th>
-<th style="text-align: right;">严重性</th>
+<th style="text-align: right;">严重程度</th>
 <th>合并前需要</th>
 <th>决议状态</th>
 </tr>
@@ -3598,7 +3598,7 @@ ADR-006/design-15 对经过身份验证的浏览器事件的一致要求
 <tbody>
 <tr>
 <td>票证发行/消费可以同时访问 <code>app.state.ws_tickets</code>，因为同步 REST 处理程序可能在工作线程中运行，而 WebSocket 握手在 ASGI 循环上运行</td>
-<td>进程本地锁现在可以序列化票证清理、发行和原子消耗，防止并发字典突变，同时保留一次性语义</td>
+<td>进程本地锁现在序列化票证清理、发行和原子消耗，防止并发字典突变，同时保留一次性语义</td>
 <td>现有票据发行/消费/重播/过期测试；运行时事件测试套件</td>
 </tr>
 <tr>

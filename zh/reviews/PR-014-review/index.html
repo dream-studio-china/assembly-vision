@@ -3455,7 +3455,7 @@ ADR-014 基于文件的门控开发工具、API/OpenAPI/客户端合约、
 当流程仍在发出物理检查决策时暂停。</p>
 <p><strong>解决方案：</strong> 在出队/处理之前暂停时对每个检查循环进行门控
 新工作。在多实例模式下，报告 <code>PAUSED</code>
-<code>inspection_ready=false</code> 暂停时。保持预览/相机健康（如果有）
+<code>inspection_ready=false</code> 暂停时。如果出现这种情况，请保持预览/相机的健康状况
 是有意为之，但要在状态和文档中明确区分。</p>
 <p><strong>验收标准：</strong></p>
 <ul>
@@ -3474,7 +3474,7 @@ ADR-014 基于文件的门控开发工具、API/OpenAPI/客户端合约、
 <li><code>apps/edge-service/src/assemblyvision_edge/api/state.py:168-178</code></li>
 </ul>
 <p>当目录丢失时 <code>FolderSource</code> 会引发 <code>ImageReadError</code>，但是
-<code>load_instances()</code> 仅捕获围绕源构建的 <code>FrameStreamError</code>。
+<code>load_instances()</code> 仅捕获源构建周围的 <code>FrameStreamError</code>。
 <code>ImageReadError</code> 转义，阻止 <code>self.instances</code> 和相机管理器
 停止安装，并阻止健康配置的实例启动。
 这违反了 ADR-013 所要求的非致命每实例源故障。</p>
@@ -3650,7 +3650,7 @@ UNAUTHENTICATED</code>，而不是ADR-014所需的<code>404 DEV_TOOLS_DISABLED</
 类型而不是绕过它们。</p>
 <p><strong>验收标准：</strong></p>
 <ul>
-<li>两个开发操作都指定所需的二进制请求主体并枚举
+<li>两个开发操作都指定所需的二进制请求体并枚举
   <code>200</code>、<code>400</code>、<code>404</code>、<code>413</code> 和 <code>503</code> 响应（如果适用）。</li>
 <li>重新生成的 TypeScript 类型接受图像/视频请求主体并公开
   宣布的回应。</li>

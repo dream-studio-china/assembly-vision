@@ -3572,7 +3572,7 @@
 
 <h1 id="23-observability-and-support">23. 可观察性和支持<a class="headerlink" href="#23-observability-and-support" title="Permanent link">&para;</a></h1>
 <h2 id="231-purpose-and-scope">23.1 目的和范围<a class="headerlink" href="#231-purpose-and-scope" title="Permanent link">&para;</a></h2>
-<p>可观察性必须解释检查行为、设备运行状况、同步状态和配置来源，而无需中央连接进行本地诊断。支持程序保留生产证据，并且永远不会将不可用或不明确的检查变成<code>OK</code>。</p>
+<p>可观察性必须解释检查行为、设备运行状况、同步状态和配置来源，而无需中央连接进行本地诊断。支持程序保留生产证据，并且决不会将不可用或不明确的检查变成<code>OK</code>。</p>
 <h3 id="2311-delivery-scope">23.1.1 交付范围<a class="headerlink" href="#2311-delivery-scope" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>MVP：</strong> 结构化本地日志、每阶段计时、决策 JSON、模型/规则版本和 CLI 运行状况输出。</li>
@@ -3585,7 +3585,7 @@
 <li>离线时本地检查可观察性仍然可用。</li>
 <li>检查 ID 将框架、决策、媒体、上传任务、收据和人工审核关联起来。</li>
 <li>日志和指标区分应用程序、模型、规则、产品、产品线和设备版本。</li>
-<li>健康端点描述软件准备情况；它们不能取代相机取景、灯光、焦点或线条行为的物理验证。</li>
+<li>健康端点描述软件准备情况；它们不能取代相机取景、照明、焦点或线条行为的物理验证。</li>
 <li>遥测是有界的并受到保留，因此它不能耗尽边缘磁盘。</li>
 <li>根据政策最小化或编辑条形码、图像、凭证和客户标识符。</li>
 </ol>
@@ -3654,7 +3654,7 @@
 <table>
 <thead>
 <tr>
-<th>严重性</th>
+<th>严重程度</th>
 <th>示例</th>
 <th>立即处理</th>
 </tr>
@@ -3686,9 +3686,9 @@
 <h2 id="2310-operational-runbooks">23.10 操作手册<a class="headerlink" href="#2310-operational-runbooks" title="Permanent link">&para;</a></h2>
 <h3 id="23101-potential-missed-ng">23.10.1 潜在的漏检 NG<a class="headerlink" href="#23101-potential-missed-ng" title="Permanent link">&para;</a></h3>
 <ol>
-<li>保存检查、相邻证据、有效版本、日志和审查记录。</li>
+<li>保存检查、相邻证据、活动版本、日志和审查记录。</li>
 <li>确定受影响的产品/组件/版本/时间/设备范围。
-3、根据客户流程增加审核或暂时暂停OK产品的自动发布。</li>
+3、根据客户流程增加审核或暂停自动发布OK产品。</li>
 <li>重新评估保留的证据而不覆盖原来的决定。</li>
 <li>纠正groundtruth，添加锁定的回归案例，并决定是否需要规则/配置回滚或模型修复。</li>
 <li>记录遏制、根本原因、受影响的检查和发布验证。</li>
@@ -3713,7 +3713,7 @@
 <ol>
 <li>将边缘墙时间与批准的时间源和中心接收时间进行比较。</li>
 <li>保留单调序列和源时间戳；不要重写历史记录。</li>
-<li>恢复时间同步，避免不安全的突变，平台支持逐步校正。</li>
+<li>恢复时间同步，避免不安全的突变，平台支持逐步修正。</li>
 <li>标记受影响的记录并验证产品窗口订购和上传核对。</li>
 </ol>
 <h2 id="2311-data-retention-for-telemetry">23.11 遥测数据保留<a class="headerlink" href="#2311-data-retention-for-telemetry" title="Permanent link">&para;</a></h2>

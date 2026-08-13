@@ -2762,6 +2762,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Immediate Safety Action">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-revocation-m1-no-in-place-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual revocation (M1, no in-place rotation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3160,6 +3177,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Immediate Safety Action">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-revocation-m1-no-in-place-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual revocation (M1, no in-place rotation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3236,18 +3270,39 @@ upload token, a session cookie, or the MinIO access/secret key.</p>
    credentials are hashed with random salts in PostgreSQL, and the API never
    reads the bootstrap plaintext at runtime.</li>
 <li>Suspend the affected credential immediately:</li>
-<li>Device upload token: disable the device row
-     (<code>devices.status != 'ACTIVE'</code>) so <code>_require_device</code> fails closed;
-     re-enrollment issues a fresh token.</li>
-<li>Administrator bearer token: the pilot token is long-lived; rotate the
-     <code>AV_CENTRAL_ADMIN_TOKEN</code> bootstrap value, re-run bootstrap to re-hash,
-     and revoke open admin sessions.</li>
+<li>Device upload token: set the device row inactive
+     (<code>devices.status != 'ACTIVE'</code>) so <code>_require_device</code> fails closed. M1 has
+     no device disable/re-enroll API or CLI, so this is a direct,
+     operator-approved database change, not an endpoint call.</li>
+<li>Administrator bearer token: the pilot token is long-lived. <strong>M1 has no
+     in-place credential rotation</strong>, and re-running <code>central-service bootstrap</code>
+     does <strong>not</strong> re-key an existing administrator: bootstrap reuses existing
+     rows and never overwrites their hashes. To revoke the token you must stop
+     central access and follow the "Manual revocation" procedure below.</li>
 <li>Browser session cookie: revoke sessions through
      <code>POST /api/v1/auth/session/revoke</code> (server-side revocation clears the
-     HttpOnly cookie and writes an <code>ADMIN_SESSION_REVOKED</code> audit event).</li>
+     HttpOnly cookie and writes an <code>ADMIN_SESSION_REVOKED</code> audit event). This
+     is the only credential class with a supported revocation path in M1.</li>
 <li>Confirm the API is not exposing the credential: <code>/api/v1/health/*</code> and
    problem responses never include tokens, object keys, or internal paths.</li>
 </ol>
+<h3 id="manual-revocation-m1-no-in-place-rotation">Manual revocation (M1, no in-place rotation)<a class="headerlink" href="#manual-revocation-m1-no-in-place-rotation" title="Permanent link">&para;</a></h3>
+<p>Until automated credential rotation ships, revoking a compromised pilot
+administrator or device token is a documented database-level incident action:</p>
+<ol>
+<li>Stop the API and bootstrap services so no further action uses the stolen
+   credential.</li>
+<li>Using the migration/owner database role, rotate the stored hash directly
+   (replace <code>upload_token_hash</code>/<code>upload_token_salt</code> on the device row or
+   <code>token_hash</code>/<code>token_salt</code> on the administrator row) and record an
+   <code>audit_logs</code> row naming actor, action, target, request/incident id, and
+   reason.</li>
+<li>Restart the services; the old credential now fails closed.</li>
+<li>Provision the new credential out of band and keep it in the deployment
+   secret store, never in logs or the repository.</li>
+</ol>
+<p>This procedure must itself be pre-approved and is out of scope for the
+automated bootstrap path.</p>
 <h2 id="diagnosis">Diagnosis<a class="headerlink" href="#diagnosis" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Query <code>audit_logs</code> for the affected window using <code>actor_type</code>,
@@ -3267,22 +3322,27 @@ upload token, a session cookie, or the MinIO access/secret key.</p>
 </ol>
 <h2 id="recovery">Recovery<a class="headerlink" href="#recovery" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Rotate credentials in order: MinIO keys, device upload tokens (re-enroll
-   each affected device with a new secret-file value), then the administrator
-   bootstrap token and session revocation.</li>
+<li>Rotate MinIO keys first (change <code>AV_CENTRAL_MINIO_ACCESS_KEY</code> /
+   <code>AV_CENTRAL_MINIO_SECRET_KEY</code>, restart MinIO, update the bucket policy).
+   Object keys are opaque and tenant-scoped, so a key leak does not expose the
+   database, but the root credential still controls every object.</li>
+<li>Revoke browser sessions via <code>POST /api/v1/auth/session/revoke</code> (supported
+   in M1).</li>
+<li>Device and administrator tokens have <strong>no automated rotation in M1</strong>; use
+   the "Manual revocation" procedure above for each affected principal.</li>
 <li>Re-verify the edge scheduler authenticates with the new device tokens and
-   that accepted inspections replay duplicate-free after re-enrollment
-   (device identity is unchanged; only the credential rotated).</li>
+   that accepted inspections replay duplicate-free (device identity is
+   unchanged; only the credential rotated).</li>
 <li>Audit every action performed during the suspected window and preserve
    evidence; add the request IDs to the incident record.</li>
 </ol>
 <h2 id="verification">Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The old device credential returns <code>401 UNAUTHENTICATED</code> and the new one
-  authenticates.</li>
+  authenticates (after the manual rotation procedure).</li>
 <li>Old admin bearer fails <code>GET /api/v1/auth/me</code>; a fresh session works and the
   <code>ADMIN_SESSION_REVOKED</code> audit row exists.</li>
-<li>Readiness still reports <code>credentials: ok</code> after re-bootstrap.</li>
+<li>Readiness still reports <code>credentials: ok</code>.</li>
 </ul>
 <h2 id="escalation">Escalation<a class="headerlink" href="#escalation" title="Permanent link">&para;</a></h2>
 <ul>

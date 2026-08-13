@@ -3239,7 +3239,7 @@
 <p><strong>已解决 - 所有发现均已在 <code>dev</code> 上修复和验证（PR #17 已更新）。</strong></p>
 <p>最初的审查发现 PR 无法安全地传输二进制媒体，
 没有将检查持久性和任务创建作为一个可恢复单元，
-允许过时的工人覆盖新的租约持有者，并且可以报告
+允许陈旧的工人覆盖新的租约持有者，并且可以报告
 检查同步，无需经过验证的服务器收据或其要求
 媒体。正常的 <code>serve</code> 路径也没有提供配置的方法
 调度程序，而编程 HTTP 路径允许纯文本凭证和
@@ -3281,7 +3281,7 @@
   单独的 <code>AV_EDGE_UPLOAD_TOKEN</code> 凭据，而不是查看者 <code>api_token</code>，
   测试证明查看者凭据从未发送（<code>406150e</code>）。</li>
 <li><strong>F8</strong> - 注入的时钟锚定响应/失败的每个转换
-  时间，因此缓慢的请求不会侵蚀<code>Retry-After</code>；确定性测试
+  时间，因此缓慢的请求无法侵蚀<code>Retry-After</code>；确定性测试
   验证 <code>next_attempt_at = response_time + 60</code> (<code>81fc6f4</code>)。</li>
 <li><strong>决议后强化</strong> - 最终审查弥补了四个小差距
   原始修复：收据现在需要匹配的尺寸/校验和和介质
@@ -3388,7 +3388,7 @@
   协调后，只有一项检查任务和每个媒体项目一项任务。</li>
 <li>在原始投影提交之后和入队之前模拟崩溃，
   然后重新启动，将发件箱修复一次。</li>
-<li>完全排队记录的协调不会创建重复任务。</li>
+<li>完全排队的记录的协调不会创建重复的任务。</li>
 </ul>
 <h3 id="f3-lease-expiry-has-no-ownertoken-fencing-so-a-late-worker-can-overwrite-a-newer-worker">F3。租约到期没有所有者/令牌围栏，因此迟到的工作人员可以覆盖较新的工作人员<a class="headerlink" href="#f3-lease-expiry-has-no-ownertoken-fencing-so-a-late-worker-can-overwrite-a-newer-worker" title="Permanent link">&para;</a></h3>
 <p><strong>严重性：</strong> P1/高</p>
@@ -3436,7 +3436,7 @@
 <li><code>apps/edge-service/src/assemblyvision_edge/persistence/repository.py:829-866</code></li>
 <li><code>apps/edge-service/src/assemblyvision_edge/upload/scheduler.py:207-238</code></li>
 </ul>
-<p>检查和所有媒体任务都会收到相同的 <code>created_at</code>。然后声称
+<p>检查和所有媒体任务都会收到相同的<code>created_at</code>。然后声称
 按随机 <code>upload_task_id</code> 排序关系，因此可以先发送媒体任务。的
 设计序列需要在媒体绑定之前摄取元数据（设计
 13.4/13.7）。正确拒绝未知检查介质的中央端点
@@ -3446,7 +3446,7 @@
 <ol>
 <li>明确地建模依赖关系：媒体任务仅在其父任务之后到期
    检验任务已验证成功收货，或使用单
-   在发布媒体之前上传元数据的检查会话状态机
+   检查会话状态机，在发布媒体之前上传元数据
    工作。</li>
 <li>将媒体保留在 <code>PENDING</code> 中（有依赖性原因），而不是处理
    预元数据服务器响应作为永久证据失败。</li>
@@ -3458,7 +3458,7 @@
 <li>在元数据证明没有媒体之前，使用返回 <code>404</code> 的端点进行测试
   发出请求直至存在匹配的检验收据。</li>
 <li>元数据首先成功，随后需要媒体耗尽，并且没有任务
-  仅仅因为其母体尚未被摄取而被标记为永久。</li>
+  仅仅因为其母体尚未被摄入而被标记为永久。</li>
 <li>元数据和媒体之间的重新启动保留了依赖性并完成
   仅剩余媒体任务，不重复。</li>
 </ul>
@@ -3479,7 +3479,7 @@
 已达到<code>PERMANENT_FAILURE</code>。</p>
 <p>这违反了合同 04 第 6 节（验证完成、存储中心对象
 标识符，仅在确认成功后更新）并滥用记录的
-设计14中的<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>同步状态。它还使得
+设计14中的<code>PARTIAL</code>/<code>SYNCED</code>/<code>FAILED</code>同步状态。它也使得
 未来的保留无法证明每个所需的工件都收到了
 已验证收据。</p>
 <p><strong>解决：</strong></p>
@@ -3570,7 +3570,7 @@
 <p><strong>解决：</strong></p>
 <ol>
 <li>在配置加载时验证 <code>upload_base_url</code> 为 HTTPS，包括
-   非空主机和批准的路径。仅通过显式、
+   非空主机和批准的路径。仅通过显式允许 HTTP，
    仅测试/本地开发模式无法在生产版本中运行或
    非环回部署。</li>
 <li>引入独特的最低权限上传凭证参考；从不

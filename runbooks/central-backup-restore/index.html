@@ -3243,12 +3243,21 @@ replacement, database corruption, or media loss.</p>
 </ul>
 <h2 id="backup-procedure">Backup Procedure<a class="headerlink" href="#backup-procedure" title="Permanent link">&para;</a></h2>
 <ol>
+<li><strong>Quiesce central writes</strong> so PostgreSQL and MinIO share one consistent
+   recovery point. M1 has no snapshot-coordinated backup, so backing up a live
+   API can capture a media object without its binding (or the reverse):</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker compose stop central-service
+</code></pre></div>
+<p>Record the backup identifier, start/end time, actor, and destination before
+   proceeding.</p>
+<ol>
 <li><strong>PostgreSQL logical backup</strong> (schema + governed data + receipts + audit):</li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker compose exec postgres pg_dump -U central -d assemblyvision \
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  --format=custom -f /tmp/assemblyvision.dump
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>docker compose cp central-service-postgres-1:/tmp/assemblyvision.dump \
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  ./backups/assemblyvision-&lt;date&gt;.dump
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker compose exec postgres pg_dump -U central -d assemblyvision \
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  --format=custom -f /tmp/assemblyvision.dump
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>docker compose cp postgres:/tmp/assemblyvision.dump \
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  ./backups/assemblyvision-&lt;date&gt;.dump
 </code></pre></div>
 <p>Record the SHA-256 of the dump file.</p>
 <ol>
@@ -3256,31 +3265,39 @@ replacement, database corruption, or media loss.</p>
    database backup alone is not a full restore. Copy the bucket (or the
    persistent volume) with an S3-compatible tool, preserving object keys:</li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>mc mirror --overwrite --remove \
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  myminio/assemblyvision-central ./backups/minio-&lt;date&gt;/
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mc mirror --overwrite --remove \
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  myminio/assemblyvision-central ./backups/minio-&lt;date&gt;/
 </code></pre></div>
-<p>The DB and the object store are backed up at approximately the same point;
-   restore both from the same dated bundle so bindings line up.</p>
+<p>Because the API was stopped before both backups, the database and object
+   store share one point; restore both from the same dated bundle so bindings
+   line up.</p>
 <ol>
-<li>Verify the backup before storing it: <code>pg_restore --list</code> on the dump and a
-   <code>mc ls</code>/checksum spot-check of the mirror.</li>
+<li>
+<p>Verify the backup before storing it: <code>pg_restore --list</code> on the dump and a
+   <code>mc ls</code>/checksum spot-check of the mirror.</p>
+</li>
+<li>
+<p>Resume the API:</p>
+</li>
 </ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker compose start central-service
+</code></pre></div>
 <h2 id="restore-procedure">Restore Procedure<a class="headerlink" href="#restore-procedure" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Stop the API so no writes race the restore (the edge outbox keeps its
    durable queue and resumes after).</li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker compose stop central-service
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker compose stop central-service
 </code></pre></div>
 <ol>
 <li><strong>PostgreSQL</strong>: create a fresh database (or restore into an empty one) and
    load the dump:</li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker compose exec postgres createdb -U central assemblyvision_restored
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>docker compose cp ./backups/assemblyvision-&lt;date&gt;.dump \
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  central-service-postgres-1:/tmp/assemblyvision.dump
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>docker compose exec postgres pg_restore -U central -d assemblyvision_restored \
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  /tmp/assemblyvision.dump
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docker compose exec postgres createdb -U central assemblyvision_restored
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>docker compose cp ./backups/assemblyvision-&lt;date&gt;.dump \
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  postgres:/tmp/assemblyvision.dump
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>docker compose exec postgres pg_restore -U central -d assemblyvision_restored \
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>  /tmp/assemblyvision.dump
 </code></pre></div>
 <ol>
 <li><strong>MinIO</strong>: restore the object volume/bucket from the same dated mirror so
