@@ -47,6 +47,14 @@ class FailingObjectStorage(NoopObjectStorage):
         raise RuntimeError("minio connection refused")
 
 
+class CorruptingObjectStorage(NoopObjectStorage):
+    """Object store stub that silently truncates bytes after a nominal PUT."""
+
+    def put_object(self, key: str, data: bytes, content_type: str) -> None:
+        super().put_object(key, data, content_type)
+        self.objects[key] = data[:-1]
+
+
 def _sqlite_engine() -> Any:
     engine = create_engine(
         "sqlite+pysqlite:///:memory:",
@@ -141,6 +149,30 @@ def test_object_store_failure_returns_503_without_receipt(repository: CentralRep
         assert response.json()["code"] == "OBJECT_STORE_UNAVAILABLE"
         assert response.headers["Retry-After"] == "5"
         # No false success receipt and no binding was persisted for the media.
+        assert response.json().get("central_object_id") is None
+        assert repository.get_media_binding(device_row_id, str(media_id)) is None
+
+
+def test_object_verification_failure_returns_503_without_receipt(
+    repository: CentralRepository,
+) -> None:
+    """Silent store-side corruption after PUT yields no AVAILABLE binding or receipt."""
+    client, device_row_id = _client(repository, storage=CorruptingObjectStorage())
+    with client:
+        record = _record()
+        accepted = client.post(
+            _INGEST_URL, content=build_envelope(record), headers=_device_headers()
+        )
+        assert accepted.status_code == 201
+
+        media_id = record.media[0].media_id
+        envelope = build_media_envelope(
+            record, source_media_id=media_id, bytes_content=b"fake-jpeg-bytes"
+        )
+        response = client.post(_INGEST_URL, content=envelope, headers=_device_headers())
+        assert response.status_code == 503
+        assert response.json()["code"] == "OBJECT_VERIFICATION_FAILED"
+        assert response.headers["Retry-After"] == "5"
         assert response.json().get("central_object_id") is None
         assert repository.get_media_binding(device_row_id, str(media_id)) is None
 

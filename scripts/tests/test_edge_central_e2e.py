@@ -92,6 +92,9 @@ class _NoopObjectStorage:
     def put_object(self, key: str, data: bytes, content_type: str) -> None:
         self.objects[key] = data
 
+    def verify_object(self, key: str, size_bytes: int, checksum_sha256: str) -> None:
+        return None
+
     def object_exists(self, key: str) -> bool:
         return key in self.objects
 

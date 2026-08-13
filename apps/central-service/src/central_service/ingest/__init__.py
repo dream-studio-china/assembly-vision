@@ -27,7 +27,7 @@ from central_service.persistence.repository import (
     PayloadConflictError,
     UploadReceiptRow,
 )
-from central_service.storage.object_store import ObjectStorage
+from central_service.storage.object_store import ObjectStorage, ObjectVerificationError
 
 log = logging.getLogger("central_service.ingest")
 
@@ -182,6 +182,24 @@ def ingest_media(
     central_object_id = str(uuid4())
     try:
         storage.put_object(object_key, envelope.payload, entry.mime_type)
+        # Verify the persisted bytes before any AVAILABLE binding or receipt,
+        # so a silent truncation or store-side corruption can never be
+        # reported as verified evidence (C1 invariant 8).
+        storage.verify_object(object_key, envelope.size_bytes, envelope.checksum_sha256)
+    except ObjectVerificationError as exc:
+        storage.remove_object(object_key)
+        log.error(
+            "object verification failed device=%s object=%s",
+            device.device_id,
+            envelope.object_id,
+            exc_info=exc,
+        )
+        raise IngestError(
+            status_code=503,
+            code="OBJECT_VERIFICATION_FAILED",
+            detail="the stored media did not match its declared size or checksum; retry later",
+            headers={"Retry-After": "5"},
+        ) from exc
     except Exception as exc:  # noqa: BLE001 - any store failure is retryable
         log.error(
             "object store unavailable device=%s object=%s",

@@ -10,6 +10,7 @@ orphan objects.
 
 from __future__ import annotations
 
+import hashlib
 import io
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
@@ -18,6 +19,10 @@ from typing import Protocol
 
 from minio import Minio
 from minio.error import S3Error
+
+
+class ObjectVerificationError(Exception):
+    """A stored object's bytes do not match the expected size or checksum."""
 
 
 @dataclass(frozen=True)
@@ -37,6 +42,7 @@ class ObjectStorage(Protocol):
     def ensure_bucket(self) -> None: ...
     def bucket_ready(self) -> bool: ...
     def put_object(self, key: str, data: bytes, content_type: str) -> None: ...
+    def verify_object(self, key: str, size_bytes: int, checksum_sha256: str) -> None: ...
     def object_exists(self, key: str) -> bool: ...
     def remove_object(self, key: str) -> None: ...
     def list_objects(self, prefix: str) -> Iterator[str]: ...
@@ -118,6 +124,29 @@ class MinioObjectStorage:
         finally:
             response.close()
             response.release_conn()
+
+    def verify_object(self, key: str, size_bytes: int, checksum_sha256: str) -> None:
+        """Read back one object and verify its exact size and SHA-256.
+
+        MinIO ``stat_object`` returns an ETag, not a trustworthy SHA-256, so
+        the bytes are streamed once and hashed here. A mismatch raises
+        :class:`ObjectVerificationError` so the caller never records an
+        ``AVAILABLE`` binding for corrupt or truncated evidence.
+        """
+        hasher = hashlib.sha256()
+        total = 0
+        response = self._client.get_object(self._settings.bucket, key)
+        try:
+            for chunk in response.stream(amt=64 * 1024):
+                hasher.update(chunk)
+                total += len(chunk)
+        finally:
+            response.close()
+            response.release_conn()
+        if total != size_bytes or hasher.hexdigest() != checksum_sha256:
+            raise ObjectVerificationError(
+                f"object {key} failed verification: size={total}/{size_bytes} checksum mismatch"
+            )
 
 
 @dataclass(frozen=True)

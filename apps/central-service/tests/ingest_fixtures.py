@@ -27,6 +27,7 @@ from assemblyvision_domain.models import (
     MediaMetadata,
     ProductResolution,
 )
+from central_service.storage.object_store import ObjectVerificationError
 
 
 def canonical_payload(record: InspectionRecord) -> bytes:
@@ -216,3 +217,12 @@ class NoopObjectStorage:
     def get_object(self, key: str) -> Iterator[bytes]:
         data = self.objects.get(key, b"")
         yield data
+
+    def verify_object(self, key: str, size_bytes: int, checksum_sha256: str) -> None:
+        data = self.objects.get(key)
+        if (
+            data is None
+            or len(data) != size_bytes
+            or hashlib.sha256(data).hexdigest() != checksum_sha256
+        ):
+            raise ObjectVerificationError(f"object {key} failed verification")
